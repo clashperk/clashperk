@@ -2679,6 +2679,33 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'capital-raids',
+				description: '[Experimental] Export capital raid attack stats.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
+					},
+					{
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'limit',
+						description: command.export.options.wars.description,
+						description_localizations: translation('command.export.options.wars.description'),
+						type: ApplicationCommandOptionType.Integer
+					}
+				]
+			},
+			{
 				name: 'last-wars',
 				description: 'Export participation history (last played wars)',
 				type: ApplicationCommandOptionType.Subcommand,

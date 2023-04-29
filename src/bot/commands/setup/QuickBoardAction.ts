@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
-import { Collections, Settings, status } from '../../util/Constants.js';
+import { Collections, status } from '../../util/Constants.js';
 
 export default class QuickBoardActionCommand extends Command {
 	public constructor() {
@@ -25,11 +25,6 @@ export default class QuickBoardActionCommand extends Command {
 			defer: true
 			// ephemeral: true
 		});
-	}
-
-	public permissionOverwrites(interaction: CommandInteraction<'cached'>) {
-		const roleId = this.client.settings.get<string>(interaction.guildId, Settings.BOT_ADMIN_ROLE);
-		return !interaction.member.roles.cache.has(roleId);
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>) {

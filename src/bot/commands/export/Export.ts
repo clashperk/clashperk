@@ -16,6 +16,7 @@ export default class ExportCommand extends Command {
 	public exec(interaction: CommandInteraction<'cached'>, args: { command: string }) {
 		const command = {
 			'missed': this.handler.modules.get('export-missed')!,
+			'capital-raids': this.handler.modules.get('export-capital-missed')!,
 			'season': this.handler.modules.get('export-season')!,
 			'wars': this.handler.modules.get('export-wars')!,
 			'members': this.handler.modules.get('export-members')!,

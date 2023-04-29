@@ -4,12 +4,12 @@ import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
 import Google from '../../struct/Google.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
-import { Collections, UnrankedCapitalLeagueId } from '../../util/Constants.js';
+import { Collections } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
 
-export default class ExportCapital extends Command {
+export default class ExportCapitalMissed extends Command {
 	public constructor() {
-		super('export-capital', {
+		super('export-capital-missed', {
 			category: 'export',
 			channel: 'guild',
 			clientPermissions: ['AttachFiles', 'EmbedLinks'],
@@ -42,58 +42,68 @@ export default class ExportCapital extends Command {
 				.limit(10)
 				.toArray();
 
-			const _weekends = [];
-			for (const clan of weekends) {
-				const remark =
-					clan.capitalLeague && clan._capitalLeague
-						? clan._capitalLeague.id > clan.capitalLeague.id
-							? 'Promoted'
-							: clan._capitalLeague.id === clan.capitalLeague.id
-							? 'Stayed'
-							: 'Demoted'
-						: 'Unknown';
-				const trophyGained = (clan._clanCapitalPoints ?? 0) - (clan.clanCapitalPoints ?? 0);
+			const membersMap: Record<
+				string,
+				{
+					name: string;
+					tag: string;
+					capitalResourcesLooted: number;
+					attackLimit: number;
+					attacks: number;
+					bonusAttackLimit: number;
+					attacksMissed: number;
+					participation: number;
+					weekends: number;
+				}
+			> = {};
+			for (const clan of weekends.reverse()) {
+				for (const member of clan.members) {
+					// eslint-disable-next-line
+					membersMap[member.tag] ??= {
+						name: member.name,
+						tag: member.tag,
+						capitalResourcesLooted: 0,
+						attackLimit: 0,
+						attacks: 0,
+						bonusAttackLimit: 0,
+						attacksMissed: 0,
+						participation: 0,
+						weekends: weekends.length
+					};
 
-				_weekends.push({
-					name: clan.name,
-					tag: clan.tag,
-					status: remark,
-					weekId: clan.weekId,
-					leagueId: clan.capitalLeague?.id ?? UnrankedCapitalLeagueId,
-					leagueName: (clan.capitalLeague?.name ?? 'Unknown').replace(/League/g, '').trim(),
-					capitalTotalLoot: clan.capitalTotalLoot,
-					totalAttacks: clan.totalAttacks,
-					raidsCompleted: clan.raidsCompleted,
-					defensiveReward: clan.defensiveReward,
-					offensiveReward: clan.offensiveReward,
-					trophyGained: trophyGained,
-					avgLoot: Number((clan.capitalTotalLoot / clan.totalAttacks).toFixed(2))
-				});
+					const mem = membersMap[member.tag];
+					mem.capitalResourcesLooted += member.capitalResourcesLooted;
+					mem.attackLimit += member.attackLimit;
+					mem.attacks += member.attacks;
+					mem.bonusAttackLimit += member.bonusAttackLimit;
+					mem.attacksMissed += member.attackLimit + member.bonusAttackLimit - member.attacks;
+					mem.participation += 1;
+				}
 			}
 
 			chunks.push({
 				name,
 				tag,
-				weekends: _weekends
+				members: Object.values(membersMap).sort((a, b) => b.attacksMissed - a.attacksMissed)
 			});
 		}
 		if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
+		const columns = [
+			{ header: 'Name', width: 20 },
+			{ header: 'Tag', width: 20 },
+			{ header: 'Total Loot', width: 10 },
+			{ header: 'Attack Limit', width: 10 },
+			{ header: 'Bonus Attack Limit', width: 10 },
+			{ header: 'Attacks Used', width: 10 },
+			{ header: 'Attacks Missed', width: 10 },
+			{ header: 'Participation', width: 10 },
+			{ header: 'Weekends', width: 10 }
+		];
 		const workbook = new Excel();
-		for (const { name, tag, weekends } of chunks) {
+		for (const { name, tag, members } of chunks) {
 			const sheet = workbook.addWorksheet(Util.escapeSheetName(`${name} (${tag})`));
-			sheet.columns = [
-				{ header: 'Weekend', width: 20 },
-				{ header: 'League', width: 20 },
-				{ header: 'Total Loot', width: 10 },
-				{ header: 'Avg. Loot', width: 10 },
-				{ header: 'Total Attacks', width: 10 },
-				{ header: 'Raids Completed', width: 10 },
-				{ header: 'Offensive Reward', width: 10 },
-				{ header: 'Defensive Reward', width: 10 },
-				{ header: 'Trophy Gained', width: 10 },
-				{ header: 'Remark', width: 10 }
-			];
+			sheet.columns = columns;
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;
@@ -103,44 +113,30 @@ export default class ExportCapital extends Command {
 			}
 
 			sheet.addRows(
-				weekends.map((weekend) => [
-					weekend.weekId,
-					weekend.leagueName.replace(/League/g, '').trim(),
-					weekend.capitalTotalLoot,
-					weekend.avgLoot,
-					weekend.totalAttacks,
-					weekend.raidsCompleted,
-					weekend.offensiveReward,
-					weekend.defensiveReward,
-					Number(weekend.trophyGained),
-					weekend.status
+				members.map((mem) => [
+					mem.name,
+					mem.tag,
+					mem.capitalResourcesLooted,
+					mem.attackLimit,
+					mem.bonusAttackLimit,
+					mem.attacks,
+					mem.attacksMissed,
+					mem.participation,
+					mem.weekends
 				])
 			);
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
 		await interaction.editReply({
-			content: `**Clan Capital Export**`,
+			content: `**Clan Capital Raids**`,
 			files: [
 				{
 					attachment: Buffer.from(buffer),
-					name: 'clan_capital_stats.xlsx'
+					name: 'clan_capital_raids.xlsx'
 				}
 			]
 		});
-
-		const columns = [
-			'Weekend',
-			'League',
-			'Total Loot',
-			'Avg. Loot',
-			'Total Attacks',
-			'Raids Completed',
-			'Offensive Reward',
-			'Defensive Reward',
-			'Trophy Gained',
-			'Remark'
-		];
 
 		const sheet = Google.sheet();
 		const drive = Google.drive();
@@ -155,9 +151,9 @@ export default class ExportCapital extends Command {
 						index: i,
 						title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
 						gridProperties: {
-							rowCount: Math.max(chunk.weekends.length + 1, 50),
+							rowCount: Math.max(chunk.members.length + 1, 50),
 							columnCount: Math.max(columns.length, 25),
-							frozenRowCount: chunk.weekends.length ? 1 : 0
+							frozenRowCount: chunk.members.length ? 1 : 0
 						}
 					}
 				}))
@@ -196,30 +192,29 @@ export default class ExportCapital extends Command {
 					{
 						values: columns.map((value) => ({
 							userEnteredValue: {
-								stringValue: value
+								stringValue: value.header
 							},
 							userEnteredFormat: {
 								wrapStrategy: 'WRAP'
 							}
 						}))
 					},
-					...clan.weekends.map((weekend) => ({
+					...clan.members.map((mem) => ({
 						values: [
-							weekend.weekId,
-							weekend.leagueName,
-							weekend.capitalTotalLoot,
-							weekend.avgLoot,
-							weekend.totalAttacks,
-							weekend.raidsCompleted,
-							weekend.offensiveReward,
-							weekend.defensiveReward,
-							weekend.trophyGained,
-							weekend.status
-						].map((value) => ({
+							mem.name,
+							mem.tag,
+							mem.capitalResourcesLooted,
+							mem.attackLimit,
+							mem.bonusAttackLimit,
+							mem.attacks,
+							mem.attacksMissed,
+							mem.participation,
+							mem.weekends
+						].map((value, i) => ({
 							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
 							userEnteredFormat: {
 								textFormat:
-									value === 'Demoted' || (typeof value === 'number' && value <= 0)
+									typeof value === 'number' && value > 0 && i === 6
 										? { foregroundColorStyle: { rgbColor: { red: 1 } } }
 										: {}
 							}
@@ -280,20 +275,6 @@ export default class ExportCapital extends Command {
 						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
 					}
 				}
-				// {
-				// 	updateDimensionProperties: {
-				// 		range: {
-				// 			sheetId: 0,
-				// 			dimension: 'COLUMNS',
-				// 			startIndex: 0,
-				// 			endIndex: columns.length
-				// 		},
-				// 		properties: {
-				// 			pixelSize: 120
-				// 		},
-				// 		fields: 'pixelSize'
-				// 	}
-				// }
 			])
 			.flat();
 

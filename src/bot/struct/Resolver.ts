@@ -122,14 +122,15 @@ export default class Resolver {
 	}
 
 	private async parseArgument(interaction: BaseInteraction<'cached'>, args: string) {
-		if (!args) return { user: interaction.member.user, matched: false, isTag: false };
+		if (!args) return { user: interaction.user, matched: false, isTag: false };
 
 		const id = /<@!?(\d{17,19})>/.exec(args)?.[1] ?? /^\d{17,19}/.exec(args)?.[0];
 		if (id) {
-			const member = interaction.guild.members.cache.get(id) ?? (await interaction.guild.members.fetch(id).catch(() => null));
-			if (member) return { user: member.user, matched: true, isTag: false };
+			const user = this.client.users.cache.get(id) ?? (await this.client.users.fetch(id).catch(() => null));
+			if (user) return { user, matched: true, isTag: false };
 			return { user: null, matched: true, isTag: false };
 		}
+
 		return { user: null, matched: false, isTag: /^#?[0289CGJLOPQRUVY]+$/gi.test(args) };
 	}
 
