@@ -353,7 +353,7 @@ export default class DonationLog extends BaseLog {
 			if (this.queued.has(id)) continue;
 
 			this.queued.add(id);
-			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval });
+			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
 			this.queued.delete(id);
 			await Util.delay(2000);
 		}
@@ -379,7 +379,7 @@ export default class DonationLog extends BaseLog {
 			if (this.queued.has(id)) continue;
 
 			this.queued.add(id);
-			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval });
+			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
 			this.queued.delete(id);
 			await Util.delay(2000);
 		}
