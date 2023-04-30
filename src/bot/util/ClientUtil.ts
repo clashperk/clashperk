@@ -47,6 +47,14 @@ export class ClientUtil {
 		return token;
 	}
 
+	public createJWT() {
+		const token = jwt.sign({ scopes: ['read'], roles: ['admin'] }, process.env.JWT_SECRET!, {
+			expiresIn: '6h'
+		});
+
+		return token;
+	}
+
 	public isManager(member: GuildMember) {
 		if (this.client.isOwner(member.user)) return true;
 		const roleId = this.client.settings.get<string>(member.guild, Settings.MANAGER_ROLE, null);

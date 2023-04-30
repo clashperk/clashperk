@@ -65,7 +65,7 @@ export default class ExportCapital extends Command {
 					totalAttacks: clan.totalAttacks,
 					raidsCompleted: clan.raidsCompleted,
 					defensiveReward: clan.defensiveReward,
-					offensiveReward: clan.offensiveReward,
+					offensiveReward: clan.offensiveReward * 6,
 					trophyGained: trophyGained,
 					avgLoot: Number((clan.capitalTotalLoot / clan.totalAttacks).toFixed(2))
 				});

@@ -3,6 +3,16 @@ import { drive_v3, google } from 'googleapis';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
+const auth = google.auth.fromJSON({
+	type: 'authorized_user',
+	client_id: process.env.GOOGLE_CLIENT_ID!,
+	client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+	refresh_token: process.env.GOOGLE_REFRESH_TOKEN!
+});
+
+const drive = google.drive({ version: 'v3', auth });
+const sheet = google.sheets({ version: 'v4', auth });
+
 export default {
 	async location(query: string) {
 		const search = new URLSearchParams({
@@ -48,25 +58,12 @@ export default {
 		return { location, timezone };
 	},
 
-	auth() {
-		return google.auth.fromJSON({
-			type: 'authorized_user',
-			client_id: process.env.GOOGLE_CLIENT_ID!,
-			client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-			refresh_token: process.env.GOOGLE_REFRESH_TOKEN!
-		});
-	},
-
 	sheet() {
-		const auth = this.auth();
-		const service = google.sheets({ version: 'v4', auth });
-		return service;
+		return sheet;
 	},
 
 	drive() {
-		const auth = this.auth();
-		const service = google.drive({ version: 'v3', auth });
-		return service;
+		return drive;
 	},
 
 	publish(drive: drive_v3.Drive, fileId: string) {

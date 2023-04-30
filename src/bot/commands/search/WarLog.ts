@@ -1,9 +1,8 @@
-import { EmbedBuilder, CommandInteraction, User } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, User, time } from 'discord.js';
 import moment from 'moment';
 import { Collections, WarType } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
 
 export default class WarLogCommand extends Command {
 	public constructor() {
@@ -59,7 +58,8 @@ export default class WarLogCommand extends Command {
 		for (const item of body.items) {
 			const extra = this.getWarInfo(wars, item);
 			const { clan, opponent } = item;
-			const time = Util.duration(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
+			// const time = Util.duration(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
+			const _time = time(new Date(moment(item.endTime).toDate()), 'R');
 			embed.addFields([
 				{
 					name: `\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${
@@ -73,7 +73,7 @@ export default class WarLogCommand extends Command {
 						}`,
 						`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${
 							EMOJIS.SWORD
-						} ${clan.attacks}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${time} ago`
+						} ${clan.attacks}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${_time}`
 					].join('\n')
 				}
 			]);

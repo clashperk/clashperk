@@ -90,7 +90,7 @@ export default class StatusCommand extends Command {
 				},
 				{
 					name: 'Version',
-					value: `[${pkg.version}](https://github.com/clashperk)`,
+					value: `[${pkg.version}](https://github.com/clashperk/clashperk/commit/${process.env.GIT_SHA!})`,
 					inline: true
 				},
 				{

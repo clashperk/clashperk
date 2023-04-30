@@ -1,23 +1,28 @@
-import {
-	EmbedBuilder,
-	CommandInteraction,
-	StringSelectMenuBuilder,
-	ActionRowBuilder,
-	escapeMarkdown,
-	ComponentType,
-	ButtonBuilder,
-	ButtonStyle,
-	User,
-	Guild,
-	Message
-} from 'discord.js';
 import { Player, WarClan } from 'clashofclans.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	ComponentType,
+	EmbedBuilder,
+	Guild,
+	Message,
+	StringSelectMenuBuilder,
+	User,
+	escapeMarkdown
+} from 'discord.js';
+import { sheets_v4 } from 'googleapis';
+import moment from 'moment';
 import ms from 'ms';
-import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis.js';
-import { Collections } from '../../util/Constants.js';
+import fetch from 'node-fetch';
 import { Args, Command } from '../../lib/index.js';
-import { Season } from '../../util/index.js';
+import Google from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
+import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/Emojis.js';
+import { Season, Util } from '../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -32,6 +37,12 @@ const weaponLevels: Record<string, string> = {
 	3: '³',
 	4: '⁴',
 	5: '⁵'
+};
+
+const warTypes: Record<string, string> = {
+	1: 'REGULAR',
+	2: 'FRIENDLY',
+	3: 'CWL'
 };
 
 export default class PlayerCommand extends Command {
@@ -76,7 +87,8 @@ export default class PlayerCommand extends Command {
 			troops: this.client.uuid(interaction.user.id),
 			upgrades: this.client.uuid(interaction.user.id),
 			rushed: this.client.uuid(interaction.user.id),
-			clan: this.client.uuid(interaction.user.id)
+			clan: this.client.uuid(interaction.user.id),
+			export: this.client.uuid(interaction.user.id)
 		};
 
 		const embed = (await this.embed(interaction.guild, data)).setColor(this.client.embed(interaction));
@@ -92,8 +104,8 @@ export default class PlayerCommand extends Command {
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.troops))
 			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
-			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
-		// .addComponents(new ButtonBuilder().setLabel('View Clan').setStyle(ButtonStyle.Primary).setCustomId(customIds.clan));
+			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed))
+			.addComponents(new ButtonBuilder().setLabel('Export Wars').setStyle(ButtonStyle.Primary).setCustomId(customIds.export));
 
 		const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
@@ -126,6 +138,10 @@ export default class PlayerCommand extends Command {
 			if (action.customId === customIds.rushed && action.isButton()) {
 				await action.deferUpdate();
 				return this.handler.exec(action, this.handler.modules.get('rushed')!, { tag: args.tag });
+			}
+			if (action.customId === customIds.export && action.isButton()) {
+				await action.deferReply();
+				await this.exportWars(action, data);
 			}
 		});
 
@@ -345,4 +361,256 @@ export default class PlayerCommand extends Command {
 		if (!data) return Promise.reject(0);
 		return data;
 	}
+
+	private async exportWars(interaction: ButtonInteraction<'cached'>, player: Player) {
+		const res = await fetch(`https://api.clashperk.com/wars/members/${encodeURIComponent(player.tag)}`, {
+			headers: {
+				Authorization: `Bearer ${this.client.util.createJWT()}`
+			}
+		});
+		const data = (await res.json()) as { wars: WarHistory[] };
+
+		const wars = data.wars
+			.map((war) => {
+				if (war.attacks.length) {
+					return war.attacks.map((attack) => ({ ...war, attack }));
+				}
+				return [{ ...war }];
+			})
+			.flat();
+
+		const columns = [
+			{ header: 'WAR TYPE', width: 8 },
+			{ header: 'CLAN', width: 18 },
+			{ header: 'OPPONENT', width: 13 },
+			{ header: 'DATE', width: 8 },
+			{ header: 'MAP POSITION', width: 8 },
+			{ header: 'TOWN HALL', width: 12 },
+			{ header: 'STARS', width: 18 },
+			{ header: 'DESTRUCTION', width: 13 },
+			{ header: 'OPPONENT MAP POSITION', width: 10 },
+			{ header: 'OPPONENT TOWN HALL', width: 10 }
+		];
+
+		const sheet = Google.sheet();
+		const drive = Google.drive();
+		const spreadsheet = await sheet.spreadsheets.create({
+			requestBody: {
+				properties: {
+					title: `${interaction.guild.name} [Attack History]`
+				},
+				sheets: [1].map((_, i) => ({
+					properties: {
+						sheetId: i,
+						index: i,
+						title: Util.escapeSheetName(`${player.name} (${player.tag})`),
+						gridProperties: {
+							rowCount: Math.max(wars.length + 1, 50),
+							columnCount: Math.max(columns.length, 25),
+							frozenRowCount: wars.length ? 1 : 0
+						}
+					}
+				}))
+			},
+			fields: 'spreadsheetId,spreadsheetUrl'
+		});
+
+		await Promise.all([
+			drive.permissions.create({
+				requestBody: {
+					role: 'reader',
+					type: 'anyone'
+				},
+				fileId: spreadsheet.data.spreadsheetId!
+			}),
+			drive.revisions.update({
+				requestBody: {
+					published: true,
+					publishedOutsideDomain: true,
+					publishAuto: true
+				},
+				fileId: spreadsheet.data.spreadsheetId!,
+				revisionId: '1',
+				fields: '*'
+			})
+		]);
+
+		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
+			updateCells: {
+				start: {
+					sheetId: i,
+					rowIndex: 0,
+					columnIndex: 0
+				},
+				rows: [
+					{
+						values: columns.map((value) => ({
+							userEnteredValue: {
+								stringValue: value.header
+							},
+							userEnteredFormat: {
+								wrapStrategy: 'WRAP'
+							}
+						}))
+					},
+					...wars.map((war) => ({
+						values: [
+							warTypes[war.warType],
+							war.clan.name,
+							war.opponent.name,
+							moment(war.startTime).format('DD/MM/YYYY HH:mm'),
+							war.attacker.mapPosition,
+							war.attacker.townhallLevel,
+							war.attack?.stars,
+							war.attack?.destructionPercentage,
+							war.attack?.defender.mapPosition,
+							war.attack?.defender.townhallLevel
+						].map((value) => ({
+							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
+							userEnteredFormat: {
+								textFormat:
+									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
+							}
+						}))
+					}))
+				],
+				fields: '*'
+			}
+		})) as sheets_v4.Schema$Request[];
+
+		const styleRequests: sheets_v4.Schema$Request[] = [1]
+			.map((_, i) => [
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 0,
+							endColumnIndex: 4
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'LEFT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 4
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'RIGHT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							endRowIndex: 1,
+							startColumnIndex: 0
+						},
+						cell: {
+							userEnteredFormat: {
+								textFormat: { bold: true, fontSize: 10 },
+								verticalAlignment: 'MIDDLE'
+							}
+						},
+						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
+					}
+				},
+				{
+					updateDimensionProperties: {
+						range: {
+							sheetId: 0,
+							dimension: 'COLUMNS',
+							startIndex: 0,
+							endIndex: 4
+						},
+						properties: {
+							pixelSize: 120
+						},
+						fields: 'pixelSize'
+					}
+				}
+			])
+			.flat();
+
+		await sheet.spreadsheets.batchUpdate({
+			spreadsheetId: spreadsheet.data.spreadsheetId!,
+			requestBody: {
+				requests: [...requests, ...styleRequests]
+			}
+		});
+
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Open in Web')
+				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
+		);
+
+		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download PDF')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
+		);
+		return interaction.editReply({ components: [row, downloadRow] });
+	}
+}
+
+interface WarHistory {
+	id: number;
+	warType: number;
+	startTime: string;
+	endTime: string;
+	clan: {
+		name: string;
+		tag: string;
+	};
+	opponent: {
+		name: string;
+		tag: string;
+	};
+	attacker: {
+		name: string;
+		tag: string;
+		townhallLevel: number;
+		mapPosition: number;
+	};
+	attacks: {
+		stars: number;
+		defenderTag: string;
+		destructionPercentage: number;
+		defender: {
+			tag: string;
+			townhallLevel: number;
+			mapPosition: number;
+		};
+	}[];
+	attack?: {
+		stars: number;
+		defenderTag: string;
+		destructionPercentage: number;
+		defender: {
+			tag: string;
+			townhallLevel: number;
+			mapPosition: number;
+		};
+	};
 }
