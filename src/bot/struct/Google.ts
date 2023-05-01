@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { drive_v3, google } from 'googleapis';
+import { google } from 'googleapis';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
@@ -66,23 +66,25 @@ export default {
 		return drive;
 	},
 
-	publish(drive: drive_v3.Drive, fileId: string) {
-		drive.permissions.create({
-			requestBody: {
-				role: 'reader',
-				type: 'anyone'
-			},
-			fileId
-		});
-		drive.revisions.update({
-			requestBody: {
-				publishedOutsideDomain: true,
-				publishAuto: true,
-				published: true
-			},
-			revisionId: '1',
-			fields: '*',
-			fileId
-		});
+	async publish(fileId: string) {
+		return Promise.all([
+			drive.permissions.create({
+				requestBody: {
+					role: 'reader',
+					type: 'anyone'
+				},
+				fileId
+			}),
+			drive.revisions.update({
+				requestBody: {
+					publishedOutsideDomain: true,
+					publishAuto: true,
+					published: true
+				},
+				revisionId: '1',
+				fields: '*',
+				fileId
+			})
+		]);
 	}
 };

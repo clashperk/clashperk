@@ -1,9 +1,12 @@
 import { ClanWar, ClanWarAttack, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
+import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
-import { Season, Util } from '../../util/index.js';
+import Google from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
+import { Season, Util } from '../../util/index.js';
+import { getExportComponents } from '../../util/Helper.js';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -132,7 +135,7 @@ export default class ExportCWL extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return interaction.editReply({
+		await interaction.editReply({
 			files: [
 				{
 					attachment: Buffer.from(buffer),
@@ -148,6 +151,266 @@ export default class ExportCWL extends Command {
 				}
 			]
 		});
+
+		const sheets = chunks
+			.map((chunk) => [
+				{
+					title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
+					columns: [
+						'Name',
+						'Tag',
+						'Total Attacks',
+						'Total Stars',
+						'True Stars',
+						'Avg Stars',
+						'Total Dest',
+						'Avg Dest',
+						'Three Stars',
+						'Two Stars',
+						'One Stars',
+						'Zero Stars',
+						'Missed',
+						'Def Stars',
+						'Avg Def Stars',
+						'Total Def Dest',
+						'Avg Def Dest'
+					],
+					rows: chunk.members
+						.filter((m) => m.of > 0)
+						.map((m) => [
+							m.name,
+							m.tag,
+							m.of,
+							m.stars,
+							m.newStars,
+							Number((m.stars / m.of || 0).toFixed(2)),
+							Number(m.dest.toFixed(2)),
+							Number((m.dest / m.of || 0).toFixed(2)),
+							this.starCount(m.starTypes, 3),
+							this.starCount(m.starTypes, 2),
+							this.starCount(m.starTypes, 1),
+							this.starCount(m.starTypes, 0),
+							m.of - m.attacks,
+							m.defStars,
+							Number((m.defStars / m.defCount || 0).toFixed()),
+							Number(m.defDestruction.toFixed(2)),
+							Number((m.defDestruction / m.defCount || 0).toFixed(2))
+						])
+				},
+				{
+					title: Util.escapeSheetName(`Ranking - ${chunk.name} (${chunk.tag})`),
+					columns: ['Rank', 'Clan', 'Tag', 'Attacks', 'Stars', 'Destruction'],
+					rows: chunk.ranking.map((round, i) => [
+						i + 1,
+						round.name,
+						round.tag,
+						round.attacks,
+						round.stars,
+						Number(round.destruction.toFixed(2))
+					])
+				},
+				{
+					title: Util.escapeSheetName(`Rounds - ${chunk.name} (${chunk.tag})`),
+					columns: [
+						'Round',
+						'Clan',
+						'Clan Tag',
+						'Attacks',
+						'Stars',
+						'Destruction',
+						'Opponent',
+						'Opponent Tag',
+						'Attacks',
+						'Stars',
+						'Destruction'
+					],
+					rows: chunk.perRound.map((round, i) => [
+						i + 1,
+						round.clan.name,
+						round.clan.tag,
+						round.clan.attacks,
+						round.clan.stars,
+						Number(round.clan.destructionPercentage.toFixed(2)),
+						round.opponent.name,
+						round.opponent.tag,
+						round.opponent.attacks,
+						round.opponent.stars,
+						Number(round.opponent.destructionPercentage.toFixed(2))
+					])
+				},
+				...chunk.perRound.map((round, i) => ({
+					title: `Round ${i + 1} - ${Util.escapeSheetName(`${chunk.name} (${chunk.tag})`)}`,
+					columns: [
+						'Clan',
+						'Opponent',
+						'Attacker',
+						'Attacker Tag',
+						'Stars',
+						'True Stars',
+						'Gained',
+						'Destruction',
+						'Defender',
+						'Defender Tag',
+						'Attacker Map',
+						'Attacker TH',
+						'Defender Map',
+						'Defender TH',
+						'Defender Stars',
+						'Defender Destruction'
+					],
+					rows: round.clan.members.map((m) => {
+						const opponent = round.opponent.members.find((en) => en.tag === m.attacks?.[0]?.defenderTag);
+						const gained = m.bestOpponentAttack && m.attacks?.length ? m.attacks[0].stars - m.bestOpponentAttack.stars : '';
+						const __attacks = round.clan.members.flatMap((m) => m.attacks ?? []);
+
+						const previousBestAttack = m.attacks?.length
+							? this.getPreviousBestAttack(__attacks, round.opponent, m.attacks[0])
+							: null;
+
+						return [
+							round.clan.name,
+							round.opponent.name,
+							m.name,
+							m.tag,
+							m.attacks?.length ? m.attacks.at(0)!.stars : '',
+							previousBestAttack
+								? Math.max(m.attacks!.at(0)!.stars - previousBestAttack.stars)
+								: m.attacks?.length
+								? m.attacks.at(0)!.stars
+								: '',
+							gained,
+							m.attacks?.length ? m.attacks.at(0)!.destructionPercentage.toFixed(2) : '',
+							opponent ? opponent.name : '',
+							opponent ? opponent.tag : '',
+							round.clan.members.findIndex((en) => en.tag === m.tag) + 1,
+							m.townhallLevel,
+							opponent ? round.opponent.members.findIndex((en) => en.tag === opponent.tag) + 1 : '',
+							opponent ? opponent.townhallLevel : '',
+							m.bestOpponentAttack?.stars ?? '',
+							m.bestOpponentAttack?.destructionPercentage.toFixed(2) ?? ''
+						];
+					})
+				}))
+			])
+			.flat();
+
+		const sheet = Google.sheet();
+		const spreadsheet = await sheet.spreadsheets.create({
+			requestBody: {
+				properties: {
+					title: `${interaction.guild.name} [CWL Stats]`
+				},
+				sheets: sheets.map((chunk, i) => ({
+					properties: {
+						sheetId: i,
+						index: i,
+						title: chunk.title,
+						gridProperties: {
+							rowCount: Math.max(chunk.rows.length + 1, 100),
+							columnCount: Math.max(chunk.columns.length, 50),
+							frozenRowCount: chunk.rows.length ? 1 : 0
+						}
+					}
+				}))
+			},
+			fields: 'spreadsheetId,spreadsheetUrl'
+		});
+
+		await Google.publish(spreadsheet.data.spreadsheetId!);
+
+		const requests: sheets_v4.Schema$Request[] = sheets.map((chunk, i) => ({
+			updateCells: {
+				start: {
+					sheetId: i,
+					rowIndex: 0,
+					columnIndex: 0
+				},
+				rows: [
+					{
+						values: chunk.columns.map((value) => ({
+							userEnteredValue: {
+								stringValue: value
+							},
+							userEnteredFormat: {
+								wrapStrategy: 'WRAP'
+							}
+						}))
+					},
+					...chunk.rows.map((values) => ({
+						values: values.map((value) => ({
+							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
+							userEnteredFormat: {
+								textFormat:
+									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
+							}
+						}))
+					}))
+				],
+				fields: '*'
+			}
+		}));
+
+		const styleRequests: sheets_v4.Schema$Request[] = sheets
+			.map((_, i) => [
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 0,
+							endColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'LEFT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'RIGHT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							endRowIndex: 1,
+							startColumnIndex: 0
+						},
+						cell: {
+							userEnteredFormat: {
+								textFormat: { bold: true },
+								verticalAlignment: 'MIDDLE'
+							}
+						},
+						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
+					}
+				}
+			])
+			.flat();
+
+		await sheet.spreadsheets.batchUpdate({
+			spreadsheetId: spreadsheet.data.spreadsheetId!,
+			requestBody: {
+				requests: [...requests, ...styleRequests]
+			}
+		});
+
+		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
 	}
 
 	private finalStandings(

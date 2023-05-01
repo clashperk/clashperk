@@ -1,10 +1,11 @@
-import { EmbedBuilder, Guild } from 'discord.js';
 import { Clan } from 'clashofclans.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild } from 'discord.js';
+import { sheets_v4 } from 'googleapis';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { PlayerLinks } from '../types/index.js';
-import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';
+import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Util } from './index.js';
 
 export const padStart = (str: string | number, length: number) => {
@@ -435,4 +436,22 @@ export const attacksEmbedMaker = async ({ clan, guild, sortKey }: { clan: Clan; 
 		);
 
 	return embed;
+};
+
+/**
+ * @param sheet must be `spreadsheet.data`
+ */
+export const getExportComponents = (sheet: sheets_v4.Schema$Spreadsheet) => {
+	return [
+		new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(sheet.spreadsheetUrl!),
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Open in Web').setURL(sheet.spreadsheetUrl!.replace('edit', 'pubhtml'))
+		),
+		new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${sheet.spreadsheetId!}&exportFormat=xlsx`)
+		)
+	];
 };

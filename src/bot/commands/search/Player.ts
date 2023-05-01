@@ -23,6 +23,7 @@ import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
+import { getExportComponents } from '../../util/Helper.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -393,7 +394,6 @@ export default class PlayerCommand extends Command {
 		];
 
 		const sheet = Google.sheet();
-		const drive = Google.drive();
 		const spreadsheet = await sheet.spreadsheets.create({
 			requestBody: {
 				properties: {
@@ -415,25 +415,7 @@ export default class PlayerCommand extends Command {
 			fields: 'spreadsheetId,spreadsheetUrl'
 		});
 
-		await Promise.all([
-			drive.permissions.create({
-				requestBody: {
-					role: 'reader',
-					type: 'anyone'
-				},
-				fileId: spreadsheet.data.spreadsheetId!
-			}),
-			drive.revisions.update({
-				requestBody: {
-					published: true,
-					publishedOutsideDomain: true,
-					publishAuto: true
-				},
-				fileId: spreadsheet.data.spreadsheetId!,
-				revisionId: '1',
-				fields: '*'
-			})
-		]);
+		await Google.publish(spreadsheet.data.spreadsheetId!);
 
 		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
 			updateCells: {
@@ -458,16 +440,17 @@ export default class PlayerCommand extends Command {
 							warTypes[war.warType],
 							war.clan.name,
 							war.opponent.name,
-							moment(war.startTime).format('DD/MM/YYYY HH:mm'),
+							Util.dateToSerialDate(moment(war.startTime).toDate()),
 							war.attacker.mapPosition,
 							war.attacker.townhallLevel,
 							war.attack?.stars,
 							war.attack?.destructionPercentage,
 							war.attack?.defender.mapPosition,
 							war.attack?.defender.townhallLevel
-						].map((value) => ({
+						].map((value, rowIndex) => ({
 							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
 							userEnteredFormat: {
+								numberFormat: rowIndex === 3 && typeof value === 'number' ? { type: 'DATE_TIME' } : {},
 								textFormat:
 									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
 							}
@@ -552,25 +535,7 @@ export default class PlayerCommand extends Command {
 			}
 		});
 
-		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Open in Web')
-				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
-		);
-
-		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Download')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Download PDF')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
-		);
-		return interaction.editReply({ components: [row, downloadRow] });
+		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
 	}
 }
 

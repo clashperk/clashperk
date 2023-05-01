@@ -46,7 +46,7 @@ export class GuildEventsHandler {
 			moment(now).date() >= 9
 				? moment(now).startOf('month').add(1, 'month').add(8, 'hour').toDate()
 				: moment(now).startOf('month').add(8, 'hours').toDate();
-		const CWLSignupEndTime = moment(CWLStartTime).add(1, 'days').toDate();
+		const CWLSignupEndTime = moment(CWLStartTime).add(2, 'days').toDate();
 
 		const seasonEndTime = moment(Season.endTimestamp).toDate();
 		const { raidWeekEndTime, raidWeekStartTime } = this.getRaidWeek(now);

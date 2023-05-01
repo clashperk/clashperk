@@ -1,10 +1,11 @@
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
+import { AttachmentBuilder, CommandInteraction } from 'discord.js';
 import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
 import Google from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
+import { getExportComponents } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
 
 export enum WarType {
@@ -200,7 +201,6 @@ export default class WarExport extends Command {
 		];
 
 		const sheet = Google.sheet();
-		const drive = Google.drive();
 		const spreadsheet = await sheet.spreadsheets.create({
 			requestBody: {
 				properties: {
@@ -222,25 +222,7 @@ export default class WarExport extends Command {
 			fields: 'spreadsheetId,spreadsheetUrl'
 		});
 
-		Promise.all([
-			drive.permissions.create({
-				requestBody: {
-					role: 'reader',
-					type: 'anyone'
-				},
-				fileId: spreadsheet.data.spreadsheetId!
-			}),
-			drive.revisions.update({
-				requestBody: {
-					published: true,
-					publishedOutsideDomain: true,
-					publishAuto: true
-				},
-				fileId: spreadsheet.data.spreadsheetId!,
-				revisionId: '1',
-				fields: '*'
-			})
-		]);
+		await Google.publish(spreadsheet.data.spreadsheetId!);
 
 		const requests: sheets_v4.Schema$Request[] = chunks.map((chunk, i) => ({
 			updateCells: {
@@ -347,32 +329,14 @@ export default class WarExport extends Command {
 			])
 			.flat();
 
-		sheet.spreadsheets.batchUpdate({
+		await sheet.spreadsheets.batchUpdate({
 			spreadsheetId: spreadsheet.data.spreadsheetId!,
 			requestBody: {
 				requests: [...requests, ...styleRequests]
 			}
 		});
 
-		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Open in Web')
-				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
-		);
-
-		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Download')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Download PDF')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
-		);
-		return interaction.editReply({ components: [row, downloadRow] });
+		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
 	}
 
 	private starCount(stars: number[] = [], count: number) {

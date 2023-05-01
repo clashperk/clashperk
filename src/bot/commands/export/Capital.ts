@@ -1,10 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
 import Google from '../../struct/Google.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { Collections, UnrankedCapitalLeagueId } from '../../util/Constants.js';
+import { getExportComponents } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
 
 export default class ExportCapital extends Command {
@@ -143,7 +144,6 @@ export default class ExportCapital extends Command {
 		];
 
 		const sheet = Google.sheet();
-		const drive = Google.drive();
 		const spreadsheet = await sheet.spreadsheets.create({
 			requestBody: {
 				properties: {
@@ -165,25 +165,7 @@ export default class ExportCapital extends Command {
 			fields: 'spreadsheetId,spreadsheetUrl'
 		});
 
-		await Promise.all([
-			drive.permissions.create({
-				requestBody: {
-					role: 'reader',
-					type: 'anyone'
-				},
-				fileId: spreadsheet.data.spreadsheetId!
-			}),
-			drive.revisions.update({
-				requestBody: {
-					published: true,
-					publishedOutsideDomain: true,
-					publishAuto: true
-				},
-				fileId: spreadsheet.data.spreadsheetId!,
-				revisionId: '1',
-				fields: '*'
-			})
-		]);
+		await Google.publish(spreadsheet.data.spreadsheetId!);
 
 		const requests: sheets_v4.Schema$Request[] = chunks.map((clan, i) => ({
 			updateCells: {
@@ -304,24 +286,6 @@ export default class ExportCapital extends Command {
 			}
 		});
 
-		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Open in Web')
-				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
-		);
-
-		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Download')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Download PDF')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
-		);
-		return interaction.editReply({ components: [row, downloadRow] });
+		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
 	}
 }

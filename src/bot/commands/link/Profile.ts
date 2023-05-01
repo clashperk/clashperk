@@ -1,20 +1,24 @@
+import { Clan, Player } from 'clashofclans.js';
 import {
-	EmbedBuilder,
-	GuildMember,
-	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
-	User,
+	ButtonInteraction,
 	ButtonStyle,
-	ComponentType
+	CommandInteraction,
+	ComponentType,
+	EmbedBuilder,
+	GuildMember,
+	User
 } from 'discord.js';
-import { Clan, Player } from 'clashofclans.js';
+import { sheets_v4 } from 'googleapis';
 import moment from 'moment';
-import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis.js';
 import { Args, Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
-import Workbook from '../../struct/Excel.js';
+import Google from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
+import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/Emojis.js';
+import { getExportComponents } from '../../util/Helper.js';
+import { Util } from '../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -132,8 +136,9 @@ export default class ProfileCommand extends Command {
 					name: player.clan?.name,
 					tag: player.clan?.tag
 				},
+				townHallLevel: player.townHallLevel,
 				role: player.role,
-				external: this.isLinked(players, tag) ? 'No' : 'Yes'
+				internal: this.isLinked(players, tag) ? 'Yes' : 'No'
 			});
 		});
 
@@ -174,13 +179,9 @@ export default class ProfileCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customIds.export) {
+			if (action.customId === customIds.export && action.isButton()) {
 				await action.deferReply();
-				const file = await this.toXlsx(links, user);
-				await action.editReply({
-					content: `**${user.tag} (${user.id})**`,
-					files: [{ attachment: Buffer.from(file), name: 'accounts.xlsx' }]
-				});
+				await this.export(action, links, user);
 			}
 			if (action.customId === customIds.sync) {
 				await action.reply({ ephemeral: true, content: 'Your roles will be updated shortly.', components: [] });
@@ -199,27 +200,155 @@ export default class ProfileCommand extends Command {
 		return this.client.users.fetch(link.userId).catch(() => interaction.user);
 	}
 
-	private toXlsx(data: LinkData[], user: User) {
-		const workbook = new Workbook();
-		const sheet = workbook.addWorksheet(`${user.tag}`);
-		sheet.columns = [
-			{ header: 'Name', width: 18 },
-			{ header: 'Tag', width: 18 },
-			{ header: 'Clan', width: 18 },
-			{ header: 'Clan Tag', width: 18 },
-			{ header: 'Clan Role', width: 18 },
-			{ header: 'Verified', width: 18 },
-			{ header: 'External', width: 18 }
-		];
+	private async export(interaction: ButtonInteraction<'cached'>, players: LinkData[], user: User) {
+		const columns = ['Name', 'Tag', 'Town Hall', 'Clan', 'Clan Tag', 'Clan Role', 'Verified', 'Internal'];
 
-		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.getRow(1).height = 40;
+		const { spreadsheets } = Google.sheet();
+		const spreadsheet = await spreadsheets.create({
+			requestBody: {
+				properties: {
+					title: `${interaction.guild.name} [Last Played War Dates]`
+				},
+				sheets: [1].map((_, i) => ({
+					properties: {
+						sheetId: i,
+						index: i,
+						title: Util.escapeSheetName('Accounts'),
+						gridProperties: {
+							rowCount: Math.max(players.length + 1, 50),
+							columnCount: Math.max(columns.length, 25),
+							frozenRowCount: players.length ? 1 : 0
+						}
+					}
+				}))
+			},
+			fields: 'spreadsheetId,spreadsheetUrl'
+		});
 
-		for (let i = 1; i <= sheet.columns.length; i++) {
-			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-		}
-		sheet.addRows(data.map((en) => [en.name, en.tag, en.clan?.name, en.clan?.tag, roles[en.role!], en.verified, en.external]));
-		return workbook.xlsx.writeBuffer();
+		await Google.publish(spreadsheet.data.spreadsheetId!);
+
+		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
+			updateCells: {
+				start: {
+					sheetId: i,
+					rowIndex: 0,
+					columnIndex: 0
+				},
+				rows: [
+					{
+						values: columns.map((value) => ({
+							userEnteredValue: {
+								stringValue: value
+							},
+							userEnteredFormat: {
+								wrapStrategy: 'WRAP'
+							}
+						}))
+					},
+					...players.map((player) => ({
+						values: [
+							player.name,
+							player.tag,
+							player.townHallLevel,
+							player.clan?.name,
+							player.clan?.tag,
+							roles[player.role!],
+							player.verified,
+							player.internal
+						].map((value, rowIndex) => ({
+							userEnteredValue: typeof value === 'number' ? { numberValue: value } : { stringValue: value },
+							userEnteredFormat: {
+								numberFormat: rowIndex === 4 && typeof value === 'number' ? { type: 'DATE_TIME' } : {},
+								textFormat:
+									value === 'No' || (typeof value === 'number' && value <= 0)
+										? { foregroundColorStyle: { rgbColor: { red: 1 } } }
+										: {}
+							}
+						}))
+					}))
+				],
+				fields: '*'
+			}
+		}));
+
+		const styleRequests: sheets_v4.Schema$Request[] = [1]
+			.map((_, i) => [
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 0,
+							endColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'LEFT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'RIGHT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							endRowIndex: 1,
+							startColumnIndex: 0
+						},
+						cell: {
+							userEnteredFormat: {
+								textFormat: { bold: true },
+								verticalAlignment: 'MIDDLE'
+							}
+						},
+						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
+					}
+				},
+				{
+					updateDimensionProperties: {
+						range: {
+							sheetId: i,
+							dimension: 'COLUMNS',
+							startIndex: 0,
+							endIndex: columns.length
+						},
+						properties: {
+							pixelSize: 120
+						},
+						fields: 'pixelSize'
+					}
+				}
+			])
+			.flat();
+
+		await spreadsheets.batchUpdate({
+			spreadsheetId: spreadsheet.data.spreadsheetId!,
+			requestBody: {
+				requests: [...requests, ...styleRequests]
+			}
+		});
+
+		return interaction.editReply({
+			content: `**${user.tag} (${user.id})**`,
+			components: getExportComponents(spreadsheet.data)
+		});
 	}
 
 	private isLinked(players: PlayerLinks[], tag: string) {
@@ -257,7 +386,8 @@ interface LinkData {
 	name: string;
 	tag: string;
 	clan?: { name?: string; tag?: string };
+	townHallLevel: number;
 	role?: string;
 	verified: string;
-	external: string;
+	internal: string;
 }

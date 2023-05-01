@@ -90,6 +90,20 @@ export class Util {
 		return index === len - 1 ? '' : '\n\u200b';
 	}
 
+	// Convert a JavaScript Date object to a Sheets serial date value
+	public static dateToSerialDate(jsDate: Date) {
+		const baseDate = new Date('1899-12-30').getTime();
+		const diffDays = (jsDate.getTime() - baseDate) / (24 * 60 * 60 * 1000);
+		return diffDays + 1;
+	}
+
+	// Convert a Sheets serial date value to a JavaScript Date object
+	public static serialDateToDate(serialDate: number) {
+		const baseDate = new Date('1899-12-30');
+		const diffMs = (serialDate - 1) * 24 * 60 * 60 * 1000;
+		return new Date(baseDate.getTime() + diffMs);
+	}
+
 	public static _formatNumber(num = 0, fraction = 2) {
 		// Nine Zeroes for Billions
 		return Math.abs(num) >= 1.0e9
