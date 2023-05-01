@@ -287,11 +287,11 @@ export default class SummaryClanGamesCommand extends Command {
 								points: -1
 							}
 						},
-						{
-							$sort: {
-								timeTaken: -1
-							}
-						},
+						// {
+						// 	$sort: {
+						// 		timeTaken: -1
+						// 	}
+						// },
 						{
 							$set: {
 								timeTaken: {
@@ -302,10 +302,10 @@ export default class SummaryClanGamesCommand extends Command {
 									}
 								}
 							}
-						},
-						{
-							$limit: 100
 						}
+						// {
+						// 	$limit: 100
+						// }
 					]
 				}
 			}

@@ -2529,6 +2529,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
 						choices: getSeasonIds()
+					},
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases to filter clans.'
 					}
 				]
 			}
