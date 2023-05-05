@@ -9,6 +9,7 @@ export const imageMaps: Record<string, string> = {
 	clan_games_start: 'clan_games_image_url',
 	clan_games_end: 'clan_games_image_url',
 	cwl_start: 'cwl_image_url',
+	cwl_end: 'cwl_image_url',
 	cwl_signup_end: 'cwl_image_url',
 	season_end: 'season_reset_image_url',
 	raid_week_start: 'raid_week_image_url',
@@ -19,6 +20,7 @@ export const eventsMap: Record<string, string> = {
 	clan_games_start: 'Clan Games',
 	clan_games_end: 'Clan Games (Ending)',
 	cwl_start: 'CWL',
+	cwl_end: 'CWL (Ending)',
 	cwl_signup_end: 'CWL Signup (Ending)',
 	season_end: 'Season Reset',
 	raid_week_start: 'Raid Weekend',
@@ -29,7 +31,16 @@ export class GuildEventsHandler {
 	public constructor(private readonly client: Client) {}
 
 	public get eventTypes() {
-		return ['clan_games_start', 'clan_games_end', 'cwl_start', 'cwl_signup_end', 'season_end', 'raid_week_start', 'raid_week_end'];
+		return [
+			'clan_games_start',
+			'clan_games_end',
+			'cwl_start',
+			'cwl_end',
+			'cwl_signup_end',
+			'season_end',
+			'raid_week_start',
+			'raid_week_end'
+		];
 	}
 
 	private _events(guild: Guild) {
@@ -43,10 +54,11 @@ export class GuildEventsHandler {
 			.toDate();
 
 		const CWLStartTime =
-			moment(now).date() >= 9
+			moment(now).date() >= 10 && moment(now).hour() >= 8
 				? moment(now).startOf('month').add(1, 'month').add(8, 'hour').toDate()
 				: moment(now).startOf('month').add(8, 'hours').toDate();
 		const CWLSignupEndTime = moment(CWLStartTime).add(2, 'days').toDate();
+		const CWLEndTime = moment(CWLStartTime).add(9, 'days').toDate();
 
 		const seasonEndTime = moment(Season.endTimestamp).toDate();
 		const { raidWeekEndTime, raidWeekStartTime } = this.getRaidWeek(now);
@@ -72,6 +84,13 @@ export class GuildEventsHandler {
 				value: `${time(CWLStartTime, 'R')}\n${time(CWLStartTime, 'f')}`,
 				timestamp: CWLStartTime.getTime(),
 				visible: moment(now).isBefore(CWLStartTime)
+			},
+			{
+				type: 'cwl_end',
+				name: i18n('common.labels.cwl_end', { lng: guild.preferredLocale }),
+				value: `${time(CWLEndTime, 'R')}\n${time(CWLEndTime, 'f')}`,
+				timestamp: CWLEndTime.getTime(),
+				visible: moment(now).isAfter(CWLSignupEndTime)
 			},
 			{
 				type: 'cwl_signup_end',

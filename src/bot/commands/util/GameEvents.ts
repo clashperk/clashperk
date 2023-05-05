@@ -22,10 +22,11 @@ export default class GameEvents extends Command {
 			.toDate();
 
 		const CWLStartTime =
-			moment(now).date() >= 9
+			moment(now).date() >= 10 && moment(now).hour() >= 8
 				? moment(now).startOf('month').add(1, 'month').add(8, 'hour').toDate()
 				: moment(now).startOf('month').add(8, 'hours').toDate();
 		const CWLSignupEndTime = moment(CWLStartTime).add(2, 'days').toDate();
+		const CWLEndTime = moment(CWLStartTime).add(9, 'days').toDate();
 
 		const seasonEndTime = moment(Season.endTimestamp).toDate();
 		const { raidWeekEndTime, raidWeekStartTime } = this.getRaidWeek(now);
@@ -55,6 +56,12 @@ export default class GameEvents extends Command {
 				value: `${time(CWLSignupEndTime, 'R')}\n${time(CWLSignupEndTime, 'f')}`,
 				timestamp: CWLSignupEndTime.getTime(),
 				visible: moment(now).isAfter(CWLStartTime) && moment(now).isBefore(CWLSignupEndTime)
+			},
+			{
+				name: 'CWL (Ending)',
+				value: `${time(CWLEndTime, 'R')}\n${time(CWLEndTime, 'f')}`,
+				timestamp: CWLEndTime.getTime(),
+				visible: moment(now).isAfter(CWLSignupEndTime)
 			},
 			{
 				name: 'League Reset',
