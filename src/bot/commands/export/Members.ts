@@ -111,7 +111,7 @@ export default class ExportClanMembersCommand extends Command {
 		for (const mem of members) {
 			const user = memberTags.find((m) => m.tag === mem.tag)?.user;
 			// @ts-expect-error
-			mem.user_tag = guildMembers.get(user)?.user.username;
+			mem.username = guildMembers.get(user)?.user.username;
 		}
 		guildMembers.clear();
 
@@ -195,7 +195,7 @@ export default class ExportClanMembersCommand extends Command {
 							m.clanRank,
 							m.name,
 							m.tag,
-							m.user_tag,
+							m.username,
 							m.clan,
 							m.role,
 							m.townHallLevel,
@@ -312,7 +312,7 @@ export default class ExportClanMembersCommand extends Command {
 				m.clanRank,
 				m.name,
 				m.tag,
-				m.user_tag,
+				m.username,
 				m.clan,
 				m.role,
 				m.townHallLevel,

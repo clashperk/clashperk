@@ -98,7 +98,7 @@ export default class FlagListCommand extends Command {
 			...members.map((m) => ({
 				name: m.name,
 				tag: m.tag,
-				author: m.user_tag,
+				author: m.username,
 				date: moment(new Date(m.createdAt)).format('DD MMMM YYYY kk:mm:ss'),
 				reason: m.reason
 			}))
