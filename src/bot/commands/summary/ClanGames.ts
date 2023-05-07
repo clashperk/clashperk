@@ -10,9 +10,11 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
-import { clanGamesSortingAlgorithm } from '../../util/Helper.js';
-import { ClanGames } from '../../util/index.js';
+import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/Helper.js';
+import { ClanGames, Util } from '../../util/index.js';
+
 export default class SummaryClanGamesCommand extends Command {
 	public constructor() {
 		super('summary-clan-games', {
@@ -56,13 +58,14 @@ export default class SummaryClanGamesCommand extends Command {
 		});
 		const customIds = {
 			times: this.client.uuid(interaction.user.id),
-			points: this.client.uuid(interaction.user.id)
+			points: this.client.uuid(interaction.user.id),
+			export: this.client.uuid(interaction.user.id)
 		};
 
-		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setLabel('Fastest Completion').setStyle(ButtonStyle.Primary).setCustomId(customIds.times)
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setLabel('Fastest Completion').setStyle(ButtonStyle.Primary).setCustomId(customIds.times),
+			new ButtonBuilder().setLabel('Export').setStyle(ButtonStyle.Primary).setCustomId(customIds.export)
 		);
-
 		await interaction.editReply({ embeds: [embed] });
 		const msg = await interaction.followUp({
 			embeds: [
@@ -108,12 +111,35 @@ export default class SummaryClanGamesCommand extends Command {
 				);
 				await action.update({ embeds: [embed], components: [row] });
 			}
+
+			if (action.customId === customIds.export) {
+				await action.deferReply();
+				await this.export(action, queried?.members ?? []);
+			}
 		});
 
 		collector.on('end', async (_, reason) => {
 			for (const id of Object.values(customIds)) this.client.components.delete(id);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
+	}
+
+	private async export(interaction: ButtonInteraction<'cached'>, members: ClanGamesMember[]) {
+		const sheets: CreateGoogleSheet[] = [
+			{
+				title: Util.escapeSheetName(`Members`),
+				columns: [
+					{ name: 'NAME', width: 160, align: 'LEFT' },
+					{ name: 'TAG', width: 120, align: 'LEFT' },
+					{ name: 'CLAN', width: 160, align: 'LEFT' },
+					{ name: 'POINTS', width: 100, align: 'RIGHT' },
+					{ name: 'FINISHED', width: 160, align: 'RIGHT' }
+				],
+				rows: members.map((m) => [m.name, m.tag, m.clan.name, m.points, m.completedAt])
+			}
+		];
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Clan Games]`, sheets);
+		return interaction.editReply({ components: getExportComponents(spreadsheet) });
 	}
 
 	private clanScoreboard(
@@ -130,7 +156,7 @@ export default class SummaryClanGamesCommand extends Command {
 		}
 	) {
 		const embed = new EmbedBuilder()
-			.setAuthor({ name: `Family Clan Games Scoreboard`, iconURL: interaction.guild!.iconURL()! })
+			.setAuthor({ name: `${interaction.guild!.name} Clan Games Scoreboard`, iconURL: interaction.guild!.iconURL()! })
 			.setDescription(
 				[
 					'```',
@@ -168,8 +194,9 @@ export default class SummaryClanGamesCommand extends Command {
 		members
 			.sort((a, b) => b.points - a.points)
 			.sort((a, b) => clanGamesSortingAlgorithm(a.completedAt?.getTime() ?? 0, b.completedAt?.getTime() ?? 0));
+
 		const embed = new EmbedBuilder()
-			.setAuthor({ name: 'Family Clan Games Scoreboard', iconURL: interaction.guild!.iconURL()! })
+			.setAuthor({ name: `${interaction.guild!.name} Clan Games Scoreboard`, iconURL: interaction.guild!.iconURL()! })
 			.setDescription(
 				[
 					`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://clashperk.com/faq)**`,
@@ -221,7 +248,7 @@ export default class SummaryClanGamesCommand extends Command {
 		const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
 		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<{
 			clans: { name: string; tag: string; points: number }[];
-			members: { name: string; tag: string; points: number; completedAt?: Date; timeTaken?: number }[];
+			members: ClanGamesMember[];
 		}>([
 			{
 				$match: { __clans: { $in: clanTags }, season: seasonId }
@@ -287,11 +314,6 @@ export default class SummaryClanGamesCommand extends Command {
 								points: -1
 							}
 						},
-						// {
-						// 	$sort: {
-						// 		timeTaken: -1
-						// 	}
-						// },
 						{
 							$set: {
 								timeTaken: {
@@ -303,9 +325,6 @@ export default class SummaryClanGamesCommand extends Command {
 								}
 							}
 						}
-						// {
-						// 	$limit: 100
-						// }
 					]
 				}
 			}
@@ -318,9 +337,19 @@ export default class SummaryClanGamesCommand extends Command {
 		if (!diff) return '';
 		if (diff >= 24 * 60 * 60 * 1000) {
 			return moment.duration(diff).format('d[d] h[h]', { trim: 'both mid' });
-			// return time.length === 7 ? time.replace(/\s/g, '') : `${time}`;
 		}
 		return moment.duration(diff).format('h[h] m[m]', { trim: 'both mid' });
-		// return time.length === 7 ? time.replace(/\s/g, '') : `${time}`;
 	}
+}
+
+interface ClanGamesMember {
+	name: string;
+	tag: string;
+	points: number;
+	completedAt?: Date;
+	timeTaken?: number;
+	clan: {
+		name: string;
+		tag: string;
+	};
 }

@@ -22,7 +22,7 @@ export default class ErrorListener extends Listener {
 	}
 
 	public async exec(error: Error, interaction: Exclude<Interaction, AutocompleteInteraction>, command?: Command) {
-		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.tag}` : `${interaction.user.tag}`;
+		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.username}` : `${interaction.user.username}`;
 		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
 		console.error(inspect(error, { depth: Infinity }));
@@ -34,7 +34,7 @@ export default class ErrorListener extends Listener {
 			data: {
 				user: {
 					id: interaction.user.id,
-					tag: interaction.user.tag
+					username: interaction.user.username
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
 				channel: interaction.channel
@@ -56,7 +56,7 @@ export default class ErrorListener extends Listener {
 		setContext('command_started', {
 			user: {
 				id: interaction.user.id,
-				tag: interaction.user.tag
+				username: interaction.user.username
 			},
 			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
 			channel: interaction.channel

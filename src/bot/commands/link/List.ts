@@ -197,7 +197,7 @@ export default class LinkListCommand extends Command {
 	private updateUsers(interaction: CommandInteraction | ButtonInteraction, members: PlayerLinks[]) {
 		for (const clan of members) {
 			const member = interaction.guild!.members.cache.get(clan.userId);
-			if (member && clan.username !== member.user.tag) {
+			if (member && clan.username !== member.user.username) {
 				this.client.resolver.updateUserTag(interaction.guild!, clan.userId);
 			}
 		}
@@ -226,7 +226,7 @@ export default class LinkListCommand extends Command {
 				try {
 					await collection.insertOne({
 						userId: user.id,
-						username: user.tag,
+						username: user.username,
 						tag,
 						name: player.name,
 						verified: false,

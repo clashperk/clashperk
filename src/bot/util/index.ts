@@ -312,6 +312,18 @@ export class Util {
 			.map((now) => moment(now).format('YYYY-MM'));
 	}
 
+	public static getWeekIds() {
+		const weekIds: { name: string; value: string }[] = [];
+		const friday = moment().endOf('month').day('Friday').startOf('day');
+		while (weekIds.length < 6) {
+			if (friday.toDate().getTime() < Date.now()) {
+				weekIds.push({ name: friday.format('DD MMM, YYYY'), value: friday.format('YYYY-MM-DD') });
+			}
+			friday.subtract(7, 'd');
+		}
+		return weekIds.map((d) => d.value);
+	}
+
 	/**
 	 * Season IDs of last X months.
 	 * @param months Last X months.

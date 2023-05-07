@@ -487,7 +487,7 @@ export default class CapitalRaidsCommand extends Command {
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
 		embed.setTitle('Capital raid history (last 3 months)');
-		if (user && !player) embed.setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() });
+		if (user && !player) embed.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() });
 
 		_players.sort((a, b) => b.raids.length - a.raids.length);
 		_players.slice(0, 25).map((member) => {

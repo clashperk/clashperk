@@ -12,7 +12,7 @@ export default class Resolver {
 		this.client = client;
 	}
 
-	public async resolvePlayer(interaction: CommandInteraction<'cached'>, args?: string): Promise<(Player & { user?: User }) | null> {
+	public async resolvePlayer(interaction: BaseInteraction<'cached'>, args?: string): Promise<(Player & { user?: User }) | null> {
 		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
 		const parsed = await this.parseArgument(interaction, args);
 
@@ -26,7 +26,7 @@ export default class Resolver {
 		const link = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.findOne({ userId: user.id }, { sort: { order: 1 } });
-		if (link && link.username !== user.tag) this.updateUserTag(interaction.guild, user.id);
+		if (link && link.username !== user.username) this.updateUserTag(interaction.guild, user.id);
 
 		if (!link) {
 			otherTags.push(...(await this.client.http.getPlayerTags(user.id)));
@@ -44,7 +44,11 @@ export default class Resolver {
 
 		return this.fail(
 			interaction,
-			i18n('common.player_not_linked', { lng: interaction.locale, user: parsed.user.tag, command: this.client.commands.LINK_CREATE })
+			i18n('common.player_not_linked', {
+				lng: interaction.locale,
+				user: parsed.user.username,
+				command: this.client.commands.LINK_CREATE
+			})
 		);
 	}
 
@@ -83,7 +87,11 @@ export default class Resolver {
 
 		return this.fail(
 			interaction,
-			i18n('common.clan_not_linked', { lng: interaction.locale, user: parsed.user.tag, command: this.client.commands.LINK_CREATE })
+			i18n('common.clan_not_linked', {
+				lng: interaction.locale,
+				user: parsed.user.username,
+				command: this.client.commands.LINK_CREATE
+			})
 		);
 	}
 
@@ -155,10 +163,12 @@ export default class Resolver {
 	public async updateUserTag(guild: Guild, userId: string) {
 		const member = guild.members.cache.get(userId);
 		if (!member) return null;
-		await this.client.db.collection(Collections.USERS).updateOne({ userId: member.user.id }, { $set: { username: member.user.tag } });
+		await this.client.db
+			.collection(Collections.USERS)
+			.updateOne({ userId: member.user.id }, { $set: { username: member.user.username } });
 		await this.client.db
 			.collection(Collections.PLAYER_LINKS)
-			.updateMany({ userId: member.user.id }, { $set: { username: member.user.tag } });
+			.updateMany({ userId: member.user.id }, { $set: { username: member.user.username } });
 	}
 
 	public async getLinkedPlayerTags(userId: string) {
@@ -178,11 +188,11 @@ export default class Resolver {
 				.toArray()
 		]);
 		const result = fetched.flat().map((en) => ({ tag: en.tag, userId: en.userId, verified: en.verified }));
-		return result.reduce<Record<string, { userId: string; tag: string; verified: boolean }>>((acc, user) => {
-			acc[user.tag] ??= user; // eslint-disable-line
-			const current = acc[user.tag];
-			if (!current.verified && user.verified) acc[user.tag].verified = true;
-			if (current.userId !== user.userId) acc[user.tag] = user;
+		return result.reduce<Record<string, { userId: string; tag: string; verified: boolean }>>((acc, mem) => {
+			acc[mem.tag] ??= mem; // eslint-disable-line
+			const current = acc[mem.tag];
+			if (!current.verified && mem.verified) acc[mem.tag].verified = true;
+			if (current.userId !== mem.userId) acc[mem.tag] = mem;
 			return acc;
 		}, {});
 	}
@@ -210,7 +220,7 @@ export default class Resolver {
 
 	public async resolveArgs(args?: string) {
 		if (args?.length === 21) {
-			const tags = await this.client.redis.get(args);
+			const tags = await this.client.redis.connection.get(args);
 			if (tags) return tags.split(/[, ]+/g);
 		}
 		return args?.split(/[, ]+/g) ?? [];

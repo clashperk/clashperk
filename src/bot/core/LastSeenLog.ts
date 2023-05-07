@@ -86,7 +86,7 @@ export default class LastSeenLog extends BaseLog {
 	}
 
 	private async embed(cache: Cache) {
-		const clan = (await this.client.redis.json.get(`C${cache.tag}`)) as unknown as Clan | null;
+		const clan = (await this.client.redis.connection.json.get(`C${cache.tag}`)) as unknown as Clan | null;
 		if (!clan) return null;
 
 		const embed = await lastSeenEmbedMaker(clan, { color: cache.color, scoreView: false });

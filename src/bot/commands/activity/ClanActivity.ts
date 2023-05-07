@@ -113,7 +113,7 @@ export default class ClanActivityCommand extends Command {
 				{ userId: interaction.user.id },
 				{
 					$set: {
-						username: interaction.user.tag,
+						username: interaction.user.username,
 						timezone: {
 							id: raw.timezone.timeZoneId,
 							offset: Number(offset),

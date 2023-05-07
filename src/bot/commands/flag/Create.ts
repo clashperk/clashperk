@@ -42,7 +42,7 @@ export default class FlagCreateCommand extends Command {
 			await this.client.db.collection(Collections.FLAGS).insertOne({
 				guild: interaction.guild.id,
 				user: interaction.user.id,
-				user_tag: interaction.user.tag,
+				username: interaction.user.username,
 				tag: data.tag,
 				name: data.name,
 				reason: cleanContent(args.reason, interaction.channel!),

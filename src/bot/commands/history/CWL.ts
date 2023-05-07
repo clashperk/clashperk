@@ -2,7 +2,7 @@ import { ClanWar, ClanWarAttack, ClanWarMember, WarClan } from 'clashofclans.js'
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { Collections, WarLeagueMap } from '../../util/Constants.js';
+import { Collections, WarLeagueMap, WarType } from '../../util/Constants.js';
 import { BLUE_NUMBERS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { handlePagination } from '../../util/Pagination.js';
 
@@ -15,7 +15,7 @@ const stars: Record<string, string> = {
 
 export default class CWLHistoryCommand extends Command {
 	public constructor() {
-		super('cwl-history', {
+		super('cwl-attacks-history', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
@@ -23,11 +23,49 @@ export default class CWLHistoryCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { player_tag?: string; user?: User }) {
-		const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
-		if (args.player_tag && !player) return null;
-		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player_tag?: string; user?: User }) {
+		// if (args.user) {
+		// 	const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
+		// 	return this.getHistory(interaction, playerTags);
+		// }
 
+		if (args.player_tag) {
+			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+			if (!player) return null;
+			const playerTags = [player.tag];
+			return this.getHistory(interaction, playerTags);
+		}
+
+		if (args.clans) {
+			const tags = await this.client.resolver.resolveArgs(args.clans);
+			const clans = tags.length
+				? await this.client.storage.search(interaction.guildId, tags)
+				: await this.client.storage.find(interaction.guildId);
+
+			if (!clans.length && tags.length)
+				return interaction.editReply(
+					this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+				);
+			if (!clans.length) {
+				return interaction.editReply(
+					this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+				);
+			}
+
+			const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag).slice(0, 1));
+			const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
+			return this.getHistory(interaction, playerTags);
+
+			// const { embeds, result } = await this.getHistory(interaction, playerTags);
+			// await interaction.editReply({ embeds: [embeds.at(0)!] });
+			// return this.export(interaction, result);
+		}
+
+		const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);
+		return this.getHistory(interaction, playerTags);
+	}
+
+	public async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
 		const _wars = await this.getWars(playerTags);
 
 		const groups = await this.client.db
@@ -93,9 +131,9 @@ export default class CWLHistoryCommand extends Command {
 					})
 					.join('\n');
 
-				if (args.user && !player) {
-					embed.setAuthor({ name: `${args.user.username} (${args.user.id})`, iconURL: args.user.displayAvatarURL() });
-				}
+				// if (args.user && !player) {
+				// 	embed.setAuthor({ name: `${args.user.username} (${args.user.id})`, iconURL: args.user.displayAvatarURL() });
+				// }
 				embed.setTitle('**CWL attack history (last 3 months)**');
 				embed.setDescription(`**${key}**\n\n${value}`);
 				embeds.push(embed);
@@ -122,7 +160,7 @@ export default class CWLHistoryCommand extends Command {
 							.subtract(new Date().getDate() >= 10 ? 2 : 3, 'month')
 							.toDate()
 					},
-					warType: 3,
+					warType: WarType.CWL,
 					$or: [{ 'clan.members.tag': { $in: tags } }, { 'opponent.members.tag': { $in: tags } }]
 				}
 			},

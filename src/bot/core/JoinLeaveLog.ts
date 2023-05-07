@@ -119,7 +119,7 @@ export default class JoinLeaveLog extends BaseLog {
 						'',
 						'**Flag**',
 						`${flag.reason as string}`,
-						`\`${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
+						`\`${user ? user.username : 'Unknown'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
 					].join('\n')
 				);
 			}

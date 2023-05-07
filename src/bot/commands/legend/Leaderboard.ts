@@ -31,13 +31,13 @@ export default class LegendLeaderboardCommand extends Command {
 			);
 		}
 
-		const raw = await this.client.redis.json.mGet(
+		const raw = await this.client.redis.connection.json.mGet(
 			clans.map((clan) => `C${clan.tag}`),
 			'$'
 		);
 		const _cachedClans = raw.flat().filter((_) => _) as unknown as Clan[];
 		const members = _cachedClans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
-		const rawPlayers = await this.client.redis.json.mGet(
+		const rawPlayers = await this.client.redis.connection.json.mGet(
 			members.map((tag) => `P${tag}`),
 			'$'
 		);

@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
-import { google } from 'googleapis';
+import { google, sheets_v4 } from 'googleapis';
+import { Util } from '../util/index.js';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
@@ -13,49 +14,282 @@ const auth = google.auth.fromJSON({
 const drive = google.drive({ version: 'v3', auth });
 const sheet = google.sheets({ version: 'v4', auth });
 
+export const publish = async (fileId: string) => {
+	return Promise.all([
+		drive.permissions.create({
+			requestBody: {
+				role: 'reader',
+				type: 'anyone'
+			},
+			fileId
+		}),
+		drive.revisions.update({
+			requestBody: {
+				publishedOutsideDomain: true,
+				publishAuto: true,
+				published: true
+			},
+			revisionId: '1',
+			fields: '*',
+			fileId
+		})
+	]);
+};
+
+export type SchemaRequest = sheets_v4.Schema$Request;
+
+export const getSheetValue = (value?: string | number | boolean | Date) => {
+	if (typeof value === 'string') return { stringValue: value };
+	if (typeof value === 'number') return { numberValue: value };
+	if (typeof value === 'boolean') return { boolValue: value };
+	if (value instanceof Date) return { numberValue: Util.dateToSerialDate(value) };
+	return {};
+};
+
+export const getConditionalFormatRequests = (sheets: CreateGoogleSheet[]) => {
+	const gridStyleRequests: SchemaRequest[] = sheets
+		.map((sheet, sheetId) => [
+			{
+				addConditionalFormatRule: {
+					index: 0,
+					rule: {
+						ranges: [
+							{
+								sheetId,
+								startRowIndex: 1,
+								endRowIndex: sheet.rows.length + 1
+							}
+						],
+						booleanRule: {
+							condition: {
+								type: 'CUSTOM_FORMULA',
+								values: [
+									{
+										userEnteredValue: '=MOD(ROW(),2)=0'
+									}
+								]
+							},
+							format: {
+								backgroundColor: {
+									red: 1,
+									green: 1,
+									blue: 1
+								}
+							}
+						}
+					}
+				}
+			},
+			{
+				addConditionalFormatRule: {
+					index: 1,
+					rule: {
+						ranges: [
+							{
+								sheetId,
+								startRowIndex: 1,
+								endRowIndex: sheet.rows.length + 1
+							}
+						],
+						booleanRule: {
+							condition: {
+								type: 'CUSTOM_FORMULA',
+								values: [
+									{
+										userEnteredValue: '=MOD(ROW(),2)=1'
+									}
+								]
+							},
+							format: {
+								backgroundColor: {
+									red: 0.9,
+									green: 0.9,
+									blue: 0.9
+								}
+							}
+						}
+					}
+				}
+			}
+		])
+		.flat();
+
+	return gridStyleRequests;
+};
+
+export const getStyleRequests = (sheets: CreateGoogleSheet[]) => {
+	const styleRequests: SchemaRequest[] = sheets
+		.map(({ columns }, sheetId) =>
+			columns
+				.map((column, columnIndex) => [
+					{
+						repeatCell: {
+							range: {
+								sheetId,
+								startRowIndex: 0,
+								// endRowIndex: 0,
+								startColumnIndex: columnIndex,
+								endColumnIndex: columnIndex + 1
+							},
+							cell: {
+								userEnteredFormat: {
+									horizontalAlignment: column.align
+								}
+							},
+							fields: 'userEnteredFormat(horizontalAlignment)'
+						}
+					},
+					{
+						updateDimensionProperties: {
+							range: {
+								sheetId,
+								startIndex: columnIndex,
+								endIndex: columnIndex + 1,
+								dimension: 'COLUMNS'
+							},
+							properties: {
+								pixelSize: column.width
+							},
+							fields: 'pixelSize'
+						}
+					}
+				])
+				.flat()
+		)
+		.flat();
+
+	return styleRequests;
+};
+
+export const createSheetRequest = async (title: string, sheets: CreateGoogleSheet[]) => {
+	const { data } = await sheet.spreadsheets.create({
+		requestBody: {
+			properties: { title },
+			sheets: sheets.map((sheet, sheetId) => ({
+				properties: {
+					sheetId,
+					index: sheetId,
+					title: Util.escapeSheetName(sheet.title),
+					gridProperties: {
+						rowCount: Math.max(sheet.rows.length + 1, 25),
+						columnCount: Math.max(sheet.columns.length, 15),
+						frozenRowCount: sheet.rows.length ? 1 : 0
+					}
+				}
+			}))
+		},
+		fields: 'spreadsheetId,spreadsheetUrl'
+	});
+	return data;
+};
+
+export const createColumnRequest = (columns: CreateGoogleSheet['columns']) => {
+	return {
+		values: columns.map((column) => ({
+			userEnteredValue: {
+				stringValue: column.name
+			},
+			userEnteredFormat: {
+				wrapStrategy: 'WRAP',
+				textFormat: { bold: true },
+				verticalAlignment: 'MIDDLE'
+			}
+		}))
+	};
+};
+
+export const batchUpdate = async (spreadsheetId: string, requests: SchemaRequest[]) => {
+	return sheet.spreadsheets.batchUpdate({
+		spreadsheetId,
+		requestBody: {
+			requests
+		}
+	});
+};
+
+export const batchUpdateWithSheet = async (spreadsheetId: string, sheets: CreateGoogleSheet[]) => {
+	const requests: SchemaRequest[] = sheets.map((sheet, sheetId) => ({
+		updateCells: {
+			start: {
+				sheetId,
+				rowIndex: 0,
+				columnIndex: 0
+			},
+			rows: [
+				createColumnRequest(sheet.columns),
+				...sheet.rows.map((values) => ({
+					values: values.map((value) => ({
+						userEnteredValue: getSheetValue(value),
+						userEnteredFormat: {
+							numberFormat: value instanceof Date ? { type: 'DATE_TIME' } : {}
+						}
+					}))
+				}))
+			],
+			fields: '*'
+		}
+	}));
+
+	await batchUpdate(spreadsheetId, [...requests, ...getStyleRequests(sheets), ...getConditionalFormatRequests(sheets)]);
+};
+
+export const createGoogleSheet = async (title: string, sheets: CreateGoogleSheet[]) => {
+	const spreadsheet = await createSheetRequest(title, sheets);
+	await Promise.all([batchUpdateWithSheet(spreadsheet.spreadsheetId!, sheets), publish(spreadsheet.spreadsheetId!)]);
+	return spreadsheet;
+};
+
+const getLocation = async (query: string) => {
+	const search = new URLSearchParams({
+		address: query,
+		key: process.env.GOOGLE!
+	}).toString();
+
+	return fetch(`${GOOGLE_MAPS_API_BASE_URL}/geocode/json?${search}`)
+		.then(
+			(res) =>
+				res.json() as unknown as {
+					results: { geometry: { location: { lat: string; lng: string } }; formatted_address: string }[];
+				}
+		)
+		.catch(() => null);
+};
+
+const timezone = async (query: string) => {
+	const location = (await getLocation(query))?.results[0];
+	if (!location) return null;
+
+	const search = new URLSearchParams({
+		key: process.env.GOOGLE!,
+		timestamp: (new Date().getTime() / 1000).toString()
+	}).toString();
+
+	const lat = location.geometry.location.lat;
+	const lng = location.geometry.location.lng;
+
+	const timezone = await fetch(`${GOOGLE_MAPS_API_BASE_URL}/timezone/json?${search}&location=${lat},${lng}`)
+		.then(
+			(res) =>
+				res.json() as unknown as {
+					rawOffset: string;
+					dstOffset: string;
+					timeZoneName: string;
+					timeZoneId: string;
+				}
+		)
+		.catch(() => null);
+
+	if (!timezone) return null;
+	return { location, timezone };
+};
+
 export default {
 	async location(query: string) {
-		const search = new URLSearchParams({
-			address: query,
-			key: process.env.GOOGLE!
-		}).toString();
-
-		return fetch(`${GOOGLE_MAPS_API_BASE_URL}/geocode/json?${search}`)
-			.then(
-				(res) =>
-					res.json() as unknown as {
-						results: { geometry: { location: { lat: string; lng: string } }; formatted_address: string }[];
-					}
-			)
-			.catch(() => null);
+		return getLocation(query);
 	},
 
 	async timezone(query: string) {
-		const location = (await this.location(query))?.results[0];
-		if (!location) return null;
-
-		const search = new URLSearchParams({
-			key: process.env.GOOGLE!,
-			timestamp: (new Date().getTime() / 1000).toString()
-		}).toString();
-
-		const lat = location.geometry.location.lat;
-		const lng = location.geometry.location.lng;
-
-		const timezone = await fetch(`${GOOGLE_MAPS_API_BASE_URL}/timezone/json?${search}&location=${lat},${lng}`)
-			.then(
-				(res) =>
-					res.json() as unknown as {
-						rawOffset: string;
-						dstOffset: string;
-						timeZoneName: string;
-						timeZoneId: string;
-					}
-			)
-			.catch(() => null);
-
-		if (!timezone) return null;
-		return { location, timezone };
+		return timezone(query);
 	},
 
 	sheet() {
@@ -67,24 +301,12 @@ export default {
 	},
 
 	async publish(fileId: string) {
-		return Promise.all([
-			drive.permissions.create({
-				requestBody: {
-					role: 'reader',
-					type: 'anyone'
-				},
-				fileId
-			}),
-			drive.revisions.update({
-				requestBody: {
-					publishedOutsideDomain: true,
-					publishAuto: true,
-					published: true
-				},
-				revisionId: '1',
-				fields: '*',
-				fileId
-			})
-		]);
+		return publish(fileId);
 	}
 };
+
+export interface CreateGoogleSheet {
+	title: string;
+	columns: { align: string; width: number; name: string }[];
+	rows: (string | number | Date | boolean | undefined)[][];
+}

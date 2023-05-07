@@ -65,8 +65,8 @@ export default class ExportSeason extends Command {
 
 		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 		for (const mem of members) {
-			const user = memberTags.find((user) => user.tag === mem.tag)?.user;
-			mem.userTag = guildMembers.get(user!)?.user.tag;
+			const user = memberTags.find((m) => m.tag === mem.tag)?.user;
+			mem.userTag = guildMembers.get(user!)?.user.username;
 		}
 		guildMembers.clear();
 
@@ -366,7 +366,7 @@ export default class ExportSeason extends Command {
 	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
 		for (const data of members) {
 			const member = interaction.guild!.members.cache.get(data.userId);
-			if (member && data.username !== member.user.tag) {
+			if (member && data.username !== member.user.username) {
 				this.client.resolver.updateUserTag(interaction.guild!, data.userId);
 			}
 		}

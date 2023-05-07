@@ -109,9 +109,9 @@ export default class ExportClanMembersCommand extends Command {
 		guildMembers = guildMembers.concat(...fetchedMembers);
 
 		for (const mem of members) {
-			const user = memberTags.find((user) => user.tag === mem.tag)?.user;
+			const user = memberTags.find((m) => m.tag === mem.tag)?.user;
 			// @ts-expect-error
-			mem.user_tag = guildMembers.get(user)?.user.tag;
+			mem.user_tag = guildMembers.get(user)?.user.username;
 		}
 		guildMembers.clear();
 
@@ -336,7 +336,7 @@ export default class ExportClanMembersCommand extends Command {
 	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
 		for (const data of members) {
 			const member = interaction.guild!.members.cache.get(data.userId);
-			if (member && data.username !== member.user.tag) {
+			if (member && data.username !== member.user.username) {
 				this.client.resolver.updateUserTag(interaction.guild!, data.userId);
 			}
 		}

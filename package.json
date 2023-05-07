@@ -33,7 +33,7 @@
 		"clashofclans.js": "^1.5.5",
 		"common-tags": "^1.8.2",
 		"discord-api-types": "^0.37.1",
-		"discord.js": "^14.8.0",
+		"discord.js": "^14.11.0",
 		"exceljs": "^4.2.1",
 		"googleapis": "^105.0.0",
 		"i18next": "^21.6.13",

@@ -1,12 +1,11 @@
 import { ClanWar, ClanWarAttack, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
-import Google from '../../struct/Google.js';
+import { createGoogleSheet } from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
-import { Season, Util } from '../../util/index.js';
 import { getExportComponents } from '../../util/Helper.js';
+import { Season, Util } from '../../util/index.js';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -157,23 +156,23 @@ export default class ExportCWL extends Command {
 				{
 					title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
 					columns: [
-						'Name',
-						'Tag',
-						'Total Attacks',
-						'Total Stars',
-						'True Stars',
-						'Avg Stars',
-						'Total Dest',
-						'Avg Dest',
-						'Three Stars',
-						'Two Stars',
-						'One Stars',
-						'Zero Stars',
-						'Missed',
-						'Def Stars',
-						'Avg Def Stars',
-						'Total Def Dest',
-						'Avg Def Dest'
+						{ name: 'Name', width: 160, align: 'LEFT' },
+						{ name: 'Tag', width: 120, align: 'LEFT' },
+						{ name: 'Total Attacks', width: 100, align: 'RIGHT' },
+						{ name: 'Total Stars', width: 100, align: 'RIGHT' },
+						{ name: 'True Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Avg Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Total Dest', width: 100, align: 'RIGHT' },
+						{ name: 'Avg Dest', width: 100, align: 'RIGHT' },
+						{ name: 'Three Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Two Stars', width: 100, align: 'RIGHT' },
+						{ name: 'One Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Zero Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Missed', width: 100, align: 'RIGHT' },
+						{ name: 'Def Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Avg Def Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Total Def Dest', width: 100, align: 'RIGHT' },
+						{ name: 'Avg Def Dest', width: 100, align: 'RIGHT' }
 					],
 					rows: chunk.members
 						.filter((m) => m.of > 0)
@@ -199,7 +198,14 @@ export default class ExportCWL extends Command {
 				},
 				{
 					title: Util.escapeSheetName(`Ranking - ${chunk.name} (${chunk.tag})`),
-					columns: ['Rank', 'Clan', 'Tag', 'Attacks', 'Stars', 'Destruction'],
+					columns: [
+						{ name: 'Rank', width: 100, align: 'CENTER' },
+						{ name: 'Clan', width: 160, align: 'LEFT' },
+						{ name: 'Tag', width: 120, align: 'LEFT' },
+						{ name: 'Attacks', width: 100, align: 'RIGHT' },
+						{ name: 'Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Destruction', width: 100, align: 'RIGHT' }
+					],
 					rows: chunk.ranking.map((round, i) => [
 						i + 1,
 						round.name,
@@ -212,17 +218,17 @@ export default class ExportCWL extends Command {
 				{
 					title: Util.escapeSheetName(`Rounds - ${chunk.name} (${chunk.tag})`),
 					columns: [
-						'Round',
-						'Clan',
-						'Clan Tag',
-						'Attacks',
-						'Stars',
-						'Destruction',
-						'Opponent',
-						'Opponent Tag',
-						'Attacks',
-						'Stars',
-						'Destruction'
+						{ name: 'Round', align: 'CENTER', width: 100 },
+						{ name: 'Clan', align: 'LEFT', width: 160 },
+						{ name: 'Clan Tag', align: 'LEFT', width: 120 },
+						{ name: 'Attacks', align: 'RIGHT', width: 100 },
+						{ name: 'Stars', align: 'RIGHT', width: 100 },
+						{ name: 'Destruction', align: 'RIGHT', width: 100 },
+						{ name: 'Opponent', align: 'LEFT', width: 160 },
+						{ name: 'Opponent Tag', align: 'LEFT', width: 120 },
+						{ name: 'Opp. Attacks', align: 'RIGHT', width: 100 },
+						{ name: 'Opp. Stars', align: 'RIGHT', width: 100 },
+						{ name: 'Opp. Dest.', align: 'RIGHT', width: 100 }
 					],
 					rows: chunk.perRound.map((round, i) => [
 						i + 1,
@@ -241,22 +247,22 @@ export default class ExportCWL extends Command {
 				...chunk.perRound.map((round, i) => ({
 					title: `Round ${i + 1} - ${Util.escapeSheetName(`${chunk.name} (${chunk.tag})`)}`,
 					columns: [
-						'Clan',
-						'Opponent',
-						'Attacker',
-						'Attacker Tag',
-						'Stars',
-						'True Stars',
-						'Gained',
-						'Destruction',
-						'Defender',
-						'Defender Tag',
-						'Attacker Map',
-						'Attacker TH',
-						'Defender Map',
-						'Defender TH',
-						'Defender Stars',
-						'Defender Destruction'
+						{ name: 'Clan', align: 'LEFT', width: 160 },
+						{ name: 'Opponent', align: 'LEFT', width: 160 },
+						{ name: 'Attacker', align: 'LEFT', width: 160 },
+						{ name: 'Attacker Tag', align: 'LEFT', width: 120 },
+						{ name: 'Stars', align: 'RIGHT', width: 100 },
+						{ name: 'True Stars', align: 'RIGHT', width: 100 },
+						{ name: 'Gained', align: 'RIGHT', width: 100 },
+						{ name: 'Destruction', align: 'RIGHT', width: 100 },
+						{ name: 'Defender', align: 'LEFT', width: 160 },
+						{ name: 'Defender Tag', align: 'LEFT', width: 120 },
+						{ name: 'Attacker Map', align: 'RIGHT', width: 100 },
+						{ name: 'Attacker TH', align: 'RIGHT', width: 100 },
+						{ name: 'Defender Map', align: 'RIGHT', width: 100 },
+						{ name: 'Defender TH', align: 'RIGHT', width: 100 },
+						{ name: 'Defender Stars', align: 'RIGHT', width: 100 },
+						{ name: 'Defender Destruction', align: 'RIGHT', width: 100 }
 					],
 					rows: round.clan.members.map((m) => {
 						const opponent = round.opponent.members.find((en) => en.tag === m.attacks?.[0]?.defenderTag);
@@ -294,123 +300,8 @@ export default class ExportCWL extends Command {
 			])
 			.flat();
 
-		const sheet = Google.sheet();
-		const spreadsheet = await sheet.spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [CWL Stats]`
-				},
-				sheets: sheets.map((chunk, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: chunk.title,
-						gridProperties: {
-							rowCount: Math.max(chunk.rows.length + 1, 100),
-							columnCount: Math.max(chunk.columns.length, 50),
-							frozenRowCount: chunk.rows.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = sheets.map((chunk, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: chunk.columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...chunk.rows.map((values) => ({
-						values: values.map((value) => ({
-							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
-							userEnteredFormat: {
-								textFormat:
-									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
-							}
-						}))
-					}))
-				],
-				fields: '*'
-			}
-		}));
-
-		const styleRequests: sheets_v4.Schema$Request[] = sheets
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				}
-			])
-			.flat();
-
-		await sheet.spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [CWL Stats]`, sheets);
+		return interaction.editReply({ components: getExportComponents(spreadsheet) });
 	}
 
 	private finalStandings(

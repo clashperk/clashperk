@@ -131,7 +131,7 @@ export default class CapitalRaidScheduler {
 	}
 
 	public async unwantedMembers(clanMembers: { tag: string }[], weekId: string, clanTag: string) {
-		const multi = this.client.redis.multi();
+		const multi = this.client.redis.connection.multi();
 		clanMembers.map((member) => multi.json.get(`CRM${member.tag}`));
 		const res = (await multi.exec()).filter((_) => _) as unknown as { tag: string; weekId: string; clan: { tag: string } }[];
 		const members = res.filter((m) => m.weekId === weekId && m.clan.tag !== clanTag);

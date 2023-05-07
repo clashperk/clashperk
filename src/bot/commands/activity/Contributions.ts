@@ -226,7 +226,7 @@ export default class CapitalContributionsCommand extends Command {
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
 		embed.setTitle('Capital contribution history (last 3 months)');
-		if (user && !player) embed.setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() });
+		if (user && !player) embed.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() });
 
 		players.forEach(({ name, tag, weeks }) => {
 			embed.addFields({

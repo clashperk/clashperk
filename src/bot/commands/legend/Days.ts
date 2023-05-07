@@ -130,7 +130,7 @@ export default class LegendDaysCommand extends Command {
 	private async embed(interaction: CommandInteraction<'cached'>, data: Player, _day?: number) {
 		const seasonId = Season.ID;
 		const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
-		const clan = data.clan ? ((await this.client.redis.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
+		const clan = data.clan ? ((await this.client.redis.connection.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
 
 		const { startTime, endTime, day } = this.getDay(_day);
 		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);

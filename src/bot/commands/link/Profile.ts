@@ -72,13 +72,13 @@ export default class ProfileCommand extends Command {
 				.toArray()
 		]);
 
-		if (data && data.username !== user.tag) {
+		if (data && data.username !== user.username) {
 			this.client.resolver.updateUserTag(interaction.guild, user.id);
 		}
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() })
+			.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() })
 			.setDescription(['**Created**', `${moment(user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`].join('\n'));
 
 		const clan: Clan = await this.client.http.clan(data?.clan?.tag ?? '💩');
@@ -346,7 +346,7 @@ export default class ProfileCommand extends Command {
 		});
 
 		return interaction.editReply({
-			content: `**${user.tag} (${user.id})**`,
+			content: `**${user.username} (${user.id})**`,
 			components: getExportComponents(spreadsheet.data)
 		});
 	}

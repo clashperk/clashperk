@@ -196,7 +196,7 @@ export default class RemainingCommand extends Command {
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
 		embed.setTitle('Remaining clan war attacks');
-		if (user && !player) embed.setAuthor({ name: `\u200e${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() });
+		if (user && !player) embed.setAuthor({ name: `\u200e${user.username} (${user.id})`, iconURL: user.displayAvatarURL() });
 
 		const remaining = players.reduce((a, b) => a + b.remaining, 0);
 		players.slice(0, 25).map(({ member, clan, remaining, endTime }, i) => {

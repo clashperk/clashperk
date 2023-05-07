@@ -357,7 +357,7 @@ export default class DonationsCommand extends Command {
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		if (user) embed.setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() });
+		if (user) embed.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() });
 		embed.setTitle('Donation history (last 6 months)');
 
 		players.slice(0, 25).forEach(({ name, tag, seasons }) => {

@@ -25,7 +25,7 @@ export default class SummaryCWLRanks extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
-		const season = args.season === Season.ID ? null : args.season;
+		const season = args.season ?? Season.ID;
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -45,7 +45,7 @@ export default class SummaryCWLRanks extends Command {
 
 		const chunks = [];
 		for (const clan of __clans) {
-			const res = season ? null : await this.client.http.clanWarLeague(clan.tag);
+			const res = season === Season.ID ? await this.client.http.clanWarLeague(clan.tag) : null;
 			if (!res?.ok || ['notInWar', 'ended'].includes(res.state)) {
 				const data = await this.client.storage.getWarTags(clan.tag, season);
 
@@ -65,7 +65,7 @@ export default class SummaryCWLRanks extends Command {
 			}
 
 			if (args.season && res.season !== args.season) continue;
-			const ranking = await this.rounds(res, clan.tag);
+			const ranking = await this.rounds(res, clan.tag, season);
 			if (!ranking) continue;
 
 			chunks.push({
@@ -99,9 +99,7 @@ export default class SummaryCWLRanks extends Command {
 						: EMOJIS.STAYED_SAME;
 				const stars = clan.stars.toString().padStart(3, ' ');
 				const name = escapeMarkdown(clan.name);
-				const label = `${emoji} \`${this.formatRank(clan.rank)}\`${
-					EMOJIS.MINI_STAR
-				}\`${stars}\` \u2002${name} ${clan.status.substring(0, 2)}`;
+				const label = `${emoji} \`${this.formatRank(clan.rank)}\`${EMOJIS.MINI_STAR}\`${stars}\` \u2002${name}`;
 				return `\u200e${label}`;
 			});
 
@@ -114,15 +112,16 @@ export default class SummaryCWLRanks extends Command {
 				});
 			});
 		});
+		embed.setFooter({ text: `Season ${season}` });
 
 		if (!chunks.length) {
-			return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.ID }));
+			return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: Season.ID }));
 		}
 
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private async rounds(body: ClanWarLeagueGroup, clanTag: string, season?: string | null) {
+	private async rounds(body: ClanWarLeagueGroup, clanTag: string, season: string) {
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		const ranking: {
 			[key: string]: {

@@ -3,7 +3,6 @@ import Discord, { Message, Options, Snowflake, GatewayIntentBits, BaseInteractio
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import { nanoid } from 'nanoid';
-import * as Redis from 'redis';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
 import RPCHandler from '../core/RPCHandler.js';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/index.js';
@@ -25,6 +24,7 @@ import { Indexer } from './Indexer.js';
 import { CommandsMap } from './CommandsMap.js';
 import { NicknameHandler } from './NicknameHandler.js';
 import { GuildEventsHandler } from './GuildEventsHandler.js';
+import RedisService from './RedisService.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -53,10 +53,7 @@ export class Client extends Discord.Client {
 	public i18n = i18n;
 	public guildEvents!: GuildEventsHandler;
 
-	public redis = Redis.createClient({
-		url: process.env.REDIS_URL,
-		database: 1
-	});
+	public redis = new RedisService(this);
 
 	public elastic = new ElasticClient({
 		node: process.env.ES_HOST!,
@@ -70,8 +67,8 @@ export class Client extends Discord.Client {
 		}
 	});
 
-	public subscriber = this.redis.duplicate();
-	public publisher = this.redis.duplicate();
+	public subscriber = this.redis.connection.duplicate();
+	public publisher = this.redis.connection.duplicate();
 
 	public rpcHandler!: RPCHandler;
 	public patrons!: Patrons;
@@ -124,7 +121,6 @@ export class Client extends Discord.Client {
 			}
 		});
 
-		this.redis.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
 		this.publisher.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
 		this.subscriber.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
 
@@ -181,7 +177,8 @@ export class Client extends Discord.Client {
 		this.settings = new SettingsProvider(this.db);
 		await this.settings.init();
 
-		await this.redis.connect();
+		// this.redis = new RedisService(this);
+		await this.redis.connection.connect();
 		await this.subscriber.connect();
 		await this.publisher.connect();
 

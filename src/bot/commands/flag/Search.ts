@@ -64,7 +64,7 @@ export default class FlagSearchCommand extends Command {
 			.setDescription(
 				[
 					'**Author**',
-					user ? user.tag : `Unknown#0000 (${flag.user})`,
+					user ? user.username : `Unknown (${flag.user})`,
 					'',
 					`**Flags (${flag.count})**`,
 					flag.flags.map((fl, i) => `${i + 1}. ${time(fl.createdAt, 'f')}\n${fl.reason}`).join('\n\n')

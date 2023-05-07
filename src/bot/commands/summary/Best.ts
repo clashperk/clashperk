@@ -92,7 +92,7 @@ export default class SummaryBestCommand extends Command {
 			);
 		}
 
-		const raw = await this.client.redis.json.mGet(
+		const raw = await this.client.redis.connection.json.mGet(
 			clans.map((clan) => `C${clan.tag}`),
 			'$'
 		);

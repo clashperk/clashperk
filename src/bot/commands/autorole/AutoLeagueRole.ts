@@ -126,7 +126,7 @@ export default class AutoLeagueRoleCommand extends Command {
 				try {
 					await collection.insertOne({
 						userId: user.id,
-						username: user.tag,
+						username: user.username,
 						tag,
 						name: player.name,
 						verified: false,

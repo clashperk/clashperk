@@ -52,11 +52,11 @@ export default class LinkCreateCommand extends Command {
 
 		if (interaction.user.id !== member.user.id) {
 			this.client.logger.debug(
-				`${interaction.user.tag} (${
+				`${interaction.user.username} (${
 					interaction.user.id
-				}) attempted to link [clan_tag: ${args.clan_tag!}] [player_tag: ${args.player_tag!}] on behalf of ${member.user.tag} (${
-					member.user.id
-				})`,
+				}) attempted to link [clan_tag: ${args.clan_tag!}] [player_tag: ${args.player_tag!}] on behalf of ${
+					member.user.username
+				} (${member.user.id})`,
 				{ label: 'LINK' }
 			);
 		}
@@ -75,7 +75,7 @@ export default class LinkCreateCommand extends Command {
 			return interaction.editReply(
 				this.i18n('command.link.create.success', {
 					lng: interaction.locale,
-					user: `**${member.user.tag}**`,
+					user: `**${member.user.username}**`,
 					target: `**${clan.name} (${clan.tag})**`
 				})
 			);
@@ -93,7 +93,7 @@ export default class LinkCreateCommand extends Command {
 						tag: clan.tag,
 						name: clan.name
 					},
-					username: member.user.tag,
+					username: member.user.username,
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
@@ -129,14 +129,14 @@ export default class LinkCreateCommand extends Command {
 
 		await this.client.db
 			.collection<UserInfoModel>(Collections.USERS)
-			.updateOne({ userId: member.id }, { $set: { username: member.user.tag } });
+			.updateOne({ userId: member.id }, { $set: { username: member.user.username } });
 
 		await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
 			{ tag: player.tag },
 			{
 				$set: {
 					userId: member.id,
-					username: member.user.tag,
+					username: member.user.username,
 					name: player.name,
 					tag: player.tag,
 					order: def
@@ -161,7 +161,7 @@ export default class LinkCreateCommand extends Command {
 		await interaction.editReply(
 			this.i18n('command.link.create.success', {
 				lng: interaction.locale,
-				user: `**${member.user.tag}**`,
+				user: `**${member.user.username}**`,
 				target: `**${player.name} (${player.tag})**`
 			})
 		);
@@ -204,7 +204,7 @@ export default class LinkCreateCommand extends Command {
 				try {
 					await collection.insertOne({
 						userId: user.id,
-						username: user.tag,
+						username: user.username,
 						tag,
 						name: player.name,
 						verified: false,

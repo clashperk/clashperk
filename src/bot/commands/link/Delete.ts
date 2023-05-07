@@ -89,6 +89,6 @@ export default class LinkDeleteCommand extends Command {
 		const target = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag });
 		return target
 			? { id: target.userId, tag: target.username || 'Unknown#0000' }
-			: { id: interaction.user.id, tag: interaction.user.tag };
+			: { id: interaction.user.id, tag: interaction.user.username };
 	}
 }

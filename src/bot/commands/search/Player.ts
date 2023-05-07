@@ -13,17 +13,16 @@ import {
 	User,
 	escapeMarkdown
 } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import moment from 'moment';
 import ms from 'ms';
 import fetch from 'node-fetch';
 import { Args, Command } from '../../lib/index.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/Emojis.js';
-import { Season, Util } from '../../util/index.js';
 import { getExportComponents } from '../../util/Helper.js';
+import { Season, Util } from '../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -370,7 +369,6 @@ export default class PlayerCommand extends Command {
 			}
 		});
 		const data = (await res.json()) as { wars: WarHistory[] };
-
 		const wars = data.wars
 			.map((war) => {
 				if (war.attacks.length) {
@@ -380,162 +378,38 @@ export default class PlayerCommand extends Command {
 			})
 			.flat();
 
-		const columns = [
-			{ header: 'WAR TYPE', width: 8 },
-			{ header: 'CLAN', width: 18 },
-			{ header: 'OPPONENT', width: 13 },
-			{ header: 'DATE', width: 8 },
-			{ header: 'MAP POSITION', width: 8 },
-			{ header: 'TOWN HALL', width: 12 },
-			{ header: 'STARS', width: 18 },
-			{ header: 'DESTRUCTION', width: 13 },
-			{ header: 'OPPONENT MAP POSITION', width: 10 },
-			{ header: 'OPPONENT TOWN HALL', width: 10 }
+		const sheets: CreateGoogleSheet[] = [
+			{
+				title: Util.escapeSheetName(`${player.name} (${player.tag})`),
+				columns: [
+					{ name: 'WAR TYPE', width: 100, align: 'LEFT' },
+					{ name: 'CLAN', width: 160, align: 'LEFT' },
+					{ name: 'OPPONENT', width: 160, align: 'LEFT' },
+					{ name: 'DATE', width: 160, align: 'LEFT' },
+					{ name: 'MAP POS', width: 100, align: 'RIGHT' },
+					{ name: 'TOWN HALL', width: 100, align: 'RIGHT' },
+					{ name: 'STARS', width: 100, align: 'RIGHT' },
+					{ name: 'DESTRUCTION', width: 100, align: 'RIGHT' },
+					{ name: 'OPPONENT MAP POS', width: 100, align: 'RIGHT' },
+					{ name: 'OPPONENT TOWN HALL', width: 100, align: 'RIGHT' }
+				],
+				rows: wars.map((war) => [
+					warTypes[war.warType],
+					war.clan.name,
+					war.opponent.name,
+					moment(war.startTime).toDate(),
+					war.attacker.mapPosition,
+					war.attacker.townhallLevel,
+					war.attack?.stars,
+					war.attack?.destructionPercentage,
+					war.attack?.defender.mapPosition,
+					war.attack?.defender.townhallLevel
+				])
+			}
 		];
 
-		const sheet = Google.sheet();
-		const spreadsheet = await sheet.spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Attack History]`
-				},
-				sheets: [1].map((_, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: Util.escapeSheetName(`${player.name} (${player.tag})`),
-						gridProperties: {
-							rowCount: Math.max(wars.length + 1, 50),
-							columnCount: Math.max(columns.length, 25),
-							frozenRowCount: wars.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value.header
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...wars.map((war) => ({
-						values: [
-							warTypes[war.warType],
-							war.clan.name,
-							war.opponent.name,
-							Util.dateToSerialDate(moment(war.startTime).toDate()),
-							war.attacker.mapPosition,
-							war.attacker.townhallLevel,
-							war.attack?.stars,
-							war.attack?.destructionPercentage,
-							war.attack?.defender.mapPosition,
-							war.attack?.defender.townhallLevel
-						].map((value, rowIndex) => ({
-							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
-							userEnteredFormat: {
-								numberFormat: rowIndex === 3 && typeof value === 'number' ? { type: 'DATE_TIME' } : {},
-								textFormat:
-									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
-							}
-						}))
-					}))
-				],
-				fields: '*'
-			}
-		})) as sheets_v4.Schema$Request[];
-
-		const styleRequests: sheets_v4.Schema$Request[] = [1]
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 4
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 4
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true, fontSize: 10 },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				},
-				{
-					updateDimensionProperties: {
-						range: {
-							sheetId: 0,
-							dimension: 'COLUMNS',
-							startIndex: 0,
-							endIndex: 4
-						},
-						properties: {
-							pixelSize: 120
-						},
-						fields: 'pixelSize'
-					}
-				}
-			])
-			.flat();
-
-		await sheet.spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Attack History]`, sheets);
+		return interaction.editReply({ components: getExportComponents(spreadsheet) });
 	}
 }
 

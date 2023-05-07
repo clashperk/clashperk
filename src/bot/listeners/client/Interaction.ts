@@ -180,7 +180,7 @@ export default class InteractionListener extends Listener {
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
-		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
+		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
 			label: 'Autocomplete'
 		});
 
@@ -250,7 +250,7 @@ export default class InteractionListener extends Listener {
 						}
 					]
 			  });
-		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
+		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
 			label: 'Autocomplete'
 		});
 
@@ -274,7 +274,7 @@ export default class InteractionListener extends Listener {
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
 
-		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
+		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
 			label: 'Autocomplete'
 		});
 
@@ -346,7 +346,7 @@ export default class InteractionListener extends Listener {
 					]
 			  });
 
-		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
+		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
 			label: 'Autocomplete'
 		});
 
@@ -377,7 +377,7 @@ export default class InteractionListener extends Listener {
 
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused);
-		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
+		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
 			label: 'Autocomplete'
 		});
 
@@ -463,7 +463,7 @@ export default class InteractionListener extends Listener {
 						}
 					]
 			  });
-		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
+		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
 			label: 'Autocomplete'
 		});
 
@@ -485,7 +485,7 @@ export default class InteractionListener extends Listener {
 
 	private async getQuery(query: string) {
 		const value = query.length > 100 ? nanoid() : query;
-		if (query.length > 100) await this.client.redis.set(value, query, { EX: 60 * 60 });
+		if (query.length > 100) await this.client.redis.connection.set(value, query, { EX: 60 * 60 });
 		return value;
 	}
 
@@ -511,14 +511,14 @@ export default class InteractionListener extends Listener {
 		const userIds = this.client.components.get(interaction.customId);
 		if (userIds?.length && userIds.includes(interaction.user.id)) return;
 		if (userIds?.length && !userIds.includes(interaction.user.id)) {
-			this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_BLOCKED' });
+			this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.username}]`, { label: 'COMPONENT_BLOCKED' });
 			return interaction.reply({ content: this.i18n('common.component.unauthorized', { lng: interaction.locale }), ephemeral: true });
 		}
 
 		if (this.client.components.has(interaction.customId)) return;
 		if (await this.componentHandler.exec(interaction)) return;
 
-		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_EXPIRED' });
+		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.username}]`, { label: 'COMPONENT_EXPIRED' });
 		await interaction.update({ components: [] });
 		return interaction.followUp({ content: this.i18n('common.component.expired', { lng: interaction.locale }), ephemeral: true });
 	}

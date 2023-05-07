@@ -34,7 +34,7 @@ export default class CommandStartedListener extends Listener {
 			distinct_id: interaction.user.id,
 			command_id: command.id,
 			user_id: interaction.user.id,
-			user_name: interaction.user.tag,
+			user_name: interaction.user.username,
 			guild_id: interaction.guild?.id ?? '0',
 			guild_name: interaction.guild?.name ?? 'DM',
 			interaction_type: InteractionType[interaction.type],
@@ -46,7 +46,7 @@ export default class CommandStartedListener extends Listener {
 		});
 
 		mixpanel.people.set(interaction.user.id, {
-			$first_name: interaction.user.tag,
+			$first_name: interaction.user.username,
 			user_id: interaction.user.id,
 			locale: interaction.locale
 		});
@@ -58,7 +58,7 @@ export default class CommandStartedListener extends Listener {
 			data: {
 				user: {
 					id: interaction.user.id,
-					tag: interaction.user.tag
+					username: interaction.user.username
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
 				channel: interaction.channel
@@ -81,7 +81,7 @@ export default class CommandStartedListener extends Listener {
 		setContext('command_started', {
 			user: {
 				id: interaction.user.id,
-				tag: interaction.user.tag
+				username: interaction.user.username
 			},
 			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
 			channel: interaction.channel
@@ -100,7 +100,7 @@ export default class CommandStartedListener extends Listener {
 			args
 		});
 
-		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.tag}` : `${interaction.user.tag}`;
+		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.username}` : `${interaction.user.username}`;
 		this.client.logger.debug(`${command.id}`, { label });
 		return this.counter(interaction, command);
 	}

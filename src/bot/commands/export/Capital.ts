@@ -61,7 +61,8 @@ export default class ExportCapital extends Command {
 					status: remark,
 					weekId: clan.weekId,
 					leagueId: clan.capitalLeague?.id ?? UnrankedCapitalLeagueId,
-					leagueName: (clan.capitalLeague?.name ?? 'Unknown').replace(/League/g, '').trim(),
+					leagueName:
+						clan.state === 'ongoing' ? 'Ongoing' : (clan.capitalLeague?.name ?? 'Unknown').replace(/League/g, '').trim(),
 					capitalTotalLoot: clan.capitalTotalLoot,
 					totalAttacks: clan.totalAttacks,
 					raidsCompleted: clan.raidsCompleted,

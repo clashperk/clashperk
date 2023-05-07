@@ -29,7 +29,7 @@ export default class TimezoneCommand extends Command {
 			{ userId: interaction.user.id },
 			{
 				$set: {
-					username: interaction.user.tag,
+					username: interaction.user.username,
 					timezone: {
 						id: raw.timezone.timeZoneId,
 						offset: Number(offset),
@@ -56,7 +56,7 @@ export default class TimezoneCommand extends Command {
 					`${offset < 0 ? '-' : '+'}${Util.timezoneOffset(offset * 1000)}`
 				].join('\n')
 			)
-			.setFooter({ text: `${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
+			.setFooter({ text: `${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() });
 		return interaction.editReply({ embeds: [embed] });
 	}
 }

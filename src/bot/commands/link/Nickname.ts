@@ -54,7 +54,7 @@ export default class NickNameCommand extends Command {
 
 		const players = await this.client.resolver.getPlayers(member.user.id);
 		if (!players.length) {
-			return interaction.editReply(this.i18n('command.nickname.no_players', { lng: interaction.locale, user: member.user.tag }));
+			return interaction.editReply(this.i18n('command.nickname.no_players', { lng: interaction.locale, user: member.user.username }));
 		}
 
 		let format = this.client.settings.get<string>(interaction.guildId, Settings.NICKNAME_EXPRESSION, '{NAME}');
@@ -81,7 +81,7 @@ export default class NickNameCommand extends Command {
 		);
 
 		const msg = await interaction.editReply({
-			content: [`**Setting up ${member.user.tag}\'s nickname...**`, '', `**Format:** ${format}`].join('\n'),
+			content: [`**Setting up ${member.user.username}\'s nickname...**`, '', `**Format:** ${format}`].join('\n'),
 			components: [row]
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -96,7 +96,7 @@ export default class NickNameCommand extends Command {
 
 				if (!nickname) {
 					await action.reply({
-						content: `Failed to set **${member.user.tag}\'s** nickname.`,
+						content: `Failed to set **${member.user.username}\'s** nickname.`,
 						components: [],
 						ephemeral: true
 					});
@@ -105,7 +105,7 @@ export default class NickNameCommand extends Command {
 
 				await action.update({
 					components: [],
-					content: `**${member.user.tag}\'s** nickname set to **${nickname}**`
+					content: `**${member.user.username}\'s** nickname set to **${nickname}**`
 				});
 
 				// const isAuto = this.client.settings.get<boolean>(member.guild, Settings.AUTO_NICKNAME, false);

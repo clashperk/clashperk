@@ -1060,6 +1060,50 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
+		name: 'history',
+		description: 'Clan Games, Capital Raids and CWL attacks history.',
+		dm_permission: false,
+		options: [
+			{
+				name: 'option',
+				required: true,
+				description: 'Select an option.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Clan Games',
+						value: 'clan-games'
+					},
+					{
+						name: 'Capital Raids',
+						value: 'capital-raids'
+					},
+					{
+						name: 'CWL Attacks',
+						value: 'cwl-attacks'
+					}
+				]
+			},
+			{
+				name: 'clans',
+				autocomplete: true,
+				description: 'View the war history of a clan.',
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'player_tag',
+				autocomplete: true,
+				description: 'View the CWL history of a player.',
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'user',
+				description: 'View the war history of a player.',
+				type: ApplicationCommandOptionType.User
+			}
+		]
+	},
+	{
 		name: 'cwl',
 		description: command.cwl.description,
 		dm_permission: false,
