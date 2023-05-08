@@ -25,7 +25,7 @@ export default class SummaryCWLRanks extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
-		const season = args.season ?? Season.ID;
+		const season = args.season === Season.ID ? null : args.season;
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -45,9 +45,10 @@ export default class SummaryCWLRanks extends Command {
 
 		const chunks = [];
 		for (const clan of __clans) {
-			const res = season === Season.ID ? await this.client.http.clanWarLeague(clan.tag) : null;
+			const res = season ? null : await this.client.http.clanWarLeague(clan.tag);
 			if (!res?.ok || ['notInWar', 'ended'].includes(res.state)) {
 				const data = await this.client.storage.getWarTags(clan.tag, season);
+				if (data && data.season !== Season.ID) continue;
 
 				if (!data) continue;
 				if (!data.leagues?.[clan.tag]) continue;
@@ -65,7 +66,9 @@ export default class SummaryCWLRanks extends Command {
 			}
 
 			if (args.season && res.season !== args.season) continue;
-			const ranking = await this.rounds(res, clan.tag, season);
+			if (res.season !== Season.ID) continue;
+
+			const ranking = await this.rounds(res, clan.tag);
 			if (!ranking) continue;
 
 			chunks.push({
@@ -112,16 +115,15 @@ export default class SummaryCWLRanks extends Command {
 				});
 			});
 		});
-		embed.setFooter({ text: `Season ${season}` });
 
 		if (!chunks.length) {
-			return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: Season.ID }));
+			return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.ID }));
 		}
 
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private async rounds(body: ClanWarLeagueGroup, clanTag: string, season: string) {
+	private async rounds(body: ClanWarLeagueGroup, clanTag: string, season?: string | null) {
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		const ranking: {
 			[key: string]: {

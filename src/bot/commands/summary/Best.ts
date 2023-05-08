@@ -1,4 +1,3 @@
-import { Clan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, embedLength, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -92,12 +91,8 @@ export default class SummaryBestCommand extends Command {
 			);
 		}
 
-		const raw = await this.client.redis.connection.json.mGet(
-			clans.map((clan) => `C${clan.tag}`),
-			'$'
-		);
-		const _cachedClans = raw.flat().filter((_) => _) as unknown as Clan[];
-		const members = _cachedClans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
+		const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
+		const members = _clans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
