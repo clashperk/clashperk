@@ -98,20 +98,19 @@ export default class Http extends ClashOfClansClient {
 	}
 
 	public async fetch(path: string) {
-		console.log(`[HTTP] Fetching ${this.baseURL!}${path}`);
 		const res = await request(`${this.baseURL!}${path}`, {
 			headers: {
 				Authorization: `Bearer ${this._token}`,
 				Accept: 'application/json'
 			},
 			signal: TimeoutSignal(this.timeout!)
-		});
+		}).catch(() => null);
 
-		const parsed: any = await res.body.json();
-		if (!parsed) return { ok: false, statusCode: res.statusCode };
+		const parsed = await res?.body.json().catch(() => null);
+		if (!parsed) return { ok: false, statusCode: res?.statusCode };
 
-		// const maxAge = res?.headers.get('cache-control')?.split('=')?.[1] ?? 0;
-		return Object.assign(parsed, { statusCode: res.statusCode, ok: res.statusCode === 200, maxAge: 1000 });
+		const maxAge = (res?.headers['cache-control'] as string | null)?.split('=')?.[1] ?? 0;
+		return Object.assign(parsed, { statusCode: res?.statusCode ?? 504, ok: res?.statusCode === 200, maxAge: Number(maxAge) * 1000 });
 	}
 
 	public fixTag(tag: string) {

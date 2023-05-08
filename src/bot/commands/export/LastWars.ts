@@ -198,7 +198,7 @@ export default class LastWarsExport extends Command {
 						index: i,
 						title: Util.escapeSheetName('Details'),
 						gridProperties: {
-							rowCount: Math.max(members.length + 1, 50),
+							rowCount: Math.max(chunks.length + 1, 50),
 							columnCount: Math.max(columns.length, 25),
 							frozenRowCount: chunks.length ? 1 : 0
 						}

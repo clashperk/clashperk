@@ -339,7 +339,10 @@ export default class SetupUtilsCommand extends Command {
 							? `• [${eventsMap[event]}](<${state[imageMaps[event] as keyof typeof state] as string}>)`
 							: `• ${eventsMap[event]}`
 					)
-					.join('\n')
+					.join('\n'),
+
+				'',
+				'*Note: Click the Confirm button to save the events.*'
 			].join('\n');
 		};
 
