@@ -76,7 +76,7 @@ export default class WarExport extends Command {
 								tag: m.tag,
 								attacks: 0,
 								stars: 0,
-								newStars: 0,
+								trueStars: 0,
 								dest: 0,
 								defStars: 0,
 								starTypes: [],
@@ -90,7 +90,7 @@ export default class WarExport extends Command {
 						const prev = this.freshAttack(attacks, atk.defenderTag, atk.order)
 							? { stars: 0 }
 							: this.getPreviousBestAttack(attacks, atk.defenderTag, atk.attackerTag);
-						member.newStars += Math.max(0, atk.stars - prev.stars);
+						member.trueStars += Math.max(0, atk.stars - prev.stars);
 					}
 
 					if (m.attacks) {
@@ -127,8 +127,9 @@ export default class WarExport extends Command {
 				{ header: 'Tag', width: 16 },
 				{ header: 'Total Attacks', width: 10 },
 				{ header: 'Total Stars', width: 10 },
+				{ header: 'Avg. Stars', width: 10 },
 				{ header: 'True Stars', width: 10 },
-				{ header: 'Avg Stars', width: 10 },
+				{ header: 'Avg. True Stars', width: 10 },
 				{ header: 'Total Dest', width: 10 },
 				{ header: 'Avg Dest', width: 10 },
 				{ header: 'Three Stars', width: 10 },
@@ -157,8 +158,9 @@ export default class WarExport extends Command {
 						m.tag,
 						m.of,
 						m.stars,
-						m.newStars,
 						(m.stars / m.of || 0).toFixed(2),
+						m.trueStars,
+						(m.trueStars / m.of || 0).toFixed(2),
 						m.dest.toFixed(2),
 						(m.dest / m.of || 0).toFixed(2),
 						this.starCount(m.starTypes, 3),
@@ -185,19 +187,20 @@ export default class WarExport extends Command {
 			'Tag',
 			'Total Attacks',
 			'Total Stars',
+			'Avg. Stars',
 			'True Stars',
-			'Avg Stars',
+			'Avg. True Stars',
 			'Total Dest',
-			'Avg Dest',
+			'Avg. Dest',
 			'Three Stars',
 			'Two Stars',
 			'One Stars',
 			'Zero Stars',
 			'Missed',
 			'Def Stars',
-			'Avg Def Stars',
+			'Avg. Def Stars',
 			'Total Def Dest',
-			'Avg Def Dest'
+			'Avg. Def Dest'
 		];
 
 		const sheet = Google.sheet();
@@ -250,8 +253,9 @@ export default class WarExport extends Command {
 								m.tag,
 								m.of,
 								m.stars,
-								m.newStars,
 								Number((m.stars / m.of || 0).toFixed(2)),
+								m.trueStars,
+								Number((m.trueStars / m.of || 0).toFixed(2)),
 								Number(m.dest.toFixed(2)),
 								Number((m.dest / m.of || 0).toFixed(2)),
 								this.starCount(m.starTypes, 3),

@@ -160,8 +160,9 @@ export default class ExportCWL extends Command {
 						{ name: 'Tag', width: 120, align: 'LEFT' },
 						{ name: 'Total Attacks', width: 100, align: 'RIGHT' },
 						{ name: 'Total Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Avg. Stars', width: 100, align: 'RIGHT' },
 						{ name: 'True Stars', width: 100, align: 'RIGHT' },
-						{ name: 'Avg Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Avg. True Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Total Dest', width: 100, align: 'RIGHT' },
 						{ name: 'Avg Dest', width: 100, align: 'RIGHT' },
 						{ name: 'Three Stars', width: 100, align: 'RIGHT' },
@@ -170,7 +171,7 @@ export default class ExportCWL extends Command {
 						{ name: 'Zero Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Missed', width: 100, align: 'RIGHT' },
 						{ name: 'Def Stars', width: 100, align: 'RIGHT' },
-						{ name: 'Avg Def Stars', width: 100, align: 'RIGHT' },
+						{ name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Total Def Dest', width: 100, align: 'RIGHT' },
 						{ name: 'Avg Def Dest', width: 100, align: 'RIGHT' }
 					],
@@ -181,8 +182,9 @@ export default class ExportCWL extends Command {
 							m.tag,
 							m.of,
 							m.stars,
-							m.newStars,
 							Number((m.stars / m.of || 0).toFixed(2)),
+							m.trueStars,
+							Number((m.trueStars / m.of).toFixed(2)),
 							Number(m.dest.toFixed(2)),
 							Number((m.dest / m.of || 0).toFixed(2)),
 							this.starCount(m.starTypes, 3),
@@ -529,21 +531,20 @@ export default class ExportCWL extends Command {
 
 					if (['inWar', 'warEnded'].includes(data.state)) {
 						for (const m of clan.members) {
-							const member = members[m.tag]
-								? members[m.tag]
-								: (members[m.tag] = {
-										name: m.name,
-										tag: m.tag,
-										of: 0,
-										attacks: 0,
-										stars: 0,
-										trueStars: 0,
-										dest: 0,
-										defStars: 0,
-										defDestruction: 0,
-										starTypes: [],
-										defCount: 0
-								  });
+							members[m.tag] ??= {
+								name: m.name,
+								tag: m.tag,
+								of: 0,
+								attacks: 0,
+								stars: 0,
+								trueStars: 0,
+								dest: 0,
+								defStars: 0,
+								defDestruction: 0,
+								starTypes: [],
+								defCount: 0
+							};
+							const member = members[m.tag];
 							member.of += 1;
 
 							for (const atk of m.attacks ?? []) {
