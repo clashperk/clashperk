@@ -362,6 +362,7 @@ export default class SetupUtilsCommand extends Command {
 					{
 						$set: {
 							images,
+							enabled: true,
 							allowedEvents: [...allowedEvents]
 						}
 					},
