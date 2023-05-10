@@ -166,19 +166,21 @@ export default class LinkCreateCommand extends Command {
 			})
 		);
 
-		if (this.client.util.isManager(interaction.member)) {
-			const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
-			await interaction.followUp({
-				content: [
-					`**Click the link below to manage Discord links on our Dashboard.**`,
-					'',
-					`[https://clashperk.com/links](https://clashperk.com/links?token=${token})`
-				].join('\n'),
-				ephemeral: true
-			});
+		return this.updateLinksAndRoles(interaction.guild.id);
 
-			return this.updateLinksAndRoles(interaction.guild.id);
-		}
+		// if (this.client.util.isManager(interaction.member)) {
+		// 	const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+		// 	await interaction.followUp({
+		// 		content: [
+		// 			`**Click the link below to manage Discord links on our Dashboard.**`,
+		// 			'',
+		// 			`[https://clashperk.com/links](https://clashperk.com/links?token=${token})`
+		// 		].join('\n'),
+		// 		ephemeral: true
+		// 	});
+
+		// 	return this.updateLinksAndRoles(interaction.guild.id);
+		// }
 	}
 
 	private async updateLinksAndRoles(guildId: string) {

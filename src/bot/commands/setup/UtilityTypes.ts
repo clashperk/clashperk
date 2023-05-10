@@ -372,7 +372,7 @@ export default class SetupUtilsCommand extends Command {
 
 				const content = getContent().split('\n');
 				await action.editReply({
-					content: ['**Successfully created automatic events schedular...**', ...content.slice(1)].join('\n'),
+					content: ['**Successfully created automatic events schedular...**', ...content.slice(1, content.length - 1)].join('\n'),
 					components: []
 				});
 			}
