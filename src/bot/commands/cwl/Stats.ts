@@ -269,7 +269,10 @@ export default class CWLStatsCommand extends Command {
 					: 0
 			}));
 
-		const rank = ranks.sort((a, b) => b.stars - a.stars).findIndex((a) => a.tag === clanTag);
+		const rank = ranks
+			.sort((a, b) => b.destruction - a.destruction)
+			.sort((a, b) => b.stars - a.stars)
+			.findIndex((a) => a.tag === clanTag);
 		const padding = Math.max(...ranks.map((r) => r.destruction)) > 9999 ? 6 : 5;
 
 		const embeds = [

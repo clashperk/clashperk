@@ -572,7 +572,9 @@ export default class ExportCWL extends Command {
 
 		return {
 			perRound,
-			ranking: Object.values(ranking).sort((a, b) => b.stars - a.stars),
+			ranking: Object.values(ranking)
+				.sort((a, b) => b.destruction - a.destruction)
+				.sort((a, b) => b.stars - a.stars),
 			members: Object.values(members)
 				.sort((a, b) => b.dest - a.dest)
 				.sort((a, b) => b.stars - a.stars)
