@@ -275,6 +275,7 @@ export default class SetupUtilsCommand extends Command {
 		const customIds = {
 			select: this.client.uuid(interaction.user.id),
 			images: this.client.uuid(interaction.user.id),
+			duration: this.client.uuid(interaction.user.id),
 			confirm: this.client.uuid(interaction.user.id),
 			modal: this.client.uuid(interaction.user.id),
 			clan_games: this.client.uuid(interaction.user.id),
@@ -302,6 +303,7 @@ export default class SetupUtilsCommand extends Command {
 
 		const state = {
 			allowedEvents: value?.allowedEvents ?? [],
+			durationOverrides: value?.durationOverrides ?? [],
 			clan_games_image_url: value?.images?.clan_games_image_url ?? '',
 			raid_week_image_url: value?.images?.raid_week_image_url ?? '',
 			cwl_image_url: value?.images?.cwl_image_url ?? '',
@@ -320,11 +322,26 @@ export default class SetupUtilsCommand extends Command {
 			)
 			.setMinValues(1)
 			.setMaxValues(this.client.guildEvents.eventTypes.length);
-		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
+		const durationEvents = this.client.guildEvents.eventTypes.filter((name) => name.endsWith('_start'));
+		const durationMenu = new StringSelectMenuBuilder()
+			.setCustomId(customIds.duration)
+			.setPlaceholder('Max duration overrides...')
+			.setOptions(
+				durationEvents.map((id) => ({
+					label: eventsMap[id],
+					value: id,
+					default: state.durationOverrides.includes(id)
+				}))
+			)
+			.setMinValues(0)
+			.setMaxValues(durationEvents.length);
+
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
+		const durationRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(durationMenu);
 		const buttonRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
 			new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm').setStyle(ButtonStyle.Primary),
-			new ButtonBuilder().setCustomId(customIds.images).setLabel('Edit Images').setStyle(ButtonStyle.Secondary)
+			new ButtonBuilder().setCustomId(customIds.images).setLabel('Set Images').setStyle(ButtonStyle.Secondary)
 		);
 
 		const getContent = () => {
@@ -346,7 +363,7 @@ export default class SetupUtilsCommand extends Command {
 			].join('\n');
 		};
 
-		const msg = await interaction.editReply({ content: getContent(), components: [menuRow, buttonRow] });
+		const msg = await interaction.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 10 * 60 * 1000
@@ -355,7 +372,7 @@ export default class SetupUtilsCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === customIds.confirm) {
 				await action.deferUpdate();
-				const { allowedEvents, ...images } = state;
+				const { allowedEvents, durationOverrides, ...images } = state;
 
 				const { value } = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
 					{ guildId: interaction.guild.id },
@@ -363,7 +380,8 @@ export default class SetupUtilsCommand extends Command {
 						$set: {
 							images,
 							enabled: true,
-							allowedEvents: [...allowedEvents]
+							allowedEvents: [...allowedEvents],
+							durationOverrides: [...durationOverrides]
 						}
 					},
 					{ returnDocument: 'after' }
@@ -386,7 +404,19 @@ export default class SetupUtilsCommand extends Command {
 						default: state.allowedEvents.includes(id)
 					}))
 				);
-				await action.update({ content: getContent(), components: [menuRow, buttonRow] });
+				await action.update({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
+			}
+
+			if (action.customId === customIds.duration && action.isStringSelectMenu()) {
+				state.durationOverrides = [...action.values];
+				durationMenu.setOptions(
+					durationEvents.map((id) => ({
+						label: eventsMap[id],
+						value: id,
+						default: state.durationOverrides.includes(id)
+					}))
+				);
+				await action.update({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
 			}
 
 			if (action.customId === customIds.images) {
@@ -453,15 +483,8 @@ export default class SetupUtilsCommand extends Command {
 							state.raid_week_image_url = URL_REGEX.test(raid_week_image_url) ? raid_week_image_url : '';
 							state.clan_games_image_url = URL_REGEX.test(clan_games_image_url) ? clan_games_image_url : '';
 
-							menu.setOptions(
-								this.client.guildEvents.eventTypes.map((id) => ({
-									label: eventsMap[id],
-									value: id,
-									default: state.allowedEvents.includes(id)
-								}))
-							);
 							await modalSubmit.deferUpdate();
-							await modalSubmit.editReply({ content: getContent(), components: [menuRow, buttonRow] });
+							await modalSubmit.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
 						});
 				} catch (e) {
 					if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {

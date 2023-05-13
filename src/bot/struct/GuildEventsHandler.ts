@@ -43,7 +43,7 @@ export class GuildEventsHandler {
 		];
 	}
 
-	private _events(guild: Guild) {
+	public getEvents(lng: string, filtered = true) {
 		const now = moment().toDate();
 
 		const clanGamesStartTime = moment(Season.ID).startOf('month').add(21, 'days').add(8, 'hours').toDate();
@@ -54,7 +54,7 @@ export class GuildEventsHandler {
 			.toDate();
 
 		const CWLStartTime =
-			moment(now).date() >= 10 && moment(now).hour() >= 8
+			moment(now).date() >= 10 || (moment(now).date() >= 10 && moment(now).hour() >= 8)
 				? moment(now).startOf('month').add(1, 'month').add(8, 'hour').toDate()
 				: moment(now).startOf('month').add(8, 'hours').toDate();
 		const CWLSignupEndTime = moment(CWLStartTime).add(2, 'days').toDate();
@@ -66,56 +66,56 @@ export class GuildEventsHandler {
 		const events = [
 			{
 				type: 'clan_games_start',
-				name: i18n('common.labels.clan_games', { lng: guild.preferredLocale }),
+				name: i18n('common.labels.clan_games', { lng }),
 				value: `${time(clanGamesStartTime, 'R')}\n${time(clanGamesStartTime, 'f')}`,
 				timestamp: clanGamesStartTime.getTime(),
 				visible: moment(now).isBefore(clanGamesStartTime) || moment(now).isAfter(clanGamesEndTime)
 			},
 			{
 				type: 'clan_games_end',
-				name: i18n('common.labels.clan_games_ending', { lng: guild.preferredLocale }),
+				name: i18n('common.labels.clan_games_ending', { lng }),
 				value: `${time(clanGamesEndTime, 'R')}\n${time(clanGamesEndTime, 'f')}`,
 				timestamp: clanGamesEndTime.getTime(),
 				visible: moment(now).isAfter(clanGamesStartTime) && moment(now).isBefore(clanGamesEndTime)
 			},
 			{
 				type: 'cwl_start',
-				name: i18n('common.labels.cwl', { lng: guild.preferredLocale }),
+				name: i18n('common.labels.cwl', { lng }),
 				value: `${time(CWLStartTime, 'R')}\n${time(CWLStartTime, 'f')}`,
 				timestamp: CWLStartTime.getTime(),
 				visible: moment(now).isBefore(CWLStartTime)
 			},
 			{
 				type: 'cwl_end',
-				name: i18n('common.labels.cwl_end', { lng: guild.preferredLocale }),
+				name: i18n('common.labels.cwl_end', { lng }),
 				value: `${time(CWLEndTime, 'R')}\n${time(CWLEndTime, 'f')}`,
 				timestamp: CWLEndTime.getTime(),
 				visible: moment(now).isAfter(CWLSignupEndTime)
 			},
 			{
 				type: 'cwl_signup_end',
-				name: i18n('common.labels.cwl_signup_ending', { lng: guild.preferredLocale }),
+				name: i18n('common.labels.cwl_signup_ending', { lng }),
 				value: `${time(CWLSignupEndTime, 'R')}\n${time(CWLSignupEndTime, 'f')}`,
 				timestamp: CWLSignupEndTime.getTime(),
 				visible: moment(now).isAfter(CWLStartTime) && moment(now).isBefore(CWLSignupEndTime)
 			},
 			{
 				type: 'season_end',
-				name: i18n('common.labels.league_reset', { lng: guild.preferredLocale }),
+				name: i18n('common.labels.league_reset', { lng }),
 				value: `${time(seasonEndTime, 'R')}\n${time(seasonEndTime, 'f')}`,
 				timestamp: seasonEndTime.getTime(),
 				visible: true
 			},
 			{
 				type: 'raid_week_start',
-				name: i18n('common.labels.raid_weekend', { lng: guild.preferredLocale }),
+				name: i18n('common.labels.raid_weekend', { lng }),
 				value: `${time(raidWeekStartTime, 'R')}\n${time(raidWeekStartTime, 'f')}`,
 				timestamp: raidWeekStartTime.getTime(),
 				visible: moment(now).isBefore(raidWeekStartTime) || moment(now).isAfter(raidWeekEndTime)
 			},
 			{
 				type: 'raid_week_end',
-				name: i18n('common.labels.raid_weekend_ending', { lng: guild.preferredLocale }),
+				name: i18n('common.labels.raid_weekend_ending', { lng }),
 				value: `${time(raidWeekEndTime, 'R')}\n${time(raidWeekEndTime, 'f')}`,
 				timestamp: raidWeekEndTime.getTime(),
 				visible: moment(now).isAfter(raidWeekStartTime) && moment(now).isBefore(raidWeekEndTime)
@@ -123,22 +123,32 @@ export class GuildEventsHandler {
 		];
 
 		events.sort((a, b) => a.timestamp - b.timestamp);
-		return events.filter((event) => event.visible);
+		if (filtered) return events.filter((event) => event.visible);
+		return events;
+	}
+
+	private getMaxDuration(lng: string, event: EventRecord, guildEvent: GuildEventData) {
+		if (guildEvent.durationOverrides?.includes(event.type)) {
+			const record = this.getEvents(lng, false).find((ev) => ev.type === event.type.replace(/_start/g, '_end'));
+			if (record && record.timestamp > Date.now()) return record.timestamp;
+		}
+		return event.timestamp + guildEvent.maxDuration * 60 * 1000;
 	}
 
 	public async create(guild: Guild, guildEvent: GuildEventData) {
 		if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageEvents)) return null;
 
-		for (const event of this._events(guild)) {
+		for (const event of this.getEvents(guild.preferredLocale)) {
 			if (guildEvent.allowedEvents && !guildEvent.allowedEvents.includes(event.type)) continue;
 			if (guildEvent.events[event.type] === event.timestamp) continue;
 
+			const endTime = this.getMaxDuration(guild.preferredLocale, event, guildEvent);
 			await guild.scheduledEvents.create({
 				name: event.name,
 				entityType: GuildScheduledEventEntityType.External,
 				privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
 				scheduledStartTime: new Date(event.timestamp),
-				scheduledEndTime: new Date(event.timestamp + 1000 * 60 * guildEvent.maxDuration),
+				scheduledEndTime: new Date(endTime),
 				entityMetadata: { location: 'in game' },
 				description: event.value,
 				image: guildEvent.images?.[imageMaps[event.type]]
@@ -212,4 +222,13 @@ export interface GuildEventData {
 	allowedEvents?: string[];
 	images?: Record<string, string>;
 	createdAt: Date;
+	durationOverrides?: string[];
+}
+
+export interface EventRecord {
+	type: string;
+	name: string;
+	value: string;
+	timestamp: number;
+	visible: boolean;
 }
