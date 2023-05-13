@@ -326,6 +326,7 @@ export default class SetupUtilsCommand extends Command {
 				durationEvents.map((id) => ({
 					label: eventsMap[id],
 					value: id,
+					description: `The event stays until the end of the ${eventsMap[id]}`,
 					default: state.durationOverrides.includes(id)
 				}))
 			)
@@ -396,6 +397,7 @@ export default class SetupUtilsCommand extends Command {
 					this.client.guildEvents.eventTypes.map((id) => ({
 						label: eventsMap[id],
 						value: id,
+						description: `The event stays until the end of the ${eventsMap[id]}`,
 						default: state.allowedEvents.includes(id)
 					}))
 				);
