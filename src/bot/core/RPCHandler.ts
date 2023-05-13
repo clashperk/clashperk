@@ -27,8 +27,8 @@ export default class RPCHandler {
 	private readonly legendLog = new LegendLog(this.client);
 	private readonly capitalLog = new CapitalLog(this.client);
 	private readonly joinLeaveLog = new JoinLeaveLog(this.client);
-	private readonly warRoleManager = new WarRoleManager(this.client);
 
+	public warRoleManager = new WarRoleManager(this.client);
 	public roleManager = new RoleManager(this.client);
 
 	public constructor(private readonly client: Client) {

@@ -73,6 +73,24 @@ export default class AutoTownHallRoleCommand extends Command {
 			await interaction.editReply(`Refreshing league roles for ${clan.name}...`);
 			await this.client.rpcHandler.roleManager.queue(data, { isLeagueRole: true });
 			await Util.delay(1000 * 5);
+
+			await interaction.editReply(`Refreshing war roles for ${clan.name}...`);
+			const wars = await this.client.http.getCurrentWars(clan.tag);
+			for (const war of wars) {
+				await this.client.rpcHandler.warRoleManager.exec(clan.tag, {
+					...war,
+					clan: {
+						...war.clan,
+						_members: war.clan.members.map((mem) => mem.tag)
+					},
+					id: 1,
+					uid: '0x',
+					result: '0x',
+					warTag: war.warTag,
+					round: war.round!
+				});
+				await Util.delay(1000 * 5);
+			}
 		}
 		return interaction.editReply('Successfully refreshed roles.').catch(() => null);
 	}
