@@ -121,12 +121,7 @@ export default class SetupUtilsCommand extends Command {
 			.setLabel('Link account')
 			.setEmoji('🔗')
 			.setStyle(ButtonStyle.Primary);
-		const helpButton = new ButtonBuilder()
-			.setDisabled(true)
-			.setLabel('How to link?')
-			.setStyle(ButtonStyle.Link)
-			.setURL('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-		const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton, helpButton);
+		const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
 		await interaction.editReply({ embeds: [embed], components: [linkButtonRow] });
 		await interaction.followUp({
@@ -162,7 +157,7 @@ export default class SetupUtilsCommand extends Command {
 				state.token_field = action.values.at(0) as 'required' | 'optional' | 'hidden';
 
 				linkButton.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }));
-				const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton, helpButton);
+				const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
 				await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
 				await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
@@ -240,7 +235,7 @@ export default class SetupUtilsCommand extends Command {
 							embed.setThumbnail(state.thumbnail_url || null);
 
 							linkButton.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }));
-							const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton, helpButton);
+							const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
 							await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
 							await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
