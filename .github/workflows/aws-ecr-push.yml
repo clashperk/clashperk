@@ -1,4 +1,4 @@
-name: CD
+name: CD/ECR
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Elastic Container Registry
+    name: AWS ECR
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
 
     steps:
