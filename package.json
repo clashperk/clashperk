@@ -1,6 +1,6 @@
 {
 	"name": "clashperk",
-	"version": "3.0.0",
+	"version": "3.1.0",
 	"author": "SUVAJIT (suvajit.me@gmail.com)",
 	"license": "MIT",
 	"description": "Clash of Clans Discord Bot",
@@ -26,8 +26,8 @@
 	"dependencies": {
 		"@elastic/elasticsearch": "^8.6.0",
 		"@google-cloud/local-auth": "^2.1.0",
-		"@sentry/integrations": "^7.3.1",
-		"@sentry/node": "^7.3.1",
+		"@sentry/integrations": "^7.51.2",
+		"@sentry/node": "^7.51.2",
 		"@typescript-eslint/typescript-estree": "^5.59.1",
 		"chalk": "^4.1.2",
 		"clashofclans.js": "^1.5.5",
