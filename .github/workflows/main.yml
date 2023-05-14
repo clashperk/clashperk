@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -6,17 +6,17 @@ on:
 
 jobs:
   lint:
-    name: Lint
+    name: ESLint
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Init Submodule
         run: git submodule init && git submodule update --remote

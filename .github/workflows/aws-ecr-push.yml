@@ -1,4 +1,4 @@
-name: CD/ECR
+name: CD
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: ECR
+    name: Elastic Container Registry
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
 
     steps:
