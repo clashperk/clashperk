@@ -1,4 +1,13 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, embedLength, escapeMarkdown } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	embedLength,
+	escapeMarkdown
+} from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -72,7 +81,7 @@ export default class SummaryBestCommand extends Command {
 	}
 
 	public async exec(
-		interaction: CommandInteraction<'cached'>,
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
 		args: { season?: string; limit?: number; clans?: string; order?: 'asc' | 'desc' }
 	) {
 		const seasonId = args.season ?? Season.ID;
@@ -606,10 +615,18 @@ export default class SummaryBestCommand extends Command {
 			return interaction.followUp({ embeds: [embed] });
 		}
 
-		const customId = JSON.stringify({ cmd: this.id, order: args.order, clans: args.clans?.substring(0, 55) });
+		const customId = interaction.isButton()
+			? interaction.customId
+			: this.client.redis.setCustomId({
+					cmd: this.id,
+					order: args.order,
+					clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans,
+					limit: args.limit
+			  });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setCustomId(customId).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
 		);
+
 		const isSameSeason = seasonId === Season.ID;
 		embed.setFooter({ text: `Season ${seasonId}` }).setTimestamp();
 		await interaction.editReply({ embeds: [embed], components: isSameSeason ? [row] : [] });

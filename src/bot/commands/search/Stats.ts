@@ -298,18 +298,10 @@ export default class StatsCommand extends Command {
 
 		embed.setTimestamp();
 
-		const customIds = {
-			starsAvg: JSON.stringify({
-				cmd: this.id,
-				type,
-				stars,
-				days: args.days,
-				view: 'avg',
-				tag: data.tag
-			})
-		};
-
-		const button = new ButtonBuilder().setCustomId(customIds.starsAvg).setStyle(ButtonStyle.Primary);
+		const customId = interaction.isButton()
+			? interaction.customId
+			: this.client.redis.setCustomId({ cmd: this.id, ...args, view: 'avg' });
+		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Primary);
 		if (interaction.isButton()) {
 			button.setEmoji(EMOJIS.REFRESH);
 		} else {

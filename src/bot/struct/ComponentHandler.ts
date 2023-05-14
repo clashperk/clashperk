@@ -1,4 +1,4 @@
-import { ButtonInteraction, SelectMenuInteraction } from 'discord.js';
+import { ButtonInteraction, StringSelectMenuInteraction } from 'discord.js';
 import { Client } from './Client.js';
 
 interface ParsedCommandId {
@@ -10,13 +10,16 @@ interface ParsedCommandId {
 export default class ComponentHandler {
 	public constructor(private readonly client: Client) {}
 
-	private parseCommandId(customId: string): ParsedCommandId | null {
+	private async parseCommandId(customId: string): Promise<ParsedCommandId | null> {
 		if (/^{.*}$/g.test(customId)) return JSON.parse(customId);
+		if (customId.startsWith('CMD-')) {
+			return this.client.redis.getCustomId<ParsedCommandId>(customId);
+		}
 		return null;
 	}
 
-	public async exec(interaction: ButtonInteraction | SelectMenuInteraction) {
-		const parsed = this.parseCommandId(interaction.customId);
+	public async exec(interaction: ButtonInteraction | StringSelectMenuInteraction) {
+		const parsed = await this.parseCommandId(interaction.customId);
 		if (!parsed) return false;
 
 		switch (parsed.cmd) {

@@ -1,5 +1,5 @@
 import { Clan, Player } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
@@ -15,7 +15,7 @@ export default class LegendLeaderboardCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { clans?: string }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -64,16 +64,14 @@ export default class LegendLeaderboardCommand extends Command {
 				].join('\n')
 			);
 
+		const customId = interaction.isButton()
+			? interaction.customId
+			: this.client.redis.setCustomId({
+					cmd: this.id,
+					clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans
+			  });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-				.setEmoji(EMOJIS.REFRESH)
-				.setStyle(ButtonStyle.Secondary)
-				.setCustomId(
-					JSON.stringify({
-						cmd: this.id,
-						clans: args.clans?.substring(0, 60)
-					})
-				)
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customId)
 		);
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
