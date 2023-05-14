@@ -18,22 +18,37 @@ export const handlePagination = async (
 		export: client.uuid(interaction.user.id)
 	};
 
-	const row = new ActionRowBuilder<ButtonBuilder>()
-		.addComponents(new ButtonBuilder().setCustomId(customIds.prev).setEmoji(PREV).setStyle(ButtonStyle.Secondary))
-		.addComponents(new ButtonBuilder().setCustomId(customIds.next).setEmoji(NEXT).setStyle(ButtonStyle.Secondary));
+	const prevButton = new ButtonBuilder()
+		.setCustomId(customIds.prev)
+		.setEmoji(PREV)
+		.setStyle(ButtonStyle.Secondary)
+		.setDisabled(embeds.length <= 1);
+
+	const nextButton = new ButtonBuilder()
+		.setCustomId(customIds.next)
+		.setEmoji(NEXT)
+		.setStyle(ButtonStyle.Secondary)
+		.setDisabled(embeds.length <= 1);
+
+	const row = new ActionRowBuilder<ButtonBuilder>();
 	const indexButton = new ButtonBuilder()
 		.setCustomId(customIds.next)
 		.setLabel(`${1}/${embeds.length}`)
 		.setStyle(ButtonStyle.Secondary)
 		.setDisabled(true)
 		.setCustomId('disabled');
-	row.addComponents(indexButton);
+
+	if (embeds.length > 1) {
+		row.addComponents(prevButton);
+		row.addComponents(nextButton);
+		row.addComponents(indexButton);
+	}
 
 	const exportButton = new ButtonBuilder().setCustomId(customIds.export).setLabel(`Export`).setStyle(ButtonStyle.Secondary);
 	if (typeof onExport === 'function') row.addComponents(exportButton);
 
 	let index = 0;
-	const msg = await interaction.editReply({ embeds: [embeds[index]], components: [row] });
+	const msg = await interaction.editReply({ embeds: embeds.length ? [embeds[index]] : [], components: [row] });
 
 	const collector = msg.createMessageComponentCollector({
 		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,

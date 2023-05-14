@@ -78,6 +78,7 @@ export default class AutoTownHallRoleCommand extends Command {
 			const wars = await this.client.http.getCurrentWars(clan.tag);
 			for (const war of wars) {
 				if (!war.ok) continue;
+				if (war.state === 'notInWar') continue;
 				await this.client.rpcHandler.warRoleManager.exec(clan.tag, {
 					...war,
 					clan: {

@@ -1,5 +1,6 @@
 import { Clan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
@@ -92,7 +93,7 @@ export default class SummaryClansCommand extends Command {
 		);
 		embed.addFields([
 			{
-				name: 'Join/Leave History',
+				name: 'Join/Leave History (last 30 days)',
 				value: Util.splitMessage(
 					[
 						`\`\u200e${'#'.padStart(3, ' ')} ${'JOINED'.padStart(5, ' ')} ${'LEFT'.padStart(5, ' ')}  ${'CLAN'.padEnd(
@@ -116,11 +117,12 @@ export default class SummaryClansCommand extends Command {
 	}
 
 	private async getJoinLeave(clans: Clan[]) {
+		const gte = moment().subtract(1, 'month').toDate().toISOString();
 		const { aggregations } = await this.client.elastic.search({
 			index: 'join_leave_events',
 			query: {
 				bool: {
-					filter: [{ terms: { clan_tag: clans.map((clan) => clan.tag) } }]
+					filter: [{ terms: { clan_tag: clans.map((clan) => clan.tag) } }, { range: { created_at: { gte } } }]
 				}
 			},
 			size: 0,
@@ -129,7 +131,7 @@ export default class SummaryClansCommand extends Command {
 				clans: {
 					terms: {
 						field: 'clan_tag',
-						size: Math.min(10_000, clans.length * 60)
+						size: Math.min(10_000)
 					},
 					aggs: {
 						events: {

@@ -1081,6 +1081,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'CWL Attacks',
 						value: 'cwl-attacks'
+					},
+					{
+						name: 'Join/Leave',
+						value: 'join-leave'
 					}
 				]
 			},

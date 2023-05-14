@@ -24,11 +24,6 @@ export default class CWLHistoryCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player_tag?: string; user?: User }) {
-		// if (args.user) {
-		// 	const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
-		// 	return this.getHistory(interaction, playerTags);
-		// }
-
 		if (args.player_tag) {
 			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
 			if (!player) return null;
@@ -55,10 +50,6 @@ export default class CWLHistoryCommand extends Command {
 			const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag).slice(0, 1));
 			const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
 			return this.getHistory(interaction, playerTags);
-
-			// const { embeds, result } = await this.getHistory(interaction, playerTags);
-			// await interaction.editReply({ embeds: [embeds.at(0)!] });
-			// return this.export(interaction, result);
 		}
 
 		const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);
@@ -130,10 +121,6 @@ export default class CWLHistoryCommand extends Command {
 						].join('\n');
 					})
 					.join('\n');
-
-				// if (args.user && !player) {
-				// 	embed.setAuthor({ name: `${args.user.username} (${args.user.id})`, iconURL: args.user.displayAvatarURL() });
-				// }
 				embed.setTitle('**CWL attack history (last 3 months)**');
 				embed.setDescription(`**${key}**\n\n${value}`);
 				embeds.push(embed);

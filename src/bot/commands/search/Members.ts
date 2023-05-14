@@ -1,10 +1,11 @@
-import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ComponentType, User, time } from 'discord.js';
 import { Clan, Player, PlayerItem } from 'clashofclans.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, User, time } from 'discord.js';
+import moment from 'moment';
 import ms from 'ms';
-import { HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
 import { UP_ARROW } from '../../util/Constants.js';
+import { HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -220,7 +221,7 @@ export default class MembersCommand extends Command {
 			const total = totalHero + totalPet + totalTroop + totalSpell;
 			embed.setFooter({
 				text: [
-					`${UP_ARROW}${total} levels were upgraded in the last ${ms(Date.now() - trackingDate, { long: true })}`,
+					`${UP_ARROW}${total} levels were upgraded in the last 30 days`,
 					`${UP_ARROW}${totalHero} heroes \u2002 ${UP_ARROW}${totalPet} pets \u2002 ${UP_ARROW}${totalTroop} troops \u2002 ${UP_ARROW}${totalSpell} spells`
 				].join('\n')
 			});
@@ -409,11 +410,13 @@ export default class MembersCommand extends Command {
 	}
 
 	private async progress(clan: Clan, players: Player[]) {
+		const gte = moment().subtract(1, 'month').toDate().toISOString();
+
 		const { aggregations } = await this.client.elastic.search({
 			index: 'player_progress_events',
 			query: {
 				bool: {
-					filter: [{ terms: { tag: players.map((p) => p.tag) } }]
+					filter: [{ terms: { tag: players.map((p) => p.tag) } }, { range: { created_at: { gte } } }]
 				}
 			},
 			size: 0,
@@ -422,7 +425,7 @@ export default class MembersCommand extends Command {
 				players: {
 					terms: {
 						field: 'tag',
-						size: 1000
+						size: 10_000
 					},
 					aggs: {
 						types: {
