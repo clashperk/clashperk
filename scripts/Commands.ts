@@ -1061,7 +1061,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'history',
-		description: 'Clan Games, Capital Raids and CWL attacks history.',
+		description: 'Clan Games, Capital Raids, Donations, and CWL attacks history.',
 		dm_permission: false,
 		options: [
 			{
@@ -1081,6 +1081,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'CWL Attacks',
 						value: 'cwl-attacks'
+					},
+					{
+						name: 'Donations',
+						value: 'donations'
 					},
 					{
 						name: 'Join/Leave',

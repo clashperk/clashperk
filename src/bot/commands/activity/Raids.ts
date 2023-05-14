@@ -1,4 +1,4 @@
-import { Clan, Player } from 'clashofclans.js';
+import { Clan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
@@ -6,7 +6,6 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	EmbedBuilder,
-	embedLength,
 	StringSelectMenuBuilder,
 	User
 } from 'discord.js';
@@ -71,9 +70,7 @@ export default class CapitalRaidsCommand extends Command {
 		args: { tag?: string; week?: string; card?: boolean; user?: User; player_tag?: string }
 	) {
 		if (args.user || args.player_tag) {
-			const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
-			if (args.player_tag && !player) return null;
-			return this.forUsers(interaction, { user: args.user, player });
+			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
 		}
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
@@ -416,114 +413,6 @@ export default class CapitalRaidsCommand extends Command {
 			body: JSON.stringify(body)
 		}).then((res) => res.json());
 		return `${process.env.ASSET_API_BACKEND!}/${(res as any).id as string}`;
-	}
-
-	private async forUsers(interaction: CommandInteraction<'cached'>, { user, player }: { user?: User; player?: Player | null }) {
-		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
-		const _players = await this.client.db
-			.collection(Collections.CAPITAL_RAID_SEASONS)
-			.aggregate<{
-				name: string;
-				tag: string;
-				raids: { capitalResourcesLooted: number; weekId: string; bonusAttackLimit: number; attackLimit: number; attacks: number }[];
-			}>([
-				{
-					$match: {
-						'members.tag': {
-							$in: [...playerTags.slice(0, 25)]
-						},
-						'createdAt': {
-							$gte: moment().subtract(6, 'months').toDate()
-						}
-					}
-				},
-				{
-					$unwind: {
-						path: '$members'
-					}
-				},
-				{
-					$match: {
-						'members.tag': {
-							$in: [...playerTags.slice(0, 25)]
-						}
-					}
-				},
-				{
-					$sort: {
-						_id: -1
-					}
-				},
-				{
-					$group: {
-						_id: '$members.tag',
-						name: {
-							$first: '$members.name'
-						},
-						tag: {
-							$first: '$members.tag'
-						},
-						raids: {
-							$push: {
-								weekId: '$weekId',
-								clan: {
-									name: '$name',
-									tag: '$tag'
-								},
-								name: '$members.name',
-								tag: '$members.tag',
-								attacks: '$members.attacks',
-								attackLimit: '$members.attackLimit',
-								bonusAttackLimit: '$members.bonusAttackLimit',
-								capitalResourcesLooted: '$members.capitalResourcesLooted'
-							}
-						}
-					}
-				}
-			])
-			.toArray();
-
-		const embeds: EmbedBuilder[] = [];
-		const embed = new EmbedBuilder();
-		embed.setColor(this.client.embed(interaction));
-		embed.setTitle('Capital raid history (last 3 months)');
-		if (user && !player) embed.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() });
-
-		_players.sort((a, b) => b.raids.length - a.raids.length);
-		_players.slice(0, 25).map((member) => {
-			embed.addFields({
-				name: `${member.name} (${member.tag})`,
-				value: [
-					'```',
-					'\u200e # LOOTED HITS  WEEKEND',
-					member.raids
-						.slice(0, 20)
-						.map((raid, i) => {
-							const looted = this.padding(raid.capitalResourcesLooted);
-							const attacks = `${raid.attacks}/${raid.attackLimit + raid.bonusAttackLimit}`.padStart(4, ' ');
-							return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${moment(raid.weekId)
-								.format('D MMM')
-								.padStart(6, ' ')}`;
-						})
-						.join('\n'),
-					'```'
-				].join('\n')
-			});
-		});
-		embeds.push(embed);
-
-		if (embedLength(embed.toJSON()) > 6000) {
-			const fieldsSize = embed.data.fields!.length;
-			embeds.push(
-				new EmbedBuilder()
-					.setColor(this.client.embed(interaction))
-					.addFields(embed.data.fields!.splice(Math.floor(fieldsSize / 2), 25))
-			);
-		}
-
-		for (const embed of embeds) {
-			await interaction.followUp({ embeds: [embed] });
-		}
 	}
 
 	private padding(num: number) {

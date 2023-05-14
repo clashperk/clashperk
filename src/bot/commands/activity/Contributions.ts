@@ -1,4 +1,4 @@
-import { Clan, Player } from 'clashofclans.js';
+import { Clan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -19,9 +19,7 @@ export default class CapitalContributionsCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; player_tag?: string; user?: User }) {
 		if (args.user || args.player_tag) {
-			const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
-			if (args.player_tag && !player) return null;
-			return this.forUsers(interaction, { user: args.user, player });
+			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
 		}
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
@@ -137,117 +135,6 @@ export default class CapitalContributionsCommand extends Command {
 			.setFooter({ text: `Week of ${weekId}` });
 
 		return embed;
-	}
-
-	private async forUsers(interaction: CommandInteraction<'cached'>, { user, player }: { user?: User; player?: Player | null }) {
-		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
-
-		const players = await this.client.db
-			.collection(Collections.CAPITAL_CONTRIBUTIONS)
-			.aggregate<{ name: string; tag: string; weeks: { week: string; total: number }[] }>([
-				{
-					$match: {
-						tag: {
-							$in: [...playerTags]
-						}
-					}
-				},
-				{
-					$set: {
-						week: {
-							$dateTrunc: {
-								date: '$createdAt',
-								unit: 'week',
-								startOfWeek: 'monday'
-							}
-						}
-					}
-				},
-				{
-					$addFields: {
-						total: {
-							$subtract: ['$current', '$initial']
-						}
-					}
-				},
-				{
-					$group: {
-						_id: {
-							week: '$week',
-							tag: '$tag'
-						},
-						week: {
-							$first: '$week'
-						},
-						name: {
-							$first: '$name'
-						},
-						tag: {
-							$first: '$tag'
-						},
-						total: {
-							$sum: '$total'
-						}
-					}
-				},
-				{
-					$sort: {
-						week: -1
-					}
-				},
-				{
-					$group: {
-						_id: '$tag',
-						name: {
-							$first: '$name'
-						},
-						tag: {
-							$first: '$tag'
-						},
-						total: {
-							$sum: '$total'
-						},
-						weeks: {
-							$push: {
-								week: '$week',
-								total: '$total'
-							}
-						}
-					}
-				},
-				{
-					$sort: {
-						total: -1
-					}
-				}
-			])
-			.toArray();
-
-		const embed = new EmbedBuilder();
-		embed.setColor(this.client.embed(interaction));
-		embed.setTitle('Capital contribution history (last 3 months)');
-		if (user && !player) embed.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() });
-
-		players.forEach(({ name, tag, weeks }) => {
-			embed.addFields({
-				name: `${name} (${tag})`,
-				value: [
-					'```',
-					'\u200e #   LOOT   WEEKEND',
-					weeks
-						.map(
-							(week, i) =>
-								`\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(week.total)}  ${moment(week.week)
-									.format('D MMM')
-									.padStart(7, ' ')}`
-						)
-						.join('\n'),
-					'```'
-				].join('\n')
-			});
-		});
-
-		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private padding(num: number) {

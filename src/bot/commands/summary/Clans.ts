@@ -1,5 +1,5 @@
 import { Clan } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, embedLength } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -66,36 +66,31 @@ export default class SummaryClansCommand extends Command {
 
 		const nameLen = Math.max(...clanList.map((clan) => clan.name.length)) + 1;
 		const tagLen = Math.max(...clanList.map((clan) => clan.tag.length)) + 1;
-
 		const totalMembers = clanList.reduce((p, c) => p + c.members, 0);
 
-		const embed = new EmbedBuilder()
-			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! });
-		embed.setDescription(
-			[
-				clanList
-					.map((clan) => {
-						const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
-						return `\`\u200e${name} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members.toString().padStart(2, ' ')}/50 \u200f\``;
-					})
-					.join('\n'),
-				''
-				// `\`\u200e${'#'.padStart(3, ' ')} ${'JOINED'.padStart(5, ' ')} ${'LEFT'.padStart(5, ' ')}  ${'CLAN'.padEnd(nameLen, ' ')} \``
-				// joinLeaves
-				// 	.map((clan, i) => {
-				// 		const nn = `${i + 1}`.padStart(3, ' ');
-				// 		const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
-				// 		return `\`\u200e${nn}  ${this.fmtNum(clan.join)} ${this.fmtNum(clan.leave)}  ${name} \u200f\``;
-				// 	})
-				// 	.join('\n')
-			].join('\n')
-		);
-		embed.addFields([
-			{
-				name: 'Join/Leave History (last 30 days)',
-				value: Util.splitMessage(
+		const embeds: EmbedBuilder[] = [
+			new EmbedBuilder()
+				.setColor(this.client.embed(interaction))
+				.setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
+				.setDescription(
 					[
+						clanList
+							.map((clan) => {
+								const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
+								return `\`\u200e${name} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members
+									.toString()
+									.padStart(2, ' ')}/50 \u200f\``;
+							})
+							.join('\n')
+					].join('\n')
+				)
+				.setFooter({ text: `${clans.length} clans, ${totalMembers} members` }),
+			new EmbedBuilder()
+				.setColor(this.client.embed(interaction))
+				.setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
+				.setDescription(
+					[
+						`**Join/Leave History (last 30 days)**`,
 						`\`\u200e${'#'.padStart(3, ' ')} ${'JOINED'.padStart(5, ' ')} ${'LEFT'.padStart(5, ' ')}  ${'CLAN'.padEnd(
 							nameLen,
 							' '
@@ -105,15 +100,21 @@ export default class SummaryClansCommand extends Command {
 							const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
 							return `\`\u200e${nn}  ${this.fmtNum(clan.join)} ${this.fmtNum(clan.leave)}  ${name} \u200f\``;
 						})
-					].join('\n'),
-					{ maxLength: 1024, char: '\n' }
-				).at(0)!
-			}
-		]);
-		embed.addFields([{ name: 'Overall Family Compo', value: this.compo(allPlayers) }]);
-		embed.setFooter({ text: `${clans.length} clans, ${totalMembers} members` });
+					].join('\n')
+				)
+				.setFooter({ text: `${clans.length} clans, ${totalMembers} members` }),
+			new EmbedBuilder()
+				.setColor(this.client.embed(interaction))
+				.setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
+				.setDescription(['**Family Town Hall Compo**', this.compo(allPlayers)].join('\n'))
+				.setFooter({ text: `${clans.length} clans, ${totalMembers} members` })
+		];
 
-		return interaction.editReply({ embeds: [embed] });
+		if (embeds.reduce((prev, acc) => embedLength(acc.toJSON()) + prev, 0) > 6000) {
+			for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
+		}
+
+		return interaction.followUp({ embeds });
 	}
 
 	private async getJoinLeave(clans: Clan[]) {

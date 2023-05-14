@@ -15,7 +15,8 @@ export default class HistoryCommand extends Command {
 			'cwl-attacks': this.handler.modules.get('cwl-attacks-history')!,
 			'capital-raids': this.handler.modules.get('capital-raids-history')!,
 			'clan-games': this.handler.modules.get('clan-games-history')!,
-			'join-leave': this.handler.modules.get('join-leave-history')!
+			'join-leave': this.handler.modules.get('join-leave-history')!,
+			'donations': this.handler.modules.get('donations-history')!
 		}[args.option];
 
 		if (!command) throw Error('Command not found.');

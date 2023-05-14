@@ -1,20 +1,9 @@
-import {
-	CommandInteraction,
-	ActionRowBuilder,
-	ButtonBuilder,
-	EmbedBuilder,
-	ButtonStyle,
-	ButtonInteraction,
-	MessageType,
-	User
-} from 'discord.js';
-import { Clan, Player } from 'clashofclans.js';
-import moment from 'moment';
-import { Collections } from '../../util/Constants.js';
-import { ClanGames } from '../../util/index.js';
+import { Clan } from 'clashofclans.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
 import { ClanGamesModel } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { clanGamesEmbedMaker, clanGamesSortingAlgorithm } from '../../util/Helper.js';
 
 export default class ClanGamesCommand extends Command {
@@ -44,9 +33,7 @@ export default class ClanGamesCommand extends Command {
 		args: { tag?: string; player_tag?: string; max: boolean; filter: boolean; season?: string; user?: User }
 	) {
 		if ((args.user || args.player_tag) && !interaction.isButton()) {
-			const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
-			if (args.player_tag && !player) return null;
-			return this.forUsers(interaction, { user: args.user, player });
+			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
 		}
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
@@ -104,99 +91,6 @@ export default class ClanGamesCommand extends Command {
 					.setStyle(ButtonStyle.Primary)
 			);
 		return interaction.editReply({ embeds: [embed], components: [row] });
-	}
-
-	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: Player | null; user?: User }) {
-		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
-		const _players = await this.client.db
-			.collection(Collections.CLAN_GAMES_POINTS)
-			.aggregate<{ name: string; tag: string; seasons: { points: number; season: string }[] }>([
-				{
-					$match: {
-						tag: {
-							$in: [...playerTags]
-						}
-					}
-				},
-				{
-					$set: {
-						points: {
-							$subtract: ['$current', '$initial']
-						},
-						clan: {
-							$arrayElemAt: ['$clans', 0]
-						}
-					}
-				},
-				{
-					$project: {
-						name: 1,
-						tag: 1,
-						clan: 1,
-						points: 1,
-						season: 1
-					}
-				},
-				{
-					$sort: {
-						_id: -1
-					}
-				},
-				{
-					$group: {
-						_id: '$tag',
-						name: {
-							$first: '$name'
-						},
-						tag: {
-							$first: '$tag'
-						},
-						seasons: {
-							$push: {
-								points: '$points',
-								season: '$season',
-								clan: {
-									name: '$clan.name',
-									tag: '$clan.tag'
-								}
-							}
-						}
-					}
-				}
-			])
-			.toArray();
-
-		const embed = new EmbedBuilder();
-		embed.setColor(this.client.embed(interaction));
-		embed.setTitle('Clan games history (last 6 months)');
-		if (user && !player) embed.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() });
-
-		_players.sort((a, b) => b.seasons.length - a.seasons.length);
-		_players.slice(0, 25).forEach((player) => {
-			const total = player.seasons.reduce((a, b) => a + b.points, 0);
-			embed.addFields({
-				name: `${EMOJIS.AUTHORIZE} ${player.name} (${player.tag})`,
-				value: [
-					`\`\`\`\n\u200e # POINTS  SEASON`,
-					player.seasons
-						.slice(0, 24)
-						.map((m, n) => {
-							return `\u200e${(n + 1).toString().padStart(2, ' ')} ${m.points.toString().padStart(6, ' ')}  ${moment(
-								m.season
-							).format('MMM YY')}`;
-						})
-						.join('\n'),
-					`\`\`\`Total: ${total} (Avg: ${(total / player.seasons.length).toFixed(2)})`
-				].join('\n')
-			});
-		});
-
-		return interaction.editReply({ embeds: [embed] });
-	}
-
-	private get MAX() {
-		const now = new Date();
-		return now.getDate() >= 22 && ClanGames.isSpecial ? 5000 : 4000;
 	}
 
 	private getSeasonId(seasonId?: string) {

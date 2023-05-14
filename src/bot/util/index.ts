@@ -296,7 +296,6 @@ export class Util {
 	}
 
 	/**
-	 * Season IDs of last 6 months.
 	 * @returns {string[]} SeasonIds
 	 */
 	public static getSeasonIds(): string[] {
