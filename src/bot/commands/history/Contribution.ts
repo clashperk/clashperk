@@ -7,9 +7,9 @@ import { getExportComponents } from '../../util/Helper.js';
 import { handlePagination } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
 
-export default class CapitalRaidsHistoryCommand extends Command {
+export default class CapitalContributionHistoryCommand extends Command {
 	public constructor() {
-		super('capital-raids-history', {
+		super('capital-contribution-history', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
@@ -58,99 +58,117 @@ export default class CapitalRaidsHistoryCommand extends Command {
 
 	private async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
 		const result = await this.client.db
-			.collection(Collections.CAPITAL_RAID_SEASONS)
-			.aggregate<AggregatedResult>([
+			.collection(Collections.CAPITAL_CONTRIBUTIONS)
+			.aggregate<{ name: string; tag: string; weeks: { week: string; total: number }[] }>([
 				{
 					$match: {
-						'members.tag': {
+						tag: {
 							$in: [...playerTags]
 						},
-						'createdAt': {
+						createdAt: {
 							$gte: moment().startOf('month').subtract(3, 'month').toDate()
 						}
 					}
 				},
 				{
-					$unwind: {
-						path: '$members'
+					$set: {
+						week: {
+							$dateTrunc: {
+								date: '$createdAt',
+								unit: 'week',
+								startOfWeek: 'monday'
+							}
+						}
 					}
 				},
 				{
-					$match: {
-						'members.tag': {
-							$in: [...playerTags]
+					$addFields: {
+						total: {
+							$subtract: ['$current', '$initial']
+						}
+					}
+				},
+				{
+					$group: {
+						_id: {
+							week: '$week',
+							tag: '$tag'
+						},
+						week: {
+							$first: '$week'
+						},
+						name: {
+							$first: '$name'
+						},
+						tag: {
+							$first: '$tag'
+						},
+						total: {
+							$sum: '$total'
 						}
 					}
 				},
 				{
 					$sort: {
-						_id: -1
+						week: -1
 					}
 				},
 				{
 					$group: {
-						_id: '$members.tag',
+						_id: '$tag',
 						name: {
-							$first: '$members.name'
+							$first: '$name'
 						},
 						tag: {
-							$first: '$members.tag'
+							$first: '$tag'
 						},
-						raids: {
+						total: {
+							$sum: '$total'
+						},
+						weeks: {
 							$push: {
-								weekId: '$weekId',
-								clan: {
-									name: '$name',
-									tag: '$tag'
-								},
-								name: '$members.name',
-								tag: '$members.tag',
-								attacks: '$members.attacks',
-								attackLimit: '$members.attackLimit',
-								bonusAttackLimit: '$members.bonusAttackLimit',
-								capitalResourcesLooted: '$members.capitalResourcesLooted',
-								reward: {
-									$sum: [
-										{
-											$multiply: ['$offensiveReward', '$members.attacks']
-										},
-										'$defensiveReward'
-									]
-								}
+								week: '$week',
+								total: '$total'
 							}
 						}
+					}
+				},
+				{
+					$sort: {
+						total: -1
 					}
 				}
 			])
 			.toArray();
-		result.sort((a, b) => b.raids.length - a.raids.length);
+
+		result.sort((a, b) => b.weeks.length - a.weeks.length);
 
 		const embeds: EmbedBuilder[] = [];
 		for (const chunk of Util.chunk(result, 15)) {
 			const embed = new EmbedBuilder();
 			embed.setColor(this.client.embed(interaction));
-			embed.setTitle('Capital Raid History (last 3 months)');
+			embed.setTitle('Capital Contribution History (last 3 months)');
 
-			chunk.forEach((member) => {
+			chunk.forEach(({ name, tag, weeks }) => {
 				embed.addFields({
-					name: `${member.name} (${member.tag})`,
+					name: `${name} (${tag})`,
 					value: [
 						'```',
-						'\u200e # LOOTED HITS  WEEKEND',
-						member.raids
+						'\u200e #   LOOT   WEEKEND',
+						weeks
 							.slice(0, 14)
-							.map((raid, i) => {
-								const looted = this.padding(raid.capitalResourcesLooted);
-								const attacks = `${raid.attacks}/${raid.attackLimit + raid.bonusAttackLimit}`.padStart(4, ' ');
-								return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${moment(raid.weekId)
-									.format('D MMM')
-									.padStart(6, ' ')}`;
-							})
+							.map(
+								(week, i) =>
+									`\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(week.total)}  ${moment(week.week)
+										.format('D MMM')
+										.padStart(7, ' ')}`
+							)
 							.join('\n'),
 						'```'
 					].join('\n')
 				});
 			});
+
 			embeds.push(embed);
 		}
 
@@ -160,49 +178,30 @@ export default class CapitalRaidsHistoryCommand extends Command {
 	private async export(interaction: ButtonInteraction<'cached'>, result: AggregatedResult[]) {
 		const chunks = result
 			.map((r) => {
-				const raids = r.raids.reduce<Record<string, IRaid>>((prev, acc) => {
-					prev[acc.weekId] ??= acc; // eslint-disable-line
+				const records = r.weeks.reduce<Record<string, IWeek>>((prev, acc) => {
+					const weekId = moment(acc.week).format('YYYY-MM-DD');
+					prev[weekId] ??= acc; // eslint-disable-line
 					return prev;
 				}, {});
-				return { name: r.name, tag: r.tag, raids };
+				return { name: r.name, tag: r.tag, records };
 			})
 			.flat();
 
-		const weekendIds = Util.getWeekIds(14);
+		const weekendIds = Util.getWeekIds(14).map((id) => moment(id).add(3, 'day').format('YYYY-MM-DD'));
 		const sheets: CreateGoogleSheet[] = [
 			{
-				title: `Capital Raid History`,
+				title: `Capital Donations History`,
 				columns: [
 					{ name: 'NAME', align: 'LEFT', width: 160 },
 					{ name: 'TAG', align: 'LEFT', width: 160 },
 					...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
 				],
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.attacks ?? 0)])
-			},
-			{
-				title: `Capital Loot History`,
-				columns: [
-					{ name: 'NAME', align: 'LEFT', width: 160 },
-					{ name: 'TAG', align: 'LEFT', width: 160 },
-					...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
-				],
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.capitalResourcesLooted ?? 0)])
-			},
-			{
-				title: `Capital Medals History`,
-				columns: [
-					{ name: 'NAME', align: 'LEFT', width: 160 },
-					{ name: 'TAG', align: 'LEFT', width: 160 },
-					...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
-				],
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.reward ?? 0)])
+				rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.records[id]?.total ?? 0)])
 			}
 		];
 
-		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Capital Raid History]`, sheets);
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Capital Contribution History]`, sheets);
 		return interaction.editReply({ components: getExportComponents(spreadsheet) });
 	}
 
@@ -211,23 +210,13 @@ export default class CapitalRaidsHistoryCommand extends Command {
 	}
 }
 
-interface IRaid {
-	weekId: string;
-	clan: {
-		name: string;
-		tag: string;
-	};
-	name: string;
-	tag: string;
-	attacks: number;
-	attackLimit: number;
-	bonusAttackLimit: number;
-	capitalResourcesLooted: number;
-	reward: number;
+interface IWeek {
+	week: string;
+	total: number;
 }
 
 interface AggregatedResult {
 	name: string;
 	tag: string;
-	raids: IRaid[];
+	weeks: IWeek[];
 }

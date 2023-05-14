@@ -311,10 +311,10 @@ export class Util {
 			.map((now) => moment(now).format('YYYY-MM'));
 	}
 
-	public static getWeekIds() {
+	public static getWeekIds(limit = 6) {
 		const weekIds: { name: string; value: string }[] = [];
 		const friday = moment().endOf('month').day('Friday').startOf('day');
-		while (weekIds.length < 6) {
+		while (weekIds.length < limit) {
 			if (friday.toDate().getTime() < Date.now()) {
 				weekIds.push({ name: friday.format('DD MMM, YYYY'), value: friday.format('YYYY-MM-DD') });
 			}

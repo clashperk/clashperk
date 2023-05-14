@@ -112,37 +112,41 @@ export default class DonationsHistoryCommand extends Command {
 			])
 			.toArray();
 
-		const embed = new EmbedBuilder();
-		embed.setColor(this.client.embed(interaction));
-		embed.setTitle('Donation history (last 6 months)');
+		const embeds: EmbedBuilder[] = [];
+		for (const chunk of Util.chunk(result, 15)) {
+			const embed = new EmbedBuilder();
+			embed.setColor(this.client.embed(interaction));
+			embed.setTitle('Donation History (last 6 months)');
 
-		result.slice(0, 15).forEach(({ name, tag, seasons }) => {
-			embed.addFields({
-				name: `${name} (${tag})`,
-				value: [
-					'```',
-					`\u200e${'DON'.padStart(6, ' ')} ${'REC'.padStart(6, ' ')}    SEASON`,
-					seasons
-						.map((season) => {
-							const { donations, donationsReceived } = Object.values(season.clans).reduce(
-								(acc, cur) => {
-									acc.donations += cur.donations.total;
-									acc.donationsReceived += cur.donationsReceived.total;
-									return acc;
-								},
-								{ donations: 0, donationsReceived: 0 }
-							);
-							return `${Util.formatNumber(Math.max(donations, season.donations)).padStart(6, ' ')} ${Util.formatNumber(
-								donationsReceived
-							).padStart(6, ' ')}  ${moment(season.season).format('MMM YYYY')}`;
-						})
-						.join('\n'),
-					'```'
-				].join('\n')
+			chunk.forEach(({ name, tag, seasons }) => {
+				embed.addFields({
+					name: `${name} (${tag})`,
+					value: [
+						'```',
+						`\u200e${'DON'.padStart(6, ' ')} ${'REC'.padStart(6, ' ')}    SEASON`,
+						seasons
+							.map((season) => {
+								const { donations, donationsReceived } = Object.values(season.clans).reduce(
+									(acc, cur) => {
+										acc.donations += cur.donations.total;
+										acc.donationsReceived += cur.donationsReceived.total;
+										return acc;
+									},
+									{ donations: 0, donationsReceived: 0 }
+								);
+								return `${Util.formatNumber(Math.max(donations, season.donations)).padStart(6, ' ')} ${Util.formatNumber(
+									donationsReceived
+								).padStart(6, ' ')}  ${moment(season.season).format('MMM YYYY')}`;
+							})
+							.join('\n'),
+						'```'
+					].join('\n')
+				});
 			});
-		});
+			embeds.push(embed);
+		}
 
-		return { embeds: [embed], result };
+		return { embeds, result };
 	}
 
 	private async export(interaction: ButtonInteraction<'cached'>, result: AggregatedResult[]) {

@@ -14,6 +14,7 @@ export default class HistoryCommand extends Command {
 		const command = {
 			'cwl-attacks': this.handler.modules.get('cwl-attacks-history')!,
 			'capital-raids': this.handler.modules.get('capital-raids-history')!,
+			'capital-contribution': this.handler.modules.get('capital-contribution-history')!,
 			'clan-games': this.handler.modules.get('clan-games-history')!,
 			'join-leave': this.handler.modules.get('join-leave-history')!,
 			'donations': this.handler.modules.get('donations-history')!

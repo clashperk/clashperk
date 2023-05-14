@@ -64,6 +64,9 @@ export default class ClanGamesHistoryCommand extends Command {
 					$match: {
 						tag: {
 							$in: [...playerTags]
+						},
+						createdAt: {
+							$gte: moment().startOf('month').subtract(12, 'month').toDate()
 						}
 					}
 				},
@@ -115,34 +118,37 @@ export default class ClanGamesHistoryCommand extends Command {
 			])
 			.toArray();
 
-		const embed = new EmbedBuilder();
-		embed.setColor(this.client.embed(interaction));
-		embed.setTitle('Clan games history (last 6 months)');
-
 		result.sort((a, b) => b.seasons.length - a.seasons.length);
-		result.slice(0, 15).forEach((player) => {
-			const total = player.seasons.reduce((a, b) => a + b.points, 0);
-			embed.addFields({
-				name: `${EMOJIS.AUTHORIZE} ${player.name} (${player.tag})`,
-				value: [
-					`\`\`\`\n\u200e # POINTS  SEASON`,
-					player.seasons
-						.slice(0, 12)
-						.map((m, n) => {
-							return `\u200e${(n + 1).toString().padStart(2, ' ')} ${m.points.toString().padStart(6, ' ')}  ${moment(
-								m.season
-							).format('MMM YY')}`;
-						})
-						.join('\n'),
-					`\`\`\`Total: ${total} (Avg: ${(total / player.seasons.length).toFixed(2)})`
-				].join('\n')
-			});
-		});
 
-		return {
-			embeds: [embed],
-			result
-		};
+		const embeds: EmbedBuilder[] = [];
+		for (const chunk of Util.chunk(result, 15)) {
+			const embed = new EmbedBuilder();
+			embed.setColor(this.client.embed(interaction));
+			embed.setTitle('Clan Games History (last 12 months)');
+
+			chunk.forEach((player) => {
+				const total = player.seasons.reduce((a, b) => a + b.points, 0);
+				embed.addFields({
+					name: `${EMOJIS.AUTHORIZE} ${player.name} (${player.tag})`,
+					value: [
+						`\`\`\`\n\u200e # POINTS  SEASON`,
+						player.seasons
+							.slice(0, 12)
+							.map((m, n) => {
+								return `\u200e${(n + 1).toString().padStart(2, ' ')} ${m.points.toString().padStart(6, ' ')}  ${moment(
+									m.season
+								).format('MMM YY')}`;
+							})
+							.join('\n'),
+						`\`\`\`Total: ${total} (Avg: ${(total / player.seasons.length).toFixed(2)})`
+					].join('\n')
+				});
+			});
+
+			embeds.push(embed);
+		}
+
+		return { embeds, result };
 	}
 
 	private async export(interaction: CommandInteraction<'cached'>, result: AggregatedResult[]) {

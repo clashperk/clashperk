@@ -1079,6 +1079,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						value: 'capital-raids'
 					},
 					{
+						name: 'Capital Contribution',
+						value: 'capital-contribution'
+					},
+					{
 						name: 'CWL Attacks',
 						value: 'cwl-attacks'
 					},
@@ -2536,6 +2540,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					},
+					{
 						name: 'week',
 						required: false,
 						type: ApplicationCommandOptionType.String,
@@ -2549,6 +2560,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description: 'Shows a summary of capital contributions.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					},
 					{
 						name: 'season',
 						required: false,
