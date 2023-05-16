@@ -18,6 +18,9 @@ export default class JoinLeaveHistoryCommand extends Command {
 		if (args.user) {
 			const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
 			const { result } = await this.getHistory(interaction, playerTags);
+			if (!result.length) {
+				return interaction.editReply('No data available at this time.');
+			}
 			return this.export(interaction, result);
 		}
 
@@ -26,6 +29,9 @@ export default class JoinLeaveHistoryCommand extends Command {
 			if (!player) return null;
 			const playerTags = [player.tag];
 			const { result } = await this.getHistory(interaction, playerTags);
+			if (!result.length) {
+				return interaction.editReply('No data available at this time.');
+			}
 			return this.export(interaction, result);
 		}
 
@@ -48,6 +54,9 @@ export default class JoinLeaveHistoryCommand extends Command {
 			interaction,
 			clans.map((clan) => clan.tag)
 		);
+		if (!result.length) {
+			return interaction.editReply('No data available at this time.');
+		}
 		return this.export(interaction, result);
 	}
 

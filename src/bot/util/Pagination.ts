@@ -1,4 +1,12 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, ButtonInteraction } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	InteractionEditReplyOptions
+} from 'discord.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 
@@ -48,11 +56,13 @@ export const handlePagination = async (
 	if (typeof onExport === 'function') row.addComponents(exportButton);
 
 	let index = 0;
-	const msg = await interaction.editReply({ embeds: embeds.length ? [embeds[index]] : [], components: [row] });
+	const payload: InteractionEditReplyOptions = { embeds: embeds.length ? [embeds[index]] : [], components: [row] };
+	if (!embeds.length) payload.content = '\u200b';
+	const msg = await interaction.editReply(payload);
 
 	const collector = msg.createMessageComponentCollector({
-		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-		time: 10 * 60 * 1000
+		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
+		// time: 10 * 60 * 1000
 	});
 
 	collector.on('collect', async (action) => {
@@ -81,7 +91,7 @@ export const handlePagination = async (
 
 	collector.on('end', async (_, reason) => {
 		Object.values(customIds).forEach((id) => client.components.delete(id));
-		if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		if (!/delete/i.test(reason) && embeds.length) await interaction.editReply({ components: [] });
 	});
 
 	return row;

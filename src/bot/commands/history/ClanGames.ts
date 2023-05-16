@@ -1,11 +1,11 @@
-import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
+import { handlePagination } from '../../util/Pagination.js';
 
 export default class ClanGamesHistoryCommand extends Command {
 	public constructor() {
@@ -21,8 +21,10 @@ export default class ClanGamesHistoryCommand extends Command {
 		if (args.user) {
 			const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
 			const { embeds, result } = await this.getHistory(interaction, playerTags);
-			await interaction.editReply({ embeds });
-			return this.export(interaction, result);
+			if (!result.length) {
+				return interaction.editReply('No data available at this time.');
+			}
+			return handlePagination(interaction, embeds, (action) => this.export(action, result));
 		}
 
 		if (args.player_tag) {
@@ -30,8 +32,10 @@ export default class ClanGamesHistoryCommand extends Command {
 			if (!player) return null;
 			const playerTags = [player.tag];
 			const { embeds, result } = await this.getHistory(interaction, playerTags);
-			await interaction.editReply({ embeds });
-			return this.export(interaction, result);
+			if (!result.length) {
+				return interaction.editReply('No data available at this time.');
+			}
+			return handlePagination(interaction, embeds, (action) => this.export(action, result));
 		}
 
 		const tags = await this.client.resolver.resolveArgs(args.clans);
@@ -52,8 +56,10 @@ export default class ClanGamesHistoryCommand extends Command {
 		const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
 		const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
 		const { embeds, result } = await this.getHistory(interaction, playerTags);
-		await interaction.editReply({ embeds });
-		return this.export(interaction, result);
+		if (!result.length) {
+			return interaction.editReply('No data available at this time.');
+		}
+		return handlePagination(interaction, embeds, (action) => this.export(action, result));
 	}
 
 	private async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
@@ -129,7 +135,7 @@ export default class ClanGamesHistoryCommand extends Command {
 			chunk.forEach((player) => {
 				const total = player.seasons.reduce((a, b) => a + b.points, 0);
 				embed.addFields({
-					name: `${EMOJIS.AUTHORIZE} ${player.name} (${player.tag})`,
+					name: `${player.name} (${player.tag})`,
 					value: [
 						`\`\`\`\n\u200e # POINTS  SEASON`,
 						player.seasons
@@ -151,7 +157,7 @@ export default class ClanGamesHistoryCommand extends Command {
 		return { embeds, result };
 	}
 
-	private async export(interaction: CommandInteraction<'cached'>, result: AggregatedResult[]) {
+	private async export(interaction: ButtonInteraction<'cached'>, result: AggregatedResult[]) {
 		const chunks = result
 			.map((r) => {
 				const seasons = r.seasons.reduce<
