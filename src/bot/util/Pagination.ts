@@ -5,7 +5,9 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	EmbedBuilder,
-	InteractionEditReplyOptions
+	InteractionEditReplyOptions,
+	Message,
+	StringSelectMenuInteraction
 } from 'discord.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
@@ -91,8 +93,42 @@ export const handlePagination = async (
 
 	collector.on('end', async (_, reason) => {
 		Object.values(customIds).forEach((id) => client.components.delete(id));
-		if (!/delete/i.test(reason) && embeds.length) await interaction.editReply({ components: [] });
+		if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 	});
 
 	return row;
+};
+
+export const handleInteractionCollector = (param: {
+	customIds: Record<string, string>;
+	onClick?: (interaction: ButtonInteraction<'cached'>) => unknown;
+	onSelect?: (interaction: StringSelectMenuInteraction<'cached'>) => unknown;
+	interaction: CommandInteraction<'cached'>;
+	msg: Message<true>;
+}) => {
+	const client = container.resolve(Client);
+	const customIds = {
+		...param.customIds
+	};
+
+	const collector = param.msg.createMessageComponentCollector({
+		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === param.interaction.user.id
+	});
+
+	collector.on('collect', async (action) => {
+		if (action.isButton()) {
+			await param.onClick?.(action);
+		}
+
+		if (action.isStringSelectMenu()) {
+			await param.onSelect?.(action);
+		}
+	});
+
+	collector.on('end', async (_, reason) => {
+		Object.values(customIds).forEach((id) => client.components.delete(id));
+		if (!/delete/i.test(reason)) await param.interaction.editReply({ components: [] });
+	});
+
+	return collector;
 };

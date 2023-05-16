@@ -22,7 +22,7 @@ export default class CapitalContributionHistoryCommand extends Command {
 			const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
 			const { embeds, result } = await this.getHistory(interaction, playerTags);
 			if (!result.length) {
-				return interaction.editReply('No data available at this time.');
+				return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 			}
 
 			return handlePagination(interaction, embeds, (action) => this.export(action, result));
@@ -34,7 +34,7 @@ export default class CapitalContributionHistoryCommand extends Command {
 			const playerTags = [player.tag];
 			const { embeds, result } = await this.getHistory(interaction, playerTags);
 			if (!result.length) {
-				return interaction.editReply('No data available at this time.');
+				return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 			}
 
 			return handlePagination(interaction, embeds, (action) => this.export(action, result));
@@ -59,7 +59,7 @@ export default class CapitalContributionHistoryCommand extends Command {
 		const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
 		const { embeds, result } = await this.getHistory(interaction, playerTags);
 		if (!result.length) {
-			return interaction.editReply('No data available at this time.');
+			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		}
 
 		return handlePagination(interaction, embeds, (action) => this.export(action, result));
