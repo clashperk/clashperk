@@ -21,7 +21,9 @@ export default class CapitalRaidsHistoryCommand extends Command {
 		if (args.user) {
 			const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
 			const { embeds, result } = await this.getHistory(interaction, playerTags);
-
+			if (!result.length) {
+				return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+			}
 			return handlePagination(interaction, embeds, (action) => this.export(action, result));
 		}
 
@@ -30,7 +32,9 @@ export default class CapitalRaidsHistoryCommand extends Command {
 			if (!player) return null;
 			const playerTags = [player.tag];
 			const { embeds, result } = await this.getHistory(interaction, playerTags);
-
+			if (!result.length) {
+				return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+			}
 			return handlePagination(interaction, embeds, (action) => this.export(action, result));
 		}
 
@@ -52,7 +56,9 @@ export default class CapitalRaidsHistoryCommand extends Command {
 		const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
 		const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
 		const { embeds, result } = await this.getHistory(interaction, playerTags);
-
+		if (!result.length) {
+			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+		}
 		return handlePagination(interaction, embeds, (action) => this.export(action, result));
 	}
 

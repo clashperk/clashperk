@@ -1,4 +1,14 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, ButtonInteraction } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	InteractionEditReplyOptions,
+	Message,
+	StringSelectMenuInteraction
+} from 'discord.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 
@@ -48,11 +58,13 @@ export const handlePagination = async (
 	if (typeof onExport === 'function') row.addComponents(exportButton);
 
 	let index = 0;
-	const msg = await interaction.editReply({ embeds: embeds.length ? [embeds[index]] : [], components: [row] });
+	const payload: InteractionEditReplyOptions = { embeds: embeds.length ? [embeds[index]] : [], components: [row] };
+	if (!embeds.length) payload.content = '\u200b';
+	const msg = await interaction.editReply(payload);
 
 	const collector = msg.createMessageComponentCollector({
-		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-		time: 10 * 60 * 1000
+		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
+		// time: 10 * 60 * 1000
 	});
 
 	collector.on('collect', async (action) => {
@@ -85,4 +97,38 @@ export const handlePagination = async (
 	});
 
 	return row;
+};
+
+export const handleInteractionCollector = (param: {
+	customIds: Record<string, string>;
+	onClick?: (interaction: ButtonInteraction<'cached'>) => unknown;
+	onSelect?: (interaction: StringSelectMenuInteraction<'cached'>) => unknown;
+	interaction: CommandInteraction<'cached'>;
+	msg: Message<true>;
+}) => {
+	const client = container.resolve(Client);
+	const customIds = {
+		...param.customIds
+	};
+
+	const collector = param.msg.createMessageComponentCollector({
+		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === param.interaction.user.id
+	});
+
+	collector.on('collect', async (action) => {
+		if (action.isButton()) {
+			await param.onClick?.(action);
+		}
+
+		if (action.isStringSelectMenu()) {
+			await param.onSelect?.(action);
+		}
+	});
+
+	collector.on('end', async (_, reason) => {
+		Object.values(customIds).forEach((id) => client.components.delete(id));
+		if (!/delete/i.test(reason)) await param.interaction.editReply({ components: [] });
+	});
+
+	return collector;
 };
