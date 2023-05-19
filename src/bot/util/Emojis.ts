@@ -111,7 +111,8 @@ export const BUILDER_ELIXIR_TROOPS: Record<string, string> = {
 };
 
 export const BUILDER_HEROES: Record<string, string> = {
-	'Battle Machine': '<:WarMachine:696305434570522665>'
+	// 'Battle Machine': '<:WarMachine:696305434570522665>',
+	'Battle Machine': '<:BattleMachine:1108950875742933065>'
 };
 
 export const HEROES: Record<string, string> = {
