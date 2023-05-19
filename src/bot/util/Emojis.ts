@@ -104,8 +104,10 @@ export const BUILDER_ELIXIR_TROOPS: Record<string, string> = {
 	'Cannon Cart': '<:CannonCart:696283381654093854>',
 	'Night Witch': '<:NightWitch:696283537145462814>',
 	'Drop Ship': '<:DropShip:696283560373387305>',
-	'Super P.E.K.K.A': '<:SuperPEKKA:696283614891081769>',
-	'Hog Glider': '<:HogGlider:696289358780563489>'
+	'Power P.E.K.K.A': '<:SuperPEKKA:696283614891081769>',
+	'Hog Glider': '<:HogGlider:696289358780563489>',
+	'Electrofire Wizard': '<:EW:1108949636229636096>',
+	'Battle Copter': '<:BC:1108949723752185986>'
 };
 
 export const BUILDER_HEROES: Record<string, string> = {
