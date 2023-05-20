@@ -205,6 +205,7 @@ export default {
 				time: [7200, 18000, 43200, 86400, 129600, 216000, 259200, 604800, 1123200, 1209600],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [1, 1, 2, 2, 3, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11]
 		},
@@ -231,6 +232,7 @@ export default {
 				time: [10800, 21600, 43200, 86400, 129600, 216000, 302400, 604800, 1123200, 1209600],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 1, 2, 2, 3, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11]
 		},
@@ -257,6 +259,7 @@ export default {
 				time: [18000, 32400, 43200, 86400, 129600, 302400, 691200],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 1, 2, 2, 3, 3, 4, 5, 6, 7, 7, 8, 8, 8, 8]
 		},
@@ -283,6 +286,7 @@ export default {
 				time: [14400, 28800, 43200, 86400, 172800, 302400, 475200, 777600, 972000, 1382400],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11]
 		},
@@ -309,6 +313,7 @@ export default {
 				time: [21600, 43200, 64800, 86400, 183600, 302400, 604800, 950400, 1296000, 1382400],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 1, 2, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11]
 		},
@@ -335,6 +340,7 @@ export default {
 				time: [28800, 43200, 64800, 86400, 302400, 453600, 820800, 1036800, 1468800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 10, 10]
 		},
@@ -361,6 +367,7 @@ export default {
 				time: [28800, 43200, 64800, 86400, 172800, 302400, 453600, 756000, 950400, 1382400],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11]
 		},
@@ -387,6 +394,7 @@ export default {
 				time: [43200, 86400, 172800, 604800, 907200, 1382400],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 7, 7]
 		},
@@ -413,6 +421,7 @@ export default {
 				time: [64800, 129600, 259200, 453600, 475200, 864000, 1036800, 1468800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 9]
 		},
@@ -439,6 +448,7 @@ export default {
 				time: [43200, 86400, 172800, 302400, 410400, 518400, 864000, 972000],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 3, 4, 6, 7, 8, 9, 9, 9]
 		},
@@ -465,6 +475,7 @@ export default {
 				time: [28800, 57600, 86400, 172800, 302400, 432000, 842400, 993600, 1339200, 1425600],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 2, 4, 5, 6, 7, 8, 9, 10, 11]
 		},
@@ -491,6 +502,7 @@ export default {
 				time: [36000, 72000, 108000, 172800, 302400, 453600, 691200, 842400, 1036800, 1404000],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 2, 4, 5, 6, 7, 9, 10, 11, 11]
 		},
@@ -517,6 +529,7 @@ export default {
 				time: [86400, 172800, 259200, 367200, 453600, 669600, 1036800, 1404000],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 2, 4, 5, 6, 7, 8, 9, 9]
 		},
@@ -543,6 +556,7 @@ export default {
 				time: [108000, 216000, 324000, 367200, 432000, 475200, 626400, 842400, 1036800, 1382400, 1468800],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 2, 4, 5, 7, 9, 10, 11, 12]
 		},
@@ -569,6 +583,7 @@ export default {
 				time: [345600, 410400, 583200, 864000, 1512000],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 5, 5, 6]
 		},
@@ -595,6 +610,7 @@ export default {
 				time: [216000, 367200, 540000, 864000, 1036800],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 6, 6]
 		},
@@ -621,6 +637,7 @@ export default {
 				time: [302400, 432000, 734400, 950400, 1447200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 6]
 		},
@@ -647,6 +664,7 @@ export default {
 				time: [172800, 302400, 432000, 540000, 712800, 907200, 1360800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 5, 6, 7, 8, 8]
 		},
@@ -673,6 +691,7 @@ export default {
 				time: [187200, 302400, 345600, 604800, 777600, 1015200, 1382400, 1468800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 6, 7, 8, 9]
 		},
@@ -699,8 +718,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 8,
 			seasonal: false,
-			levels: [1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+			levels: [8, 8, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
 		},
 		{
 			id: 27,
@@ -725,8 +745,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 8,
 			seasonal: false,
-			levels: [0, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+			levels: [0, 8, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
 		},
 		{
 			id: 28,
@@ -751,8 +772,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 7,
 			seasonal: false,
-			levels: [0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+			levels: [0, 0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
 		},
 		{
 			id: 29,
@@ -777,8 +799,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 9,
 			seasonal: false,
-			levels: [0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+			levels: [0, 9, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
 		},
 		{
 			id: 30,
@@ -803,13 +826,14 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10]
 		},
 		{
 			id: 31,
 			name: 'Raged Barbarian',
-			housingSpace: 2,
+			housingSpace: 4,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -823,22 +847,26 @@ export default {
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [50, 50, 55, 55, 61, 61, 67, 67, 74, 74, 81, 81, 89, 89, 98, 98, 108, 108],
+			dps: [45, 45, 58, 58, 70, 70, 83, 83, 93, 93, 103, 103, 112, 112, 119, 119, 126, 126, 133, 133],
 			upgrade: {
 				cost: [
-					3500, 6000, 9000, 50000, 100000, 300000, 330000, 700000, 900000, 1000000, 1200000, 2000000, 2200000, 3000000, 3200000,
-					3800000, 4000000
+					3500, 7000, 10000, 90000, 180000, 300000, 330000, 700000, 900000, 1000000, 1200000, 2000000, 2200000, 3000000, 3200000,
+					3800000, 4000000, 4600000, 5200000
 				],
-				time: [300, 900, 10800, 21600, 43200, 43200, 86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 432000, 432000],
+				time: [
+					300, 900, 18000, 36000, 54000, 72000, 86400, 129600, 172800, 216000, 302400, 388800, 475200, 475200, 518400, 518400,
+					561600, 561600
+				],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
-			levels: [2, 4, 6, 8, 10, 12, 14, 16, 18]
+			levels: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
 		},
 		{
 			id: 32,
 			name: 'Sneaky Archer',
-			housingSpace: 2,
+			housingSpace: 3,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -852,24 +880,26 @@ export default {
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [36, 36, 40, 40, 44, 44, 48, 48, 53, 53, 58, 58, 64, 64, 70, 70, 77, 77],
+			dps: [60, 60, 66, 66, 72, 72, 79, 79, 86, 86, 95, 95, 104, 104, 112, 112, 119, 119, 125, 125],
 			upgrade: {
 				cost: [
-					5000, 8000, 12000, 60000, 120000, 320000, 350000, 800000, 1000000, 1100000, 1300000, 2100000, 2300000, 3100000, 3300000,
-					3900000, 4100000
+					5000, 8000, 12000, 100000, 200000, 320000, 350000, 800000, 1000000, 1100000, 1300000, 2100000, 2300000, 3100000,
+					3300000, 3900000, 4100000, 4700000, 5300000
 				],
 				time: [
-					180, 600, 1800, 14400, 21600, 43200, 43200, 86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 432000, 432000
+					180, 600, 1800, 21600, 39600, 57600, 75600, 86400, 129600, 172800, 216000, 302400, 388800, 475200, 475200, 518400,
+					518400, 561600, 561600
 				],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
-			levels: [0, 4, 6, 8, 10, 12, 14, 16, 18]
+			levels: [0, 4, 6, 8, 10, 12, 14, 16, 18, 20]
 		},
 		{
 			id: 33,
 			name: 'Beta Minion',
-			housingSpace: 2,
+			housingSpace: 3,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -883,25 +913,26 @@ export default {
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [36, 36, 40, 40, 44, 44, 48, 48, 53, 53, 58, 58, 64, 64, 70, 70, 77, 77],
+			dps: [60, 60, 65, 65, 72, 72, 81, 81, 90, 90, 99, 99, 108, 108, 117, 117, 126, 126],
 			upgrade: {
 				cost: [
-					50000, 80000, 120000, 250000, 280000, 320000, 360000, 900000, 1100000, 1300000, 1500000, 2300000, 2500000, 3300000,
-					3500000, 4000000, 4200000
+					50000, 110000, 220000, 330000, 360000, 900000, 1100000, 1300000, 1500000, 2300000, 2500000, 3300000, 3500000, 4000000,
+					4200000, 4800000, 5400000
 				],
 				time: [
-					3600, 10800, 18000, 28800, 43200, 43200, 43200, 86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 432000,
-					432000
+					14400, 28800, 43200, 64800, 86400, 129600, 172800, 172800, 216000, 302400, 388800, 475200, 475200, 518400, 518400,
+					561600, 561600
 				],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 3,
 			seasonal: false,
-			levels: [0, 0, 4, 8, 10, 12, 14, 16, 18]
+			levels: [0, 0, 6, 8, 10, 12, 14, 16, 18, 20]
 		},
 		{
 			id: 34,
 			name: 'Boxer Giant',
-			housingSpace: 8,
+			housingSpace: 18,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -915,25 +946,26 @@ export default {
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [36, 36, 40, 40, 44, 44, 48, 48, 53, 53, 58, 58, 64, 64, 70, 70, 77, 85],
+			dps: [65, 65, 70, 70, 76, 76, 83, 83, 91, 91, 100, 100, 109, 109, 119, 119, 129, 129],
 			upgrade: {
 				cost: [
-					20000, 40000, 60000, 300000, 320000, 340000, 380000, 1000000, 1200000, 1300000, 1500000, 2300000, 2500000, 3300000,
-					3500000, 4000000, 4200000
+					60000, 120000, 240000, 350000, 380000, 1000000, 1200000, 1300000, 1500000, 2300000, 2500000, 3300000, 3500000, 4000000,
+					4200000, 4800000, 5400000
 				],
 				time: [
-					1800, 3600, 7200, 28800, 43200, 43200, 43200, 86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 432000,
-					432000
+					18000, 36000, 57600, 72000, 86400, 129600, 172800, 172800, 216000, 302400, 388800, 475200, 475200, 518400, 518400,
+					561600, 561600
 				],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 3,
 			seasonal: false,
-			levels: [0, 0, 4, 8, 10, 12, 14, 16, 18]
+			levels: [0, 0, 6, 8, 10, 12, 14, 16, 18, 20]
 		},
 		{
 			id: 35,
 			name: 'Bomber',
-			housingSpace: 4,
+			housingSpace: 12,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -947,121 +979,104 @@ export default {
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [36, 36, 40, 40, 44, 44, 48, 48, 53, 53, 58, 58, 64, 64, 70, 70, 77, 77],
+			dps: [80, 80, 90, 90, 100, 100, 110, 110, 120, 120, 130, 130, 140, 140, 150, 150],
 			upgrade: {
 				cost: [
-					150000, 200000, 250000, 280000, 320000, 340000, 360000, 900000, 1000000, 1200000, 1400000, 2200000, 2400000, 3200000,
-					3400000, 3900000, 4100000
+					320000, 340000, 360000, 900000, 1000000, 1200000, 1400000, 2200000, 2400000, 3200000, 3400000, 3900000, 4100000,
+					4700000, 5300000
 				],
-				time: [
-					10800, 18000, 28800, 43200, 43200, 43200, 43200, 86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 432000,
-					432000
-				],
+				time: [57600, 72000, 86400, 129600, 172800, 172800, 216000, 302400, 388800, 475200, 475200, 518400, 518400, 561600, 561600],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 5,
 			seasonal: false,
-			levels: [0, 0, 0, 8, 10, 12, 14, 16, 18]
+			levels: [0, 0, 0, 8, 10, 12, 14, 16, 18, 20]
 		},
 		{
 			id: 36,
-			name: 'Super P.E.K.K.A',
-			housingSpace: 25,
+			name: 'Power P.E.K.K.A',
+			housingSpace: 22,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
 			unlock: {
 				hall: 8,
 				cost: 1500000,
-				time: 86400,
+				time: 259200,
 				resource: 'Builder Elixir',
 				building: 'Builder Barracks',
 				buildingLevel: 10
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [305, 305, 336, 336, 369, 369, 406, 406, 447, 447, 491, 491, 540, 540, 594, 594, 653, 718],
+			dps: [420, 420, 460, 460, 500, 500, 560, 560],
 			upgrade: {
-				cost: [
-					1600000, 1700000, 1800000, 1900000, 2000000, 2200000, 2400000, 2600000, 2800000, 3000000, 3200000, 3400000, 3600000,
-					3800000, 4000000, 4600000, 4800000
-				],
-				time: [
-					86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 345600, 345600, 345600, 345600, 345600, 345600, 345600,
-					432000, 432000
-				],
+				cost: [3600000, 3800000, 4000000, 4600000, 4800000, 5600000, 5800000],
+				time: [388800, 475200, 475200, 518400, 518400, 561600, 561600],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 13,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 0, 16, 18]
+			levels: [0, 0, 0, 0, 0, 0, 0, 16, 18, 20]
 		},
 		{
 			id: 37,
 			name: 'Cannon Cart',
-			housingSpace: 8,
+			housingSpace: 16,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
 			unlock: {
 				hall: 5,
 				cost: 300000,
-				time: 28800,
+				time: 32400,
 				resource: 'Builder Elixir',
 				building: 'Builder Barracks',
 				buildingLevel: 7
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [85, 85, 94, 94, 103, 120, 130, 130, 141, 141, 153, 153, 167, 184, 199, 216, 233, 251],
+			dps: [115, 115, 130, 130, 150, 150, 170, 170, 190, 190, 215, 215, 240, 240],
 			upgrade: {
-				cost: [
-					400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1100000, 1200000, 1400000, 1600000, 2400000, 2600000, 3400000,
-					3600000, 4100000, 4300000
-				],
-				time: [
-					43200, 43200, 86400, 86400, 86400, 86400, 86400, 86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 432000,
-					432000
-				],
+				cost: [1000000, 1100000, 1200000, 1400000, 1600000, 2400000, 2600000, 3400000, 3600000, 4100000, 4300000, 5300000, 5700000],
+				time: [86400, 129600, 172800, 172800, 216000, 302400, 388800, 475200, 475200, 518400, 518400, 561600, 561600],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 7,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 10, 12, 14, 16, 18]
+			levels: [0, 0, 0, 0, 10, 12, 14, 16, 18, 20]
 		},
 		{
 			id: 38,
 			name: 'Drop Ship',
-			housingSpace: 5,
+			housingSpace: 15,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
 			unlock: {
 				hall: 7,
 				cost: 1000000,
-				time: 43200,
+				time: 172800,
 				resource: 'Builder Elixir',
 				building: 'Builder Barracks',
 				buildingLevel: 9
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+			dps: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
 			upgrade: {
-				cost: [
-					1100000, 1200000, 1300000, 1400000, 1500000, 1600000, 1700000, 1800000, 2000000, 2200000, 2400000, 2600000, 2800000,
-					3600000, 3800000, 4300000, 4500000
-				],
-				time: [
-					43200, 43200, 86400, 86400, 172800, 172800, 259200, 259200, 259200, 259200, 259200, 259200, 259200, 345600, 345600,
-					432000, 432000
-				],
+				cost: [2400000, 2600000, 2800000, 3600000, 3800000, 4300000, 4500000, 5500000, 5700000],
+				time: [216000, 302400, 388800, 475200, 475200, 518400, 518400, 561600, 561600],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 11,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 14, 16, 18]
+			levels: [0, 0, 0, 0, 0, 0, 14, 16, 18, 20]
 		},
 		{
 			id: 41,
 			name: 'Baby Dragon',
-			housingSpace: 10,
+			housingSpace: 12,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -1075,52 +1090,45 @@ export default {
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [40, 40, 44, 44, 48, 48, 53, 53, 58, 58, 64, 64, 70, 70, 77, 77, 85, 85],
+			dps: [62, 62, 68, 68, 75, 75, 83, 83, 91, 91, 100, 100, 110, 110, 120, 120],
 			upgrade: {
 				cost: [
-					200000, 240000, 280000, 320000, 360000, 380000, 400000, 1000000, 1200000, 1400000, 1600000, 2400000, 2600000, 3400000,
-					3600000, 4100000, 4300000
+					360000, 380000, 400000, 1000000, 1200000, 1400000, 1600000, 2400000, 2600000, 3400000, 3600000, 4100000, 4300000,
+					5100000, 5500000
 				],
-				time: [
-					18000, 28800, 43200, 43200, 43200, 43200, 43200, 86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 432000,
-					432000
-				],
+				time: [57600, 72000, 86400, 129600, 172800, 172800, 216000, 302400, 388800, 475200, 475200, 518400, 518400, 561600, 561600],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 5,
 			seasonal: false,
-			levels: [0, 0, 0, 8, 10, 12, 14, 16, 18]
+			levels: [0, 0, 0, 8, 10, 12, 14, 16, 18, 20]
 		},
 		{
 			id: 42,
 			name: 'Night Witch',
-			housingSpace: 12,
+			housingSpace: 14,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
 			unlock: {
 				hall: 6,
 				cost: 500000,
-				time: 36000,
+				time: 86400,
 				resource: 'Builder Elixir',
 				building: 'Builder Barracks',
 				buildingLevel: 8
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [90, 90, 99, 99, 109, 109, 120, 120, 132, 132, 145, 145, 160, 160, 176, 176, 194, 213],
+			dps: [176, 176, 193, 193, 216, 216, 234, 234, 257, 257, 278, 278],
 			upgrade: {
-				cost: [
-					600000, 700000, 800000, 900000, 1000000, 1100000, 1200000, 1300000, 1400000, 1600000, 1800000, 2500000, 2700000,
-					3500000, 3700000, 4200000, 4400000
-				],
-				time: [
-					43200, 43200, 86400, 86400, 172800, 172800, 172800, 172800, 172800, 172800, 172800, 259200, 259200, 345600, 345600,
-					432000, 432000
-				],
+				cost: [1400000, 1600000, 1800000, 2500000, 2700000, 3500000, 3700000, 4200000, 4400000, 5200000, 5600000],
+				time: [172800, 172800, 216000, 302400, 388800, 475200, 475200, 518400, 518400, 561600, 561600],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 9,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 12, 14, 16, 18]
+			levels: [0, 0, 0, 0, 0, 12, 14, 16, 18, 20]
 		},
 		{
 			id: 45,
@@ -1145,6 +1153,7 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 		},
@@ -1171,6 +1180,7 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [0, 0, 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 7, 7, 7]
 		},
@@ -1197,6 +1207,7 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [1, 1, 2, 2, 3, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7]
 		},
@@ -1223,6 +1234,7 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [0, 1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11]
 		},
@@ -1249,6 +1261,7 @@ export default {
 				time: [475200, 604800, 1036800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 4, 4]
 		},
@@ -1275,6 +1288,7 @@ export default {
 				time: [475200, 604800, 1036800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 4, 4]
 		},
@@ -1301,6 +1315,7 @@ export default {
 				time: [648000, 1036800, 1468800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 4]
 		},
@@ -1327,8 +1342,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 7,
 			seasonal: false,
-			levels: [0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+			levels: [0, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
 		},
 		{
 			id: 56,
@@ -1353,8 +1369,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 7,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3]
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9]
 		},
 		{
 			id: 57,
@@ -1379,8 +1396,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 8,
 			seasonal: false,
-			levels: [0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+			levels: [0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
 		},
 		{
 			id: 58,
@@ -1405,6 +1423,7 @@ export default {
 				time: [244800, 432000, 626400, 820800, 1382400],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 5, 6, 6]
 		},
@@ -1431,6 +1450,7 @@ export default {
 				time: [475200, 842400, 1036800, 1468800, 1555200],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 6]
 		},
@@ -1457,6 +1477,7 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [0, 0, 0, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 9, 9]
 		},
@@ -1483,6 +1504,7 @@ export default {
 				time: [475200, 604800, 1036800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 4, 4]
 		},
@@ -1509,8 +1531,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 6,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3]
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8]
 		},
 		{
 			id: 64,
@@ -1535,8 +1558,9 @@ export default {
 				time: [],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 7,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3]
+			levels: [0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9]
 		},
 		{
 			id: 65,
@@ -1561,6 +1585,7 @@ export default {
 				time: [972000, 1382400],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3]
 		},
@@ -1587,8 +1612,9 @@ export default {
 				time: [518400],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 5,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2]
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6]
 		},
 		{
 			id: 67,
@@ -1613,40 +1639,36 @@ export default {
 				time: [734400],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 		},
 		{
 			id: 70,
 			name: 'Hog Glider',
-			housingSpace: 5,
+			housingSpace: 12,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
 			unlock: {
 				hall: 9,
 				cost: 2000000,
-				time: 129600,
+				time: 345600,
 				resource: 'Builder Elixir',
 				building: 'Builder Barracks',
 				buildingLevel: 11
 			},
 			trainingTime: '',
 			regenerationTimes: [],
-			dps: [700, 700, 700, 700, 700, 700, 700, 700, 700, 900, 900, 900, 900, 1100, 1100, 1100, 1100, 1100],
+			dps: [900, 1100, 1100, 1100, 1100, 1300],
 			upgrade: {
-				cost: [
-					1600000, 1700000, 1800000, 1900000, 2000000, 2200000, 2400000, 2600000, 2800000, 3000000, 3200000, 3400000, 3600000,
-					3800000, 4000000, 4200000, 4400000
-				],
-				time: [
-					86400, 86400, 172800, 172800, 259200, 259200, 345600, 345600, 345600, 345600, 345600, 345600, 345600, 345600, 345600,
-					432000, 432000
-				],
+				cost: [4000000, 4200000, 4400000, 5400000, 5800000],
+				time: [475200, 518400, 518400, 561600, 561600],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 15,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 0, 0, 18]
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 18, 20]
 		},
 		{
 			id: 72,
@@ -1671,6 +1693,7 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10]
 		},
@@ -1697,6 +1720,7 @@ export default {
 				time: [604800, 842400, 1036800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4]
 		},
@@ -1723,8 +1747,9 @@ export default {
 				time: [],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 5,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2]
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 6, 6, 6, 6]
 		},
 		{
 			id: 80,
@@ -1749,8 +1774,9 @@ export default {
 				time: [],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 4,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3]
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6]
 		},
 		{
 			id: 81,
@@ -1775,8 +1801,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 7,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+			levels: [0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9]
 		},
 		{
 			id: 82,
@@ -1801,6 +1828,7 @@ export default {
 				time: [842400, 1036800],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3, 3]
 		},
@@ -1827,8 +1855,9 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 9,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+			levels: [0, 0, 0, 0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
 		},
 		{
 			id: 84,
@@ -1853,8 +1882,9 @@ export default {
 				time: [],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 8,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+			levels: [0, 0, 0, 0, 0, 0, 11, 11, 11, 11, 11, 11, 11, 11, 11]
 		},
 		{
 			id: 87,
@@ -1879,6 +1909,7 @@ export default {
 				time: [648000, 907200, 1036800],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4]
 		},
@@ -1905,6 +1936,7 @@ export default {
 				time: [820800, 1166400, 1296000],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4]
 		},
@@ -1931,6 +1963,7 @@ export default {
 				time: [864000, 1209600, 1382400],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]
 		},
@@ -1957,6 +1990,7 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: true,
 			levels: [0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9]
 		},
@@ -1983,8 +2017,36 @@ export default {
 				time: [1512000, 1555200],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3]
+		},
+		{
+			id: 106,
+			name: 'Electrofire Wizard',
+			housingSpace: 14,
+			village: 'builderBase',
+			category: 'troop',
+			subCategory: 'troop',
+			unlock: {
+				hall: 10,
+				cost: 3000000,
+				time: 432000,
+				resource: 'Builder Elixir',
+				building: 'Builder Barracks',
+				buildingLevel: 12
+			},
+			trainingTime: '',
+			regenerationTimes: [],
+			dps: [220, 220, 253, 253],
+			upgrade: {
+				cost: [4400000, 5400000, 5800000],
+				time: [518400, 561600, 561600],
+				resource: 'Builder Elixir'
+			},
+			minLevel: 17,
+			seasonal: false,
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
 		},
 		{
 			id: 0,
@@ -2009,6 +2071,7 @@ export default {
 				time: [14400, 28800, 43200, 86400, 345600, 518400, 626400, 777600, 1382400],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 4, 4, 4, 5, 6, 7, 8, 9, 9, 9, 10]
 		},
@@ -2035,6 +2098,7 @@ export default {
 				time: [18000, 36000, 72000, 129600, 345600, 518400, 1036800, 1468800],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 3, 4, 5, 6, 7, 7, 7, 8, 8, 9]
 		},
@@ -2061,6 +2125,7 @@ export default {
 				time: [43200, 86400, 172800, 345600, 691200],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 4, 5, 5, 5, 5, 6, 6, 6, 6]
 		},
@@ -2087,6 +2152,7 @@ export default {
 				time: [345600, 518400, 972000, 1425600],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3, 3, 4, 4, 5]
 		},
@@ -2113,6 +2179,7 @@ export default {
 				time: [129600, 223200, 367200, 518400, 669600, 712800],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 2, 5, 6, 7, 7, 7, 7]
 		},
@@ -2139,6 +2206,7 @@ export default {
 				time: [],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: true,
 			levels: [0, 0, 0, 0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
 		},
@@ -2165,6 +2233,7 @@ export default {
 				time: [28800, 86400, 223200, 540000, 669600, 1015200, 1447200, 1512000],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 8, 9]
 		},
@@ -2191,6 +2260,7 @@ export default {
 				time: [64800, 129600, 367200, 669600],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 5, 5, 5, 5]
 		},
@@ -2217,6 +2287,7 @@ export default {
 				time: [129600, 223200, 432000, 669600],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 5, 5, 5, 5, 5]
 		},
@@ -2243,6 +2314,7 @@ export default {
 				time: [151200, 302400, 345600, 604800, 972000, 1360800],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 5, 6, 7, 7]
 		},
@@ -2269,6 +2341,7 @@ export default {
 				time: [115200, 223200, 367200, 518400, 626400, 972000, 1598400],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 4, 6, 7, 7, 7]
 		},
@@ -2321,6 +2394,7 @@ export default {
 				time: [151200, 302400, 453600, 540000, 1555200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 5, 5, 5, 6]
 		},
@@ -2347,6 +2421,7 @@ export default {
 				time: [475200, 691200, 1015200],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 4, 4]
 		},
@@ -2373,6 +2448,7 @@ export default {
 				time: [993600, 1339200, 1512000],
 				resource: 'Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4]
 		},
@@ -2424,6 +2500,7 @@ export default {
 				],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 5, 10, 30, 40, 50, 65, 75, 80, 85]
 		},
@@ -2475,6 +2552,7 @@ export default {
 				],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 30, 40, 50, 65, 75, 80, 85]
 		},
@@ -2521,6 +2599,7 @@ export default {
 				],
 				resource: 'Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 50, 55, 60]
 		},
@@ -2544,22 +2623,24 @@ export default {
 			regenerationTimes: [0],
 			dps: [
 				125, 127, 130, 132, 135, 137, 140, 142, 145, 147, 150, 154, 157, 160, 164, 167, 170, 174, 177, 180, 186, 192, 198, 204, 210,
-				218, 226, 234, 242, 250
+				218, 226, 234, 242, 250, 258, 266, 274, 282, 290
 			],
 			upgrade: {
 				cost: [
 					1000000, 1100000, 1200000, 1300000, 1500000, 1600000, 1700000, 1800000, 1900000, 2100000, 2200000, 2300000, 2400000,
 					2500000, 2600000, 2700000, 2800000, 2900000, 3000000, 3100000, 3200000, 3300000, 3400000, 3500000, 3600000, 3700000,
-					3800000, 3900000, 4000000, 4000000
+					3800000, 3900000, 4000000, 4100000, 4200000, 4300000, 4400000, 4500000
 				],
 				time: [
-					43200, 43200, 86400, 86400, 86400, 86400, 86400, 86400, 86400, 172800, 172800, 172800, 172800, 172800, 259200, 259200,
-					259200, 259200, 259200, 259200, 259200, 259200, 259200, 259200, 345600, 345600, 345600, 345600, 345600, 345600
+					43200, 43200, 86400, 86400, 129600, 129600, 172800, 172800, 216000, 216000, 259200, 259200, 302400, 302400, 345600,
+					345600, 345600, 345600, 345600, 432000, 432000, 432000, 432000, 432000, 518400, 518400, 518400, 518400, 518400, 604800,
+					604800, 604800, 604800, 604800
 				],
 				resource: 'Builder Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
-			levels: [0, 0, 0, 0, 5, 10, 20, 25, 30]
+			levels: [0, 0, 0, 0, 5, 10, 20, 25, 30, 35]
 		},
 		{
 			id: 4,
@@ -2599,8 +2680,43 @@ export default {
 				],
 				resource: 'Dark Elixir'
 			},
+			minLevel: 1,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 30, 35]
+		},
+		{
+			id: 5,
+			name: 'Battle Copter',
+			housingSpace: 25,
+			village: 'builderBase',
+			category: 'hero',
+			subCategory: 'hero',
+			unlock: {
+				hall: 8,
+				cost: 2500000,
+				time: 0,
+				resource: 'Builder Elixir',
+				building: 'Battle Copter',
+				buildingLevel: 1
+			},
+			resourceType: 'Builder Elixir',
+			trainingTime: 0,
+			regenerationTimes: [0],
+			dps: [112, 116, 119, 123, 126, 130, 134, 137, 141, 144, 148, 153, 157, 162, 166, 171, 175, 180, 184, 189, 193],
+			upgrade: {
+				cost: [
+					2600000, 2700000, 2800000, 2900000, 3000000, 3100000, 3200000, 3300000, 3400000, 3500000, 3600000, 3700000, 3800000,
+					3900000, 4000000, 4100000, 4200000, 4300000, 4400000, 4500000
+				],
+				time: [
+					432000, 432000, 432000, 432000, 432000, 432000, 432000, 432000, 432000, 432000, 518400, 518400, 518400, 518400, 518400,
+					604800, 604800, 604800, 604800, 604800
+				],
+				resource: 'Builder Elixir'
+			},
+			minLevel: 15,
+			seasonal: false,
+			levels: [0, 0, 0, 0, 0, 0, 0, 25, 30, 35]
 		},
 		{
 			id: 0,
@@ -2626,6 +2742,7 @@ export default {
 				time: [259200, 345600, 432000, 475200, 518400, 561600, 604800, 648000, 691200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10]
 		},
@@ -2653,6 +2770,7 @@ export default {
 				time: [259200, 345600, 432000, 475200, 518400, 561600, 604800, 648000, 691200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10]
 		},
@@ -2680,6 +2798,7 @@ export default {
 				time: [259200, 345600, 432000, 475200, 518400, 561600, 604800, 648000, 691200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10]
 		},
@@ -2707,6 +2826,7 @@ export default {
 				time: [259200, 345600, 432000, 475200, 518400, 561600, 604800, 648000, 691200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10]
 		},
@@ -2734,6 +2854,7 @@ export default {
 				time: [259200, 345600, 432000, 475200, 518400, 561600, 604800, 648000, 691200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
 		},
@@ -2761,6 +2882,7 @@ export default {
 				time: [259200, 345600, 432000, 475200, 518400, 561600, 604800, 648000, 691200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
 		},
@@ -2788,6 +2910,7 @@ export default {
 				time: [259200, 345600, 432000, 475200, 518400, 561600, 604800, 648000, 691200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
 		},
@@ -2815,6 +2938,7 @@ export default {
 				time: [259200, 345600, 432000, 475200, 518400, 561600, 604800, 648000, 691200],
 				resource: 'Dark Elixir'
 			},
+			minLevel: null,
 			seasonal: false,
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
 		}

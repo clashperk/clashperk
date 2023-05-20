@@ -423,6 +423,7 @@ export class Util {
 	}
 
 	public static ms(num: number, long = false) {
+		if (!num) return ' ';
 		const abs = Math.abs(num);
 		if (abs >= DURATION.DAY) return this._format(num, abs, DURATION.DAY, 'day', 'd', long);
 		if (abs >= DURATION.HOUR) return this._format(num, abs, DURATION.HOUR, 'hour', 'h', long);

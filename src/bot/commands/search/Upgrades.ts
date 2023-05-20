@@ -130,10 +130,12 @@ export default class UpgradesCommand extends Command {
 
 		for (const category of units.sort((a, b) => a.index - b.index)) {
 			const unitsArray = category.units.map((unit) => {
-				const { maxLevel, level } = apiTroops.find(
+				const { maxLevel, level: _level } = apiTroops.find(
 					(u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
 				) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 				const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
+
+				const level = _level === 0 ? 0 : Math.max(_level, unit.minLevel ?? _level);
 
 				return {
 					type: unit.category,
@@ -141,10 +143,10 @@ export default class UpgradesCommand extends Command {
 					name: unit.name,
 					level,
 					hallMaxLevel: unit.levels[hallLevel! - 1],
-					maxLevel,
+					maxLevel: Math.max(unit.levels[unit.levels.length - 1], maxLevel),
 					resource: unit.upgrade.resource,
-					upgradeCost: level ? unit.upgrade.cost[level - 1] : unit.unlock.cost,
-					upgradeTime: level ? unit.upgrade.time[level - 1] : unit.unlock.time
+					upgradeCost: level ? unit.upgrade.cost[level - (unit.minLevel ?? 1)] : unit.unlock.cost,
+					upgradeTime: level ? unit.upgrade.time[level - (unit.minLevel ?? 1)] : unit.unlock.time
 				};
 			});
 

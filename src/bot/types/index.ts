@@ -112,6 +112,7 @@ export interface TroopJSON {
 			time: number[];
 			resource: string;
 		};
+		minLevel?: number | null;
 		seasonal: boolean;
 		levels: number[];
 	}[];
