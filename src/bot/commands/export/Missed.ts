@@ -1,8 +1,6 @@
 import { CommandInteraction } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
-import Excel from '../../struct/Excel.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
@@ -108,250 +106,54 @@ export default class ExportMissed extends Command {
 
 		if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const workbook = new Excel();
-		const sheet = workbook.addWorksheet('Missed Attacks');
-		sheet.columns = [
-			{ header: 'Name', width: 16 },
-			{ header: 'Tag', width: 16 },
-			{ header: 'Clan', width: 16 },
-			{ header: 'Enemy Clan', width: 16 },
-			{ header: 'War ID', width: 16 },
-			{ header: 'Ended', width: 14 },
-			{ header: 'War Type', width: 10 },
-			{ header: 'Team Size', width: 10 },
-			{ header: 'Missed', width: 10 }
-		];
-
-		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.getRow(1).height = 40;
-
-		for (let i = 1; i <= sheet.columns.length; i++) {
-			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-		}
-
-		chunks.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-		sheet.addRows(chunks.map((m) => [m.name, m.tag, m.clan, m.opponent, m.warID, m.timestamp, m.warType, m.teamSize, m.missed]));
-
-		// extra pages
 		const twoMissed = Object.values(missed).filter((m) => m.count === 2);
-		if (twoMissed.length) {
-			const sheet = workbook.addWorksheet('2 Missed Attacks');
-			sheet.columns = [
-				{ header: 'Name', width: 16 },
-				{ header: 'Tag', width: 16 },
-				{ header: 'Miss #1', width: 16 },
-				{ header: 'Miss #2', width: 16 },
-				{ header: 'Miss #3', width: 16 },
-				{ header: 'Miss #4', width: 16 },
-				{ header: 'Miss #5', width: 16 }
-			];
-
-			sheet.getRow(1).font = { bold: true, size: 10 };
-			sheet.getRow(1).height = 40;
-
-			for (let i = 1; i <= sheet.columns.length; i++) {
-				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			}
-
-			sheet.addRows(twoMissed.map((m) => [m.name, m.tag, ...m.missed.slice(0, 5)]));
-		}
-
 		const oneMissed = Object.values(missed).filter((m) => m.count === 1);
-		if (oneMissed.length) {
-			const sheet = workbook.addWorksheet('1 Missed Attacks');
-			sheet.columns = [
-				{ header: 'Name', width: 16 },
-				{ header: 'Tag', width: 16 },
-				{ header: 'Miss #1', width: 16 },
-				{ header: 'Miss #2', width: 16 },
-				{ header: 'Miss #3', width: 16 },
-				{ header: 'Miss #4', width: 16 },
-				{ header: 'Miss #5', width: 16 }
-			];
 
-			sheet.getRow(1).font = { bold: true, size: 10 };
-			sheet.getRow(1).height = 40;
-
-			for (let i = 1; i <= sheet.columns.length; i++) {
-				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			}
-
-			sheet.addRows(oneMissed.map((m) => [m.name, m.tag, ...m.missed.slice(0, 5)]));
-		}
-
-		const buffer = await workbook.xlsx.writeBuffer();
-		await interaction.editReply({
-			content: `**Missed Attacks (Last ${num})**`,
-			files: [
-				{
-					attachment: Buffer.from(buffer),
-					name: 'clan_war_missed.xlsx'
-				}
-			]
-		});
-
-		const sheets = [
+		const sheets: CreateGoogleSheet[] = [
 			{
 				title: Util.escapeSheetName('Missed Attacks'),
-				columns: ['Name', 'Tag', 'Clan', 'Enemy Clan', 'War ID', 'Ended', 'War Type', 'Team Size', 'Missed'],
-				rows: chunks.map((m) => [
-					m.name,
-					m.tag,
-					m.clan,
-					m.opponent,
-					m.warID,
-					Util.dateToSerialDate(m.timestamp),
-					m.warType,
-					m.teamSize,
-					m.missed
-				])
+				columns: [
+					{ name: 'Name', width: 160, align: 'LEFT' },
+					{ name: 'Tag', width: 120, align: 'LEFT' },
+					{ name: 'Clan', width: 160, align: 'LEFT' },
+					{ name: 'Enemy Clan', width: 160, align: 'LEFT' },
+					{ name: 'War ID', width: 100, align: 'RIGHT' },
+					{ name: 'Ended', width: 160, align: 'LEFT' },
+					{ name: 'War Type', width: 100, align: 'LEFT' },
+					{ name: 'Team Size', width: 100, align: 'RIGHT' },
+					{ name: 'Missed', width: 100, align: 'RIGHT' }
+				],
+				rows: chunks.map((m) => [m.name, m.tag, m.clan, m.opponent, m.warID, m.timestamp, m.warType, m.teamSize, m.missed])
 			},
 			{
 				title: Util.escapeSheetName(`2 Missed Attacks`),
-				columns: ['Name', 'Tag', 'Miss #1', 'Miss #2', 'Miss #3', 'Miss #4', 'Miss #5'],
+				columns: [
+					{ name: 'Name', width: 160, align: 'LEFT' },
+					{ name: 'Tag', width: 120, align: 'LEFT' },
+					{ name: 'Miss #1', width: 160, align: 'LEFT' },
+					{ name: 'Miss #2', width: 160, align: 'LEFT' },
+					{ name: 'Miss #3', width: 160, align: 'LEFT' },
+					{ name: 'Miss #4', width: 160, align: 'LEFT' },
+					{ name: 'Miss #5', width: 160, align: 'LEFT' }
+				],
 				rows: twoMissed.map((m) => [m.name, m.tag, ...m.missed.map((m) => Util.dateToSerialDate(m)).slice(0, 5)])
 			},
 			{
 				title: Util.escapeSheetName('1 Missed Attacks'),
-				columns: ['Name', 'Tag', 'Miss #1', 'Miss #2', 'Miss #3', 'Miss #4', 'Miss #5'],
-				rows: oneMissed.map((m) => [m.name, m.tag, ...m.missed.map((m) => Util.dateToSerialDate(m)).slice(0, 5)])
+				columns: [
+					{ name: 'Name', width: 160, align: 'LEFT' },
+					{ name: 'Tag', width: 120, align: 'LEFT' },
+					{ name: 'Miss #1', width: 160, align: 'LEFT' },
+					{ name: 'Miss #2', width: 160, align: 'LEFT' },
+					{ name: 'Miss #3', width: 160, align: 'LEFT' },
+					{ name: 'Miss #4', width: 160, align: 'LEFT' },
+					{ name: 'Miss #5', width: 160, align: 'LEFT' }
+				],
+				rows: oneMissed.map((m) => [m.name, m.tag, ...m.missed.map((m) => m).slice(0, 5)])
 			}
 		];
 
-		const { spreadsheets } = Google.sheet();
-		const spreadsheet = await spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Missed Attacks]`
-				},
-				sheets: sheets.map((chunk, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: chunk.title,
-						gridProperties: {
-							rowCount: Math.max(chunk.rows.length + 1, 100),
-							columnCount: Math.max(chunk.columns.length, 50),
-							frozenRowCount: chunk.rows.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = sheets.map((chunk, sheetIndex) => ({
-			updateCells: {
-				start: {
-					sheetId: sheetIndex,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: chunk.columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...chunk.rows.map((values) => ({
-						values: values.map((value, rowIndex) => ({
-							userEnteredValue: typeof value === 'number' ? { numberValue: value } : { stringValue: value.toString() },
-							userEnteredFormat: {
-								numberFormat:
-									((rowIndex === 5 && sheetIndex === 0) || (rowIndex >= 2 && sheetIndex > 0)) && typeof value === 'number'
-										? { type: 'DATE' }
-										: {},
-								textFormat:
-									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
-							}
-						}))
-					}))
-				],
-				fields: '*'
-			}
-		}));
-
-		const styleRequests: sheets_v4.Schema$Request[] = sheets
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 4
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 4
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				},
-				{
-					updateDimensionProperties: {
-						range: {
-							sheetId: i,
-							dimension: 'COLUMNS',
-							startIndex: 0,
-							endIndex: 10
-						},
-						properties: {
-							pixelSize: 120
-						},
-						fields: 'pixelSize'
-					}
-				}
-			])
-			.flat();
-
-		await spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Missed Attacks]`, sheets);
+		return interaction.editReply({ content: `**Missed Attacks (Last ${num})**`, components: getExportComponents(spreadsheet) });
 	}
 }

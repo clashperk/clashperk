@@ -1428,27 +1428,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				name: 'list',
 				description: command.flag.list.description,
 				description_localizations: translation('command.flag.list.description'),
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'export',
-						description: command.flag.list.options.export.description,
-						description_localizations: translation('command.flag.list.options.export.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Yes',
-								name_localizations: translation('common.choices.yes'),
-								value: 'true'
-							},
-							{
-								name: 'No',
-								name_localizations: translation('common.choices.no'),
-								value: 'false'
-							}
-						]
-					}
-				]
+				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'search',

@@ -1,11 +1,9 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
-import moment from 'moment';
+import { CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import Excel from '../../struct/Excel.js';
 import { Collections } from '../../util/Constants.js';
-import { RED_NUMBERS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
+import { handlePagination } from '../../util/Pagination.js';
 
-// TODO: Fix TS
 export default class FlagListCommand extends Command {
 	public constructor() {
 		super('flag-list', {
@@ -27,16 +25,17 @@ export default class FlagListCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { export?: boolean }) {
-		const page = 1;
-		const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
-		const data = await this.client.db
+	public async exec(interaction: CommandInteraction<'cached'>) {
+		const result = await this.client.db
 			.collection(Collections.FLAGS)
-			.aggregate<{ name: string; tag: string; count: number }>([
+			.aggregate<{ name: string; tag: string; user: string; username: string; count: number; reason: string; createdAt: Date }>([
 				{
 					$match: {
 						guild: interaction.guild.id
 					}
+				},
+				{
+					$sort: { _id: -1 }
 				},
 				{
 					$group: {
@@ -52,72 +51,41 @@ export default class FlagListCommand extends Command {
 						},
 						count: {
 							$sum: 1
+						},
+						user: {
+							$last: '$user'
+						},
+						username: {
+							$last: '$username'
+						},
+						createdAt: {
+							$last: '$createdAt'
 						}
 					}
 				}
 			])
 			.toArray();
 
-		let buffer = null;
-		if (data.length) {
-			if (args.export) buffer = await this.excel(data);
-			const paginated = this.paginate(data, page);
-			let index = (paginated.page - 1) * 25;
-			embed
-				.setAuthor({ name: interaction.guild.name, iconURL: interaction.guild.iconURL()! })
-				.setTitle('Flags')
-				.setDescription(paginated.items.map((mem) => `${RED_NUMBERS[++index]} ${mem.name} (${mem.tag}) [${mem.count}]`).join('\n'))
-				.setFooter({ text: `Page ${paginated.page}/${paginated.maxPage}` });
-		} else {
-			embed.setDescription(this.i18n('command.flag.list.no_flags', { lng: interaction.locale }));
-		}
+		const embeds: EmbedBuilder[] = [];
 
-		return interaction.editReply({
-			embeds: [embed],
-			files:
-				buffer && args.export
-					? [{ attachment: Buffer.from(buffer), name: `${interaction.guild.name.toLowerCase()}_flag_list.xlsx` }]
-					: undefined
+		Util.chunk(result, 15).forEach((chunk) => {
+			const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+			embed.setTitle('Flags');
+			chunk.map((mem) =>
+				embed.addFields({
+					name: '\u200b',
+					value: [
+						`\u200e[${escapeMarkdown(mem.name)} (${mem.tag})](${this.client.http.getPlayerURL(mem.tag)})`,
+						`*Latest reason:* ${escapeMarkdown(mem.reason.substring(0, 256))}${mem.reason.length > 256 ? '...' : ''}`,
+						'',
+						`*Flagged by:* ${mem.username} ${time(mem.createdAt, 'R')}`
+					].join('\n')
+				})
+			);
+			embed.setFooter({ text: `Total ${result.length}` });
+			embeds.push(embed);
 		});
-	}
 
-	private excel(members: any[]) {
-		const workbook = new Excel();
-		const sheet = workbook.addWorksheet('Flag List');
-
-		sheet.columns = [
-			{ header: 'NAME', key: 'name', width: 16 },
-			{ header: 'TAG', key: 'tag', width: 16 },
-			{ header: 'AUTHOR', key: 'author', width: 20 },
-			{ header: 'DATE (UTC)', key: 'date', width: 30 },
-			{ header: 'REASON', key: 'reason', width: 50 }
-		];
-
-		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.addRows([
-			...members.map((m) => ({
-				name: m.name,
-				tag: m.tag,
-				author: m.username,
-				date: moment(new Date(m.createdAt)).format('DD MMMM YYYY kk:mm:ss'),
-				reason: m.reason
-			}))
-		]);
-
-		return workbook.xlsx.writeBuffer();
-	}
-
-	private paginate<T>(items: T[], page = 1, pageLength = 25) {
-		const maxPage = Math.ceil(items.length / pageLength);
-		if (page < 1) page = 1;
-		if (page > maxPage) page = maxPage;
-		const startIndex = (page - 1) * pageLength;
-
-		return {
-			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
-			page,
-			maxPage,
-			pageLength
-		};
+		return handlePagination(interaction, embeds);
 	}
 }

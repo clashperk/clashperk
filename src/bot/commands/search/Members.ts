@@ -119,7 +119,6 @@ export default class MembersCommand extends Command {
 			);
 		}
 
-		const trackingDate = new Date('2023-02-27').getTime();
 		if (args.option === 'warPref') {
 			const members = await this.getWarPref(data, fetched);
 			const optedIn = members.filter((m) => m.warPreference === 'in');
@@ -139,20 +138,20 @@ export default class MembersCommand extends Command {
 			embed.setDescription(
 				[
 					'**War Preferences and Last Opted In/Out**',
-					`**Opted in ~ ${optedIn.length}**`,
+					`**Opted in - ${optedIn.length}**`,
 					optedIn
 						.map((m) => {
 							const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
-							const inTime = m.inTime ? ms(Date.now() - m.inTime.getTime()) : `~${ms(Date.now() - trackingDate)}`;
+							const inTime = m.inTime ? ms(Date.now() - m.inTime.getTime()) : `---`;
 							return `**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${inTime.padStart(4, ' ')}  ${name}\u200f\``;
 						})
 						.join('\n'),
 					'',
-					`**Opted out ~ ${optedOut.length}**`,
+					`**Opted out - ${optedOut.length}**`,
 					optedOut
 						.map((m) => {
 							const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
-							const outTime = m.outTime ? ms(Date.now() - m.outTime.getTime()) : `~${ms(Date.now() - trackingDate)}`;
+							const outTime = m.outTime ? ms(Date.now() - m.outTime.getTime()) : `---`;
 							return `**✘** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${outTime.padStart(4, ' ')}  ${name}\u200f\``;
 						})
 						.join('\n')
@@ -266,7 +265,7 @@ export default class MembersCommand extends Command {
 				bool: {
 					filter: [
 						{ match: { op: 'WAR_PREF_CHANGE' } },
-						{ match: { clan_tag: clan.tag } },
+						// { match: { clan_tag: clan.tag } },
 						{ terms: { tag: players.map((p) => p.tag) } }
 					]
 				}
@@ -277,8 +276,7 @@ export default class MembersCommand extends Command {
 			aggs: {
 				players: {
 					terms: {
-						field: 'tag',
-						size: 50
+						field: 'tag'
 					},
 					aggs: {
 						in_stats: {

@@ -1,12 +1,9 @@
 import { CommandInteraction } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
-import Excel from '../../struct/Excel.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { Collections, UnrankedCapitalLeagueId } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
-import { Util } from '../../util/index.js';
 
 export default class ExportCapital extends Command {
 	public constructor() {
@@ -81,212 +78,35 @@ export default class ExportCapital extends Command {
 		}
 		if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const workbook = new Excel();
-		for (const { name, tag, weekends } of chunks) {
-			const sheet = workbook.addWorksheet(Util.escapeSheetName(`${name} (${tag})`));
-			sheet.columns = [
-				{ header: 'Weekend', width: 20 },
-				{ header: 'League', width: 20 },
-				{ header: 'Total Loot', width: 10 },
-				{ header: 'Avg. Loot', width: 10 },
-				{ header: 'Total Attacks', width: 10 },
-				{ header: 'Raids Completed', width: 10 },
-				{ header: 'Offensive Reward', width: 10 },
-				{ header: 'Defensive Reward', width: 10 },
-				{ header: 'Trophy Gained', width: 10 },
-				{ header: 'Remark', width: 10 }
-			];
+		const sheets: CreateGoogleSheet[] = chunks.map((chunk) => ({
+			columns: [
+				{ name: 'Weekend', width: 100, align: 'LEFT' },
+				{ name: 'League', width: 100, align: 'LEFT' },
+				{ name: 'Total Loot', width: 100, align: 'RIGHT' },
+				{ name: 'Avg. Loot', width: 100, align: 'RIGHT' },
+				{ name: 'Total Attacks', width: 100, align: 'RIGHT' },
+				{ name: 'Raids Completed', width: 100, align: 'RIGHT' },
+				{ name: 'Offensive Reward', width: 100, align: 'RIGHT' },
+				{ name: 'Defensive Reward', width: 100, align: 'RIGHT' },
+				{ name: 'Trophy Gained', width: 100, align: 'RIGHT' },
+				{ name: 'Remark', width: 100, align: 'LEFT' }
+			],
+			rows: chunk.weekends.map((weekend) => [
+				weekend.weekId,
+				weekend.leagueName,
+				weekend.capitalTotalLoot,
+				weekend.avgLoot,
+				weekend.totalAttacks,
+				weekend.raidsCompleted,
+				weekend.offensiveReward,
+				weekend.defensiveReward,
+				weekend.trophyGained,
+				weekend.status
+			]),
+			title: `${chunk.name} (${chunk.tag})`
+		}));
 
-			sheet.getRow(1).font = { bold: true, size: 10 };
-			sheet.getRow(1).height = 40;
-
-			for (let i = 1; i <= sheet.columns.length; i++) {
-				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			}
-
-			sheet.addRows(
-				weekends.map((weekend) => [
-					weekend.weekId,
-					weekend.leagueName.replace(/League/g, '').trim(),
-					weekend.capitalTotalLoot,
-					weekend.avgLoot,
-					weekend.totalAttacks,
-					weekend.raidsCompleted,
-					weekend.offensiveReward,
-					weekend.defensiveReward,
-					Number(weekend.trophyGained),
-					weekend.status
-				])
-			);
-		}
-
-		const buffer = await workbook.xlsx.writeBuffer();
-		await interaction.editReply({
-			content: `**Clan Capital Export**`,
-			files: [
-				{
-					attachment: Buffer.from(buffer),
-					name: 'clan_capital_stats.xlsx'
-				}
-			]
-		});
-
-		const columns = [
-			'Weekend',
-			'League',
-			'Total Loot',
-			'Avg. Loot',
-			'Total Attacks',
-			'Raids Completed',
-			'Offensive Reward',
-			'Defensive Reward',
-			'Trophy Gained',
-			'Remark'
-		];
-
-		const sheet = Google.sheet();
-		const spreadsheet = await sheet.spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Clan Capital Stats]`
-				},
-				sheets: chunks.map((chunk, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
-						gridProperties: {
-							rowCount: Math.max(chunk.weekends.length + 1, 50),
-							columnCount: Math.max(columns.length, 25),
-							frozenRowCount: chunk.weekends.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = chunks.map((clan, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...clan.weekends.map((weekend) => ({
-						values: [
-							weekend.weekId,
-							weekend.leagueName,
-							weekend.capitalTotalLoot,
-							weekend.avgLoot,
-							weekend.totalAttacks,
-							weekend.raidsCompleted,
-							weekend.offensiveReward,
-							weekend.defensiveReward,
-							weekend.trophyGained,
-							weekend.status
-						].map((value) => ({
-							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
-							userEnteredFormat: {
-								textFormat:
-									value === 'Demoted' || (typeof value === 'number' && value <= 0)
-										? { foregroundColorStyle: { rgbColor: { red: 1 } } }
-										: {}
-							}
-						}))
-					}))
-				],
-				fields: '*'
-			}
-		})) as sheets_v4.Schema$Request[];
-
-		const styleRequests: sheets_v4.Schema$Request[] = chunks
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				}
-				// {
-				// 	updateDimensionProperties: {
-				// 		range: {
-				// 			sheetId: 0,
-				// 			dimension: 'COLUMNS',
-				// 			startIndex: 0,
-				// 			endIndex: columns.length
-				// 		},
-				// 		properties: {
-				// 			pixelSize: 120
-				// 		},
-				// 		fields: 'pixelSize'
-				// 	}
-				// }
-			])
-			.flat();
-
-		await sheet.spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Clan Capital Stats]`, sheets);
+		return interaction.editReply({ content: `**Clan Capital Export**`, components: getExportComponents(spreadsheet) });
 	}
 }

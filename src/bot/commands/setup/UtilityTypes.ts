@@ -380,7 +380,7 @@ export default class SetupUtilsCommand extends Command {
 							durationOverrides: [...durationOverrides]
 						}
 					},
-					{ returnDocument: 'after', upsert: true }
+					{ returnDocument: 'after' }
 				);
 
 				if (!value) {

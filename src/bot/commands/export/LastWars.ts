@@ -1,12 +1,9 @@
 import { CommandInteraction } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import ms from 'ms';
 import { Command } from '../../lib/index.js';
-import Excel from '../../struct/Excel.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
-import { Util } from '../../util/index.js';
 
 export default class LastWarsExport extends Command {
 	public constructor() {
@@ -39,18 +36,7 @@ export default class LastWarsExport extends Command {
 		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
-		const columns = [
-			{ header: 'Name', width: 20 },
-			{ header: 'Tag', width: 16 },
-			{ header: 'Clan', width: 16 },
-			{ header: 'Total Wars', width: 10 },
-			{ header: 'Last War Date', width: 16 },
-			{ header: 'Duration', width: 16 }
-		];
-
-		const workbook = new Excel();
 		const query = args.season ? { season: args.season } : {};
-		const sheet = workbook.addWorksheet('Details');
 		const members = [] as { name: string; tag: string; total: number; clan: string; date: Date }[];
 		for (const clan of clans) {
 			const data = await this.client.db
@@ -126,22 +112,6 @@ export default class LastWarsExport extends Command {
 			members.push(...data);
 		}
 
-		sheet.columns = [
-			{ header: 'Name', width: 20 },
-			{ header: 'Tag', width: 16 },
-			{ header: 'Clan', width: 16 },
-			{ header: 'Total Wars', width: 10 },
-			{ header: 'Last War Date', width: 16 },
-			{ header: 'Duration', width: 16 }
-		];
-
-		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.getRow(1).height = 40;
-
-		for (let i = 1; i <= sheet.columns.length; i++) {
-			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-		}
-
 		const _missing = memberList
 			.filter((mem) => !members.find((m) => m.tag === mem.tag))
 			.map((m) => ({
@@ -160,8 +130,7 @@ export default class LastWarsExport extends Command {
 				total: m.total,
 				date: m.date,
 				duration: ms(Date.now() - m.date.getTime())
-			}))
-			.concat();
+			}));
 
 		const rows: {
 			name: string;
@@ -172,137 +141,24 @@ export default class LastWarsExport extends Command {
 			duration?: string;
 		}[] = [..._members, ..._missing];
 
-		const chunks = rows.map((m) => [m.name, m.tag, m.clan, m.total, m.date ? Util.dateToSerialDate(m.date) : '', m.duration ?? '']);
-		sheet.addRows(rows.map((m) => [m.name, m.tag, m.clan, m.total, m.date, m.duration]));
+		if (!rows.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const buffer = await workbook.xlsx.writeBuffer();
-		await interaction.editReply({
-			content: `**Last Played Wars (Last ${num})**`,
-			files: [
-				{
-					attachment: Buffer.from(buffer),
-					name: 'last_played_wars.xlsx'
-				}
-			]
-		});
-
-		const { spreadsheets } = Google.sheet();
-		const spreadsheet = await spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Last Played War Dates]`
-				},
-				sheets: [1].map((_, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: Util.escapeSheetName('Details'),
-						gridProperties: {
-							rowCount: Math.max(chunks.length + 1, 50),
-							columnCount: Math.max(columns.length, 25),
-							frozenRowCount: chunks.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value.header
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...chunks.map((values) => ({
-						values: values.map((value, rowIndex) => ({
-							userEnteredValue: typeof value === 'number' ? { numberValue: value } : { stringValue: value },
-							userEnteredFormat: {
-								numberFormat: rowIndex === 4 && typeof value === 'number' ? { type: 'DATE_TIME' } : {},
-								textFormat:
-									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
-							}
-						}))
-					}))
+		const sheets: CreateGoogleSheet[] = [
+			{
+				columns: [
+					{ name: 'Name', width: 160, align: 'LEFT' },
+					{ name: 'Tag', width: 120, align: 'LEFT' },
+					{ name: 'Clan', width: 160, align: 'LEFT' },
+					{ name: 'Total Wars', width: 100, align: 'RIGHT' },
+					{ name: 'Last War Date', width: 160, align: 'LEFT' },
+					{ name: 'Duration', width: 160, align: 'LEFT' }
 				],
-				fields: '*'
+				rows: rows.map((m) => [m.name, m.tag, m.clan, m.total, m.date, m.duration]),
+				title: `All Clans`
 			}
-		}));
+		];
 
-		const styleRequests: sheets_v4.Schema$Request[] = [1]
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				}
-			])
-			.flat();
-
-		await spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Last Played Wars]`, sheets);
+		return interaction.editReply({ content: `**Last Played Wars (Last ${num})**`, components: getExportComponents(spreadsheet) });
 	}
 }
