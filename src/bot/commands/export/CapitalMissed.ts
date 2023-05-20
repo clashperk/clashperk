@@ -1,12 +1,9 @@
 import { CommandInteraction } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
-import Excel from '../../struct/Excel.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
-import { Util } from '../../util/index.js';
 
 export default class ExportCapitalMissed extends Command {
 	public constructor() {
@@ -90,183 +87,33 @@ export default class ExportCapitalMissed extends Command {
 		}
 		if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const columns = [
-			{ header: 'Name', width: 20 },
-			{ header: 'Tag', width: 20 },
-			{ header: 'Total Loot', width: 10 },
-			{ header: 'Attack Limit', width: 10 },
-			{ header: 'Bonus Attack Limit', width: 10 },
-			{ header: 'Attacks Used', width: 10 },
-			{ header: 'Attacks Missed', width: 10 },
-			{ header: 'Participation', width: 10 },
-			{ header: 'Weekends', width: 10 }
-		];
-		const workbook = new Excel();
-		for (const { name, tag, members } of chunks) {
-			const sheet = workbook.addWorksheet(Util.escapeSheetName(`${name} (${tag})`));
-			sheet.columns = columns;
+		const sheets: CreateGoogleSheet[] = chunks.map((chunk) => ({
+			columns: [
+				{ name: 'Name', width: 160, align: 'LEFT' },
+				{ name: 'Tag', width: 120, align: 'LEFT' },
+				{ name: 'Total Loot', width: 100, align: 'RIGHT' },
+				{ name: 'Attack Limit', width: 100, align: 'RIGHT' },
+				{ name: 'Bonus Attack Limit', width: 100, align: 'RIGHT' },
+				{ name: 'Attacks Used', width: 100, align: 'RIGHT' },
+				{ name: 'Attacks Missed', width: 100, align: 'RIGHT' },
+				{ name: 'Participation', width: 100, align: 'RIGHT' },
+				{ name: 'Weekends', width: 100, align: 'RIGHT' }
+			],
+			rows: chunk.members.map((mem) => [
+				mem.name,
+				mem.tag,
+				mem.capitalResourcesLooted,
+				mem.attackLimit,
+				mem.bonusAttackLimit,
+				mem.attacks,
+				mem.attacksMissed,
+				mem.participation,
+				mem.weekends
+			]),
+			title: `${chunk.name} (${chunk.tag})`
+		}));
 
-			sheet.getRow(1).font = { bold: true, size: 10 };
-			sheet.getRow(1).height = 40;
-
-			for (let i = 1; i <= sheet.columns.length; i++) {
-				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			}
-
-			sheet.addRows(
-				members.map((mem) => [
-					mem.name,
-					mem.tag,
-					mem.capitalResourcesLooted,
-					mem.attackLimit,
-					mem.bonusAttackLimit,
-					mem.attacks,
-					mem.attacksMissed,
-					mem.participation,
-					mem.weekends
-				])
-			);
-		}
-
-		const buffer = await workbook.xlsx.writeBuffer();
-		await interaction.editReply({
-			content: `**Clan Capital Raids**`,
-			files: [
-				{
-					attachment: Buffer.from(buffer),
-					name: 'clan_capital_raids.xlsx'
-				}
-			]
-		});
-
-		const sheet = Google.sheet();
-		const spreadsheet = await sheet.spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Clan Capital Stats]`
-				},
-				sheets: chunks.map((chunk, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
-						gridProperties: {
-							rowCount: Math.max(chunk.members.length + 1, 50),
-							columnCount: Math.max(columns.length, 25),
-							frozenRowCount: chunk.members.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = chunks.map((clan, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value.header
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...clan.members.map((mem) => ({
-						values: [
-							mem.name,
-							mem.tag,
-							mem.capitalResourcesLooted,
-							mem.attackLimit,
-							mem.bonusAttackLimit,
-							mem.attacks,
-							mem.attacksMissed,
-							mem.participation,
-							mem.weekends
-						].map((value, i) => ({
-							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
-							userEnteredFormat: {
-								textFormat:
-									typeof value === 'number' && value > 0 && i === 6
-										? { foregroundColorStyle: { rgbColor: { red: 1 } } }
-										: {}
-							}
-						}))
-					}))
-				],
-				fields: '*'
-			}
-		})) as sheets_v4.Schema$Request[];
-
-		const styleRequests: sheets_v4.Schema$Request[] = chunks
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				}
-			])
-			.flat();
-
-		await sheet.spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Capital Raids]`, sheets);
+		return interaction.editReply({ content: `**Capital Raids Export**`, components: getExportComponents(spreadsheet) });
 	}
 }

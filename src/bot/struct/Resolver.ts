@@ -13,7 +13,7 @@ export default class Resolver {
 	}
 
 	public async resolvePlayer(interaction: BaseInteraction<'cached'>, args?: string): Promise<(Player & { user?: User }) | null> {
-		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
+		args = (args?.replace(/[\u200e|\u200f|\u200b|\u2002|\)|\()]+/g, '') ?? '').trim();
 		const parsed = await this.parseArgument(interaction, args);
 
 		if (parsed.isTag) return this.getPlayer(interaction, args);
@@ -59,7 +59,7 @@ export default class Resolver {
 	}
 
 	public async resolveClan(interaction: BaseInteraction<'cached'>, args?: string): Promise<Clan | null> {
-		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
+		args = (args?.replace(/[\u200e|\u200f|\u200b|\u2002|\)|\()]+/g, '') ?? '').trim();
 		const parsed = await this.parseArgument(interaction, args);
 
 		const clan = await this.clanAlias(interaction.guild.id, args.trim());

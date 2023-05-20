@@ -1,9 +1,7 @@
 import { Player } from 'clashofclans.js';
 import { Collection, CommandInteraction, GuildMember } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
-import Workbook from '../../struct/Excel.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { HERO_PETS, HOME_HEROES, SUPER_TROOPS } from '../../util/Emojis.js';
@@ -125,208 +123,46 @@ export default class ExportClanMembersCommand extends Command {
 			)
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-		const buffer = await this.excel(members);
-		await interaction.editReply({
-			content: `**${interaction.guild.name} Members**`,
-			files: [{ attachment: Buffer.from(buffer), name: 'clan_members.xlsx' }]
-		});
+		if (!members.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const columns = [
-			{ header: 'Clan Rank', width: 10 },
-			{ header: 'NAME', width: 16 },
-			{ header: 'TAG', width: 16 },
-			{ header: 'Discord', width: 16 },
-			{ header: 'CLAN', width: 16 },
-			{ header: 'ROLE', width: 10 },
-			{ header: 'Town-Hall', width: 10 },
-			{ header: 'War Preference', width: 10 },
-			{ header: 'Rushed %', width: 10 },
-			{ header: 'Lab Upgrades Done', width: 10 },
-			{ header: 'Hero Upgrades Done', width: 10 },
-			...HERO_LIST.map((header) => ({ header, width: 10 })),
-			...PET_LIST.map((header) => ({ header, width: 10 })),
-			...achievements.map((header) => ({ header, width: 16 }))
-		];
-
-		const { spreadsheets } = Google.sheet();
-		const spreadsheet = await spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Clan Members]`
-				},
-				sheets: [1].map((_, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: Util.escapeSheetName(`Members`),
-						gridProperties: {
-							rowCount: Math.max(members.length + 1, 50),
-							columnCount: Math.max(columns.length, 25),
-							frozenRowCount: members.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value.header
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...members.map((m) => ({
-						values: [
-							m.clanRank,
-							m.name,
-							m.tag,
-							m.username,
-							m.clan,
-							m.role,
-							m.townHallLevel,
-							m.warPreference,
-							m.rushed,
-							m.labRem,
-							m.heroRem,
-							...m.heroes.map((h: any) => h.level).concat(Array(HERO_LIST.length - m.heroes.length).fill('')),
-							...m.pets.map((h: any) => h.level).concat(Array(PET_LIST.length - m.pets.length).fill('')),
-							...m.achievements.map((v: any) => v.value)
-						].map((value) => ({
-							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
-							userEnteredFormat: {
-								textFormat:
-									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
-							}
-						}))
-					}))
+		const sheets: CreateGoogleSheet[] = [
+			{
+				columns: [
+					{ name: 'NAME', width: 160, align: 'LEFT' },
+					{ name: 'TAG', width: 120, align: 'LEFT' },
+					{ name: 'Discord', width: 160, align: 'LEFT' },
+					{ name: 'CLAN', width: 160, align: 'LEFT' },
+					{ name: 'ROLE', width: 100, align: 'LEFT' },
+					{ name: 'War Preference', width: 100, align: 'LEFT' },
+					{ name: 'Town-Hall', width: 100, align: 'RIGHT' },
+					{ name: 'Rushed %', width: 100, align: 'RIGHT' },
+					{ name: 'Lab Upgrades Done', width: 100, align: 'RIGHT' },
+					{ name: 'Hero Upgrades Done', width: 100, align: 'RIGHT' },
+					...HERO_LIST.map((name) => ({ name, width: 100, align: 'RIGHT' })),
+					...PET_LIST.map((name) => ({ name, width: 100, align: 'RIGHT' })),
+					...achievements.map((name) => ({ name, width: 100, align: 'RIGHT' }))
 				],
-				fields: '*'
+				rows: members.map((m) => [
+					m.name,
+					m.tag,
+					m.username,
+					m.clan,
+					m.role,
+					m.warPreference,
+					m.townHallLevel,
+					m.rushed,
+					m.labRem,
+					m.heroRem,
+					...m.heroes.map((h: any) => h.level).concat(Array(HERO_LIST.length - m.heroes.length).fill('')),
+					...m.pets.map((h: any) => h.level).concat(Array(PET_LIST.length - m.pets.length).fill('')),
+					...m.achievements.map((v: any) => v.value)
+				]),
+				title: 'All Members'
 			}
-		}));
-
-		const styleRequests: sheets_v4.Schema$Request[] = [1]
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				}
-			])
-			.flat();
-
-		await spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
-	}
-
-	private excel(members: any[]) {
-		const workbook = new Workbook();
-		const sheet = workbook.addWorksheet('Member List');
-		sheet.columns = [
-			{ header: 'Clan Rank', width: 10 },
-			{ header: 'NAME', width: 16 },
-			{ header: 'TAG', width: 16 },
-			{ header: 'Discord', width: 16 },
-			{ header: 'CLAN', width: 16 },
-			{ header: 'ROLE', width: 10 },
-			{ header: 'Town-Hall', width: 10 },
-			{ header: 'War Preference', width: 10 },
-			{ header: 'Rushed %', width: 10 },
-			{ header: 'Lab Upgrades Done', width: 10 },
-			{ header: 'Hero Upgrades Done', width: 10 },
-			...HERO_LIST.map((header) => ({ header, width: 10 })),
-			...PET_LIST.map((header) => ({ header, width: 10 })),
-			...achievements.map((header) => ({ header, width: 16 }))
 		];
 
-		sheet.getRow(1).font = { bold: true, size: 10 };
-		for (let i = 1; i <= sheet.columns.length; i++) {
-			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-		}
-
-		sheet.addRows(
-			members.map((m) => [
-				m.clanRank,
-				m.name,
-				m.tag,
-				m.username,
-				m.clan,
-				m.role,
-				m.townHallLevel,
-				m.warPreference,
-				m.rushed,
-				m.labRem,
-				m.heroRem,
-				...m.heroes.map((h: any) => h.level).concat(Array(HERO_LIST.length - m.heroes.length).fill('')),
-				...m.pets.map((h: any) => h.level).concat(Array(PET_LIST.length - m.pets.length).fill('')),
-				...m.achievements.map((v: any) => v.value)
-			])
-		);
-
-		return workbook.xlsx.writeBuffer();
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Clan Members]`, sheets);
+		return interaction.editReply({ content: `**Clan Members Export**`, components: getExportComponents(spreadsheet) });
 	}
 
 	private getAchievements(data: Player) {

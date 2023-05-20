@@ -10,14 +10,13 @@ import {
 	User,
 	escapeMarkdown
 } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import Workbook from '../../struct/Excel.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { CallerCollection } from '../../types/index.js';
 import { Collections, WarType } from '../../util/Constants.js';
 import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/Emojis.js';
+import { getExportComponents } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
 
 const stars: Record<string, string> = {
@@ -247,12 +246,6 @@ export default class WarCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === customIds.download && action.isButton()) {
 				await action.update({ components: [] });
-				const buffer = await this.warStats(body);
-				const msg = await action.followUp({
-					content: `**${body.clan.name} vs ${body.opponent.name}**`,
-					files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }]
-				});
-
 				await this.gSpread(action, body, msg.id);
 			}
 
@@ -303,256 +296,56 @@ export default class WarCommand extends Command {
 		return array;
 	}
 
-	private warStats(round: ClanWar) {
-		const data = this.flatHits(round);
-		const workbook = new Workbook();
-		const sheet = workbook.addWorksheet('Current War');
-
-		sheet.columns = [
-			{ header: 'NAME', width: 18 },
-			{ header: 'TAG', width: 13 },
-			{ header: 'STARS', width: 8 },
-			{ header: 'TRUE STARS', width: 8 },
-			{ header: 'DESTRUCTION', width: 12 },
-			{ header: 'DEFENDER', width: 18 },
-			{ header: 'DEFENDER TAG', width: 13 },
-			{ header: 'ATTACKER MAP', width: 10 },
-			{ header: 'ATTACKER TH', width: 10 },
-			{ header: 'DEFENDER MAP', width: 10 },
-			{ header: 'DEFENDER TH', width: 10 },
-			{ header: 'DEFENSE STAR', width: 10 },
-			{ header: 'DEFENSE DESTRUCTION', width: 12 }
-		];
-
-		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.getRow(1).height = 40;
-
-		for (let i = 1; i <= sheet.columns.length; i++) {
-			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-		}
-
-		sheet.addRows(
-			data.map((m) => [
-				m.name,
-				m.tag,
-				m.attack?.stars,
-				m.attack?.trueStars,
-				m.attack?.destructionPercentage?.toFixed(2),
-				m.defender?.name,
-				m.defender?.tag,
-				m.mapPosition,
-				m.townhallLevel,
-				m.defender?.mapPosition,
-				m.defender?.townhallLevel,
-				m.bestOpponentAttack?.stars,
-				m.bestOpponentAttack?.destructionPercentage?.toFixed(2)
-			])
-		);
-
-		return workbook.xlsx.writeBuffer();
-	}
-
 	private async gSpread(interaction: ButtonInteraction<'cached'>, round: ClanWar, messageId: string) {
 		const data = this.flatHits(round);
 
-		const columns = [
-			{ header: 'NAME', width: 18 },
-			{ header: 'TAG', width: 13 },
-			{ header: 'STARS', width: 8 },
-			{ header: 'TRUE STARS', width: 8 },
-			{ header: 'DESTRUCTION', width: 12 },
-			{ header: 'DEFENDER', width: 18 },
-			{ header: 'DEFENDER TAG', width: 13 },
-			{ header: 'ATTACKER MAP', width: 10 },
-			{ header: 'ATTACKER TH', width: 10 },
-			{ header: 'DEFENDER MAP', width: 10 },
-			{ header: 'DEFENDER TH', width: 10 },
-			{ header: 'DEFENSE STAR', width: 10 },
-			{ header: 'DEFENSE DESTRUCTION', width: 12 }
+		const sheets: CreateGoogleSheet[] = [
+			{
+				columns: [
+					{ name: 'NAME', width: 160, align: 'LEFT' },
+					{ name: 'TAG', width: 120, align: 'LEFT' },
+					{ name: 'STARS', width: 100, align: 'RIGHT' },
+					{ name: 'TRUE STARS', width: 100, align: 'RIGHT' },
+					{ name: 'DESTRUCTION', width: 100, align: 'RIGHT' },
+					{ name: 'DEFENDER', width: 160, align: 'LEFT' },
+					{ name: 'DEFENDER TAG', width: 120, align: 'LEFT' },
+					{ name: 'ATTACKER MAP', width: 100, align: 'RIGHT' },
+					{ name: 'ATTACKER TH', width: 100, align: 'RIGHT' },
+					{ name: 'DEFENDER MAP', width: 100, align: 'RIGHT' },
+					{ name: 'DEFENDER TH', width: 100, align: 'RIGHT' },
+					{ name: 'DEFENSE STAR', width: 100, align: 'RIGHT' },
+					{ name: 'DEFENSE DESTRUCTION', width: 100, align: 'RIGHT' }
+				],
+				rows: data.map((m) => [
+					m.name,
+					m.tag,
+					m.attack?.stars,
+					m.attack?.trueStars,
+					this.toFixed(m.attack?.destructionPercentage),
+					m.defender?.name,
+					m.defender?.tag,
+					m.mapPosition,
+					m.townhallLevel,
+					m.defender?.mapPosition,
+					m.defender?.townhallLevel,
+					m.bestOpponentAttack?.stars,
+					this.toFixed(m.bestOpponentAttack?.destructionPercentage)
+				]),
+				title: `${round.clan.name} vs ${round.opponent.name}`
+			}
 		];
 
-		const sheet = Google.sheet();
-		const drive = Google.drive();
-		const spreadsheet = await sheet.spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Clan War]`
-				},
-				sheets: [1].map((_, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: Util.escapeSheetName(`WAR`),
-						gridProperties: {
-							rowCount: Math.max(data.length + 1, 50),
-							columnCount: Math.max(columns.length, 25),
-							frozenRowCount: data.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Export]`, sheets);
+		return interaction.editReply({
+			message: messageId,
+			content: `**War (${round.clan.name} vs ${round.opponent.name})**`,
+			components: getExportComponents(spreadsheet)
 		});
+	}
 
-		await Promise.all([
-			drive.permissions.create({
-				requestBody: {
-					role: 'reader',
-					type: 'anyone'
-				},
-				fileId: spreadsheet.data.spreadsheetId!
-			}),
-			drive.revisions.update({
-				requestBody: {
-					published: true,
-					publishedOutsideDomain: true,
-					publishAuto: true
-				},
-				fileId: spreadsheet.data.spreadsheetId!,
-				revisionId: '1',
-				fields: '*'
-			})
-		]);
-
-		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value.header
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...data.map((m) => ({
-						values: [
-							m.name,
-							m.tag,
-							m.attack?.stars,
-							m.attack?.trueStars,
-							m.attack?.destructionPercentage?.toFixed(2),
-							m.defender?.name,
-							m.defender?.tag,
-							m.mapPosition,
-							m.townhallLevel,
-							m.defender?.mapPosition,
-							m.defender?.townhallLevel,
-							m.bestOpponentAttack?.stars,
-							m.bestOpponentAttack?.destructionPercentage?.toFixed(2)
-						].map((value) => ({
-							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
-							userEnteredFormat: {
-								textFormat:
-									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
-							}
-						}))
-					}))
-				],
-				fields: '*'
-			}
-		})) as sheets_v4.Schema$Request[];
-
-		const styleRequests: sheets_v4.Schema$Request[] = [1]
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				}
-				// {
-				// 	updateDimensionProperties: {
-				// 		range: {
-				// 			sheetId: 0,
-				// 			dimension: 'COLUMNS',
-				// 			startIndex: 0,
-				// 			endIndex: columns.length
-				// 		},
-				// 		properties: {
-				// 			pixelSize: 120
-				// 		},
-				// 		fields: 'pixelSize'
-				// 	}
-				// }
-			])
-			.flat();
-
-		await sheet.spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Open in Web')
-				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
-		);
-
-		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Download')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Link)
-				.setLabel('Download PDF')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
-		);
-		return interaction.editReply({ components: [row, downloadRow], message: messageId });
+	private toFixed(num: number) {
+		if (!num) return num;
+		return Number(num.toFixed(2));
 	}
 
 	private getLeaderBoard(clan: WarClan, opponent: WarClan, attacksPerMember: number) {

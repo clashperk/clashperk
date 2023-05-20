@@ -58,13 +58,16 @@ export const handlePagination = async (
 	if (typeof onExport === 'function') row.addComponents(exportButton);
 
 	let index = 0;
-	const payload: InteractionEditReplyOptions = { embeds: embeds.length ? [embeds[index]] : [], components: [row] };
+	const payload: InteractionEditReplyOptions = {
+		embeds: embeds.length ? [embeds[index]] : [],
+		components: row.components.length ? [row] : []
+	};
 	if (!embeds.length) payload.content = '\u200b';
 	const msg = await interaction.editReply(payload);
 
 	const collector = msg.createMessageComponentCollector({
-		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
-		// time: 10 * 60 * 1000
+		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+		time: 10 * 60 * 1000
 	});
 
 	collector.on('collect', async (action) => {

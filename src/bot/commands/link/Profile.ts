@@ -10,15 +10,13 @@ import {
 	GuildMember,
 	User
 } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
-import { Util } from '../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -201,153 +199,36 @@ export default class ProfileCommand extends Command {
 	}
 
 	private async export(interaction: ButtonInteraction<'cached'>, players: LinkData[], user: User) {
-		const columns = ['Name', 'Tag', 'Town Hall', 'Clan', 'Clan Tag', 'Clan Role', 'Verified', 'Internal'];
-
-		const { spreadsheets } = Google.sheet();
-		const spreadsheet = await spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Last Played War Dates]`
-				},
-				sheets: [1].map((_, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: Util.escapeSheetName('Accounts'),
-						gridProperties: {
-							rowCount: Math.max(players.length + 1, 50),
-							columnCount: Math.max(columns.length, 25),
-							frozenRowCount: players.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...players.map((player) => ({
-						values: [
-							player.name,
-							player.tag,
-							player.townHallLevel,
-							player.clan?.name,
-							player.clan?.tag,
-							roles[player.role!],
-							player.verified,
-							player.internal
-						].map((value, rowIndex) => ({
-							userEnteredValue: typeof value === 'number' ? { numberValue: value } : { stringValue: value },
-							userEnteredFormat: {
-								numberFormat: rowIndex === 4 && typeof value === 'number' ? { type: 'DATE_TIME' } : {},
-								textFormat:
-									value === 'No' || (typeof value === 'number' && value <= 0)
-										? { foregroundColorStyle: { rgbColor: { red: 1 } } }
-										: {}
-							}
-						}))
-					}))
+		const sheets: CreateGoogleSheet[] = [
+			{
+				columns: [
+					{ name: 'Name', width: 160, align: 'LEFT' },
+					{ name: 'Tag', width: 120, align: 'LEFT' },
+					{ name: 'Town Hall', width: 100, align: 'LEFT' },
+					{ name: 'Clan', width: 160, align: 'LEFT' },
+					{ name: 'Clan Tag', width: 100, align: 'LEFT' },
+					{ name: 'Clan Role', width: 100, align: 'LEFT' },
+					{ name: 'Verified', width: 100, align: 'LEFT' },
+					{ name: 'Internal', width: 100, align: 'LEFT' }
 				],
-				fields: '*'
+				rows: players.map((player) => [
+					player.name,
+					player.tag,
+					player.townHallLevel,
+					player.clan?.name,
+					player.clan?.tag,
+					roles[player.role!],
+					player.verified,
+					player.internal
+				]),
+				title: 'Accounts'
 			}
-		}));
+		];
 
-		const styleRequests: sheets_v4.Schema$Request[] = [1]
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				},
-				{
-					updateDimensionProperties: {
-						range: {
-							sheetId: i,
-							dimension: 'COLUMNS',
-							startIndex: 0,
-							endIndex: columns.length
-						},
-						properties: {
-							pixelSize: 120
-						},
-						fields: 'pixelSize'
-					}
-				}
-			])
-			.flat();
-
-		await spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Linked Accounts]`, sheets);
 		return interaction.editReply({
-			content: `**${user.username} (${user.id})**`,
-			components: getExportComponents(spreadsheet.data)
+			content: `**Linked Accounts [${user.username} (${user.id})]**`,
+			components: getExportComponents(spreadsheet)
 		});
 	}
 

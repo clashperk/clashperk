@@ -113,6 +113,14 @@ export default class Http extends ClashOfClansClient {
 		return Object.assign(parsed, { statusCode: res?.statusCode ?? 504, ok: res?.statusCode === 200, maxAge: Number(maxAge) * 1000 });
 	}
 
+	public getClanURL(clanTag: string) {
+		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clanTag)}`;
+	}
+
+	public getPlayerURL(playerTag: string) {
+		return `https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(playerTag)}`;
+	}
+
 	public fixTag(tag: string) {
 		return super.parseTag(tag);
 	}

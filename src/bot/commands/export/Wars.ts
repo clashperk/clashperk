@@ -1,12 +1,9 @@
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
-import { AttachmentBuilder, CommandInteraction } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
+import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import Excel from '../../struct/Excel.js';
-import Google from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
-import { Util } from '../../util/index.js';
 
 export enum WarType {
 	REGULAR = 1,
@@ -119,228 +116,52 @@ export default class WarExport extends Command {
 
 		if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const workbook = new Excel();
-		for (const { name, members, tag } of chunks) {
-			const sheet = workbook.addWorksheet(Util.escapeSheetName(`${name} (${tag})`));
-			sheet.columns = [
-				{ header: 'Name', width: 20 },
-				{ header: 'Tag', width: 16 },
-				{ header: 'Total Attacks', width: 10 },
-				{ header: 'Total Stars', width: 10 },
-				{ header: 'Avg. Stars', width: 10 },
-				{ header: 'True Stars', width: 10 },
-				{ header: 'Avg. True Stars', width: 10 },
-				{ header: 'Total Dest', width: 10 },
-				{ header: 'Avg Dest', width: 10 },
-				{ header: 'Three Stars', width: 10 },
-				{ header: 'Two Stars', width: 10 },
-				{ header: 'One Stars', width: 10 },
-				{ header: 'Zero Stars', width: 10 },
-				{ header: 'Missed', width: 10 },
-				{ header: 'Def Stars', width: 10 },
-				{ header: 'Avg Def Stars', width: 10 },
-				{ header: 'Total Def Dest', width: 10 },
-				{ header: 'Avg Def Dest', width: 10 }
-			];
-
-			sheet.getRow(1).font = { bold: true, size: 10 };
-			sheet.getRow(1).height = 40;
-
-			for (let i = 1; i <= sheet.columns.length; i++) {
-				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			}
-
-			sheet.addRows(
-				members
-					.filter((m) => m.of > 0)
-					.map((m) => [
-						m.name,
-						m.tag,
-						m.of,
-						m.stars,
-						(m.stars / m.of || 0).toFixed(2),
-						m.trueStars,
-						(m.trueStars / m.of || 0).toFixed(2),
-						m.dest.toFixed(2),
-						(m.dest / m.of || 0).toFixed(2),
-						this.starCount(m.starTypes, 3),
-						this.starCount(m.starTypes, 2),
-						this.starCount(m.starTypes, 1),
-						this.starCount(m.starTypes, 0),
-						m.of - m.attacks,
-						m.defStars,
-						(m.defStars / m.defCount || 0).toFixed(),
-						m.defDestruction.toFixed(2),
-						(m.defDestruction / m.defCount || 0).toFixed(2)
-					])
-			);
-		}
-
-		const buffer = await workbook.xlsx.writeBuffer();
-		await interaction.editReply({
-			content: `**War Export (Last ${num})**`,
-			files: [new AttachmentBuilder(Buffer.from(buffer), { name: 'clan_war_stats.xlsx' })]
-		});
-
-		const columns = [
-			'Name',
-			'Tag',
-			'Total Attacks',
-			'Total Stars',
-			'Avg. Stars',
-			'True Stars',
-			'Avg. True Stars',
-			'Total Dest',
-			'Avg. Dest',
-			'Three Stars',
-			'Two Stars',
-			'One Stars',
-			'Zero Stars',
-			'Missed',
-			'Def Stars',
-			'Avg. Def Stars',
-			'Total Def Dest',
-			'Avg. Def Dest'
-		];
-
-		const sheet = Google.sheet();
-		const spreadsheet = await sheet.spreadsheets.create({
-			requestBody: {
-				properties: {
-					title: `${interaction.guild.name} [Clan War Stats]`
-				},
-				sheets: chunks.map((chunk, i) => ({
-					properties: {
-						sheetId: i,
-						index: i,
-						title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
-						gridProperties: {
-							rowCount: Math.max(chunk.members.length + 1, 100),
-							columnCount: Math.max(columns.length, 50),
-							frozenRowCount: chunk.members.length ? 1 : 0
-						}
-					}
-				}))
-			},
-			fields: 'spreadsheetId,spreadsheetUrl'
-		});
-
-		await Google.publish(spreadsheet.data.spreadsheetId!);
-
-		const requests: sheets_v4.Schema$Request[] = chunks.map((chunk, i) => ({
-			updateCells: {
-				start: {
-					sheetId: i,
-					rowIndex: 0,
-					columnIndex: 0
-				},
-				rows: [
-					{
-						values: columns.map((value) => ({
-							userEnteredValue: {
-								stringValue: value
-							},
-							userEnteredFormat: {
-								wrapStrategy: 'WRAP'
-							}
-						}))
-					},
-					...chunk.members
-						.filter((m) => m.of > 0)
-						.map((m) => ({
-							values: [
-								m.name,
-								m.tag,
-								m.of,
-								m.stars,
-								Number((m.stars / m.of || 0).toFixed(2)),
-								m.trueStars,
-								Number((m.trueStars / m.of || 0).toFixed(2)),
-								Number(m.dest.toFixed(2)),
-								Number((m.dest / m.of || 0).toFixed(2)),
-								this.starCount(m.starTypes, 3),
-								this.starCount(m.starTypes, 2),
-								this.starCount(m.starTypes, 1),
-								this.starCount(m.starTypes, 0),
-								m.of - m.attacks,
-								m.defStars,
-								Number((m.defStars / m.defCount || 0).toFixed()),
-								Number(m.defDestruction.toFixed(2)),
-								Number((m.defDestruction / m.defCount || 0).toFixed(2))
-							].map((value) => ({
-								userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
-								userEnteredFormat: {
-									textFormat:
-										typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
-								}
-							}))
-						}))
-				],
-				fields: '*'
-			}
+		const sheets: CreateGoogleSheet[] = chunks.map((chunk) => ({
+			columns: [
+				{ name: 'Name', width: 160, align: 'LEFT' },
+				{ name: 'Tag', width: 120, align: 'LEFT' },
+				{ name: 'Total Attacks', width: 100, align: 'RIGHT' },
+				{ name: 'Total Stars', width: 100, align: 'RIGHT' },
+				{ name: 'Avg. Stars', width: 100, align: 'RIGHT' },
+				{ name: 'True Stars', width: 100, align: 'RIGHT' },
+				{ name: 'Avg. True Stars', width: 100, align: 'RIGHT' },
+				{ name: 'Total Dest', width: 100, align: 'RIGHT' },
+				{ name: 'Avg. Dest', width: 100, align: 'RIGHT' },
+				{ name: 'Three Stars', width: 100, align: 'RIGHT' },
+				{ name: 'Two Stars', width: 100, align: 'RIGHT' },
+				{ name: 'One Stars', width: 100, align: 'RIGHT' },
+				{ name: 'Zero Stars', width: 100, align: 'RIGHT' },
+				{ name: 'Missed', width: 100, align: 'RIGHT' },
+				{ name: 'Def Stars', width: 100, align: 'RIGHT' },
+				{ name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
+				{ name: 'Total Def Dest', width: 100, align: 'RIGHT' },
+				{ name: 'Avg. Def Dest', width: 100, align: 'RIGHT' }
+			],
+			rows: chunk.members.map((m) => [
+				m.name,
+				m.tag,
+				m.of,
+				m.stars,
+				Number((m.stars / m.of || 0).toFixed(2)),
+				m.trueStars,
+				Number((m.trueStars / m.of || 0).toFixed(2)),
+				Number(m.dest.toFixed(2)),
+				Number((m.dest / m.of || 0).toFixed(2)),
+				this.starCount(m.starTypes, 3),
+				this.starCount(m.starTypes, 2),
+				this.starCount(m.starTypes, 1),
+				this.starCount(m.starTypes, 0),
+				m.of - m.attacks,
+				m.defStars,
+				Number((m.defStars / m.defCount || 0).toFixed()),
+				Number(m.defDestruction.toFixed(2)),
+				Number((m.defDestruction / m.defCount || 0).toFixed(2))
+			]),
+			title: `${chunk.name} (${chunk.tag})`
 		}));
 
-		const styleRequests: sheets_v4.Schema$Request[] = chunks
-			.map((_, i) => [
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 0,
-							endColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'LEFT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							startColumnIndex: 2
-						},
-						cell: {
-							userEnteredFormat: {
-								horizontalAlignment: 'RIGHT'
-							}
-						},
-						fields: 'userEnteredFormat(horizontalAlignment)'
-					}
-				},
-				{
-					repeatCell: {
-						range: {
-							sheetId: i,
-							startRowIndex: 0,
-							endRowIndex: 1,
-							startColumnIndex: 0
-						},
-						cell: {
-							userEnteredFormat: {
-								textFormat: { bold: true },
-								verticalAlignment: 'MIDDLE'
-							}
-						},
-						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
-					}
-				}
-			])
-			.flat();
-
-		await sheet.spreadsheets.batchUpdate({
-			spreadsheetId: spreadsheet.data.spreadsheetId!,
-			requestBody: {
-				requests: [...requests, ...styleRequests]
-			}
-		});
-
-		return interaction.editReply({ components: getExportComponents(spreadsheet.data) });
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Stats]`, sheets);
+		return interaction.editReply({ content: `**War Export (Last ${num})**`, components: getExportComponents(spreadsheet) });
 	}
 
 	private starCount(stars: number[] = [], count: number) {
