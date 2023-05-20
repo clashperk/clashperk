@@ -380,9 +380,18 @@ export default class SetupUtilsCommand extends Command {
 							durationOverrides: [...durationOverrides]
 						}
 					},
-					{ returnDocument: 'after' }
+					{ returnDocument: 'after', upsert: true }
 				);
-				await this.client.guildEvents.create(interaction.guild, value!);
+
+				if (!value) {
+					await action.editReply({
+						content: 'Event schedular was deleted while you were configuring it.',
+						components: []
+					});
+					return;
+				}
+
+				await this.client.guildEvents.create(interaction.guild, value);
 
 				const content = getContent().split('\n');
 				await action.editReply({
