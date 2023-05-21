@@ -2,8 +2,8 @@ import { Clan, Player } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { LEGEND_LEAGUE_ID } from '../../util/Constants.js';
-import { Util } from '../../util/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 export default class LegendLeaderboardCommand extends Command {
 	public constructor() {
@@ -15,7 +15,7 @@ export default class LegendLeaderboardCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { clans?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { clans?: string; season?: string }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)

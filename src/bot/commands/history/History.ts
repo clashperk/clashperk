@@ -17,7 +17,9 @@ export default class HistoryCommand extends Command {
 			'capital-contribution': this.handler.modules.get('capital-contribution-history')!,
 			'clan-games': this.handler.modules.get('clan-games-history')!,
 			'join-leave': this.handler.modules.get('join-leave-history')!,
-			'donations': this.handler.modules.get('donations-history')!
+			'donations': this.handler.modules.get('donations-history')!,
+			'attacks': this.handler.modules.get('attacks-history')!,
+			'loot': this.handler.modules.get('loot-history')!
 		}[args.option];
 
 		if (!command) throw Error('Command not found.');

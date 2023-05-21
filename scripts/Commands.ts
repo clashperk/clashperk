@@ -1091,6 +1091,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						value: 'donations'
 					},
 					{
+						name: 'Attacks',
+						value: 'attacks'
+					},
+					{
+						name: 'Loot',
+						value: 'loot'
+					},
+					{
 						name: 'Join/Leave',
 						value: 'join-leave'
 					}
@@ -1115,6 +1123,46 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			}
 		]
 	},
+	// {
+	// 	name: 'graph',
+	// 	description: 'Graphs of clan statistics.',
+	// 	dm_permission: false,
+	// 	options: [
+	// 		{
+	// 			name: 'option',
+	// 			description: 'Select an option.',
+	// 			type: ApplicationCommandOptionType.String,
+	// 			choices: [
+	// 				{
+	// 					name: 'Join/Leave',
+	// 					value: 'join-leave'
+	// 				},
+	// 				{
+	// 					name: 'Donations',
+	// 					value: 'donations'
+	// 				}
+	// 			],
+	// 			required: true
+	// 		},
+	// 		{
+	// 			name: 'clans',
+	// 			autocomplete: true,
+	// 			description: 'View the war history of a clan.',
+	// 			type: ApplicationCommandOptionType.String
+	// 		},
+	// 		{
+	// 			name: 'player_tag',
+	// 			autocomplete: true,
+	// 			description: 'View the CWL history of a player.',
+	// 			type: ApplicationCommandOptionType.String
+	// 		},
+	// 		{
+	// 			name: 'user',
+	// 			description: 'View the war history of a player.',
+	// 			type: ApplicationCommandOptionType.User
+	// 		}
+	// 	]
+	// },
 	{
 		name: 'cwl',
 		description: command.cwl.description,
