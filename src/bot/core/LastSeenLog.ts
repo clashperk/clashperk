@@ -106,12 +106,7 @@ export default class LastSeenLog extends BaseLog {
 			});
 		}
 
-		this.initLoop();
-	}
-
-	private async initLoop() {
-		await this._refresh();
-		setInterval(this._refresh.bind(this), this.refreshRate).unref();
+		return this._refresh();
 	}
 
 	public async add(clanId: string) {
@@ -147,14 +142,18 @@ export default class LastSeenLog extends BaseLog {
 			])
 			.toArray();
 
-		for (const log of logs) {
-			if (!this.client.guilds.cache.has(log.guild)) continue;
-			if (this.queued.has(log._id.toHexString())) continue;
+		try {
+			for (const log of logs) {
+				if (!this.client.guilds.cache.has(log.guild)) continue;
+				if (this.queued.has(log._id.toHexString())) continue;
 
-			this.queued.add(log._id.toHexString());
-			await this.exec(log.tag, { channel: log.channel });
-			this.queued.delete(log._id.toHexString());
-			await Util.delay(3000);
+				this.queued.add(log._id.toHexString());
+				await this.exec(log.tag, { channel: log.channel });
+				this.queued.delete(log._id.toHexString());
+				await Util.delay(3000);
+			}
+		} finally {
+			setTimeout(this._refresh.bind(this), this.refreshRate).unref();
 		}
 	}
 }

@@ -136,7 +136,7 @@ export default class LootHistoryCommand extends Command {
 		for (const chunk of Util.chunk(result, 12)) {
 			const embed = new EmbedBuilder();
 			embed.setColor(this.client.embed(interaction));
-			embed.setTitle('Loot History (last 6 months)');
+			embed.setTitle('Loot History (last 12 months)');
 
 			chunk.forEach(({ name, tag, seasons }) => {
 				embed.addFields({

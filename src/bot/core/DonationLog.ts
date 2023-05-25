@@ -7,8 +7,6 @@ import { BLUE_NUMBERS, EMOJIS, PLAYER_LEAGUES, RED_NUMBERS } from '../util/Emoji
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 
-// const now = moment('2023-04-01').toDate();
-
 export default class DonationLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 	private readonly queued = new Set<string>();
@@ -283,13 +281,8 @@ export default class DonationLog extends BaseLog {
 		}
 
 		await this._refreshDaily();
-		setInterval(this._refreshDaily.bind(this), this.refreshRate).unref();
-
 		await this._refreshWeekly();
-		setInterval(this._refreshWeekly.bind(this), this.refreshRate).unref();
-
 		await this._refreshMonthly();
-		setInterval(this._refreshMonthly.bind(this), this.refreshRate).unref();
 	}
 
 	public async add(id: string) {
@@ -322,15 +315,19 @@ export default class DonationLog extends BaseLog {
 			.find({ dailyLastPosted: { $lt: timestamp }, interval })
 			.toArray();
 
-		for (const log of logs) {
-			if (!this.client.guilds.cache.has(log.guild)) continue;
-			const id = log._id.toHexString();
-			if (this.queued.has(id)) continue;
+		try {
+			for (const log of logs) {
+				if (!this.client.guilds.cache.has(log.guild)) continue;
+				const id = log._id.toHexString();
+				if (this.queued.has(id)) continue;
 
-			this.queued.add(id);
-			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
-			this.queued.delete(id);
-			await Util.delay(2000);
+				this.queued.add(id);
+				await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
+				this.queued.delete(id);
+				await Util.delay(2000);
+			}
+		} finally {
+			setTimeout(this._refreshDaily.bind(this), this.refreshRate).unref();
 		}
 	}
 
@@ -347,15 +344,19 @@ export default class DonationLog extends BaseLog {
 			.find({ weeklyLastPosted: { $lt: timestamp }, interval })
 			.toArray();
 
-		for (const log of logs) {
-			if (!this.client.guilds.cache.has(log.guild)) continue;
-			const id = log._id.toHexString();
-			if (this.queued.has(id)) continue;
+		try {
+			for (const log of logs) {
+				if (!this.client.guilds.cache.has(log.guild)) continue;
+				const id = log._id.toHexString();
+				if (this.queued.has(id)) continue;
 
-			this.queued.add(id);
-			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
-			this.queued.delete(id);
-			await Util.delay(2000);
+				this.queued.add(id);
+				await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
+				this.queued.delete(id);
+				await Util.delay(2000);
+			}
+		} finally {
+			setTimeout(this._refreshWeekly.bind(this), this.refreshRate).unref();
 		}
 	}
 
@@ -373,15 +374,19 @@ export default class DonationLog extends BaseLog {
 			.find({ monthlyLastPosted: { $lt: timestamp }, interval })
 			.toArray();
 
-		for (const log of logs) {
-			if (!this.client.guilds.cache.has(log.guild)) continue;
-			const id = log._id.toHexString();
-			if (this.queued.has(id)) continue;
+		try {
+			for (const log of logs) {
+				if (!this.client.guilds.cache.has(log.guild)) continue;
+				const id = log._id.toHexString();
+				if (this.queued.has(id)) continue;
 
-			this.queued.add(id);
-			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
-			this.queued.delete(id);
-			await Util.delay(2000);
+				this.queued.add(id);
+				await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
+				this.queued.delete(id);
+				await Util.delay(2000);
+			}
+		} finally {
+			setTimeout(this._refreshMonthly.bind(this), this.refreshRate).unref();
 		}
 	}
 }
