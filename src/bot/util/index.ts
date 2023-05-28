@@ -418,12 +418,12 @@ export class Util {
 	private static _format(ms: number, msAbs: number, dur: number, long: string, short: string, l = false) {
 		const plural = msAbs >= dur * 1.5;
 		let num: number | string = ms / dur;
-		num = Number.isInteger(num) ? num : num.toFixed(1);
+		num = Number(Number.isInteger(num) ? num : num.toFixed(1));
+		if (num >= 100) num = Math.round(num);
 		return `${num}${l ? ` ${long}${plural ? 's' : ''}` : short}`;
 	}
 
 	public static ms(num: number, long = false) {
-		if (!num) return ' ';
 		const abs = Math.abs(num);
 		if (abs >= DURATION.DAY) return this._format(num, abs, DURATION.DAY, 'day', 'd', long);
 		if (abs >= DURATION.HOUR) return this._format(num, abs, DURATION.HOUR, 'hour', 'h', long);

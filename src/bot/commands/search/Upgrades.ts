@@ -6,6 +6,16 @@ import { Args, Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 import { TroopJSON } from '../../types/index.js';
 
+export const EN_ESCAPE = '\u2002';
+
+export const resourceMap = {
+	'Elixir': EMOJIS.ELIXIR,
+	'Dark Elixir': EMOJIS.DARK_ELIXIR,
+	'Gold': EMOJIS.GOLD,
+	'Builder Elixir': EMOJIS.BUILDER_ELIXIR,
+	'Builder Gold': EMOJIS.BUILDER_GOLD
+};
+
 export default class UpgradesCommand extends Command {
 	public constructor() {
 		super('upgrades', {
@@ -73,7 +83,9 @@ export default class UpgradesCommand extends Command {
 	public embed(data: Player) {
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${data.name} (${data.tag})` })
-			.setDescription(`Remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? `& BH${data.builderHallLevel}` : ''}`);
+			.setDescription(
+				`Remaining upgrades at TH ${data.townHallLevel} ${data.builderHallLevel ? `& BH ${data.builderHallLevel}` : ''}`
+			);
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS))
@@ -130,19 +142,20 @@ export default class UpgradesCommand extends Command {
 
 		for (const category of units.sort((a, b) => a.index - b.index)) {
 			const unitsArray = category.units.map((unit) => {
-				const { maxLevel, level: _level } = apiTroops.find(
-					(u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
-				) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
-				const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
-
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				const maxLevel = apiTroop?.maxLevel ?? unit.levels[unit.levels.length - 1];
+				const _level = apiTroop?.level ?? 0;
+				const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel ?? 0;
 				const level = _level === 0 ? 0 : Math.max(_level, unit.minLevel ?? _level);
+				const isRushed = unit.levels[hallLevel - 2] > level;
 
 				return {
 					type: unit.category,
 					village: unit.village,
 					name: unit.name,
 					level,
-					hallMaxLevel: unit.levels[hallLevel! - 1],
+					isRushed,
+					hallMaxLevel: unit.levels[hallLevel - 1],
 					maxLevel: Math.max(unit.levels[unit.levels.length - 1], maxLevel),
 					resource: unit.upgrade.resource,
 					upgradeCost: level ? unit.upgrade.cost[level - (unit.minLevel ?? 1)] : unit.unlock.cost,
@@ -150,43 +163,36 @@ export default class UpgradesCommand extends Command {
 				};
 			});
 
+			const _totalTime = unitsArray.reduce((prev, curr) => prev + curr.upgradeTime, 0);
+			const _totalCost = unitsArray.reduce((prev, curr) => prev + curr.upgradeCost, 0);
+			const totalTime = this.dur(_totalTime).padStart(5, ' ');
+			const totalCost = this.format(_totalCost).padStart(6, ' ');
+
+			const descriptionTexts = [
+				`**${category.title}**`,
+				unitsArray
+					.map((unit) => {
+						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+						const level = this.padStart(unit.level);
+						const maxLevel = this.padEnd(unit.hallMaxLevel);
+						const upgradeTime = this.dur(unit.upgradeTime).padStart(5, ' ');
+						const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+						const rushed = unit.isRushed ? `\` R \`` : '`   `';
+						return `\u200e${unitIcon} \` ${level}/${maxLevel} \` \` ${upgradeTime} \` \` ${upgradeCost} \` ${rushed}`;
+					})
+					.join('\n'),
+				`\u200e${EMOJIS.CLOCK} \`   -   \` \` ${totalTime} \` \` ${totalCost} \` \`   \``
+			];
+
 			if (category.key === 'Barracks' && unitsArray.length) {
-				embed.setDescription(
-					[
-						embed.data.description,
-						'',
-						`**${category.title}**`,
-						unitsArray
-							.map((unit) => {
-								const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-								const level = this.padStart(unit.level);
-								const maxLevel = this.padEnd(unit.hallMaxLevel);
-								const upgradeTime = Util.ms(unit.upgradeTime * 1000).padStart(5, ' ');
-								const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
-								return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
-							})
-							.join('\n')
-					].join('\n')
-				);
+				embed.setDescription([embed.data.description, '', ...descriptionTexts].join('\n'));
 			}
 
 			if (unitsArray.length && category.key !== 'Barracks') {
 				embed.addFields([
 					{
 						name: '\u200b',
-						value: [
-							`**${category.title}**`,
-							unitsArray
-								.map((unit) => {
-									const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-									const level = this.padStart(unit.level);
-									const maxLevel = this.padEnd(unit.hallMaxLevel);
-									const upgradeTime = Util.ms(unit.upgradeTime * 1000).padStart(5, ' ');
-									const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
-									return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
-								})
-								.join('\n')
-						].join('\n')
+						value: [...descriptionTexts].join('\n')
 					}
 				]);
 			}
@@ -194,7 +200,7 @@ export default class UpgradesCommand extends Command {
 
 		if (!embed.data.fields?.length && embed.data.description?.length) {
 			embed.setDescription(
-				`No remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
+				`No remaining upgrades at TH ${data.townHallLevel} ${data.builderHallLevel ? ` and BH ${data.builderHallLevel}` : ''}`
 			);
 		}
 
@@ -250,5 +256,14 @@ export default class UpgradesCommand extends Command {
 			Math.abs(num) >= 1.0e3
 			? `${(Math.abs(num) / 1.0e3).toFixed(1)}K`
 			: Math.abs(num).toFixed(0);
+	}
+
+	private dur(sec: number) {
+		if (!sec) return '  -  ';
+		return Util.ms(sec * 1000);
+	}
+
+	private toGameString(num: number) {
+		return num.toLocaleString('en-US').replace(/,/g, ' ');
 	}
 }
