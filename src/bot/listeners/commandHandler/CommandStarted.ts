@@ -48,7 +48,6 @@ export default class CommandStartedListener extends Listener {
 
 		mixpanel.people.set(interaction.user.id, {
 			$first_name: interaction.user.username,
-			$avatar: interaction.user.displayAvatarURL({ extension: 'png', forceStatic: false, size: 512 }),
 			user_id: interaction.user.id,
 			locale: interaction.locale
 		});
