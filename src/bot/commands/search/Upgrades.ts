@@ -84,7 +84,12 @@ export default class UpgradesCommand extends Command {
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${data.name} (${data.tag})` })
 			.setDescription(
-				`Remaining upgrades at TH ${data.townHallLevel} ${data.builderHallLevel ? `& BH ${data.builderHallLevel}` : ''}`
+				[
+					`Remaining upgrades at TH ${data.townHallLevel} ${data.builderHallLevel ? `& BH ${data.builderHallLevel}` : ''}`,
+					'Total time & cost of the remaining units',
+					'for the current TH/BH level.',
+					'R = Rushed (Not maxed for the previous TH/BH)'
+				].join('\n')
 			);
 
 		const apiTroops = this.apiTroops(data);
@@ -97,7 +102,13 @@ export default class UpgradesCommand extends Command {
 			})
 			.reduce<TroopJSON>((prev, curr) => {
 				const unlockBuilding =
-					curr.category === 'hero' ? (curr.village === 'home' ? 'Town Hall' : 'Builder Hall') : curr.unlock.building;
+					curr.category === 'hero'
+						? curr.village === 'home'
+							? curr.name === 'Grand Warden'
+								? 'Elixir Hero'
+								: 'Dark Hero'
+							: 'Builder Hall'
+						: curr.unlock.building;
 				if (!(unlockBuilding in prev)) prev[unlockBuilding] = [];
 				prev[unlockBuilding].push(curr);
 				return prev;
@@ -121,7 +132,8 @@ export default class UpgradesCommand extends Command {
 			'Dark Barracks': `${EMOJIS.DARK_ELIXIR} Dark Troops`,
 			'Spell Factory': `${EMOJIS.ELIXIR} Elixir Spells`,
 			'Dark Spell Factory': `${EMOJIS.DARK_ELIXIR} Dark Spells`,
-			'Town Hall': `${EMOJIS.DARK_ELIXIR} Heroes`,
+			'Dark Hero': `${EMOJIS.DARK_ELIXIR} Heroes`,
+			'Elixir Hero': `${EMOJIS.ELIXIR} Heroes`,
 			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
 			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`,
 			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
@@ -148,6 +160,15 @@ export default class UpgradesCommand extends Command {
 				const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel ?? 0;
 				const level = _level === 0 ? 0 : Math.max(_level, unit.minLevel ?? _level);
 				const isRushed = unit.levels[hallLevel - 2] > level;
+				const hallMaxLevel = unit.levels[hallLevel - 1];
+
+				const remainingCost = level
+					? unit.upgrade.cost.slice(level - (unit.minLevel ?? 1), hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0)
+					: unit.unlock.cost + unit.upgrade.cost.slice(0, hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0);
+
+				const remainingTime = level
+					? unit.upgrade.time.slice(level - (unit.minLevel ?? 1), hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0)
+					: unit.unlock.time + unit.upgrade.time.slice(0, hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0);
 
 				return {
 					type: unit.category,
@@ -155,16 +176,18 @@ export default class UpgradesCommand extends Command {
 					name: unit.name,
 					level,
 					isRushed,
-					hallMaxLevel: unit.levels[hallLevel - 1],
+					hallMaxLevel,
 					maxLevel: Math.max(unit.levels[unit.levels.length - 1], maxLevel),
 					resource: unit.upgrade.resource,
 					upgradeCost: level ? unit.upgrade.cost[level - (unit.minLevel ?? 1)] : unit.unlock.cost,
-					upgradeTime: level ? unit.upgrade.time[level - (unit.minLevel ?? 1)] : unit.unlock.time
+					upgradeTime: level ? unit.upgrade.time[level - (unit.minLevel ?? 1)] : unit.unlock.time,
+					remainingCost,
+					remainingTime
 				};
 			});
 
-			const _totalTime = unitsArray.reduce((prev, curr) => prev + curr.upgradeTime, 0);
-			const _totalCost = unitsArray.reduce((prev, curr) => prev + curr.upgradeCost, 0);
+			const _totalTime = unitsArray.reduce((prev, curr) => prev + curr.remainingTime, 0);
+			const _totalCost = unitsArray.reduce((prev, curr) => prev + curr.remainingCost, 0);
 			const totalTime = this.dur(_totalTime).padStart(5, ' ');
 			const totalCost = this.format(_totalCost).padStart(6, ' ');
 
@@ -175,13 +198,13 @@ export default class UpgradesCommand extends Command {
 						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
 						const level = this.padStart(unit.level);
 						const maxLevel = this.padEnd(unit.hallMaxLevel);
-						const upgradeTime = this.dur(unit.upgradeTime).padStart(5, ' ');
-						const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+						const upgradeTime = this.dur(unit.remainingTime).padStart(5, ' ');
+						const upgradeCost = this.format(unit.remainingCost).padStart(6, ' ');
 						const rushed = unit.isRushed ? `\` R \`` : '`   `';
 						return `\u200e${unitIcon} \` ${level}/${maxLevel} \` \` ${upgradeTime} \` \` ${upgradeCost} \` ${rushed}`;
 					})
 					.join('\n'),
-				`\u200e${EMOJIS.CLOCK} \`   -   \` \` ${totalTime} \` \` ${totalCost} \` \`   \``
+				unitsArray.length > 1 ? `\u200e${EMOJIS.CLOCK} \`   -   \` \` ${totalTime} \` \` ${totalCost} \` \`   \`` : ''
 			];
 
 			if (category.key === 'Barracks' && unitsArray.length) {
@@ -205,7 +228,9 @@ export default class UpgradesCommand extends Command {
 		}
 
 		if (remaining > 0) {
-			embed.setFooter({ text: `Remaining ~${remaining}% (Home)` });
+			embed.setFooter({
+				text: [`Remaining ~${remaining}% (Home Village)`].join('\n')
+			});
 		}
 
 		return embed;
@@ -248,13 +273,13 @@ export default class UpgradesCommand extends Command {
 	private format(num = 0) {
 		// Nine Zeroes for Billions
 		return Math.abs(num) >= 1.0e9
-			? `${(Math.abs(num) / 1.0e9).toFixed(2)}B`
+			? `${(Math.abs(num) / 1.0e9).toFixed(Math.abs(num) / 1.0e9 >= 100 ? 1 : 2)}B`
 			: // Six Zeroes for Millions
 			Math.abs(num) >= 1.0e6
-			? `${(Math.abs(num) / 1.0e6).toFixed(2)}M`
+			? `${(Math.abs(num) / 1.0e6).toFixed(Math.abs(num) / 1.0e6 >= 100 ? 1 : 2)}M`
 			: // Three Zeroes for Thousands
 			Math.abs(num) >= 1.0e3
-			? `${(Math.abs(num) / 1.0e3).toFixed(1)}K`
+			? `${(Math.abs(num) / 1.0e3).toFixed(Math.abs(num) / 1.0e3 >= 100 ? 1 : 2)}K`
 			: Math.abs(num).toFixed(0);
 	}
 

@@ -165,6 +165,7 @@ export default class RushedCommand extends Command {
 		embed.setDescription(
 			[
 				`Rushed units for Town Hall ${data.townHallLevel}`,
+				'Rushed = Not maxed for the previous Town Hall level.',
 				'',
 				'**Percentage**',
 				`${this.rushedPercentage(data)}% (Lab)`,
