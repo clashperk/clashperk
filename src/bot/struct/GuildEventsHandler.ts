@@ -46,15 +46,14 @@ export class GuildEventsHandler {
 	public getEvents(lng: string, filtered = true) {
 		const now = moment().toDate();
 
-		const clanGamesStartTime = moment(Season.ID).startOf('month').add(21, 'days').add(8, 'hours').toDate();
-		const clanGamesEndTime = moment(Season.ID)
-			.startOf('month')
-			.add(21 + 6, 'days')
-			.add(8, 'hours')
-			.toDate();
+		const clanGamesStartTime =
+			moment(now).date() > 28 || (moment(now).date() >= 28 && moment(now).hour() >= 8)
+				? moment(Season.ID).startOf('month').add(1, 'month').add(21, 'days').add(8, 'hours').toDate()
+				: moment(Season.ID).startOf('month').add(21, 'days').add(8, 'hours').toDate();
+		const clanGamesEndTime = moment(clanGamesStartTime).add(6, 'days').toDate();
 
 		const CWLStartTime =
-			moment(now).date() >= 10 || (moment(now).date() >= 10 && moment(now).hour() >= 8)
+			moment(now).date() > 10 || (moment(now).date() >= 10 && moment(now).hour() >= 8)
 				? moment(now).startOf('month').add(1, 'month').add(8, 'hour').toDate()
 				: moment(now).startOf('month').add(8, 'hours').toDate();
 		const CWLSignupEndTime = moment(CWLStartTime).add(2, 'days').toDate();

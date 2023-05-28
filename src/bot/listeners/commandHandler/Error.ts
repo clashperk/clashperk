@@ -34,6 +34,7 @@ export default class ErrorListener extends Listener {
 			data: {
 				user: {
 					id: interaction.user.id,
+					tag: interaction.user.tag,
 					username: interaction.user.username
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
