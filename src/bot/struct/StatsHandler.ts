@@ -155,7 +155,12 @@ export default class StatsHandler {
 		return this.client.db.collection(Collections.BOT_USERS).updateOne(
 			{ user: interaction.user.id },
 			{
-				$set: { user: interaction.user.id, username: interaction.user.username, locale: interaction.locale },
+				$set: {
+					user: interaction.user.id,
+					username: interaction.user.username,
+					userTag: interaction.user.tag,
+					locale: interaction.locale
+				},
 				$inc: { usage: 1 },
 				$min: { createdAt: new Date() }
 			},

@@ -124,6 +124,9 @@ export default class InteractionListener extends Listener {
 		mixpanel.track('Autocomplete', {
 			distinct_id: interaction.user.id,
 			guild_id: interaction.guild.id,
+			user_id: interaction.user.id,
+			user_tag: interaction.user.tag,
+			user_name: interaction.user.username,
 			guild_name: interaction.guild.name,
 			command_id: interaction.commandName,
 			sub_command_id: interaction.options.getSubcommand(false),

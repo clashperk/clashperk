@@ -10,6 +10,7 @@ export default class LegendLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 	private readonly refreshRate: number;
 	private readonly queued = new Set<string>();
+	private timeout!: NodeJS.Timeout | null;
 
 	public constructor(client: Client) {
 		super(client, false);
@@ -158,13 +159,14 @@ export default class LegendLog extends BaseLog {
 	}
 
 	private async _refresh() {
-		const { startTime } = Util.getCurrentLegendTimestamp();
-		const logs = await this.client.db
-			.collection<LegendLogModel>(Collections.LEGEND_LOGS)
-			.find({ lastPosted: { $lt: new Date(startTime) } })
-			.toArray();
-
+		if (this.timeout) clearTimeout(this.timeout);
 		try {
+			const { startTime } = Util.getCurrentLegendTimestamp();
+			const logs = await this.client.db
+				.collection<LegendLogModel>(Collections.LEGEND_LOGS)
+				.find({ lastPosted: { $lt: new Date(startTime) } })
+				.toArray();
+
 			for (const log of logs) {
 				if (!this.client.guilds.cache.has(log.guild)) continue;
 				if (this.queued.has(log._id.toHexString())) continue;
@@ -175,7 +177,7 @@ export default class LegendLog extends BaseLog {
 				await Util.delay(3000);
 			}
 		} finally {
-			setTimeout(this._refresh.bind(this), this.refreshRate).unref();
+			this.timeout = setTimeout(this._refresh.bind(this), this.refreshRate).unref();
 		}
 	}
 }

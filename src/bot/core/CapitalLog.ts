@@ -12,6 +12,7 @@ export default class CapitalLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 	private readonly refreshRate: number;
 	private readonly queued = new Set<string>();
+	private timeout!: NodeJS.Timeout | null;
 
 	public constructor(client: Client) {
 		super(client, false);
@@ -306,12 +307,7 @@ export default class CapitalLog extends BaseLog {
 			});
 		}
 
-		this.initLoop();
-	}
-
-	private async initLoop() {
-		await this._refresh();
-		setInterval(this._refresh.bind(this), this.refreshRate).unref();
+		return this._refresh();
 	}
 
 	public async add(clanId: string) {
@@ -329,24 +325,29 @@ export default class CapitalLog extends BaseLog {
 	}
 
 	private async _refresh() {
-		const { endTime } = Util.getRaidWeekEndTimestamp();
+		if (this.timeout) clearTimeout(this.timeout);
+		try {
+			const { endTime } = Util.getRaidWeekEndTimestamp();
 
-		const timestamp = new Date(endTime.getTime() + 1000 * 60 * 90);
-		if (timestamp.getTime() > Date.now()) return;
+			const timestamp = new Date(endTime.getTime() + 1000 * 60 * 90);
+			if (timestamp.getTime() > Date.now()) return;
 
-		const logs = await this.client.db
-			.collection<CapitalLogModel>(Collections.CAPITAL_LOGS)
-			.find({ lastPosted: { $lt: timestamp } })
-			.toArray();
+			const logs = await this.client.db
+				.collection<CapitalLogModel>(Collections.CAPITAL_LOGS)
+				.find({ lastPosted: { $lt: timestamp } })
+				.toArray();
 
-		for (const log of logs) {
-			if (!this.client.guilds.cache.has(log.guild)) continue;
-			if (this.queued.has(log._id.toHexString())) continue;
+			for (const log of logs) {
+				if (!this.client.guilds.cache.has(log.guild)) continue;
+				if (this.queued.has(log._id.toHexString())) continue;
 
-			this.queued.add(log._id.toHexString());
-			await this.exec(log.tag, { channel: log.channel });
-			this.queued.delete(log._id.toHexString());
-			await Util.delay(3000);
+				this.queued.add(log._id.toHexString());
+				await this.exec(log.tag, { channel: log.channel });
+				this.queued.delete(log._id.toHexString());
+				await Util.delay(3000);
+			}
+		} finally {
+			this.timeout = setTimeout(this._refresh.bind(this), this.refreshRate).unref();
 		}
 	}
 }

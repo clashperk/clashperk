@@ -120,6 +120,7 @@ export default class AutoTownHallRoleCommand extends Command {
 					await collection.insertOne({
 						userId: user.id,
 						username: user.tag,
+						userTag: user.tag,
 						tag,
 						name: player.name,
 						verified: false,

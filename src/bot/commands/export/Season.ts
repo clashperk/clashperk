@@ -62,7 +62,7 @@ export default class ExportSeason extends Command {
 		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 		for (const mem of members) {
 			const user = memberTags.find((m) => m.tag === mem.tag)?.user;
-			mem.userTag = guildMembers.get(user!)?.user.username;
+			mem.userTag = guildMembers.get(user!)?.user.tag;
 		}
 		guildMembers.clear();
 

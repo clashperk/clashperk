@@ -13,6 +13,7 @@ export default class LastSeenLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 	private readonly queued = new Set<string>();
 	public refreshRate: number;
+	private timeout!: NodeJS.Timeout | null;
 
 	public constructor(client: Client) {
 		super(client);
@@ -125,24 +126,26 @@ export default class LastSeenLog extends BaseLog {
 	}
 
 	private async _refresh() {
-		const logs = await this.client.db
-			.collection(Collections.LAST_SEEN_LOGS)
-			.aggregate<LastSeenLogModel & { _id: ObjectId }>([
-				{ $match: { updatedAt: { $lte: new Date(Date.now() - 30 * 60 * 1e3) } } },
-				{
-					$lookup: {
-						from: Collections.CLAN_STORES,
-						localField: 'clanId',
-						foreignField: '_id',
-						as: '_store',
-						pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
-					}
-				},
-				{ $unwind: { path: '$_store' } }
-			])
-			.toArray();
+		if (this.timeout) clearTimeout(this.timeout);
 
 		try {
+			const logs = await this.client.db
+				.collection(Collections.LAST_SEEN_LOGS)
+				.aggregate<LastSeenLogModel & { _id: ObjectId }>([
+					{ $match: { updatedAt: { $lte: new Date(Date.now() - 30 * 60 * 1e3) } } },
+					{
+						$lookup: {
+							from: Collections.CLAN_STORES,
+							localField: 'clanId',
+							foreignField: '_id',
+							as: '_store',
+							pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
+						}
+					},
+					{ $unwind: { path: '$_store' } }
+				])
+				.toArray();
+
 			for (const log of logs) {
 				if (!this.client.guilds.cache.has(log.guild)) continue;
 				if (this.queued.has(log._id.toHexString())) continue;
@@ -153,7 +156,7 @@ export default class LastSeenLog extends BaseLog {
 				await Util.delay(3000);
 			}
 		} finally {
-			setTimeout(this._refresh.bind(this), this.refreshRate).unref();
+			this.timeout = setTimeout(this._refresh.bind(this), this.refreshRate).unref();
 		}
 	}
 }

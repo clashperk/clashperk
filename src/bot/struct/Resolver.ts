@@ -165,10 +165,10 @@ export default class Resolver {
 		if (!member) return null;
 		await this.client.db
 			.collection(Collections.USERS)
-			.updateOne({ userId: member.user.id }, { $set: { username: member.user.username } });
+			.updateOne({ userId: member.user.id }, { $set: { username: member.user.username, userTag: member.user.tag } });
 		await this.client.db
 			.collection(Collections.PLAYER_LINKS)
-			.updateMany({ userId: member.user.id }, { $set: { username: member.user.username } });
+			.updateMany({ userId: member.user.id }, { $set: { username: member.user.username, userTag: member.user.tag } });
 	}
 
 	public async getLinkedPlayerTags(userId: string) {

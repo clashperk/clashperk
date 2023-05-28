@@ -1,10 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	ChannelType,
-	RESTPostAPIApplicationCommandsJSONBody
-} from 'discord-api-types/v10';
+import { ApplicationCommandOptionType, ApplicationCommandType, ChannelType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import i18next from 'i18next';
 import moment from 'moment';
 import { command, common } from '../locales/en.js';

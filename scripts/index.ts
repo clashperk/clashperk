@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { inspect } from 'util';
-import { Routes, RouteBases } from 'discord-api-types/v10';
+import { Routes, RouteBases } from 'discord.js';
 import fetch from 'node-fetch';
 import { COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 

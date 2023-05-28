@@ -85,6 +85,7 @@ export interface PlayerLinks {
 	_id?: ObjectId;
 	userId: string;
 	username: string;
+	userTag: string;
 	tag: string;
 	name: string;
 	order: number;

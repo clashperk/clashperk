@@ -11,10 +11,16 @@ export default class DonationLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 	private readonly queued = new Set<string>();
 	private readonly refreshRate: number;
+	private readonly timeouts: {
+		daily?: NodeJS.Timeout;
+		weekly?: NodeJS.Timeout;
+		monthly?: NodeJS.Timeout;
+	};
 
 	public constructor(client: Client) {
 		super(client);
 		this.refreshRate = 10 * 60 * 1000;
+		this.timeouts = {};
 	}
 
 	public override get permissions(): PermissionsString[] {
@@ -302,20 +308,21 @@ export default class DonationLog extends BaseLog {
 	}
 
 	private async _refreshDaily() {
-		const interval = DonationLogFrequencyTypes.Daily;
-		const lte = moment().startOf('day').toDate();
-		const gte = moment(lte).subtract(1, 'd').toISOString();
-
-		const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
-
-		if (timestamp.getTime() > Date.now()) return;
-
-		const logs = await this.client.db
-			.collection(Collections.DONATION_LOGS)
-			.find({ dailyLastPosted: { $lt: timestamp }, interval })
-			.toArray();
-
+		if (this.timeouts.daily) clearTimeout(this.timeouts.daily);
 		try {
+			const interval = DonationLogFrequencyTypes.Daily;
+			const lte = moment().startOf('day').toDate();
+			const gte = moment(lte).subtract(1, 'd').toISOString();
+
+			const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
+
+			if (timestamp.getTime() > Date.now()) return;
+
+			const logs = await this.client.db
+				.collection(Collections.DONATION_LOGS)
+				.find({ dailyLastPosted: { $lt: timestamp }, interval })
+				.toArray();
+
 			for (const log of logs) {
 				if (!this.client.guilds.cache.has(log.guild)) continue;
 				const id = log._id.toHexString();
@@ -327,24 +334,25 @@ export default class DonationLog extends BaseLog {
 				await Util.delay(2000);
 			}
 		} finally {
-			setTimeout(this._refreshDaily.bind(this), this.refreshRate).unref();
+			this.timeouts.daily = setTimeout(this._refreshDaily.bind(this), this.refreshRate).unref();
 		}
 	}
 
 	private async _refreshWeekly() {
-		const interval = DonationLogFrequencyTypes.Weekly;
-		const lte = moment().startOf('week').toDate();
-		const gte = moment(lte).subtract(7, 'days').toISOString();
-
-		const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
-		if (timestamp.getTime() > Date.now()) return;
-
-		const logs = await this.client.db
-			.collection(Collections.DONATION_LOGS)
-			.find({ weeklyLastPosted: { $lt: timestamp }, interval })
-			.toArray();
-
+		if (this.timeouts.weekly) clearTimeout(this.timeouts.weekly);
 		try {
+			const interval = DonationLogFrequencyTypes.Weekly;
+			const lte = moment().startOf('week').toDate();
+			const gte = moment(lte).subtract(7, 'days').toISOString();
+
+			const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
+			if (timestamp.getTime() > Date.now()) return;
+
+			const logs = await this.client.db
+				.collection(Collections.DONATION_LOGS)
+				.find({ weeklyLastPosted: { $lt: timestamp }, interval })
+				.toArray();
+
 			for (const log of logs) {
 				if (!this.client.guilds.cache.has(log.guild)) continue;
 				const id = log._id.toHexString();
@@ -356,25 +364,26 @@ export default class DonationLog extends BaseLog {
 				await Util.delay(2000);
 			}
 		} finally {
-			setTimeout(this._refreshWeekly.bind(this), this.refreshRate).unref();
+			this.timeouts.weekly = setTimeout(this._refreshWeekly.bind(this), this.refreshRate).unref();
 		}
 	}
 
 	private async _refreshMonthly() {
-		const interval = DonationLogFrequencyTypes.Monthly;
-		const season = moment(Season.ID);
-		const lte = Season.getLastMondayOfMonth(season.month() - 1, season.year());
-		const gte = Season.getLastMondayOfMonth(lte.getMonth() - 1, lte.getFullYear()).toISOString();
-
-		const timestamp = new Date(lte.getTime() + 10 * 60 * 1000);
-		if (timestamp.getTime() > Date.now()) return;
-
-		const logs = await this.client.db
-			.collection(Collections.DONATION_LOGS)
-			.find({ monthlyLastPosted: { $lt: timestamp }, interval })
-			.toArray();
-
+		if (this.timeouts.monthly) clearTimeout(this.timeouts.monthly);
 		try {
+			const interval = DonationLogFrequencyTypes.Monthly;
+			const season = moment(Season.ID);
+			const lte = Season.getLastMondayOfMonth(season.month() - 1, season.year());
+			const gte = Season.getLastMondayOfMonth(lte.getMonth() - 1, lte.getFullYear()).toISOString();
+
+			const timestamp = new Date(lte.getTime() + 10 * 60 * 1000);
+			if (timestamp.getTime() > Date.now()) return;
+
+			const logs = await this.client.db
+				.collection(Collections.DONATION_LOGS)
+				.find({ monthlyLastPosted: { $lt: timestamp }, interval })
+				.toArray();
+
 			for (const log of logs) {
 				if (!this.client.guilds.cache.has(log.guild)) continue;
 				const id = log._id.toHexString();
@@ -386,7 +395,7 @@ export default class DonationLog extends BaseLog {
 				await Util.delay(2000);
 			}
 		} finally {
-			setTimeout(this._refreshMonthly.bind(this), this.refreshRate).unref();
+			this.timeouts.monthly = setTimeout(this._refreshMonthly.bind(this), this.refreshRate).unref();
 		}
 	}
 }

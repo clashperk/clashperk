@@ -451,36 +451,57 @@ export default class LegendDaysCommand extends Command {
 		}, []);
 
 		const weaponLevel = data.townHallWeaponLevel ? attackCounts[data.townHallWeaponLevel] : '';
+		const logDescription =
+			perDayLogs.length >= 32
+				? [
+						'```',
+						'DAY   ATK    DEF   +/-   INIT  FINAL ',
+						...perDayLogs.map((day, i) => {
+							const net = day.gain + day.loss;
+							const def = this.pad(`-${Math.abs(day.loss)}${attackCounts[Math.min(9, day.defenseCount)]}`, 5);
+							const atk = this.pad(`+${day.gain}${attackCounts[Math.min(9, day.attackCount)]}`, 5);
+							const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
+							const final = this.pad(day.final, 4);
+							const init = this.pad(day.initial, 5);
+							const n = (i + 1).toString().padStart(2, ' ');
+							return `\u200e${n}  ${atk}  ${def}  ${ng}  ${init}  ${final}`;
+						}),
+						'```'
+				  ]
+				: [
+						'`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
+						...perDayLogs.map((day, i) => {
+							const net = day.gain + day.loss;
+							const def = this.pad(`-${Math.abs(day.loss)}${attackCounts[Math.min(9, day.defenseCount)]}`, 5);
+							const atk = this.pad(`+${day.gain}${attackCounts[Math.min(9, day.attackCount)]}`, 5);
+							const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
+							const final = this.pad(day.final, 4);
+							const init = this.pad(day.initial, 5);
+							const n = (i + 1).toString().padStart(2, ' ');
+							return `\`\u200e${n} \` \`${atk} \` \`${def} \` \`${ng} \` \`${init} \` \` ${final} \``;
+						})
+				  ];
+
+		const description = [
+			...[
+				`${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
+					data.league?.id === 29000022 ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
+				} **${data.trophies}**`,
+				''
+			],
+			`**Legend Season Logs (${Season.ID})**`,
+			`• ${data.attackWins} ${Util.plural(data.attackWins, 'attack')} and ${data.defenseWins} ${Util.plural(
+				data.defenseWins,
+				'defense'
+			)} won`,
+			'',
+			logDescription.join('\n')
+		].join('\n');
+
 		const embed = new EmbedBuilder()
 			.setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`);
-		embed.setDescription(
-			[
-				...[
-					`${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
-						data.league?.id === 29000022 ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
-					} **${data.trophies}**`,
-					''
-				],
-				`**Legend Season Logs (${Season.ID})**`,
-				`• ${data.attackWins} ${Util.plural(data.attackWins, 'attack')} and ${data.defenseWins} ${Util.plural(
-					data.defenseWins,
-					'defense'
-				)} won`,
-				'',
-				'`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
-				...perDayLogs.map((day, i) => {
-					const net = day.gain + day.loss;
-					const def = this.pad(`-${Math.abs(day.loss)}${attackCounts[Math.min(9, day.defenseCount)]}`, 5);
-					const atk = this.pad(`+${day.gain}${attackCounts[Math.min(9, day.attackCount)]}`, 5);
-					const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
-					const final = this.pad(day.final, 4);
-					const init = this.pad(day.initial, 5);
-					const n = (i + 1).toString().padStart(2, ' ');
-					return `\`\u200e${n} \` \`${atk} \` \`${def} \` \`${ng} \` \`${init} \` \` ${final} \``;
-				})
-			].join('\n')
-		);
+		embed.setDescription(description);
 
 		const url = await this.graph(data);
 		if (url) embed.setImage(url);

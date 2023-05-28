@@ -87,6 +87,7 @@ export default class AutoClanRoleCommand extends Command {
 					await collection.insertOne({
 						userId: user.id,
 						username: user.username,
+						userTag: user.tag,
 						tag,
 						name: player.name,
 						verified: false,
