@@ -238,6 +238,7 @@ export default class LegendDaysCommand extends Command {
 			})
 			.reverse();
 		const [, seasonStart, seasonEnd] = seasonIds;
+		const [prevSeasonStart, prevSeasonEnd] = seasonIds;
 
 		const result = await this.client.db
 			.collection(Collections.LEGEND_ATTACKS)
@@ -367,37 +368,28 @@ export default class LegendDaysCommand extends Command {
 		if (!result.length) return null;
 
 		const season = result.at(0)!;
-		// const dates = season.logs.map((log) => moment(log.timestamp));
-		// const minDate = moment.min(dates).startOf('day');
-		// const maxDate = moment.max(dates).endOf('day');
+		const prevSeason = result.at(1);
+
 		const labels = Array.from({ length: moment(seasonEnd).diff(seasonStart, 'days') + 1 }, (_, i) =>
 			moment(seasonStart).add(i, 'days').toDate()
 		);
 
-		const currentDate = new Date(seasonEnd);
-		const currentYear = currentDate.getFullYear();
-		const currentMonth = currentDate.getMonth();
-		const daysInPreviousMonth = new Date(currentYear, currentMonth, 0).getDate();
+		const prevLabels = Array.from({ length: moment(prevSeasonEnd).diff(prevSeasonStart, 'days') + 1 }, (_, i) =>
+			moment(prevSeasonStart).add(i, 'days').toDate()
+		);
 
-		result.forEach(({ logs, _id }) => {
-			if (_id !== season._id) {
-				logs.forEach((log) => {
-					const daysToSubtract = daysInPreviousMonth - log.timestamp.getDate();
-					const newDate = new Date(currentYear, currentMonth, currentDate.getDate() - daysToSubtract);
-					log.timestamp = newDate;
-				});
+		if (prevSeason) {
+			for (const label of prevLabels) {
+				const log = prevSeason.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
+				if (!log) prevSeason.logs.push({ timestamp: label, trophies: null });
+				prevSeason.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 			}
-		});
+		}
 
 		for (const label of labels) {
-			result.forEach(({ logs }) => {
-				const log = logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
-				if (!log) logs.push({ timestamp: label, trophies: null });
-			});
-
-			for (const season of result) {
-				season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-			}
+			const log = season.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
+			if (!log) season.logs.push({ timestamp: label, trophies: null });
+			season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 		}
 
 		const res = await fetch(`${process.env.ASSET_API_BACKEND!}/legends/graph`, {

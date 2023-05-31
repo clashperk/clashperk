@@ -107,7 +107,7 @@ export default class Http extends ClashOfClansClient {
 		}).catch(() => null);
 
 		const parsed = await res?.body.json().catch(() => null);
-		if (!parsed) return { ok: false, statusCode: res?.statusCode };
+		if (!parsed) return { ok: false, statusCode: res?.statusCode ?? 504 };
 
 		const maxAge = (res?.headers['cache-control'] as string | null)?.split('=')?.[1] ?? 0;
 		return Object.assign(parsed, { statusCode: res?.statusCode ?? 504, ok: res?.statusCode === 200, maxAge: Number(maxAge) * 1000 });
