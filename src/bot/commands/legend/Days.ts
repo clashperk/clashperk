@@ -370,6 +370,8 @@ export default class LegendDaysCommand extends Command {
 		const season = result.at(0)!;
 		const prevSeason = result.at(1);
 
+		if (season._id !== Season.ID) return null;
+
 		const labels = Array.from({ length: moment(seasonEnd).diff(seasonStart, 'days') + 1 }, (_, i) =>
 			moment(seasonStart).add(i, 'days').toDate()
 		);
