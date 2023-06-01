@@ -141,7 +141,7 @@ export default class LegendLog extends BaseLog {
 			});
 		}
 
-		return this._refresh();
+		this._refresh();
 	}
 
 	public async add(clanId: string) {

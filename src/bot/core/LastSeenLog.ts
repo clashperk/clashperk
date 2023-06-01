@@ -107,7 +107,7 @@ export default class LastSeenLog extends BaseLog {
 			});
 		}
 
-		return this._refresh();
+		this._refresh();
 	}
 
 	public async add(clanId: string) {

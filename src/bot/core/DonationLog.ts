@@ -234,7 +234,8 @@ export default class DonationLog extends BaseLog {
 
 		const embed = new EmbedBuilder().setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.large });
 		if (cache.color) embed.setColor(cache.color);
-		embed.setDescription(
+
+		const [description] = Util.splitMessage(
 			[
 				`**${this.titleCase(interval)} Donations**`,
 				`${time(moment(gte).toDate())} - ${time(moment(lte).toDate())}`,
@@ -245,8 +246,10 @@ export default class DonationLog extends BaseLog {
 					const name = escapeMarkdown(player.name);
 					return `\` ${don} ${rec} \` \u200e${name}`;
 				})
-			].join('\n')
+			].join('\n'),
+			{ maxLength: 4096 }
 		);
+		embed.setDescription(description);
 
 		const donated = result.reduce((acc, cur) => acc + cur.donated, 0);
 		const received = result.reduce((acc, cur) => acc + cur.received, 0);
@@ -286,6 +289,10 @@ export default class DonationLog extends BaseLog {
 			});
 		}
 
+		this._init();
+	}
+
+	private async _init() {
 		await this._refreshDaily();
 		await this._refreshWeekly();
 		await this._refreshMonthly();
