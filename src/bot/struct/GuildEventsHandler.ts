@@ -48,8 +48,8 @@ export class GuildEventsHandler {
 
 		const clanGamesStartTime =
 			moment(now).date() > 28 || (moment(now).date() >= 28 && moment(now).hour() >= 8)
-				? moment(Season.ID).startOf('month').add(1, 'month').add(21, 'days').add(8, 'hours').toDate()
-				: moment(Season.ID).startOf('month').add(21, 'days').add(8, 'hours').toDate();
+				? moment(now).startOf('month').add(1, 'month').add(21, 'days').add(8, 'hours').toDate()
+				: moment(now).startOf('month').add(21, 'days').add(8, 'hours').toDate();
 		const clanGamesEndTime = moment(clanGamesStartTime).add(6, 'days').toDate();
 
 		const CWLStartTime =
