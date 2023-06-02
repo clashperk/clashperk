@@ -381,3 +381,44 @@ export const promotionMap: Record<string, { promotion: number; demotion: number;
 	48000017: { promotion: 1, demotion: 7, name: 'Champion League II' },
 	48000018: { promotion: 0, demotion: 6, name: 'Champion League I' }
 };
+
+export const medalsRankingMap: Record<string, number[]> = {
+	48000001: [34, 32, 30, 28, 26, 24, 22, 20],
+	48000002: [46, 44, 42, 40, 38, 36, 34, 32],
+	48000003: [58, 56, 54, 52, 50, 48, 46, 44],
+	48000004: [76, 73, 70, 67, 64, 61, 58, 55],
+	48000005: [94, 91, 88, 85, 82, 79, 76, 73],
+	48000006: [112, 109, 106, 103, 100, 97, 94, 91],
+	48000007: [136, 132, 128, 124, 120, 116, 112, 108],
+	48000008: [160, 156, 152, 148, 144, 140, 136, 132],
+	48000009: [184, 180, 176, 172, 168, 164, 160, 156],
+	48000010: [214, 209, 204, 199, 194, 189, 184, 179],
+	48000011: [244, 239, 234, 229, 224, 219, 214, 209],
+	48000012: [274, 269, 264, 259, 254, 249, 244, 239],
+	48000013: [310, 304, 298, 292, 286, 280, 274, 268],
+	48000014: [346, 340, 334, 328, 322, 316, 310, 304],
+	48000015: [382, 376, 370, 364, 358, 352, 346, 340],
+	48000016: [424, 417, 410, 403, 396, 389, 382, 375],
+	48000017: [466, 459, 452, 445, 438, 431, 424, 417],
+	48000018: [508, 501, 494, 487, 480, 473, 466, 459]
+};
+
+export const medalsPercentageMap: Record<string, number> = {
+	'0': 20,
+	'1': 30,
+	'2': 40,
+	'3': 50,
+	'4': 60,
+	'5': 70,
+	'6': 80,
+	'7': 90,
+	'8': 100
+};
+
+export const calculateCWLMedals = (leagueId: string, stars: number, rank: number) => {
+	const percentage = medalsPercentageMap[Math.min(8, stars)];
+	const ranks = medalsRankingMap[leagueId];
+	const rankMedals = ranks[rank - 1];
+	const totalMedals = Math.round((rankMedals * percentage) / 100);
+	return totalMedals;
+};

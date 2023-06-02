@@ -3,7 +3,7 @@ import { AttachmentBuilder, CommandInteraction, EmbedBuilder, User } from 'disco
 import moment from 'moment';
 import fetch from 'node-fetch';
 import { Command } from '../../lib/index.js';
-import { Collections, UnrankedWarLeagueId, WarLeagueMap, promotionMap } from '../../util/Constants.js';
+import { Collections, UnrankedWarLeagueId, WarLeagueMap, calculateCWLMedals, promotionMap } from '../../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -74,57 +74,60 @@ export default class CWLStatsCommand extends Command {
 		const warTags = rounds.map((round) => round.warTags).flat();
 		const wars: (ClanWar & { warTag: string })[] = await Promise.all(warTags.map((warTag) => this.fetch(warTag)));
 
+		let activeRounds = 0;
+
 		for (const data of wars) {
 			if (!data.ok || data.state === 'notInWar') continue;
 
 			if (data.state === 'inWar') {
-				const clan = ranking[data.clan.tag] // eslint-disable-line
-					? ranking[data.clan.tag]
-					: (ranking[data.clan.tag] = {
-							name: data.clan.name,
-							tag: data.clan.tag,
-							stars: 0,
-							destruction: 0,
-							badgeUrl: data.clan.badgeUrls.large
-					  });
+				// eslint-disable-next-line
+				ranking[data.clan.tag] ??= {
+					name: data.clan.name,
+					tag: data.clan.tag,
+					stars: 0,
+					destruction: 0,
+					badgeUrl: data.clan.badgeUrls.large
+				};
+				const clan = ranking[data.clan.tag];
+
 				clan.stars += data.clan.stars;
 				clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
-				const opponent = ranking[data.opponent.tag] // eslint-disable-line
-					? ranking[data.opponent.tag]
-					: (ranking[data.opponent.tag] = {
-							name: data.opponent.name,
-							tag: data.opponent.tag,
-							stars: 0,
-							destruction: 0,
-							badgeUrl: data.opponent.badgeUrls.large
-					  });
+				// eslint-disable-next-line
+				ranking[data.opponent.tag] ??= {
+					name: data.opponent.name,
+					tag: data.opponent.tag,
+					stars: 0,
+					destruction: 0,
+					badgeUrl: data.opponent.badgeUrls.large
+				};
+				const opponent = ranking[data.opponent.tag];
 				opponent.stars += data.opponent.stars;
 				opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
 			}
 
 			if (data.state === 'warEnded') {
-				const clan = ranking[data.clan.tag] //eslint-disable-line
-					? ranking[data.clan.tag]
-					: (ranking[data.clan.tag] = {
-							name: data.clan.name,
-							tag: data.clan.tag,
-							stars: 0,
-							destruction: 0,
-							badgeUrl: data.clan.badgeUrls.large
-					  });
+				// eslint-disable-next-line
+				ranking[data.clan.tag] ??= {
+					name: data.clan.name,
+					tag: data.clan.tag,
+					stars: 0,
+					destruction: 0,
+					badgeUrl: data.clan.badgeUrls.large
+				};
+				const clan = ranking[data.clan.tag];
 				clan.stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
 				clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
-				const opponent = ranking[data.opponent.tag] // eslint-disable-line
-					? ranking[data.opponent.tag]
-					: (ranking[data.opponent.tag] = {
-							name: data.opponent.name,
-							tag: data.opponent.tag,
-							stars: 0,
-							destruction: 0,
-							badgeUrl: data.opponent.badgeUrls.large
-					  });
+				// eslint-disable-next-line
+				ranking[data.opponent.tag] = {
+					name: data.opponent.name,
+					tag: data.opponent.tag,
+					stars: 0,
+					destruction: 0,
+					badgeUrl: data.opponent.badgeUrls.large
+				};
+				const opponent = ranking[data.opponent.tag];
 				opponent.stars += this.winner(data.opponent, data.clan) ? data.opponent.stars + 10 : data.opponent.stars;
 				opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
 			}
@@ -137,16 +140,16 @@ export default class CWLStatsCommand extends Command {
 					destruction += clan.destructionPercentage * data.teamSize;
 					const end = new Date(moment(data.endTime).toDate()).getTime();
 					for (const m of clan.members) {
-						const member = members[m.tag] // eslint-disable-line
-							? members[m.tag]
-							: (members[m.tag] = {
-									name: m.name,
-									of: 0,
-									attacks: 0,
-									stars: 0,
-									dest: 0,
-									lost: 0
-							  });
+						// eslint-disable-next-line
+						members[m.tag] ??= {
+							name: m.name,
+							of: 0,
+							attacks: 0,
+							stars: 0,
+							dest: 0,
+							lost: 0
+						};
+						const member = members[m.tag];
 						member.of += 1;
 
 						if (m.attacks) {
@@ -184,16 +187,17 @@ export default class CWLStatsCommand extends Command {
 					destruction += clan.destructionPercentage * data.teamSize;
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					for (const m of clan.members) {
-						const member = members[m.tag] // eslint-disable-line
-							? members[m.tag]
-							: (members[m.tag] = {
-									name: m.name,
-									of: 0,
-									attacks: 0,
-									stars: 0,
-									dest: 0,
-									lost: 0
-							  });
+						// eslint-disable-next-line
+						members[m.tag] ??= {
+							name: m.name,
+							of: 0,
+							attacks: 0,
+							stars: 0,
+							dest: 0,
+							lost: 0
+						};
+
+						const member = members[m.tag];
 						member.of += 1;
 
 						if (m.attacks) {
@@ -226,6 +230,8 @@ export default class CWLStatsCommand extends Command {
 						]
 					]);
 				}
+
+				if (['inWar', 'warEnded'].includes(data.state)) activeRounds += 1;
 			}
 		}
 
@@ -257,7 +263,8 @@ export default class CWLStatsCommand extends Command {
 
 		const ranks = Object.values(ranking)
 			.sort((a, b) => b.stars - a.stars)
-			.map((clan, i) => ({ ...clan, leagueId: lg?.leagues?.[clan.tag] ?? leaguesMap[clan.tag], rank: i + 1 }))
+			.sort((a, b) => b.destruction - a.destruction)
+			.map((clan, i) => ({ ...clan, leagueId, rank: i + 1 }))
 			.map((clan) => ({
 				...clan,
 				pos: leagueId
@@ -266,28 +273,34 @@ export default class CWLStatsCommand extends Command {
 						: clan.rank >= promotionMap[leagueId].demotion
 						? 'down'
 						: 'same'
-					: 0
+					: 0,
+				destruction: Math.round(clan.destruction)
 			}));
 
-		const rank = ranks
-			.sort((a, b) => b.destruction - a.destruction)
-			.sort((a, b) => b.stars - a.stars)
-			.findIndex((a) => a.tag === clanTag);
+		const rankIndex = ranks.findIndex((a) => a.tag === clanTag);
 		const padding = Math.max(...ranks.map((r) => r.destruction)) > 9999 ? 6 : 5;
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const maxStars =
+			Object.values(members)
+				.sort((a, b) => b.stars - a.stars)
+				.sort((a, b) => b.dest - a.dest)
+				.at(0)?.stars ?? 0;
 
 		const embeds = [
 			new EmbedBuilder()
 				.setColor(this.client.embed(interaction))
 				.setTitle(`Clan War League Stats (${body.season})`)
-				.setDescription(description),
-			new EmbedBuilder().setColor(this.client.embed(interaction)).setTitle('Clan War League Ranking')
+				.setDescription(description)
 		];
+		const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setTitle('Clan War League Ranking');
+
 		if (leagueId) {
-			embeds[1].setDescription(
+			embed.setDescription(
 				[
 					`${EMOJIS.GAP}${EMOJIS.HASH} **\`\u200eSTAR DEST%${''.padEnd(padding - 3, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 					ranks
-						.map((clan, i) => {
+						.map((clan) => {
 							const emoji =
 								clan.rank <= promotionMap[leagueId].promotion
 									? EMOJIS.UP_KEY
@@ -295,18 +308,20 @@ export default class CWLStatsCommand extends Command {
 									? EMOJIS.DOWN_KEY
 									: EMOJIS.STAYED_SAME;
 
-							return `${emoji}${BLUE_NUMBERS[++i]} \`\u200e ${clan.stars.toString().padEnd(3, ' ')} ${this.dest(
+							return `${emoji}${BLUE_NUMBERS[clan.rank]} \`\u200e ${clan.stars.toString().padEnd(3, ' ')} ${this.dest(
 								clan.destruction,
 								padding
 							)}  ${Util.escapeBackTick(clan.name).padEnd(15, ' ')}\``;
 						})
 						.join('\n'),
 					'',
-					`Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`
+					`Rank #${rankIndex + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}% ${
+						EMOJIS.CWL_MEDAL
+					} (Max. ${calculateCWLMedals(leagueId, 8, rankIndex + 1)})`
 				].join('\n')
 			);
 		} else {
-			embeds[1].setDescription(
+			embed.setDescription(
 				[
 					`${EMOJIS.HASH} **\`\u200eSTAR DEST%${''.padEnd(padding - 3, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 					ranks
@@ -318,12 +333,12 @@ export default class CWLStatsCommand extends Command {
 						})
 						.join('\n'),
 					'',
-					`Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`
+					`Rank #${rankIndex + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`
 				].join('\n')
 			);
 		}
 
-		await interaction.editReply({ embeds });
+		await interaction.editReply({ embeds: [...embeds, embed] });
 		if (!leagueId) return null;
 
 		const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND!}/wars/cwl-ranks`, {
@@ -333,19 +348,18 @@ export default class CWLStatsCommand extends Command {
 			},
 			body: JSON.stringify({
 				ranks,
-				rankIndex: rank,
+				rankIndex: rankIndex,
 				season: body.season,
 				leagueName: WarLeagueMap[leagueId],
-				rounds: `${rounds.length}/${body.rounds.length}`
+				rounds: `${activeRounds}/${body.rounds.length}`
 			})
 		}).then((res) => res.arrayBuffer());
 
 		const rawFile = new AttachmentBuilder(Buffer.from(arrayBuffer), {
 			name: 'clan-war-league-ranking.jpeg'
 		});
-
-		embeds[1].setImage('attachment://clan-war-league-ranking.jpeg');
-		return interaction.editReply({ files: [rawFile], embeds });
+		embed.setImage('attachment://clan-war-league-ranking.jpeg');
+		return interaction.editReply({ files: [rawFile], embeds: [...embeds, embed] });
 	}
 
 	private async fetch(warTag: string) {
