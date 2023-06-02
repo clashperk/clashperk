@@ -66,21 +66,21 @@ export default class WarExport extends Command {
 					.flat();
 
 				for (const m of clan.members) {
-					const member = members[m.tag]
-						? members[m.tag]
-						: (members[m.tag] = {
-								name: m.name,
-								tag: m.tag,
-								attacks: 0,
-								stars: 0,
-								trueStars: 0,
-								dest: 0,
-								defStars: 0,
-								starTypes: [],
-								defCount: 0,
-								of: 0,
-								defDestruction: 0
-						  });
+					members[m.tag] ??= {
+						name: m.name,
+						tag: m.tag,
+						attacks: 0,
+						stars: 0,
+						trueStars: 0,
+						dest: 0,
+						defStars: 0,
+						starTypes: [],
+						defCount: 0,
+						of: 0,
+						defDestruction: 0
+					};
+
+					const member = members[m.tag];
 					member.of += war.attacksPerMember;
 
 					for (const atk of m.attacks ?? []) {
