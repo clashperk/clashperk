@@ -2818,6 +2818,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
+						name: 'war_type',
+						description: 'Regular or CWL',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Regular',
+								value: 'regular'
+							},
+							{
+								name: 'CWL',
+								value: 'cwl'
+							}
+						]
+					},
+					{
 						name: 'season',
 						description: command.export.options.season.description,
 						description_localizations: translation('command.export.options.season.description'),

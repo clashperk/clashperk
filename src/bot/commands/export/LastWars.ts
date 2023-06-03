@@ -4,6 +4,7 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
+import { WarType } from './Wars.js';
 
 export default class LastWarsExport extends Command {
 	public constructor() {
@@ -15,7 +16,10 @@ export default class LastWarsExport extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string; season?: string }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { limit?: number; clans?: string; season?: string; war_type: string }
+	) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -36,7 +40,13 @@ export default class LastWarsExport extends Command {
 		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
-		const query = args.season ? { season: args.season } : {};
+		const query: Record<string, string | number> = args.season ? { season: args.season } : {};
+		if (args.war_type) {
+			query.warType = args.war_type === 'cwl' ? WarType.CWL : WarType.REGULAR;
+		} else {
+			query.warType = WarType.REGULAR;
+		}
+
 		const members = [] as { name: string; tag: string; total: number; clan: string; date: Date }[];
 		for (const clan of clans) {
 			const data = await this.client.db
