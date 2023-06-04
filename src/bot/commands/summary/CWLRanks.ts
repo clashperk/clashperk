@@ -180,9 +180,7 @@ export default class SummaryCWLRanks extends Command {
 			opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
 		}
 
-		const _ranking = Object.values(ranking)
-			.sort((a, b) => b.destruction - a.destruction)
-			.sort((a, b) => b.stars - a.stars);
+		const _ranking = Object.values(ranking).sort(this.rankingSort);
 		if (!_ranking.length) return null;
 		const index = _ranking.findIndex((r) => r.tag === clanTag);
 		const rank = index + 1;
@@ -194,5 +192,10 @@ export default class SummaryCWLRanks extends Command {
 		const rule = pr.select(n);
 		const suffix = suffixes.get(rule);
 		return `${n}${suffix!}`;
+	}
+
+	private rankingSort(a: { stars: number; destruction: number }, b: { stars: number; destruction: number }) {
+		if (a.stars === b.stars) return b.destruction - a.destruction;
+		return b.stars - a.stars;
 	}
 }

@@ -1118,46 +1118,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			}
 		]
 	},
-	// {
-	// 	name: 'graph',
-	// 	description: 'Graphs of clan statistics.',
-	// 	dm_permission: false,
-	// 	options: [
-	// 		{
-	// 			name: 'option',
-	// 			description: 'Select an option.',
-	// 			type: ApplicationCommandOptionType.String,
-	// 			choices: [
-	// 				{
-	// 					name: 'Join/Leave',
-	// 					value: 'join-leave'
-	// 				},
-	// 				{
-	// 					name: 'Donations',
-	// 					value: 'donations'
-	// 				}
-	// 			],
-	// 			required: true
-	// 		},
-	// 		{
-	// 			name: 'clans',
-	// 			autocomplete: true,
-	// 			description: 'View the war history of a clan.',
-	// 			type: ApplicationCommandOptionType.String
-	// 		},
-	// 		{
-	// 			name: 'player_tag',
-	// 			autocomplete: true,
-	// 			description: 'View the CWL history of a player.',
-	// 			type: ApplicationCommandOptionType.String
-	// 		},
-	// 		{
-	// 			name: 'user',
-	// 			description: 'View the war history of a player.',
-	// 			type: ApplicationCommandOptionType.User
-	// 		}
-	// 	]
-	// },
 	{
 		name: 'cwl',
 		description: command.cwl.description,
@@ -1222,25 +1182,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'user',
 						description: common.options.user.description,
 						description_localizations: translation('common.options.user.description'),
-						type: ApplicationCommandOptionType.User,
-						required: false
-					}
-				]
-			},
-			{
-				name: 'history',
-				description: 'CWL attack history of a player.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'player_tag',
-						description: common.options.tag.description,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'user',
-						description: common.options.user.description,
 						type: ApplicationCommandOptionType.User,
 						required: false
 					}
@@ -1350,14 +1291,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'player_tag',
 						description: 'The player tag to link.',
 						required: false,
-						// autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'clan_tag',
 						description: 'The default clan tag to link.',
 						required: false,
-						// autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{

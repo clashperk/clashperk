@@ -79,58 +79,33 @@ export default class CWLStatsCommand extends Command {
 		for (const data of wars) {
 			if (!data.ok || data.state === 'notInWar') continue;
 
-			if (data.state === 'inWar') {
-				// eslint-disable-next-line
-				ranking[data.clan.tag] ??= {
-					name: data.clan.name,
-					tag: data.clan.tag,
-					stars: 0,
-					destruction: 0,
-					badgeUrl: data.clan.badgeUrls.large
-				};
-				const clan = ranking[data.clan.tag];
+			// eslint-disable-next-line
+			ranking[data.clan.tag] ??= {
+				name: data.clan.name,
+				tag: data.clan.tag,
+				stars: 0,
+				destruction: 0,
+				badgeUrl: data.clan.badgeUrls.large
+			};
+			const clan = ranking[data.clan.tag];
+			clan.stars += data.clan.stars;
+			if (data.state === 'warEnded' && this.winner(data.clan, data.opponent)) clan.stars += 10;
 
-				clan.stars += data.clan.stars;
-				clan.destruction += data.clan.destructionPercentage * data.teamSize;
+			clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
-				// eslint-disable-next-line
-				ranking[data.opponent.tag] ??= {
-					name: data.opponent.name,
-					tag: data.opponent.tag,
-					stars: 0,
-					destruction: 0,
-					badgeUrl: data.opponent.badgeUrls.large
-				};
-				const opponent = ranking[data.opponent.tag];
-				opponent.stars += data.opponent.stars;
-				opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
-			}
+			// eslint-disable-next-line
+			ranking[data.opponent.tag] ??= {
+				name: data.opponent.name,
+				tag: data.opponent.tag,
+				stars: 0,
+				destruction: 0,
+				badgeUrl: data.opponent.badgeUrls.large
+			};
+			const opponent = ranking[data.opponent.tag];
+			opponent.stars += data.opponent.stars;
+			if (data.state === 'warEnded' && this.winner(data.opponent, data.clan)) opponent.stars += 10;
 
-			if (data.state === 'warEnded') {
-				// eslint-disable-next-line
-				ranking[data.clan.tag] ??= {
-					name: data.clan.name,
-					tag: data.clan.tag,
-					stars: 0,
-					destruction: 0,
-					badgeUrl: data.clan.badgeUrls.large
-				};
-				const clan = ranking[data.clan.tag];
-				clan.stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
-				clan.destruction += data.clan.destructionPercentage * data.teamSize;
-
-				// eslint-disable-next-line
-				ranking[data.opponent.tag] = {
-					name: data.opponent.name,
-					tag: data.opponent.tag,
-					stars: 0,
-					destruction: 0,
-					badgeUrl: data.opponent.badgeUrls.large
-				};
-				const opponent = ranking[data.opponent.tag];
-				opponent.stars += this.winner(data.opponent, data.clan) ? data.opponent.stars + 10 : data.opponent.stars;
-				opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
-			}
+			opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
 
 			if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
@@ -262,8 +237,7 @@ export default class CWLStatsCommand extends Command {
 		const leagueId = lg?.leagues?.[clan.tag] ?? leaguesMap[clan.tag];
 
 		const ranks = Object.values(ranking)
-			.sort((a, b) => b.stars - a.stars)
-			.sort((a, b) => b.destruction - a.destruction)
+			.sort(this.rankingSort)
 			.map((clan, i) => ({ ...clan, leagueId, rank: i + 1 }))
 			.map((clan) => ({
 				...clan,
@@ -381,5 +355,10 @@ export default class CWLStatsCommand extends Command {
 
 	private winner(clan: WarClan, opponent: WarClan) {
 		return this.client.http.isWinner(clan, opponent);
+	}
+
+	private rankingSort(a: { stars: number; destruction: number }, b: { stars: number; destruction: number }) {
+		if (a.stars === b.stars) return b.destruction - a.destruction;
+		return b.stars - a.stars;
 	}
 }

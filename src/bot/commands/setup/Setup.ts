@@ -1,4 +1,12 @@
-import { CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ComponentType } from 'discord.js';
+import {
+	CommandInteraction,
+	EmbedBuilder,
+	ButtonBuilder,
+	ActionRowBuilder,
+	ButtonStyle,
+	ComponentType,
+	AttachmentBuilder
+} from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Flags, Collections } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
@@ -59,7 +67,7 @@ export default class SetupCommand extends Command {
 		const msg = await interaction.editReply({
 			content: ['**Follow the steps below to setup the bot.**'].join('\n'),
 			components: [row],
-			files: ['https://i.imgur.com/rEZV66g.png']
+			files: [new AttachmentBuilder('https://i.imgur.com/rEZV66g.png', { name: 'setup.png' })]
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
