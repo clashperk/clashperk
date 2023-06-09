@@ -90,7 +90,7 @@ export default class ClanGamesCommand extends Command {
 					.setLabel(args.max ? 'Permissible Points' : 'Maximum Points')
 					.setStyle(ButtonStyle.Primary)
 			);
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		return interaction.editReply({ embeds: [embed], components: [row], content: null });
 	}
 
 	private getSeasonId(seasonId?: string) {

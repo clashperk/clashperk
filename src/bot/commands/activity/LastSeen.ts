@@ -61,6 +61,6 @@ export default class LastSeenCommand extends Command {
 					.setLabel(args.score ? 'Last Seen' : 'Scoreboard')
 			);
 
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		return interaction.editReply({ embeds: [embed], components: [row], content: null });
 	}
 }

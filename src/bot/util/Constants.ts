@@ -383,6 +383,7 @@ export const promotionMap: Record<string, { promotion: number; demotion: number;
 };
 
 export const medalsRankingMap: Record<string, number[]> = {
+	48000000: [34, 32, 30, 28, 26, 24, 22, 20],
 	48000001: [34, 32, 30, 28, 26, 24, 22, 20],
 	48000002: [46, 44, 42, 40, 38, 36, 34, 32],
 	48000003: [58, 56, 54, 52, 50, 48, 46, 44],

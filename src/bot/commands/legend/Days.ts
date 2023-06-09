@@ -9,6 +9,51 @@ import { Args, Command } from '../../lib/index.js';
 import { Season, Util } from '../../util/index.js';
 import { LegendAttacks, PlayerLinks } from '../../types/index.js';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function randomlySelectItems(array: { timestamp: Date; trophies: null | number }[], itemCount: number) {
+	const newArray = [...array]; // Create a copy of the array
+	const sortedArray = newArray.filter((item) => item.trophies !== null).sort((a, b) => a.trophies! - b.trophies!);
+	const selectedItems = [];
+	let highestItem = null;
+	let lowestItem = null;
+
+	if (sortedArray.length > 0) {
+		highestItem = sortedArray[sortedArray.length - 1];
+		lowestItem = sortedArray[0];
+		selectedItems.push(highestItem);
+
+		const trophyRange = highestItem.trophies! - lowestItem.trophies!;
+		// const nonNullItemCount = sortedArray.length;
+		const stepSize = trophyRange / (itemCount - 1);
+
+		let threshold = highestItem.trophies!;
+		for (let i = 0; i < itemCount - 2; i++) {
+			threshold -= stepSize;
+			let closestItem = null;
+			let closestDistance = Infinity;
+
+			sortedArray.forEach((item) => {
+				const distance = Math.abs(item.trophies! - threshold);
+				if (distance < closestDistance) {
+					closestItem = item;
+					closestDistance = distance;
+				}
+			});
+
+			if (closestItem) {
+				selectedItems.push(closestItem);
+				sortedArray.splice(sortedArray.indexOf(closestItem), 1);
+			} else {
+				break; // Exit the loop if no more non-null items can be found
+			}
+		}
+
+		selectedItems.push(lowestItem);
+	}
+
+	return selectedItems.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+}
+
 export default class LegendDaysCommand extends Command {
 	public constructor() {
 		super('legend-days', {
@@ -246,7 +291,7 @@ export default class LegendDaysCommand extends Command {
 				_id: string;
 				logs: {
 					timestamp: Date;
-					trophies: string | null;
+					trophies: number | null;
 				}[];
 				avgGain: number;
 				avgOffense: number;
@@ -380,18 +425,21 @@ export default class LegendDaysCommand extends Command {
 			moment(prevSeasonStart).add(i, 'days').toDate()
 		);
 
+		for (const label of labels) {
+			const log = season.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
+			if (!log) season.logs.push({ timestamp: label, trophies: null });
+		}
+		season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
 		if (prevSeason) {
 			for (const label of prevLabels) {
 				const log = prevSeason.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
 				if (!log) prevSeason.logs.push({ timestamp: label, trophies: null });
-				prevSeason.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 			}
-		}
-
-		for (const label of labels) {
-			const log = season.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
-			if (!log) season.logs.push({ timestamp: label, trophies: null });
-			season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+			prevSeason.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+			// if (prevSeason.logs.length > season.logs.length) {
+			// 	prevSeason.logs = randomlySelectItems(prevSeason.logs, season.logs.length);
+			// }
 		}
 
 		const res = await fetch(`${process.env.ASSET_API_BACKEND!}/legends/graph`, {

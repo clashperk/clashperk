@@ -705,8 +705,8 @@ export default class StorageHandler {
 			for (const warTag of round.warTags) {
 				const data = await this.client.http.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
-				if (!warTags[data.clan.tag]!.includes(warTag)) warTags[data.clan.tag]!.push(warTag);
-				if (!warTags[data.opponent.tag]!.includes(warTag)) warTags[data.opponent.tag]!.push(warTag);
+				if (!warTags[data.clan.tag].includes(warTag)) warTags[data.clan.tag]!.push(warTag);
+				if (!warTags[data.opponent.tag].includes(warTag)) warTags[data.opponent.tag]!.push(warTag);
 			}
 		}
 

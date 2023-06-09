@@ -126,7 +126,7 @@ export class RoleManager {
 				{
 					$match: {
 						tag,
-						active: true,
+						// active: true,
 						paused: false
 					}
 				},
@@ -144,8 +144,8 @@ export class RoleManager {
 						pipeline: [
 							{
 								$match: {
-									active: true,
 									paused: false,
+									// active: true,
 									roles: { $exists: true }
 								}
 							},
@@ -180,6 +180,7 @@ export class RoleManager {
 				{
 					$match: {
 						tag,
+						// active: true,
 						paused: false
 					}
 				},
@@ -195,6 +196,7 @@ export class RoleManager {
 						pipeline: [
 							{
 								$match: {
+									// active: true,
 									paused: false
 								}
 							},
@@ -289,7 +291,7 @@ export class RoleManager {
 				{
 					$match: {
 						tag,
-						active: true,
+						// active: true,
 						paused: false
 					}
 				},
@@ -335,7 +337,7 @@ export class RoleManager {
 				{
 					$match: {
 						tag,
-						active: true,
+						// active: true,
 						paused: false
 					}
 				},

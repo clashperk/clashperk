@@ -25,7 +25,9 @@ export class WarRoleManager {
 			.aggregate<{ guild: string; warRole: string }>([
 				{
 					$match: {
-						tag
+						tag,
+						// active: true,
+						paused: false
 					}
 				},
 				{
