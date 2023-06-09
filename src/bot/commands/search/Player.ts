@@ -111,7 +111,7 @@ export default class PlayerCommand extends Command {
 			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: options.length ? [row, menu] : [row] });
+		const msg = await interaction.editReply({ embeds: [embed], components: options.length > 1 ? [row, menu] : [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
 			// time: 5 * 60 * 1000
