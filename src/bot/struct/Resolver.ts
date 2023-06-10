@@ -202,6 +202,12 @@ export default class Resolver {
 		return Object.values(users);
 	}
 
+	public async getUser(playerTag: string) {
+		const link = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: playerTag });
+		if (!link) return null;
+		return this.client.users.fetch(link.userId).catch(() => null);
+	}
+
 	public async getPlayers(userId: string) {
 		const [players, others] = await Promise.all([
 			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),

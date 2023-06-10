@@ -44,6 +44,24 @@ export default class ComponentHandler {
 				await this.client.commandHandler.exec(interaction, command, parsed);
 				return true;
 			}
+			case 'roster-signup': {
+				const command = this.client.commandHandler.modules.get('roster-signup')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, parsed);
+				return true;
+			}
+			case 'roster-post': {
+				const command = this.client.commandHandler.modules.get('roster-post')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, parsed);
+				return true;
+			}
+			case 'roster-settings': {
+				const command = this.client.commandHandler.modules.get('roster-settings')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, parsed);
+				return true;
+			}
 			case 'boosts': {
 				const command = this.client.commandHandler.modules.get('boosts')!;
 				await interaction.deferUpdate();
@@ -83,6 +101,12 @@ export default class ComponentHandler {
 			}
 			case 'clan': {
 				const command = this.client.commandHandler.modules.get('clan')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
+				return true;
+			}
+			case 'player': {
+				const command = this.client.commandHandler.modules.get('player')!;
 				await interaction.deferUpdate();
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;

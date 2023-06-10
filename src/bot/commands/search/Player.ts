@@ -102,6 +102,12 @@ export default class PlayerCommand extends Command {
 		}));
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setEmoji(EMOJIS.REFRESH)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId(JSON.stringify({ cmd: this.id, tag: args.tag ?? args.user?.id }))
+			)
 			.addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.troops))
 			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
 			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed))
