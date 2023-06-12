@@ -44,7 +44,8 @@ export const DARK_ELIXIR_TROOPS: Record<string, string> = {
 	'Lava Hound': '<:LavaHound:696282183832305685>',
 	'Bowler': '<:bowler:696282213360074782>',
 	'Ice Golem': '<:IceGolem:696282324798799892>',
-	'Headhunter': '<:Headhunter:724650414066106459>'
+	'Headhunter': '<:Headhunter:724650414066106459>',
+	'Apprentice Warden': '<:ApprenticeWarden:1117866249645461604>'
 };
 
 export const SIEGE_MACHINES: Record<string, string> = {
@@ -91,7 +92,8 @@ export const SUPER_TROOPS: Record<string, string> = {
 	'Super Witch': '<:SuperWitch:789730409210576897>',
 	'Ice Hound': '<:IceHound:789730401816018945>',
 	'Super Bowler': '<:SuperBowler:892028277252825128>',
-	'Super Miner': '<:SuperMiner:1062662677077446656>'
+	'Super Miner': '<:SuperMiner:1062662677077446656>',
+	'Super Hog Rider': '<:SuperHogRider:1117866738495787018>'
 };
 
 export const BUILDER_ELIXIR_TROOPS: Record<string, string> = {
@@ -111,7 +113,6 @@ export const BUILDER_ELIXIR_TROOPS: Record<string, string> = {
 };
 
 export const BUILDER_HEROES: Record<string, string> = {
-	// 'Battle Machine': '<:WarMachine:696305434570522665>',
 	'Battle Machine': '<:BattleMachine:1108950875742933065>'
 };
 
