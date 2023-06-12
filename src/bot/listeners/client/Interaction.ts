@@ -156,6 +156,9 @@ export default class InteractionListener extends Listener {
 			case 'clan': {
 				return this.clanTagAutocomplete(interaction, focused);
 			}
+			case 'alias': {
+				return this.aliasAutoComplete(interaction);
+			}
 			case 'roster': {
 				return this.rosterAutocomplete(interaction);
 			}
@@ -181,6 +184,14 @@ export default class InteractionListener extends Listener {
 		return interaction.respond(
 			categories.map((category) => ({ value: category._id.toHexString(), name: `${category.displayName}`.substring(0, 100) }))
 		);
+	}
+
+	private async aliasAutoComplete(interaction: AutocompleteInteraction<'cached'>) {
+		const clans = await this.client.storage.find(interaction.guild.id);
+		const aliases = clans.filter((clan) => clan.alias);
+		if (!aliases.length) return interaction.respond([{ value: '0', name: 'No aliases found.' }]);
+
+		return interaction.respond(aliases.map((clan) => ({ value: clan.alias!, name: `${clan.alias!} - ${clan.name}` })));
 	}
 
 	private async durationAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {

@@ -1,9 +1,10 @@
-import { CommandInteraction, Role } from 'discord.js';
 import { Clan } from 'clashofclans.js';
+import { CommandInteraction, Role } from 'discord.js';
+import moment from 'moment-timezone';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
+import { IRoster, IRosterMember, RosterSortTypes } from '../../struct/RosterManager.js';
 import { PlayerLinks } from '../../types/index.js';
-import { IRosterMember } from '../../struct/RosterManager.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class RosterCreateCommand extends Command {
 	public constructor() {
@@ -29,17 +30,19 @@ export default class RosterCreateCommand extends Command {
 			min_town_hall?: number;
 			min_hero_level?: number;
 			roster_role?: Role;
-			allow_category_selection?: boolean;
+			allow_group_selection?: boolean;
 			allow_multi_signup?: boolean;
+			closing_time?: string;
+			sort_by?: RosterSortTypes;
 		}
 	) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.clan);
-		if (!clan) return;
-
 		// Create default categories
 		this.client.rosterManager.createDefaultCategories(interaction.guild.id);
 
-		const roster = await this.client.rosterManager.create({
+		const clan = await this.client.resolver.resolveClan(interaction, args.clan);
+		if (!clan) return;
+
+		const data: IRoster = {
 			name: args.name,
 			clan: {
 				name: clan.name,
@@ -48,16 +51,33 @@ export default class RosterCreateCommand extends Command {
 			},
 			guildId: interaction.guild.id,
 			closed: false,
-			createdAt: new Date(),
-			lastUpdated: new Date(),
 			members: args.import_members ? await this.getClanMembers(clan) : [],
-			allowMultiSignup: args.allow_multi_signup,
-			allowCategorySelection: args.allow_category_selection,
+			allowMultiSignup: Boolean(args.allow_multi_signup ?? false),
+			allowCategorySelection: args.allow_group_selection ?? true,
 			maxMembers: args.max_members,
+			sortBy: args.sort_by,
 			minHeroLevels: args.min_hero_level,
 			minTownHall: args.min_town_hall,
-			roleId: args.roster_role?.id
-		});
+			roleId: args.roster_role?.id,
+			createdAt: new Date(),
+			lastUpdated: new Date()
+		};
+
+		if (args.roster_role) {
+			const dup = await this.client.rosterManager.rosters.findOne({ roleId: args.roster_role.id });
+			if (dup) return interaction.editReply({ content: 'A roster with this role already exists.' });
+		}
+
+		if (moment(args.closing_time).isValid()) {
+			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction.user.id);
+			data.closingTime = moment.tz(args.closing_time, timezoneId).utc().toDate();
+			if (data.closingTime < new Date()) return interaction.editReply('Closing time cannot be in the past.');
+			if (data.closingTime < moment().add(5, 'minutes').toDate()) {
+				return interaction.editReply('Closing time must be at least 5 minutes from now.');
+			}
+		}
+
+		const roster = await this.client.rosterManager.create(data);
 
 		const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
 		return interaction.editReply({ embeds: [embed] });

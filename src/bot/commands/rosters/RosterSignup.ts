@@ -26,6 +26,13 @@ export default class RosterSignupCommand extends Command {
 		const roster = await this.client.rosterManager.get(rosterId);
 		if (!roster) return interaction.followUp({ content: 'Roster was deleted.', ephemeral: true });
 
+		const isClosed = this.client.rosterManager.isClosed(roster);
+		if (isClosed) {
+			const row = this.client.rosterManager.getRosterComponents({ roster, withSignupButton: true });
+			await interaction.editReply({ components: [row] });
+			return interaction.followUp({ content: 'Roster is closed.', ephemeral: true });
+		}
+
 		const players = await this.client.resolver.getPlayers(interaction.user.id);
 		const customIds = {
 			select: this.client.uuid(interaction.user.id),
@@ -121,7 +128,7 @@ export default class RosterSignupCommand extends Command {
 			selected.category = action.values[0];
 			categoryMenu.setOptions(
 				categories.map((category) => ({
-					label: category.name,
+					label: category.displayName,
 					value: category._id.toHexString(),
 					default: selected.category === category._id.toHexString()
 				}))

@@ -17,7 +17,7 @@ export default class AliasCreateCommand extends Command {
 		return tag ? `#${tag.toUpperCase().replace(/O/g, '0').replace(/^#/g, '')}` : null;
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; name?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clan: string; name: string }) {
 		if (!args.name) {
 			return interaction.editReply(this.i18n('command.alias.create.no_name', { lng: interaction.locale }));
 		}
@@ -28,7 +28,7 @@ export default class AliasCreateCommand extends Command {
 			return interaction.editReply(this.i18n('command.alias.create.no_whitespace', { lng: interaction.locale }));
 		}
 
-		const tag = this.parseTag(args.tag);
+		const tag = this.parseTag(args.clan);
 		if (!tag) {
 			return interaction.editReply(this.i18n('command.alias.create.no_clan', { lng: interaction.locale }));
 		}

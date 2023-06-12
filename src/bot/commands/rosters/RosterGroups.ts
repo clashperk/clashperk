@@ -40,6 +40,11 @@ export default class RosterEditCommand extends Command {
 		const category = await this.client.rosterManager.searchCategory(interaction.guild.id, args.name);
 		if (category) return interaction.editReply({ content: 'A category with this name already exists.' });
 
+		if (args.group_role) {
+			const dup = await this.client.rosterManager.categories.findOne({ roleId: args.group_role.id });
+			if (dup) return interaction.editReply({ content: 'A category with this role already exists.' });
+		}
+
 		await this.client.rosterManager.createCategory({
 			name: args.name,
 			displayName: args.name,
@@ -72,6 +77,11 @@ export default class RosterEditCommand extends Command {
 		if (args.selectable) data.selectable = args.selectable;
 		if (args.group_role) data.roleId = args.group_role.id;
 		if (args.delete_role) data.roleId = null;
+
+		if (args.group_role) {
+			const dup = await this.client.rosterManager.categories.findOne({ _id: { $ne: category._id }, roleId: args.group_role.id });
+			if (dup) return interaction.editReply({ content: 'A category with this role already exists.' });
+		}
 
 		await this.client.rosterManager.editCategory(category._id, data);
 		return interaction.editReply({ content: 'Category updated!' });

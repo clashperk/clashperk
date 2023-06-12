@@ -18,6 +18,15 @@ import { EMOJIS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
 
+export type RosterSortTypes =
+	| 'PLAYER_NAME'
+	| 'DISCORD_USERNAME'
+	| 'HERO_LEVEL'
+	| 'TOWN_HALL_LEVEL'
+	| 'TH_HERO_LEVEL'
+	| 'CLAN_NAME'
+	| 'SIGNUP_TIME';
+
 export interface IRoster {
 	name: string;
 	guildId: string;
@@ -34,6 +43,7 @@ export interface IRoster {
 	members: IRosterMember[];
 	closed: boolean;
 	closingTime?: Date;
+	sortBy?: RosterSortTypes;
 	allowCategorySelection?: boolean;
 	lastUpdated: Date;
 	createdAt: Date;
@@ -64,8 +74,8 @@ export interface IRosterMember {
 }
 
 export class RosterManager {
-	private readonly rosters: Collection<IRoster>;
-	private readonly categories: Collection<IRosterCategory>;
+	public rosters: Collection<IRoster>;
+	public categories: Collection<IRosterCategory>;
 	private readonly queued: Set<string> = new Set();
 
 	public constructor(private readonly client: Client) {
@@ -94,15 +104,18 @@ export class RosterManager {
 	}
 
 	public async clear(rosterId: ObjectId) {
-		return this.rosters.updateOne({ _id: rosterId }, { $set: { members: [] } });
+		const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { members: [] } }, { returnDocument: 'after' });
+		return value;
 	}
 
 	public async close(rosterId: ObjectId) {
-		return this.rosters.updateOne({ _id: rosterId }, { $set: { closed: true } });
+		const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: true } }, { returnDocument: 'after' });
+		return value;
 	}
 
 	public async open(rosterId: ObjectId) {
-		return this.rosters.updateOne({ _id: rosterId }, { $set: { closed: false } });
+		const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: false } }, { returnDocument: 'after' });
+		return value;
 	}
 
 	public async get(rosterId: ObjectId) {
@@ -126,6 +139,11 @@ export class RosterManager {
 		}
 
 		if (roster.closed) {
+			await interaction.followUp({ content: 'This roster is closed.', ephemeral: true });
+			return false;
+		}
+
+		if (roster.closingTime && roster.closingTime < new Date()) {
 			await interaction.followUp({ content: 'This roster is closed.', ephemeral: true });
 			return false;
 		}
@@ -171,6 +189,22 @@ export class RosterManager {
 					content: isOwner
 						? 'You are already signed up for another roster.'
 						: 'This player is already signed up for another roster.',
+					ephemeral: true
+				});
+				return false;
+			}
+		}
+
+		if (roster.allowMultiSignup && !isDryRun) {
+			const dup = await this.rosters.findOne(
+				{ '_id': { $ne: rosterId }, 'guildId': interaction.guild.id, 'members.tag': player.tag, 'allowMultiSignup': false },
+				{ projection: { _id: 1 } }
+			);
+			if (dup && !dup.allowMultiSignup) {
+				await interaction.followUp({
+					content: isOwner
+						? 'You are already signed up for another roster that does not allow multi-signup.'
+						: 'This player is already signed up for another roster that does not allow multi-signup.',
 					ephemeral: true
 				});
 				return false;
@@ -334,9 +368,35 @@ export class RosterManager {
 			{}
 		);
 
-		roster.members
-			.sort((a, b) => this.sum(Object.values(b.heroes)) - this.sum(Object.values(a.heroes)))
-			.sort((a, b) => b.townHallLevel - a.townHallLevel);
+		const sortKey = roster.sortBy ?? 'TH_HERO_LEVEL';
+		switch (sortKey) {
+			case 'TOWN_HALL_LEVEL':
+				roster.members.sort((a, b) => a.townHallLevel - b.townHallLevel);
+				break;
+			case 'HERO_LEVEL':
+				roster.members.sort((a, b) => this.sum(Object.values(a.heroes)) - this.sum(Object.values(b.heroes)));
+				break;
+			case 'TH_HERO_LEVEL':
+				roster.members
+					.sort((a, b) => this.sum(Object.values(b.heroes)) - this.sum(Object.values(a.heroes)))
+					.sort((a, b) => b.townHallLevel - a.townHallLevel);
+				break;
+			case 'PLAYER_NAME':
+				roster.members.sort((a, b) => a.name.localeCompare(b.name));
+				break;
+			case 'CLAN_NAME':
+				roster.members.sort((a, b) => (a.clan?.name ?? '').localeCompare(b.clan?.name ?? ''));
+				break;
+			case 'DISCORD_USERNAME':
+				roster.members.sort((a, b) => (a.username ?? '').localeCompare(b.username ?? ''));
+				break;
+			case 'SIGNUP_TIME':
+				roster.members.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+				break;
+			default:
+				roster.members.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+				break;
+		}
 
 		const membersGroup = Object.entries(
 			roster.members.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
@@ -378,6 +438,13 @@ export class RosterManager {
 				].join('\n')
 			);
 
+		if (roster.closingTime) {
+			embed.addFields({
+				name: '\u200e',
+				value: `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.closingTime)}`
+			});
+		}
+
 		return embed;
 	}
 
@@ -391,42 +458,52 @@ export class RosterManager {
 				url: this.client.http.getClanURL(roster.clan.tag)
 			})
 			.addFields({
-				name: 'Max. members',
+				name: 'Max. Members',
+				inline: true,
 				value: (roster.maxMembers ?? 65).toString()
 			})
 			.addFields({
 				name: 'Min. Town Hall',
+				inline: true,
 				value: (roster.minTownHall ?? 2).toString()
 			})
 			.addFields({
-				name: 'Min. Hero levels',
+				name: 'Min. Hero Levels',
+				inline: true,
 				value: (roster.minHeroLevels ?? 0).toString()
 			})
 			.addFields({
-				name: 'Allow multi-signup',
+				name: 'Allow Multi-Signup',
+				inline: true,
 				value: roster.allowMultiSignup ? 'Yes' : 'No'
 			})
 			.addFields({
-				name: 'Roster role',
+				name: 'Roster Role',
+				inline: true,
 				value: roster.roleId ? `<@&${roster.roleId}>` : 'None'
 			})
 			.addFields({
-				name: 'Members signed up',
+				name: 'Members Signed-up',
+				inline: true,
 				value: roster.members.length.toString()
 			})
 			.addFields({
-				name: 'Signup close time',
-				value: roster.closingTime ? time(roster.closingTime) : 'None'
+				name: 'Signup Close Time',
+				inline: true,
+				value: roster.closingTime ? `${time(roster.closingTime)} ${this.isClosed(roster) ? '[CLOSED]' : ''}` : 'N/A'
 			})
 			.addFields({
-				name: 'Allow members to select category',
+				name: 'Allow Members to Select Group',
+				inline: true,
 				value: roster.allowCategorySelection ? 'Yes' : 'No'
 			});
 
 		return embed;
 	}
 
-	public getRosterComponents(roster: WithId<IRoster>, withSignupButton = false) {
+	public getRosterComponents({ roster, withSignupButton = false }: { roster: WithId<IRoster>; withSignupButton: boolean }) {
+		const isClosed = this.isClosed(roster);
+
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
 				.setCustomId(
@@ -445,17 +522,25 @@ export class RosterManager {
 				new ButtonBuilder()
 					.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: true }))
 					.setLabel('Signup')
-					.setStyle(ButtonStyle.Success),
+					.setStyle(ButtonStyle.Success)
+					.setDisabled(isClosed),
 				new ButtonBuilder()
 					.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: false }))
 					.setLabel('Opt-out')
 					.setStyle(ButtonStyle.Danger)
+					.setDisabled(isClosed)
 			);
 		}
 
 		row.addComponents(
 			new ButtonBuilder()
-				.setCustomId(JSON.stringify({ cmd: 'roster-settings', roster: roster._id.toHexString() }))
+				.setCustomId(
+					JSON.stringify({
+						cmd: 'roster-settings',
+						roster: roster._id.toHexString(),
+						with_signup_button: Boolean(withSignupButton)
+					})
+				)
 				.setEmoji(EMOJIS.SETTINGS)
 				.setStyle(ButtonStyle.Secondary)
 		);
@@ -533,6 +618,10 @@ export class RosterManager {
 		);
 	}
 
+	public isClosed(roster: IRoster) {
+		return roster.closed || (roster.closingTime && roster.closingTime < new Date());
+	}
+
 	private snipe(str: string | number, len = 12) {
 		return Util.escapeBackTick(`${str}`).substring(0, len).padEnd(len, ' ');
 	}
@@ -596,5 +685,10 @@ export class RosterManager {
 	public async editCategory(categoryId: ObjectId, data: Partial<IRosterCategory>) {
 		const { value } = await this.categories.findOneAndUpdate({ _id: categoryId }, { $set: data }, { returnDocument: 'after' });
 		return value;
+	}
+
+	public async getTimezoneId(userId: string) {
+		const user = await this.client.db.collection(Collections.USERS).findOne({ userId });
+		return user?.timezone?.id ?? 'UTC';
 	}
 }

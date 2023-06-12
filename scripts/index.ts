@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { inspect } from 'util';
 import { Routes, RouteBases } from 'discord.js';
 import fetch from 'node-fetch';
-import { COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
+import { BETA_COMMANDS, COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
 const guildId = process.env.GUILD_ID ?? '509784317598105619';
@@ -65,5 +65,5 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 	}
 
 	// await applicationGuildCommands(process.env.BOT_TOKEN!, []);
-	return applicationCommands(token, [...COMMANDS, ...PRIVATE_COMMANDS]);
+	return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...PRIVATE_COMMANDS]);
 })();

@@ -28,7 +28,10 @@ export default class RosterPostCommand extends Command {
 
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
-		const row = this.client.rosterManager.getRosterComponents(roster, args.with_signup_button);
+		const row = this.client.rosterManager.getRosterComponents({
+			roster: updated,
+			withSignupButton: Boolean(args.with_signup_button)
+		});
 		const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 
 		return interaction.editReply({ embeds: [embed], components: [row] });

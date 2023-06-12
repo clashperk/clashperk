@@ -798,287 +798,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
-		name: 'roster',
-		description: command.cwl.roster.description,
-		dm_permission: false,
-		description_localizations: translation('command.cwl.roster.description'),
-		options: [
-			{
-				name: 'create',
-				description: 'Create a roster',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'clan',
-						description: 'Clan tag of the roster',
-						autocomplete: true,
-						required: true,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'name',
-						description: 'Name of the roster',
-						required: true,
-						max_length: 30,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'max_members',
-						min_value: 5,
-						max_value: 65,
-						description: 'Size of the roster',
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'min_town_hall',
-						description: 'Minimum town hall level of the roster',
-						type: ApplicationCommandOptionType.Integer,
-						min_value: 2,
-						max_value: MAX_TOWN_HALL_LEVEL
-					},
-					{
-						name: 'min_hero_level',
-						min_value: 0,
-						description: 'Minimum hero level of the roster',
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'roster_role',
-						description: 'Role of the roster',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'allow_category_selection',
-						description: 'Allow members to select category.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'allow_multi_signup',
-						description: 'Allow multiple signup',
-						type: ApplicationCommandOptionType.Boolean
-					}
-				]
-			},
-			{
-				name: 'post',
-				description: 'List all rosters',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'roster',
-						autocomplete: true,
-						required: true,
-						description: 'Search for a roster',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'with_signup_button',
-						required: true,
-						description: 'Include Signup and Opt-out buttons.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'import_members',
-						description: 'Import members from the clan.',
-						type: ApplicationCommandOptionType.Boolean
-					}
-				]
-			},
-			{
-				name: 'edit',
-				description: 'Edit a roster',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'roster',
-						description: 'ID of the roster',
-						required: true,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'name',
-						description: 'Name of the roster',
-						max_length: 30,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'clan',
-						description: 'Clan tag of the roster',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'max_members',
-						description: 'Size of the roster',
-						max_value: 65,
-						min_value: 5,
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'min_town_hall',
-						max_value: MAX_TOWN_HALL_LEVEL,
-						min_value: 2,
-						description: 'Minimum town hall level of the roster',
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'min_hero_level',
-						min_value: 0,
-						description: 'Minimum hero level of the roster',
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'roster_role',
-						description: 'Role of the roster',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'delete_role',
-						description: 'Delete the role of the roster.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'allow_category_selection',
-						description: 'Allow members to select category.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'allow_multi_signup',
-						description: 'Allow multiple signup',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'delete_roster',
-						description: 'Delete the roster.',
-						type: ApplicationCommandOptionType.Boolean
-					}
-				]
-			},
-			{
-				name: 'manage',
-				description: 'Add or remove players from a roster',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'roster',
-						description: 'ID of the roster',
-						required: true,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'action',
-						description: 'Name of the roster',
-						required: true,
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Add User',
-								value: 'add-user'
-							},
-							{
-								name: 'Remove User',
-								value: 'del-user'
-							},
-							{
-								name: 'Move User',
-								value: 'change-roster'
-							},
-							{
-								name: 'Change Group',
-								value: 'change-category'
-							}
-						]
-					},
-					{
-						name: 'player_tag',
-						required: true,
-						autocomplete: true,
-						description: 'Clan tag of the roster',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'group',
-						autocomplete: true,
-						description: 'Group of the roster',
-						type: ApplicationCommandOptionType.String
-					}
-				]
-			},
-			{
-				name: 'groups',
-				description: 'Manage groups of the signed up users.',
-				type: ApplicationCommandOptionType.SubcommandGroup,
-				options: [
-					{
-						name: 'create',
-						description: 'Name of the roster',
-						type: ApplicationCommandOptionType.Subcommand,
-						options: [
-							{
-								name: 'name',
-								description: 'Name of the group.',
-								required: true,
-								max_length: 30,
-								type: ApplicationCommandOptionType.String
-							},
-							{
-								name: 'group_role',
-								description: 'Role of the group',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'selectable',
-								description: 'Allow members to select this group.',
-								type: ApplicationCommandOptionType.Boolean
-							}
-						]
-					},
-					{
-						name: 'modify',
-						description: 'Name of the category.',
-						type: ApplicationCommandOptionType.Subcommand,
-						options: [
-							{
-								name: 'group',
-								autocomplete: true,
-								required: true,
-								description: 'Name of the category.',
-								type: ApplicationCommandOptionType.String
-							},
-							{
-								name: 'name',
-								description: 'Name of the category.',
-								max_length: 30,
-								type: ApplicationCommandOptionType.String
-							},
-							{
-								name: 'group_role',
-								description: 'Role of the group',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'selectable',
-								description: 'Allow members to select this group.',
-								type: ApplicationCommandOptionType.Boolean
-							},
-							{
-								name: 'delete_role',
-								description: 'Delete the role of the group.',
-								type: ApplicationCommandOptionType.Boolean
-							},
-							{
-								name: 'delete_group',
-								description: 'Delete the group.',
-								type: ApplicationCommandOptionType.Boolean
-							}
-						]
-					}
-				]
-			}
-		]
-	},
-	{
 		name: 'donations',
 		description: command.donations.description,
 		dm_permission: false,
@@ -1916,18 +1635,19 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'name',
-						required: true,
-						description: command.alias.create.options.name.description,
-						description_localizations: translation('command.alias.create.options.name.description'),
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'tag',
+						name: 'clan',
 						description: command.alias.create.options.tag.description,
 						description_localizations: translation('command.alias.create.options.tag.description'),
 						required: true,
 						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'name',
+						required: true,
+						max_length: 6,
+						description: command.alias.create.options.name.description,
+						description_localizations: translation('command.alias.create.options.name.description'),
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -1945,10 +1665,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'name',
+						name: 'alias',
 						description: command.alias.delete.options.name.description,
 						description_localizations: translation('command.alias.delete.options.name.description'),
 						required: true,
+						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -3230,6 +2951,370 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	}
 ];
 
+export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
+	{
+		name: 'roster',
+		description: command.cwl.roster.description,
+		dm_permission: false,
+		description_localizations: translation('command.cwl.roster.description'),
+		options: [
+			{
+				name: 'create',
+				description: 'Create a roster',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clan',
+						description: 'Clan tag of the roster',
+						autocomplete: true,
+						required: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'name',
+						description: 'Name of the roster',
+						required: true,
+						max_length: 30,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'import_members',
+						description: 'Import members from the clan.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'max_members',
+						min_value: 5,
+						max_value: 65,
+						description: 'Size of the roster',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'min_town_hall',
+						description: 'Minimum town hall level of the roster',
+						type: ApplicationCommandOptionType.Integer,
+						min_value: 2,
+						max_value: MAX_TOWN_HALL_LEVEL
+					},
+					{
+						name: 'min_hero_level',
+						min_value: 0,
+						description: 'Minimum hero level of the roster',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'roster_role',
+						description: 'Role of the roster',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'sort_by',
+						description: 'Sort members by',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Player Name',
+								value: 'PLAYER_NAME'
+							},
+							{
+								name: 'Discord Username',
+								value: 'DISCORD_NAME'
+							},
+							{
+								name: 'Town Hall Level',
+								value: 'TOWN_HALL_LEVEL'
+							},
+							{
+								name: 'Hero Levels',
+								value: 'HERO_LEVEL'
+							},
+							{
+								name: 'TH + Hero Levels',
+								value: 'TH_HERO_LEVEL'
+							},
+							{
+								name: 'Clan Name',
+								value: 'CLAN_NAME'
+							},
+							{
+								name: 'Last Sign Up',
+								value: 'SIGNUP_TIME'
+							}
+						]
+					},
+					{
+						name: 'closing_time',
+						description: 'Closing time of the roster (YYYY-MM-DD HH:mm)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'allow_group_selection',
+						description: 'Allow members to select category.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'allow_multi_signup',
+						description: 'Allow multiple signup',
+						type: ApplicationCommandOptionType.Boolean
+					}
+				]
+			},
+			{
+				name: 'post',
+				description: 'List all rosters',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						autocomplete: true,
+						required: true,
+						description: 'Search for a roster',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'with_signup_button',
+						required: true,
+						description: 'Include Signup and Opt-out buttons.',
+						type: ApplicationCommandOptionType.Boolean
+					}
+				]
+			},
+			{
+				name: 'edit',
+				description: 'Edit a roster',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						description: 'ID of the roster',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'name',
+						description: 'Name of the roster',
+						max_length: 30,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clan',
+						description: 'Clan tag of the roster',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'max_members',
+						description: 'Size of the roster',
+						max_value: 65,
+						min_value: 5,
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'min_town_hall',
+						max_value: MAX_TOWN_HALL_LEVEL,
+						min_value: 2,
+						description: 'Minimum town hall level of the roster',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'min_hero_level',
+						min_value: 0,
+						description: 'Minimum combined hero level of the roster',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'roster_role',
+						description: 'Role of the roster',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'sort_by',
+						description: 'Sort members by',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Player Name',
+								value: 'PLAYER_NAME'
+							},
+							{
+								name: 'Discord Username',
+								value: 'DISCORD_NAME'
+							},
+							{
+								name: 'Town Hall Level',
+								value: 'TOWN_HALL_LEVEL'
+							},
+							{
+								name: 'Hero Levels',
+								value: 'HERO_LEVEL'
+							},
+							{
+								name: 'TH + Hero Levels',
+								value: 'TH_HERO_LEVEL'
+							},
+							{
+								name: 'Clan Name',
+								value: 'CLAN_NAME'
+							},
+							{
+								name: 'Last Sign Up',
+								value: 'SIGNUP_TIME'
+							}
+						]
+					},
+					// {
+					// 	name: 'delete_role',
+					// 	description: 'Delete the role of the roster.',
+					// 	type: ApplicationCommandOptionType.Boolean
+					// },
+					{
+						name: 'closing_time',
+						description: 'Closing time of the roster (YYYY-MM-DD HH:mm)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'allow_group_selection',
+						description: 'Allow members to select category.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'allow_multi_signup',
+						description: 'Allow multiple signup',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'delete_roster',
+						description: 'Delete the roster.',
+						type: ApplicationCommandOptionType.Boolean
+					}
+				]
+			},
+			{
+				name: 'manage',
+				description: 'Add or remove players from a roster',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						description: 'ID of the roster',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'action',
+						description: 'Name of the roster',
+						required: true,
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Add User',
+								value: 'add-user'
+							},
+							{
+								name: 'Remove User',
+								value: 'del-user'
+							},
+							{
+								name: 'Move User',
+								value: 'change-roster'
+							},
+							{
+								name: 'Change Group',
+								value: 'change-category'
+							}
+						]
+					},
+					{
+						name: 'player_tag',
+						required: true,
+						autocomplete: true,
+						description: 'Clan tag of the roster',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'group',
+						autocomplete: true,
+						description: 'Group of the roster',
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			},
+			{
+				name: 'groups',
+				description: 'Manage groups of the signed up users.',
+				type: ApplicationCommandOptionType.SubcommandGroup,
+				options: [
+					{
+						name: 'create',
+						description: 'Name of the roster',
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'name',
+								description: 'Name of the group.',
+								required: true,
+								max_length: 30,
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'group_role',
+								description: 'Role of the group',
+								type: ApplicationCommandOptionType.Role
+							},
+							{
+								name: 'selectable',
+								description: 'Allow members to select this group.',
+								type: ApplicationCommandOptionType.Boolean
+							}
+						]
+					},
+					{
+						name: 'modify',
+						description: 'Name of the category.',
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'group',
+								autocomplete: true,
+								required: true,
+								description: 'Name of the category.',
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'name',
+								description: 'Name of the category.',
+								max_length: 30,
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'group_role',
+								description: 'Role of the group',
+								type: ApplicationCommandOptionType.Role
+							},
+							{
+								name: 'selectable',
+								description: 'Allow members to select this group.',
+								type: ApplicationCommandOptionType.Boolean
+							},
+							{
+								name: 'delete_role',
+								description: 'Delete the role of the group.',
+								type: ApplicationCommandOptionType.Boolean
+							},
+							{
+								name: 'delete_group',
+								description: 'Delete the group.',
+								type: ApplicationCommandOptionType.Boolean
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+];
+
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
 		name: 'status',
@@ -3286,251 +3371,5 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				required: false
 			}
 		]
-	},
-	{
-		name: 'donations_range',
-		description: 'Elasticsearch query for donations.',
-		dm_permission: false,
-		options: [
-			{
-				name: 'tag',
-				type: ApplicationCommandOptionType.String,
-				description: common.options.tag.description
-			},
-			{
-				name: 'gte',
-				type: ApplicationCommandOptionType.String,
-				description: 'GTE date'
-			},
-			{
-				name: 'lte',
-				type: ApplicationCommandOptionType.String,
-				description: 'LTE date'
-			}
-		]
-	},
-	{
-		name: 'raid-perf',
-		description: 'Elasticsearch query for raid performance.',
-		dm_permission: false,
-		options: [
-			{
-				name: 'tag',
-				autocomplete: true,
-				type: ApplicationCommandOptionType.String,
-				description: common.options.tag.description
-			}
-		]
 	}
-	// {
-	// 	name: 'family',
-	// 	description: 'Shows summary of the clan family.',
-	// 	dm_permission: false,
-	// 	options: [
-	// 		{
-	// 			name: 'best',
-	// 			description: 'Shows a summary of best members.',
-	// 			type: ApplicationCommandOptionType.Subcommand,
-	// 			options: [
-	// 				{
-	// 					name: 'clans',
-	// 					required: false,
-	// 					autocomplete: true,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: 'Clan tags or aliases to filter clans.'
-	// 				},
-	// 				{
-	// 					name: 'season',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: command.summary.options.season.description,
-	// 					choices: getSeasonIds()
-	// 				},
-	// 				{
-	// 					name: 'limit',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.Integer,
-	// 					description: 'Number of members to show (Default: 5)',
-	// 					min_value: 3,
-	// 					max_value: 10
-	// 				},
-	// 				{
-	// 					name: 'order',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: 'Order of the list.',
-	// 					choices: [
-	// 						{
-	// 							name: 'Descending',
-	// 							value: 'desc'
-	// 						},
-	// 						{
-	// 							name: 'Ascending',
-	// 							value: 'asc'
-	// 						}
-	// 					]
-	// 				}
-	// 			]
-	// 		},
-	// 		{
-	// 			name: 'wars',
-	// 			description: 'Shows a summary of current wars, war stats and missed wars.',
-	// 			type: ApplicationCommandOptionType.Subcommand,
-	// 			options: [
-	// 				{
-	// 					name: 'option',
-	// 					description: 'Option to show.',
-	// 					type: ApplicationCommandOptionType.String,
-	// 					required: true,
-	// 					choices: [
-	// 						{
-	// 							name: 'War stats',
-	// 							value: 'war-stats'
-	// 						},
-	// 						{
-	// 							name: 'Current wars',
-	// 							value: 'current-wars'
-	// 						},
-	// 						{
-	// 							name: 'Missed wars',
-	// 							value: 'missed-wars'
-	// 						}
-	// 					]
-	// 				},
-	// 				{
-	// 					name: 'season',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: command.summary.options.season.description,
-	// 					choices: getSeasonIds()
-	// 				}
-	// 			]
-	// 		},
-	// 		{
-	// 			name: 'compo',
-	// 			description: 'Shows a summary of family compo.',
-	// 			type: ApplicationCommandOptionType.Subcommand
-	// 		},
-	// 		{
-	// 			name: 'cwl-ranks',
-	// 			description: 'Shows a summary of CWL ranks.',
-	// 			type: ApplicationCommandOptionType.Subcommand
-	// 		},
-	// 		{
-	// 			name: 'leagues',
-	// 			description: 'Shows a summary of clan leagues.',
-	// 			type: ApplicationCommandOptionType.Subcommand
-	// 		},
-	// 		{
-	// 			name: 'clans',
-	// 			description: 'Shows a summary of family clans.',
-	// 			type: ApplicationCommandOptionType.Subcommand
-	// 		},
-	// 		{
-	// 			name: 'donations',
-	// 			description: 'Shows a summary of donations.',
-	// 			type: ApplicationCommandOptionType.Subcommand,
-	// 			options: [
-	// 				{
-	// 					name: 'season',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: command.summary.options.season.description,
-	// 					choices: getSeasonIds()
-	// 				},
-	// 				{
-	// 					name: 'clans',
-	// 					required: false,
-	// 					autocomplete: true,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: 'Clan tags or aliases to filter clans.'
-	// 				}
-	// 			]
-	// 		},
-	// 		{
-	// 			name: 'attacks',
-	// 			description: 'Shows a summary of attacks.',
-	// 			type: ApplicationCommandOptionType.Subcommand,
-	// 			options: [
-	// 				{
-	// 					name: 'season',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: command.summary.options.season.description,
-	// 					// description_localizations: translation('command.summary.options.season.description'),
-	// 					choices: getSeasonIds()
-	// 				}
-	// 			]
-	// 		},
-	// 		{
-	// 			name: 'trophies',
-	// 			description: 'Shows a summary of trophies.',
-	// 			type: ApplicationCommandOptionType.Subcommand,
-	// 			options: [
-	// 				{
-	// 					name: 'limit',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.Integer,
-	// 					description: 'Limit the number of members.'
-	// 				}
-	// 			]
-	// 		},
-	// 		{
-	// 			name: 'capital-raids',
-	// 			description: 'Shows information about capital raids.',
-	// 			type: ApplicationCommandOptionType.Subcommand,
-	// 			options: [
-	// 				{
-	// 					name: 'week',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: 'The week to show raids for.',
-	// 					choices: getWeekIds()
-	// 				}
-	// 			]
-	// 		},
-	// 		{
-	// 			name: 'capital-contribution',
-	// 			description: 'Shows a summary of capital contributions.',
-	// 			type: ApplicationCommandOptionType.Subcommand,
-	// 			options: [
-	// 				{
-	// 					name: 'season',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: command.summary.options.season.description,
-	// 					// description_localizations: translation('command.summary.options.season.description'),
-	// 					choices: getSeasonIds()
-	// 				},
-	// 				{
-	// 					name: 'week',
-	// 					description: 'The week to show capital contributions for.',
-	// 					type: ApplicationCommandOptionType.String,
-	// 					required: false,
-	// 					choices: getWeekIds()
-	// 				}
-	// 			]
-	// 		},
-	// 		{
-	// 			name: 'activity',
-	// 			description: 'Shows a summary of clan activities (last seen).',
-	// 			type: ApplicationCommandOptionType.Subcommand
-	// 		},
-	// 		{
-	// 			name: 'clan-games',
-	// 			description: 'Shows a summary of clan games scores.',
-	// 			type: ApplicationCommandOptionType.Subcommand,
-	// 			options: [
-	// 				{
-	// 					name: 'season',
-	// 					required: false,
-	// 					type: ApplicationCommandOptionType.String,
-	// 					description: command.summary.options.season.description,
-	// 					// description_localizations: translation('command.summary.options.season.description'),
-	// 					choices: getSeasonIds()
-	// 				}
-	// 			]
-	// 		}
-	// 	]
-	// }
 ];
