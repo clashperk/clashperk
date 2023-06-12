@@ -104,6 +104,22 @@ export default class RosterEditCommand extends Command {
 				return action.reply({ content: 'This roster cannot be opened as the closing time has passed.', ephemeral: true });
 			}
 
+			if (!roster.allowMultiSignup && roster.members.length > 1 && roster.closed) {
+				const dup = await this.client.rosterManager.rosters.findOne(
+					{
+						'_id': { $ne: roster._id },
+						'closed': false,
+						'members.tag': { $in: roster.members.map((mem) => mem.tag) }
+					},
+					{ projection: { _id: 1 } }
+				);
+
+				if (dup)
+					return interaction.editReply(
+						`This roster has multiple members signed up for another roster **${roster.clan.name} - ${roster.name}**. Please remove them before opening this roster.`
+					);
+			}
+
 			const updated = await this.client.rosterManager.open(rosterId);
 			if (!updated) return action.reply({ content: 'Roster was deleted.', ephemeral: true });
 			await action.update({ content: 'Roster opened!', components: [] });

@@ -67,12 +67,33 @@ export default class RosterEditCommand extends Command {
 		if (args.min_hero_level) data.minHeroLevels = args.min_hero_level;
 		if (args.roster_role) data.roleId = args.roster_role.id;
 		if (args.delete_role) data.roleId = null;
-		if (args.allow_multi_signup) data.allowMultiSignup = args.allow_multi_signup;
-		if (args.allow_group_selection) data.allowCategorySelection = args.allow_group_selection;
+		if (typeof args.allow_multi_signup === 'boolean') data.allowMultiSignup = args.allow_multi_signup;
+		if (typeof args.allow_group_selection === 'boolean') data.allowCategorySelection = args.allow_group_selection;
 		if (args.clear_members) data.members = [];
 		if (args.sort_by) data.sortBy = args.sort_by;
 
-		if (moment(args.closing_time).isValid()) {
+		if (
+			typeof args.allow_multi_signup === 'boolean' &&
+			!args.allow_multi_signup &&
+			roster.allowMultiSignup &&
+			roster.members.length > 1
+		) {
+			const dup = await this.client.rosterManager.rosters.findOne(
+				{
+					'_id': { $ne: roster._id },
+					'closed': false,
+					'members.tag': { $in: roster.members.map((mem) => mem.tag) }
+				},
+				{ projection: { _id: 1 } }
+			);
+
+			if (dup)
+				return interaction.editReply(
+					'This roster has multiple members signed up for another roster. Please remove them before disabling multi-signup.'
+				);
+		}
+
+		if (args.closing_time && moment(args.closing_time).isValid()) {
 			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction.user.id);
 			data.closingTime = moment.tz(args.closing_time, timezoneId).utc().toDate();
 			if (data.closingTime < new Date()) return interaction.editReply('Closing time cannot be in the past.');

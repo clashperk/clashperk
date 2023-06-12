@@ -42,7 +42,7 @@ export interface IRoster {
 	};
 	members: IRosterMember[];
 	closed: boolean;
-	closingTime?: Date;
+	closingTime?: Date | null;
 	sortBy?: RosterSortTypes;
 	allowCategorySelection?: boolean;
 	lastUpdated: Date;
@@ -100,7 +100,7 @@ export class RosterManager {
 	public async list(guildId: string, withMembers = false) {
 		const cursor = this.rosters.find({ guildId });
 		if (!withMembers) cursor.project({ members: 0 });
-		return cursor.toArray();
+		return cursor.sort({ _id: -1 }).toArray();
 	}
 
 	public async clear(rosterId: ObjectId) {
@@ -181,7 +181,7 @@ export class RosterManager {
 
 		if (!roster.allowMultiSignup && !isDryRun) {
 			const dup = await this.rosters.findOne(
-				{ '_id': { $ne: rosterId }, 'guildId': interaction.guild.id, 'members.tag': player.tag },
+				{ '_id': { $ne: rosterId }, 'closed': false, 'guildId': interaction.guild.id, 'members.tag': player.tag },
 				{ projection: { _id: 1 } }
 			);
 			if (dup) {
@@ -197,7 +197,13 @@ export class RosterManager {
 
 		if (roster.allowMultiSignup && !isDryRun) {
 			const dup = await this.rosters.findOne(
-				{ '_id': { $ne: rosterId }, 'guildId': interaction.guild.id, 'members.tag': player.tag, 'allowMultiSignup': false },
+				{
+					'_id': { $ne: rosterId },
+					'closed': false,
+					'guildId': interaction.guild.id,
+					'members.tag': player.tag,
+					'allowMultiSignup': false
+				},
 				{ projection: { _id: 1 } }
 			);
 			if (dup && !dup.allowMultiSignup) {
@@ -619,7 +625,7 @@ export class RosterManager {
 	}
 
 	public isClosed(roster: IRoster) {
-		return roster.closed || (roster.closingTime && roster.closingTime < new Date());
+		return roster.closed || (roster.closingTime ? roster.closingTime < new Date() : false);
 	}
 
 	private snipe(str: string | number, len = 12) {
@@ -680,6 +686,25 @@ export class RosterManager {
 		];
 
 		return this.categories.insertMany(defaultCategories);
+	}
+
+	private async closeRosters(guildId: string) {
+		return this.rosters.updateMany(
+			{
+				guildId,
+				$and: [
+					{
+						closingTime: { $ne: null }
+					},
+					{
+						closingTime: { $lt: new Date() }
+					}
+				]
+			},
+			{
+				$set: { closed: true }
+			}
+		);
 	}
 
 	public async editCategory(categoryId: ObjectId, data: Partial<IRosterCategory>) {

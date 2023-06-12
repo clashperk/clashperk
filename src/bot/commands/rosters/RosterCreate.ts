@@ -58,17 +58,21 @@ export default class RosterCreateCommand extends Command {
 			sortBy: args.sort_by,
 			minHeroLevels: args.min_hero_level,
 			minTownHall: args.min_town_hall,
-			roleId: args.roster_role?.id,
-			createdAt: new Date(),
-			lastUpdated: new Date()
+			roleId: args.roster_role?.id ?? null,
+			closingTime: null,
+			lastUpdated: new Date(),
+			createdAt: new Date()
 		};
 
 		if (args.roster_role) {
-			const dup = await this.client.rosterManager.rosters.findOne({ roleId: args.roster_role.id });
+			const dup = await this.client.rosterManager.rosters.findOne(
+				{ roleId: args.roster_role.id, closed: false },
+				{ projection: { _id: 1 } }
+			);
 			if (dup) return interaction.editReply({ content: 'A roster with this role already exists.' });
 		}
 
-		if (moment(args.closing_time).isValid()) {
+		if (args.closing_time && moment(args.closing_time).isValid()) {
 			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction.user.id);
 			data.closingTime = moment.tz(args.closing_time, timezoneId).utc().toDate();
 			if (data.closingTime < new Date()) return interaction.editReply('Closing time cannot be in the past.');
