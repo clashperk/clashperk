@@ -25,6 +25,7 @@ import { CommandsMap } from './CommandsMap.js';
 import { NicknameHandler } from './NicknameHandler.js';
 import { GuildEventsHandler } from './GuildEventsHandler.js';
 import RedisService from './RedisService.js';
+import { RosterManager } from './RosterManager.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -78,6 +79,7 @@ export class Client extends Discord.Client {
 	public _commands: Map<string, string> = new Map();
 	private commandsMap!: CommandsMap;
 	public nickHandler!: NicknameHandler;
+	public rosterManager!: RosterManager;
 
 	public constructor() {
 		super({
@@ -196,6 +198,7 @@ export class Client extends Discord.Client {
 		this.nickHandler = new NicknameHandler(this);
 		this.commandsMap = new CommandsMap(this);
 		this.guildEvents = new GuildEventsHandler(this);
+		this.rosterManager = new RosterManager(this);
 
 		await this.http.login();
 

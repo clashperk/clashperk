@@ -8,7 +8,6 @@ import { Util } from '../../util/index.js';
 export default class CWLRosterCommand extends Command {
 	public constructor() {
 		super('cwl-roster', {
-			aliases: ['roster'],
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],

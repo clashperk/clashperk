@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { inspect } from 'util';
-import { Routes, RouteBases } from 'discord.js';
+import { Routes, RouteBases, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import fetch from 'node-fetch';
-import { COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
+import { BETA_COMMANDS, COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
 const guildId = process.env.GUILD_ID ?? '509784317598105619';
@@ -23,7 +23,7 @@ const applicationGuildCommands = async (token: string, commands: typeof COMMANDS
 	console.log(`Updated ${COMMANDS.length} Guild Application Commands`);
 };
 
-const commandPermission = async (token: string, commands: typeof COMMANDS) => {
+const betaCommands = async (token: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
 	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
 		method: 'PUT',
 		headers: {
@@ -56,14 +56,13 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 		return applicationCommands(token, COMMANDS);
 	}
 
-	if (process.argv.includes('--private')) {
-		return commandPermission(token, PRIVATE_COMMANDS);
+	if (process.argv.includes('--beta')) {
+		return betaCommands(token, BETA_COMMANDS);
 	}
 
 	if (process.argv.includes('--delete')) {
 		return applicationGuildCommands(token, []);
 	}
 
-	// await applicationGuildCommands(process.env.BOT_TOKEN!, []);
-	return applicationCommands(token, [...COMMANDS, ...PRIVATE_COMMANDS]);
+	return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...PRIVATE_COMMANDS]);
 })();

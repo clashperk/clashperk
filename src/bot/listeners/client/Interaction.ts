@@ -153,7 +153,45 @@ export default class InteractionListener extends Listener {
 			case 'clan_tag': {
 				return this.clanTagAutocomplete(interaction, focused);
 			}
+			case 'clan': {
+				return this.clanTagAutocomplete(interaction, focused);
+			}
+			case 'alias': {
+				return this.aliasAutoComplete(interaction);
+			}
+			case 'roster': {
+				return this.rosterAutocomplete(interaction);
+			}
+			case 'group': {
+				return this.rosterCategoryAutocomplete(interaction);
+			}
 		}
+	}
+
+	private async rosterAutocomplete(interaction: AutocompleteInteraction<'cached'>) {
+		const rosters = await this.client.rosterManager.list(interaction.guild.id);
+		if (!rosters.length) return interaction.respond([{ value: '0', name: 'No rosters found.' }]);
+
+		return interaction.respond(
+			rosters.map((roster) => ({ value: roster._id.toHexString(), name: `${roster.clan.name} - ${roster.name}`.substring(0, 100) }))
+		);
+	}
+
+	private async rosterCategoryAutocomplete(interaction: AutocompleteInteraction<'cached'>) {
+		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
+		if (!categories.length) return interaction.respond([{ value: '0', name: 'No categories found.' }]);
+
+		return interaction.respond(
+			categories.map((category) => ({ value: category._id.toHexString(), name: `${category.displayName}`.substring(0, 100) }))
+		);
+	}
+
+	private async aliasAutoComplete(interaction: AutocompleteInteraction<'cached'>) {
+		const clans = await this.client.storage.find(interaction.guild.id);
+		const aliases = clans.filter((clan) => clan.alias);
+		if (!aliases.length) return interaction.respond([{ value: '0', name: 'No aliases found.' }]);
+
+		return interaction.respond(aliases.map((clan) => ({ value: clan.alias!, name: `${clan.alias!} - ${clan.name}` })));
 	}
 
 	private async durationAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {

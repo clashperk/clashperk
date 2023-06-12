@@ -61,6 +61,9 @@ export const enum Collections {
 
 	GUILD_EVENTS = 'GuildEvents',
 
+	ROSTERS = 'Rosters',
+	ROSTER_CATEGORIES = 'RosterCategories',
+
 	CLAN_MEMBERS = 'ClanMembers',
 	CLAN_GAMES_POINTS = 'ClanGamesPoints',
 	PLAYER_SEASONS = 'PlayerSeasons',

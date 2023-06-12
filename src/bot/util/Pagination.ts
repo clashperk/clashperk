@@ -102,19 +102,19 @@ export const handlePagination = async (
 	return row;
 };
 
-export const handleInteractionCollector = (param: {
+export const createInteractionCollector = (param: {
 	customIds: Record<string, string>;
 	onClick?: (interaction: ButtonInteraction<'cached'>) => unknown;
 	onSelect?: (interaction: StringSelectMenuInteraction<'cached'>) => unknown;
 	interaction: CommandInteraction<'cached'>;
-	msg: Message<true>;
+	message: Message<true>;
 }) => {
 	const client = container.resolve(Client);
 	const customIds = {
 		...param.customIds
 	};
 
-	const collector = param.msg.createMessageComponentCollector({
+	const collector = param.message.createMessageComponentCollector({
 		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === param.interaction.user.id
 	});
 
