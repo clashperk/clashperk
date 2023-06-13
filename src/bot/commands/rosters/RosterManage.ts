@@ -12,6 +12,7 @@ export default class RosterManageCommand extends Command {
 			description: {
 				content: ['Create, delete, edit or view rosters.']
 			},
+			userPermissions: ['ManageGuild'],
 			defer: true,
 			ephemeral: true
 		});
@@ -27,9 +28,7 @@ export default class RosterManageCommand extends Command {
 			action: 'add-user' | 'del-user' | 'change-roster' | 'change-category' | '/';
 		}
 	) {
-		if (!ObjectId.isValid(args.roster)) {
-			return interaction.editReply({ content: 'Invalid roster ID.' });
-		}
+		if (!ObjectId.isValid(args.roster)) return interaction.editReply({ content: 'Invalid roster ID.' });
 
 		const rosterId = new ObjectId(args.roster);
 		const roster = await this.client.rosterManager.get(rosterId);

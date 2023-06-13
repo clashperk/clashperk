@@ -15,7 +15,6 @@ export default class RosterEditCommand extends Command {
 			description: {
 				content: ['Create, delete, edit or view rosters.']
 			},
-			userPermissions: ['ManageGuild'],
 			defer: true,
 			ephemeral: true
 		});
@@ -28,9 +27,7 @@ export default class RosterEditCommand extends Command {
 			with_signup_button?: boolean;
 		}
 	) {
-		if (!ObjectId.isValid(args.roster)) {
-			return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
-		}
+		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 
 		const rosterId = new ObjectId(args.roster);
 		const roster = await this.client.rosterManager.get(rosterId);
@@ -100,7 +97,7 @@ export default class RosterEditCommand extends Command {
 		};
 
 		const openRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
-			if (roster.closingTime && new Date(roster.closingTime) < new Date()) {
+			if (roster.endTime && new Date(roster.endTime) < new Date()) {
 				return action.reply({ content: 'This roster cannot be opened as the closing time has passed.', ephemeral: true });
 			}
 
@@ -207,6 +204,14 @@ export default class RosterEditCommand extends Command {
 			message,
 			onSelect: (action) => {
 				const value = action.values.at(0)!;
+
+				if (!this.client.util.isManager(action.member) && !['info', 'export'].includes(value)) {
+					return interaction.reply({
+						content: `You are missing the **Manage Server** permission or the **Bot Manager** role to perform this action.`,
+						ephemeral: true
+					});
+				}
+
 				switch (value) {
 					case 'close':
 						return closeRoster(action);

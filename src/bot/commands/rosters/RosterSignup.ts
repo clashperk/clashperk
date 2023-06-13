@@ -18,9 +18,7 @@ export default class RosterSignupCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; signup: boolean }) {
-		if (!ObjectId.isValid(args.roster)) {
-			return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
-		}
+		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 
 		const rosterId = new ObjectId(args.roster);
 		const roster = await this.client.rosterManager.get(rosterId);

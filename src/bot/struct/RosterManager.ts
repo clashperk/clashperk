@@ -33,6 +33,7 @@ export interface IRoster {
 	allowMultiSignup?: boolean;
 	maxMembers?: number;
 	minTownHall?: number;
+	maxTownHall?: number;
 	minHeroLevels?: number;
 	roleId?: string | null;
 	clan: {
@@ -42,7 +43,8 @@ export interface IRoster {
 	};
 	members: IRosterMember[];
 	closed: boolean;
-	closingTime?: Date | null;
+	startTime?: Date | null;
+	endTime?: Date | null;
 	sortBy?: RosterSortTypes;
 	allowCategorySelection?: boolean;
 	lastUpdated: Date;
@@ -138,12 +140,20 @@ export class RosterManager {
 			return false;
 		}
 
+		if (roster.startTime && roster.startTime > new Date()) {
+			await interaction.followUp({
+				content: `This roster will open on ${time(roster.startTime)} (${time(roster.startTime, 'R')})`,
+				ephemeral: true
+			});
+			return false;
+		}
+
 		if (roster.closed) {
 			await interaction.followUp({ content: 'This roster is closed.', ephemeral: true });
 			return false;
 		}
 
-		if (roster.closingTime && roster.closingTime < new Date()) {
+		if (roster.endTime && roster.endTime < new Date()) {
 			await interaction.followUp({ content: 'This roster is closed.', ephemeral: true });
 			return false;
 		}
@@ -156,6 +166,14 @@ export class RosterManager {
 		if (roster.minTownHall && player.townHallLevel < roster.minTownHall) {
 			await interaction.followUp({
 				content: `This roster requires a minimum Town Hall level of ${roster.minTownHall}.`,
+				ephemeral: true
+			});
+			return false;
+		}
+
+		if (roster.maxTownHall && player.townHallLevel > roster.maxTownHall) {
+			await interaction.followUp({
+				content: `This roster requires a maximum Town Hall level of ${roster.maxTownHall}.`,
 				ephemeral: true
 			});
 			return false;
@@ -427,28 +445,41 @@ export class RosterManager {
 				name: `${roster.clan.name} (${roster.clan.tag})`,
 				iconURL: roster.clan.badgeUrl,
 				url: this.client.http.getClanURL(roster.clan.tag)
-			})
-			.setDescription(
+			});
+		embed.setDescription(
+			[
+				`\`TH ${'DISCORD'.padEnd(12, ' ')} ${'NAME'.padEnd(12, ' ')} ${'CLAN'.padEnd(6, ' ')}\``,
+				...membersGroup.flatMap(([categoryId, members]) => [
+					`${categoryId === 'none' ? '' : `\n**${categoriesMap[categoryId].displayName}**`}`,
+					...members.map((mem) => {
+						const hall = `${mem.townHallLevel}`.padStart(2, ' ');
+						const ign = this.snipe(mem.name, 12);
+						const discord = this.snipe(mem.username ?? ' ', 12);
+						const clan = this.snipe(mem.clan?.name ?? ' ', 6);
+						return `\`${hall} ${discord} ${ign} ${clan}\``;
+					})
+				])
+			].join('\n')
+		);
+
+		if (!roster.members.length) {
+			embed.setDescription(
 				[
 					`\`TH ${'DISCORD'.padEnd(12, ' ')} ${'NAME'.padEnd(12, ' ')} ${'CLAN'.padEnd(6, ' ')}\``,
-					...membersGroup.flatMap(([categoryId, members]) => [
-						`${categoryId === 'none' ? '' : `\n**${categoriesMap[categoryId].displayName}**`}`,
-						...members.map((mem) => {
-							const hall = `${mem.townHallLevel}`.padStart(2, ' ');
-							const ign = this.snipe(mem.name, 12);
-							const discord = this.snipe(mem.username ?? ' ', 12);
-							const clan = this.snipe(mem.clan?.name ?? ' ', 6);
-							return `\`${hall} ${discord} ${ign} ${clan}\``;
-						})
-					])
+					`\`-- ${'------'.padEnd(12, ' ')} ${'----'.padEnd(12, ' ')} ${'----'.padEnd(6, ' ')}\``
 				].join('\n')
 			);
+		}
 
-		if (roster.closingTime) {
+		if (roster.startTime && roster.startTime > new Date()) {
+			embed.addFields({ name: '\u200e', value: `Signup opens on ${time(roster.startTime)}` });
+		} else if (roster.endTime) {
 			embed.addFields({
 				name: '\u200e',
-				value: `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.closingTime)}`
+				value: `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`
 			});
+		} else if (roster.closed) {
+			embed.addFields({ name: '\u200e', value: 'Signup is **closed**' });
 		}
 
 		return embed;
@@ -456,7 +487,7 @@ export class RosterManager {
 
 	public getRosterInfoEmbed(roster: IRoster) {
 		const embed = new EmbedBuilder()
-			.setTitle(roster.name)
+			.setTitle(`${roster.name} ${this.isClosed(roster) ? '[CLOSED]' : ''}`)
 			.setURL(this.client.http.getClanURL(roster.clan.tag))
 			.setAuthor({
 				name: `${roster.clan.name} (${roster.clan.tag})`,
@@ -494,9 +525,18 @@ export class RosterManager {
 				value: roster.members.length.toString()
 			})
 			.addFields({
-				name: 'Signup Close Time',
+				name: 'Start Time',
 				inline: true,
-				value: roster.closingTime ? `${time(roster.closingTime)} ${this.isClosed(roster) ? '[CLOSED]' : ''}` : 'N/A'
+				value: roster.startTime
+					? `${time(roster.startTime)} ${roster.startTime > new Date() ? `(${time(roster.startTime, 'R')})` : '[STARTED]'}`
+					: 'N/A'
+			})
+			.addFields({
+				name: 'End Time',
+				inline: true,
+				value: roster.endTime
+					? `${time(roster.endTime)} ${this.isClosed(roster) ? '[CLOSED]' : `(${time(roster.endTime, 'R')})`}`
+					: 'N/A'
 			})
 			.addFields({
 				name: 'Allow Members to Select Group',
@@ -625,7 +665,7 @@ export class RosterManager {
 	}
 
 	public isClosed(roster: IRoster) {
-		return roster.closed || (roster.closingTime ? roster.closingTime < new Date() : false);
+		return roster.closed || (roster.endTime ? roster.endTime < new Date() : false);
 	}
 
 	private snipe(str: string | number, len = 12) {
@@ -694,10 +734,10 @@ export class RosterManager {
 				guildId,
 				$and: [
 					{
-						closingTime: { $ne: null }
+						endTime: { $ne: null }
 					},
 					{
-						closingTime: { $lt: new Date() }
+						endTime: { $lt: new Date() }
 					}
 				]
 			},

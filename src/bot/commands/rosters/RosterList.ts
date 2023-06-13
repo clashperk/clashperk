@@ -6,7 +6,6 @@ export default class RosterListCommand extends Command {
 		super('roster-list', {
 			category: 'roster',
 			channel: 'guild',
-			userPermissions: ['ManageGuild'],
 			description: {
 				content: ['Create, delete, edit or view rosters.']
 			},

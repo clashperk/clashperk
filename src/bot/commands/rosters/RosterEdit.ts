@@ -26,20 +26,20 @@ export default class RosterEditCommand extends Command {
 			name?: string;
 			max_members?: number;
 			min_town_hall?: number;
+			max_town_hall?: number;
 			min_hero_level?: number;
 			roster_role?: Role;
 			delete_role?: boolean;
 			allow_multi_signup?: boolean;
 			allow_group_selection?: boolean;
-			closing_time?: string;
+			end_time?: string;
+			start_time?: string;
 			sort_by?: RosterSortTypes;
 			clear_members?: boolean;
 			delete_roster?: boolean;
 		}
 	) {
-		if (!ObjectId.isValid(args.roster)) {
-			return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
-		}
+		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 
 		const rosterId = new ObjectId(args.roster);
 		const roster = await this.client.rosterManager.get(rosterId);
@@ -64,6 +64,7 @@ export default class RosterEditCommand extends Command {
 		if (args.name) data.name = args.name;
 		if (args.max_members) data.maxMembers = args.max_members;
 		if (args.min_town_hall) data.minTownHall = args.min_town_hall;
+		if (args.max_town_hall) data.maxTownHall = args.max_town_hall;
 		if (args.min_hero_level) data.minHeroLevels = args.min_hero_level;
 		if (args.roster_role) data.roleId = args.roster_role.id;
 		if (args.delete_role) data.roleId = null;
@@ -93,13 +94,28 @@ export default class RosterEditCommand extends Command {
 				);
 		}
 
-		if (args.closing_time && moment(args.closing_time).isValid()) {
+		if (args.start_time && moment(args.start_time).isValid()) {
 			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction.user.id);
-			data.closingTime = moment.tz(args.closing_time, timezoneId).utc().toDate();
-			if (data.closingTime < new Date()) return interaction.editReply('Closing time cannot be in the past.');
-			if (data.closingTime < moment().add(5, 'minutes').toDate()) {
-				return interaction.editReply('Closing time must be at least 5 minutes from now.');
+			data.startTime = moment.tz(args.start_time, timezoneId).utc().toDate();
+			if (data.startTime < new Date()) return interaction.editReply('Start time cannot be in the past.');
+			if (data.startTime < moment().add(5, 'minutes').toDate()) {
+				return interaction.editReply('Start time must be at least 5 minutes from now.');
 			}
+		}
+
+		if (args.end_time && moment(args.end_time).isValid()) {
+			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction.user.id);
+			data.endTime = moment.tz(args.end_time, timezoneId).utc().toDate();
+			if (data.endTime < new Date()) return interaction.editReply('End time cannot be in the past.');
+			if (data.endTime < moment().add(5, 'minutes').toDate()) {
+				return interaction.editReply('End time must be at least 5 minutes from now.');
+			}
+		}
+
+		if (data.endTime && data.startTime) {
+			if (data.endTime < data.startTime) return interaction.editReply('End time cannot be before start time.');
+			if (data.endTime.getTime() - data.startTime.getTime() < 600000)
+				return interaction.editReply('Roster must be at least 10 minutes long.');
 		}
 
 		const updated = await this.client.rosterManager.edit(rosterId, data);

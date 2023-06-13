@@ -3042,8 +3042,13 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						]
 					},
 					{
-						name: 'closing_time',
-						description: 'Closing time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						name: 'start_time',
+						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'end_time',
+						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
@@ -3172,8 +3177,13 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					// 	type: ApplicationCommandOptionType.Boolean
 					// },
 					{
-						name: 'closing_time',
-						description: 'Closing time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						name: 'start_time',
+						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'end_time',
+						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
