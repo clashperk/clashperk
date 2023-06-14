@@ -254,8 +254,8 @@ export class CommandHandler extends BaseHandler {
 		if (!interaction.inCachedGuild()) return false;
 
 		if (command.clientPermissions?.length) {
-			const missing = interaction.appPermissions?.missing(command.clientPermissions);
-			if (missing?.length) {
+			const missing = interaction.appPermissions.missing(command.clientPermissions);
+			if (missing.length) {
 				this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.CLIENT, missing);
 				return true;
 			}
