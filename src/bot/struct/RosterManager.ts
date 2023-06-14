@@ -13,10 +13,12 @@ import {
 	time
 } from 'discord.js';
 import { Collection, ObjectId, WithId } from 'mongodb';
-import { Collections } from '../util/Constants.js';
+import { UserInfoModel } from '../types/index.js';
+import { Collections, MAX_TOWN_HALL_LEVEL } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
+import Google from './Google.js';
 
 export type RosterSortTypes =
 	| 'PLAYER_NAME'
@@ -526,19 +528,19 @@ export class RosterManager {
 				url: this.client.http.getClanURL(roster.clan.tag)
 			})
 			.addFields({
-				name: 'Max. Members',
+				name: 'Roster Size',
 				inline: true,
-				value: (roster.maxMembers ?? 65).toString()
+				value: `${roster.maxMembers ?? 65} max, ${roster.members.length} signed-up`
 			})
 			.addFields({
-				name: 'Min. Town Hall',
+				name: 'Town Hall',
 				inline: true,
-				value: (roster.minTownHall ?? 2).toString()
+				value: `${roster.minTownHall ?? 2} min, ${roster.maxTownHall ?? MAX_TOWN_HALL_LEVEL} max`
 			})
 			.addFields({
-				name: 'Min. Hero Levels',
+				name: 'Hero Levels',
 				inline: true,
-				value: (roster.minHeroLevels ?? 0).toString()
+				value: `${roster.minHeroLevels ?? 0} min (combined)`
 			})
 			.addFields({
 				name: 'Allow Multi-Signup',
@@ -549,11 +551,6 @@ export class RosterManager {
 				name: 'Roster Role',
 				inline: true,
 				value: roster.roleId ? `<@&${roster.roleId}>` : 'None'
-			})
-			.addFields({
-				name: 'Members Signed-up',
-				inline: true,
-				value: roster.members.length.toString()
 			})
 			.addFields({
 				name: 'Start Time',
@@ -570,7 +567,7 @@ export class RosterManager {
 					: 'N/A'
 			})
 			.addFields({
-				name: 'Allow Members to Select Group',
+				name: 'Allow Users to Select Group',
 				inline: true,
 				value: roster.allowCategorySelection ? 'Yes' : 'No'
 			});
@@ -755,7 +752,7 @@ export class RosterManager {
 		return this.categories.insertMany(defaultCategories);
 	}
 
-	private async closeRosters(guildId: string) {
+	public async closeRosters(guildId: string) {
 		return this.rosters.updateMany(
 			{
 				guildId,
@@ -779,8 +776,38 @@ export class RosterManager {
 		return value;
 	}
 
-	public async getTimezoneId(userId: string) {
-		const user = await this.client.db.collection(Collections.USERS).findOne({ userId });
-		return user?.timezone?.id ?? 'UTC';
+	public async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {
+		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
+		if (!location) {
+			if (!user?.timezone) return { id: 'UTC', name: 'Coordinated Universal Time' };
+			return { id: user.timezone.id, name: user.timezone.name };
+		}
+
+		const raw = await Google.timezone(location);
+		if (!raw) return { id: 'UTC', name: 'Coordinated Universal Time' };
+
+		const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
+		if (!user?.timezone) {
+			await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+				{ userId: interaction.user.id },
+				{
+					$set: {
+						username: interaction.user.username,
+						displayName: interaction.user.displayName,
+						discriminator: interaction.user.discriminator,
+						timezone: {
+							id: raw.timezone.timeZoneId,
+							offset: Number(offset),
+							name: raw.timezone.timeZoneName,
+							location: raw.location.formatted_address
+						}
+					},
+					$setOnInsert: { createdAt: new Date() }
+				},
+				{ upsert: true }
+			);
+		}
+
+		return { id: raw.timezone.timeZoneId, name: raw.timezone.timeZoneName };
 	}
 }

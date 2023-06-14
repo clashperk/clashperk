@@ -34,6 +34,7 @@ export default class RosterEditCommand extends Command {
 			allow_group_selection?: boolean;
 			end_time?: string;
 			start_time?: string;
+			timezone?: string;
 			sort_by?: RosterSortTypes;
 			clear_members?: boolean;
 			delete_roster?: boolean;
@@ -94,9 +95,10 @@ export default class RosterEditCommand extends Command {
 				);
 		}
 
+		const timezone = await this.client.rosterManager.getTimezoneOffset(interaction, args.timezone);
+
 		if (args.start_time && moment(args.start_time).isValid()) {
-			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction.user.id);
-			data.startTime = moment.tz(args.start_time, timezoneId).utc().toDate();
+			data.startTime = moment.tz(args.start_time, timezone.id).utc().toDate();
 			if (data.startTime < new Date()) return interaction.editReply('Start time cannot be in the past.');
 			if (data.startTime < moment().add(5, 'minutes').toDate()) {
 				return interaction.editReply('Start time must be at least 5 minutes from now.');
@@ -104,8 +106,7 @@ export default class RosterEditCommand extends Command {
 		}
 
 		if (args.end_time && moment(args.end_time).isValid()) {
-			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction.user.id);
-			data.endTime = moment.tz(args.end_time, timezoneId).utc().toDate();
+			data.endTime = moment.tz(args.end_time, timezone.id).utc().toDate();
 			if (data.endTime < new Date()) return interaction.editReply('End time cannot be in the past.');
 			if (data.endTime < moment().add(5, 'minutes').toDate()) {
 				return interaction.editReply('End time must be at least 5 minutes from now.');

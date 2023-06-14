@@ -86,10 +86,7 @@ export default class ClanActivityCommand extends Command {
 
 		const timeZoneCommand = this.client.getCommand('/timezone');
 		await interaction.editReply({
-			content:
-				timezone.offset === 0
-					? `Please set your time zone with the ${timeZoneCommand} command. It enables you to view the graphs in your time zone.`
-					: null,
+			content: timezone.offset === 0 ? `Set your timezone with the ${timeZoneCommand} command.` : null,
 			files: [rawFile]
 		});
 

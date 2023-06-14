@@ -335,7 +335,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'timezone',
 				required: false,
-				description: 'Search time zone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+				description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -1320,7 +1320,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'location',
-				description: 'Search time zone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+				description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
 				type: ApplicationCommandOptionType.String,
 				required: true
 			}
@@ -3052,6 +3052,11 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
+						name: 'timezone',
+						description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
 						name: 'allow_group_selection',
 						description: 'Whether to allow members to select group.',
 						type: ApplicationCommandOptionType.Boolean
@@ -3165,11 +3170,11 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							}
 						]
 					},
-					// {
-					// 	name: 'delete_role',
-					// 	description: 'Whether to delete the role of the roster.',
-					// 	type: ApplicationCommandOptionType.Boolean
-					// },
+					{
+						name: 'delete_role',
+						description: 'Whether to delete the role of the roster.',
+						type: ApplicationCommandOptionType.Boolean
+					},
 					{
 						name: 'start_time',
 						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
@@ -3178,6 +3183,11 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'end_time',
 						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'timezone',
+						description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
 						type: ApplicationCommandOptionType.String
 					},
 					{

@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, ComponentType, User } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, ComponentType, User, embedLength } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
@@ -136,14 +136,15 @@ export default class UpgradesCommand extends Command {
 			'Elixir Hero': `${EMOJIS.ELIXIR} Heroes`,
 			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
 			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`,
-			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`
-			// 'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`,
+			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
+			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};
 
 		const units = [];
 		const indexes = Object.values(titles);
 		for (const [key, value] of Object.entries(Troops)) {
 			const title = titles[key];
+			// if (!title) continue;
 			units.push({
 				index: indexes.indexOf(title),
 				title,
@@ -231,6 +232,11 @@ export default class UpgradesCommand extends Command {
 			embed.setFooter({
 				text: [`Remaining ~${remaining}% (Home Village)`].join('\n')
 			});
+		}
+
+		// TODO: add pages
+		if (embedLength(embed.toJSON()) > 6000) {
+			embed.spliceFields(embed.data.fields!.length - 1, 1);
 		}
 
 		return embed;
