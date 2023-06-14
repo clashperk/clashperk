@@ -5,12 +5,11 @@ import fetch from 'node-fetch';
 import { BETA_COMMANDS, COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
-const guildId = process.env.GUILD_ID ?? '509784317598105619';
 
 console.log(new Date().toISOString());
 
-const applicationGuildCommands = async (token: string, commands: typeof COMMANDS) => {
-	console.log('Building Guild Application Commands');
+const applicationGuildCommands = async (token: string, guildId: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
+	console.log(`Building guild application commands for ${guildId}`);
 	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
 		method: 'PUT',
 		headers: {
@@ -23,21 +22,8 @@ const applicationGuildCommands = async (token: string, commands: typeof COMMANDS
 	console.log(`Updated ${COMMANDS.length} Guild Application Commands`);
 };
 
-const betaCommands = async (token: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
-	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
-		method: 'PUT',
-		headers: {
-			'Authorization': `Bot ${token}`,
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify(commands)
-	});
-	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
-	console.log(`Updated ${commands.length} Guild Application Commands`);
-};
-
 const applicationCommands = async (token: string, commands: typeof COMMANDS) => {
-	console.log('Building Application Commands', getClientId(token));
+	console.log('Building global application commands', getClientId(token));
 	const res = await fetch(`${RouteBases.api}${Routes.applicationCommands(getClientId(token))}`, {
 		method: 'PUT',
 		headers: {
@@ -56,12 +42,20 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 		return applicationCommands(token, COMMANDS);
 	}
 
-	if (process.argv.includes('--beta')) {
-		return betaCommands(token, BETA_COMMANDS);
+	if (process.argv.includes('--delete')) {
+		const guilds = process.env.GUILD_IDS!.split(',');
+		for (const guildId of guilds) {
+			await applicationGuildCommands(process.env.PROD_TOKEN!, guildId, []);
+		}
+		return;
 	}
 
-	if (process.argv.includes('--delete')) {
-		return applicationGuildCommands(token, []);
+	if (process.argv.includes('--beta')) {
+		const guilds = process.env.GUILD_IDS!.split(',');
+		for (const guildId of new Set(guilds)) {
+			await applicationGuildCommands(process.env.PROD_TOKEN!, guildId, BETA_COMMANDS);
+		}
+		return;
 	}
 
 	return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...PRIVATE_COMMANDS]);
