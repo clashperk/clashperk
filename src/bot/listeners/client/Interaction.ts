@@ -125,7 +125,7 @@ export default class InteractionListener extends Listener {
 			distinct_id: interaction.user.id,
 			guild_id: interaction.guild.id,
 			user_id: interaction.user.id,
-			user_tag: interaction.user.tag,
+			user_tag: `${interaction.user.username}#${interaction.user.discriminator}`,
 			user_name: interaction.user.username,
 			guild_name: interaction.guild.name,
 			command_id: interaction.commandName,

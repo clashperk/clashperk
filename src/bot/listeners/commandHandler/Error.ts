@@ -34,7 +34,7 @@ export default class ErrorListener extends Listener {
 			data: {
 				user: {
 					id: interaction.user.id,
-					tag: interaction.user.tag,
+					displayName: interaction.user.displayName,
 					username: interaction.user.username
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
@@ -57,7 +57,8 @@ export default class ErrorListener extends Listener {
 		setContext('command_started', {
 			user: {
 				id: interaction.user.id,
-				username: interaction.user.username
+				username: interaction.user.username,
+				displayName: interaction.user.displayName
 			},
 			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
 			channel: interaction.channel

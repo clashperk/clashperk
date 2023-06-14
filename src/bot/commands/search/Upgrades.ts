@@ -136,8 +136,8 @@ export default class UpgradesCommand extends Command {
 			'Elixir Hero': `${EMOJIS.ELIXIR} Heroes`,
 			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
 			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`,
-			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
-			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
+			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`
+			// 'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`,
 		};
 
 		const units = [];

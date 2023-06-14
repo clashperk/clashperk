@@ -35,7 +35,7 @@ export default class CommandStartedListener extends Listener {
 			command_id: command.id,
 			user_id: interaction.user.id,
 			user_name: interaction.user.username,
-			user_tag: interaction.user.tag,
+			user_tag: `${interaction.user.username}#${interaction.user.discriminator}`,
 			guild_id: interaction.guild?.id ?? '0',
 			guild_name: interaction.guild?.name ?? 'DM',
 			interaction_type: InteractionType[interaction.type],
@@ -59,7 +59,7 @@ export default class CommandStartedListener extends Listener {
 			data: {
 				user: {
 					id: interaction.user.id,
-					tag: interaction.user.tag,
+					displayName: interaction.user.displayName,
 					username: interaction.user.username
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
@@ -83,7 +83,7 @@ export default class CommandStartedListener extends Listener {
 		setContext('command_started', {
 			user: {
 				id: interaction.user.id,
-				tag: interaction.user.tag,
+				displayName: interaction.user.displayName,
 				username: interaction.user.username
 			},
 			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,

@@ -50,6 +50,7 @@ const categories: Record<string, string> = {
 	activity: 'PLAYER AND CLAN',
 
 	war: 'WAR AND CWL',
+	roster: 'WAR AND CWL',
 
 	summary: 'EXPORTS, FAMILY SUMMARY AND TOP STATS',
 	export: 'EXPORTS, FAMILY SUMMARY AND TOP STATS',

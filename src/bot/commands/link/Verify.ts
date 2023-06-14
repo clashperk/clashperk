@@ -45,6 +45,8 @@ export default class VerifyPlayerCommand extends Command {
 				$set: {
 					userId: interaction.user.id,
 					username: interaction.user.username,
+					displayName: interaction.user.displayName,
+					discriminator: interaction.user.discriminator,
 					name: data.name,
 					tag: data.tag,
 					verified: true,

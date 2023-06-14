@@ -14,7 +14,7 @@ import {
 } from 'discord.js';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
-import { EMOJIS } from '../util/Emojis.js';
+import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
 
@@ -42,6 +42,8 @@ export interface IRoster {
 		badgeUrl: string;
 	};
 	members: IRosterMember[];
+	layout?: string;
+	sheetId?: string;
 	closed: boolean;
 	startTime?: Date | null;
 	endTime?: Date | null;
@@ -117,6 +119,11 @@ export class RosterManager {
 
 	public async open(rosterId: ObjectId) {
 		const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: false } }, { returnDocument: 'after' });
+		return value;
+	}
+
+	public async attachSheetId(rosterId: ObjectId, sheetId: string) {
+		const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { sheetId } }, { returnDocument: 'after' });
 		return value;
 	}
 
@@ -242,7 +249,7 @@ export class RosterManager {
 			name: player.name,
 			tag: player.tag,
 			userId: user?.id ?? null,
-			username: user?.tag ?? null,
+			username: user?.displayName ?? null,
 			heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
 			townHallLevel: player.townHallLevel,
 			clan: player.clan ? { name: player.clan.name, tag: player.clan.tag } : null,
@@ -438,6 +445,7 @@ export class RosterManager {
 			return categoriesMap[a].displayName.localeCompare(categoriesMap[b].displayName);
 		});
 
+		// let count = 0;
 		const embed = new EmbedBuilder()
 			.setTitle(roster.name)
 			.setURL(this.client.http.getClanURL(roster.clan.tag))
@@ -446,21 +454,41 @@ export class RosterManager {
 				iconURL: roster.clan.badgeUrl,
 				url: this.client.http.getClanURL(roster.clan.tag)
 			});
-		embed.setDescription(
-			[
-				`\`TH ${'DISCORD'.padEnd(12, ' ')} ${'NAME'.padEnd(12, ' ')} ${'CLAN'.padEnd(6, ' ')}\``,
-				...membersGroup.flatMap(([categoryId, members]) => [
-					`${categoryId === 'none' ? '' : `\n**${categoriesMap[categoryId].displayName}**`}`,
-					...members.map((mem) => {
-						const hall = `${mem.townHallLevel}`.padStart(2, ' ');
-						const ign = this.snipe(mem.name, 12);
-						const discord = this.snipe(mem.username ?? ' ', 12);
-						const clan = this.snipe(mem.clan?.name ?? ' ', 6);
-						return `\`${hall} ${discord} ${ign} ${clan}\``;
-					})
-				])
-			].join('\n')
-		);
+
+		if (roster.layout === '#/TH_ICON/DISCORD/NAME/CLAN') {
+			embed.setDescription(
+				[
+					`\` #\` ${EMOJIS.GAP} \`${'DISCORD'.padEnd(12, ' ')}\` \`${'NAME'.padEnd(12, ' ')}\` \`${'CLAN'.padEnd(6, ' ')}\``,
+					...membersGroup.flatMap(([categoryId, members]) => [
+						`${categoryId === 'none' ? '' : `\n**${categoriesMap[categoryId].displayName}**`}`,
+						...members.map((mem, i) => {
+							// const n = `${1 + count++}`.padStart(2, ' ');
+							const n = `${1 + i}`.padStart(2, ' ');
+							const ign = this.snipe(mem.name, 12);
+							const discord = this.snipe(mem.username ?? ' ', 12);
+							const clan = this.snipe(mem.clan?.name ?? ' ', 6);
+							return `\`${n}\` ${TOWN_HALLS[mem.townHallLevel]} \`${discord}\` \`${ign}\` \`${clan}\``;
+						})
+					])
+				].join('\n')
+			);
+		} else {
+			embed.setDescription(
+				[
+					`\`TH \` \`${'DISCORD'.padEnd(12, ' ')} ${'NAME'.padEnd(12, ' ')} ${'CLAN'.padEnd(6, ' ')}\``,
+					...membersGroup.flatMap(([categoryId, members]) => [
+						`${categoryId === 'none' ? '' : `\n**${categoriesMap[categoryId].displayName}**`}`,
+						...members.map((mem) => {
+							const hall = `${mem.townHallLevel}`.padStart(2, ' ');
+							const ign = this.snipe(mem.name, 12);
+							const discord = this.snipe(mem.username ?? ' ', 12);
+							const clan = this.snipe(mem.clan?.name ?? ' ', 6);
+							return `\`${hall} \` \`${discord} ${ign} ${clan}\``;
+						})
+					])
+				].join('\n')
+			);
+		}
 
 		if (!roster.members.length) {
 			embed.setDescription(
@@ -476,7 +504,10 @@ export class RosterManager {
 		} else if (roster.endTime) {
 			embed.addFields({
 				name: '\u200e',
-				value: `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`
+				value: [
+					`Total ${roster.members.length}`,
+					`Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`
+				].join('\n')
 			});
 		} else if (roster.closed) {
 			embed.addFields({ name: '\u200e', value: 'Signup is **closed**' });
@@ -547,7 +578,7 @@ export class RosterManager {
 		return embed;
 	}
 
-	public getRosterComponents({ roster, withSignupButton = false }: { roster: WithId<IRoster>; withSignupButton: boolean }) {
+	public getRosterComponents({ roster }: { roster: WithId<IRoster> }) {
 		const isClosed = this.isClosed(roster);
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -555,36 +586,32 @@ export class RosterManager {
 				.setCustomId(
 					JSON.stringify({
 						cmd: 'roster-post',
-						roster: roster._id.toHexString(),
-						with_signup_button: Boolean(withSignupButton)
+						roster: roster._id.toHexString()
 					})
 				)
 				.setEmoji(EMOJIS.REFRESH)
 				.setStyle(ButtonStyle.Secondary)
 		);
 
-		if (withSignupButton) {
-			row.addComponents(
-				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: true }))
-					.setLabel('Signup')
-					.setStyle(ButtonStyle.Success)
-					.setDisabled(isClosed),
-				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: false }))
-					.setLabel('Opt-out')
-					.setStyle(ButtonStyle.Danger)
-					.setDisabled(isClosed)
-			);
-		}
+		row.addComponents(
+			new ButtonBuilder()
+				.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: true }))
+				.setLabel('Signup')
+				.setStyle(ButtonStyle.Success)
+				.setDisabled(isClosed),
+			new ButtonBuilder()
+				.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: false }))
+				.setLabel('Opt-out')
+				.setStyle(ButtonStyle.Danger)
+				.setDisabled(isClosed)
+		);
 
 		row.addComponents(
 			new ButtonBuilder()
 				.setCustomId(
 					JSON.stringify({
 						cmd: 'roster-settings',
-						roster: roster._id.toHexString(),
-						with_signup_button: Boolean(withSignupButton)
+						roster: roster._id.toHexString()
 					})
 				)
 				.setEmoji(EMOJIS.SETTINGS)

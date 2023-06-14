@@ -27,7 +27,7 @@ export default class RateLimitListener extends Listener {
 			const embeds = [...this.embeds];
 			this.embeds = [];
 			return webhook.send({
-				username: this.client.user?.username,
+				username: this.client.user?.displayName,
 				avatarURL: this.client.user?.displayAvatarURL(),
 				embeds: [...embeds]
 			});

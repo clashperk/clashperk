@@ -69,6 +69,8 @@ export interface UserInfoModel {
 	_id: ObjectId;
 	userId: string;
 	username?: string;
+	displayName?: string;
+	discriminator?: string;
 	clan?: {
 		tag: string;
 		name?: string;
@@ -85,7 +87,8 @@ export interface PlayerLinks {
 	_id?: ObjectId;
 	userId: string;
 	username: string;
-	userTag: string;
+	displayName: string;
+	discriminator: string;
 	tag: string;
 	name: string;
 	order: number;

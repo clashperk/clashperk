@@ -41,7 +41,7 @@ export default class ExportSeason extends Command {
 			return previous;
 		}, []);
 
-		const memberTags: { tag: string; user: string }[] = [];
+		const memberTags: { tag: string; userId: string }[] = [];
 		let guildMembers = new Collection<string, GuildMember>();
 		memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
 		const dbMembers = await this.client.db
@@ -52,17 +52,18 @@ export default class ExportSeason extends Command {
 		for (const member of dbMembers) {
 			if (!allMembers.find((mem) => mem.tag === member.tag)) continue;
 			if (memberTags.find((mem) => mem.tag === member.tag)) continue;
-			memberTags.push({ tag: member.tag, user: member.userId });
+			memberTags.push({ tag: member.tag, userId: member.userId });
 		}
 		const fetchedMembers = await Promise.all(
-			this.chunks(memberTags).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.user) }))
+			this.chunks(memberTags).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.userId) }))
 		);
 		guildMembers = guildMembers.concat(...fetchedMembers);
 
 		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 		for (const mem of members) {
-			const user = memberTags.find((m) => m.tag === mem.tag)?.user;
-			mem.userTag = guildMembers.get(user!)?.user.tag;
+			const userId = memberTags.find((m) => m.tag === mem.tag)?.userId;
+			const guildMember = guildMembers.get(userId!);
+			mem.userTag = guildMember ? `${guildMember.user.username}#${guildMember.user.discriminator}` : '';
 		}
 		guildMembers.clear();
 
@@ -207,8 +208,13 @@ export default class ExportSeason extends Command {
 	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
 		for (const data of members) {
 			const member = interaction.guild!.members.cache.get(data.userId);
-			if (member && data.username !== member.user.username) {
-				this.client.resolver.updateUserTag(interaction.guild!, data.userId);
+			if (
+				member &&
+				(data.username !== member.user.username ||
+					data.discriminator !== member.user.discriminator ||
+					data.displayName !== member.displayName)
+			) {
+				this.client.resolver.updateUserData(interaction.guild!, data.userId);
 			}
 		}
 	}

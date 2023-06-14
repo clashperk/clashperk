@@ -62,7 +62,7 @@ export default class DebugCommand extends Command {
 
 		const chunks = Util.splitMessage(
 			[
-				`**${this.client.user!.username} Debug Menu**`,
+				`**${this.client.user!.displayName} Debug Menu**`,
 				'',
 				'**Server ID**',
 				`${interaction.guild.id}`,

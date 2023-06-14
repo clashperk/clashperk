@@ -53,6 +53,8 @@ export default class AutoTownHallRoleCommand extends Command {
 			// 		await collection.insertOne({
 			// 			userId: user.id,
 			// 			username: user.username,
+			// 			displayName: user.displayName,
+			// 			discriminator: user.discriminator,
 			// 			tag,
 			// 			name: player.name,
 			// 			verified: false,

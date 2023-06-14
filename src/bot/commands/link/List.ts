@@ -194,15 +194,6 @@ export default class LinkListCommand extends Command {
 		return a.name.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.name.replace(/[^\x00-\xF7]+/g, ''));
 	}
 
-	private updateUsers(interaction: CommandInteraction | ButtonInteraction, members: PlayerLinks[]) {
-		for (const clan of members) {
-			const member = interaction.guild!.members.cache.get(clan.userId);
-			if (member && clan.username !== member.user.username) {
-				this.client.resolver.updateUserTag(interaction.guild!, clan.userId);
-			}
-		}
-	}
-
 	private async updateLinksAndRoles(guildId: string) {
 		const clans = await this.client.storage.find(guildId);
 		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
@@ -227,7 +218,8 @@ export default class LinkListCommand extends Command {
 					await collection.insertOne({
 						userId: user.id,
 						username: user.username,
-						userTag: user.tag,
+						displayName: user.displayName,
+						discriminator: user.discriminator,
 						tag,
 						name: player.name,
 						verified: false,

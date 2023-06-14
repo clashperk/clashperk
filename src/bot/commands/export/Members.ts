@@ -98,18 +98,18 @@ export default class ExportClanMembersCommand extends Command {
 		for (const member of dbMembers) {
 			if (!members.find((mem) => mem.tag === member.tag)) continue;
 			if (memberTags.find((mem) => mem.tag === member.tag)) continue;
-			memberTags.push({ tag: member.tag, user: member.userId });
+			memberTags.push({ tag: member.tag, userId: member.userId });
 		}
 		let guildMembers = new Collection<string, GuildMember>();
 		const fetchedMembers = await Promise.all(
-			Util.chunk(memberTags, 100).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.user) }))
+			Util.chunk(memberTags, 100).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.userId) }))
 		);
 		guildMembers = guildMembers.concat(...fetchedMembers);
 
 		for (const mem of members) {
-			const user = memberTags.find((m) => m.tag === mem.tag)?.user;
-			// @ts-expect-error
-			mem.username = guildMembers.get(user)?.user.tag;
+			const userId = memberTags.find((m) => m.tag === mem.tag)?.userId;
+			const guildMember = guildMembers.get(userId!);
+			mem.userTag = guildMember ? `${guildMember.user.username}#${guildMember.user.discriminator}` : '';
 		}
 		guildMembers.clear();
 
@@ -145,7 +145,7 @@ export default class ExportClanMembersCommand extends Command {
 				rows: members.map((m) => [
 					m.name,
 					m.tag,
-					m.username,
+					m.userTag,
 					m.clan,
 					m.role,
 					m.warPreference,
@@ -172,8 +172,13 @@ export default class ExportClanMembersCommand extends Command {
 	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
 		for (const data of members) {
 			const member = interaction.guild!.members.cache.get(data.userId);
-			if (member && data.username !== member.user.username) {
-				this.client.resolver.updateUserTag(interaction.guild!, data.userId);
+			if (
+				member &&
+				(data.username !== member.user.username ||
+					data.discriminator !== member.user.discriminator ||
+					data.displayName !== member.displayName)
+			) {
+				this.client.resolver.updateUserData(interaction.guild!, data.userId);
 			}
 		}
 	}

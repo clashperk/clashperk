@@ -14,7 +14,7 @@ export default class RosterPostCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; with_signup_button: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string }) {
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 
 		const rosterId = new ObjectId(args.roster);
@@ -27,8 +27,7 @@ export default class RosterPostCommand extends Command {
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
 		const row = this.client.rosterManager.getRosterComponents({
-			roster: updated,
-			withSignupButton: Boolean(args.with_signup_button)
+			roster: updated
 		});
 		const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 

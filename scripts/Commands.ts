@@ -3074,12 +3074,6 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: true,
 						description: 'Select a roster to post.',
 						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'with_signup_button',
-						required: true,
-						description: 'Whether to show signup and opt-out buttons.',
-						type: ApplicationCommandOptionType.Boolean
 					}
 				]
 			},

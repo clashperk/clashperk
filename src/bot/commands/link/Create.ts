@@ -75,7 +75,7 @@ export default class LinkCreateCommand extends Command {
 			return interaction.editReply(
 				this.i18n('command.link.create.success', {
 					lng: interaction.locale,
-					user: `**${member.user.username}**`,
+					user: `**${member.user.displayName}**`,
 					target: `**${clan.name} (${clan.tag})**`
 				})
 			);
@@ -94,6 +94,8 @@ export default class LinkCreateCommand extends Command {
 						name: clan.name
 					},
 					username: member.user.username,
+					displayName: member.user.displayName,
+					discriminator: member.user.discriminator,
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
@@ -129,7 +131,10 @@ export default class LinkCreateCommand extends Command {
 
 		await this.client.db
 			.collection<UserInfoModel>(Collections.USERS)
-			.updateOne({ userId: member.id }, { $set: { username: member.user.username } });
+			.updateOne(
+				{ userId: member.id },
+				{ $set: { username: member.user.username, displayName: member.user.displayName, discriminator: member.user.discriminator } }
+			);
 
 		await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
 			{ tag: player.tag },
@@ -137,6 +142,8 @@ export default class LinkCreateCommand extends Command {
 				$set: {
 					userId: member.id,
 					username: member.user.username,
+					displayName: member.user.displayName,
+					discriminator: member.user.discriminator,
 					name: player.name,
 					tag: player.tag,
 					order: def
@@ -161,7 +168,7 @@ export default class LinkCreateCommand extends Command {
 		await interaction.editReply(
 			this.i18n('command.link.create.success', {
 				lng: interaction.locale,
-				user: `**${member.user.username}**`,
+				user: `**${member.user.displayName}**`,
 				target: `**${player.name} (${player.tag})**`
 			})
 		);
@@ -207,7 +214,8 @@ export default class LinkCreateCommand extends Command {
 					await collection.insertOne({
 						userId: user.id,
 						username: user.username,
-						userTag: user.tag,
+						displayName: user.displayName,
+						discriminator: user.discriminator,
 						tag,
 						name: player.name,
 						verified: false,

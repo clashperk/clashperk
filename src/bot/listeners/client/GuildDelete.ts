@@ -50,12 +50,12 @@ export default class GuildDeleteListener extends Listener {
 			const embed = new EmbedBuilder()
 				.setColor(0xeb3508)
 				.setAuthor({ name: `${guild.name} (${guild.id})`, iconURL: guild.iconURL()! })
-				.setTitle(`${EMOJIS.OWNER} ${user.username} (${user.id})`)
+				.setTitle(`${EMOJIS.OWNER} ${user.displayName} (${user.id})`)
 				.setFooter({ text: `${guild.memberCount} members (Shard ${guild.shard.id})`, iconURL: user.displayAvatarURL() })
 				.setTimestamp();
 			return webhook.send({
 				embeds: [embed],
-				username: this.client.user!.username,
+				username: this.client.user!.displayName,
 				avatarURL: this.client.user!.displayAvatarURL({ forceStatic: false }),
 				content: `**Total ${guilds} | Growth ${await this.growth()}**`
 			});

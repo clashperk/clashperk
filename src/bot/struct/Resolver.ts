@@ -26,7 +26,8 @@ export default class Resolver {
 		const link = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.findOne({ userId: user.id }, { sort: { order: 1 } });
-		if (link && link.username !== user.username) this.updateUserTag(interaction.guild, user.id);
+		if (link && (link.username !== user.username || link.discriminator !== user.discriminator || link.displayName !== user.displayName))
+			this.updateUserData(interaction.guild, user.id);
 
 		if (!link) {
 			otherTags.push(...(await this.client.http.getPlayerTags(user.id)));
@@ -46,7 +47,7 @@ export default class Resolver {
 			interaction,
 			i18n('common.player_not_linked', {
 				lng: interaction.locale,
-				user: parsed.user.username,
+				user: parsed.user.displayName,
 				command: this.client.commands.LINK_CREATE
 			})
 		);
@@ -89,7 +90,7 @@ export default class Resolver {
 			interaction,
 			i18n('common.clan_not_linked', {
 				lng: interaction.locale,
-				user: parsed.user.username,
+				user: parsed.user.displayName,
 				command: this.client.commands.LINK_CREATE
 			})
 		);
@@ -160,15 +161,31 @@ export default class Resolver {
 		return user?.clan ?? null;
 	}
 
-	public async updateUserTag(guild: Guild, userId: string) {
+	public async updateUserData(guild: Guild, userId: string) {
 		const member = guild.members.cache.get(userId);
 		if (!member) return null;
-		await this.client.db
-			.collection(Collections.USERS)
-			.updateOne({ userId: member.user.id }, { $set: { username: member.user.username, userTag: member.user.tag } });
-		await this.client.db
-			.collection(Collections.PLAYER_LINKS)
-			.updateMany({ userId: member.user.id }, { $set: { username: member.user.username, userTag: member.user.tag } });
+
+		await this.client.db.collection(Collections.USERS).updateOne(
+			{ userId: member.user.id },
+			{
+				$set: {
+					username: member.user.username,
+					discriminator: member.user.discriminator,
+					displayName: member.user.displayName
+				}
+			}
+		);
+
+		await this.client.db.collection(Collections.PLAYER_LINKS).updateMany(
+			{ userId: member.user.id },
+			{
+				$set: {
+					username: member.user.username,
+					discriminator: member.user.discriminator,
+					displayName: member.user.displayName
+				}
+			}
+		);
 	}
 
 	public async getLinkedPlayerTags(userId: string) {

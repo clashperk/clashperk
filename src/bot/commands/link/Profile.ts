@@ -70,13 +70,16 @@ export default class ProfileCommand extends Command {
 				.toArray()
 		]);
 
-		if (data && data.username !== user.username) {
-			this.client.resolver.updateUserTag(interaction.guild, user.id);
+		if (
+			data &&
+			(data.username !== user.username || data.discriminator !== user.discriminator || data.displayName !== user.displayName)
+		) {
+			this.client.resolver.updateUserData(interaction.guild, user.id);
 		}
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() })
+			.setAuthor({ name: `${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() })
 			.setDescription(['**Created**', `${moment(user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`].join('\n'));
 
 		const clan: Clan = await this.client.http.clan(data?.clan?.tag ?? '💩');
@@ -227,7 +230,7 @@ export default class ProfileCommand extends Command {
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Linked Accounts]`, sheets);
 		return interaction.editReply({
-			content: `**Linked Accounts [${user.username} (${user.id})]**`,
+			content: `**Linked Accounts [${user.displayName} (${user.id})]**`,
 			components: getExportComponents(spreadsheet)
 		});
 	}

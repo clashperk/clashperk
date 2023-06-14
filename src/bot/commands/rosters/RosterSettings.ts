@@ -1,7 +1,7 @@
 import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
+import { CreateGoogleSheet, updateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { IRosterCategory } from '../../struct/RosterManager.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
@@ -24,7 +24,6 @@ export default class RosterEditCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		args: {
 			roster: string;
-			with_signup_button?: boolean;
 		}
 	) {
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
@@ -89,8 +88,7 @@ export default class RosterEditCommand extends Command {
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 			const row = this.client.rosterManager.getRosterComponents({
-				roster: updated,
-				withSignupButton: Boolean(args.with_signup_button)
+				roster: updated
 			});
 
 			return interaction.editReply({ embeds: [embed], components: [row] });
@@ -123,8 +121,7 @@ export default class RosterEditCommand extends Command {
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 			const row = this.client.rosterManager.getRosterComponents({
-				roster: updated,
-				withSignupButton: Boolean(args.with_signup_button)
+				roster: updated
 			});
 
 			return interaction.editReply({ embeds: [embed], components: [row] });
@@ -138,8 +135,7 @@ export default class RosterEditCommand extends Command {
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 			const row = this.client.rosterManager.getRosterComponents({
-				roster: updated,
-				withSignupButton: Boolean(args.with_signup_button)
+				roster: updated
 			});
 
 			return interaction.editReply({ embeds: [embed], components: [row] });
@@ -158,7 +154,7 @@ export default class RosterEditCommand extends Command {
 
 		const exportSheet = async (action: StringSelectMenuInteraction<'cached'>) => {
 			if (!roster.members.length) return action.reply({ content: 'Roster is empty.', ephemeral: true });
-			await action.update(`Creating google spreadsheet... ${EMOJIS.LOADING}`);
+			await action.update({ content: `Updating spreadsheet... ${EMOJIS.LOADING}`, components: [] });
 
 			const categoriesMap = categories.reduce<Record<string, IRosterCategory>>(
 				(prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
@@ -193,9 +189,13 @@ export default class RosterEditCommand extends Command {
 				}
 			];
 
-			const sheet = await createGoogleSheet(`${interaction.guild.name} [Roster Export]`, sheets);
+			const sheet = roster.sheetId
+				? await updateGoogleSheet(roster.sheetId, sheets, true)
+				: await createGoogleSheet(`${interaction.guild.name} [Roster Export]`, sheets);
+			if (!roster.sheetId) this.client.rosterManager.attachSheetId(rosterId, sheet.spreadsheetId);
+
 			const components = getExportComponents(sheet);
-			return action.editReply({ components: [menuRow, ...components] });
+			return action.editReply({ content: null, components: [...components] });
 		};
 
 		createInteractionCollector({
@@ -206,9 +206,9 @@ export default class RosterEditCommand extends Command {
 				const value = action.values.at(0)!;
 
 				if (!this.client.util.isManager(action.member) && !['info', 'export'].includes(value)) {
-					return interaction.reply({
-						content: `You are missing the **Manage Server** permission or the **Bot Manager** role to perform this action.`,
-						ephemeral: true
+					return action.reply({
+						ephemeral: true,
+						content: `You are missing the **Manage Server** permission or the **Bot Manager** role to perform this action.`
 					});
 				}
 

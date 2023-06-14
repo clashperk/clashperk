@@ -117,7 +117,7 @@ export const getConditionalFormatRequests = (sheets: CreateGoogleSheet[]) => {
 	return gridStyleRequests;
 };
 
-export const getStyleRequests = (sheets: CreateGoogleSheet[]) => {
+const getStyleRequests = (sheets: CreateGoogleSheet[]) => {
 	const styleRequests: SchemaRequest[] = sheets
 		.map(({ columns }, sheetId) =>
 			columns
@@ -161,7 +161,7 @@ export const getStyleRequests = (sheets: CreateGoogleSheet[]) => {
 	return styleRequests;
 };
 
-export const createSheetRequest = async (title: string, sheets: CreateGoogleSheet[]) => {
+const createSheetRequest = async (title: string, sheets: CreateGoogleSheet[]) => {
 	const { data } = await sheet.spreadsheets.create({
 		requestBody: {
 			properties: { title },
@@ -183,7 +183,7 @@ export const createSheetRequest = async (title: string, sheets: CreateGoogleShee
 	return data;
 };
 
-export const createColumnRequest = (columns: CreateGoogleSheet['columns']) => {
+const createColumnRequest = (columns: CreateGoogleSheet['columns']) => {
 	return {
 		values: columns.map((column) => ({
 			userEnteredValue: {
@@ -198,16 +198,33 @@ export const createColumnRequest = (columns: CreateGoogleSheet['columns']) => {
 	};
 };
 
-export const batchUpdate = async (spreadsheetId: string, requests: SchemaRequest[]) => {
-	return sheet.spreadsheets.batchUpdate({
-		spreadsheetId,
-		requestBody: {
-			requests
-		}
-	});
-};
+export const updateGoogleSheet = async (spreadsheetId: string, sheets: CreateGoogleSheet[], clear = false) => {
+	const clearSheetRequests: SchemaRequest[] = sheets
+		.map((sheet, sheetId) => [
+			{
+				updateCells: {
+					range: {
+						sheetId: sheetId
+					},
+					fields: 'userEnteredValue'
+				}
+			},
+			{
+				updateSheetProperties: {
+					properties: {
+						sheetId,
+						gridProperties: {
+							columnCount: Math.max(sheet.columns.length, 15),
+							rowCount: Math.max(sheet.rows.length + 1, 25),
+							frozenRowCount: sheet.rows.length ? 1 : 0
+						}
+					},
+					fields: 'gridProperties.rowCount,gridProperties.columnCount,gridProperties.frozenRowCount'
+				}
+			}
+		])
+		.flat();
 
-export const batchUpdateWithSheet = async (spreadsheetId: string, sheets: CreateGoogleSheet[]) => {
 	const requests: SchemaRequest[] = sheets.map((sheet, sheetId) => ({
 		updateCells: {
 			start: {
@@ -230,13 +247,28 @@ export const batchUpdateWithSheet = async (spreadsheetId: string, sheets: Create
 		}
 	}));
 
-	await batchUpdate(spreadsheetId, [...requests, ...getStyleRequests(sheets), ...getConditionalFormatRequests(sheets)]);
+	await sheet.spreadsheets.batchUpdate({
+		spreadsheetId,
+		requestBody: {
+			requests: [
+				...(clear ? clearSheetRequests : []),
+				...requests,
+				...getStyleRequests(sheets),
+				...getConditionalFormatRequests(sheets)
+			]
+		}
+	});
+
+	return { spreadsheetId, spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit` };
 };
 
 export const createGoogleSheet = async (title: string, sheets: CreateGoogleSheet[]) => {
 	const spreadsheet = await createSheetRequest(title, sheets);
-	await Promise.all([batchUpdateWithSheet(spreadsheet.spreadsheetId!, sheets), publish(spreadsheet.spreadsheetId!)]);
-	return spreadsheet;
+	await Promise.all([updateGoogleSheet(spreadsheet.spreadsheetId!, sheets), publish(spreadsheet.spreadsheetId!)]);
+	return {
+		spreadsheetId: spreadsheet.spreadsheetId!,
+		spreadsheetUrl: spreadsheet.spreadsheetUrl!
+	};
 };
 
 const getLocation = async (query: string) => {

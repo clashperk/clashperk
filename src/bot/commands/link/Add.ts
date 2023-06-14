@@ -52,7 +52,10 @@ export default class LinkAddCommand extends Command {
 
 		await this.client.db
 			.collection<UserInfoModel>(Collections.USERS)
-			.updateOne({ userId: member.id }, { $set: { username: member.user.username } });
+			.updateOne(
+				{ userId: member.id },
+				{ $set: { username: member.user.username, displayName: member.user.displayName, discriminator: member.user.discriminator } }
+			);
 
 		await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
 			{ tag: player.tag },
@@ -60,6 +63,8 @@ export default class LinkAddCommand extends Command {
 				$set: {
 					userId: member.id,
 					username: member.user.username,
+					displayName: member.user.displayName,
+					discriminator: member.user.discriminator,
 					name: player.name,
 					tag: player.tag,
 					order: def
@@ -84,7 +89,7 @@ export default class LinkAddCommand extends Command {
 		return interaction.editReply(
 			this.i18n('command.link.create.success', {
 				lng: interaction.locale,
-				user: `**${member.user.username}**`,
+				user: `**${member.user.displayName}**`,
 				target: `**${player.name} (${player.tag})**`
 			})
 		);
@@ -166,6 +171,8 @@ export default class LinkAddCommand extends Command {
 				$set: {
 					userId: interaction.user.id,
 					username: interaction.user.username,
+					displayName: interaction.user.displayName,
+					discriminator: interaction.user.discriminator,
 					name: data.name,
 					tag: data.tag,
 					verified: true,

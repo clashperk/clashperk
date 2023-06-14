@@ -52,12 +52,12 @@ export default class GuildCreateListener extends Listener {
 			const embed = new EmbedBuilder()
 				.setColor(0x38d863)
 				.setAuthor({ name: `${guild.name} (${guild.id})`, iconURL: guild.iconURL({ forceStatic: false })! })
-				.setTitle(`${EMOJIS.OWNER} ${user.username} (${user.id})`)
+				.setTitle(`${EMOJIS.OWNER} ${user.displayName} (${user.id})`)
 				.setFooter({ text: `${guild.memberCount} members (Shard ${guild.shard.id})`, iconURL: user.displayAvatarURL() })
 				.setTimestamp();
 			return webhook.send({
 				embeds: [embed],
-				username: this.client.user!.username,
+				username: this.client.user!.displayName,
 				avatarURL: this.client.user!.displayAvatarURL({ extension: 'png' }),
 				content: `**Total ${guilds} | Growth ${await this.growth()}**`
 			});

@@ -19,7 +19,7 @@ export default class InviteCommand extends Command {
 		}).toString();
 
 		const embed = new EmbedBuilder()
-			.setAuthor({ name: this.client.user!.username, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
+			.setAuthor({ name: this.client.user!.displayName, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
 			.setDescription(
 				[
 					'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. Thanks in advance!',

@@ -51,7 +51,7 @@ export default class StatusCommand extends Command {
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(guild.id))
 			.setTitle('Stats')
-			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
+			.setAuthor({ name: `${this.client.user!.displayName}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
 			.addFields([
 				{
 					name: 'Memory Usage',

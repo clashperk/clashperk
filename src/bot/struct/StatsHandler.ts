@@ -158,7 +158,7 @@ export default class StatsHandler {
 				$set: {
 					user: interaction.user.id,
 					username: interaction.user.username,
-					userTag: interaction.user.tag,
+					displayName: interaction.user.displayName,
 					locale: interaction.locale
 				},
 				$inc: { usage: 1 },

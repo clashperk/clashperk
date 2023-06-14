@@ -122,7 +122,7 @@ export default class RosterCreateCommand extends Command {
 			members.push({
 				tag: player.tag,
 				name: player.name,
-				username: link.username,
+				username: link.displayName,
 				townHallLevel: player.townHallLevel,
 				userId: link.userId,
 				heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),

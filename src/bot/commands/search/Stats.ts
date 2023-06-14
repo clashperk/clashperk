@@ -457,7 +457,7 @@ export default class StatsCommand extends Command {
 
 		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
 		const embed = new EmbedBuilder()
-			.setAuthor({ name: `${user.username} (${user.id})`, iconURL: user.displayAvatarURL() })
+			.setAuthor({ name: `${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() })
 			.setDescription(
 				Util.splitMessage(
 					[

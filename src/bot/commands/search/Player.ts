@@ -101,13 +101,13 @@ export default class PlayerCommand extends Command {
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
 
+		const refreshButton = new ButtonBuilder()
+			.setEmoji(EMOJIS.REFRESH)
+			.setStyle(ButtonStyle.Secondary)
+			.setCustomId(JSON.stringify({ cmd: this.id, tag: data.tag }));
+
 		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setEmoji(EMOJIS.REFRESH)
-					.setStyle(ButtonStyle.Secondary)
-					.setCustomId(JSON.stringify({ cmd: this.id, tag: args.tag ?? args.user?.id }))
-			)
+			.addComponents(refreshButton)
 			.addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.troops))
 			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
 			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed))
@@ -129,9 +129,10 @@ export default class PlayerCommand extends Command {
 				await action.deferUpdate();
 				const data = players.find((en) => en.tag === action.values.at(0))!;
 				args.tag = data.tag;
+				refreshButton.setCustomId(JSON.stringify({ cmd: this.id, tag: data.tag }));
 				const embed = await this.embed(action.guild, data);
 				embed.setColor(this.client.embed(action));
-				await action.editReply({ embeds: [embed] });
+				await action.editReply({ embeds: [embed], components: options.length > 1 ? [row, menu] : [row] });
 			}
 			if (action.customId === customIds.troops && action.isButton()) {
 				await action.deferUpdate();

@@ -43,6 +43,8 @@ export default class FlagCreateCommand extends Command {
 				guild: interaction.guild.id,
 				user: interaction.user.id,
 				username: interaction.user.username,
+				displayName: interaction.user.displayName,
+				discriminator: interaction.user.discriminator,
 				tag: data.tag,
 				name: data.name,
 				reason: cleanContent(args.reason, interaction.channel!),

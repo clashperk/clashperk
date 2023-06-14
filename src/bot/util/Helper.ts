@@ -1,6 +1,5 @@
 import { Clan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild } from 'discord.js';
-import { sheets_v4 } from 'googleapis';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { PlayerLinks } from '../types/index.js';
@@ -441,17 +440,17 @@ export const attacksEmbedMaker = async ({ clan, guild, sortKey }: { clan: Clan; 
 /**
  * @param sheet must be `spreadsheet.data`
  */
-export const getExportComponents = (sheet: sheets_v4.Schema$Spreadsheet) => {
+export const getExportComponents = (sheet: { spreadsheetUrl: string; spreadsheetId: string }) => {
 	return [
 		new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(sheet.spreadsheetUrl!),
-			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Open in Web').setURL(sheet.spreadsheetUrl!.replace('edit', 'pubhtml'))
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(sheet.spreadsheetUrl),
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Open in Web').setURL(sheet.spreadsheetUrl.replace('edit', 'pubhtml'))
 		),
 		new ActionRowBuilder<ButtonBuilder>().setComponents(
 			new ButtonBuilder()
 				.setStyle(ButtonStyle.Link)
 				.setLabel('Download')
-				.setURL(`https://docs.google.com/spreadsheets/export?id=${sheet.spreadsheetId!}&exportFormat=xlsx`)
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${sheet.spreadsheetId}&exportFormat=xlsx`)
 		)
 	];
 };

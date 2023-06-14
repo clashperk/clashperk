@@ -64,7 +64,9 @@ export class RoleManager {
 				{ fullDocument: 'updateLookup' }
 			)
 			.on('change', async (change) => {
-				this.client.logger.debug(`Player ${change.operationType}ed.`, { label: 'DashboardLink' });
+				if (this.client.shard?.ids[0] === 0) {
+					this.client.logger.debug(`Player ${change.operationType}ed`, { label: 'PlayerLink' });
+				}
 				if (change.operationType === 'insert' || change.operationType === 'update') {
 					const link = change.fullDocument!;
 					const res = await this.client.http.player(link.tag);
