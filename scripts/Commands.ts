@@ -3229,11 +3229,20 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'allow_multi_signup',
 						description: 'Whether to allow multiple rosters signup.',
 						type: ApplicationCommandOptionType.Boolean
-					},
+					}
+				]
+			},
+			{
+				name: 'delete',
+				description: 'Edit a roster',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'delete_roster',
-						description: 'Whether to delete the roster.',
-						type: ApplicationCommandOptionType.Boolean
+						name: 'roster',
+						description: 'Select a roster to edit.',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
