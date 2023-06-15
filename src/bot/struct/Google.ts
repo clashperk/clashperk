@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { google, sheets_v4 } from 'googleapis';
+import { google, sheets_v4, Auth } from 'googleapis';
 import { Util } from '../util/index.js';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
@@ -9,7 +9,7 @@ const auth = google.auth.fromJSON({
 	client_id: process.env.GOOGLE_CLIENT_ID!,
 	client_secret: process.env.GOOGLE_CLIENT_SECRET!,
 	refresh_token: process.env.GOOGLE_REFRESH_TOKEN!
-});
+}) as Auth.OAuth2Client;
 
 const drive = google.drive({ version: 'v3', auth });
 const sheet = google.sheets({ version: 'v4', auth });

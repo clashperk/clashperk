@@ -3042,6 +3042,21 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						]
 					},
 					{
+						name: 'layout',
+						description: 'Layout of the roster.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: '#/TH_ICON/DISCORD/NAME/CLAN',
+								value: '#/TH_ICON/DISCORD/NAME/CLAN'
+							},
+							{
+								name: 'TH/DISCORD/NAME/CLAN',
+								value: 'TH/DISCORD/NAME/CLAN'
+							}
+						]
+					},
+					{
 						name: 'start_time',
 						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
 						type: ApplicationCommandOptionType.String
@@ -3134,6 +3149,21 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'roster_role',
 						description: 'Role of the roster.',
 						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'layout',
+						description: 'Layout of the roster.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: '#/TH_ICON/DISCORD/NAME/CLAN',
+								value: '#/TH_ICON/DISCORD/NAME/CLAN'
+							},
+							{
+								name: 'TH/DISCORD/NAME/CLAN',
+								value: 'TH/DISCORD/NAME/CLAN'
+							}
+						]
 					},
 					{
 						name: 'sort_by',

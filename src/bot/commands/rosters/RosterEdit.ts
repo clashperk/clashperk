@@ -35,6 +35,7 @@ export default class RosterEditCommand extends Command {
 			end_time?: string;
 			start_time?: string;
 			timezone?: string;
+			layout?: string;
 			sort_by?: RosterSortTypes;
 			clear_members?: boolean;
 			delete_roster?: boolean;
@@ -73,6 +74,7 @@ export default class RosterEditCommand extends Command {
 		if (typeof args.allow_group_selection === 'boolean') data.allowCategorySelection = args.allow_group_selection;
 		if (args.clear_members) data.members = [];
 		if (args.sort_by) data.sortBy = args.sort_by;
+		if (args.layout) data.layout = args.layout;
 
 		if (
 			typeof args.allow_multi_signup === 'boolean' &&

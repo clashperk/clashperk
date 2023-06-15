@@ -36,6 +36,7 @@ export default class RosterCreateCommand extends Command {
 			end_time?: string;
 			start_time?: string;
 			sort_by?: RosterSortTypes;
+			layout?: string;
 			timezone?: string;
 		}
 	) {
@@ -59,6 +60,7 @@ export default class RosterCreateCommand extends Command {
 			allowCategorySelection: args.allow_group_selection ?? true,
 			maxMembers: args.max_members,
 			sortBy: args.sort_by,
+			layout: args.layout,
 			minHeroLevels: args.min_hero_level,
 			minTownHall: args.min_town_hall,
 			maxTownHall: args.max_town_hall,

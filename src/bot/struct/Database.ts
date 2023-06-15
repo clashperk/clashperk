@@ -299,10 +299,10 @@ class MongoDB extends MongoClient {
 			db.collection(Collections.FLAGS).createIndex({ guild: 1, tag: 1 }),
 
 			db.collection(Collections.LAST_SEEN).createIndexes([
-				{
-					key: { lastSeen: 1 },
-					expireAfterSeconds: 60 * 60 * 24 * 99
-				},
+				// {
+				// 	key: { lastSeen: 1 },
+				// 	expireAfterSeconds: 60 * 60 * 24 * 99
+				// },
 				{
 					key: { 'clan.tag': 1, 'tag': 1 }
 				},
@@ -332,6 +332,24 @@ class MongoDB extends MongoClient {
 				},
 				{
 					key: { userId: 1 }
+				}
+			]),
+
+			db.collection(Collections.ROSTERS).createIndexes([
+				{
+					key: { name: 'text' }
+				},
+				{
+					key: { guildId: 1 }
+				}
+			]),
+
+			db.collection(Collections.ROSTER_CATEGORIES).createIndexes([
+				{
+					key: { name: 'text' }
+				},
+				{
+					key: { guildId: 1 }
 				}
 			]),
 
