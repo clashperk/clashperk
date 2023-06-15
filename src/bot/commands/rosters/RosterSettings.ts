@@ -104,13 +104,14 @@ export default class RosterEditCommand extends Command {
 					{
 						'_id': { $ne: roster._id },
 						'closed': false,
+						'guildId': action.guild.id,
 						'members.tag': { $in: roster.members.map((mem) => mem.tag) }
 					},
 					{ projection: { _id: 1 } }
 				);
 
 				if (dup)
-					return interaction.editReply(
+					return action.update(
 						`This roster has multiple members signed up for another roster **${roster.clan.name} - ${roster.name}**. Please remove them before opening this roster.`
 					);
 			}
