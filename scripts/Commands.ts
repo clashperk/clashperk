@@ -3085,7 +3085,7 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'post',
-				description: 'Post a roster to a channel.',
+				description: 'Post a roster.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -3099,12 +3099,12 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'list',
-				description: 'List all rosters.',
+				description: 'List all rosters and groups.',
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'edit',
-				description: 'Edit a roster',
+				description: 'Edit a roster.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -3234,12 +3234,12 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'delete',
-				description: 'Edit a roster',
+				description: 'Permanently delete a roster.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'roster',
-						description: 'Select a roster to edit.',
+						description: 'Select a roster to delete.',
 						required: true,
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
@@ -3248,7 +3248,7 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'manage',
-				description: 'Add or remove players from a roster',
+				description: 'Add or remove users or change their group or roster.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -3292,9 +3292,15 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'group',
 						autocomplete: true,
-						description: 'Group of the roster.',
+						description: 'Group of the user.',
 						type: ApplicationCommandOptionType.String
 					}
+					// {
+					// 	name: 'select_roster',
+					// 	autocomplete: true,
+					// 	description: 'Roster to move the user to.',
+					// 	type: ApplicationCommandOptionType.String
+					// }
 				]
 			},
 			{
@@ -3328,7 +3334,7 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'modify',
-						description: 'Modify a roster group.',
+						description: 'Modify or delete a roster group.',
 						type: ApplicationCommandOptionType.Subcommand,
 						options: [
 							{

@@ -16,16 +16,35 @@ export default class RosterListCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, _args: unknown) {
 		const rosters = await this.client.rosterManager.list(interaction.guild.id);
-		if (!rosters.length) return interaction.editReply({ content: 'No rosters found.' });
+		const embeds = [];
 
-		const embed = new EmbedBuilder().setTitle('Rosters').setDescription(
+		const rosterEmbed = new EmbedBuilder().setTitle('Rosters').setDescription(
 			rosters
 				.map((roster, i) => {
-					return `**${i + 1}.** ${escapeMarkdown(`${roster.clan.name} - ${roster.name} - ${time(roster.createdAt, 'D')}`)}`;
+					return `**${i + 1}.** ${escapeMarkdown(
+						`${roster.clan.name} - ${roster.name} (${roster.memberCount}/${roster.maxMembers ?? 75}) - ${time(
+							roster.createdAt,
+							'D'
+						)}`
+					)}`;
 				})
 				.join('\n')
 		);
+		if (rosters.length) embeds.push(rosterEmbed);
 
-		return interaction.editReply({ embeds: [embed] });
+		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
+		const groupEmbed = new EmbedBuilder().setTitle('Categories').setDescription(
+			categories
+				.map((category, i) => {
+					return `**${i + 1}.** ${escapeMarkdown(
+						`${category.displayName} ${category.roleId ? `- <@&${category.roleId}>` : ''}`
+					)}`;
+				})
+				.join('\n')
+		);
+		if (categories.length) embeds.push(groupEmbed);
+
+		if (!embeds.length) return interaction.editReply({ content: 'No rosters or categories found.' });
+		return interaction.editReply({ embeds });
 	}
 }

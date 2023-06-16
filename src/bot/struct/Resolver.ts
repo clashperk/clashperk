@@ -302,7 +302,7 @@ export default class Resolver {
 		const count = await this.client.db
 			.collection(Collections.CLAN_STORES)
 			.countDocuments({ tag: data.tag, guild: { $ne: interaction.guildId } });
-		const code = ['CP', interaction.guild.id.substr(-2)].join('');
+		const code = ['CP', interaction.guild.id.slice(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
 
 		if (

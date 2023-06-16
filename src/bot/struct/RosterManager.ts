@@ -104,9 +104,24 @@ export class RosterManager {
 	}
 
 	public async list(guildId: string, withMembers = false) {
-		const cursor = this.rosters.find({ guildId });
-		if (!withMembers) cursor.project({ members: 0 });
-		return cursor.sort({ _id: -1 }).toArray();
+		const cursor = this.rosters.aggregate<WithId<IRoster> & { memberCount: number }>([
+			{ $match: { guildId } },
+			{ $set: { memberCount: { $size: '$members' } } },
+			...(withMembers ? [] : [{ $set: { members: [] } }]),
+			{ $sort: { _id: -1 } }
+		]);
+
+		return cursor.toArray();
+	}
+
+	public async search(guildId: string, query: string) {
+		const cursor = this.rosters.aggregate<WithId<Omit<IRoster, 'members'>> & { memberCount: number }>([
+			{ $match: { guildId, $text: { $search: query } } },
+			{ $set: { memberCount: { $size: '$members' } } },
+			{ $project: { members: 0 } },
+			{ $sort: { _id: -1 } }
+		]);
+		return cursor.toArray();
 	}
 
 	public async clear(rosterId: ObjectId) {
