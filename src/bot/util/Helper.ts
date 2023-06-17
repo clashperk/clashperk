@@ -149,17 +149,19 @@ export const clanEmbedMaker = async (
 		}
 	]);
 
-	embed.addFields([
-		{
-			name: 'Town Halls',
-			value: [
-				townHalls
-					.slice(0, 7)
-					.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
-					.join(' ')
-			].join('\n')
-		}
-	]);
+	if (townHalls.length) {
+		embed.addFields([
+			{
+				name: 'Town Halls',
+				value: [
+					townHalls
+						.slice(0, 7)
+						.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
+						.join(' ')
+				].join('\n')
+			}
+		]);
+	}
 
 	embed.setFooter({ text: 'Synced' });
 	embed.setTimestamp();

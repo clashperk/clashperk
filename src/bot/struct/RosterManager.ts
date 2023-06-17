@@ -1,4 +1,4 @@
-import { Player } from 'clashofclans.js';
+import { ClanMember, Player } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -12,8 +12,8 @@ import {
 	User,
 	time
 } from 'discord.js';
-import { Collection, ObjectId, WithId } from 'mongodb';
-import { UserInfoModel } from '../types/index.js';
+import { Collection, Filter, ObjectId, WithId } from 'mongodb';
+import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
@@ -103,9 +103,9 @@ export class RosterManager {
 		return this.rosters.deleteOne({ _id: rosterId });
 	}
 
-	public async list(guildId: string, withMembers = false) {
+	public async query(query: Filter<IRoster>, withMembers = false) {
 		const cursor = this.rosters.aggregate<WithId<IRoster> & { memberCount: number }>([
-			{ $match: { guildId } },
+			{ $match: { ...query } },
 			{ $set: { memberCount: { $size: '$members' } } },
 			...(withMembers ? [] : [{ $set: { members: [] } }]),
 			{ $sort: { _id: -1 } }
@@ -114,19 +114,17 @@ export class RosterManager {
 		return cursor.toArray();
 	}
 
+	public async list(guildId: string, withMembers = false) {
+		return this.query({ guildId }, withMembers);
+	}
+
 	public async search(guildId: string, query: string) {
-		const cursor = this.rosters.aggregate<WithId<Omit<IRoster, 'members'>> & { memberCount: number }>([
-			{ $match: { guildId, $text: { $search: query } } },
-			{ $set: { memberCount: { $size: '$members' } } },
-			{ $project: { members: 0 } },
-			{ $sort: { _id: -1 } }
-		]);
-		return cursor.toArray();
+		return this.query({ guildId, $text: { $search: query } });
 	}
 
 	public async clear(rosterId: ObjectId) {
-		const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { members: [] } }, { returnDocument: 'after' });
-		return value;
+		const roster = await this.rosters.findOne({ _id: rosterId });
+		return this.clearRoster(roster);
 	}
 
 	public async close(rosterId: ObjectId) {
@@ -182,7 +180,8 @@ export class RosterManager {
 			return false;
 		}
 
-		if (roster.maxMembers && roster.members.length >= roster.maxMembers) {
+		const maxMembers = roster.maxMembers ?? 50;
+		if (roster.members.length >= maxMembers) {
 			await interaction.followUp({ content: 'This roster is full.', ephemeral: true });
 			return false;
 		}
@@ -405,8 +404,37 @@ export class RosterManager {
 			{ returnDocument: 'after' }
 		);
 
-		if (value) this.updateBulkRoles(value, rolesMap);
+		if (value) this.updateBulkRoles(value, rolesMap, true);
+		return value;
+	}
 
+	private async clearRoster(roster: WithId<IRoster> | null) {
+		if (!roster) return null;
+
+		const _categories = await this.getCategories(roster.guildId);
+		const categories = _categories.reduce<Record<string, IRosterCategory>>(
+			(prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
+			{}
+		);
+
+		const rolesMap: Record<string, string[]> = {};
+		roster.members.forEach((member) => {
+			if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
+			if (roster.roleId && member.userId) rolesMap[member.userId].push(roster.roleId);
+			if (member.categoryId && member.userId) {
+				const category = categories[member.categoryId.toHexString()];
+				// eslint-disable-next-line
+				if (category?.roleId) rolesMap[member.userId].push(category.roleId);
+			}
+		});
+
+		const { value } = await this.rosters.findOneAndUpdate(
+			{ _id: roster._id },
+			{ $set: { members: [], lastUpdated: new Date() } },
+			{ returnDocument: 'after' }
+		);
+
+		if (value) this.updateBulkRoles(value, rolesMap, false);
 		return value;
 	}
 
@@ -633,17 +661,16 @@ export class RosterManager {
 		return row;
 	}
 
-	public async updateBulkRoles(roster: WithId<IRoster>, rolesMap: Record<string, string[]>) {
+	private async updateBulkRoles(roster: WithId<IRoster>, rolesMap: Record<string, string[]>, addRoles: boolean) {
 		const rosterId = roster._id.toHexString();
 		if (this.queued.has(rosterId)) return;
-
 		this.queued.add(rosterId);
+
 		try {
 			const guild = this.client.guilds.cache.get(roster.guildId);
 			if (!guild) return null;
 
 			const entries = Object.entries(rolesMap).filter(([_, roles]) => roles.length);
-
 			const members = await guild.members.fetch({ user: entries.map(([userId]) => userId) }).catch(() => null);
 			if (!members) return null;
 
@@ -654,7 +681,12 @@ export class RosterManager {
 				const roles = rolesIds.filter((id) => this.hasPermission(guild, id)).filter((id) => !member.roles.cache.has(id));
 				if (!roles.length) continue;
 
-				await member.roles.add(roles);
+				if (addRoles) {
+					await member.roles.add(roles);
+				} else {
+					await member.roles.remove(roles);
+				}
+
 				await Util.delay(2000);
 			}
 		} finally {
@@ -824,5 +856,33 @@ export class RosterManager {
 		}
 
 		return { id: raw.timezone.timeZoneId, name: raw.timezone.timeZoneName };
+	}
+
+	public async getClanMembers(memberList: ClanMember[]) {
+		const links = await this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ tag: { $in: memberList.map((mem) => mem.tag) } })
+			.toArray();
+		const players = await Promise.all(links.map((mem) => this.client.http.player(mem.tag)));
+
+		const members: IRosterMember[] = [];
+		links.forEach((link, i) => {
+			const player = players[i];
+			if (!player.ok) return;
+
+			const heroes = player.heroes.filter((hero) => hero.village === 'home');
+			members.push({
+				tag: player.tag,
+				name: player.name,
+				username: link.displayName || link.username,
+				townHallLevel: player.townHallLevel,
+				userId: link.userId,
+				heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
+				clan: player.clan ? { tag: player.clan.tag, name: player.clan.name } : null,
+				createdAt: new Date()
+			});
+		});
+
+		return members;
 	}
 }

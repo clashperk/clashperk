@@ -3,6 +3,7 @@ import { extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
 	ApplicationCommandOptionType,
+	AutocompleteInteraction,
 	BaseInteraction,
 	ClientEvents,
 	Collection,
@@ -129,7 +130,40 @@ export class CommandHandler extends BaseHandler {
 		return result;
 	}
 
-	public argumentRunner(interaction: CommandInteraction, command: Command) {
+	public rawArgs(interaction: CommandInteraction | AutocompleteInteraction) {
+		const resolved: Record<string, unknown> = {};
+		for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
+			const key = name.toString();
+
+			if ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)) {
+				resolved[key] = option.name;
+			} else if (option.type === ApplicationCommandOptionType.Channel) {
+				resolved[key] = (option.channel as GuildBasedChannel | null)?.isTextBased() ? option.channel : null;
+			} else if (option.type === ApplicationCommandOptionType.Role) {
+				resolved[key] = option.role ?? null;
+			} else if (option.type === ApplicationCommandOptionType.User) {
+				resolved[key] = option.user ?? null;
+			} else {
+				resolved[key] = option.value ?? null;
+			}
+
+			if (resolved[key] && (typeof resolved[key] === 'boolean' || ['true', 'false'].includes(resolved[key] as string))) {
+				resolved[key] = resolved[key] === 'true' || resolved[key] === true;
+			}
+
+			if (resolved[key] && name === 'color') {
+				resolved[key] = ResolveColor(resolved[key] as string);
+			}
+		}
+
+		const subCommandGroup = resolved.subCommand ? `-${resolved.subCommand as string}` : '';
+		const subCommand = resolved.command ? `-${resolved.command as string}` : '';
+		resolved.commandName = `${interaction.commandName}${subCommandGroup}${subCommand}`;
+
+		return resolved;
+	}
+
+	public argumentRunner(interaction: CommandInteraction | AutocompleteInteraction, command: Command) {
 		const args = command.args(interaction);
 
 		const resolved: Record<string, unknown> = {};
@@ -177,6 +211,10 @@ export class CommandHandler extends BaseHandler {
 				resolved[key] = typeof def === 'function' ? def(resolved[key]) : def;
 			}
 		}
+
+		const subCommandGroup = resolved.subCommand ? `-${resolved.subCommand as string}` : '';
+		const subCommand = resolved.command ? `-${resolved.command as string}` : '';
+		resolved.commandName = `${interaction.commandName}${subCommandGroup}${subCommand}`;
 
 		return resolved;
 	}
@@ -400,6 +438,11 @@ export class Command implements CommandOptions {
 	public permissionOverwrites(interaction: BaseInteraction): boolean;
 	public permissionOverwrites(): boolean {
 		return false;
+	}
+
+	public autocomplete(interaction: AutocompleteInteraction, args: Record<string, unknown>): Promise<unknown> | unknown;
+	public autocomplete(): Promise<unknown> | unknown {
+		return null;
 	}
 
 	public condition(interaction: BaseInteraction): { embeds: EmbedBuilder[] } | null;

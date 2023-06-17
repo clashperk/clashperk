@@ -38,11 +38,11 @@ export default class RosterEditCommand extends Command {
 		if (args.command === 'modify') return this.modify(interaction, args);
 
 		const category = await this.client.rosterManager.searchCategory(interaction.guild.id, args.name);
-		if (category) return interaction.editReply({ content: 'A category with this name already exists.' });
+		if (category) return interaction.editReply({ content: 'A group with this name already exists.' });
 
 		if (args.group_role) {
 			const dup = await this.client.rosterManager.categories.findOne({ roleId: args.group_role.id });
-			if (dup) return interaction.editReply({ content: 'A category with this role already exists.' });
+			if (dup) return interaction.editReply({ content: 'A group with this role already exists.' });
 		}
 
 		await this.client.rosterManager.createCategory({
@@ -54,7 +54,7 @@ export default class RosterEditCommand extends Command {
 			createdAt: new Date()
 		});
 
-		return interaction.editReply({ content: 'Category created!' });
+		return interaction.editReply({ content: 'User group created!' });
 	}
 
 	private async modify(interaction: CommandInteraction<'cached'>, args: RosterGroupModifyProps) {
@@ -64,11 +64,11 @@ export default class RosterEditCommand extends Command {
 
 		const categoryId = new ObjectId(args.group);
 		const category = await this.client.rosterManager.getCategory(categoryId);
-		if (!category) return interaction.editReply({ content: 'Category was deleted.' });
+		if (!category) return interaction.editReply({ content: 'User group was deleted.' });
 
 		if (args.delete_group) {
 			await this.client.rosterManager.deleteCategory(category._id);
-			return interaction.editReply({ content: 'Category deleted!' });
+			return interaction.editReply({ content: 'User group deleted!' });
 		}
 
 		const data: Partial<IRosterCategory> = {};
@@ -84,6 +84,6 @@ export default class RosterEditCommand extends Command {
 		}
 
 		await this.client.rosterManager.editCategory(category._id, data);
-		return interaction.editReply({ content: 'Category updated!' });
+		return interaction.editReply({ content: 'User group updated!' });
 	}
 }

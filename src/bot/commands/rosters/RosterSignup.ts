@@ -37,10 +37,11 @@ export default class RosterSignupCommand extends Command {
 			category: this.client.uuid(interaction.user.id)
 		};
 
+		const signedUp = roster.members.map((member) => member.tag);
 		const linked = players.map((player) => {
 			const heroes = player.heroes.filter((hero) => hero.village === 'home');
 			return {
-				label: `${player.name} (${player.tag})`,
+				label: `${signedUp.includes(player.tag) ? '[SIGNED UP] ' : ''}${player.name} (${player.tag})`,
 				value: player.tag,
 				emoji: TOWN_HALLS[player.townHallLevel],
 				description: heroes.length ? `${heroes.map((hero) => `${this.initials(hero.name)} ${hero.level}`).join(', ')}` : undefined

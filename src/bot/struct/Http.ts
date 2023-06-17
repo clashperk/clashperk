@@ -125,6 +125,11 @@ export default class Http extends ClashOfClansClient {
 		return super.parseTag(tag);
 	}
 
+	public isValidTag(tag?: string) {
+		if (!tag) return false;
+		return /^#?[0289PYLQGRJCUV]{3,}$/.test(tag.toUpperCase().replace(/O/g, '0'));
+	}
+
 	public detailedClanMembers(members: { tag: string }[] = []): Promise<Player[]> {
 		return Promise.all(members.map((mem) => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
 	}

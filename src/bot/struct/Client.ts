@@ -26,6 +26,7 @@ import { NicknameHandler } from './NicknameHandler.js';
 import { GuildEventsHandler } from './GuildEventsHandler.js';
 import RedisService from './RedisService.js';
 import { RosterManager } from './RosterManager.js';
+import { Autocomplete } from './Autocomplete.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -80,6 +81,7 @@ export class Client extends Discord.Client {
 	private commandsMap!: CommandsMap;
 	public nickHandler!: NicknameHandler;
 	public rosterManager!: RosterManager;
+	public autocomplete!: Autocomplete;
 
 	public constructor() {
 		super({
@@ -199,6 +201,7 @@ export class Client extends Discord.Client {
 		this.commandsMap = new CommandsMap(this);
 		this.guildEvents = new GuildEventsHandler(this);
 		this.rosterManager = new RosterManager(this);
+		this.autocomplete = new Autocomplete(this);
 
 		await this.http.login();
 

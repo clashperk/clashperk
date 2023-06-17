@@ -2,11 +2,13 @@ import { MsearchMultiSearchItem } from '@elastic/elasticsearch/lib/api/types.js'
 
 import { AutocompleteInteraction, Interaction } from 'discord.js';
 import moment from 'moment';
+import { Filter } from 'mongodb';
 import ms from 'ms';
 import { nanoid } from 'nanoid';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
+import { IRoster, IRosterCategory } from '../../struct/RosterManager.js';
 import { ElasticIndex, Settings } from '../../util/Constants.js';
 
 const ranges: Record<string, number> = {
@@ -148,6 +150,10 @@ export default class InteractionListener extends Listener {
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 			case 'player_tag': {
+				const subCommand = interaction.options.getSubcommand();
+				if (interaction.commandName === 'roster' && subCommand === 'manage') {
+					return this.client.autocomplete.handle(interaction);
+				}
 				return this.playerTagAutocomplete(interaction, focused);
 			}
 			case 'clan_tag': {
@@ -157,19 +163,42 @@ export default class InteractionListener extends Listener {
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 			case 'alias': {
-				return this.aliasAutoComplete(interaction);
+				return this.aliasAutoComplete(interaction, focused);
 			}
+			case 'target_roster':
 			case 'roster': {
-				return this.rosterAutocomplete(interaction);
+				const subCommand = interaction.options.getSubcommand();
+				if (interaction.commandName === 'roster' && subCommand === 'manage' && focused === 'target_roster') {
+					return this.client.autocomplete.handle(interaction);
+				}
+				return this.rosterAutocomplete(interaction, focused);
 			}
+			case 'target_group':
 			case 'group': {
-				return this.rosterCategoryAutocomplete(interaction);
+				const subCommand = interaction.options.getSubcommand();
+				if (interaction.commandName === 'roster' && subCommand === 'manage' && focused === 'target_group') {
+					return this.client.autocomplete.handle(interaction);
+				}
+				return this.rosterCategoryAutocomplete(interaction, focused);
 			}
 		}
 	}
 
-	private async rosterAutocomplete(interaction: AutocompleteInteraction<'cached'>) {
-		const rosters = await this.client.rosterManager.list(interaction.guild.id);
+	private async rosterAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+		const filter: Filter<IRoster> = {
+			guildId: interaction.guild.id
+		};
+
+		const query = interaction.options.getString(focused);
+		if (query) {
+			const text = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			filter.name = { $regex: `.*${text}.*`, $options: 'i' };
+		}
+
+		const cursor = this.client.rosterManager.rosters.find(filter, { projection: { members: 0 } });
+		if (!query) cursor.sort({ _id: -1 });
+
+		const rosters = await cursor.limit(24).toArray();
 		if (!rosters.length) return interaction.respond([{ value: '0', name: 'No rosters found.' }]);
 
 		return interaction.respond(
@@ -177,8 +206,20 @@ export default class InteractionListener extends Listener {
 		);
 	}
 
-	private async rosterCategoryAutocomplete(interaction: AutocompleteInteraction<'cached'>) {
-		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
+	private async rosterCategoryAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+		const filter: Filter<IRosterCategory> = {
+			guildId: interaction.guild.id
+		};
+		const query = interaction.options.getString(focused);
+		if (query) {
+			const text = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			filter.displayName = { $regex: `.*${text}.*`, $options: 'i' };
+		}
+
+		const cursor = this.client.rosterManager.categories.find(filter);
+		if (!query) cursor.sort({ _id: -1 });
+
+		const categories = await cursor.limit(24).toArray();
 		if (!categories.length) return interaction.respond([{ value: '0', name: 'No categories found.' }]);
 
 		return interaction.respond(
@@ -186,9 +227,14 @@ export default class InteractionListener extends Listener {
 		);
 	}
 
-	private async aliasAutoComplete(interaction: AutocompleteInteraction<'cached'>) {
+	private async aliasAutoComplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const clans = await this.client.storage.find(interaction.guild.id);
-		const aliases = clans.filter((clan) => clan.alias);
+		const query = interaction.options.getString(focused)?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+		const aliases = clans
+			.filter((clan) => clan.alias)
+			.filter((alias) => (query ? new RegExp(`.*${query}.*`, 'i').test(alias.alias!) : true))
+			.slice(0, 24);
 		if (!aliases.length) return interaction.respond([{ value: '0', name: 'No aliases found.' }]);
 
 		return interaction.respond(aliases.map((clan) => ({ value: clan.alias!, name: `${clan.alias!} - ${clan.name}` })));

@@ -1,10 +1,7 @@
-import { Clan } from 'clashofclans.js';
 import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Command } from '../../lib/index.js';
-import { IRoster, IRosterMember, RosterSortTypes } from '../../struct/RosterManager.js';
-import { PlayerLinks } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
+import { IRoster, RosterSortTypes } from '../../struct/RosterManager.js';
 
 export default class RosterCreateCommand extends Command {
 	public constructor() {
@@ -55,7 +52,7 @@ export default class RosterCreateCommand extends Command {
 			},
 			guildId: interaction.guild.id,
 			closed: false,
-			members: args.import_members ? await this.getClanMembers(clan) : [],
+			members: args.import_members ? await this.client.rosterManager.getClanMembers(clan.memberList) : [],
 			allowMultiSignup: Boolean(args.allow_multi_signup ?? false),
 			allowCategorySelection: args.allow_group_selection ?? true,
 			maxMembers: args.max_members,
@@ -107,33 +104,5 @@ export default class RosterCreateCommand extends Command {
 
 		const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
 		return interaction.editReply({ embeds: [embed] });
-	}
-
-	private async getClanMembers(clan: Clan) {
-		const links = await this.client.db
-			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: clan.memberList.map((mem) => mem.tag) } })
-			.toArray();
-		const players = await Promise.all(links.map((mem) => this.client.http.player(mem.tag)));
-
-		const members: IRosterMember[] = [];
-		links.forEach((link, i) => {
-			const player = players[i];
-			if (!player.ok) return;
-
-			const heroes = player.heroes.filter((hero) => hero.village === 'home');
-			members.push({
-				tag: player.tag,
-				name: player.name,
-				username: link.displayName,
-				townHallLevel: player.townHallLevel,
-				userId: link.userId,
-				heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
-				clan: player.clan ? { tag: player.clan.tag, name: player.clan.name } : null,
-				createdAt: new Date()
-			});
-		});
-
-		return members;
 	}
 }
