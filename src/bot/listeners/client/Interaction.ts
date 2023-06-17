@@ -150,7 +150,7 @@ export default class InteractionListener extends Listener {
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 			case 'player_tag': {
-				const subCommand = interaction.options.getSubcommand();
+				const subCommand = interaction.options.getSubcommand(false);
 				if (interaction.commandName === 'roster' && subCommand === 'manage') {
 					return this.client.autocomplete.handle(interaction);
 				}
@@ -167,7 +167,7 @@ export default class InteractionListener extends Listener {
 			}
 			case 'target_roster':
 			case 'roster': {
-				const subCommand = interaction.options.getSubcommand();
+				const subCommand = interaction.options.getSubcommand(false);
 				if (interaction.commandName === 'roster' && subCommand === 'manage' && focused === 'target_roster') {
 					return this.client.autocomplete.handle(interaction);
 				}
@@ -175,7 +175,7 @@ export default class InteractionListener extends Listener {
 			}
 			case 'target_group':
 			case 'group': {
-				const subCommand = interaction.options.getSubcommand();
+				const subCommand = interaction.options.getSubcommand(false);
 				if (interaction.commandName === 'roster' && subCommand === 'manage' && focused === 'target_group') {
 					return this.client.autocomplete.handle(interaction);
 				}
