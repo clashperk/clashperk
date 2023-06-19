@@ -20,13 +20,13 @@ export default class RosterPostCommand extends Command {
 	) {
 		// if (args.list_option || args.group) return this.ping(interaction, args);
 
-		if (!ObjectId.isValid(args.roster)) return interaction.editReply({ content: 'Invalid roster ID.' });
+		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 		const rosterId = new ObjectId(args.roster);
 		const roster = await this.client.rosterManager.get(rosterId);
-		if (!roster) return interaction.editReply({ content: 'Roster not found.' });
+		if (!roster) return interaction.followUp({ content: 'Roster not found.', ephemeral: true });
 
 		const updated = await this.client.rosterManager.updateMembers(roster, roster.members);
-		if (!updated) return interaction.editReply({ content: 'This roster no longer exists.' });
+		if (!updated) return interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
 
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
