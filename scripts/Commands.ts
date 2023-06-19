@@ -1677,6 +1677,494 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
+		name: 'roster',
+		description: 'Comprehensive roster management system.',
+		dm_permission: false,
+		options: [
+			{
+				name: 'create',
+				description: 'Create a roster for your clan.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clan',
+						description: 'Clan of the roster.',
+						autocomplete: true,
+						required: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'name',
+						description: 'Name of the roster.',
+						required: true,
+						max_length: 30,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'import_members',
+						description: 'Whether to import members from the clan.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'max_members',
+						min_value: 5,
+						max_value: 65,
+						description: 'Size of the roster.',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'min_town_hall',
+						description: 'Minimum Town Hall level of the roster.',
+						type: ApplicationCommandOptionType.Integer,
+						min_value: 2,
+						max_value: MAX_TOWN_HALL_LEVEL
+					},
+					{
+						name: 'min_hero_level',
+						min_value: 0,
+						description: 'Minimum combined Hero level of the roster.',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'roster_role',
+						description: 'Role of the roster.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'sort_by',
+						description: 'Sorting order of the roster member list.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Player Name',
+								value: 'PLAYER_NAME'
+							},
+							{
+								name: 'Discord Username',
+								value: 'DISCORD_NAME'
+							},
+							{
+								name: 'Town Hall Level',
+								value: 'TOWN_HALL_LEVEL'
+							},
+							{
+								name: 'Hero Levels',
+								value: 'HERO_LEVEL'
+							},
+							{
+								name: 'TH + Hero Levels',
+								value: 'TH_HERO_LEVEL'
+							},
+							{
+								name: 'Clan Name',
+								value: 'CLAN_NAME'
+							},
+							{
+								name: 'Last Sign Up',
+								value: 'SIGNUP_TIME'
+							}
+						]
+					},
+					{
+						name: 'layout',
+						description: 'Layout of the roster.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: '#/TH_ICON/DISCORD/NAME/CLAN',
+								value: '#/TH_ICON/DISCORD/NAME/CLAN'
+							},
+							{
+								name: 'TH/DISCORD/NAME/CLAN',
+								value: 'TH/DISCORD/NAME/CLAN'
+							}
+						]
+					},
+					{
+						name: 'start_time',
+						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'end_time',
+						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'timezone',
+						description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'allow_group_selection',
+						description: 'Whether to allow members to select group.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'allow_multi_signup',
+						description: 'Whether to allow multiple rosters signup.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'use_clan_alias',
+						description: 'Whether to use clan alias in the roster (created by /alias command)',
+						type: ApplicationCommandOptionType.Boolean
+					}
+				]
+			},
+			{
+				name: 'post',
+				description: 'Post a roster.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						autocomplete: true,
+						required: true,
+						description: 'Select a roster to post.',
+						type: ApplicationCommandOptionType.String
+					}
+					// {
+					// 	name: 'list_option',
+					// 	description: 'Select an option to ping or list down members.',
+					// 	type: ApplicationCommandOptionType.String,
+					// 	choices: [
+					// 		{
+					// 			name: 'Pending Members',
+					// 			value: 'pending'
+					// 		},
+					// 		{
+					// 			name: 'Unwanted Members',
+					// 			value: 'unwanted'
+					// 		},
+					// 		{
+					// 			name: 'All Members',
+					// 			value: 'all'
+					// 		}
+					// 	]
+					// },
+					// {
+					// 	name: 'group',
+					// 	autocomplete: true,
+					// 	description: 'Select a group to ping or list down members.',
+					// 	type: ApplicationCommandOptionType.String
+					// },
+					// {
+					// 	name: 'message',
+					// 	description: 'Message to ping.',
+					// 	type: ApplicationCommandOptionType.String
+					// }
+				]
+			},
+			{
+				name: 'list',
+				description: 'Search rosters or list all rosters and groups.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'name',
+						description: 'Search rosters by name.',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'user',
+						description: 'Search rosters by user.',
+						type: ApplicationCommandOptionType.User
+					},
+					{
+						name: 'player_tag',
+						description: 'Search rosters by player.',
+						type: ApplicationCommandOptionType.String,
+						autocomplete: true
+					},
+					{
+						name: 'clan',
+						description: 'Search rosters by clan.',
+						type: ApplicationCommandOptionType.String,
+						autocomplete: true
+					}
+				]
+			},
+			{
+				name: 'edit',
+				description: 'Edit a roster.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						description: 'Select a roster to edit.',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'name',
+						description: 'Name of the roster.',
+						max_length: 30,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clan',
+						description: 'Clan of the roster.',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'max_members',
+						description: 'Size of the roster.',
+						max_value: 65,
+						min_value: 5,
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'min_town_hall',
+						max_value: MAX_TOWN_HALL_LEVEL,
+						min_value: 2,
+						description: 'Minimum Town Hall level of the roster.',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'min_hero_level',
+						min_value: 0,
+						description: 'Minimum combined Hero level of the roster.',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
+						name: 'roster_role',
+						description: 'Role of the roster.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'layout',
+						description: 'Layout of the roster.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: '#/TH_ICON/DISCORD/NAME/CLAN',
+								value: '#/TH_ICON/DISCORD/NAME/CLAN'
+							},
+							{
+								name: 'TH/DISCORD/NAME/CLAN',
+								value: 'TH/DISCORD/NAME/CLAN'
+							}
+						]
+					},
+					{
+						name: 'sort_by',
+						description: 'Sorting order of the roster member list.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Player Name',
+								value: 'PLAYER_NAME'
+							},
+							{
+								name: 'Discord Username',
+								value: 'DISCORD_NAME'
+							},
+							{
+								name: 'Town Hall Level',
+								value: 'TOWN_HALL_LEVEL'
+							},
+							{
+								name: 'Hero Levels',
+								value: 'HERO_LEVEL'
+							},
+							{
+								name: 'TH + Hero Levels',
+								value: 'TH_HERO_LEVEL'
+							},
+							{
+								name: 'Clan Name',
+								value: 'CLAN_NAME'
+							},
+							{
+								name: 'Last Sign Up',
+								value: 'SIGNUP_TIME'
+							}
+						]
+					},
+					{
+						name: 'delete_role',
+						description: 'Whether to delete the role of the roster.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'start_time',
+						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'end_time',
+						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'timezone',
+						description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'allow_group_selection',
+						description: 'Whether to allow members to select group.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'allow_multi_signup',
+						description: 'Whether to allow multiple rosters signup.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'use_clan_alias',
+						description: 'Whether to use clan alias in the roster (created by /alias command)',
+						type: ApplicationCommandOptionType.Boolean
+					}
+				]
+			},
+			{
+				name: 'delete',
+				description: 'Permanently delete a roster.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						description: 'Select a roster to delete.',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			},
+			{
+				name: 'manage',
+				description: 'Add or remove users or change their group or roster.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						description: 'Select a roster to manage.',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'action',
+						description: 'Select an action to perform.',
+						required: true,
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Add User',
+								value: 'add-user'
+							},
+							{
+								name: 'Remove User',
+								value: 'del-user'
+							},
+							{
+								name: 'Change Roster',
+								value: 'change-roster'
+							},
+							{
+								name: 'Change Group',
+								value: 'change-category'
+							}
+						]
+					},
+					{
+						name: 'player_tag',
+						required: true,
+						autocomplete: true,
+						description: 'Select a player to manage.',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'target_group',
+						autocomplete: true,
+						description: 'Group of the user to move to.',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'target_roster',
+						autocomplete: true,
+						description: 'Roster to move the user to.',
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			},
+			{
+				name: 'groups',
+				description: 'Manage user groups of the rosters.',
+				type: ApplicationCommandOptionType.SubcommandGroup,
+				options: [
+					{
+						name: 'create',
+						description: 'Create a user group.',
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'name',
+								description: 'Name of the user group.',
+								required: true,
+								max_length: 30,
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'group_role',
+								description: 'Role of the user group.',
+								type: ApplicationCommandOptionType.Role
+							},
+							{
+								name: 'selectable',
+								description: 'Whether to allow members to select this group.',
+								type: ApplicationCommandOptionType.Boolean
+							}
+						]
+					},
+					{
+						name: 'modify',
+						description: 'Modify or delete a user group.',
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'group',
+								autocomplete: true,
+								required: true,
+								description: 'Select a group to modify.',
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'name',
+								description: 'Name of the user group.',
+								max_length: 30,
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'group_role',
+								description: 'Role of the user group.',
+								type: ApplicationCommandOptionType.Role
+							},
+							{
+								name: 'selectable',
+								description: 'Whether to allow members to select this group.',
+								type: ApplicationCommandOptionType.Boolean
+							},
+							{
+								name: 'delete_role',
+								description: 'Whether to delete the role of the group.',
+								type: ApplicationCommandOptionType.Boolean
+							},
+							{
+								name: 'delete_group',
+								description: 'Whether to delete the user group.',
+								type: ApplicationCommandOptionType.Boolean
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
 		name: 'autorole',
 		description: 'Enable automatic clan roles and Town Hall roles.',
 		dm_permission: false,
@@ -2951,496 +3439,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	}
 ];
 
-export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
-	{
-		name: 'roster',
-		description: 'Comprehensive roster management system.',
-		dm_permission: false,
-		options: [
-			{
-				name: 'create',
-				description: 'Create a roster for your clan.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'clan',
-						description: 'Clan of the roster.',
-						autocomplete: true,
-						required: true,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'name',
-						description: 'Name of the roster.',
-						required: true,
-						max_length: 30,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'import_members',
-						description: 'Whether to import members from the clan.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'max_members',
-						min_value: 5,
-						max_value: 65,
-						description: 'Size of the roster.',
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'min_town_hall',
-						description: 'Minimum Town Hall level of the roster.',
-						type: ApplicationCommandOptionType.Integer,
-						min_value: 2,
-						max_value: MAX_TOWN_HALL_LEVEL
-					},
-					{
-						name: 'min_hero_level',
-						min_value: 0,
-						description: 'Minimum combined Hero level of the roster.',
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'roster_role',
-						description: 'Role of the roster.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'sort_by',
-						description: 'Sorting order of the roster member list.',
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Player Name',
-								value: 'PLAYER_NAME'
-							},
-							{
-								name: 'Discord Username',
-								value: 'DISCORD_NAME'
-							},
-							{
-								name: 'Town Hall Level',
-								value: 'TOWN_HALL_LEVEL'
-							},
-							{
-								name: 'Hero Levels',
-								value: 'HERO_LEVEL'
-							},
-							{
-								name: 'TH + Hero Levels',
-								value: 'TH_HERO_LEVEL'
-							},
-							{
-								name: 'Clan Name',
-								value: 'CLAN_NAME'
-							},
-							{
-								name: 'Last Sign Up',
-								value: 'SIGNUP_TIME'
-							}
-						]
-					},
-					{
-						name: 'layout',
-						description: 'Layout of the roster.',
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: '#/TH_ICON/DISCORD/NAME/CLAN',
-								value: '#/TH_ICON/DISCORD/NAME/CLAN'
-							},
-							{
-								name: 'TH/DISCORD/NAME/CLAN',
-								value: 'TH/DISCORD/NAME/CLAN'
-							}
-						]
-					},
-					{
-						name: 'start_time',
-						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'end_time',
-						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'timezone',
-						description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'allow_group_selection',
-						description: 'Whether to allow members to select group.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'allow_multi_signup',
-						description: 'Whether to allow multiple rosters signup.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'use_clan_alias',
-						description: 'Whether to use clan alias in the roster (created by /alias command)',
-						type: ApplicationCommandOptionType.Boolean
-					}
-				]
-			},
-			{
-				name: 'post',
-				description: 'Post a roster.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'roster',
-						autocomplete: true,
-						required: true,
-						description: 'Select a roster to post.',
-						type: ApplicationCommandOptionType.String
-					}
-					// {
-					// 	name: 'list_option',
-					// 	description: 'Select an option to ping or list down members.',
-					// 	type: ApplicationCommandOptionType.String,
-					// 	choices: [
-					// 		{
-					// 			name: 'Pending Members',
-					// 			value: 'pending'
-					// 		},
-					// 		{
-					// 			name: 'Unwanted Members',
-					// 			value: 'unwanted'
-					// 		},
-					// 		{
-					// 			name: 'All Members',
-					// 			value: 'all'
-					// 		}
-					// 	]
-					// },
-					// {
-					// 	name: 'group',
-					// 	autocomplete: true,
-					// 	description: 'Select a group to ping or list down members.',
-					// 	type: ApplicationCommandOptionType.String
-					// },
-					// {
-					// 	name: 'message',
-					// 	description: 'Message to ping.',
-					// 	type: ApplicationCommandOptionType.String
-					// }
-				]
-			},
-			{
-				name: 'list',
-				description: 'Search rosters or list all rosters and groups.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'name',
-						description: 'Search rosters by name.',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'user',
-						description: 'Search rosters by user.',
-						type: ApplicationCommandOptionType.User
-					},
-					{
-						name: 'player_tag',
-						description: 'Search rosters by player.',
-						type: ApplicationCommandOptionType.String,
-						autocomplete: true
-					},
-					{
-						name: 'clan',
-						description: 'Search rosters by clan.',
-						type: ApplicationCommandOptionType.String,
-						autocomplete: true
-					}
-				]
-			},
-			{
-				name: 'edit',
-				description: 'Edit a roster.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'roster',
-						description: 'Select a roster to edit.',
-						required: true,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'name',
-						description: 'Name of the roster.',
-						max_length: 30,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'clan',
-						description: 'Clan of the roster.',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'max_members',
-						description: 'Size of the roster.',
-						max_value: 65,
-						min_value: 5,
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'min_town_hall',
-						max_value: MAX_TOWN_HALL_LEVEL,
-						min_value: 2,
-						description: 'Minimum Town Hall level of the roster.',
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'min_hero_level',
-						min_value: 0,
-						description: 'Minimum combined Hero level of the roster.',
-						type: ApplicationCommandOptionType.Integer
-					},
-					{
-						name: 'roster_role',
-						description: 'Role of the roster.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'layout',
-						description: 'Layout of the roster.',
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: '#/TH_ICON/DISCORD/NAME/CLAN',
-								value: '#/TH_ICON/DISCORD/NAME/CLAN'
-							},
-							{
-								name: 'TH/DISCORD/NAME/CLAN',
-								value: 'TH/DISCORD/NAME/CLAN'
-							}
-						]
-					},
-					{
-						name: 'sort_by',
-						description: 'Sorting order of the roster member list.',
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Player Name',
-								value: 'PLAYER_NAME'
-							},
-							{
-								name: 'Discord Username',
-								value: 'DISCORD_NAME'
-							},
-							{
-								name: 'Town Hall Level',
-								value: 'TOWN_HALL_LEVEL'
-							},
-							{
-								name: 'Hero Levels',
-								value: 'HERO_LEVEL'
-							},
-							{
-								name: 'TH + Hero Levels',
-								value: 'TH_HERO_LEVEL'
-							},
-							{
-								name: 'Clan Name',
-								value: 'CLAN_NAME'
-							},
-							{
-								name: 'Last Sign Up',
-								value: 'SIGNUP_TIME'
-							}
-						]
-					},
-					{
-						name: 'delete_role',
-						description: 'Whether to delete the role of the roster.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'start_time',
-						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'end_time',
-						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'timezone',
-						description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'allow_group_selection',
-						description: 'Whether to allow members to select group.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'allow_multi_signup',
-						description: 'Whether to allow multiple rosters signup.',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'use_clan_alias',
-						description: 'Whether to use clan alias in the roster (created by /alias command)',
-						type: ApplicationCommandOptionType.Boolean
-					}
-				]
-			},
-			{
-				name: 'delete',
-				description: 'Permanently delete a roster.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'roster',
-						description: 'Select a roster to delete.',
-						required: true,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
-					}
-				]
-			},
-			{
-				name: 'manage',
-				description: 'Add or remove users or change their group or roster.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'roster',
-						description: 'Select a roster to manage.',
-						required: true,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'action',
-						description: 'Select an action to perform.',
-						required: true,
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Add User',
-								value: 'add-user'
-							},
-							{
-								name: 'Remove User',
-								value: 'del-user'
-							},
-							{
-								name: 'Change Roster',
-								value: 'change-roster'
-							},
-							{
-								name: 'Change Group',
-								value: 'change-category'
-							}
-						]
-					},
-					{
-						name: 'player_tag',
-						required: true,
-						autocomplete: true,
-						description: 'Select a player to manage.',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'target_group',
-						autocomplete: true,
-						description: 'Group of the user to move to.',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'target_roster',
-						autocomplete: true,
-						description: 'Roster to move the user to.',
-						type: ApplicationCommandOptionType.String
-					}
-				]
-			},
-			{
-				name: 'groups',
-				description: 'Manage user groups of the rosters.',
-				type: ApplicationCommandOptionType.SubcommandGroup,
-				options: [
-					{
-						name: 'create',
-						description: 'Create a user group.',
-						type: ApplicationCommandOptionType.Subcommand,
-						options: [
-							{
-								name: 'name',
-								description: 'Name of the user group.',
-								required: true,
-								max_length: 30,
-								type: ApplicationCommandOptionType.String
-							},
-							{
-								name: 'group_role',
-								description: 'Role of the user group.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'selectable',
-								description: 'Whether to allow members to select this group.',
-								type: ApplicationCommandOptionType.Boolean
-							}
-						]
-					},
-					{
-						name: 'modify',
-						description: 'Modify or delete a user group.',
-						type: ApplicationCommandOptionType.Subcommand,
-						options: [
-							{
-								name: 'group',
-								autocomplete: true,
-								required: true,
-								description: 'Select a group to modify.',
-								type: ApplicationCommandOptionType.String
-							},
-							{
-								name: 'name',
-								description: 'Name of the user group.',
-								max_length: 30,
-								type: ApplicationCommandOptionType.String
-							},
-							{
-								name: 'group_role',
-								description: 'Role of the user group.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'selectable',
-								description: 'Whether to allow members to select this group.',
-								type: ApplicationCommandOptionType.Boolean
-							},
-							{
-								name: 'delete_role',
-								description: 'Whether to delete the role of the group.',
-								type: ApplicationCommandOptionType.Boolean
-							},
-							{
-								name: 'delete_group',
-								description: 'Whether to delete the user group.',
-								type: ApplicationCommandOptionType.Boolean
-							}
-						]
-					}
-				]
-			}
-		]
-	}
-];
+export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [];
 
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{

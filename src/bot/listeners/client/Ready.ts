@@ -20,16 +20,28 @@ export default class ReadyListener extends Listener {
 		const commands = applicationCommands
 			.filter((command) => command.type === ApplicationCommandType.ChatInput)
 			.map((command) => {
-				const subCommands = command.options
-					.filter((option) => option.type === ApplicationCommandOptionType.Subcommand)
-					.map((option) => {
+				const subCommandGroups = command.options
+					.filter((option) =>
+						[ApplicationCommandOptionType.SubcommandGroup, ApplicationCommandOptionType.Subcommand].includes(option.type)
+					)
+					.flatMap((option) => {
+						if (option.type === ApplicationCommandOptionType.SubcommandGroup && option.options?.length) {
+							return option.options.map((subOption) => {
+								return {
+									id: command.id,
+									name: `/${command.name} ${option.name} ${subOption.name}`,
+									formatted: `</${command.name} ${option.name} ${subOption.name}:${command.id}>`
+								};
+							});
+						}
 						return {
 							id: command.id,
 							name: `/${command.name} ${option.name}`,
 							formatted: `</${command.name} ${option.name}:${command.id}>`
 						};
 					});
-				if (subCommands.length) return [...subCommands];
+				if (subCommandGroups.length) return [...subCommandGroups];
+
 				return [
 					{
 						id: command.id,
@@ -38,6 +50,6 @@ export default class ReadyListener extends Listener {
 					}
 				];
 			});
-		commands.flat().map((cmd) => this.client._commands.set(cmd.name, cmd.formatted));
+		commands.flat().map((cmd) => this.client.commandsMap.commands.set(cmd.name, cmd.formatted));
 	}
 }

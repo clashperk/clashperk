@@ -67,6 +67,7 @@ const categories: Record<string, string> = {
 interface CommandInfo {
 	id: string;
 	name: string;
+	rootName: string;
 	description: string;
 	category: string;
 	translation_key: string;
@@ -151,21 +152,41 @@ export default class HelpCommand extends Command {
 		const commands = applicationCommands
 			.filter((command) => command.type === ApplicationCommandType.ChatInput)
 			.map((command) => {
-				const subCommands = command.options
-					.filter((option) => option.type === ApplicationCommandOptionType.Subcommand)
-					.map((option) => {
+				const subCommandGroups = command.options
+					.filter((option) =>
+						[ApplicationCommandOptionType.SubcommandGroup, ApplicationCommandOptionType.Subcommand].includes(option.type)
+					)
+					.flatMap((option) => {
+						if (option.type === ApplicationCommandOptionType.SubcommandGroup && option.options?.length) {
+							return option.options.map((subOption) => {
+								const translation_key = `${command.name} ${option.name} ${subOption.name}.description_long`
+									.replace(/ /g, '.')
+									.replace(/-/g, '_');
+								const cmd = this.client.commandHandler.getCommand(command.name);
+								return {
+									id: command.id,
+									name: `${command.name} ${option.name} ${subOption.name}`,
+									rootName: command.name,
+									description: subOption.description,
+									category: cmd?.category ?? 'search',
+									translation_key: `command.${translation_key}`,
+									description_long: getTranslation(translation_key)
+								};
+							});
+						}
 						const translation_key = `${command.name} ${option.name}.description_long`.replace(/ /g, '.').replace(/-/g, '_');
 						const cmd = this.client.commandHandler.getCommand(command.name);
 						return {
 							id: command.id,
 							name: `${command.name} ${option.name}`,
+							rootName: command.name,
 							description: option.description,
 							category: cmd?.category ?? 'search',
 							translation_key: `command.${translation_key}`,
 							description_long: getTranslation(translation_key)
 						};
 					});
-				if (subCommands.length) return [...subCommands];
+				if (subCommandGroups.length) return [...subCommandGroups];
 
 				const cmd = this.client.commandHandler.getCommand(command.name);
 				const translation_key = `${command.name.replace(/ /g, '_').replace(/-/g, '_')}.description_long`;
@@ -173,6 +194,7 @@ export default class HelpCommand extends Command {
 					{
 						id: command.id,
 						name: command.name,
+						rootName: command.name,
 						category: cmd?.category ?? 'search',
 						description: command.description,
 						translation_key: `command.${translation_key}`,
@@ -191,7 +213,13 @@ export default class HelpCommand extends Command {
 
 		const commandCategories = Object.entries(grouped).map(([category, commands]) => ({
 			category,
-			commands
+			commandGroups: Object.values(
+				commands.reduce<Record<string, CommandInfo[]>>((acc, cur) => {
+					acc[cur.rootName] ??= []; // eslint-disable-line
+					acc[cur.rootName].push(cur);
+					return acc;
+				}, {})
+			)
 		}));
 
 		const fields = Object.values(categories);
@@ -199,7 +227,7 @@ export default class HelpCommand extends Command {
 
 		const embeds: EmbedBuilder[] = [];
 		args.category ??= 'PLAYER AND CLAN';
-		for (const { category, commands } of commandCategories) {
+		for (const { category, commandGroups } of commandCategories) {
 			if (args.category && args.category !== category) continue;
 
 			const embed = new EmbedBuilder();
@@ -208,10 +236,15 @@ export default class HelpCommand extends Command {
 				[
 					`**${category}**`,
 					'',
-					...commands.map((command) => {
-						const description = command.description_long ?? command.description;
-						return `</${command.name}:${command.id}>\n${description}`;
-					})
+					commandGroups
+						.map((commands) => {
+							const _commands = commands.map((command) => {
+								const description = command.description_long ?? command.description;
+								return `</${command.name}:${command.id}>\n${description}`;
+							});
+							return _commands.join('\n');
+						})
+						.join('\n\n')
 				].join('\n')
 			);
 			embeds.push(embed);

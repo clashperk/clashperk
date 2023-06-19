@@ -77,8 +77,7 @@ export class Client extends Discord.Client {
 	public components = new Map<string, string[]>();
 	public resolver!: Resolver;
 	public ownerId: string;
-	public _commands: Map<string, string> = new Map();
-	private commandsMap!: CommandsMap;
+	public commandsMap!: CommandsMap;
 	public nickHandler!: NicknameHandler;
 	public rosterManager!: RosterManager;
 	public autocomplete!: Autocomplete;
@@ -150,7 +149,7 @@ export class Client extends Discord.Client {
 	}
 
 	public getCommand(name: string) {
-		return this._commands.get(name) ?? `${name}`;
+		return this.commandsMap.commands.get(name) ?? `${name}`;
 	}
 
 	public get commands() {
