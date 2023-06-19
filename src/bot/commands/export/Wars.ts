@@ -69,6 +69,7 @@ export default class WarExport extends Command {
 					members[m.tag] ??= {
 						name: m.name,
 						tag: m.tag,
+						townHallLevel: m.townhallLevel,
 						attacks: 0,
 						stars: 0,
 						trueStars: 0,
@@ -120,6 +121,7 @@ export default class WarExport extends Command {
 			columns: [
 				{ name: 'Name', width: 160, align: 'LEFT' },
 				{ name: 'Tag', width: 120, align: 'LEFT' },
+				{ name: 'Town Hall', width: 100, align: 'RIGHT' },
 				{ name: 'Total Attacks', width: 100, align: 'RIGHT' },
 				{ name: 'Total Stars', width: 100, align: 'RIGHT' },
 				{ name: 'Avg. Stars', width: 100, align: 'RIGHT' },
@@ -140,6 +142,7 @@ export default class WarExport extends Command {
 			rows: chunk.members.map((m) => [
 				m.name,
 				m.tag,
+				m.townHallLevel,
 				m.of,
 				m.stars,
 				Number((m.stars / m.of || 0).toFixed(2)),

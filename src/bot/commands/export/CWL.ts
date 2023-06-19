@@ -82,6 +82,7 @@ export default class ExportCWL extends Command {
 					columns: [
 						{ name: 'Name', width: 160, align: 'LEFT' },
 						{ name: 'Tag', width: 120, align: 'LEFT' },
+						{ name: 'Town Hall', width: 100, align: 'RIGHT' },
 						{ name: 'Total Attacks', width: 100, align: 'RIGHT' },
 						{ name: 'Total Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Avg. Stars', width: 100, align: 'RIGHT' },
@@ -104,6 +105,7 @@ export default class ExportCWL extends Command {
 						.map((m) => [
 							m.name,
 							m.tag,
+							m.townHallLevel,
 							m.of,
 							m.stars,
 							Number((m.stars / m.of || 0).toFixed(2)),
@@ -305,6 +307,7 @@ export default class ExportCWL extends Command {
 							members[m.tag] ??= {
 								name: m.name,
 								tag: m.tag,
+								townHallLevel: m.townhallLevel,
 								of: 0,
 								attacks: 0,
 								stars: 0,
