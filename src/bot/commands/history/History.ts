@@ -13,6 +13,7 @@ export default class HistoryCommand extends Command {
 	public exec(interaction: CommandInteraction, args: { option: string }) {
 		const command = {
 			'cwl-attacks': this.handler.modules.get('cwl-attacks-history')!,
+			'war-attacks': this.handler.modules.get('war-attacks-history')!,
 			'capital-raids': this.handler.modules.get('capital-raids-history')!,
 			'capital-contribution': this.handler.modules.get('capital-contribution-history')!,
 			'clan-games': this.handler.modules.get('clan-games-history')!,

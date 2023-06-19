@@ -1030,15 +1030,19 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						value: 'cwl-attacks'
 					},
 					{
-						name: 'Donations',
+						name: 'War Attacks',
+						value: 'war-attacks'
+					},
+					{
+						name: 'Donations/Received',
 						value: 'donations'
 					},
 					{
-						name: 'Attacks',
+						name: 'Attacks/Defenses',
 						value: 'attacks'
 					},
 					{
-						name: 'Loot',
+						name: 'Loot (Gold/Elixir/Dark)',
 						value: 'loot'
 					},
 					{

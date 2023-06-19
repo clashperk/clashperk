@@ -2,7 +2,6 @@ import { Player, WarClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
-	ButtonInteraction,
 	ButtonStyle,
 	CommandInteraction,
 	ComponentType,
@@ -13,16 +12,12 @@ import {
 	User,
 	escapeMarkdown
 } from 'discord.js';
-import moment from 'moment';
 import ms from 'ms';
-import fetch from 'node-fetch';
 import { Args, Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/Emojis.js';
-import { getExportComponents } from '../../util/Helper.js';
-import { Season, Util } from '../../util/index.js';
+import { Season } from '../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -37,12 +32,6 @@ const weaponLevels: Record<string, string> = {
 	3: '³',
 	4: '⁴',
 	5: '⁵'
-};
-
-const warTypes: Record<string, string> = {
-	1: 'REGULAR',
-	2: 'FRIENDLY',
-	3: 'CWL'
 };
 
 export default class PlayerCommand extends Command {
@@ -147,8 +136,7 @@ export default class PlayerCommand extends Command {
 				return this.handler.exec(action, this.handler.modules.get('rushed')!, { tag: args.tag });
 			}
 			if (action.customId === customIds.export && action.isButton()) {
-				await action.deferReply();
-				await this.exportWars(action, data);
+				await action.reply(`This command has been moved to ${this.client.getCommand('/history')} command.`);
 			}
 		});
 
@@ -368,95 +356,4 @@ export default class PlayerCommand extends Command {
 		if (!data) return Promise.reject(0);
 		return data;
 	}
-
-	private async exportWars(interaction: ButtonInteraction<'cached'>, player: Player) {
-		const res = await fetch(`https://api.clashperk.com/wars/members/${encodeURIComponent(player.tag)}`, {
-			headers: {
-				Authorization: `Bearer ${this.client.util.createJWT()}`
-			}
-		});
-		const data = (await res.json()) as { wars: WarHistory[] };
-		const wars = data.wars
-			.map((war) => {
-				if (war.attacks.length) {
-					return war.attacks.map((attack) => ({ ...war, attack }));
-				}
-				return [{ ...war }];
-			})
-			.flat();
-
-		const sheets: CreateGoogleSheet[] = [
-			{
-				title: Util.escapeSheetName(`${player.name} (${player.tag})`),
-				columns: [
-					{ name: 'WAR TYPE', width: 100, align: 'LEFT' },
-					{ name: 'CLAN', width: 160, align: 'LEFT' },
-					{ name: 'OPPONENT', width: 160, align: 'LEFT' },
-					{ name: 'DATE', width: 160, align: 'LEFT' },
-					{ name: 'MAP POS', width: 100, align: 'RIGHT' },
-					{ name: 'TOWN HALL', width: 100, align: 'RIGHT' },
-					{ name: 'STARS', width: 100, align: 'RIGHT' },
-					{ name: 'DESTRUCTION', width: 100, align: 'RIGHT' },
-					{ name: 'OPPONENT MAP POS', width: 100, align: 'RIGHT' },
-					{ name: 'OPPONENT TOWN HALL', width: 100, align: 'RIGHT' }
-				],
-				rows: wars.map((war) => [
-					warTypes[war.warType],
-					war.clan.name,
-					war.opponent.name,
-					moment(war.startTime).toDate(),
-					war.attacker.mapPosition,
-					war.attacker.townhallLevel,
-					war.attack?.stars,
-					war.attack?.destructionPercentage,
-					war.attack?.defender.mapPosition,
-					war.attack?.defender.townhallLevel
-				])
-			}
-		];
-
-		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Attack History]`, sheets);
-		return interaction.editReply({ components: getExportComponents(spreadsheet) });
-	}
-}
-
-interface WarHistory {
-	id: number;
-	warType: number;
-	startTime: string;
-	endTime: string;
-	clan: {
-		name: string;
-		tag: string;
-	};
-	opponent: {
-		name: string;
-		tag: string;
-	};
-	attacker: {
-		name: string;
-		tag: string;
-		townhallLevel: number;
-		mapPosition: number;
-	};
-	attacks: {
-		stars: number;
-		defenderTag: string;
-		destructionPercentage: number;
-		defender: {
-			tag: string;
-			townhallLevel: number;
-			mapPosition: number;
-		};
-	}[];
-	attack?: {
-		stars: number;
-		defenderTag: string;
-		destructionPercentage: number;
-		defender: {
-			tag: string;
-			townhallLevel: number;
-			mapPosition: number;
-		};
-	};
 }
