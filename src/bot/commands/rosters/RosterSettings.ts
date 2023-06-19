@@ -36,7 +36,7 @@ export default class RosterEditCommand extends Command {
 				.setCustomId(customIds.select)
 				.setOptions([
 					{
-						label: 'Export Roster',
+						label: 'Roster Info/Export',
 						description: 'View roster info, settings and Export to Google spreadsheet.',
 						value: 'export'
 					},

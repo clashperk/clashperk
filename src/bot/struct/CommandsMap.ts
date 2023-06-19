@@ -12,7 +12,8 @@ export class CommandsMap {
 			SETUP_ENABLE: this.client.getCommand('/setup enable'),
 			LINK_CREATE: this.client.getCommand('/link create'),
 			REDEEM: this.client.getCommand('/redeem'),
-			VERIFY: this.client.getCommand('/verify')
+			VERIFY: this.client.getCommand('/verify'),
+			HISTORY: this.client.getCommand('/history')
 		};
 	}
 }

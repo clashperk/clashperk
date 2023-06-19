@@ -49,9 +49,9 @@ export default class UsageCommand extends Command {
 				`__**\`\u200e${'Date'.padEnd(6, ' ')}  ${'Uses'.padEnd(18, ' ')}\u200f\`**__`,
 				...usage.map((en) => `\`\u200e${moment(en.createdAt).format('DD MMM')}  ${en.usage.toString().padEnd(18, ' ')}\u200f\``),
 				'',
-				`__**\`\u200e # ${'Uses'.padStart(6, ' ')}  ${'Command'.padEnd(15, ' ')}\u200f\`**__`,
-				...commands.splice(0, 15).map(({ id, uses }, index) => {
-					const command = this.client.commandHandler.modules.get(id)!.id.replace(/-/g, '');
+				`__**\`\u200e # ${'Uses'.padStart(maxDigit + 1, ' ')}  ${'Command'.padEnd(15, ' ')}\u200f\`**__`,
+				...commands.splice(0, 50).map(({ id, uses }, index) => {
+					const command = `/${this.client.commandHandler.modules.get(id)!.id}`;
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses
 						.toString()
 						.padStart(maxDigit, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
