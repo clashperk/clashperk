@@ -521,7 +521,8 @@ export class RosterManager {
 		membersGroup.sort(([a], [b]) => {
 			if (a === 'none') return 1;
 			if (b === 'none') return -1;
-			return categoriesMap[a].displayName.localeCompare(categoriesMap[b].displayName);
+			// return categoriesMap[a].displayName.localeCompare(categoriesMap[b].displayName);
+			return categoriesMap[a].createdAt.getTime() - categoriesMap[b].createdAt.getTime();
 		});
 
 		// let count = 0;
