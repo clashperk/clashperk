@@ -14,7 +14,7 @@ import {
 } from 'discord.js';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
-import { Collections, MAX_TOWN_HALL_LEVEL } from '../util/Constants.js';
+import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
@@ -55,6 +55,17 @@ export interface IRoster {
 	createdAt: Date;
 }
 
+export interface IRosterDefaultSettings {
+	allowMultiSignup: boolean;
+	maxMembers: number;
+	minTownHall: number;
+	maxTownHall: number;
+	minHeroLevels: number;
+	layout: string;
+	sortBy: RosterSortTypes;
+	allowCategorySelection: boolean;
+}
+
 export interface IRosterCategory {
 	displayName: string;
 	name: string;
@@ -69,6 +80,8 @@ export interface IRosterMember {
 	tag: string;
 	userId: string | null;
 	username: string | null;
+	warPreference: 'in' | 'out' | null;
+	role: string | null;
 	townHallLevel: number;
 	heroes: Record<string, number>;
 	clan?: {
@@ -266,6 +279,8 @@ export class RosterManager {
 			tag: player.tag,
 			userId: user?.id ?? null,
 			username: user?.displayName ?? null,
+			warPreference: player.warPreference ?? null,
+			role: player.role ?? null,
 			heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
 			townHallLevel: player.townHallLevel,
 			clan: player.clan ? { name: player.clan.name, tag: player.clan.tag } : null,
@@ -392,6 +407,8 @@ export class RosterManager {
 
 			member.name = player.name;
 			member.townHallLevel = player.townHallLevel;
+			member.warPreference = player.warPreference ?? null;
+			member.role = player.role ?? null;
 			const heroes = player.heroes.filter((hero) => hero.village === 'home');
 			member.heroes = heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {});
 			if (player.clan) member.clan = { name: player.clan.name, tag: player.clan.tag };
@@ -444,7 +461,7 @@ export class RosterManager {
 			{}
 		);
 
-		const sortKey = roster.sortBy ?? 'TH_HERO_LEVEL';
+		const sortKey = roster.sortBy ?? 'SIGNUP_TIME';
 		switch (sortKey) {
 			case 'TOWN_HALL_LEVEL':
 				roster.members.sort((a, b) => a.townHallLevel - b.townHallLevel);
@@ -545,7 +562,10 @@ export class RosterManager {
 		}
 
 		if (roster.startTime && roster.startTime > new Date()) {
-			embed.addFields({ name: '\u200e', value: `Signup opens on ${time(roster.startTime)}` });
+			embed.addFields({
+				name: '\u200e',
+				value: [`Total ${roster.members.length}`, `Signup opens on ${time(roster.startTime)}`].join('\n')
+			});
 		} else if (roster.endTime) {
 			embed.addFields({
 				name: '\u200e',
@@ -555,7 +575,9 @@ export class RosterManager {
 				].join('\n')
 			});
 		} else if (roster.closed) {
-			embed.addFields({ name: '\u200e', value: 'Signup is **closed**' });
+			embed.addFields({ name: '\u200e', value: [`Total ${roster.members.length}`, 'Signup is **closed**'].join('\n') });
+		} else {
+			embed.addFields({ name: '\u200e', value: `Total ${roster.members.length}` });
 		}
 
 		return embed;
@@ -858,6 +880,24 @@ export class RosterManager {
 		return { id: raw.timezone.timeZoneId, name: raw.timezone.timeZoneName };
 	}
 
+	public getDefaultSettings(guildId: string) {
+		return this.client.settings.get<Partial<IRosterDefaultSettings>>(guildId, Settings.ROSTER_DEFAULT_SETTINGS, {});
+	}
+
+	public async setDefaultSettings(guildId: string, data: Partial<IRoster>) {
+		const settings: Partial<IRosterDefaultSettings> = {
+			allowMultiSignup: data.allowMultiSignup,
+			allowCategorySelection: data.allowCategorySelection,
+			maxMembers: data.maxMembers,
+			minHeroLevels: data.minHeroLevels,
+			minTownHall: data.minTownHall,
+			maxTownHall: data.maxTownHall,
+			sortBy: data.sortBy,
+			layout: data.layout
+		};
+		return this.client.settings.set(guildId, Settings.ROSTER_DEFAULT_SETTINGS, settings);
+	}
+
 	public async getClanMembers(memberList: ClanMember[]) {
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
@@ -877,6 +917,8 @@ export class RosterManager {
 				username: link.displayName || link.username,
 				townHallLevel: player.townHallLevel,
 				userId: link.userId,
+				warPreference: player.warPreference ?? null,
+				role: player.role ?? null,
 				heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
 				clan: player.clan ? { tag: player.clan.tag, name: player.clan.name } : null,
 				createdAt: new Date()

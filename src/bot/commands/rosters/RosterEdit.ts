@@ -80,12 +80,13 @@ export default class RosterEditCommand extends Command {
 			typeof args.allow_multi_signup === 'boolean' &&
 			!args.allow_multi_signup &&
 			roster.allowMultiSignup &&
-			roster.members.length > 1
+			roster.members.length > 0
 		) {
 			const dup = await this.client.rosterManager.rosters.findOne(
 				{
 					'_id': { $ne: roster._id },
 					'closed': false,
+					'guildId': interaction.guild.id,
 					'members.tag': { $in: roster.members.map((mem) => mem.tag) }
 				},
 				{ projection: { _id: 1 } }
@@ -93,7 +94,7 @@ export default class RosterEditCommand extends Command {
 
 			if (dup)
 				return interaction.editReply(
-					'This roster has multiple members signed up for another roster. Please remove them before disabling multi-signup.'
+					`This roster has multiple members signed up for another roster ${dup.name} - ${dup.clan.name} (${dup.clan.name}). Please remove them or close the roster before disabling multi-signup.`
 				);
 		}
 
@@ -123,6 +124,7 @@ export default class RosterEditCommand extends Command {
 
 		const updated = await this.client.rosterManager.edit(rosterId, data);
 		if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', ephemeral: true });
+		this.client.rosterManager.setDefaultSettings(interaction.guild.id, updated);
 
 		const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
 		return interaction.editReply({ embeds: [embed] });

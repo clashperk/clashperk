@@ -3094,37 +3094,37 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: true,
 						description: 'Select a roster to post.',
 						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'option',
-						description: 'Select an option to ping or list down members.',
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Pending Members',
-								value: 'pending'
-							},
-							{
-								name: 'Unwanted Members',
-								value: 'unwanted'
-							},
-							{
-								name: 'All Members',
-								value: 'all'
-							}
-						]
-					},
-					{
-						name: 'group',
-						autocomplete: true,
-						description: 'Select a group to ping or list down members.',
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'message',
-						description: 'Message to ping.',
-						type: ApplicationCommandOptionType.String
 					}
+					// {
+					// 	name: 'list_option',
+					// 	description: 'Select an option to ping or list down members.',
+					// 	type: ApplicationCommandOptionType.String,
+					// 	choices: [
+					// 		{
+					// 			name: 'Pending Members',
+					// 			value: 'pending'
+					// 		},
+					// 		{
+					// 			name: 'Unwanted Members',
+					// 			value: 'unwanted'
+					// 		},
+					// 		{
+					// 			name: 'All Members',
+					// 			value: 'all'
+					// 		}
+					// 	]
+					// },
+					// {
+					// 	name: 'group',
+					// 	autocomplete: true,
+					// 	description: 'Select a group to ping or list down members.',
+					// 	type: ApplicationCommandOptionType.String
+					// },
+					// {
+					// 	name: 'message',
+					// 	description: 'Message to ping.',
+					// 	type: ApplicationCommandOptionType.String
+					// }
 				]
 			},
 			{

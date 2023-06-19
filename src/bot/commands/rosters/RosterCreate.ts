@@ -43,6 +43,8 @@ export default class RosterCreateCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.clan);
 		if (!clan) return;
 
+		const defaultSettings = this.client.rosterManager.getDefaultSettings(interaction.guild.id);
+
 		const data: IRoster = {
 			name: args.name,
 			clan: {
@@ -53,14 +55,14 @@ export default class RosterCreateCommand extends Command {
 			guildId: interaction.guild.id,
 			closed: false,
 			members: args.import_members ? await this.client.rosterManager.getClanMembers(clan.memberList) : [],
-			allowMultiSignup: Boolean(args.allow_multi_signup ?? false),
-			allowCategorySelection: args.allow_group_selection ?? true,
-			maxMembers: args.max_members,
-			sortBy: args.sort_by,
-			layout: args.layout,
-			minHeroLevels: args.min_hero_level,
-			minTownHall: args.min_town_hall,
-			maxTownHall: args.max_town_hall,
+			allowMultiSignup: Boolean(args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true),
+			allowCategorySelection: Boolean(args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true),
+			maxMembers: args.max_members ?? defaultSettings.maxMembers,
+			sortBy: args.sort_by ?? defaultSettings.sortBy,
+			layout: args.layout ?? defaultSettings.layout,
+			minHeroLevels: args.min_hero_level ?? defaultSettings.minHeroLevels,
+			minTownHall: args.min_town_hall ?? defaultSettings.minTownHall,
+			maxTownHall: args.max_town_hall ?? defaultSettings.maxTownHall,
 			roleId: args.roster_role?.id ?? null,
 			startTime: null,
 			endTime: null,
@@ -101,6 +103,7 @@ export default class RosterCreateCommand extends Command {
 		}
 
 		const roster = await this.client.rosterManager.create(data);
+		this.client.rosterManager.setDefaultSettings(interaction.guild.id, roster);
 
 		const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
 		return interaction.editReply({ embeds: [embed] });

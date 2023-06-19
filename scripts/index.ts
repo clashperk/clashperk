@@ -6,6 +6,8 @@ import { BETA_COMMANDS, COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
 
+const masterGuilds = ['609250675431309313', '1016659402817814620', '509784317598105619'];
+
 console.log(new Date().toISOString());
 
 const applicationGuildCommands = async (token: string, guildId: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
@@ -53,7 +55,8 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 	if (process.argv.includes('--beta')) {
 		const guilds = process.env.GUILD_IDS!.split(',');
 		for (const guildId of new Set(guilds)) {
-			await applicationGuildCommands(process.env.PROD_TOKEN!, guildId, BETA_COMMANDS);
+			const commands = masterGuilds.includes(guildId) ? [...BETA_COMMANDS, ...PRIVATE_COMMANDS] : [...BETA_COMMANDS];
+			await applicationGuildCommands(process.env.PROD_TOKEN!, guildId, commands);
 		}
 		return;
 	}

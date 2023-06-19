@@ -99,7 +99,7 @@ export default class RosterEditCommand extends Command {
 				return action.reply({ content: 'This roster cannot be opened as the closing time has passed.', ephemeral: true });
 			}
 
-			if (!roster.allowMultiSignup && roster.members.length > 1 && roster.closed) {
+			if (!roster.allowMultiSignup && roster.members.length > 0 && roster.closed) {
 				const dup = await this.client.rosterManager.rosters.findOne(
 					{
 						'_id': { $ne: roster._id },
@@ -157,6 +157,13 @@ export default class RosterEditCommand extends Command {
 			if (!roster.members.length) return action.reply({ content: 'Roster is empty.', ephemeral: true });
 			await action.update({ content: `Updating spreadsheet... ${EMOJIS.LOADING}`, components: [] });
 
+			const clan = await this.client.http.clan(roster.clan.tag);
+			if (!clan.ok) return action.reply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
+			const clanMembers = await this.client.rosterManager.getClanMembers(clan.memberList);
+
+			const signedUp = roster.members.map((member) => member.tag);
+			clanMembers.sort((a) => (signedUp.includes(a.tag) ? -1 : 1));
+
 			const categoriesMap = categories.reduce<Record<string, IRosterCategory>>(
 				(prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
 				{}
@@ -168,7 +175,10 @@ export default class RosterEditCommand extends Command {
 					columns: [
 						{ name: 'Name', align: 'LEFT', width: 160 },
 						{ name: 'Tag', align: 'LEFT', width: 120 },
+						{ name: 'Clan', align: 'LEFT', width: 160 },
+						{ name: 'Clan Tag', align: 'LEFT', width: 120 },
 						{ name: 'Discord', align: 'LEFT', width: 160 },
+						{ name: 'War Preference', align: 'LEFT', width: 100 },
 						{ name: 'Town Hall', align: 'RIGHT', width: 100 },
 						{ name: 'Heroes', align: 'RIGHT', width: 100 },
 						{ name: 'Group', align: 'LEFT', width: 160 },
@@ -180,11 +190,37 @@ export default class RosterEditCommand extends Command {
 						return [
 							member.name,
 							member.tag,
+							member.clan?.name ?? '',
+							member.clan?.tag ?? '',
 							member.username ?? '',
+							member.warPreference ?? '',
 							member.townHallLevel,
 							Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
 							category,
 							member.createdAt
+						];
+					})
+				},
+				{
+					title: `${clan.name} (${clan.tag})`,
+					columns: [
+						{ name: 'Name', align: 'LEFT', width: 160 },
+						{ name: 'Tag', align: 'LEFT', width: 120 },
+						{ name: 'Discord', align: 'LEFT', width: 160 },
+						{ name: 'War Preference', align: 'LEFT', width: 100 },
+						{ name: 'Town Hall', align: 'RIGHT', width: 100 },
+						{ name: 'Heroes', align: 'RIGHT', width: 100 },
+						{ name: 'Signed up?', align: 'LEFT', width: 100 }
+					],
+					rows: clanMembers.map((member) => {
+						return [
+							member.name,
+							member.tag,
+							member.username ?? '',
+							member.warPreference ?? '',
+							member.townHallLevel,
+							Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
+							signedUp.includes(member.tag) ? 'Yes' : 'No'
 						];
 					})
 				}

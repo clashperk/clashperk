@@ -50,7 +50,7 @@ export default class RosterEditCommand extends Command {
 			displayName: args.name,
 			guildId: interaction.guild.id,
 			roleId: args.group_role?.id,
-			selectable: args.selectable!,
+			selectable: Boolean(args.selectable),
 			createdAt: new Date()
 		});
 

@@ -99,7 +99,10 @@ export default class StatusCommand extends Command {
 					inline: true
 				}
 			])
-			.setFooter({ text: `© ${new Date().getFullYear()} ${owner.tag}`, iconURL: owner.displayAvatarURL({ forceStatic: false }) });
+			.setFooter({
+				text: `© ${new Date().getFullYear()} ${owner.username}`,
+				iconURL: owner.displayAvatarURL({ forceStatic: false })
+			});
 		return embed;
 	}
 

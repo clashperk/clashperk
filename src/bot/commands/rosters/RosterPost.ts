@@ -16,22 +16,21 @@ export default class RosterPostCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { roster: string; option?: 'pending' | 'unwanted' | 'all'; group?: string; message?: string }
+		args: { roster: string; list_option?: 'pending' | 'unwanted' | 'all'; group?: string; message?: string }
 	) {
-		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
+		// if (args.list_option || args.group) return this.ping(interaction, args);
 
+		if (!ObjectId.isValid(args.roster)) return interaction.editReply({ content: 'Invalid roster ID.' });
 		const rosterId = new ObjectId(args.roster);
 		const roster = await this.client.rosterManager.get(rosterId);
-		if (!roster) return interaction.followUp({ content: 'Roster not found.', ephemeral: true });
+		if (!roster) return interaction.editReply({ content: 'Roster not found.' });
 
 		const updated = await this.client.rosterManager.updateMembers(roster, roster.members);
-		if (!updated) return interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
+		if (!updated) return interaction.editReply({ content: 'This roster no longer exists.' });
 
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
-		const row = this.client.rosterManager.getRosterComponents({
-			roster: updated
-		});
+		const row = this.client.rosterManager.getRosterComponents({ roster: updated });
 		const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 
 		return interaction.editReply({ embeds: [embed], components: [row] });
@@ -42,24 +41,24 @@ export default class RosterPostCommand extends Command {
 		args: { roster: string; list_option?: 'pending' | 'unwanted' | 'all'; group?: string; message?: string }
 	) {
 		if (!(args.list_option || args.group)) return interaction.editReply('Please provide an option or group.');
-
-		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
+		if (!ObjectId.isValid(args.roster)) return interaction.editReply({ content: 'Invalid roster ID.' });
 
 		const rosterId = new ObjectId(args.roster);
 		const roster = await this.client.rosterManager.get(rosterId);
-		if (!roster) return interaction.followUp({ content: 'Roster not found.', ephemeral: true });
-		if (!roster.members.length) return interaction.followUp({ content: 'This roster has no members.', ephemeral: true });
+		if (!roster) return interaction.editReply({ content: 'Roster not found.' });
+		if (!roster.members.length) return interaction.editReply({ content: 'This roster has no members.' });
 
-		const clan = await this.client.resolver.resolveClan(interaction, roster.clan.tag);
-		if (!clan) return;
+		const clan = await this.client.http.clan(roster.clan.tag);
+		if (!clan.ok) return interaction.editReply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
 
 		const updated = await this.client.rosterManager.updateMembers(roster, roster.members);
-		if (!updated) return interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
+		if (!updated) return interaction.editReply({ content: 'This roster no longer exists.' });
 
 		if (args.group) {
 			const groupMembers = updated.members.filter((member) => member.categoryId && member.categoryId.toHexString() === args.group);
-			if (!groupMembers.length) return interaction.followUp({ content: 'No members found in this group.', ephemeral: true });
+			if (!groupMembers.length) return interaction.editReply({ content: 'No members found in this group.' });
 
+			if (args.message) await interaction.editReply(`${roster.name} - ${roster.clan.name} (${roster.clan.tag})`);
 			return interaction.editReply({
 				content: [
 					args.message ?? '',
@@ -75,14 +74,20 @@ export default class RosterPostCommand extends Command {
 
 		if (args.list_option === 'pending') {
 			const pendingMembers = clan.memberList.filter((member) => !updated.members.some((m) => m.tag === member.tag));
-			if (!pendingMembers.length) return interaction.followUp({ content: 'No pending members found.', ephemeral: true });
+			if (!pendingMembers.length) return interaction.editReply({ content: 'No pending members found.' });
 
 			const members = await this.client.rosterManager.getClanMembers(pendingMembers);
-			if (!members.length) return interaction.followUp({ content: 'No pending members found.', ephemeral: true });
+			if (!members.length) return interaction.editReply({ content: 'No pending members found.' });
 
-			return interaction.editReply({
+			const msgText = [
+				`${roster.name} - ${roster.clan.name} (${roster.clan.tag})`,
+				`Pending Members (Who belongs to the clan but has not signed up for the roster.)`
+			].join('\n');
+			if (args.message) await interaction.editReply(msgText);
+
+			return interaction.followUp({
 				content: [
-					args.message ?? '',
+					args.message ?? msgText,
 					'',
 					members
 						.map((member) => {
@@ -95,9 +100,16 @@ export default class RosterPostCommand extends Command {
 
 		if (args.list_option === 'unwanted') {
 			const unwantedMembers = updated.members.filter((member) => !member.clan || member.clan.tag !== clan.tag);
-			if (!unwantedMembers.length) return interaction.followUp({ content: 'No unwanted members found.', ephemeral: true });
+			if (!unwantedMembers.length) return interaction.editReply({ content: 'No unwanted members found.' });
 
-			return interaction.editReply({
+			if (args.message)
+				await interaction.editReply(
+					[
+						`${roster.name} - ${roster.clan.name} (${roster.clan.tag})`,
+						`Unwanted Members (Who signed up for the roster but does not belong to the clan.)`
+					].join('\n')
+				);
+			return interaction.followUp({
 				content: [
 					args.message ?? '',
 					'',
@@ -111,7 +123,8 @@ export default class RosterPostCommand extends Command {
 		}
 
 		if (args.list_option === 'all') {
-			return interaction.editReply({
+			if (args.message) await interaction.editReply(`${roster.name} - ${roster.clan.name} (${roster.clan.tag})`);
+			return interaction.followUp({
 				content: [
 					args.message ?? '',
 					'',

@@ -96,7 +96,7 @@ export default class RosterSignupCommand extends Command {
 			components: args.signup && roster.allowCategorySelection && categories.length ? [categoryRow, accountsRow] : [accountsRow]
 		});
 
-		const addItem = async (action: StringSelectMenuInteraction<'cached'>) => {
+		const signupUser = async (action: StringSelectMenuInteraction<'cached'>) => {
 			selected.tag = action.values[0];
 			const player = players.find((mem) => mem.tag === selected.tag)!;
 
@@ -110,7 +110,7 @@ export default class RosterSignupCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		};
 
-		const deleteItem = async (action: StringSelectMenuInteraction<'cached'>) => {
+		const optOutUser = async (action: StringSelectMenuInteraction<'cached'>) => {
 			const tag = action.values[0];
 			await action.deferUpdate();
 
@@ -126,11 +126,13 @@ export default class RosterSignupCommand extends Command {
 		const selectCategory = async (action: StringSelectMenuInteraction<'cached'>) => {
 			selected.category = action.values[0];
 			categoryMenu.setOptions(
-				categories.map((category) => ({
-					label: category.displayName,
-					value: category._id.toHexString(),
-					default: selected.category === category._id.toHexString()
-				}))
+				categories
+					.filter((category) => category.selectable)
+					.map((category) => ({
+						label: category.displayName,
+						value: category._id.toHexString(),
+						default: selected.category === category._id.toHexString()
+					}))
 			);
 			await action.update({ content: msg.content, components: [categoryRow, accountsRow] });
 		};
@@ -144,8 +146,8 @@ export default class RosterSignupCommand extends Command {
 					return selectCategory(action);
 				}
 
-				if (args.signup) return addItem(action);
-				return deleteItem(action);
+				if (args.signup) return signupUser(action);
+				return optOutUser(action);
 			}
 		});
 	}

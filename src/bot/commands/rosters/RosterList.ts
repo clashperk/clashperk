@@ -20,7 +20,10 @@ export default class RosterListCommand extends Command {
 		const query: Filter<IRoster> = { guildId: interaction.guild.id };
 		if (args.user) query['members.userId'] = args.user.id;
 		if (args.player_tag) query['members.playerTag'] = args.player_tag;
-		if (args.name) query.$text = { $search: args.name };
+		if (args.name) {
+			const text = args.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			query.name = { $regex: `.*${text}.*`, $options: 'i' };
+		}
 		if (args.clan) query['clan.tag'] = args.clan;
 
 		const isSearch = Object.keys(query).length > 1;
@@ -29,15 +32,20 @@ export default class RosterListCommand extends Command {
 			: await this.client.rosterManager.list(interaction.guild.id);
 
 		const embeds: EmbedBuilder[] = [];
-		const rosterEmbed = new EmbedBuilder().setTitle('Rosters').setDescription(
-			rosters
-				.map((roster, i) => {
-					const closed = this.client.rosterManager.isClosed(roster) ? '[CLOSED] ' : '';
-					const memberCount = `${roster.memberCount}/${roster.maxMembers ?? 50}`;
-					return `**${i + 1}.** ${escapeMarkdown(`\u200e${roster.name} ${closed}${roster.clan.name} (${memberCount})`)}`;
-				})
-				.join('\n')
-		);
+
+		const rosterEmbed = new EmbedBuilder().setTitle('Rosters');
+		if (rosters.length) {
+			rosterEmbed.setDescription(
+				rosters
+					.map((roster, i) => {
+						const closed = this.client.rosterManager.isClosed(roster) ? '[CLOSED] ' : '';
+						const memberCount = `${roster.memberCount}/${roster.maxMembers ?? 50}`;
+						return `**${i + 1}.** ${escapeMarkdown(`\u200e${roster.name} ${closed}${roster.clan.name} (${memberCount})`)}`;
+					})
+					.join('\n')
+			);
+		}
+
 		if (isSearch) rosterEmbed.setFooter({ text: 'Search Results' });
 		if (rosters.length) embeds.push(rosterEmbed);
 
@@ -47,15 +55,20 @@ export default class RosterListCommand extends Command {
 		}
 
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
-		const groupEmbed = new EmbedBuilder().setTitle('User Groups').setDescription(
-			categories
-				.map((category, i) => {
-					return `**${i + 1}.** ${escapeMarkdown(category.displayName)} ${category.roleId ? `- <@&${category.roleId}>` : ''}`;
-				})
-				.join('\n')
-		);
-		if (categories.length) embeds.push(groupEmbed);
+		const groupEmbed = new EmbedBuilder().setTitle('User Groups');
+		if (categories.length) {
+			groupEmbed.setDescription(
+				categories
+					.map((category, i) => {
+						return `**${i + 1}.** ${escapeMarkdown(category.displayName)} (${category.selectable ? 'Public' : 'Private'}) ${
+							category.roleId ? `- <@&${category.roleId}>` : ''
+						}`;
+					})
+					.join('\n')
+			);
+		}
 
+		if (categories.length) embeds.push(groupEmbed);
 		if (!embeds.length) return interaction.editReply({ content: 'No rosters or groups found.' });
 		return interaction.editReply({ embeds });
 	}
