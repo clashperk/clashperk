@@ -43,9 +43,9 @@ export default class RosterEditCommand extends Command {
 				.setCustomId(customIds.select)
 				.setOptions([
 					{
-						label: 'Roster Info',
-						description: 'View roster info and settings.',
-						value: 'info'
+						label: 'Export Roster',
+						description: 'View roster info, settings and Export to Google spreadsheet.',
+						value: 'export'
 					},
 					{
 						label: 'Close Roster',
@@ -66,11 +66,6 @@ export default class RosterEditCommand extends Command {
 						label: 'Remove Buttons',
 						description: 'Remove all buttons from the message.',
 						value: 'archive'
-					},
-					{
-						label: 'Export Roster',
-						description: 'Export roster to a Google spreadsheet.',
-						value: 'export'
 					}
 				])
 		);
@@ -148,18 +143,13 @@ export default class RosterEditCommand extends Command {
 			return interaction.editReply({ embeds: [embed], components: [] });
 		};
 
-		const getRosterInfo = async (action: StringSelectMenuInteraction<'cached'>) => {
-			const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
-			return action.update({ embeds: [embed], components: [] });
-		};
-
 		const exportSheet = async (action: StringSelectMenuInteraction<'cached'>) => {
 			if (!roster.members.length) return action.reply({ content: 'Roster is empty.', ephemeral: true });
 			await action.update({ content: `Updating spreadsheet... ${EMOJIS.LOADING}`, components: [] });
 
 			const clan = await this.client.http.clan(roster.clan.tag);
 			if (!clan.ok) return action.reply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
-			const clanMembers = await this.client.rosterManager.getClanMembers(clan.memberList);
+			const clanMembers = await this.client.rosterManager.getClanMembers(clan.memberList, true);
 
 			const signedUp = roster.members.map((member) => member.tag);
 			clanMembers.sort((a) => (signedUp.includes(a.tag) ? -1 : 1));
@@ -232,7 +222,8 @@ export default class RosterEditCommand extends Command {
 			if (!roster.sheetId) this.client.rosterManager.attachSheetId(rosterId, sheet.spreadsheetId);
 
 			const components = getExportComponents(sheet);
-			return action.editReply({ content: null, components: [...components] });
+			const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
+			return action.editReply({ content: null, embeds: [embed], components: [...components] });
 		};
 
 		createInteractionCollector({
@@ -256,8 +247,6 @@ export default class RosterEditCommand extends Command {
 						return openRoster(action);
 					case 'clear':
 						return clearRoster(action);
-					case 'info':
-						return getRosterInfo(action);
 					case 'archive':
 						return archiveRoster(action);
 					case 'export':

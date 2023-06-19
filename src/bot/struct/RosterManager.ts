@@ -925,25 +925,27 @@ export class RosterManager {
 		return this.client.settings.set(guildId, Settings.ROSTER_DEFAULT_SETTINGS, settings);
 	}
 
-	public async getClanMembers(memberList: ClanMember[]) {
+	public async getClanMembers(memberList: ClanMember[], allowUnlinked = false) {
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.find({ tag: { $in: memberList.map((mem) => mem.tag) } })
 			.toArray();
-		const players = await Promise.all(links.map((mem) => this.client.http.player(mem.tag)));
+		const players = await Promise.all(memberList.map((mem) => this.client.http.player(mem.tag)));
 
 		const members: IRosterMember[] = [];
-		links.forEach((link, i) => {
-			const player = players[i];
+		players.forEach((player) => {
 			if (!player.ok) return;
+
+			const link = links.find((link) => link.tag === player.tag);
+			if (!link && !allowUnlinked) return;
 
 			const heroes = player.heroes.filter((hero) => hero.village === 'home');
 			members.push({
 				tag: player.tag,
 				name: player.name,
-				username: link.displayName || link.username,
+				userId: link?.userId ?? null,
+				username: link?.displayName ?? link?.username ?? null,
 				townHallLevel: player.townHallLevel,
-				userId: link.userId,
 				warPreference: player.warPreference ?? null,
 				role: player.role ?? null,
 				heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
