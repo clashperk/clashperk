@@ -1,8 +1,6 @@
 import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, updateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { IRosterCategory } from '../../struct/RosterManager.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
@@ -20,12 +18,7 @@ export default class RosterEditCommand extends Command {
 		});
 	}
 
-	public async exec(
-		interaction: CommandInteraction<'cached'>,
-		args: {
-			roster: string;
-		}
-	) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string }) {
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 
 		const rosterId = new ObjectId(args.roster);
@@ -64,16 +57,13 @@ export default class RosterEditCommand extends Command {
 					},
 					{
 						label: 'Remove Buttons',
-						description: 'Remove all buttons from the message.',
+						description: 'Remove action buttons from the message.',
 						value: 'archive'
 					}
 				])
 		);
 
-		const message = await interaction.followUp({
-			components: [menuRow],
-			ephemeral: true
-		});
+		const message = await interaction.followUp({ components: [menuRow], ephemeral: true });
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
 		const closeRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
@@ -82,10 +72,7 @@ export default class RosterEditCommand extends Command {
 			await action.update({ content: 'Roster closed!', components: [] });
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-			const row = this.client.rosterManager.getRosterComponents({
-				roster: updated
-			});
-
+			const row = this.client.rosterManager.getRosterComponents({ roster: updated });
 			return interaction.editReply({ embeds: [embed], components: [row] });
 		};
 
@@ -116,10 +103,7 @@ export default class RosterEditCommand extends Command {
 			await action.update({ content: 'Roster opened!', components: [] });
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-			const row = this.client.rosterManager.getRosterComponents({
-				roster: updated
-			});
-
+			const row = this.client.rosterManager.getRosterComponents({ roster: updated });
 			return interaction.editReply({ embeds: [embed], components: [row] });
 		};
 
@@ -130,99 +114,46 @@ export default class RosterEditCommand extends Command {
 			await action.update({ content: 'Roster cleared!', components: [] });
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-			const row = this.client.rosterManager.getRosterComponents({
-				roster: updated
-			});
-
+			const row = this.client.rosterManager.getRosterComponents({ roster: updated });
 			return interaction.editReply({ embeds: [embed], components: [row] });
 		};
 
 		const archiveRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
-			await action.update({ content: 'Roster buttons removed!', components: [] });
 			const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
-			return interaction.editReply({ embeds: [embed], components: [] });
+			await interaction.editReply({ embeds: [embed], components: [] });
+			await action.update({ content: 'Roster buttons removed!', components: [] });
+
+			const clan = await this.client.http.clan(roster.clan.tag);
+			if (!clan.ok) return null;
+
+			const sheet = await this.client.rosterManager.exportSheet({
+				name: interaction.guild.name,
+				roster,
+				clan,
+				categories
+			});
+
+			const components = getExportComponents(sheet);
+			return interaction.editReply({ embeds: [embed], components: [...components] });
 		};
 
 		const exportSheet = async (action: StringSelectMenuInteraction<'cached'>) => {
 			if (!roster.members.length) return action.reply({ content: 'Roster is empty.', ephemeral: true });
-			await action.update({ content: `Updating spreadsheet... ${EMOJIS.LOADING}`, components: [] });
+
+			const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
+			await action.update({ content: `## Updating spreadsheet... ${EMOJIS.LOADING}`, embeds: [embed], components: [] });
 
 			const clan = await this.client.http.clan(roster.clan.tag);
 			if (!clan.ok) return action.reply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
-			const clanMembers = await this.client.rosterManager.getClanMembers(clan.memberList, true);
 
-			const signedUp = roster.members.map((member) => member.tag);
-			clanMembers.sort((a) => (signedUp.includes(a.tag) ? -1 : 1));
-
-			const categoriesMap = categories.reduce<Record<string, IRosterCategory>>(
-				(prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
-				{}
-			);
-
-			const sheets: CreateGoogleSheet[] = [
-				{
-					title: `${roster.name} - ${roster.clan.name}`,
-					columns: [
-						{ name: 'Name', align: 'LEFT', width: 160 },
-						{ name: 'Tag', align: 'LEFT', width: 120 },
-						{ name: 'Clan', align: 'LEFT', width: 160 },
-						{ name: 'Clan Tag', align: 'LEFT', width: 120 },
-						{ name: 'Discord', align: 'LEFT', width: 160 },
-						{ name: 'War Preference', align: 'LEFT', width: 100 },
-						{ name: 'Town Hall', align: 'RIGHT', width: 100 },
-						{ name: 'Heroes', align: 'RIGHT', width: 100 },
-						{ name: 'Group', align: 'LEFT', width: 160 },
-						{ name: 'Signed up at', align: 'LEFT', width: 160 }
-					],
-					rows: roster.members.map((member) => {
-						const key = member.categoryId?.toHexString();
-						const category = key && key in categoriesMap ? categoriesMap[key].displayName : '';
-						return [
-							member.name,
-							member.tag,
-							member.clan?.name ?? '',
-							member.clan?.tag ?? '',
-							member.username ?? '',
-							member.warPreference ?? '',
-							member.townHallLevel,
-							Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
-							category,
-							member.createdAt
-						];
-					})
-				},
-				{
-					title: `${clan.name} (${clan.tag})`,
-					columns: [
-						{ name: 'Name', align: 'LEFT', width: 160 },
-						{ name: 'Tag', align: 'LEFT', width: 120 },
-						{ name: 'Discord', align: 'LEFT', width: 160 },
-						{ name: 'War Preference', align: 'LEFT', width: 100 },
-						{ name: 'Town Hall', align: 'RIGHT', width: 100 },
-						{ name: 'Heroes', align: 'RIGHT', width: 100 },
-						{ name: 'Signed up?', align: 'LEFT', width: 100 }
-					],
-					rows: clanMembers.map((member) => {
-						return [
-							member.name,
-							member.tag,
-							member.username ?? '',
-							member.warPreference ?? '',
-							member.townHallLevel,
-							Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
-							signedUp.includes(member.tag) ? 'Yes' : 'No'
-						];
-					})
-				}
-			];
-
-			const sheet = roster.sheetId
-				? await updateGoogleSheet(roster.sheetId, sheets, true)
-				: await createGoogleSheet(`${interaction.guild.name} [Roster Export]`, sheets);
-			if (!roster.sheetId) this.client.rosterManager.attachSheetId(rosterId, sheet.spreadsheetId);
+			const sheet = await this.client.rosterManager.exportSheet({
+				name: interaction.guild.name,
+				roster,
+				clan,
+				categories
+			});
 
 			const components = getExportComponents(sheet);
-			const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
 			return action.editReply({ content: null, embeds: [embed], components: [...components] });
 		};
 
@@ -233,7 +164,7 @@ export default class RosterEditCommand extends Command {
 			onSelect: (action) => {
 				const value = action.values.at(0)!;
 
-				if (!this.client.util.isManager(action.member) && !['info', 'export'].includes(value)) {
+				if (!this.client.util.isManager(action.member) && !['export'].includes(value)) {
 					return action.reply({
 						ephemeral: true,
 						content: `You are missing the **Manage Server** permission or the **Bot Manager** role to perform this action.`

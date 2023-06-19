@@ -1,4 +1,4 @@
-import { ClanMember, Player } from 'clashofclans.js';
+import { Clan, ClanMember, Player } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -18,7 +18,7 @@ import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/Constants.js
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
-import Google from './Google.js';
+import Google, { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from './Google.js';
 
 export type RosterSortTypes =
 	| 'PLAYER_NAME'
@@ -955,5 +955,89 @@ export class RosterManager {
 		});
 
 		return members;
+	}
+
+	public async exportSheet({
+		roster,
+		categories,
+		clan,
+		name
+	}: {
+		roster: WithId<IRoster>;
+		categories: WithId<IRosterCategory>[];
+		clan: Clan;
+		name: string;
+	}) {
+		const clanMembers = await this.client.rosterManager.getClanMembers(clan.memberList, true);
+		const signedUp = roster.members.map((member) => member.tag);
+		clanMembers.sort((a) => (signedUp.includes(a.tag) ? -1 : 1));
+
+		const categoriesMap = categories.reduce<Record<string, IRosterCategory>>(
+			(prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
+			{}
+		);
+
+		const sheets: CreateGoogleSheet[] = [
+			{
+				title: `${roster.name} - ${roster.clan.name}`,
+				columns: [
+					{ name: 'Name', align: 'LEFT', width: 160 },
+					{ name: 'Tag', align: 'LEFT', width: 120 },
+					{ name: 'Clan', align: 'LEFT', width: 160 },
+					{ name: 'Clan Tag', align: 'LEFT', width: 120 },
+					{ name: 'Discord', align: 'LEFT', width: 160 },
+					{ name: 'War Preference', align: 'LEFT', width: 100 },
+					{ name: 'Town Hall', align: 'RIGHT', width: 100 },
+					{ name: 'Heroes', align: 'RIGHT', width: 100 },
+					{ name: 'Group', align: 'LEFT', width: 160 },
+					{ name: 'Signed up at', align: 'LEFT', width: 160 }
+				],
+				rows: roster.members.map((member) => {
+					const key = member.categoryId?.toHexString();
+					const category = key && key in categoriesMap ? categoriesMap[key].displayName : '';
+					return [
+						member.name,
+						member.tag,
+						member.clan?.name ?? '',
+						member.clan?.tag ?? '',
+						member.username ?? '',
+						member.warPreference ?? '',
+						member.townHallLevel,
+						Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
+						category,
+						member.createdAt
+					];
+				})
+			},
+			{
+				title: `${clan.name} (${clan.tag})`,
+				columns: [
+					{ name: 'Name', align: 'LEFT', width: 160 },
+					{ name: 'Tag', align: 'LEFT', width: 120 },
+					{ name: 'Discord', align: 'LEFT', width: 160 },
+					{ name: 'War Preference', align: 'LEFT', width: 100 },
+					{ name: 'Town Hall', align: 'RIGHT', width: 100 },
+					{ name: 'Heroes', align: 'RIGHT', width: 100 },
+					{ name: 'Signed up?', align: 'LEFT', width: 100 }
+				],
+				rows: clanMembers.map((member) => {
+					return [
+						member.name,
+						member.tag,
+						member.username ?? '',
+						member.warPreference ?? '',
+						member.townHallLevel,
+						Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
+						signedUp.includes(member.tag) ? 'Yes' : 'No'
+					];
+				})
+			}
+		];
+
+		const sheet = roster.sheetId
+			? await updateGoogleSheet(roster.sheetId, sheets, true)
+			: await createGoogleSheet(`${name} [Roster Export]`, sheets);
+		if (!roster.sheetId) this.client.rosterManager.attachSheetId(roster._id, sheet.spreadsheetId);
+		return sheet;
 	}
 }
