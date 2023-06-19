@@ -3080,6 +3080,11 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'allow_multi_signup',
 						description: 'Whether to allow multiple rosters signup.',
 						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'use_clan_alias',
+						description: 'Whether to use clan alias in the roster (created by /alias command)',
+						type: ApplicationCommandOptionType.Boolean
 					}
 				]
 			},
@@ -3261,7 +3266,7 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'start_time',
-						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
@@ -3282,6 +3287,11 @@ export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'allow_multi_signup',
 						description: 'Whether to allow multiple rosters signup.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'use_clan_alias',
+						description: 'Whether to use clan alias in the roster (created by /alias command)',
 						type: ApplicationCommandOptionType.Boolean
 					}
 				]

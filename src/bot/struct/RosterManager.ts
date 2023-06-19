@@ -32,7 +32,6 @@ export type RosterSortTypes =
 export interface IRoster {
 	name: string;
 	guildId: string;
-	allowMultiSignup?: boolean;
 	maxMembers?: number;
 	minTownHall?: number;
 	maxTownHall?: number;
@@ -50,6 +49,8 @@ export interface IRoster {
 	startTime?: Date | null;
 	endTime?: Date | null;
 	sortBy?: RosterSortTypes;
+	useClanAlias?: boolean;
+	allowMultiSignup?: boolean;
 	allowCategorySelection?: boolean;
 	lastUpdated: Date;
 	createdAt: Date;
@@ -62,6 +63,7 @@ export interface IRosterDefaultSettings {
 	maxTownHall: number;
 	minHeroLevels: number;
 	layout: string;
+	useClanAlias: boolean;
 	sortBy: RosterSortTypes;
 	allowCategorySelection: boolean;
 }
@@ -87,6 +89,7 @@ export interface IRosterMember {
 	clan?: {
 		tag: string;
 		name: string;
+		alias?: string | null;
 	} | null;
 	categoryId?: ObjectId | null;
 	createdAt: Date;
@@ -383,48 +386,6 @@ export class RosterManager {
 		return value;
 	}
 
-	public async updateMembers(roster: WithId<IRoster>, members: IRosterMember[]) {
-		const players = await Promise.all(members.map((mem) => this.client.http.player(mem.tag)));
-
-		const _categories = await this.getCategories(roster.guildId);
-		const categories = _categories.reduce<Record<string, IRosterCategory>>(
-			(prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
-			{}
-		);
-
-		const rolesMap: Record<string, string[]> = {};
-		members.forEach((member, i) => {
-			if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
-			if (roster.roleId && member.userId) rolesMap[member.userId].push(roster.roleId);
-			if (member.categoryId && member.userId) {
-				const category = categories[member.categoryId.toHexString()];
-				// eslint-disable-next-line
-				if (category?.roleId) rolesMap[member.userId].push(category.roleId);
-			}
-
-			const player = players[i];
-			if (!player.ok) return;
-
-			member.name = player.name;
-			member.townHallLevel = player.townHallLevel;
-			member.warPreference = player.warPreference ?? null;
-			member.role = player.role ?? null;
-			const heroes = player.heroes.filter((hero) => hero.village === 'home');
-			member.heroes = heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {});
-			if (player.clan) member.clan = { name: player.clan.name, tag: player.clan.tag };
-			else member.clan = null;
-		});
-
-		const { value } = await this.rosters.findOneAndUpdate(
-			{ _id: roster._id },
-			{ $set: { members, lastUpdated: new Date() } },
-			{ returnDocument: 'after' }
-		);
-
-		if (value) this.updateBulkRoles(value, rolesMap, true);
-		return value;
-	}
-
 	private async clearRoster(roster: WithId<IRoster> | null) {
 		if (!roster) return null;
 
@@ -452,6 +413,62 @@ export class RosterManager {
 		);
 
 		if (value) this.updateBulkRoles(value, rolesMap, false);
+		return value;
+	}
+
+	public async getClanAliases(guildId: string, clanTags: string[]) {
+		const clans = await this.client.db
+			.collection<{ tag: string; alias?: string }>(Collections.CLAN_STORES)
+			.find({ guild: guildId, tag: { $in: clanTags } })
+			.toArray();
+		return clans.reduce<Record<string, string>>((prev, curr) => {
+			if (!curr.alias) return prev;
+			return { ...prev, [curr.tag]: curr.alias };
+		}, {});
+	}
+
+	public async updateMembers(roster: WithId<IRoster>, members: IRosterMember[]) {
+		const aliases = await this.getClanAliases(roster.guildId, [
+			...new Set(members.filter((mem) => mem.clan?.tag).map((mem) => mem.clan!.tag))
+		]);
+		const players = await Promise.all(members.map((mem) => this.client.http.player(mem.tag)));
+
+		const _categories = await this.getCategories(roster.guildId);
+		const categories = _categories.reduce<Record<string, IRosterCategory>>(
+			(prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
+			{}
+		);
+
+		const rolesMap: Record<string, string[]> = {};
+		members.forEach((member, i) => {
+			if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
+			if (roster.roleId && member.userId) rolesMap[member.userId].push(roster.roleId);
+			if (member.categoryId && member.userId) {
+				const category = categories[member.categoryId.toHexString()];
+				// eslint-disable-next-line
+				if (category?.roleId) rolesMap[member.userId].push(category.roleId);
+			}
+
+			const player = players[i];
+			if (!player.ok) return;
+
+			member.name = player.name;
+			member.townHallLevel = player.townHallLevel;
+			member.warPreference = player.warPreference ?? null;
+			member.role = player.role ?? null;
+			const heroes = player.heroes.filter((hero) => hero.village === 'home');
+			member.heroes = heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {});
+			if (player.clan) member.clan = { name: player.clan.name, tag: player.clan.tag, alias: aliases[player.clan.tag] || null };
+			else member.clan = null;
+		});
+
+		const { value } = await this.rosters.findOneAndUpdate(
+			{ _id: roster._id },
+			{ $set: { members, lastUpdated: new Date() } },
+			{ returnDocument: 'after' }
+		);
+
+		if (value) this.updateBulkRoles(value, rolesMap, true);
 		return value;
 	}
 
@@ -528,7 +545,9 @@ export class RosterManager {
 							const n = `${1 + i}`.padStart(2, ' ');
 							const ign = this.snipe(mem.name, 12);
 							const discord = this.snipe(mem.username ?? ' ', 12);
-							const clan = this.snipe(mem.clan?.name ?? ' ', 6);
+							const clan = roster.useClanAlias
+								? this.snipe(mem.clan?.alias ?? mem.clan?.name ?? ' ', 6)
+								: this.snipe(mem.clan?.name ?? ' ', 6);
 							return `\`${n}\` ${TOWN_HALLS[mem.townHallLevel]} \`${discord}\` \`${ign}\` \`${clan}\``;
 						})
 					])
@@ -544,7 +563,9 @@ export class RosterManager {
 							const hall = `${mem.townHallLevel}`.padStart(2, ' ');
 							const ign = this.snipe(mem.name, 12);
 							const discord = this.snipe(mem.username ?? ' ', 12);
-							const clan = this.snipe(mem.clan?.name ?? ' ', 6);
+							const clan = roster.useClanAlias
+								? this.snipe(mem.clan?.alias ?? mem.clan?.name ?? ' ', 6)
+								: this.snipe(mem.clan?.name ?? ' ', 6);
 							return `\`${hall} \` \`${discord} ${ign} ${clan}\``;
 						})
 					])
@@ -630,6 +651,11 @@ export class RosterManager {
 				value: roster.endTime
 					? `${time(roster.endTime)} ${this.isClosed(roster) ? '[CLOSED]' : `(${time(roster.endTime, 'R')})`}`
 					: 'N/A'
+			})
+			.addFields({
+				name: 'Use Clan Alias',
+				inline: true,
+				value: roster.useClanAlias ? 'Yes' : 'No'
 			})
 			.addFields({
 				name: 'Allow Users to Select Group',
@@ -893,7 +919,8 @@ export class RosterManager {
 			minTownHall: data.minTownHall,
 			maxTownHall: data.maxTownHall,
 			sortBy: data.sortBy,
-			layout: data.layout
+			layout: data.layout,
+			useClanAlias: data.useClanAlias
 		};
 		return this.client.settings.set(guildId, Settings.ROSTER_DEFAULT_SETTINGS, settings);
 	}

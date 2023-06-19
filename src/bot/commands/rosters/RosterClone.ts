@@ -72,6 +72,7 @@ export default class RosterCloneCommand extends Command {
 			roleId: null,
 			startTime: null,
 			endTime: null,
+			useClanAlias: roster.useClanAlias,
 			lastUpdated: new Date(),
 			createdAt: new Date()
 		};

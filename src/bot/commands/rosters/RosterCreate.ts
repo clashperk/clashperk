@@ -35,6 +35,7 @@ export default class RosterCreateCommand extends Command {
 			sort_by?: RosterSortTypes;
 			layout?: string;
 			timezone?: string;
+			use_clan_alias?: boolean;
 		}
 	) {
 		// Create default categories
@@ -44,7 +45,6 @@ export default class RosterCreateCommand extends Command {
 		if (!clan) return;
 
 		const defaultSettings = this.client.rosterManager.getDefaultSettings(interaction.guild.id);
-
 		const data: IRoster = {
 			name: args.name,
 			clan: {
@@ -54,7 +54,6 @@ export default class RosterCreateCommand extends Command {
 			},
 			guildId: interaction.guild.id,
 			closed: false,
-			members: args.import_members ? await this.client.rosterManager.getClanMembers(clan.memberList) : [],
 			allowMultiSignup: Boolean(args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true),
 			allowCategorySelection: Boolean(args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true),
 			maxMembers: args.max_members ?? defaultSettings.maxMembers,
@@ -63,7 +62,9 @@ export default class RosterCreateCommand extends Command {
 			minHeroLevels: args.min_hero_level ?? defaultSettings.minHeroLevels,
 			minTownHall: args.min_town_hall ?? defaultSettings.minTownHall,
 			maxTownHall: args.max_town_hall ?? defaultSettings.maxTownHall,
+			useClanAlias: args.use_clan_alias ?? defaultSettings.useClanAlias,
 			roleId: args.roster_role?.id ?? null,
+			members: args.import_members ? await this.client.rosterManager.getClanMembers(clan.memberList) : [],
 			startTime: null,
 			endTime: null,
 			lastUpdated: new Date(),

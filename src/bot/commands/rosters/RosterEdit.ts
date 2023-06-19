@@ -38,6 +38,7 @@ export default class RosterEditCommand extends Command {
 			layout?: string;
 			sort_by?: RosterSortTypes;
 			clear_members?: boolean;
+			use_clan_alias?: boolean;
 			delete_roster?: boolean;
 		}
 	) {
@@ -75,6 +76,7 @@ export default class RosterEditCommand extends Command {
 		if (args.clear_members) data.members = [];
 		if (args.sort_by) data.sortBy = args.sort_by;
 		if (args.layout) data.layout = args.layout;
+		if (typeof args.use_clan_alias === 'boolean') data.useClanAlias = args.use_clan_alias;
 
 		if (
 			typeof args.allow_multi_signup === 'boolean' &&
@@ -99,7 +101,6 @@ export default class RosterEditCommand extends Command {
 		}
 
 		const timezone = await this.client.rosterManager.getTimezoneOffset(interaction, args.timezone);
-
 		if (args.start_time && moment(args.start_time).isValid()) {
 			data.startTime = moment.tz(args.start_time, timezone.id).utc().toDate();
 			if (data.startTime < new Date()) return interaction.editReply('Start time cannot be in the past.');
