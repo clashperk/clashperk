@@ -46,22 +46,22 @@ interface Description {
 // };
 
 const categories: Record<string, string> = {
-	search: 'PLAYER AND CLAN',
-	activity: 'PLAYER AND CLAN',
+	search: 'Player and Clan',
+	activity: 'Player and Clan',
 
-	war: 'WAR AND CWL',
-	roster: 'WAR AND CWL',
+	war: 'War, CWL and Rosters',
+	roster: 'War, CWL and Rosters',
 
-	summary: 'EXPORTS, FAMILY SUMMARY AND TOP STATS',
-	export: 'EXPORTS, FAMILY SUMMARY AND TOP STATS',
+	summary: 'Exports, Family, Summary & Top Stats',
+	export: 'Exports, Family, Summary & Top Stats',
 
-	link: 'LINKING AND FLAGGING',
-	flag: 'LINKING AND FLAGGING',
-	profile: 'LINKING AND FLAGGING',
+	link: 'Linking and Flagging',
+	flag: 'Linking and Flagging',
+	profile: 'Linking and Flagging',
 
-	reminders: 'SERVER SETUPS, CONFIGURATIONS AND OTHER UTILITIES',
-	config: 'SERVER SETUPS, CONFIGURATIONS AND OTHER UTILITIES',
-	setup: 'SERVER SETUPS, CONFIGURATIONS AND OTHER UTILITIES'
+	reminders: 'Server Setup, Config & Utils',
+	config: 'Server Setup, Config & Utils',
+	setup: 'Server Setup, Config & Utils'
 };
 
 interface CommandInfo {
@@ -226,7 +226,7 @@ export default class HelpCommand extends Command {
 		commandCategories.sort((a, b) => fields.indexOf(a.category) - fields.indexOf(b.category));
 
 		const embeds: EmbedBuilder[] = [];
-		args.category ??= 'PLAYER AND CLAN';
+		args.category ??= categories.search;
 		for (const { category, commandGroups } of commandCategories) {
 			if (args.category && args.category !== category) continue;
 
