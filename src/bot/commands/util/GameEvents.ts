@@ -1,5 +1,6 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class GameEvents extends Command {
 	public constructor() {
@@ -11,10 +12,19 @@ export default class GameEvents extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
 		const visibleEvents = this.client.guildEvents.getEvents(interaction.locale);
+
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: 'Next Events in the Game' })
 			.addFields(visibleEvents.map((event) => ({ name: event.name, value: `${event.value}\n\u200b` })))
 			.setFooter({ text: `${visibleEvents.length} upcoming events` });
-		return interaction.editReply({ embeds: [embed] });
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setEmoji(EMOJIS.REFRESH)
+				.setCustomId(JSON.stringify({ cmd: this.id }))
+				.setStyle(ButtonStyle.Secondary)
+		);
+
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 }

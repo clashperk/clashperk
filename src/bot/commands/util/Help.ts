@@ -86,7 +86,7 @@ export default class HelpCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { command?: string; category?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { command?: string; category?: string; selected?: string }) {
 		const command = this.handler.modules.get(args.command!);
 		if (!command) return this.commandMenu(interaction, args);
 

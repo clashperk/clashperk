@@ -7,6 +7,8 @@ interface ParsedCommandId {
 	[key: string]: string | number;
 }
 
+const deferredDisallowed = ['link-add'];
+
 export default class ComponentHandler {
 	public constructor(private readonly client: Client) {}
 
@@ -32,36 +34,6 @@ export default class ComponentHandler {
 				});
 				return true;
 			}
-			case 'summary-best': {
-				const command = this.client.commandHandler.modules.get('summary-best')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, parsed);
-				return true;
-			}
-			case 'legend-leaderboard': {
-				const command = this.client.commandHandler.modules.get('legend-leaderboard')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, parsed);
-				return true;
-			}
-			case 'roster-signup': {
-				const command = this.client.commandHandler.modules.get('roster-signup')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, parsed);
-				return true;
-			}
-			case 'roster-post': {
-				const command = this.client.commandHandler.modules.get('roster-post')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, parsed);
-				return true;
-			}
-			case 'roster-settings': {
-				const command = this.client.commandHandler.modules.get('roster-settings')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, parsed);
-				return true;
-			}
 			case 'boosts': {
 				const command = this.client.commandHandler.modules.get('boosts')!;
 				await interaction.deferUpdate();
@@ -81,80 +53,18 @@ export default class ComponentHandler {
 				});
 				return true;
 			}
-			case 'link-list': {
-				const command = this.client.commandHandler.modules.get('link-list')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'clan-games': {
-				const command = this.client.commandHandler.modules.get('clan-games')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'lastseen': {
-				const command = this.client.commandHandler.modules.get('lastseen')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'clan': {
-				const command = this.client.commandHandler.modules.get('clan')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'player': {
-				const command = this.client.commandHandler.modules.get('player')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'capital-raids': {
-				const command = this.client.commandHandler.modules.get('capital-raids')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'capital-contribution':
-			case 'capital-contributions': {
-				const command = this.client.commandHandler.modules.get('capital-contribution')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'legend-attacks': {
-				const command = this.client.commandHandler.modules.get('legend-attacks')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'legend-days': {
-				const command = this.client.commandHandler.modules.get('legend-days')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'war': {
-				const command = this.client.commandHandler.modules.get('war')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			case 'stats': {
-				const command = this.client.commandHandler.modules.get('stats')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
 			case 'link-add': {
 				const command = this.client.commandHandler.modules.get('link-add')!;
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;
 			}
 			default: {
-				return false;
+				const command = this.client.commandHandler.modules.get(parsed.cmd);
+				if (!command) return false;
+				if (!deferredDisallowed.includes(parsed.cmd)) await interaction.deferUpdate();
+				const selected = interaction.isStringSelectMenu() ? interaction.values[0] : null;
+				await this.client.commandHandler.exec(interaction, command, { selected, ...parsed });
+				return true;
 			}
 		}
 	}
