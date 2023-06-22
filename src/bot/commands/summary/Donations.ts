@@ -6,7 +6,8 @@ import {
 	ButtonStyle,
 	StringSelectMenuBuilder,
 	ButtonInteraction,
-	BaseInteraction
+	BaseInteraction,
+	embedLength
 } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import moment from 'moment';
@@ -27,7 +28,7 @@ export default class DonationSummaryCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { season?: string; clans?: string; sort_by?: SortType[]; order_by?: OrderType }
+		args: { season?: string; clans?: string; sort_by?: SortType[]; order_by?: OrderType; clans_only?: boolean }
 	) {
 		const season = args.season ?? Season.ID;
 
@@ -66,18 +67,36 @@ export default class DonationSummaryCommand extends Command {
 			})
 		]);
 
-		const payload = { cmd: this.id, tag: args.clans, season: args.season, sort_by: args.sort_by, order_by: args.order_by };
+		const payload = {
+			cmd: this.id,
+			tag: args.clans,
+			season: args.season,
+			sort_by: args.sort_by,
+			order_by: args.order_by,
+			clans_only: args.clans_only
+		};
 		this.client.redis.clearCustomId(interaction);
 
 		const customId = {
 			orderBy: this.client.redis.setCustomId({ ...payload, string_key: 'order_by' }),
 			sortBy: this.client.redis.setCustomId({ ...payload, array_key: 'sort_by' }),
-			refresh: this.client.redis.setCustomId(payload)
+			refresh: this.client.redis.setCustomId(payload),
+			toggle: this.client.redis.setCustomId({ ...payload, clans_only: !args.clans_only })
 		};
 
 		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customId.refresh).setEmoji(EMOJIS.REFRESH)
 		);
+
+		const splitted = embedLength(topPlayersEmbed.toJSON()) + embedLength(topClansEmbed.toJSON()) > 6000;
+		if (splitted) {
+			buttonRow.addComponents(
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId(customId.toggle)
+					.setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
+			);
+		}
 
 		const sortingRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
@@ -132,7 +151,10 @@ export default class DonationSummaryCommand extends Command {
 				])
 		);
 
-		return interaction.editReply({ embeds: [topClansEmbed, topPlayersEmbed], components: [buttonRow, sortingRow, orderingRow] });
+		return interaction.editReply({
+			embeds: splitted ? [args.clans_only ? topClansEmbed : topPlayersEmbed] : [topClansEmbed, topPlayersEmbed],
+			components: [buttonRow, sortingRow, orderingRow]
+		});
 	}
 
 	private donation(num: number, space: number) {

@@ -316,7 +316,7 @@ export const clanGamesEmbedMaker = (
 		embed.setDescription(
 			[
 				embed.data.description!,
-				`${EMOJIS.CLAN_GAMES_POINTS} \`${text.replace(/&&/g, ''.padStart(maxBars - text.length - 1, ' '))}\``,
+				`${EMOJIS.CLAN_GAMES} \`${text.replace(/&&/g, ''.padStart(maxBars - text.length - 1, ' '))}\``,
 				`\`${progressBar}\``
 			].join('\n')
 		);
