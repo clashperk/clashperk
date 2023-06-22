@@ -3,6 +3,8 @@ import moment from 'moment-timezone';
 import { Command } from '../../lib/index.js';
 import { IRoster, RosterSortTypes } from '../../struct/RosterManager.js';
 
+// /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2})$/
+
 export default class RosterCreateCommand extends Command {
 	public constructor() {
 		super('roster-create', {

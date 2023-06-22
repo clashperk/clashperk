@@ -2831,11 +2831,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
-				name: 'compo',
-				description: 'Command deleted. Use /summary clans instead.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
 				name: 'wars',
 				description: 'Shows a summary of current wars.',
 				type: ApplicationCommandOptionType.Subcommand
@@ -2878,7 +2873,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'attacks',
-				description: 'Shows a summary of attacks.',
+				description: 'Shows a summary of multiplayer attacks and defenses.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -3092,7 +3087,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'season',
-				description: 'Export regular, friendly and CWL wars stats.',
+				description: 'Export season stats of the clan family.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
