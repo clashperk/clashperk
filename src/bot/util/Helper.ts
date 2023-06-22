@@ -306,7 +306,7 @@ export const clanGamesEmbedMaker = (
 		].join('\n')
 	);
 
-	if (total <= maxTotal) {
+	if (total > 0 && total <= maxTotal) {
 		const maxBars = 38;
 		const next = tiers.find((t) => t > total) ?? maxTotal;
 		const progress = Math.floor((total / next) * maxBars);
