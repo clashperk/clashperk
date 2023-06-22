@@ -254,7 +254,7 @@ export default class HelpCommand extends Command {
 		const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
 				.setPlaceholder('Select a command category')
-				.setCustomId(JSON.stringify({ cmd: this.id, menu: true }))
+				.setCustomId(JSON.stringify({ cmd: this.id, category: args.category, string_key: 'category' }))
 				.addOptions(
 					Array.from(new Set(Object.values(categories))).map((key) => ({
 						label: key,

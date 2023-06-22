@@ -242,7 +242,7 @@ export default class Resolver {
 	}
 
 	public async resolveArgs(args?: string) {
-		if (args?.length === 21) {
+		if (args?.startsWith('AC-')) {
 			const tags = await this.client.redis.connection.get(args);
 			if (tags) return tags.split(/[, ]+/g);
 		}

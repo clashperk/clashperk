@@ -284,6 +284,8 @@ export const clanGamesEmbedMaker = (
 ) => {
 	const maxPoints = clanGamesMaxPoints(new Date(seasonId).getMonth());
 	const total = members.reduce((prev, mem) => prev + Math.min(mem.points, maxPoints), 0);
+	const maxTotal = maxPoints === 5000 ? 75000 : 50000;
+	const tiers = [3000, 7500, 12000, 18000, 30000, 50000, 75000];
 
 	const embed = new EmbedBuilder();
 	if (color) embed.setColor(color);
@@ -303,6 +305,22 @@ export const clanGamesEmbedMaker = (
 			'```'
 		].join('\n')
 	);
+
+	if (total <= maxTotal) {
+		const maxBars = 38;
+		const next = tiers.find((t) => t > total) ?? maxTotal;
+		const progress = Math.floor((total / next) * maxBars);
+		const progressBar = [...Array(progress).fill('◼'), ...Array(maxBars - progress).fill('◻')].join('');
+		const text = `${total} && ${next} (Tier ${tiers.indexOf(next) + 1})`;
+
+		embed.setDescription(
+			[
+				embed.data.description!,
+				`${EMOJIS.CLAN_GAMES_POINTS} \`${text.replace(/&&/g, ''.padStart(maxBars - text.length - 1, ' '))}\``,
+				`\`${progressBar}\``
+			].join('\n')
+		);
+	}
 
 	embed.setFooter({ text: `Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]` });
 	embed.setTimestamp();
