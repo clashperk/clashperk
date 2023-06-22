@@ -306,18 +306,18 @@ export const clanGamesEmbedMaker = (
 		].join('\n')
 	);
 
-	if (total > 0 && total <= maxTotal) {
+	if (total <= maxTotal) {
 		const maxBars = 38;
 		const next = tiers.find((t) => t > total) ?? maxTotal;
-		const progress = Math.floor((total / next) * maxBars);
-		const progressBar = [...Array(progress).fill('◼'), ...Array(maxBars - progress).fill('◻')].join('');
+		// const progress = Math.floor((total / next) * maxBars);
+		// const progressBar = [...Array(progress).fill('■'), ...Array(maxBars - progress).fill('□')].join('');
 		const text = `${total} && ${next} (Tier ${tiers.indexOf(next) + 1})`;
 
 		embed.setDescription(
 			[
 				embed.data.description!,
-				`${EMOJIS.CLAN_GAMES} \`${text.replace(/&&/g, ''.padStart(maxBars - text.length - 1, ' '))}\``,
-				`\`${progressBar}\``
+				`${EMOJIS.CLAN_GAMES} \`${text.replace(/&&/g, '-'.padStart(maxBars - text.length - 1, '-'))}\``
+				// `\`${progressBar}\``
 			].join('\n')
 		);
 	}
