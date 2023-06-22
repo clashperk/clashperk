@@ -1,13 +1,4 @@
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	CommandInteraction,
-	ComponentType,
-	EmbedBuilder,
-	StringSelectMenuBuilder,
-	User
-} from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerSeasonModel } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -46,8 +37,8 @@ export default class DonationsCommand extends Command {
 		args: {
 			tag?: string;
 			season: string;
-			sortBy?: ('donated' | 'received' | 'townHall' | 'difference')[];
-			orderBy?: string;
+			sort_by?: SortKey[];
+			order_by?: OrderKey;
 			user?: User;
 			player_tag?: string;
 		}
@@ -56,7 +47,7 @@ export default class DonationsCommand extends Command {
 			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
 		}
 
-		let { season, sortBy, orderBy } = args;
+		let { season, sort_by: sortBy, order_by: orderBy } = args;
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (clan.members < 1) {
@@ -189,11 +180,20 @@ export default class DonationsCommand extends Command {
 		};
 
 		const embed = getEmbed();
-		const customId = {
-			order: isSameSeason ? JSON.stringify({ tag: clan.tag, cmd: this.id, sortBy, _: 1 }) : this.client.uuid(interaction.user.id),
-			sort: isSameSeason ? JSON.stringify({ tag: clan.tag, cmd: this.id, orderBy, _: 2 }) : this.client.uuid(interaction.user.id),
-			refresh: JSON.stringify({ tag: clan.tag, cmd: this.id, sortBy, orderBy })
+
+		const payload = {
+			cmd: this.id,
+			tag: clan.tag,
+			sort_by: args.sort_by,
+			order_by: args.order_by,
+			season: args.season
 		};
+		const customId = {
+			order: this.client.redis.setCustomId({ ...payload, string_key: 'order_by' }),
+			sort: this.client.redis.setCustomId({ ...payload, array_key: 'sort_by' }),
+			refresh: this.client.redis.setCustomId({ ...payload })
+		};
+		this.client.redis.clearCustomId(interaction);
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
@@ -256,27 +256,7 @@ export default class DonationsCommand extends Command {
 				])
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row, sortingRow, orderingRow] });
-		if (isSameSeason) return;
-
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => action.customId === customId.sort && action.user.id === interaction.user.id,
-			max: 1,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customId.sort) {
-				members.sort((a, b) => b.received - a.received);
-				const embed = getEmbed();
-				await action.update({ embeds: [embed] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customId.sort);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		return interaction.editReply({ embeds: [embed], components: [row, sortingRow, orderingRow] });
 	}
 
 	private padEnd(name: string) {
@@ -287,3 +267,6 @@ export default class DonationsCommand extends Command {
 		return num.toString().padStart(space, ' ');
 	}
 }
+
+type SortKey = 'donated' | 'received' | 'townHall' | 'difference';
+type OrderKey = 'asc' | 'desc';

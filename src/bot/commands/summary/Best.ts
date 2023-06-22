@@ -615,14 +615,13 @@ export default class SummaryBestCommand extends Command {
 			return interaction.followUp({ embeds: [embed] });
 		}
 
-		const customId = interaction.isButton()
-			? interaction.customId
-			: this.client.redis.setCustomId({
-					cmd: this.id,
-					order: args.order,
-					clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans,
-					limit: args.limit
-			  });
+		const customId = this.client.redis.setCustomId({
+			cmd: this.id,
+			order: args.order,
+			clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans,
+			limit: args.limit
+		});
+		this.client.redis.clearCustomId(interaction);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setCustomId(customId).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
 		);

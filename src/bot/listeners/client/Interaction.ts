@@ -571,9 +571,12 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async getQuery(query: string) {
-		const value = query.length > 100 ? nanoid() : query;
-		if (query.length > 100) await this.client.redis.connection.set(value, query, { EX: 60 * 60 });
-		return value;
+		if (query.length > 100) {
+			const key = `AC-${nanoid()}`;
+			await this.client.redis.connection.set(key, query, { EX: 60 * 60 });
+			return key;
+		}
+		return query;
 	}
 
 	private async contextInteraction(interaction: Interaction) {

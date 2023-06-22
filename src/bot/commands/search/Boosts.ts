@@ -19,7 +19,7 @@ export default class BoostsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; value?: string; recent?: boolean; user?: User }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; unit?: string; recent?: boolean; user?: User }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (!clan.members) {
@@ -42,13 +42,13 @@ export default class BoostsCommand extends Command {
 		const recently = boostTimes.filter((m) => m.lastSeen >= new Date(Date.now() - 10 * 60 * 1000)).map((m) => m.tag);
 
 		const selected = players
-			.filter((mem) => mem.troops.filter((en) => en.name === args.value && en.superTroopIsActive).length)
+			.filter((mem) => mem.troops.filter((en) => en.name === args.unit && en.superTroopIsActive).length)
 			.filter((m) => (recently.length && args.recent ? recently.includes(m.tag) : true)).length;
 
 		const boosters = players.filter((m) => (recently.length && args.recent ? recently.includes(m.tag) : true));
 		const memObj = boosters.reduce<{ [key: string]: { name: string; duration: number; online: boolean }[] }>((pre, curr) => {
 			for (const troop of curr.troops) {
-				if (troop.name in SUPER_TROOPS && troop.superTroopIsActive && (args.value && selected ? args.value === troop.name : true)) {
+				if (troop.name in SUPER_TROOPS && troop.superTroopIsActive && (args.unit && selected ? args.unit === troop.name : true)) {
 					if (!(troop.name in pre)) pre[troop.name] = [];
 					const boosted = boostTimes.find((mem) => mem.tag === curr.tag)?.superTroops?.find((en) => en.name === troop.name);
 					const duration = boosted?.timestamp ? BOOST_DURATION - (Date.now() - boosted.timestamp) : 0;
@@ -103,12 +103,12 @@ export default class BoostsCommand extends Command {
 			});
 		}
 
-		if (args.value && !selected) {
+		if (args.unit && !selected) {
 			return interaction.followUp({
 				ephemeral: true,
 				content: args.recent
-					? this.i18n('command.boosts.no_recent_unit_boosts', { lng: interaction.locale, unit: args.value })
-					: this.i18n('command.boosts.no_unit_boosts', { lng: interaction.locale, unit: args.value })
+					? this.i18n('command.boosts.no_recent_unit_boosts', { lng: interaction.locale, unit: args.unit })
+					: this.i18n('command.boosts.no_unit_boosts', { lng: interaction.locale, unit: args.unit })
 			});
 		}
 
@@ -129,7 +129,7 @@ export default class BoostsCommand extends Command {
 		const menus = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
 				.setPlaceholder('Select a Super Troop')
-				.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, recent: Boolean(args.recent), menu: true }))
+				.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, recent: Boolean(args.recent), string_key: 'unit' }))
 				.addOptions(Object.entries(SUPER_TROOPS).map(([key, value]) => ({ label: key, value: key, emoji: value })))
 		);
 

@@ -20,52 +20,22 @@ export default class ComponentHandler {
 		return null;
 	}
 
+	public parseStringSelectMenu(interaction: StringSelectMenuInteraction, parsed: ParsedCommandId) {
+		const values = interaction.values;
+		if (parsed.array_key) return { [parsed.array_key]: values };
+		if (parsed.string_key) return { [parsed.string_key]: values[0] };
+		return { selected: values.length === 1 ? values[0] : values };
+	}
+
 	public async exec(interaction: ButtonInteraction | StringSelectMenuInteraction) {
 		const parsed = await this.parseCommandId(interaction.customId);
 		if (!parsed) return false;
 
-		switch (parsed.cmd) {
-			case 'help': {
-				const command = this.client.commandHandler.modules.get('help')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, {
-					category: interaction.isStringSelectMenu() ? interaction.values.at(0) : null,
-					...parsed
-				});
-				return true;
-			}
-			case 'boosts': {
-				const command = this.client.commandHandler.modules.get('boosts')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, {
-					value: interaction.isStringSelectMenu() ? interaction.values[0] : null,
-					...parsed
-				});
-				return true;
-			}
-			case 'donations': {
-				const command = this.client.commandHandler.modules.get('donations')!;
-				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, {
-					sortBy: interaction.isStringSelectMenu() ? interaction.values : null,
-					orderBy: interaction.isStringSelectMenu() ? interaction.values[0] : null,
-					...parsed
-				});
-				return true;
-			}
-			case 'link-add': {
-				const command = this.client.commandHandler.modules.get('link-add')!;
-				await this.client.commandHandler.exec(interaction, command, { ...parsed });
-				return true;
-			}
-			default: {
-				const command = this.client.commandHandler.modules.get(parsed.cmd);
-				if (!command) return false;
-				if (!deferredDisallowed.includes(parsed.cmd)) await interaction.deferUpdate();
-				const selected = interaction.isStringSelectMenu() ? interaction.values[0] : null;
-				await this.client.commandHandler.exec(interaction, command, { selected, ...parsed });
-				return true;
-			}
-		}
+		const command = this.client.commandHandler.modules.get(parsed.cmd);
+		if (!command) return false;
+		if (!deferredDisallowed.includes(parsed.cmd)) await interaction.deferUpdate();
+		const selected = interaction.isStringSelectMenu() ? this.parseStringSelectMenu(interaction, parsed) : {};
+		await this.client.commandHandler.exec(interaction, command, { ...parsed, ...selected });
+		return true;
 	}
 }

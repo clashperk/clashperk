@@ -298,9 +298,9 @@ export default class StatsCommand extends Command {
 
 		embed.setTimestamp();
 
-		const customId = interaction.isButton()
-			? interaction.customId
-			: this.client.redis.setCustomId({ cmd: this.id, ...args, view: 'avg' });
+		const customId = this.client.redis.setCustomId({ cmd: this.id, ...args, view: 'avg' });
+		this.client.redis.clearCustomId(interaction);
+
 		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Primary);
 		if (interaction.isButton()) {
 			button.setEmoji(EMOJIS.REFRESH);

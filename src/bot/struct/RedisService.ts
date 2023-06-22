@@ -1,4 +1,5 @@
 import { Clan, Player } from 'clashofclans.js';
+import { BaseInteraction } from 'discord.js';
 import { nanoid } from 'nanoid';
 import * as Redis from 'redis';
 import Client from './Client.js';
@@ -43,14 +44,23 @@ class RedisService {
 		return raw as unknown as Player;
 	}
 
-	public setCustomId(payload: unknown) {
+	public setCustomId(payload: Record<string, unknown>) {
 		const customId = `CMD-${nanoid()}`;
 
+		const text = JSON.stringify(payload);
+		if (text.length <= 100) return text;
+
 		const query = this.client.redis.connection.multi();
-		query.json.set(customId, '$', payload as RedisJSON);
-		query.expire(customId, 60 * 60 * 24 * 30);
+		query.json.set(customId, '$', { ...payload, customId } as unknown as RedisJSON);
+		query.expire(customId, 60 * 60 * 24 * 60);
 		query.exec();
 
+		return customId;
+	}
+
+	public clearCustomId(interaction: BaseInteraction) {
+		const customId = interaction.isMessageComponent() ? interaction.customId : null;
+		if (customId?.startsWith('CMD-')) this.client.redis.connection.json.del(customId);
 		return customId;
 	}
 
