@@ -3,6 +3,7 @@ import moment from 'moment';
 import { Collections } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import { Season } from '../util/index.js';
+import { EMOJIS } from '../util/Emojis.js';
 import Client from './Client.js';
 
 export const imageMaps: Record<string, string> = {
@@ -66,6 +67,7 @@ export class GuildEventsHandler {
 			{
 				type: 'clan_games_start',
 				name: i18n('common.labels.clan_games', { lng }),
+				formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.labels.clan_games', { lng })}`,
 				value: `${time(clanGamesStartTime, 'R')}\n${time(clanGamesStartTime, 'f')}`,
 				timestamp: clanGamesStartTime.getTime(),
 				visible: moment(now).isBefore(clanGamesStartTime) || moment(now).isAfter(clanGamesEndTime)
@@ -73,6 +75,7 @@ export class GuildEventsHandler {
 			{
 				type: 'clan_games_end',
 				name: i18n('common.labels.clan_games_ending', { lng }),
+				formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.labels.clan_games_ending', { lng })}`,
 				value: `${time(clanGamesEndTime, 'R')}\n${time(clanGamesEndTime, 'f')}`,
 				timestamp: clanGamesEndTime.getTime(),
 				visible: moment(now).isAfter(clanGamesStartTime) && moment(now).isBefore(clanGamesEndTime)
@@ -80,6 +83,7 @@ export class GuildEventsHandler {
 			{
 				type: 'cwl_start',
 				name: i18n('common.labels.cwl', { lng }),
+				formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl', { lng })}`,
 				value: `${time(CWLStartTime, 'R')}\n${time(CWLStartTime, 'f')}`,
 				timestamp: CWLStartTime.getTime(),
 				visible: moment(now).isBefore(CWLStartTime)
@@ -87,6 +91,7 @@ export class GuildEventsHandler {
 			{
 				type: 'cwl_end',
 				name: i18n('common.labels.cwl_end', { lng }),
+				formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl_end', { lng })}`,
 				value: `${time(CWLEndTime, 'R')}\n${time(CWLEndTime, 'f')}`,
 				timestamp: CWLEndTime.getTime(),
 				visible: moment(now).isAfter(CWLSignupEndTime)
@@ -94,6 +99,7 @@ export class GuildEventsHandler {
 			{
 				type: 'cwl_signup_end',
 				name: i18n('common.labels.cwl_signup_ending', { lng }),
+				formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl_signup_ending', { lng })}`,
 				value: `${time(CWLSignupEndTime, 'R')}\n${time(CWLSignupEndTime, 'f')}`,
 				timestamp: CWLSignupEndTime.getTime(),
 				visible: moment(now).isAfter(CWLStartTime) && moment(now).isBefore(CWLSignupEndTime)
@@ -101,6 +107,9 @@ export class GuildEventsHandler {
 			{
 				type: 'season_end',
 				name: i18n('common.labels.league_reset', { lng }),
+				formattedName: `${EMOJIS.TROPHY} ${i18n('common.labels.league_reset', { lng })} (${moment(seasonEndTime).format(
+					'MMM YYYY'
+				)})`,
 				value: `${time(seasonEndTime, 'R')}\n${time(seasonEndTime, 'f')}`,
 				timestamp: seasonEndTime.getTime(),
 				visible: true
@@ -108,6 +117,7 @@ export class GuildEventsHandler {
 			{
 				type: 'raid_week_start',
 				name: i18n('common.labels.raid_weekend', { lng }),
+				formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.labels.raid_weekend', { lng })}`,
 				value: `${time(raidWeekStartTime, 'R')}\n${time(raidWeekStartTime, 'f')}`,
 				timestamp: raidWeekStartTime.getTime(),
 				visible: moment(now).isBefore(raidWeekStartTime) || moment(now).isAfter(raidWeekEndTime)
@@ -115,6 +125,7 @@ export class GuildEventsHandler {
 			{
 				type: 'raid_week_end',
 				name: i18n('common.labels.raid_weekend_ending', { lng }),
+				formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.labels.raid_weekend_ending', { lng })}`,
 				value: `${time(raidWeekEndTime, 'R')}\n${time(raidWeekEndTime, 'f')}`,
 				timestamp: raidWeekEndTime.getTime(),
 				visible: moment(now).isAfter(raidWeekStartTime) && moment(now).isBefore(raidWeekEndTime)

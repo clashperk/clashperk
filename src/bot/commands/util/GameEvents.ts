@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, parseEmoji } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
 
@@ -14,9 +14,19 @@ export default class GameEvents extends Command {
 		const visibleEvents = this.client.guildEvents.getEvents(interaction.locale);
 
 		const embed = new EmbedBuilder()
-			.setAuthor({ name: 'Next Events in the Game' })
-			.addFields(visibleEvents.map((event) => ({ name: event.name, value: `${event.value}\n\u200b` })))
-			.setFooter({ text: `${visibleEvents.length} upcoming events` });
+			.setAuthor({
+				name: 'Upcoming Events!',
+				iconURL: `https://cdn.discordapp.com/emojis/${parseEmoji(EMOJIS.COC_LOGO)!.id!}.png?v=1`
+			})
+			.setColor(this.client.embed(interaction))
+			.addFields(
+				visibleEvents.map((event, index, items) => ({
+					name: event.formattedName,
+					value: `${event.value}${items.length - 1 === index ? '' : '\n\u200b'}`
+				}))
+			)
+			.setFooter({ text: 'Synced' })
+			.setTimestamp();
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
