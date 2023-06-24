@@ -1,4 +1,4 @@
-import { MsearchMultiSearchItem } from '@elastic/elasticsearch/lib/api/types.js';
+import { MsearchMultiSearchItem, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types.js';
 
 import { AutocompleteInteraction, Interaction } from 'discord.js';
 import moment from 'moment';
@@ -81,6 +81,35 @@ const preferences: Record<string, string[]> = {
 		'4d'
 	],
 	'default': ['1h', '4h', '10h', '12h', '16h', '20h', '1d', '1d 6h', '2d', '3d', '4d', '5d', '5d 23h']
+};
+
+const getQuery = (query: string): QueryDslQueryContainer[] => {
+	return [
+		{
+			prefix: {
+				name: {
+					value: `${query}`,
+					case_insensitive: true
+				}
+			}
+		},
+		// {
+		// 	wildcard: {
+		// 		name: {
+		// 			value: `*${query}*`,
+		// 			case_insensitive: true
+		// 		}
+		// 	}
+		// },
+		{
+			wildcard: {
+				tag: {
+					value: `*${query}*`,
+					case_insensitive: true
+				}
+			}
+		}
+	];
 };
 
 export default class InteractionListener extends Listener {
@@ -282,7 +311,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { userId: interaction.user.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									should: getQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -294,7 +323,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { userId: interaction.user.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									should: getQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -303,7 +332,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								dis_max: {
-									queries: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									queries: getQuery(query),
 									tie_breaker: 1
 								}
 							}
@@ -376,7 +405,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { userId: interaction.user.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									should: getQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -388,7 +417,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { guildId: interaction.guild.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									should: getQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -479,7 +508,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { userId: interaction.user.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									should: getQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -493,7 +522,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { guildId: interaction.guild.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									should: getQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -506,7 +535,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { userId: interaction.user.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									should: getQuery(query),
 									minimum_should_match: 1
 								}
 							}
