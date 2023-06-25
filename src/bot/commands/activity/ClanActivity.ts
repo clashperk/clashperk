@@ -86,7 +86,7 @@ export default class ClanActivityCommand extends Command {
 
 		const timeZoneCommand = this.client.getCommand('/timezone');
 		await interaction.editReply({
-			content: timezone.offset === 0 ? `Set your timezone with the ${timeZoneCommand} command.` : null,
+			content: timezone.name === 'UTC' ? `Set your timezone with the ${timeZoneCommand} command.` : null,
 			files: [rawFile]
 		});
 
@@ -96,16 +96,16 @@ export default class ClanActivityCommand extends Command {
 
 	private async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {
 		const zone = location ? moment.tz.zone(location) : null;
-		if (zone) return { offset: zone.utcOffset(Date.now()), name: zone.name };
+		if (zone) return { offset: zone.utcOffset(Date.now()) * 60 * -1, name: zone.name };
 
 		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
 		if (!location) {
-			if (!user?.timezone) return { offset: 0, name: 'Coordinated Universal Time' };
-			return { offset: user.timezone.offset, name: user.timezone.name };
+			if (!user?.timezone) return { offset: 0, name: 'UTC' };
+			return { offset: moment.tz.zone(user.timezone.id)!.utcOffset(Date.now()) * 60 * -1, name: user.timezone.name };
 		}
 
 		const raw = await Google.timezone(location);
-		if (!raw) return { offset: 0, name: 'Coordinated Universal Time' };
+		if (!raw) return { offset: 0, name: 'UTC' };
 
 		const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
 		if (!user?.timezone) {
@@ -129,7 +129,7 @@ export default class ClanActivityCommand extends Command {
 			);
 		}
 
-		return { offset, name: raw.timezone.timeZoneName };
+		return { offset: moment.tz.zone(raw.timezone.timeZoneId)!.utcOffset(Date.now()) * 60 * -1, name: raw.timezone.timeZoneName };
 	}
 
 	private aggregate(clanTags: string[], days: number) {
