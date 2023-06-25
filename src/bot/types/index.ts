@@ -65,6 +65,13 @@ export interface PlayerSeasonModel extends AchievementsMap {
 	createdAt: Date;
 }
 
+export interface UserTimezone {
+	id: string;
+	name: string;
+	offset: number;
+	location: string;
+}
+
 export interface UserInfoModel {
 	_id: ObjectId;
 	userId: string;
@@ -75,12 +82,7 @@ export interface UserInfoModel {
 		tag: string;
 		name?: string;
 	};
-	timezone?: {
-		id: string;
-		name: string;
-		offset: number;
-		location: string;
-	};
+	timezone?: UserTimezone;
 }
 
 export interface PlayerLinks {

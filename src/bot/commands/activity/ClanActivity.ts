@@ -95,6 +95,9 @@ export default class ClanActivityCommand extends Command {
 	}
 
 	private async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {
+		const zone = location ? moment.tz.zone(location) : null;
+		if (zone) return { offset: zone.utcOffset(Date.now()), name: zone.name };
+
 		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
 		if (!location) {
 			if (!user?.timezone) return { offset: 0, name: 'Coordinated Universal Time' };

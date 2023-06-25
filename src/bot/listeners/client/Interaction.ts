@@ -9,7 +9,9 @@ import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
 import { IRoster, IRosterCategory } from '../../struct/RosterManager.js';
-import { ElasticIndex, Settings } from '../../util/Constants.js';
+import { Collections, ElasticIndex, Settings } from '../../util/Constants.js';
+import Google from '../../struct/Google.js';
+import { UserInfoModel, UserTimezone } from '../../types/index.js';
 
 const ranges: Record<string, number> = {
 	'clan-wars': ms('46h'),
@@ -210,7 +212,88 @@ export default class InteractionListener extends Listener {
 				}
 				return this.rosterCategoryAutocomplete(interaction, focused);
 			}
+			case 'timezone': {
+				return this.timezoneAutocomplete(interaction, focused);
+			}
 		}
+	}
+
+	private async timezoneAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+		const query = interaction.options.getString(focused);
+		const text = query?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') ?? '';
+
+		const rest = {
+			$match: {
+				$or: [
+					{ 'timezone.id': { $regex: `.*${text}*.`, $options: 'i' } },
+					{ 'timezone.name': { $regex: `.*${text}*.`, $options: 'i' } },
+					{ 'timezone.location': { $regex: `.*${text}*.`, $options: 'i' } }
+				]
+			}
+		};
+
+		const collection = this.client.db.collection<UserInfoModel>(Collections.USERS);
+		const cursor = collection.aggregate<{ _id: string; timezone: UserTimezone }>([
+			{
+				$match: {
+					timezone: {
+						$exists: true
+					}
+				}
+			},
+			{
+				$replaceRoot: {
+					newRoot: '$timezone'
+				}
+			},
+			{
+				$group: {
+					_id: '$id',
+					timezone: {
+						$first: '$$ROOT'
+					},
+					uses: {
+						$sum: 1
+					}
+				}
+			},
+			{
+				$sort: {
+					uses: -1
+				}
+			},
+			...(query ? [rest] : []),
+			{
+				$limit: 24
+			}
+		]);
+
+		const [user, result] = await Promise.all([collection.findOne({ userId: interaction.user.id }), cursor.toArray()]);
+		if (user?.timezone && !query) result.unshift({ _id: user.timezone.id, timezone: user.timezone });
+
+		if (!result.length && query) {
+			const raw = await Google.timezone(query);
+			// eslint-disable-next-line
+			if (raw?.location && raw.timezone) {
+				const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
+				const timezone = {
+					id: raw.timezone.timeZoneId,
+					offset: Number(offset),
+					name: raw.timezone.timeZoneName,
+					location: raw.location.formatted_address
+				};
+				result.push({ _id: timezone.id, timezone });
+			}
+		}
+
+		const timezones = result.filter((timezone, index, self) => self.findIndex((t) => t._id === timezone._id) === index);
+		if (!timezones.length) return interaction.respond([{ value: '0', name: 'No timezones found.' }]);
+		return interaction.respond(
+			timezones.map(({ timezone }) => ({
+				value: timezone.id,
+				name: `${moment.tz(new Date(), timezone.id).format('kk:mm')} - ${timezone.id}`
+			}))
+		);
 	}
 
 	private async rosterAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {

@@ -13,6 +13,7 @@ import {
 	time
 } from 'discord.js';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
+import moment from 'moment';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
@@ -872,15 +873,18 @@ export class RosterManager {
 		return value;
 	}
 
-	public async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {
+	public async getTimezoneId(interaction: CommandInteraction<'cached'>, location?: string) {
+		const zone = location ? moment.tz.zone(location) : null;
+		if (zone) return zone.name;
+
 		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
 		if (!location) {
-			if (!user?.timezone) return { id: 'UTC', name: 'Coordinated Universal Time' };
-			return { id: user.timezone.id, name: user.timezone.name };
+			if (!user?.timezone) return 'UTC';
+			return user.timezone.id;
 		}
 
 		const raw = await Google.timezone(location);
-		if (!raw) return { id: 'UTC', name: 'Coordinated Universal Time' };
+		if (!raw) return 'UTC';
 
 		const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
 		if (!user?.timezone) {
@@ -904,7 +908,7 @@ export class RosterManager {
 			);
 		}
 
-		return { id: raw.timezone.timeZoneId, name: raw.timezone.timeZoneName };
+		return raw.timezone.timeZoneId;
 	}
 
 	public getDefaultSettings(guildId: string) {
