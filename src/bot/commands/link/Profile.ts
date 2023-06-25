@@ -172,6 +172,16 @@ export default class ProfileCommand extends Command {
 				.setDisabled(links.length < 5)
 		);
 
+		if (user.id === interaction.user.id) {
+			row.addComponents(
+				new ButtonBuilder()
+					.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: 'optional' }))
+					.setLabel('Link account')
+					.setEmoji('🔗')
+					.setStyle(ButtonStyle.Primary)
+			);
+		}
+
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,

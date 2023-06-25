@@ -1,4 +1,3 @@
-import { Clan, Player } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { LEGEND_LEAGUE_ID } from '../../util/Constants.js';
@@ -31,17 +30,9 @@ export default class LegendLeaderboardCommand extends Command {
 			);
 		}
 
-		const raw = await this.client.redis.connection.json.mGet(
-			clans.map((clan) => `C${clan.tag}`),
-			'$'
-		);
-		const _cachedClans = raw.flat().filter((_) => _) as unknown as Clan[];
-		const members = _cachedClans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
-		const rawPlayers = await this.client.redis.connection.json.mGet(
-			members.map((tag) => `P${tag}`),
-			'$'
-		);
-		const players = rawPlayers.flat().filter((_) => _) as unknown as Player[];
+		const cachedClans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
+		const memberTags = cachedClans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
+		const players = await this.client.redis.getPlayers(memberTags);
 
 		const legends = players.filter((player) => player.trophies >= 5000 || player.league?.id === LEGEND_LEAGUE_ID);
 		legends.sort((a, b) => b.trophies - a.trophies);
@@ -66,10 +57,7 @@ export default class LegendLeaderboardCommand extends Command {
 
 		const customId = interaction.isButton()
 			? interaction.customId
-			: this.client.redis.setCustomId({
-					cmd: this.id,
-					clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans
-			  });
+			: this.client.redis.setCustomId({ cmd: this.id, clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customId)
 		);

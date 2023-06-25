@@ -134,7 +134,7 @@ export default class DonationsHistoryCommand extends Command {
 					name: `${name} (${tag})`,
 					value: [
 						'```',
-						`\u200e${'DON'.padStart(6, ' ')} ${'REC'.padStart(6, ' ')}    SEASON`,
+						`\u200e${'DON'.padStart(7, ' ')} ${'REC'.padStart(7, ' ')}    SEASON`,
 						seasons
 							.map((season) => {
 								const { donations, donationsReceived } = Object.values(season.clans).reduce(
@@ -145,9 +145,9 @@ export default class DonationsHistoryCommand extends Command {
 									},
 									{ donations: 0, donationsReceived: 0 }
 								);
-								return `${Util.formatNumber(Math.max(donations, season.donations)).padStart(6, ' ')} ${Util.formatNumber(
-									donationsReceived
-								).padStart(6, ' ')}  ${moment(season.season).format('MMM YYYY')}`;
+								const don = Util.formatNumber(Math.max(donations, season.donations)).padStart(7, ' ');
+								const rec = Util.formatNumber(donationsReceived).padStart(7, ' ');
+								return `${don} ${rec}  ${moment(season.season).format('MMM YYYY')}`;
 							})
 							.join('\n'),
 						'```'
