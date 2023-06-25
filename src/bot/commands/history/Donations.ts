@@ -86,7 +86,7 @@ export default class DonationsHistoryCommand extends Command {
 							$subtract: ['$troopsDonations.current', '$troopsDonations.initial']
 						},
 						_spells: {
-							$subtract: ['$spellsDonations.current', '$spellsDonations.initial']
+							$multiply: [{ $subtract: ['$spellsDonations.current', '$spellsDonations.initial'] }, 5]
 						},
 						_sieges: {
 							$multiply: [{ $subtract: ['$siegeMachinesDonations.current', '$siegeMachinesDonations.initial'] }, 30]
