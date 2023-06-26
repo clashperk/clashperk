@@ -22,7 +22,7 @@ export default class ErrorListener extends Listener {
 	}
 
 	public async exec(error: Error, interaction: Exclude<Interaction, AutocompleteInteraction>, command?: Command) {
-		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.username}` : `${interaction.user.username}`;
+		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
 		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
 		console.error(inspect(error, { depth: Infinity }));

@@ -22,7 +22,7 @@ export default class CommandBlockedListener extends Listener {
 
 	public exec(interaction: CommandInteraction, command: Command, reason: string) {
 		const content = texts[reason];
-		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.username}` : `${interaction.user.username}`;
+		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
 		this.client.logger.log(`${command.id} ~ ${reason}`, { label });
 
 		if (!interaction.inCachedGuild() && interaction.inGuild()) {
@@ -39,7 +39,9 @@ export default class CommandBlockedListener extends Listener {
 		}
 
 		if (!interaction.channel) {
-			const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.username}` : `${interaction.user.username}`;
+			const label = interaction.guild
+				? `${interaction.guild.name}/${interaction.user.displayName}`
+				: `${interaction.user.displayName}`;
 			this.client.logger.log(`${command.id} ~ ${'noChannel'}`, { label });
 			return null;
 		}

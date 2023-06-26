@@ -220,8 +220,12 @@ export default class InteractionListener extends Listener {
 
 	private async timezoneAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused);
+		this.client.logger.debug(`${interaction.commandName} ~ searching for "${query ?? ''}"`, {
+			label: `${interaction.guild.name}/${interaction.user.displayName}`
+		});
 		const text = query?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') ?? '';
 
+		const now = Date.now();
 		const rest = {
 			$match: {
 				$or: [
@@ -285,6 +289,10 @@ export default class InteractionListener extends Listener {
 				result.push({ _id: timezone.id, timezone });
 			}
 		}
+
+		this.client.logger.debug(`${interaction.commandName} ~ search took ${Date.now() - now}ms`, {
+			label: `${interaction.guild.name}/${interaction.user.displayName}`
+		});
 
 		const timezones = result.filter((timezone, index, self) => self.findIndex((t) => t._id === timezone._id) === index);
 		if (!timezones.length) return interaction.respond([{ value: '0', name: 'No timezones found.' }]);
@@ -379,8 +387,8 @@ export default class InteractionListener extends Listener {
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
-		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
-			label: 'Autocomplete'
+		this.client.logger.debug(`${interaction.commandName} ~ searching for "${query ?? ''}"`, {
+			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
 		const now = Date.now();
@@ -449,8 +457,8 @@ export default class InteractionListener extends Listener {
 						}
 					]
 			  });
-		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
-			label: 'Autocomplete'
+		this.client.logger.debug(`${interaction.commandName} ~ search took ${Date.now() - now}ms`, {
+			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
 		const players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])
@@ -473,8 +481,8 @@ export default class InteractionListener extends Listener {
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
 
-		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
-			label: 'Autocomplete'
+		this.client.logger.debug(`${interaction.commandName} ~ searching for "${query ?? ''}"`, {
+			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
 		const now = Date.now();
@@ -545,8 +553,8 @@ export default class InteractionListener extends Listener {
 					]
 			  });
 
-		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
-			label: 'Autocomplete'
+		this.client.logger.debug(`${interaction.commandName} ~ search took ${Date.now() - now}ms`, {
+			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
 		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
@@ -576,8 +584,8 @@ export default class InteractionListener extends Listener {
 
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused);
-		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
-			label: 'Autocomplete'
+		this.client.logger.debug(`${interaction.commandName} ~ searching for "${query ?? ''}"`, {
+			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
 		const now = Date.now();
@@ -662,8 +670,8 @@ export default class InteractionListener extends Listener {
 						}
 					]
 			  });
-		this.client.logger.debug(`[${interaction.user.username} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
-			label: 'Autocomplete'
+		this.client.logger.debug(`${interaction.commandName} ~ search took ${Date.now() - now}ms`, {
+			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
 		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
@@ -713,14 +721,14 @@ export default class InteractionListener extends Listener {
 		const userIds = this.client.components.get(interaction.customId);
 		if (userIds?.length && userIds.includes(interaction.user.id)) return;
 		if (userIds?.length && !userIds.includes(interaction.user.id)) {
-			this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.username}]`, { label: 'COMPONENT_BLOCKED' });
+			this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.displayName}]`, { label: 'COMPONENT_BLOCKED' });
 			return interaction.reply({ content: this.i18n('common.component.unauthorized', { lng: interaction.locale }), ephemeral: true });
 		}
 
 		if (this.client.components.has(interaction.customId)) return;
 		if (await this.componentHandler.exec(interaction)) return;
 
-		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.username}]`, { label: 'COMPONENT_EXPIRED' });
+		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.displayName}]`, { label: 'COMPONENT_EXPIRED' });
 		await interaction.update({ components: [] });
 		return interaction.followUp({ content: this.i18n('common.component.expired', { lng: interaction.locale }), ephemeral: true });
 	}
