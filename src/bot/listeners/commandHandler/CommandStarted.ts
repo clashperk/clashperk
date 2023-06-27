@@ -47,7 +47,8 @@ export default class CommandStartedListener extends Listener {
 		});
 
 		mixpanel.people.set(interaction.user.id, {
-			$first_name: interaction.user.username,
+			$first_name: interaction.user.displayName,
+			username: interaction.user.username,
 			user_id: interaction.user.id,
 			locale: interaction.locale
 		});
