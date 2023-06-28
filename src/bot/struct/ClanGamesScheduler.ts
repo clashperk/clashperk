@@ -75,12 +75,16 @@ export default class ClanGamesScheduler {
 
 		if (insertedSeasonId === currentSeasonId) return null;
 
+		const { startTime, endTime } = this.timings();
+		if (!(Date.now() >= startTime && Date.now() <= endTime)) return null;
+
 		this.client.logger.info(`Inserting new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
 		const cursor = this.reminders.find({});
 		while (await cursor.hasNext()) {
 			const reminder = await cursor.next();
 			if (reminder) await this.create(reminder);
 		}
+
 		this.client.settings.set('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, currentSeasonId);
 		this.client.logger.info(`Inserted new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
 	}
