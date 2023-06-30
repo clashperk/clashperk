@@ -14,7 +14,7 @@ import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, DOT } from '../../util/Constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
 
@@ -23,6 +23,14 @@ const roles: Record<string, string> = {
 	admin: 'Elder',
 	leader: 'Leader',
 	coLeader: 'Co-Leader'
+};
+
+const weaponLevels: Record<string, string> = {
+	1: '¹',
+	2: '²',
+	3: '³',
+	4: '⁴',
+	5: '⁵'
 };
 
 export default class ProfileCommand extends Command {
@@ -92,7 +100,7 @@ export default class ProfileCommand extends Command {
 				[
 					embed.data.description,
 					'',
-					'**Clan**',
+					'**Default Clan**',
 					`${EMOJIS.CLAN} [${clan.name} (${
 						clan.tag
 					})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
@@ -114,18 +122,32 @@ export default class ProfileCommand extends Command {
 		const playerTags = [...new Set([...players.map((en) => en.tag), ...otherTags])];
 		const hideLink = Boolean(playerTags.length >= 12);
 		const __players = await Promise.all(playerTags.map((tag) => this.client.http.player(tag)));
+		const playerLinks = __players.filter((res) => res.ok);
+		const defaultPlayer = playerLinks.at(0);
 
-		const links: LinkData[] = [];
 		__players.forEach((player, n) => {
 			const tag = playerTags[n];
-			if (player.statusCode === 404) this.deleteBanned(user.id, tag);
-			if (!player.ok) return;
+			if (player.statusCode === 404) {
+				this.deleteBanned(user.id, tag);
+			}
+		});
+
+		playerLinks.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
+		playerLinks.sort((a, b) => this.heroSum(b) - this.heroSum(a));
+		playerLinks.sort((a, b) => b.townHallLevel - a.townHallLevel);
+
+		const links: LinkData[] = [];
+		playerLinks.forEach((player) => {
+			const tag = player.tag;
+			const isDefault = defaultPlayer?.tag === tag;
 
 			const signature = this.isVerified(players, tag) ? '**✓**' : this.isLinked(players, tag) ? '' : '';
+			const weaponLevel = player.townHallWeaponLevel ? weaponLevels[player.townHallWeaponLevel] : '';
+			const townHall = `${TOWN_HALLS[player.townHallLevel]} ${player.townHallLevel}${weaponLevel}`;
 			collection.push({
-				field: `${TOWN_HALLS[player.townHallLevel]} ${hideLink ? '' : '['}${player.name} (${player.tag})${
+				field: `${townHall} ${DOT} ${hideLink ? '' : '['}${player.name} (${player.tag})${
 					hideLink ? '' : `](${this.profileURL(player.tag)})`
-				} ${signature}`,
+				} ${signature} ${isDefault ? '**(Default)**' : ''}`,
 				values: [this.heroes(player), this.clanName(player)].filter((a) => a.length)
 			});
 
@@ -145,7 +167,7 @@ export default class ProfileCommand extends Command {
 
 		embed.addFields(
 			collection.slice(0, 25).map((a, i) => ({
-				name: i === 0 ? `**Player Accounts [${playerTags.length}]**` : '\u200b',
+				name: i === 0 ? `**Player Accounts (${playerTags.length})**` : '\u200b',
 				value: [a.field, ...a.values].join('\n')
 			}))
 		);
@@ -245,6 +267,13 @@ export default class ProfileCommand extends Command {
 		});
 	}
 
+	private heroSum(player: Player) {
+		return player.heroes.reduce((prev, curr) => {
+			if (curr.village === 'builderBase') return prev;
+			return curr.level + prev;
+		}, 0);
+	}
+
 	private isLinked(players: PlayerLinks[], tag: string) {
 		return Boolean(players.find((en) => en.tag === tag));
 	}
@@ -253,17 +282,19 @@ export default class ProfileCommand extends Command {
 		return Boolean(players.find((en) => en.tag === tag && en.verified));
 	}
 
-	private clanName(data: Player) {
-		if (!data.clan) return '';
-		return `${EMOJIS.CLAN} ${roles[data.role!]} of ${data.clan.name}`;
+	private clanName(player: Player) {
+		if (!player.clan) return '';
+		const warPref = player.warPreference === 'in' ? `${EMOJIS.WAR_PREF_IN}` : `${EMOJIS.WAR_PREF_OUT}`;
+		return `${warPref} ${roles[player.role!]} of ${player.clan.name}`;
 	}
 
 	private heroes(data: Player) {
 		if (!data.heroes.length) return '';
-		return data.heroes
+		const heroes = data.heroes
 			.filter((hero) => hero.village === 'home')
 			.map((hero) => `${HEROES[hero.name]} ${hero.level}`)
 			.join(' ');
+		return `${heroes}`;
 	}
 
 	private deleteBanned(userId: string, tag: string) {

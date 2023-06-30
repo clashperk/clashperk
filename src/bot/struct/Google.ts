@@ -289,7 +289,7 @@ const getLocation = async (query: string) => {
 
 const timezone = async (query: string) => {
 	const location = (await getLocation(query))?.results[0];
-	if (!location) return null;
+	if (!location?.formatted_address) return null;
 
 	const search = new URLSearchParams({
 		key: process.env.GOOGLE!,
@@ -311,7 +311,7 @@ const timezone = async (query: string) => {
 		)
 		.catch(() => null);
 
-	if (!timezone) return null;
+	if (!timezone?.timeZoneId) return null;
 	return { location, timezone };
 };
 

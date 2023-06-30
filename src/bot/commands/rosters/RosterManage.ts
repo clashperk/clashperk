@@ -110,14 +110,19 @@ export default class RosterManageCommand extends Command {
 
 			const choices = roster.members
 				.map((member) => ({
+					query: `${member.name} ${member.tag} ${member.username ?? ''} ${member.userId ?? ''}`,
 					name: `${member.name} (${member.tag})`,
 					value: member.tag
 				}))
 				.filter((member) => {
 					if (!args.player_tag) return true;
 					const query = args.player_tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-					return new RegExp(`.*${query}.*`, 'i').test(member.name);
+					return new RegExp(`.*${query}.*`, 'i').test(`${member.query}`);
 				})
+				.map((member) => ({
+					name: member.name,
+					value: member.value
+				}))
 				.slice(0, 24);
 			return interaction.respond(choices);
 		}

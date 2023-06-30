@@ -100,7 +100,7 @@ export default class ClanActivityCommand extends Command {
 
 		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
 		if (!location) {
-			if (!user?.timezone) return { offset: 0, name: 'UTC' };
+			if (!user?.timezone?.id) return { offset: 0, name: 'UTC' };
 			return { offset: moment.tz.zone(user.timezone.id)!.utcOffset(Date.now()) * 60 * -1, name: user.timezone.name };
 		}
 
