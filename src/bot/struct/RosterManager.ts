@@ -807,9 +807,9 @@ export class RosterManager {
 		const heading = layouts
 			.map((layout) => {
 				const padding = layout.align === 'left' ? 'padEnd' : 'padStart';
-				return layout.isEmoji ? layout.label : `\`${layout.label[padding](layout.width, ' ')} \``;
+				return layout.isEmoji ? layout.label : `\`${layout.label[padding](layout.width, ' ')}\``;
 			})
-			.join(' ');
+			.join('\u2002');
 
 		embed.setDescription(
 			[
@@ -817,7 +817,7 @@ export class RosterManager {
 				...groups.flatMap(({ categoryLabel, members }) => [
 					`${categoryLabel}`,
 					...members.map((member) => {
-						return layouts.map((layout) => (layout.isEmoji ? member[layout.key] : `\`${member[layout.key]} \``)).join(' ');
+						return layouts.map((layout) => (layout.isEmoji ? member[layout.key] : `\`${member[layout.key]}\``)).join('\u2002');
 					})
 				])
 			].join('\n')
