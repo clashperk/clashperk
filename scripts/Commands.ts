@@ -1840,36 +1840,26 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: 'Select a roster to post.',
 						type: ApplicationCommandOptionType.String
 					}
-					// {
-					// 	name: 'list_option',
-					// 	description: 'Select an option to ping or list down members.',
-					// 	type: ApplicationCommandOptionType.String,
-					// 	choices: [
-					// 		{
-					// 			name: 'Pending Members',
-					// 			value: 'pending'
-					// 		},
-					// 		{
-					// 			name: 'Unwanted Members',
-					// 			value: 'unwanted'
-					// 		},
-					// 		{
-					// 			name: 'All Members',
-					// 			value: 'all'
-					// 		}
-					// 	]
-					// },
-					// {
-					// 	name: 'group',
-					// 	autocomplete: true,
-					// 	description: 'Select a group to ping or list down members.',
-					// 	type: ApplicationCommandOptionType.String
-					// },
-					// {
-					// 	name: 'message',
-					// 	description: 'Message to ping.',
-					// 	type: ApplicationCommandOptionType.String
-					// }
+				]
+			},
+			{
+				name: 'clone',
+				description: 'Clone a roster.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						autocomplete: true,
+						required: true,
+						description: 'Select a roster to post.',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'name',
+						description: 'Name of the roster.',
+						max_length: 30,
+						type: ApplicationCommandOptionType.String
+					}
 				]
 			},
 			{
