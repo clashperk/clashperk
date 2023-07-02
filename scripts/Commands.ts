@@ -1712,6 +1712,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
+						name: 'allow_unlinked',
+						description: 'Whether to allow unlinked members to join.',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
 						name: 'max_members',
 						min_value: 5,
 						max_value: 65,
@@ -1914,6 +1919,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'clan',
 						description: 'Clan of the roster.',
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'allow_unlinked',
+						description: 'Whether to allow unlinked members to join.',
+						type: ApplicationCommandOptionType.Boolean
 					},
 					{
 						name: 'max_members',

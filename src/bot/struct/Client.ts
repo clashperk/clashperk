@@ -164,6 +164,7 @@ export class Client extends Discord.Client {
 		this.warScheduler.init();
 		this.guildEvents.init();
 		this.rpcHandler.roleManager.init();
+		this.rosterManager.init();
 	}
 
 	public async init(token: string) {
@@ -206,6 +207,7 @@ export class Client extends Discord.Client {
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();
+			this.rosterManager.init();
 		});
 
 		this.logger.debug('Connecting to the Gateway', { label: 'DISCORD' });

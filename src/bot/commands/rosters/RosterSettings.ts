@@ -89,12 +89,12 @@ export default class RosterEditCommand extends Command {
 						'guildId': action.guild.id,
 						'members.tag': { $in: roster.members.map((mem) => mem.tag) }
 					},
-					{ projection: { _id: 1 } }
+					{ projection: { members: 0 } }
 				);
 
 				if (dup)
-					return action.update(
-						`This roster has multiple members signed up for another roster **${roster.clan.name} - ${roster.name}**. Please remove them before opening this roster.`
+					return action.reply(
+						`This roster has multiple members signed up for another roster **${dup.clan.name} - ${dup.name}**. Please remove them before opening this roster.`
 					);
 			}
 

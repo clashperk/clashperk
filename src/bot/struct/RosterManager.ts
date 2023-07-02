@@ -51,6 +51,7 @@ export interface IRoster {
 	endTime?: Date | null;
 	sortBy?: RosterSortTypes;
 	useClanAlias?: boolean;
+	allowUnlinked?: boolean;
 	allowMultiSignup?: boolean;
 	allowCategorySelection?: boolean;
 	lastUpdated: Date;
@@ -67,6 +68,7 @@ export interface IRosterDefaultSettings {
 	useClanAlias: boolean;
 	sortBy: RosterSortTypes;
 	allowCategorySelection: boolean;
+	allowUnlinked: boolean;
 }
 
 export interface IRosterCategory {
@@ -100,6 +102,7 @@ export class RosterManager {
 	public rosters: Collection<IRoster>;
 	public categories: Collection<IRosterCategory>;
 	private readonly queued: Set<string> = new Set();
+	private timeoutId?: NodeJS.Timeout;
 
 	public constructor(private readonly client: Client) {
 		this.rosters = this.client.db.collection<IRoster>(Collections.ROSTERS);
@@ -163,6 +166,116 @@ export class RosterManager {
 		return this.rosters.findOne({ _id: rosterId });
 	}
 
+	public async attemptSignup(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>,
+		roster: WithId<IRoster>,
+		player: Player,
+		user: User | null,
+		isDryRun = false
+	) {
+		const isOwner = interaction.user.id === user?.id;
+
+		if (roster.startTime && roster.startTime > new Date()) {
+			return {
+				success: false,
+				message: `This roster will open on ${time(roster.startTime)} (${time(roster.startTime, 'R')})`
+			};
+		}
+
+		if (this.isClosed(roster)) {
+			return {
+				success: false,
+				message: 'This roster is closed.'
+			};
+		}
+
+		if (!user && !roster.allowUnlinked) {
+			const linkCommand = this.client.commandsMap.get().LINK_CREATE;
+			return {
+				success: false,
+				message: isOwner
+					? `You are not linked to any players. Please link your account with ${linkCommand} or use the \`allow_unlinked\` option to allow unlinked players to sign up.`
+					: `This player is not linked to any users. Please link their account with ${linkCommand} or use the \`allow_unlinked\` option to allow unlinked players to sign up.`
+			};
+		}
+
+		const maxMembers = roster.maxMembers ?? 50;
+		if (roster.members.length >= maxMembers) {
+			return {
+				success: false,
+				message: `This roster is full (maximum ${maxMembers} members).`
+			};
+		}
+
+		if (roster.minTownHall && player.townHallLevel < roster.minTownHall) {
+			return {
+				success: false,
+				message: `This roster requires a minimum Town Hall level of ${roster.minTownHall}.`
+			};
+		}
+
+		if (roster.maxTownHall && player.townHallLevel > roster.maxTownHall) {
+			return {
+				success: false,
+				message: `This roster requires a maximum Town Hall level of ${roster.maxTownHall}.`
+			};
+		}
+
+		const heroes = player.heroes.filter((hero) => hero.village === 'home');
+		const sumOfHeroLevels = heroes.reduce((prev, curr) => prev + curr.level, 0);
+		if (roster.minHeroLevels && sumOfHeroLevels < roster.minHeroLevels) {
+			return {
+				success: false,
+				message: `This roster requires a minimum combined hero level of ${roster.minHeroLevels}.`
+			};
+		}
+
+		if (roster.members.some((m) => m.tag === player.tag)) {
+			return {
+				success: false,
+				message: isOwner ? 'You are already signed up for this roster.' : 'This player is already signed up for this roster.'
+			};
+		}
+
+		if (!roster.allowMultiSignup && !isDryRun) {
+			const dup = await this.rosters.findOne(
+				{ '_id': { $ne: roster._id }, 'closed': false, 'guildId': interaction.guild.id, 'members.tag': player.tag },
+				{ projection: { members: 0 } }
+			);
+			if (dup) {
+				return {
+					success: false,
+					message: isOwner
+						? `You are already signed up for another roster (${dup.clan.name} - ${dup.name})`
+						: `This player is already signed up for another roster (${dup.clan.name} - ${dup.name})`
+				};
+			}
+		}
+
+		if (roster.allowMultiSignup && !isDryRun) {
+			const dup = await this.rosters.findOne(
+				{
+					'_id': { $ne: roster._id },
+					'closed': false,
+					'guildId': interaction.guild.id,
+					'members.tag': player.tag,
+					'allowMultiSignup': false
+				},
+				{ projection: { members: 0 } }
+			);
+			if (dup && !dup.allowMultiSignup) {
+				return {
+					success: false,
+					message: isOwner
+						? `You are already signed up for another roster (${dup.clan.name} - ${dup.name}) that does not allow multi-signup.`
+						: `This player is already signed up for another roster (${dup.clan.name} - ${dup.name}) that does not allow multi-signup.`
+				};
+			}
+		}
+
+		return { success: true, message: 'Success!' };
+	}
+
 	public async signup(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>,
 		rosterId: ObjectId,
@@ -172,112 +285,21 @@ export class RosterManager {
 		isDryRun = false
 	) {
 		const roster = await this.rosters.findOne({ _id: rosterId });
-		const isOwner = interaction.user.id === user?.id;
-
 		if (!roster) {
 			await interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
 			return false;
 		}
 
-		if (roster.startTime && roster.startTime > new Date()) {
-			await interaction.followUp({
-				content: `This roster will open on ${time(roster.startTime)} (${time(roster.startTime, 'R')})`,
-				ephemeral: true
-			});
+		const attempt = await this.attemptSignup(interaction, roster, player, user, isDryRun);
+		if (!attempt.success) {
+			await interaction.followUp({ content: attempt.message, ephemeral: true });
 			return false;
-		}
-
-		if (roster.closed) {
-			await interaction.followUp({ content: 'This roster is closed.', ephemeral: true });
-			return false;
-		}
-
-		if (roster.endTime && roster.endTime < new Date()) {
-			await interaction.followUp({ content: 'This roster is closed.', ephemeral: true });
-			return false;
-		}
-
-		const maxMembers = roster.maxMembers ?? 50;
-		if (roster.members.length >= maxMembers) {
-			await interaction.followUp({ content: 'This roster is full.', ephemeral: true });
-			return false;
-		}
-
-		if (roster.minTownHall && player.townHallLevel < roster.minTownHall) {
-			await interaction.followUp({
-				content: `This roster requires a minimum Town Hall level of ${roster.minTownHall}.`,
-				ephemeral: true
-			});
-			return false;
-		}
-
-		if (roster.maxTownHall && player.townHallLevel > roster.maxTownHall) {
-			await interaction.followUp({
-				content: `This roster requires a maximum Town Hall level of ${roster.maxTownHall}.`,
-				ephemeral: true
-			});
-			return false;
-		}
-
-		const heroes = player.heroes.filter((hero) => hero.village === 'home');
-		const sumOfHeroLevels = heroes.reduce((prev, curr) => prev + curr.level, 0);
-		if (roster.minHeroLevels && sumOfHeroLevels < roster.minHeroLevels) {
-			await interaction.followUp({
-				content: `This roster requires a minimum combined hero level of ${roster.minHeroLevels}.`,
-				ephemeral: true
-			});
-			return false;
-		}
-
-		if (roster.members.some((m) => m.tag === player.tag)) {
-			await interaction.followUp({
-				content: isOwner ? 'You are already signed up for this roster.' : 'This player is already signed up for this roster.',
-				ephemeral: true
-			});
-			return false;
-		}
-
-		if (!roster.allowMultiSignup && !isDryRun) {
-			const dup = await this.rosters.findOne(
-				{ '_id': { $ne: rosterId }, 'closed': false, 'guildId': interaction.guild.id, 'members.tag': player.tag },
-				{ projection: { _id: 1 } }
-			);
-			if (dup) {
-				await interaction.followUp({
-					content: isOwner
-						? 'You are already signed up for another roster.'
-						: 'This player is already signed up for another roster.',
-					ephemeral: true
-				});
-				return false;
-			}
-		}
-
-		if (roster.allowMultiSignup && !isDryRun) {
-			const dup = await this.rosters.findOne(
-				{
-					'_id': { $ne: rosterId },
-					'closed': false,
-					'guildId': interaction.guild.id,
-					'members.tag': player.tag,
-					'allowMultiSignup': false
-				},
-				{ projection: { _id: 1 } }
-			);
-			if (dup && !dup.allowMultiSignup) {
-				await interaction.followUp({
-					content: isOwner
-						? 'You are already signed up for another roster that does not allow multi-signup.'
-						: 'This player is already signed up for another roster that does not allow multi-signup.',
-					ephemeral: true
-				});
-				return false;
-			}
 		}
 
 		if (isDryRun) return roster; // DRY RUN BABY
 
 		const category = categoryId ? await this.getCategory(new ObjectId(categoryId)) : null;
+		const heroes = player.heroes.filter((hero) => hero.village === 'home');
 		const member: IRosterMember = {
 			name: player.name,
 			tag: player.tag,
@@ -924,6 +946,7 @@ export class RosterManager {
 			minTownHall: data.minTownHall,
 			maxTownHall: data.maxTownHall,
 			sortBy: data.sortBy,
+			allowUnlinked: data.allowUnlinked,
 			layout: data.layout,
 			useClanAlias: data.useClanAlias
 		};
@@ -1044,5 +1067,28 @@ export class RosterManager {
 			: await createGoogleSheet(`${name} [Roster Export]`, sheets);
 		if (!roster.sheetId) this.client.rosterManager.attachSheetId(roster._id, sheet.spreadsheetId);
 		return sheet;
+	}
+
+	public async init() {
+		if (this.timeoutId) clearTimeout(this.timeoutId);
+		try {
+			await this.rosters.updateMany(
+				{
+					$and: [
+						{
+							endTime: { $ne: null }
+						},
+						{
+							endTime: { $lt: new Date() }
+						}
+					]
+				},
+				{
+					$set: { closed: true }
+				}
+			);
+		} finally {
+			this.timeoutId = setTimeout(this.init.bind(this), 10 * 60 * 1000);
+		}
 	}
 }

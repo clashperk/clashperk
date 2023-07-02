@@ -38,6 +38,7 @@ export default class RosterCreateCommand extends Command {
 			layout?: string;
 			timezone?: string;
 			use_clan_alias?: boolean;
+			allow_unlinked?: boolean;
 		}
 	) {
 		// Create default categories
@@ -58,6 +59,7 @@ export default class RosterCreateCommand extends Command {
 			closed: false,
 			allowMultiSignup: Boolean(args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true),
 			allowCategorySelection: Boolean(args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true),
+			allowUnlinked: Boolean(args.allow_unlinked ?? defaultSettings.allowUnlinked ?? true),
 			maxMembers: args.max_members ?? defaultSettings.maxMembers,
 			sortBy: args.sort_by ?? defaultSettings.sortBy,
 			layout: args.layout ?? defaultSettings.layout,

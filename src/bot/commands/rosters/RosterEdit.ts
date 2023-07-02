@@ -40,6 +40,7 @@ export default class RosterEditCommand extends Command {
 			clear_members?: boolean;
 			use_clan_alias?: boolean;
 			delete_roster?: boolean;
+			allow_unlinked?: boolean;
 		}
 	) {
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
@@ -77,6 +78,7 @@ export default class RosterEditCommand extends Command {
 		if (args.sort_by) data.sortBy = args.sort_by;
 		if (args.layout) data.layout = args.layout;
 		if (typeof args.use_clan_alias === 'boolean') data.useClanAlias = args.use_clan_alias;
+		if (typeof args.allow_unlinked === 'boolean') data.allowUnlinked = args.allow_unlinked;
 
 		if (
 			typeof args.allow_multi_signup === 'boolean' &&

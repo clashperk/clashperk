@@ -64,18 +64,23 @@ export default class RosterSignupCommand extends Command {
 			return interaction.followUp({ content: 'You are not signed up for this roster.', ephemeral: true });
 		}
 
-		const selected = {
-			category: null as null | string,
+		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
+		const selectableCategories = categories.filter((category) => category.selectable);
+
+		const selected: { tag: string; category: null | string } = {
+			category: null,
 			tag: ''
 		};
 
-		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
+		const category = selectableCategories.find((category) => category.name === 'confirmed');
+		if (category && roster.allowCategorySelection) selected.category = category._id.toHexString();
+
 		const categoryMenu = new StringSelectMenuBuilder()
 			.setMinValues(1)
 			.setPlaceholder('Choose a category (confirmed, substitute, etc)')
 			.setCustomId(customIds.category)
 			.setOptions(
-				categories.map((category) => ({
+				selectableCategories.map((category) => ({
 					label: category.displayName,
 					value: category._id.toHexString(),
 					default: selected.category === category._id.toHexString()
@@ -93,7 +98,8 @@ export default class RosterSignupCommand extends Command {
 		const msg = await interaction.followUp({
 			content: args.signup ? 'Select the accounts you want to sign up with.' : 'Select the accounts you want to remove.',
 			ephemeral: true,
-			components: args.signup && roster.allowCategorySelection && categories.length ? [categoryRow, accountsRow] : [accountsRow]
+			components:
+				args.signup && roster.allowCategorySelection && selectableCategories.length ? [categoryRow, accountsRow] : [accountsRow]
 		});
 
 		const signupUser = async (action: StringSelectMenuInteraction<'cached'>) => {
@@ -104,7 +110,7 @@ export default class RosterSignupCommand extends Command {
 			const updated = await this.client.rosterManager.signup(action, rosterId, player, interaction.user, selected.category);
 			if (!updated) return null;
 
-			await action.editReply({ content: 'You have been signed up.', embeds: [], components: [] });
+			await action.editReply({ content: 'You have been added to the roster.', embeds: [], components: [] });
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 			return interaction.editReply({ embeds: [embed] });
@@ -117,7 +123,7 @@ export default class RosterSignupCommand extends Command {
 			const updated = await this.client.rosterManager.optOut(rosterId, tag);
 			if (!updated) return null;
 
-			await action.editReply({ content: 'You have been removed.', embeds: [], components: [] });
+			await action.editReply({ content: 'You have been removed from the roster.', embeds: [], components: [] });
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 			return interaction.editReply({ embeds: [embed] });
@@ -126,13 +132,11 @@ export default class RosterSignupCommand extends Command {
 		const selectCategory = async (action: StringSelectMenuInteraction<'cached'>) => {
 			selected.category = action.values[0];
 			categoryMenu.setOptions(
-				categories
-					.filter((category) => category.selectable)
-					.map((category) => ({
-						label: category.displayName,
-						value: category._id.toHexString(),
-						default: selected.category === category._id.toHexString()
-					}))
+				selectableCategories.map((category) => ({
+					label: category.displayName,
+					value: category._id.toHexString(),
+					default: selected.category === category._id.toHexString()
+				}))
 			);
 			await action.update({ content: msg.content, components: [categoryRow, accountsRow] });
 		};

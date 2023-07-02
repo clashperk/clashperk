@@ -54,6 +54,9 @@ export default class RosterPostCommand extends Command {
 		const updated = await this.client.rosterManager.updateMembers(roster, roster.members);
 		if (!updated) return interaction.editReply({ content: 'This roster no longer exists.' });
 
+		// close all rosters that should be closed
+		this.client.rosterManager.closeRosters(interaction.guild.id);
+
 		if (args.group) {
 			const groupMembers = updated.members.filter((member) => member.categoryId && member.categoryId.toHexString() === args.group);
 			if (!groupMembers.length) return interaction.editReply({ content: 'No members found in this group.' });
