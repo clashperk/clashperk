@@ -1788,11 +1788,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'TH/DISCORD/NAME/CLAN',
 								value: 'TH/DISCORD/NAME/CLAN'
-							},
-							{
-								name: 'Custom',
-								value: 'CUSTOM'
 							}
+							// {
+							// 	name: 'Custom',
+							// 	value: 'CUSTOM'
+							// }
 						]
 					},
 					{
