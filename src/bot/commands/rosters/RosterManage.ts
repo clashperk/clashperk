@@ -222,7 +222,9 @@ export default class RosterManageCommand extends Command {
 			if (!player) return;
 
 			const user = await this.client.resolver.getUser(args.player_tag);
-			await this.client.rosterManager.swapRoster(interaction, roster._id, player, user, newRosterId, newGroupId);
+
+			const swapped = await this.client.rosterManager.swapRoster(interaction, roster._id, player, user, newRosterId, newGroupId);
+			if (!swapped) return null;
 
 			return interaction.editReply({ content: 'User moved to the new roster.', components: [] });
 		}
@@ -234,7 +236,8 @@ export default class RosterManageCommand extends Command {
 			if (!player) return;
 
 			const user = await this.client.resolver.getUser(args.player_tag);
-			await this.client.rosterManager.swapCategory(roster._id, player, user, new ObjectId(args.target_group));
+			const swapped = await this.client.rosterManager.swapCategory(roster._id, player, user, new ObjectId(args.target_group));
+			if (!swapped) return null;
 
 			return interaction.editReply({ content: 'User moved to the new group.', components: [] });
 		}
@@ -277,7 +280,8 @@ export default class RosterManageCommand extends Command {
 			if (!player) return;
 
 			const user = await this.client.resolver.getUser(playerTag);
-			await this.client.rosterManager.swapCategory(roster._id, player, user, new ObjectId(selected.categoryId));
+			const swapped = await this.client.rosterManager.swapCategory(roster._id, player, user, new ObjectId(selected.categoryId));
+			if (!swapped) return null;
 
 			return action.editReply({ content: 'User moved successfully.', components: [] });
 		};
@@ -332,7 +336,15 @@ export default class RosterManageCommand extends Command {
 			if (!player) return;
 
 			const user = await this.client.resolver.getUser(playerTag);
-			await this.client.rosterManager.swapRoster(action, roster._id, player, user, new ObjectId(selected.rosterId), null);
+			const swapped = await this.client.rosterManager.swapRoster(
+				action,
+				roster._id,
+				player,
+				user,
+				new ObjectId(selected.rosterId),
+				null
+			);
+			if (!swapped) return null;
 
 			return action.editReply({ content: 'User moved successfully.', components: [] });
 		};

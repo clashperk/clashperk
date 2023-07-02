@@ -239,7 +239,7 @@ export default class ClanActivityCommand extends Command {
 					}
 				},
 				{
-					$limit: 7
+					$limit: 10
 				}
 			])
 			.toArray();

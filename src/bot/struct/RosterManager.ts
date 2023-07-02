@@ -30,6 +30,88 @@ export type RosterSortTypes =
 	| 'CLAN_NAME'
 	| 'SIGNUP_TIME';
 
+const roleNames: Record<string, string> = {
+	member: 'Mem',
+	admin: 'Eld',
+	coLeader: 'Co',
+	leader: 'Lead'
+};
+
+export const rosterLayoutMap = {
+	'#': {
+		width: 2,
+		label: '#',
+		isEmoji: false,
+		key: 'index',
+		align: 'right',
+		name: 'Index',
+		description: 'The index of the player in the roster.'
+	},
+	'TH': {
+		width: 2,
+		label: 'TH',
+		isEmoji: false,
+		key: 'townHallLevel',
+		align: 'right',
+		name: 'Town Hall Level',
+		description: 'The Town Hall level of the player.'
+	},
+	'TH_ICON': {
+		width: 1,
+		label: EMOJIS.TOWNHALL,
+		isEmoji: true,
+		key: 'townHallIcon',
+		align: 'left',
+		name: 'Town Hall Icon',
+		description: 'The Town Hall icon of the player.'
+	},
+	'DISCORD': {
+		width: 12,
+		label: 'DISCORD',
+		isEmoji: false,
+		key: 'username',
+		align: 'left',
+		name: 'Discord Username',
+		description: 'The Discord username of the player.'
+	},
+	'NAME': {
+		width: 12,
+		label: 'PLAYER',
+		isEmoji: false,
+		key: 'name',
+		align: 'left',
+		name: 'Player Name',
+		description: 'The name of the player.'
+	},
+	'CLAN': {
+		width: 6,
+		label: 'CLAN',
+		isEmoji: false,
+		key: 'clanName',
+		align: 'left',
+		name: 'Clan Name / Alias',
+		description: 'The clan name of the player.'
+	},
+	'HERO_LEVEL': {
+		width: 4,
+		label: 'HERO',
+		isEmoji: false,
+		key: 'heroes',
+		align: 'right',
+		name: 'Combined Hero Level',
+		description: 'The combined hero level of the player.'
+	},
+	'ROLE': {
+		width: 4,
+		label: 'ROLE',
+		isEmoji: false,
+		key: 'role',
+		align: 'left',
+		name: 'Role',
+		description: 'The role of the player in the clan.'
+	}
+} as const;
+
 export interface IRoster {
 	name: string;
 	guildId: string;
@@ -166,15 +248,19 @@ export class RosterManager {
 		return this.rosters.findOne({ _id: rosterId });
 	}
 
-	public async attemptSignup(
-		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>,
-		roster: WithId<IRoster>,
-		player: Player,
-		user: User | null,
+	public async attemptSignup({
+		roster,
+		player,
+		user,
+		isOwner,
 		isDryRun = false
-	) {
-		const isOwner = interaction.user.id === user?.id;
-
+	}: {
+		roster: WithId<IRoster>;
+		player: Player;
+		user: { id: string; displayName: string } | null;
+		isOwner: boolean;
+		isDryRun: boolean;
+	}) {
 		if (roster.startTime && roster.startTime > new Date()) {
 			return {
 				success: false,
@@ -194,8 +280,8 @@ export class RosterManager {
 			return {
 				success: false,
 				message: isOwner
-					? `You are not linked to any players. Please link your account with ${linkCommand} or use the \`allow_unlinked\` option to allow unlinked players to sign up.`
-					: `This player is not linked to any users. Please link their account with ${linkCommand} or use the \`allow_unlinked\` option to allow unlinked players to sign up.`
+					? `You are not linked to any players. Please link your account with ${linkCommand} or use the \`allow_unlinked\` option to allow unlinked players to signup.`
+					: `This player is not linked to any users. Please link their account with ${linkCommand} or use the \`allow_unlinked\` option to allow unlinked players to signup.`
 			};
 		}
 
@@ -239,7 +325,7 @@ export class RosterManager {
 
 		if (!roster.allowMultiSignup && !isDryRun) {
 			const dup = await this.rosters.findOne(
-				{ '_id': { $ne: roster._id }, 'closed': false, 'guildId': interaction.guild.id, 'members.tag': player.tag },
+				{ '_id': { $ne: roster._id }, 'closed': false, 'guildId': roster.guildId, 'members.tag': player.tag },
 				{ projection: { members: 0 } }
 			);
 			if (dup) {
@@ -257,7 +343,7 @@ export class RosterManager {
 				{
 					'_id': { $ne: roster._id },
 					'closed': false,
-					'guildId': interaction.guild.id,
+					'guildId': roster.guildId,
 					'members.tag': player.tag,
 					'allowMultiSignup': false
 				},
@@ -280,7 +366,7 @@ export class RosterManager {
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>,
 		rosterId: ObjectId,
 		player: Player,
-		user: User | null,
+		user: { id: string; displayName: string } | null,
 		categoryId?: string | null,
 		isDryRun = false
 	) {
@@ -290,7 +376,15 @@ export class RosterManager {
 			return false;
 		}
 
-		const attempt = await this.attemptSignup(interaction, roster, player, user, isDryRun);
+		const isOwner = interaction.user.id === user?.id;
+		const attempt = await this.attemptSignup({
+			roster,
+			player,
+			user,
+			isOwner,
+			isDryRun
+		});
+
 		if (!attempt.success) {
 			await interaction.followUp({ content: attempt.message, ephemeral: true });
 			return false;
@@ -298,6 +392,26 @@ export class RosterManager {
 
 		if (isDryRun) return roster; // DRY RUN BABY
 
+		const value = await this.signupUser({ roster, player, user, categoryId });
+		if (!value) {
+			await interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
+			return false;
+		}
+
+		return value;
+	}
+
+	public async signupUser({
+		roster,
+		player,
+		user,
+		categoryId
+	}: {
+		roster: WithId<IRoster>;
+		player: Player;
+		user: { id: string; displayName: string } | null;
+		categoryId?: string | null;
+	}) {
 		const category = categoryId ? await this.getCategory(new ObjectId(categoryId)) : null;
 		const heroes = player.heroes.filter((hero) => hero.village === 'home');
 		const member: IRosterMember = {
@@ -315,15 +429,12 @@ export class RosterManager {
 		};
 
 		const { value } = await this.rosters.findOneAndUpdate(
-			{ _id: rosterId },
+			{ _id: roster._id },
 			{ $push: { members: { ...member } } },
 			{ returnDocument: 'after' }
 		);
 
-		if (!value) {
-			await interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
-			return false;
-		}
+		if (!value) return null;
 		if (!user) return value;
 
 		const roleIds: string[] = [];
@@ -558,53 +669,61 @@ export class RosterManager {
 				url: this.client.http.getClanURL(roster.clan.tag)
 			});
 
-		if (roster.layout === '#/TH_ICON/DISCORD/NAME/CLAN') {
-			embed.setDescription(
-				[
-					`\` #\` ${EMOJIS.GAP} \`${'DISCORD'.padEnd(12, ' ')}\` \`${'NAME'.padEnd(12, ' ')}\` \`${'CLAN'.padEnd(6, ' ')}\``,
-					...membersGroup.flatMap(([categoryId, members]) => [
-						`${categoryId === 'none' ? '' : `\n**${categoriesMap[categoryId].displayName}**`}`,
-						...members.map((mem, i) => {
-							// const n = `${1 + count++}`.padStart(2, ' ');
-							const n = `${1 + i}`.padStart(2, ' ');
-							const ign = this.snipe(mem.name, 12);
-							const discord = this.snipe(mem.username ?? ' ', 12);
-							const clan = roster.useClanAlias
-								? this.snipe(mem.clan?.alias ?? mem.clan?.name ?? ' ', 6)
-								: this.snipe(mem.clan?.name ?? ' ', 6);
-							return `\`${n}\` ${TOWN_HALLS[mem.townHallLevel]} \`${discord}\` \`${ign}\` \`${clan}\``;
-						})
-					])
-				].join('\n')
-			);
-		} else {
-			embed.setDescription(
-				[
-					`\`TH \` \`${'DISCORD'.padEnd(12, ' ')} ${'NAME'.padEnd(12, ' ')} ${'CLAN'.padEnd(6, ' ')}\``,
-					...membersGroup.flatMap(([categoryId, members]) => [
-						`${categoryId === 'none' ? '' : `\n**${categoriesMap[categoryId].displayName}**`}`,
-						...members.map((mem) => {
-							const hall = `${mem.townHallLevel}`.padStart(2, ' ');
-							const ign = this.snipe(mem.name, 12);
-							const discord = this.snipe(mem.username ?? ' ', 12);
-							const clan = roster.useClanAlias
-								? this.snipe(mem.clan?.alias ?? mem.clan?.name ?? ' ', 6)
-								: this.snipe(mem.clan?.name ?? ' ', 6);
-							return `\`${hall} \` \`${discord} ${ign} ${clan}\``;
-						})
-					])
-				].join('\n')
-			);
-		}
+		const groups = membersGroup.map(([categoryId, members]) => {
+			const categoryLabel = categoryId === 'none' ? '**Ungrouped**' : `**${categoriesMap[categoryId].displayName}**`;
+			return {
+				categoryLabel,
+				members: members.map((mem, i) => {
+					const index = `${1 + i}`.padStart(rosterLayoutMap['#'].width, ' ');
+					const name = this.snipe(mem.name, rosterLayoutMap.NAME.width);
+					const username = this.snipe(mem.username ?? ' ', rosterLayoutMap.DISCORD.width);
+					const clanName = roster.useClanAlias
+						? this.snipe(mem.clan?.alias ?? mem.clan?.name ?? ' ', rosterLayoutMap.CLAN.width)
+						: this.snipe(mem.clan?.name ?? ' ', rosterLayoutMap.CLAN.width);
 
-		if (!roster.members.length) {
-			embed.setDescription(
-				[
-					`\`TH ${'DISCORD'.padEnd(12, ' ')} ${'NAME'.padEnd(12, ' ')} ${'CLAN'.padEnd(6, ' ')}\``,
-					`\`-- ${'------'.padEnd(12, ' ')} ${'----'.padEnd(12, ' ')} ${'----'.padEnd(6, ' ')}\``
-				].join('\n')
-			);
-		}
+					const townHallLevel = `${mem.townHallLevel}`.padStart(rosterLayoutMap.TH.width, ' ');
+					const townHallIcon = TOWN_HALLS[mem.townHallLevel];
+					const heroes = `${this.sum(Object.values(mem.heroes))}`.padEnd(rosterLayoutMap.HERO_LEVEL.width, ' ');
+					const role = (mem.role ? roleNames[mem.role] : ' ').padEnd(rosterLayoutMap.ROLE.width, ' ');
+
+					return {
+						index,
+						name,
+						username,
+						clanName,
+						townHallLevel,
+						townHallIcon,
+						heroes,
+						role
+					};
+				})
+			};
+		});
+
+		const layoutId = roster.layout ?? '#/TH_ICON/DISCORD/NAME/CLAN';
+		const layouts = layoutId
+			.split('/')
+			.filter((k) => k in rosterLayoutMap)
+			.map((k) => rosterLayoutMap[k as keyof typeof rosterLayoutMap]);
+
+		const heading = layouts
+			.map((layout) => {
+				const padding = layout.align === 'left' ? 'padEnd' : 'padStart';
+				return layout.isEmoji ? layout.label : `\`${layout.label[padding](layout.width, ' ')} \``;
+			})
+			.join(' ');
+
+		embed.setDescription(
+			[
+				heading,
+				...groups.flatMap(({ categoryLabel, members }) => [
+					`${categoryLabel}`,
+					...members.map((member) => {
+						return layouts.map((layout) => (layout.isEmoji ? member[layout.key] : `\`${member[layout.key]} \``)).join(' ');
+					})
+				])
+			].join('\n')
+		);
 
 		if (roster.startTime && roster.startTime > new Date()) {
 			embed.addFields({
@@ -682,9 +801,19 @@ export class RosterManager {
 				value: roster.useClanAlias ? 'Yes' : 'No'
 			})
 			.addFields({
+				name: 'Allow Unlinked Players',
+				inline: true,
+				value: roster.allowUnlinked ? 'Yes' : 'No'
+			})
+			.addFields({
 				name: 'Allow Users to Select Group',
 				inline: true,
 				value: roster.allowCategorySelection ? 'Yes' : 'No'
+			})
+			.addFields({
+				name: 'Roster Layout',
+				inline: true,
+				value: roster.layout ?? '#/TH_ICON/DISCORD/NAME/CLAN'
 			});
 
 		return embed;
@@ -812,7 +941,7 @@ export class RosterManager {
 	}
 
 	private snipe(str: string | number, len = 12) {
-		return Util.escapeBackTick(`${str}`).substring(0, len).padEnd(len, ' ');
+		return `\u200e${Util.escapeBackTick(`${str}`).substring(0, len).padEnd(len, ' ')}`;
 	}
 
 	private sum(arr: number[]) {
@@ -953,6 +1082,28 @@ export class RosterManager {
 		return this.client.settings.set(guildId, Settings.ROSTER_DEFAULT_SETTINGS, settings);
 	}
 
+	public async importMembers(roster: WithId<IRoster>, memberList: { tag: string }[]) {
+		const members = await this.getClanMemberLinks(memberList, roster.allowUnlinked);
+		for (const member of members) {
+			const attempt = await this.client.rosterManager.attemptSignup({
+				roster,
+				player: member,
+				user: member.user,
+				isDryRun: false,
+				isOwner: false
+			});
+
+			if (attempt.success) {
+				await this.client.rosterManager.signupUser({
+					roster,
+					player: member,
+					user: member.user,
+					categoryId: null
+				});
+			}
+		}
+	}
+
 	public async getClanMembers(memberList: ClanMember[], allowUnlinked = false) {
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
@@ -979,6 +1130,29 @@ export class RosterManager {
 				heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
 				clan: player.clan ? { tag: player.clan.tag, name: player.clan.name } : null,
 				createdAt: new Date()
+			});
+		});
+
+		return members;
+	}
+
+	private async getClanMemberLinks(memberList: { tag: string }[], allowUnlinked = false) {
+		const links = await this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ tag: { $in: memberList.map((mem) => mem.tag) } })
+			.toArray();
+		const players = await Promise.all(memberList.map((mem) => this.client.http.player(mem.tag)));
+
+		const members: (Player & { user: { id: string; displayName: string } | null })[] = [];
+		players.forEach((player) => {
+			if (!player.ok) return;
+
+			const link = links.find((link) => link.tag === player.tag);
+			if (!link && !allowUnlinked) return;
+
+			members.push({
+				user: link ? { id: link.userId, displayName: link.displayName || link.username } : null,
+				...player
 			});
 		});
 

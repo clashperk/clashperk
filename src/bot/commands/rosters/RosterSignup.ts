@@ -96,7 +96,7 @@ export default class RosterSignupCommand extends Command {
 		);
 
 		const msg = await interaction.followUp({
-			content: args.signup ? 'Select the accounts you want to sign up with.' : 'Select the accounts you want to remove.',
+			content: args.signup ? 'Select the accounts you want to signup with.' : 'Select the accounts you want to remove.',
 			ephemeral: true,
 			components:
 				args.signup && roster.allowCategorySelection && selectableCategories.length ? [categoryRow, accountsRow] : [accountsRow]

@@ -181,7 +181,6 @@ export class Client extends Discord.Client {
 		this.settings = new SettingsProvider(this.db);
 		await this.settings.init();
 
-		// this.redis = new RedisService(this);
 		await this.redis.connection.connect();
 		await this.subscriber.connect();
 		await this.publisher.connect();
@@ -207,7 +206,6 @@ export class Client extends Discord.Client {
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();
-			this.rosterManager.init();
 		});
 
 		this.logger.debug('Connecting to the Gateway', { label: 'DISCORD' });

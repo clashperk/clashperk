@@ -1,8 +1,9 @@
-import { CommandInteraction, Role } from 'discord.js';
+import { ActionRowBuilder, CommandInteraction, Role, StringSelectMenuBuilder } from 'discord.js';
 import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { IRoster, RosterSortTypes } from '../../struct/RosterManager.js';
+import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class RosterEditCommand extends Command {
 	public constructor() {
@@ -76,9 +77,33 @@ export default class RosterEditCommand extends Command {
 		if (typeof args.allow_group_selection === 'boolean') data.allowCategorySelection = args.allow_group_selection;
 		if (args.clear_members) data.members = [];
 		if (args.sort_by) data.sortBy = args.sort_by;
-		if (args.layout) data.layout = args.layout;
+		if (args.layout && args.layout !== 'CUSTOM') data.layout = args.layout;
 		if (typeof args.use_clan_alias === 'boolean') data.useClanAlias = args.use_clan_alias;
 		if (typeof args.allow_unlinked === 'boolean') data.allowUnlinked = args.allow_unlinked;
+
+		const selected = {
+			layoutIds: [] as string[]
+		};
+
+		const customIds = {
+			select: this.client.uuid(interaction.user.id)
+		};
+
+		const keys = Object.entries(rosterLayoutMap);
+		const menu = new StringSelectMenuBuilder()
+			.setCustomId(customIds.select)
+			.setPlaceholder('Select a layout!')
+			.setMinValues(3)
+			.setMaxValues(5)
+			.setOptions(
+				keys.map(([key, { name, description }]) => ({
+					label: name,
+					description,
+					value: key,
+					default: selected.layoutIds.includes(key)
+				}))
+			);
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
 		if (
 			typeof args.allow_multi_signup === 'boolean' &&
@@ -130,6 +155,22 @@ export default class RosterEditCommand extends Command {
 		this.client.rosterManager.setDefaultSettings(interaction.guild.id, updated);
 
 		const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
-		return interaction.editReply({ embeds: [embed] });
+		const message = await interaction.editReply({ embeds: [embed], components: [menuRow] });
+
+		createInteractionCollector({
+			customIds,
+			message,
+			interaction,
+			onSelect: async (interaction) => {
+				selected.layoutIds = interaction.values;
+				data.layout = selected.layoutIds.join('/');
+
+				const updated = await this.client.rosterManager.edit(rosterId, data);
+				if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', ephemeral: true });
+
+				const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
+				return interaction.update({ embeds: [embed], components: [menuRow] });
+			}
+		});
 	}
 }

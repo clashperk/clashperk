@@ -22,7 +22,6 @@ export default class RosterCloneCommand extends Command {
 		args: {
 			roster: string;
 			name?: string;
-			with_members?: boolean;
 		}
 	) {
 		// Create default categories
@@ -33,36 +32,15 @@ export default class RosterCloneCommand extends Command {
 		const roster = await this.client.rosterManager.get(rosterId);
 		if (!roster) return interaction.followUp({ content: 'Roster was deleted.', ephemeral: true });
 
-		if (args.with_members && !roster.allowMultiSignup && roster.members.length > 0) {
-			return interaction.followUp({ content: 'Cannot clone roster with members when multi-signup is disabled.', ephemeral: true });
-		}
-
-		if (roster.members.length > 0 && args.with_members) {
-			const dup = await this.client.rosterManager.rosters.findOne(
-				{
-					'_id': { $ne: roster._id },
-					'closed': false,
-					'allowMultiSignup': false,
-					'guildId': interaction.guild.id,
-					'members.tag': { $in: roster.members.map((mem) => mem.tag) }
-				},
-				{ projection: { _id: 1 } }
-			);
-
-			if (dup)
-				return interaction.editReply(
-					`This roster has multiple members signed up for another roster ${dup.name} - ${dup.clan.name} (${dup.clan.tag}).`
-				);
-		}
-
 		const data: IRoster = {
 			name: args.name ?? `${roster.name} [CLONE]`,
 			clan: roster.clan,
 			guildId: interaction.guild.id,
 			closed: false,
-			members: args.with_members ? roster.members : [],
+			members: [],
 			allowMultiSignup: roster.allowMultiSignup,
 			allowCategorySelection: roster.allowCategorySelection,
+			allowUnlinked: roster.allowUnlinked,
 			maxMembers: roster.maxMembers,
 			sortBy: roster.sortBy,
 			layout: roster.layout,
@@ -77,7 +55,15 @@ export default class RosterCloneCommand extends Command {
 			createdAt: new Date()
 		};
 
+		if (roster.endTime && roster.endTime > new Date()) data.endTime = roster.endTime;
+		if (roster.startTime) data.startTime = roster.startTime;
+
 		const newRoster = await this.client.rosterManager.create(data);
+
+		if (roster.members.length) {
+			this.client.rosterManager.importMembers(newRoster, roster.members);
+		}
+
 		const embed = this.client.rosterManager.getRosterInfoEmbed(newRoster);
 		return interaction.editReply({ embeds: [embed] });
 	}

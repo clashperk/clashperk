@@ -1771,7 +1771,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'CLAN_NAME'
 							},
 							{
-								name: 'Last Sign Up',
+								name: 'Last Signup',
 								value: 'SIGNUP_TIME'
 							}
 						]
@@ -1788,6 +1788,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'TH/DISCORD/NAME/CLAN',
 								value: 'TH/DISCORD/NAME/CLAN'
+							},
+							{
+								name: 'Custom',
+								value: 'CUSTOM'
 							}
 						]
 					},
@@ -1962,6 +1966,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'TH/DISCORD/NAME/CLAN',
 								value: 'TH/DISCORD/NAME/CLAN'
+							},
+							{
+								name: 'Custom',
+								value: 'CUSTOM'
 							}
 						]
 					},
@@ -1995,7 +2003,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'CLAN_NAME'
 							},
 							{
-								name: 'Last Sign Up',
+								name: 'Last Signup',
 								value: 'SIGNUP_TIME'
 							}
 						]

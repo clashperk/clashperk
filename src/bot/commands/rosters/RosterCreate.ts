@@ -59,7 +59,7 @@ export default class RosterCreateCommand extends Command {
 			closed: false,
 			allowMultiSignup: Boolean(args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true),
 			allowCategorySelection: Boolean(args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true),
-			allowUnlinked: Boolean(args.allow_unlinked ?? defaultSettings.allowUnlinked ?? true),
+			allowUnlinked: Boolean(args.allow_unlinked ?? defaultSettings.allowUnlinked ?? false),
 			maxMembers: args.max_members ?? defaultSettings.maxMembers,
 			sortBy: args.sort_by ?? defaultSettings.sortBy,
 			layout: args.layout ?? defaultSettings.layout,
@@ -68,7 +68,7 @@ export default class RosterCreateCommand extends Command {
 			maxTownHall: args.max_town_hall ?? defaultSettings.maxTownHall,
 			useClanAlias: args.use_clan_alias ?? defaultSettings.useClanAlias,
 			roleId: args.roster_role?.id ?? null,
-			members: args.import_members ? await this.client.rosterManager.getClanMembers(clan.memberList) : [],
+			members: [],
 			startTime: null,
 			endTime: null,
 			lastUpdated: new Date(),
@@ -110,7 +110,21 @@ export default class RosterCreateCommand extends Command {
 		const roster = await this.client.rosterManager.create(data);
 		this.client.rosterManager.setDefaultSettings(interaction.guild.id, roster);
 
+		if (args.import_members) this.client.rosterManager.importMembers(roster, clan.memberList);
+
 		const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
+		embed.setDescription(
+			[
+				`- ${this.client.getCommand('/roster post')} to signup.`,
+				`- ${this.client.getCommand('/roster manage')} to manage the roster.`,
+				`- ${this.client.getCommand('/roster edit')} to change the roster settings.`,
+				`- ${this.client.getCommand('/roster delete')} to delete the roster.`,
+				`- ${this.client.getCommand('/roster list')} to list all rosters or search for a roster.`,
+				`- ${this.client.getCommand('/roster clone')} to clone a roster.`,
+				`- ${this.client.getCommand('/roster groups create')} to create a user group.`,
+				`- ${this.client.getCommand('/roster groups modify')} to edit/delete a user group.`
+			].join('\n')
+		);
 		return interaction.editReply({ embeds: [embed] });
 	}
 }
