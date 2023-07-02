@@ -177,7 +177,7 @@ export default class RosterManageCommand extends Command {
 		if (!roster) return interaction.editReply({ content: 'Roster was deleted.' });
 
 		if (args.action === 'del-user') {
-			const updated = await this.client.rosterManager.optOut(rosterId, args.player_tag);
+			const updated = await this.client.rosterManager.optOut(roster, args.player_tag);
 			if (!updated) return interaction.editReply({ content: 'Roster was deleted.' });
 
 			return interaction.editReply({ content: 'User removed successfully.' });
@@ -186,10 +186,15 @@ export default class RosterManageCommand extends Command {
 		if (args.action === 'add-user') {
 			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
 			if (!player) return;
-
 			const user = await this.client.resolver.getUser(args.player_tag);
 
-			const updated = await this.client.rosterManager.signup(interaction, rosterId, player, user, args.target_group);
+			const updated = await this.client.rosterManager.signup({
+				interaction,
+				player,
+				rosterId,
+				user,
+				categoryId: args.target_group
+			});
 			if (!updated) return null;
 
 			return interaction.editReply({ content: 'User added successfully.' });
@@ -223,7 +228,7 @@ export default class RosterManageCommand extends Command {
 
 			const user = await this.client.resolver.getUser(args.player_tag);
 
-			const swapped = await this.client.rosterManager.swapRoster(interaction, roster._id, player, user, newRosterId, newGroupId);
+			const swapped = await this.client.rosterManager.swapRoster(interaction, roster, player, user, newRosterId, newGroupId);
 			if (!swapped) return null;
 
 			return interaction.editReply({ content: 'User moved to the new roster.', components: [] });
@@ -336,14 +341,7 @@ export default class RosterManageCommand extends Command {
 			if (!player) return;
 
 			const user = await this.client.resolver.getUser(playerTag);
-			const swapped = await this.client.rosterManager.swapRoster(
-				action,
-				roster._id,
-				player,
-				user,
-				new ObjectId(selected.rosterId),
-				null
-			);
+			const swapped = await this.client.rosterManager.swapRoster(action, roster, player, user, new ObjectId(selected.rosterId), null);
 			if (!swapped) return null;
 
 			return action.editReply({ content: 'User moved successfully.', components: [] });

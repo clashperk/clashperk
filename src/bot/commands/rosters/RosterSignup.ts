@@ -67,9 +67,8 @@ export default class RosterSignupCommand extends Command {
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 		const selectableCategories = categories.filter((category) => category.selectable);
 
-		const selected: { tag: string; category: null | string } = {
-			category: null,
-			tag: ''
+		const selected: { category: null | string } = {
+			category: null
 		};
 
 		const category = selectableCategories.find((category) => category.name === 'confirmed');
@@ -87,13 +86,14 @@ export default class RosterSignupCommand extends Command {
 				}))
 			);
 		const categoryRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(categoryMenu);
-		const accountsRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-			new StringSelectMenuBuilder()
-				.setMinValues(1)
-				.setPlaceholder('Select an account!')
-				.setCustomId(customIds.select)
-				.setOptions(options)
-		);
+
+		const accountsMenu = new StringSelectMenuBuilder()
+			.setMinValues(1)
+			.setMaxValues(options.length)
+			.setPlaceholder('Select accounts!')
+			.setCustomId(customIds.select)
+			.setOptions(options);
+		const accountsRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(accountsMenu);
 
 		const msg = await interaction.followUp({
 			content: args.signup ? 'Select the accounts you want to signup with.' : 'Select the accounts you want to remove.',
@@ -103,25 +103,46 @@ export default class RosterSignupCommand extends Command {
 		});
 
 		const signupUser = async (action: StringSelectMenuInteraction<'cached'>) => {
-			selected.tag = action.values[0];
-			const player = players.find((mem) => mem.tag === selected.tag)!;
-
 			await action.deferUpdate();
-			const updated = await this.client.rosterManager.signup(action, rosterId, player, interaction.user, selected.category);
-			if (!updated) return null;
 
-			await action.editReply({ content: 'You have been added to the roster.', embeds: [], components: [] });
+			const result = [];
+			for (const tag of action.values) {
+				const player = players.find((mem) => mem.tag === tag)!;
+				const updated = await this.client.rosterManager.selfSignup({
+					player,
+					rosterId,
+					user: interaction.user,
+					categoryId: selected.category
+				});
+				result.push({
+					success: updated.success,
+					message: `**\u200e${player.name} (${player.tag})** ${updated.success ? '- ' : '\n'}${updated.message}`
+				});
+			}
+			const errored = result.some((res) => !res.success);
 
-			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
+			const roster = await this.client.rosterManager.get(rosterId);
+			if (!roster) return action.editReply({ content: 'Roster was deleted.', embeds: [], components: [] });
+
+			if (errored) {
+				await action.editReply({
+					content: ['**Failed to signup a few accounts!**', ...result.map((res) => res.message)].join('\n\n'),
+					embeds: [],
+					components: []
+				});
+			} else {
+				await action.editReply({ content: 'You have been added to the roster.', embeds: [], components: [] });
+			}
+
+			const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
 			return interaction.editReply({ embeds: [embed] });
 		};
 
 		const optOutUser = async (action: StringSelectMenuInteraction<'cached'>) => {
-			const tag = action.values[0];
 			await action.deferUpdate();
 
-			const updated = await this.client.rosterManager.optOut(rosterId, tag);
-			if (!updated) return null;
+			const updated = await this.client.rosterManager.optOut(roster, ...action.values);
+			if (!updated) return action.editReply({ content: 'You are not signed up for this roster.', embeds: [], components: [] });
 
 			await action.editReply({ content: 'You have been removed from the roster.', embeds: [], components: [] });
 

@@ -362,14 +362,21 @@ export class RosterManager {
 		return { success: true, message: 'Success!' };
 	}
 
-	public async signup(
-		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>,
-		rosterId: ObjectId,
-		player: Player,
-		user: { id: string; displayName: string } | null,
-		categoryId?: string | null,
+	public async signup({
+		interaction,
+		rosterId,
+		player,
+		user,
+		categoryId,
 		isDryRun = false
-	) {
+	}: {
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>;
+		rosterId: ObjectId;
+		player: Player;
+		user: { id: string; displayName: string } | null;
+		categoryId?: string | null;
+		isDryRun?: boolean;
+	}) {
 		const roster = await this.rosters.findOne({ _id: rosterId });
 		if (!roster) {
 			await interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
@@ -399,6 +406,44 @@ export class RosterManager {
 		}
 
 		return value;
+	}
+
+	public async selfSignup({
+		rosterId,
+		player,
+		user,
+		categoryId,
+		isDryRun = false,
+		isOwner = true
+	}: {
+		rosterId: ObjectId;
+		player: Player;
+		user: { id: string; displayName: string } | null;
+		categoryId?: string | null;
+		isDryRun?: boolean;
+		isOwner?: boolean;
+	}): Promise<{
+		success: boolean;
+		message: string;
+		roster?: WithId<IRoster>;
+	}> {
+		const roster = await this.rosters.findOne({ _id: rosterId });
+		if (!roster) return { success: false, message: 'This roster no longer exists.' };
+
+		const attempt = await this.attemptSignup({
+			roster,
+			player,
+			user,
+			isOwner,
+			isDryRun
+		});
+
+		if (!attempt.success) return attempt;
+		if (isDryRun) return { success: true, message: 'Success!', roster };
+
+		const value = await this.signupUser({ roster, player, user, categoryId });
+		if (!value) return { success: false, message: 'This roster no longer exists.' };
+		return { success: true, message: 'Success!', roster: value };
 	}
 
 	public async signupUser({
@@ -445,16 +490,13 @@ export class RosterManager {
 		return value;
 	}
 
-	public async optOut(rosterId: ObjectId, tag: string) {
-		const roster = await this.get(rosterId);
-		if (!roster) return null;
-
+	public async _optOut(roster: WithId<IRoster>, tag: string) {
 		const member = roster.members.find((mem) => mem.tag === tag);
 		if (!member) return roster;
 		const members = roster.members.filter((mem) => mem.userId === member.userId);
 
 		const { value } = await this.rosters.findOneAndUpdate(
-			{ _id: rosterId },
+			{ _id: roster._id },
 			{ $pull: { members: { tag } } },
 			{ returnDocument: 'after' }
 		);
@@ -477,21 +519,77 @@ export class RosterManager {
 		return value;
 	}
 
+	public async optOut(roster: WithId<IRoster>, ...playerTags: string[]) {
+		const members = roster.members.filter((mem) => playerTags.includes(mem.tag));
+		if (!members.length) return roster;
+
+		const { value } = await this.rosters.findOneAndUpdate(
+			{ _id: roster._id },
+			{ $pull: { members: { tag: { $in: playerTags } } } },
+			{ returnDocument: 'after' }
+		);
+		if (!value) return null;
+
+		const grouped = members.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
+			if (!curr.userId) return prev;
+			prev[curr.userId] ??= []; // eslint-disable-line
+			prev[curr.userId].push(curr);
+			return prev;
+		}, {});
+
+		const userGroups = Object.entries(grouped);
+		const categories = await this.getCategories(value.guildId);
+
+		for (const [userId, members] of userGroups) {
+			const roleIds: string[] = [];
+			if (value.roleId && members.length <= 1) roleIds.push(value.roleId);
+
+			for (const member of members) {
+				if (!member.categoryId) continue;
+
+				const category = categories.find((cat) => cat._id.toHexString() === member.categoryId!.toHexString());
+				if (!category) continue;
+
+				const categorizedMembers = members.filter(
+					(mem) => mem.categoryId && mem.categoryId.toHexString() === category._id.toHexString()
+				);
+				if (category.roleId && categorizedMembers.length <= 1) roleIds.push(category.roleId);
+			}
+
+			if (roleIds.length) this.removeRole(value.guildId, roleIds, userId);
+		}
+
+		return value;
+	}
+
 	public async swapRoster(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>,
-		rosterId: ObjectId,
+		oldRoster: WithId<IRoster>,
 		player: Player,
 		user: User | null,
 		newRosterId: ObjectId,
 		categoryId: string | null
 	) {
-		const attempt = await this.signup(interaction, newRosterId, player, user, categoryId, true);
+		const attempt = await this.signup({
+			interaction,
+			rosterId: newRosterId,
+			player,
+			user,
+			categoryId,
+			isDryRun: true
+		});
 		if (!attempt) return null;
 
-		const roster = await this.optOut(rosterId, player.tag);
+		const roster = await this.optOut(oldRoster, player.tag);
 		if (!roster) return null;
 
-		return this.signup(interaction, newRosterId, player, user, categoryId);
+		return this.signup({
+			interaction,
+			rosterId: newRosterId,
+			player,
+			user,
+			categoryId
+		});
 	}
 
 	public async swapCategory(rosterId: ObjectId, player: Player, user: User | null, newCategoryId: ObjectId | null) {
