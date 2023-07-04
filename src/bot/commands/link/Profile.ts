@@ -5,18 +5,19 @@ import {
 	ButtonInteraction,
 	ButtonStyle,
 	CommandInteraction,
-	ComponentType,
 	EmbedBuilder,
 	GuildMember,
-	User
+	User,
+	embedLength
 } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections, DOT } from '../../util/Constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
+import { createInteractionCollector, handlePagination } from '../../util/Pagination.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -120,7 +121,7 @@ export default class ProfileCommand extends Command {
 
 		const collection: { field: string; values: string[] }[] = [];
 		const playerTags = [...new Set([...players.map((en) => en.tag), ...otherTags])];
-		const hideLink = Boolean(playerTags.length >= 12);
+		const hideLink = Boolean(playerTags.length >= 120);
 		const __players = await Promise.all(playerTags.map((tag) => this.client.http.player(tag)));
 		const playerLinks = __players.filter((res) => res.ok);
 		const defaultPlayer = playerLinks.at(0);
@@ -173,25 +174,40 @@ export default class ProfileCommand extends Command {
 		);
 
 		const embedLengthExceeded = () => {
-			return embed.data.description!.length + embed.data.fields!.reduce((a, b) => a + b.name.length + b.value.length, 0) > 5900;
+			return embedLength(embed.toJSON()) > 6000;
 		};
+
+		const newEmbed = new EmbedBuilder()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
 		const popEmbed = () => {
-			embed.data.fields!.pop();
+			if (embed.data.fields) {
+				const removed = embed.data.fields.pop();
+				if (removed) newEmbed.addFields(removed);
+			}
 			if (embedLengthExceeded()) popEmbed();
 		};
+
+		if (newEmbed.data.fields) newEmbed.data.fields.reverse();
 		if (embedLengthExceeded()) popEmbed();
 
+		const embeds = newEmbed.data.fields?.length ? [embed, newEmbed] : [embed];
+
+		if (embeds.length > 1) {
+			return handlePagination(interaction, embeds, (action) => this.export(action, links, user));
+		}
+
 		const customIds = {
-			export: this.client.uuid(interaction.user.id),
-			sync: this.client.uuid(interaction.user.id)
+			export: this.client.uuid(interaction.user.id, user.id)
 		};
+
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
 				.setEmoji(EMOJIS.EXPORT)
 				.setCustomId(customIds.export)
 				.setStyle(ButtonStyle.Secondary)
-				.setDisabled(links.length < 5)
+				.setDisabled(links.length < 1)
 		);
 
 		if (user.id === interaction.user.id) {
@@ -204,26 +220,15 @@ export default class ProfileCommand extends Command {
 			);
 		}
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000,
-			max: 1
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.export && action.isButton()) {
+		const message = await interaction.editReply({ embeds: [embed], components: [row] });
+		createInteractionCollector({
+			interaction,
+			customIds,
+			message,
+			onClick: async (action) => {
 				await action.deferReply();
-				await this.export(action, links, user);
+				return this.export(action, links, user);
 			}
-			if (action.customId === customIds.sync) {
-				await action.reply({ ephemeral: true, content: 'Your roles will be updated shortly.', components: [] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			Object.values(customIds).forEach((id) => this.client.components.delete(id));
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
 
@@ -248,10 +253,10 @@ export default class ProfileCommand extends Command {
 				],
 				rows: players.map((player) => [
 					player.name,
-					player.tag,
+					createHyperlink(this.client.http.getPlayerURL(player.tag), player.tag),
 					player.townHallLevel,
 					player.clan?.name,
-					player.clan?.tag,
+					player.clan?.tag ? createHyperlink(this.client.http.getClanURL(player.clan.tag), player.clan.tag) : '',
 					roles[player.role!],
 					player.verified,
 					player.internal

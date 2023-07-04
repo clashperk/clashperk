@@ -38,13 +38,29 @@ export const publish = async (fileId: string) => {
 
 export type SchemaRequest = sheets_v4.Schema$Request;
 
+const allowedFormulas = ['=HYPERLINK(', '=IMAGE(', '=SUM('];
+
 export const getSheetValue = (value?: string | number | boolean | Date) => {
+	if (typeof value === 'string' && allowedFormulas.some((formula) => value.startsWith(formula))) {
+		return { formulaValue: value };
+	}
+
 	if (typeof value === 'string') return { stringValue: value };
 	if (typeof value === 'number') return { numberValue: value };
 	if (typeof value === 'boolean') return { boolValue: value };
 	if (value instanceof Date) return { numberValue: Util.dateToSerialDate(value) };
 	return {};
 };
+
+const getUserEnteredFormat = (value?: string | number | boolean | Date) => {
+	if (value instanceof Date) return { numberFormat: { type: 'DATE_TIME' } };
+	if (typeof value === 'string' && allowedFormulas.some((formula) => value.startsWith(formula))) {
+		return { hyperlinkDisplayType: 'LINKED' };
+	}
+	return {};
+};
+
+export const createHyperlink = (url: string, text: string) => `=HYPERLINK("${url}","${text}")`;
 
 export const getConditionalFormatRequests = (sheets: CreateGoogleSheet[]) => {
 	const gridStyleRequests: SchemaRequest[] = sheets
@@ -237,9 +253,7 @@ export const updateGoogleSheet = async (spreadsheetId: string, sheets: CreateGoo
 				...sheet.rows.map((values) => ({
 					values: values.map((value) => ({
 						userEnteredValue: getSheetValue(value),
-						userEnteredFormat: {
-							numberFormat: value instanceof Date ? { type: 'DATE_TIME' } : {}
-						}
+						userEnteredFormat: getUserEnteredFormat(value)
 					}))
 				}))
 			],

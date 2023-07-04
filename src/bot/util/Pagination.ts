@@ -11,6 +11,7 @@ import {
 } from 'discord.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
+import { EMOJIS } from './Emojis.js';
 
 const NEXT = '➡️';
 const PREV = '⬅️';
@@ -54,7 +55,7 @@ export const handlePagination = async (
 		row.addComponents(indexButton);
 	}
 
-	const exportButton = new ButtonBuilder().setCustomId(customIds.export).setLabel(`Export`).setStyle(ButtonStyle.Secondary);
+	const exportButton = new ButtonBuilder().setCustomId(customIds.export).setEmoji(EMOJIS.EXPORT).setStyle(ButtonStyle.Secondary);
 	if (typeof onExport === 'function') row.addComponents(exportButton);
 
 	let index = 0;
