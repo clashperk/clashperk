@@ -17,6 +17,17 @@ export const imageMaps: Record<string, string> = {
 	raid_week_end: 'raid_week_image_url'
 };
 
+export const locationsMap: Record<string, string> = {
+	clan_games_start: 'clan_games_location',
+	clan_games_end: 'clan_games_location',
+	cwl_start: 'cwl_location',
+	cwl_end: 'cwl_location',
+	cwl_signup_end: 'cwl_location',
+	season_end: 'season_reset_location',
+	raid_week_start: 'raid_week_location',
+	raid_week_end: 'raid_week_location'
+};
+
 export const eventsMap: Record<string, string> = {
 	clan_games_start: 'Clan Games',
 	clan_games_end: 'Clan Games (Ending)',
@@ -159,7 +170,7 @@ export class GuildEventsHandler {
 				privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
 				scheduledStartTime: new Date(event.timestamp),
 				scheduledEndTime: new Date(endTime),
-				entityMetadata: { location: 'in game' },
+				entityMetadata: { location: guildEvent.locations?.[locationsMap[event.type]] ?? 'in game' },
 				description: event.value,
 				image: guildEvent.images?.[imageMaps[event.type]]
 			});
@@ -231,6 +242,7 @@ export interface GuildEventData {
 	maxDuration: number;
 	allowedEvents?: string[];
 	images?: Record<string, string>;
+	locations?: Record<string, string | null>;
 	createdAt: Date;
 	durationOverrides?: string[];
 }
