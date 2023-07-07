@@ -23,7 +23,12 @@ RUN npm install --omit=dev
 
 COPY --from=deps /app/dist ./dist
 
-ARG GIT_SHA
-ENV GIT_SHA=$GIT_SHA
+ARG RAILWAY_GIT_COMMIT_SHA
+ARG RAILWAY_SERVICE_ID
+ARG RAILWAY_SERVICE_NAME
+
+ENV GIT_SHA=$RAILWAY_GIT_COMMIT_SHA
+ENV SERVICE_ID=$RAILWAY_SERVICE_ID
+ENV SERVICE_NAME=$RAILWAY_SERVICE_NAME
 
 CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/src/index.js"]
