@@ -28,8 +28,8 @@ export default class ComponentHandler {
 	public parseStringSelectMenu(interaction: StringSelectMenuInteraction, parsed: ParsedCommandId) {
 		const values = interaction.values;
 		if (parsed.array_key) return { [parsed.array_key]: values };
-		if (parsed.string_key) return { [parsed.string_key]: values[0] };
-		return { selected: values.length === 1 ? values[0] : values };
+		if (parsed.string_key) return { [parsed.string_key]: values.at(0) };
+		return { selected: values.length === 1 ? values.at(0) : values };
 	}
 
 	public async exec(interaction: ButtonInteraction | StringSelectMenuInteraction) {

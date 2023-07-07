@@ -1,7 +1,8 @@
-import { CommandInteraction, ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, ComponentType, User } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, User, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class CWLStarsCommand extends Command {
 	public constructor() {
@@ -28,7 +29,7 @@ export default class CWLStarsCommand extends Command {
 
 		if (!body.ok) {
 			const group = await this.client.storage.getWarTags(clan.tag);
-			if (group) return this.rounds(interaction, group, clan);
+			if (group) return this.rounds(interaction, { body: group, clan, args });
 
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
@@ -36,10 +37,25 @@ export default class CWLStarsCommand extends Command {
 		}
 
 		this.client.storage.pushWarTags(clan.tag, body);
-		return this.rounds(interaction, body, clan);
+		return this.rounds(interaction, { body, clan, args });
 	}
 
-	private async rounds(interaction: CommandInteraction<'cached'>, body: ClanWarLeagueGroup, clan: Clan) {
+	private async rounds(
+		interaction: CommandInteraction<'cached'>,
+		{
+			body,
+			clan,
+			args
+		}: {
+			body: ClanWarLeagueGroup;
+			clan: Clan;
+			args: {
+				tag?: string;
+				user?: User;
+				list_view?: 'TOTAL' | 'GAINED';
+			};
+		}
+	) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 
@@ -103,11 +119,33 @@ export default class CWLStarsCommand extends Command {
 		if (!leaderboard.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 		leaderboard.sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars);
 
+		const comparisonMode = args.list_view === 'GAINED';
+		const listView = comparisonMode ? 'GAINED' : 'TOTAL';
+
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
-			.setDescription(
+			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small });
+
+		if (comparisonMode) {
+			embed.setDescription(
 				[
+					'**Clan War League Stars**',
+					`**\`\u200e # STR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
+					leaderboard
+						.filter((m) => m.of > 0)
+						.map((m, i) => {
+							const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
+							return `\`\u200e${this.pad(++i)} ${this.pad(m.stars)}  ${gained.padStart(3, ' ')}  ${Util.escapeBackTick(
+								m.name
+							).padEnd(15, ' ')}\``;
+						})
+						.join('\n')
+				].join('\n')
+			);
+		} else {
+			embed.setDescription(
+				[
+					'**Clan War League Stars**',
 					`\u200e\` # STR DEST HIT  ${'NAME'.padEnd(15, ' ')}\u200f\``,
 					leaderboard
 						.filter((m) => m.of > 0)
@@ -121,69 +159,47 @@ export default class CWLStarsCommand extends Command {
 						.join('\n')
 				].join('\n')
 			);
+		}
 
-		const customID = this.client.uuid(interaction.user.id);
+		const payload = {
+			cmd: this.id,
+			tag: clanTag,
+			list_view: args.list_view
+		};
+
+		const customIds = {
+			refresh: this.createId(payload),
+			toggle: this.createId({ ...payload, string_key: 'list_view' })
+		};
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh)
+		);
+
 		const menu = new StringSelectMenuBuilder()
-			.setCustomId(customID)
+			.setCustomId(customIds.toggle)
 			.setPlaceholder('Select a filter!')
-			.addOptions([
-				{
-					label: 'Best Stars (Offense)',
-					value: 'TOTAL',
-					description: 'Best offense stars comparison.'
-				},
-				{
-					label: 'Offense vs/ Defense',
-					value: 'GAINED',
-					description: '[Offense - Defense] stars comparison.'
-				}
-			]);
-		const msg = await interaction.editReply({
-			embeds: [embed],
-			components: [new ActionRowBuilder<StringSelectMenuBuilder>({ components: [menu] })]
-		});
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
+			.addOptions(
+				[
+					{
+						label: 'Total Stars (Offense)',
+						value: 'TOTAL',
+						description: 'Total offense stars comparison.'
+					},
+					{
+						label: 'Offense vs/ Defense',
+						value: 'GAINED',
+						description: '[Offense - Defense] stars comparison.'
+					}
+				].map((option) => ({
+					...option,
+					default: option.value === listView
+				}))
+			);
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-		collector.on('collect', async (action) => {
-			if (action.customId === customID && action.isStringSelectMenu()) {
-				if (action.values[0] === 'TOTAL') {
-					await action.update({ embeds: [embed] });
-				}
-
-				if (action.values[0] === 'GAINED') {
-					leaderboard.sort((a, b) => b.stars - a.stars).sort((a, b) => b.stars - b.lost - (a.stars - a.lost));
-
-					const embed = new EmbedBuilder()
-						.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
-						.setColor(this.client.embed(interaction))
-						.setDescription(
-							[
-								`**\`\u200e # STR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
-								leaderboard
-									.filter((m) => m.of > 0)
-									.map((m, i) => {
-										const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-										return `\`\u200e${this.pad(++i)} ${this.pad(m.stars)}  ${gained.padStart(
-											3,
-											' '
-										)}  ${Util.escapeBackTick(m.name).padEnd(15, ' ')}\``;
-									})
-									.join('\n')
-							].join('\n')
-						);
-
-					await action.update({ embeds: [embed] });
-				}
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
+		return this.clearId(interaction);
 	}
 
 	private pad(num: number, depth = 2) {

@@ -5,6 +5,7 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	EmbedBuilder,
+	StringSelectMenuBuilder,
 	embedLength,
 	escapeMarkdown
 } from 'discord.js';
@@ -82,7 +83,7 @@ export default class SummaryBestCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { season?: string; limit?: number; clans?: string; order?: 'asc' | 'desc' }
+		args: { season?: string; limit?: number; clans?: string; order?: 'asc' | 'desc'; selected?: string[] }
 	) {
 		const seasonId = args.season ?? Season.ID;
 		const tags = await this.client.resolver.resolveArgs(args.clans);
@@ -580,30 +581,32 @@ export default class SummaryBestCommand extends Command {
 		}
 
 		const _fields = Object.keys(fields).filter((field) => (field === '_clanGamesCompletionTime' && order === 'asc' ? false : true));
-		_fields.map((field) => {
-			const key = field as keyof typeof fields;
-			const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
+		_fields
+			.filter((field) => (args.selected ? args.selected.includes(field) : true))
+			.map((field) => {
+				const key = field as keyof typeof fields;
+				const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
 
-			if (!members.length) {
+				if (!members.length) {
+					return embed.addFields({
+						name: fields[key],
+						value: 'No data available.'
+					});
+				}
+
 				return embed.addFields({
 					name: fields[key],
-					value: 'No data available.'
+					value: members
+						.map((member, n) => {
+							const num =
+								key === '_clanGamesCompletionTime'
+									? this._formatTime(member.value).padStart(7, ' ')
+									: Util.formatNumber(member.value).padStart(7, ' ');
+							return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${escapeMarkdown(member.name)}`;
+						})
+						.join('\n')
 				});
-			}
-
-			return embed.addFields({
-				name: fields[key],
-				value: members
-					.map((member, n) => {
-						const num =
-							key === '_clanGamesCompletionTime'
-								? this._formatTime(member.value).padStart(7, ' ')
-								: Util.formatNumber(member.value).padStart(7, ' ');
-						return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${escapeMarkdown(member.name)}`;
-					})
-					.join('\n')
 			});
-		});
 
 		if (embedLength(embed.toJSON()) > 6000) {
 			const fields = [...embed.data.fields!];
@@ -615,20 +618,48 @@ export default class SummaryBestCommand extends Command {
 			return interaction.followUp({ embeds: [embed] });
 		}
 
-		const customId = this.createId({
+		const payload = {
 			cmd: this.id,
 			order: args.order,
 			clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans,
-			limit: args.limit
-		});
+			limit: args.limit,
+			selected: args.selected
+		};
+
+		const customIds = {
+			refresh: this.createId(payload),
+			order: this.createId({ ...payload, order: order === 'asc' ? 'desc' : 'asc' }),
+			selected: this.createId({ ...payload, array_key: 'selected' })
+		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setCustomId(customId).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
+			new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId(customIds.order)
+				.setStyle(ButtonStyle.Secondary)
+				.setLabel(args.order === 'asc' ? 'Ascending' : 'Descending')
+		);
+
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(customIds.selected)
+				.setMinValues(1)
+				.setMaxValues(_fields.length)
+				.setOptions(
+					_fields
+						.map((field) => {
+							const labelText = fields[field as keyof typeof fields];
+							const emoji = /<a?:.+:(\d+)>/.exec(labelText)?.[1];
+							const label = emoji ? labelText.replace(/<a?:.+:(\d+)>/, '').trim() : labelText;
+							return { label, emoji, value: field };
+						})
+						.map((option) => ({ ...option, default: args.selected?.includes(option.value) }))
+				)
 		);
 
 		const isSameSeason = seasonId === Season.ID;
 		embed.setFooter({ text: `Season ${seasonId}` }).setTimestamp();
-		await interaction.editReply({ embeds: [embed], components: isSameSeason ? [row] : [] });
+		await interaction.editReply({ embeds: [embed], components: isSameSeason ? [row, menuRow] : [menuRow] });
 		return this.clearId(interaction);
 	}
 

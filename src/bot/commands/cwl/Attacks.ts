@@ -7,12 +7,11 @@ import {
 	escapeInlineCode,
 	ButtonStyle,
 	escapeMarkdown,
-	ComponentType,
 	User
 } from 'discord.js';
-import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
+import { ClanWar, ClanWarLeagueGroup, Clan } from 'clashofclans.js';
 import moment from 'moment';
-import { RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/Emojis.js';
+import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
@@ -52,7 +51,7 @@ export default class CWLAttacksCommand extends Command {
 
 		if (!body.ok) {
 			const group = await this.client.storage.getWarTags(clan.tag);
-			if (group) return this.rounds(interaction, group, clan.tag);
+			if (group) return this.rounds(interaction, { body: group, clan, args });
 
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
@@ -60,10 +59,22 @@ export default class CWLAttacksCommand extends Command {
 		}
 
 		this.client.storage.pushWarTags(clan.tag, body);
-		return this.rounds(interaction, body, clan.tag);
+		return this.rounds(interaction, { body, clan, args });
 	}
 
-	private async rounds(interaction: CommandInteraction<'cached'>, body: ClanWarLeagueGroup, clanTag: string) {
+	private async rounds(
+		interaction: CommandInteraction<'cached'>,
+		{
+			body,
+			clan,
+			args
+		}: {
+			body: ClanWarLeagueGroup;
+			clan: Clan;
+			args: { tag?: string; user?: User; round?: number; missed?: boolean };
+		}
+	) {
+		const clanTag = clan.tag;
 		const rounds = body.rounds.filter((round) => !round.warTags.includes('#0'));
 
 		let i = 0;
@@ -201,77 +212,64 @@ export default class CWLAttacksCommand extends Command {
 			}
 		}
 
-		const clan = body.clans.find((clan) => clan.tag === clanTag)!;
 		if (!chunks.length && body.season !== Util.getCWLSeasonId()) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
-		if (!chunks.length || chunks.length !== rounds.length)
+		if (!chunks.length || chunks.length !== rounds.length) {
 			return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
-		const round = chunks.find((c) => c.state === 'inWar') ?? chunks.slice(-1)[0];
-		if (chunks.length === 1) {
-			return interaction.editReply({ embeds: [round.embed] });
 		}
 
-		const options = chunks.map((ch) => ({ label: `Round #${ch.round}`, value: ch.round.toString() }));
-		const ids = {
-			menu: this.client.uuid(interaction.user.id),
-			button: this.client.uuid(interaction.user.id)
+		const members = Object.values(missed);
+		const missedEmbed = new EmbedBuilder()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
+			.setDescription(
+				[
+					'**All Missed Attacks**',
+					'',
+					members.map((mem) => `${RED_NUMBERS[mem.count]} ${escapeMarkdown(mem.name)}`).join('\n')
+				].join('\n')
+			);
+
+		const round = chunks.find((c) => (args.round ? c.round === Number(args.round) : c.state === 'inWar')) ?? chunks.slice(-1).at(0)!;
+		const selectedRound = args.round ?? round.round;
+
+		const payload = {
+			cmd: this.id,
+			tag: clanTag,
+			missed: args.missed,
+			round: args.round
 		};
 
-		const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(ids.menu).setPlaceholder('Select a round!');
+		const embed = args.missed ? missedEmbed : round.embed;
 
-		const button = new ButtonBuilder()
-			.setStyle(ButtonStyle.Secondary)
-			.setCustomId(ids.button)
-			.setLabel('Show Overall Missed Attacks')
-			.setDisabled(!Object.keys(missed).length);
+		const customIds = {
+			refresh: this.createId({ ...payload }),
+			missed: this.createId({ ...payload, missed: !args.missed }),
+			rounds: this.createId({ ...payload, string_key: 'round' })
+		};
 
-		const rows = [
-			new ActionRowBuilder<ButtonBuilder>().addComponents(button),
-			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)
-		];
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+			new ButtonBuilder()
+				.setLabel(args.missed ? 'Return to Attacks' : 'All Missed Attacks')
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customIds.missed)
+		);
 
-		const msg = await interaction.editReply({
-			embeds: [round.embed],
-			components: [...rows]
-		});
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(ids).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
+		const options = chunks
+			.map((ch) => ({ label: `Round #${ch.round}`, value: ch.round.toString() }))
+			.map((option) => ({
+				...option,
+				default: option.value === selectedRound.toString()
+			}));
+		const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(customIds.rounds).setPlaceholder('Select a round!');
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
-		collector.on('collect', async (action) => {
-			if (action.customId === ids.menu && action.isStringSelectMenu()) {
-				const round = chunks.find((ch) => ch.round === Number(action.values[0]));
-				await action.update({ embeds: [round!.embed] });
-			}
-
-			if (action.customId === ids.button) {
-				const members = Object.values(missed);
-				const embed = new EmbedBuilder()
-					.setColor(this.client.embed(interaction))
-					.setDescription(
-						[
-							'**All Missed Attacks**',
-							'',
-							members.map((mem) => `${RED_NUMBERS[mem.count]} ${escapeMarkdown(mem.name)}`).join('\n')
-						].join('\n')
-					);
-				embed.data.author = round.embed.data.author!;
-				rows[1].components[0].setDisabled(true);
-
-				await action.update({ components: [...rows] });
-				await action.followUp({ embeds: [embed] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			this.client.components.delete(ids.menu);
-			this.client.components.delete(ids.button);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: args.missed ? [buttonRow] : [buttonRow, menuRow] });
+		return this.clearIds(interaction);
 	}
 
 	private padEnd(name: string) {

@@ -1,5 +1,5 @@
-import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, ButtonStyle, ComponentType, User } from 'discord.js';
+import { ClanWar, ClanWarLeagueGroup, WarClan, Clan } from 'clashofclans.js';
+import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, ButtonStyle, User } from 'discord.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS, EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -36,7 +36,7 @@ export default class CWLRosterCommand extends Command {
 		}
 
 		this.client.storage.pushWarTags(clan.tag, body);
-		return this.rounds(interaction, body, clan.tag);
+		return this.rounds(interaction, { body, clan, args });
 	}
 
 	private async fetch(warTag: string) {
@@ -44,7 +44,19 @@ export default class CWLRosterCommand extends Command {
 		return { warTag, ...data };
 	}
 
-	private async rounds(interaction: CommandInteraction<'cached'>, body: ClanWarLeagueGroup, clanTag: string) {
+	private async rounds(
+		interaction: CommandInteraction<'cached'>,
+		{
+			body,
+			clan,
+			args
+		}: {
+			body: ClanWarLeagueGroup;
+			clan: Clan;
+			args: { tag?: string; user?: User; detailed?: boolean };
+		}
+	) {
+		const clanTag = clan.tag;
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 
 		const clanRounds = [];
@@ -126,7 +138,8 @@ export default class CWLRosterCommand extends Command {
 		const next = clanRounds.find((round) => round.state === 'preparation');
 		const rank = ranks.findIndex((a) => a.tag === clanTag);
 
-		const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setDescription(
+		const summarizedEmbed = new EmbedBuilder().setColor(this.client.embed(interaction));
+		summarizedEmbed.setDescription(
 			[
 				'**Clan War League Rosters**',
 				`${EMOJIS.HASH} ${townHalls.map((th) => ORANGE_NUMBERS[th]).join('')} **Clan**`,
@@ -145,7 +158,7 @@ export default class CWLRosterCommand extends Command {
 				.fill(0)
 				.map((_, i) => max - i);
 
-			embed.addFields([
+			summarizedEmbed.addFields([
 				{
 					name: '\u200e',
 					value: [
@@ -159,7 +172,7 @@ export default class CWLRosterCommand extends Command {
 		}
 
 		if (next?.round || rounds.length >= 2) {
-			embed.addFields([
+			summarizedEmbed.addFields([
 				{
 					name: '\u200b',
 					value: `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`
@@ -167,67 +180,56 @@ export default class CWLRosterCommand extends Command {
 			]);
 		}
 
+		const detailedEmbed = new EmbedBuilder();
+		detailedEmbed
+			.setFooter({ text: `Clan War League ${moment(body.season).format('MMMM YYYY')}` })
+			.setAuthor({ name: 'CWL Roster' })
+			.setDescription('CWL Roster and Town-Hall Distribution')
+			.setColor(this.client.embed(interaction));
+
+		for (const clan of body.clans) {
+			const reduced = clan.members.reduce<{ [key: string]: number }>((count, member) => {
+				const townHall = member.townHallLevel;
+				count[townHall] = (count[townHall] || 0) + 1;
+				return count;
+			}, {});
+
+			const townHalls = Object.entries(reduced)
+				.map((entry) => ({ level: Number(entry[0]), total: Number(entry[1]) }))
+				.sort((a, b) => b.level - a.level);
+
+			detailedEmbed.addFields([
+				{
+					name: `\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
+					value: [
+						Util.chunk(townHalls, 5)
+							.map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' '))
+							.join('\n')
+					].join('\n')
+				}
+			]);
+		}
+
+		const embed = args.detailed ? detailedEmbed : summarizedEmbed;
+
+		const payload = {
+			cmd: this.id,
+			tag: clanTag,
+			detailed: args.detailed
+		};
 		const customIds = {
-			detailed: this.client.uuid(interaction.user.id),
-			summarized: this.client.uuid(interaction.user.id)
+			toggle: this.createId({ ...payload, detailed: !args.detailed }),
+			refresh: this.createId(payload)
 		};
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setCustomId(customIds.detailed).setStyle(ButtonStyle.Secondary).setLabel('Detailed Roster')
+			new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId(customIds.toggle)
+				.setStyle(ButtonStyle.Secondary)
+				.setLabel(args.detailed ? 'Summarized Roster' : 'Detailed Roster')
 		);
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.detailed) {
-				const embed = new EmbedBuilder();
-				embed
-					.setFooter({ text: `Clan War League ${moment(body.season).format('MMMM YYYY')}` })
-					.setAuthor({ name: 'CWL Roster' })
-					.setDescription('CWL Roster and Town-Hall Distribution')
-					.setColor(this.client.embed(interaction));
-
-				for (const clan of body.clans) {
-					const reduced = clan.members.reduce<{ [key: string]: number }>((count, member) => {
-						const townHall = member.townHallLevel;
-						count[townHall] = (count[townHall] || 0) + 1;
-						return count;
-					}, {});
-
-					const townHalls = Object.entries(reduced)
-						.map((entry) => ({ level: Number(entry[0]), total: Number(entry[1]) }))
-						.sort((a, b) => b.level - a.level);
-
-					embed.addFields([
-						{
-							name: `\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
-							value: [
-								Util.chunk(townHalls, 5)
-									.map((chunks) =>
-										chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' ')
-									)
-									.join('\n')
-							].join('\n')
-						}
-					]);
-				}
-
-				const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-					new ButtonBuilder().setCustomId(customIds.summarized).setStyle(ButtonStyle.Secondary).setLabel('Summarized Roster')
-				);
-				await action.update({ embeds: [embed], components: [row] });
-			}
-			if (action.customId === customIds.summarized) {
-				await action.update({ embeds: [embed], components: [row] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			Object.values(customIds).forEach((id) => this.client.components.delete(id));
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearIds(interaction);
 	}
 
 	private getNextRoster(clan: WarClan, townHalls: number[]) {

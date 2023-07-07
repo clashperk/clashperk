@@ -492,6 +492,10 @@ export class Command implements CommandOptions {
 			}
 		}
 	}
+
+	public clearIds(interaction: BaseInteraction) {
+		return this.clearId(interaction);
+	}
 }
 
 export interface ListenerOptions {

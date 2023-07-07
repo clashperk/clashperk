@@ -1,5 +1,5 @@
-import { ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.js';
-import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, ComponentType, User } from 'discord.js';
+import { ClanWar, ClanWarLeagueGroup, ClanWarMember, Clan } from 'clashofclans.js';
+import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, User, ButtonBuilder, ButtonStyle } from 'discord.js';
 import moment from 'moment';
 import { EMOJIS, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -32,7 +32,7 @@ export default class CWLRoundCommand extends Command {
 
 		if (!body.ok) {
 			const cw = await this.client.storage.getWarTags(clan.tag);
-			if (cw) return this.rounds(interaction, cw, clan.tag);
+			if (cw) return this.rounds(interaction, { body: cw, clan, args });
 
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
@@ -40,10 +40,22 @@ export default class CWLRoundCommand extends Command {
 		}
 
 		this.client.storage.pushWarTags(clan.tag, body);
-		return this.rounds(interaction, body, clan.tag);
+		return this.rounds(interaction, { body, clan, args });
 	}
 
-	private async rounds(interaction: CommandInteraction<'cached'>, body: ClanWarLeagueGroup, clanTag: string) {
+	private async rounds(
+		interaction: CommandInteraction<'cached'>,
+		{
+			body,
+			clan,
+			args
+		}: {
+			body: ClanWarLeagueGroup;
+			clan: Clan;
+			args: { tag?: string; user?: User; round?: number };
+		}
+	) {
+		const clanTag = clan.tag;
 		const rounds = body.rounds.filter((d) => !d.warTags.includes('#0'));
 
 		const chunks: { state: string; embed: EmbedBuilder; round: number }[] = [];
@@ -142,43 +154,44 @@ export default class CWLRoundCommand extends Command {
 			}
 		}
 
-		const clan = body.clans.find((clan) => clan.tag === clanTag)!;
 		if (!chunks.length && body.season !== Util.getCWLSeasonId()) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
-		if (!chunks.length || chunks.length !== rounds.length)
+		if (!chunks.length || chunks.length !== rounds.length) {
 			return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
-		const round = chunks.find((c) => c.state === 'inWar') ?? chunks.slice(-1)[0];
-		if (chunks.length === 1) {
-			return interaction.editReply({ embeds: [round.embed] });
 		}
 
-		const options = chunks.map((ch) => ({ label: `Round #${ch.round}`, value: ch.round.toString() }));
-		const customID = this.client.uuid(interaction.user.id);
-		const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(customID).setPlaceholder('Select a round!');
+		const round = chunks.find((c) => (args.round ? c.round === Number(args.round) : c.state === 'inWar')) ?? chunks.slice(-1).at(0)!;
+		const selectedRound = args.round ?? round.round;
 
-		const msg = await interaction.editReply({
-			embeds: [round.embed],
-			components: [new ActionRowBuilder<StringSelectMenuBuilder>({ components: [menu] })]
-		});
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
+		const payload = {
+			cmd: this.id,
+			tag: clanTag,
+			round: args.round
+		};
 
-		collector.on('collect', async (action) => {
-			if (action.customId === customID && action.isStringSelectMenu()) {
-				const round = chunks.find((ch) => ch.round === Number(action.values[0]));
-				await action.update({ embeds: [round!.embed] });
-			}
-		});
+		const customIds = {
+			refresh: this.createId({ ...payload }),
+			rounds: this.createId({ ...payload, string_key: 'round' })
+		};
 
-		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh)
+		);
+
+		const options = chunks
+			.map((ch) => ({ label: `Round #${ch.round}`, value: ch.round.toString() }))
+			.map((option) => ({
+				...option,
+				default: option.value === selectedRound.toString()
+			}));
+		const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(customIds.rounds).setPlaceholder('Select a round!');
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
+
+		await interaction.editReply({ embeds: [round.embed], components: [buttonRow, menuRow] });
+		return this.clearIds(interaction);
 	}
 
 	private count(members: ClanWarMember[]) {

@@ -1,13 +1,4 @@
-import {
-	EmbedBuilder,
-	CommandInteraction,
-	ButtonBuilder,
-	ActionRowBuilder,
-	StringSelectMenuBuilder,
-	ButtonStyle,
-	ComponentType,
-	User
-} from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonStyle, User } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player, WarClan } from 'clashofclans.js';
 import { EMOJIS, HERO_PETS, BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -48,10 +39,21 @@ export default class CWLLineupCommand extends Command {
 			);
 		}
 
-		return this.rounds(interaction, body, clan);
+		return this.rounds(interaction, { body, clan, args });
 	}
 
-	private async rounds(interaction: CommandInteraction<'cached'>, body: ClanWarLeagueGroup, clan: Clan) {
+	private async rounds(
+		interaction: CommandInteraction<'cached'>,
+		{
+			body,
+			clan,
+			args
+		}: {
+			body: ClanWarLeagueGroup;
+			clan: Clan;
+			args: { tag?: string; user?: User; player_list?: boolean; state?: string };
+		}
+	) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter((d) => !d.warTags.includes('#0'));
 
@@ -71,28 +73,40 @@ export default class CWLLineupCommand extends Command {
 		}
 
 		if (!chunks.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
-		let data = chunks.find((ch) => ch.state === 'preparation') ?? chunks.slice(-1)[0];
 
-		const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
+		const state = args.state ?? 'preparation';
+		const data = chunks.find((ch) => ch.state === state) ?? chunks.slice(-1).at(0)!;
+
+		const embeds = args.player_list
+			? this.getLineupList(data.state, data.round, { clan: data.clan, opponent: data.opponent })
+			: await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
 		for (const embed of embeds) embed.setColor(this.client.embed(interaction));
 
-		const CUSTOM_ID = {
-			PLAYER: this.client.uuid(interaction.user.id),
-			COMPARE: this.client.uuid(interaction.user.id),
-			MENU: this.client.uuid(interaction.user.id)
+		const payload = {
+			cmd: this.id,
+			tag: clanTag,
+			player_list: args.player_list
 		};
 
-		const buttons = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.PLAYER).setLabel('Show Player List').setStyle(ButtonStyle.Secondary))
-			.addComponents(
-				new ButtonBuilder().setCustomId(CUSTOM_ID.COMPARE).setLabel('Compare').setStyle(ButtonStyle.Secondary).setDisabled(true)
-			);
+		const customIds = {
+			refresh: this.createId(payload),
+			round: this.createId({ ...payload, string_key: 'state' }),
+			toggle: this.createId({ ...payload, player_list: !args.player_list })
+		};
 
-		const menus = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-			new StringSelectMenuBuilder()
-				.setCustomId(CUSTOM_ID.MENU)
-				.setPlaceholder('Select War')
-				.addOptions([
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+			new ButtonBuilder()
+				.setCustomId(customIds.toggle)
+				.setLabel(args.player_list ? 'Compare' : 'Player List')
+				.setStyle(ButtonStyle.Secondary)
+		);
+
+		const menu = new StringSelectMenuBuilder()
+			.setCustomId(customIds.round)
+			.setPlaceholder('Select War')
+			.addOptions(
+				[
 					{
 						label: 'Preparation',
 						value: 'preparation',
@@ -103,54 +117,13 @@ export default class CWLLineupCommand extends Command {
 						value: 'inWar',
 						description: 'Lineup for the battle day.'
 					}
-				])
-				.setDisabled(chunks.length === 1)
-		);
+				].map((option) => ({ ...option, default: option.value === state }))
+			)
+			.setDisabled(chunks.length === 1);
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-		const msg = await interaction.editReply({ embeds, components: [buttons, menus] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		let clicked = Boolean(false);
-		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.PLAYER) {
-				const embeds = this.getLineupList(data.state, data.round, { clan: data.clan, opponent: data.opponent });
-				for (const embed of embeds) embed.setColor(this.client.embed(interaction));
-				clicked = Boolean(true);
-				buttons.components[0].setDisabled(true);
-				buttons.components[1].setDisabled(false);
-				await action.update({ embeds, components: [buttons, menus] });
-			}
-
-			if (action.customId === CUSTOM_ID.MENU && action.isStringSelectMenu()) {
-				data = chunks.find((ch) => ch.state === action.values[0]) ?? chunks.slice(-1)[0];
-
-				await action.deferUpdate();
-				const embeds = clicked
-					? this.getLineupList(data.state, data.round, { clan: data.clan, opponent: data.opponent })
-					: await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
-				for (const embed of embeds) embed.setColor(this.client.embed(interaction));
-
-				await action.editReply({ embeds });
-			}
-
-			if (action.customId === CUSTOM_ID.COMPARE) {
-				await action.deferUpdate();
-				const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
-				for (const embed of embeds) embed.setColor(this.client.embed(interaction));
-				clicked = Boolean(false);
-				buttons.components[0].setDisabled(false);
-				buttons.components[1].setDisabled(true);
-				await action.editReply({ embeds, components: [buttons, menus] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			Object.values(CUSTOM_ID).forEach((id) => this.client.components.delete(id));
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds, components: [buttonRow, menuRow] });
+		return this.clearId(interaction);
 	}
 
 	private async rosters(clanMembers: ClanWarMember[], opponentMembers: ClanWarMember[]) {

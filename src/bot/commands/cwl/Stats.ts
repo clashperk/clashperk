@@ -1,5 +1,5 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { AttachmentBuilder, CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import fetch from 'node-fetch';
 import { Command } from '../../lib/index.js';
@@ -313,7 +313,14 @@ export default class CWLStatsCommand extends Command {
 			);
 		}
 
-		await interaction.editReply({ embeds: [...embeds, embed] });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setCustomId(this.createId({ cmd: this.id, tag: clanTag }))
+				.setEmoji(EMOJIS.REFRESH)
+				.setStyle(ButtonStyle.Secondary)
+		);
+
+		await interaction.editReply({ embeds: [...embeds, embed], components: [row] });
 		if (!leagueId) return null;
 
 		const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND!}/wars/cwl-ranks`, {
@@ -335,7 +342,8 @@ export default class CWLStatsCommand extends Command {
 			name: 'clan-war-league-ranking.jpeg'
 		});
 		embed.setImage('attachment://clan-war-league-ranking.jpeg');
-		return interaction.editReply({ files: [rawFile], embeds: [...embeds, embed] });
+
+		return interaction.editReply({ files: [rawFile], embeds: [...embeds, embed], components: [row] });
 	}
 
 	private async fetch(warTag: string) {
