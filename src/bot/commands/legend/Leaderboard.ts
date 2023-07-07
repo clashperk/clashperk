@@ -57,7 +57,9 @@ export default class LegendLeaderboardCommand extends Command {
 
 		const customId = interaction.isButton()
 			? interaction.customId
-			: this.client.redis.setCustomId({ cmd: this.id, clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans });
+			: this.createId({ cmd: this.id, clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans });
+
+		this.clearId(interaction);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customId)
 		);

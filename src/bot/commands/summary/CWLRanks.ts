@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections, promotionMap, UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
@@ -120,7 +120,13 @@ export default class SummaryCWLRanks extends Command {
 			return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.ID }));
 		}
 
-		return interaction.editReply({ embeds: [embed] });
+		const customId = this.createId({ cmd: this.id, clans: args.clans, season: args.season });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Secondary)
+		);
+
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearId(interaction);
 	}
 
 	private async rounds(body: ClanWarLeagueGroup, clanTag: string, season?: string | null) {

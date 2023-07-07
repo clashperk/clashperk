@@ -69,19 +69,18 @@ export default class DonationSummaryCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			tag: args.clans,
+			clans: args.clans,
 			season: args.season,
 			sort_by: args.sort_by,
 			order_by: args.order_by,
 			clans_only: args.clans_only
 		};
-		this.client.redis.clearCustomId(interaction);
 
 		const customId = {
-			orderBy: this.client.redis.setCustomId({ ...payload, string_key: 'order_by' }),
-			sortBy: this.client.redis.setCustomId({ ...payload, array_key: 'sort_by' }),
-			refresh: this.client.redis.setCustomId(payload),
-			toggle: this.client.redis.setCustomId({ ...payload, clans_only: !args.clans_only })
+			orderBy: this.createId({ ...payload, string_key: 'order_by' }),
+			sortBy: this.createId({ ...payload, array_key: 'sort_by' }),
+			refresh: this.createId(payload),
+			toggle: this.createId({ ...payload, clans_only: !args.clans_only })
 		};
 
 		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -151,10 +150,11 @@ export default class DonationSummaryCommand extends Command {
 				])
 		);
 
-		return interaction.editReply({
+		await interaction.editReply({
 			embeds: splitted ? [args.clans_only ? topClansEmbed : topPlayersEmbed] : [topClansEmbed, topPlayersEmbed],
 			components: [buttonRow, sortingRow, orderingRow]
 		});
+		return this.clearId(interaction);
 	}
 
 	private donation(num: number, space: number) {

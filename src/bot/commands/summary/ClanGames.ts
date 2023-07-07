@@ -5,7 +5,6 @@ import {
 	ButtonInteraction,
 	ButtonStyle,
 	CommandInteraction,
-	ComponentType,
 	EmbedBuilder
 } from 'discord.js';
 import moment from 'moment';
@@ -14,6 +13,7 @@ import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
 import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/Helper.js';
 import { ClanGames, Util } from '../../util/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class SummaryClanGamesCommand extends Command {
 	public constructor() {
@@ -27,7 +27,15 @@ export default class SummaryClanGamesCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; max: boolean; filter: boolean; season?: string; clans?: string }
+		args: {
+			season?: string;
+			clans?: string;
+			max_points?: boolean;
+			clans_only?: boolean;
+			show_time?: boolean;
+			export_disabled?: boolean;
+			export?: boolean;
+		}
 	) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
@@ -48,80 +56,72 @@ export default class SummaryClanGamesCommand extends Command {
 		const queried = await this.query(
 			clans.map((clan) => clan.tag),
 			seasonId
-		)!;
-		const embed = this.clanScoreboard(interaction, {
+		);
+
+		const clansEmbed = this.clanScoreboard(interaction, {
 			members: queried?.members ?? [],
 			clans: queried?.clans ?? [],
-			max: args.max,
-			filter: args.filter,
 			seasonId
 		});
+		const playersEmbed = this.playerScoreboard(interaction, {
+			members: queried?.members ?? [],
+			clans: queried?.clans ?? [],
+			maxPoints: args.max_points,
+			seasonId,
+			showTime: args.show_time
+		});
+		const embed = args.clans_only ? clansEmbed : playersEmbed;
+
+		const payload = {
+			cmd: this.id,
+			clans: args.clans,
+			season: args.season,
+			max_points: args.max_points,
+			clans_only: args.clans_only,
+			show_time: args.show_time,
+			export_disabled: args.export_disabled
+		};
+
 		const customIds = {
-			times: this.client.uuid(interaction.user.id),
-			points: this.client.uuid(interaction.user.id),
-			export: this.client.uuid(interaction.user.id)
+			refresh: this.createId({ ...payload, export_disabled: false }),
+			toggle: this.createId({ ...payload, clans_only: !args.clans_only }),
+			show_time: this.createId({ ...payload, show_time: !args.show_time }),
+			export: this.createId({ ...payload, defer: false, export: true, export_disabled: true })
 		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setLabel('Fastest Completion').setStyle(ButtonStyle.Primary).setCustomId(customIds.times),
-			new ButtonBuilder().setLabel('Export').setStyle(ButtonStyle.Primary).setCustomId(customIds.export)
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+			new ButtonBuilder()
+				.setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customIds.toggle)
 		);
-		await interaction.editReply({ embeds: [embed] });
-		const msg = await interaction.followUp({
-			embeds: [
-				this.playerScoreboard(interaction, {
-					members: queried?.members ?? [],
-					clans: queried?.clans ?? [],
-					max: args.max,
-					seasonId
-				})
-			],
-			components: [row]
-		});
 
-		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
-		});
+		const optionalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setLabel(args.show_time ? 'Scoreboard' : 'Fastest Completion')
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customIds.show_time)
+		);
+		const components = args.clans_only ? [] : [optionalRow];
 
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.times) {
-				const embed = this.playerScoreboard(interaction, {
-					members: queried?.members ?? [],
-					clans: queried?.clans ?? [],
-					max: args.max,
-					seasonId,
-					showTime: true
-				});
+		row.addComponents(
+			new ButtonBuilder()
+				.setEmoji(EMOJIS.EXPORT)
+				.setLabel('Export')
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customIds.export)
+				.setDisabled(typeof args.export_disabled === 'boolean' && args.export_disabled)
+		);
 
-				row.setComponents(new ButtonBuilder().setLabel('Show Points').setStyle(ButtonStyle.Primary).setCustomId(customIds.points));
-				await action.update({ embeds: [embed], components: [row] });
-			}
+		if (args.export && interaction.isButton()) {
+			await interaction.editReply({ embeds: [embed], components: [...components, row], message: interaction.message.id });
+			await this.export(interaction, queried?.members ?? []);
+		} else {
+			await interaction.editReply({ embeds: [embed], components: [...components, row] });
+		}
 
-			if (action.customId === customIds.points) {
-				const embed = this.playerScoreboard(interaction, {
-					members: queried?.members ?? [],
-					clans: queried?.clans ?? [],
-					max: args.max,
-					seasonId,
-					showTime: false
-				});
-
-				row.setComponents(
-					new ButtonBuilder().setLabel('Fastest Completion').setStyle(ButtonStyle.Primary).setCustomId(customIds.times)
-				);
-				await action.update({ embeds: [embed], components: [row] });
-			}
-
-			if (action.customId === customIds.export) {
-				await action.deferReply();
-				await this.export(action, queried?.members ?? []);
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(customIds)) this.client.components.delete(id);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		return this.clearId(interaction);
 	}
 
 	private async export(interaction: ButtonInteraction<'cached'>, members: ClanGamesMember[]) {
@@ -138,6 +138,7 @@ export default class SummaryClanGamesCommand extends Command {
 				rows: members.map((m) => [m.name, m.tag, m.clan.name, m.points, m.completedAt])
 			}
 		];
+
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Clan Games]`, sheets);
 		return interaction.editReply({ components: getExportComponents(spreadsheet) });
 	}
@@ -150,8 +151,6 @@ export default class SummaryClanGamesCommand extends Command {
 		}: {
 			members: { name: string; tag: string; points: number }[];
 			clans: { name: string; tag: string; points: number }[];
-			max?: boolean;
-			filter?: boolean;
 			seasonId: string;
 		}
 	) {
@@ -179,18 +178,18 @@ export default class SummaryClanGamesCommand extends Command {
 		interaction: BaseInteraction,
 		{
 			members,
-			max = false,
+			maxPoints = false,
 			seasonId,
 			showTime
 		}: {
 			members: { name: string; tag: string; points: number; completedAt?: Date; timeTaken?: number }[];
 			clans: { name: string; tag: string; points: number }[];
-			max?: boolean;
+			maxPoints?: boolean;
 			seasonId: string;
 			showTime?: boolean;
 		}
 	) {
-		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
+		const total = members.reduce((prev, mem) => prev + (maxPoints ? mem.points : Math.min(mem.points, this.MAX)), 0);
 		members
 			.sort((a, b) => b.points - a.points)
 			.sort((a, b) => clanGamesSortingAlgorithm(a.completedAt?.getTime() ?? 0, b.completedAt?.getTime() ?? 0));

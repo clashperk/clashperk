@@ -298,8 +298,8 @@ export default class StatsCommand extends Command {
 
 		embed.setTimestamp();
 
-		const customId = this.client.redis.setCustomId({ cmd: this.id, ...args, view: 'avg' });
-		this.client.redis.clearCustomId(interaction);
+		const customId = this.createId({ cmd: this.id, ...args, view: 'avg' });
+		this.clearId(interaction);
 
 		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Primary);
 		if (interaction.isButton()) {

@@ -615,13 +615,13 @@ export default class SummaryBestCommand extends Command {
 			return interaction.followUp({ embeds: [embed] });
 		}
 
-		const customId = this.client.redis.setCustomId({
+		const customId = this.createId({
 			cmd: this.id,
 			order: args.order,
 			clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans,
 			limit: args.limit
 		});
-		this.client.redis.clearCustomId(interaction);
+
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setCustomId(customId).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
 		);
@@ -629,6 +629,7 @@ export default class SummaryBestCommand extends Command {
 		const isSameSeason = seasonId === Season.ID;
 		embed.setFooter({ text: `Season ${seasonId}` }).setTimestamp();
 		await interaction.editReply({ embeds: [embed], components: isSameSeason ? [row] : [] });
+		return this.clearId(interaction);
 	}
 
 	private _formatTime(diff: number) {

@@ -189,11 +189,11 @@ export default class DonationsCommand extends Command {
 			season: args.season
 		};
 		const customId = {
-			order: this.client.redis.setCustomId({ ...payload, string_key: 'order_by' }),
-			sort: this.client.redis.setCustomId({ ...payload, array_key: 'sort_by' }),
-			refresh: this.client.redis.setCustomId({ ...payload })
+			order: this.createId({ ...payload, string_key: 'order_by' }),
+			sort: this.createId({ ...payload, array_key: 'sort_by' }),
+			refresh: this.createId({ ...payload })
 		};
-		this.client.redis.clearCustomId(interaction);
+		this.clearId(interaction);
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()

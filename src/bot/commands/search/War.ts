@@ -462,7 +462,7 @@ export default class WarCommand extends Command {
 		return new Date(moment(ISO).toDate());
 	}
 
-	private createId(data: ClanWar) {
+	private createWarId(data: ClanWar) {
 		const ISO = this.toDate(data.preparationStartTime).toISOString().substring(0, 16);
 		return `${ISO}-${[data.clan.tag, data.opponent.tag].sort((a, b) => a.localeCompare(b)).join('-')}`;
 	}
@@ -482,7 +482,7 @@ export default class WarCommand extends Command {
 
 		const callerData = await this.client.db
 			.collection<CallerCollection>(Collections.WAR_BASE_CALLS)
-			.findOne({ warId: this.createId(body), guild: interaction.guildId });
+			.findOne({ warId: this.createWarId(body), guild: interaction.guildId });
 		const caller = callerData?.caller ?? {};
 
 		const embed = new EmbedBuilder()

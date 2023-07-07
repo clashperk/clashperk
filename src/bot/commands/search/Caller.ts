@@ -36,7 +36,7 @@ export default class TargetCommand extends Command {
 			return interaction.editReply('There is no war going on.');
 		}
 
-		const warId = this.createId(war);
+		const warId = this.createWarId(war);
 		const offenseTags = war.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => m.tag);
 		const defenseTags = war.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => m.tag);
 
@@ -94,7 +94,7 @@ export default class TargetCommand extends Command {
 		return new Date(moment(ISO).toDate());
 	}
 
-	private createId(data: ClanWar) {
+	private createWarId(data: ClanWar) {
 		const ISO = this.toDate(data.preparationStartTime).toISOString().substring(0, 16);
 		return `${ISO}-${[data.clan.tag, data.opponent.tag].sort((a, b) => a.localeCompare(b)).join('-')}`;
 	}

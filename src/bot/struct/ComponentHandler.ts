@@ -12,10 +12,15 @@ const deferredDisallowed = ['link-add'];
 export default class ComponentHandler {
 	public constructor(private readonly client: Client) {}
 
+	private async getCustomId<T>(id: string) {
+		const data = await this.client.redis.connection.json.get(id);
+		return data as unknown as T;
+	}
+
 	private async parseCommandId(customId: string): Promise<ParsedCommandId | null> {
 		if (/^{.*}$/g.test(customId)) return JSON.parse(customId);
 		if (customId.startsWith('CMD-')) {
-			return this.client.redis.getCustomId<ParsedCommandId>(customId);
+			return this.getCustomId<ParsedCommandId>(customId);
 		}
 		return null;
 	}
@@ -33,7 +38,10 @@ export default class ComponentHandler {
 
 		const command = this.client.commandHandler.modules.get(parsed.cmd);
 		if (!command) return false;
-		if (!deferredDisallowed.includes(parsed.cmd)) await interaction.deferUpdate();
+
+		const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
+		if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) await interaction.deferUpdate();
+
 		const selected = interaction.isStringSelectMenu() ? this.parseStringSelectMenu(interaction, parsed) : {};
 		await this.client.commandHandler.exec(interaction, command, { ...parsed, ...selected });
 		return true;

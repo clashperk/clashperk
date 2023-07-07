@@ -1,6 +1,7 @@
 import EventEmitter from 'node:events';
 import { extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { nanoid } from 'nanoid';
 import {
 	ApplicationCommandOptionType,
 	AutocompleteInteraction,
@@ -21,8 +22,9 @@ import {
 import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/Client.js';
-import { i18n } from '../util/i18n.js';
+import { RedisJSON } from '../struct/RedisService.js';
 import { Settings } from '../util/Constants.js';
+import { i18n } from '../util/i18n.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util.js';
 
 type ArgsMatchType =
@@ -464,6 +466,31 @@ export class Command implements CommandOptions {
 	public run(message: Message, args: unknown): Promise<unknown> | unknown;
 	public run(): Promise<unknown> | unknown {
 		return null;
+	}
+
+	public createId(payload: Record<string, unknown>) {
+		const text = JSON.stringify(payload);
+		if (text.length <= 100) return text;
+
+		const customId = `CMD-${nanoid()}`;
+		const query = this.client.redis.connection.multi();
+		query.json.set(customId, '$', { ...payload, customId } as unknown as RedisJSON);
+		query.expire(customId, 60 * 60 * 24 * 100);
+		query.exec();
+
+		return customId;
+	}
+
+	public clearId(interaction: BaseInteraction) {
+		if (interaction.isMessageComponent()) {
+			for (const component of interaction.message.components) {
+				component.components.forEach((button) => {
+					if (button.customId?.startsWith('CMD-')) {
+						this.client.redis.connection.json.del(button.customId);
+					}
+				});
+			}
+		}
 	}
 }
 

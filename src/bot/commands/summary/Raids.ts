@@ -1,8 +1,9 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { RaidSeason } from '../../struct/Http.js';
 import { Collections } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class SummaryCapitalRaidsCommand extends Command {
 	public constructor() {
@@ -14,7 +15,10 @@ export default class SummaryCapitalRaidsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { week?: string; clans?: string }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { week?: string; clans?: string; clans_only?: boolean; avg_loot?: boolean }
+	) {
 		const { weekId } = this.raidWeek();
 		let { week } = args;
 		if (!week) week = weekId;
@@ -40,97 +44,99 @@ export default class SummaryCapitalRaidsCommand extends Command {
 		const maxPad = Math.max(...clansGroup.map((clan) => clan.looted.toString().length));
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		embed.setAuthor({ name: `${interaction.guild.name} Capital Raids` });
-		embed.setDescription(
-			[
-				'```',
-				`\u200e # ${'LOOT'.padStart(6, ' ')} HIT MEDAL NAME`,
-				clansGroup
-					.map(
-						(clan, i) =>
-							`\u200e${(i + 1).toString().padStart(2, ' ')} ${Util.formatNumber(clan.looted, 1).padStart(
-								6,
-								' '
-							)} ${clan.attacks.toString().padStart(3, ' ')} ${clan.medals.toFixed(0).padStart(5, ' ')} ${clan.name}`
-					)
-					.join('\n'),
-				'```'
-			].join('\n')
-		);
+
+		if (args.avg_loot && args.clans_only) {
+			embed.setAuthor({ name: `${interaction.guild.name} Capital Raids` });
+			embed.setDescription(
+				[
+					'```',
+					`\u200e # ${'LOOT'.padStart(maxPad, ' ')} HIT  AVG NAME`,
+					clansGroup
+						.map(
+							(clan, i) =>
+								`${(i + 1).toString().padStart(2, ' ')} ${clan.looted.toFixed(0).padStart(maxPad, ' ')} ${clan.attacks
+									.toString()
+									.padStart(3, ' ')} ${(clan.looted ? clan.looted / clan.attacks : 0).toFixed(0).padStart(4, ' ')} ${
+									clan.name
+								}`
+						)
+						.join('\n'),
+					'```'
+				].join('\n')
+			);
+		} else if (args.clans_only) {
+			embed.setAuthor({ name: `${interaction.guild.name} Capital Raids` });
+			embed.setDescription(
+				[
+					'```',
+					`\u200e # ${'LOOT'.padStart(6, ' ')} HIT MEDAL NAME`,
+					clansGroup
+						.map(
+							(clan, i) =>
+								`\u200e${(i + 1).toString().padStart(2, ' ')} ${Util.formatNumber(clan.looted, 1).padStart(
+									6,
+									' '
+								)} ${clan.attacks.toString().padStart(3, ' ')} ${clan.medals.toFixed(0).padStart(5, ' ')} ${clan.name}`
+						)
+						.join('\n'),
+					'```'
+				].join('\n')
+			);
+		} else {
+			embed.setAuthor({ name: `${interaction.guild.name} Top Capital Looters` });
+			embed.setDescription(
+				[
+					`**Clan Capital Raids (${week})**`,
+					'```',
+					'\u200e #   LOOT  HIT  NAME',
+					membersGroup
+						.map(
+							(mem, i) =>
+								`\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.capitalResourcesLooted)}  ${
+									mem.attacks
+								}/${mem.attackLimit}  ${mem.name}`
+						)
+						.join('\n'),
+					'```'
+				].join('\n')
+			);
+		}
+
 		embed.setFooter({ text: `Week ${week}` });
 
-		const customIds = {
-			action: this.client.uuid(interaction.user.id),
-			active: this.client.uuid(interaction.user.id),
-			medals: this.client.uuid(interaction.user.id)
+		const payload = {
+			cmd: this.id,
+			clans: args.clans,
+			week: args.week,
+			clans_only: args.clans_only,
+			avg_loot: args.avg_loot
 		};
+
+		const customIds = {
+			refresh: this.createId(payload),
+			avg_loot: this.createId({ ...payload, avg_loot: !args.avg_loot, clans_only: true }),
+			toggle: this.createId({ ...payload, clans_only: !args.clans_only })
+		};
+
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setLabel('Show Top Looters').setStyle(ButtonStyle.Primary).setCustomId(customIds.action),
-			new ButtonBuilder().setLabel('Show Avg. Loot').setStyle(ButtonStyle.Secondary).setCustomId(customIds.medals)
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+			new ButtonBuilder()
+				.setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
+				.setStyle(ButtonStyle.Primary)
+				.setCustomId(customIds.toggle)
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 10 * 60 * 1000
-		});
+		if (args.clans_only) {
+			row.addComponents(
+				new ButtonBuilder()
+					.setLabel(args.avg_loot ? 'Loot/Hit/Medals' : 'Avg. Loot/Hit')
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId(customIds.avg_loot)
+			);
+		}
 
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.medals) {
-				embed.setDescription(
-					[
-						'```',
-						`\u200e # ${'LOOT'.padStart(maxPad, ' ')} HIT  AVG NAME`,
-						clansGroup
-							.map(
-								(clan, i) =>
-									`${(i + 1).toString().padStart(2, ' ')} ${clan.looted.toFixed(0).padStart(maxPad, ' ')} ${clan.attacks
-										.toString()
-										.padStart(3, ' ')} ${(clan.looted ? clan.looted / clan.attacks : 0).toFixed(0).padStart(4, ' ')} ${
-										clan.name
-									}`
-							)
-							.join('\n'),
-						'```'
-					].join('\n')
-				);
-
-				const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-					new ButtonBuilder().setLabel('Show Top Looters').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
-				);
-				await action.update({ embeds: [embed], components: [row] });
-			}
-
-			if (action.customId === customIds.action) {
-				const embed = new EmbedBuilder()
-					.setColor(this.client.embed(interaction))
-					.setAuthor({ name: `${interaction.guild.name} Top Capital Looters` })
-					.setDescription(
-						[
-							`**Clan Capital Raids (${week!})**`,
-							'```',
-							'\u200e #   LOOT  HIT  NAME',
-							membersGroup
-								.map(
-									(mem, i) =>
-										`\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.capitalResourcesLooted)}  ${
-											mem.attacks
-										}/${mem.attackLimit}  ${mem.name}`
-								)
-								.join('\n'),
-							'```'
-						].join('\n')
-					)
-					.setFooter({ text: `Week ${week!}` });
-
-				await action.update({ embeds: [embed], components: [] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(customIds)) this.client.components.delete(id);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearId(interaction);
 	}
 
 	private async queryFromDB(weekId: string, clans: { tag: string; name: string }[]) {

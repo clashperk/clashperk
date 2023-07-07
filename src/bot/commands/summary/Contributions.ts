@@ -1,8 +1,9 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class SummaryCapitalContributionCommand extends Command {
 	public constructor() {
@@ -14,9 +15,13 @@ export default class SummaryCapitalContributionCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; week?: string; clans?: string }) {
-		let { season, week } = args;
-		if (!season) season = Season.ID;
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { season?: string; week?: string; clans?: string; clans_only?: boolean }
+	) {
+		const season = args.season ?? Season.ID;
+		const week = args.week;
+
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -104,19 +109,37 @@ export default class SummaryCapitalContributionCommand extends Command {
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		embed.setAuthor({ name: `${interaction.guild.name} Capital Contributions` });
-		embed.setDescription(
-			[
-				'```',
-				`\u200e #  ${'TOTAL'.padStart(maxPad, ' ')}  NAME`,
-				clansGroup
-					.map(
-						(clan, i) => `${(i + 1).toString().padStart(2, ' ')}  ${clan.total.toString().padStart(maxPad, ' ')}  ${clan.name}`
-					)
-					.join('\n'),
-				'```'
-			].join('\n')
-		);
+
+		if (args.clans_only) {
+			embed.setAuthor({ name: `${interaction.guild.name} Capital Contributions` });
+			embed.setDescription(
+				[
+					'```',
+					`\u200e #  ${'TOTAL'.padStart(maxPad, ' ')}  NAME`,
+					clansGroup
+						.map(
+							(clan, i) =>
+								`${(i + 1).toString().padStart(2, ' ')}  ${clan.total.toString().padStart(maxPad, ' ')}  ${clan.name}`
+						)
+						.join('\n'),
+					'```'
+				].join('\n')
+			);
+		} else {
+			embed
+				.setAuthor({ name: `${interaction.guild.name} Top Contributors` })
+				.setDescription(
+					[
+						`**${this.i18n('command.capital.contribution.title', { lng: interaction.locale })} (${season})**`,
+						'```',
+						'\u200e #  TOTAL  NAME',
+						membersGroup
+							.map((mem, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.total)}  ${mem.name}`)
+							.join('\n'),
+						'```'
+					].join('\n')
+				);
+		}
 
 		if (week) {
 			embed.setFooter({ text: `Week ${Util.dateRangeFormat(startWeek, endWeek)}` });
@@ -124,51 +147,29 @@ export default class SummaryCapitalContributionCommand extends Command {
 			embed.setFooter({ text: `Season ${season}` });
 		}
 
-		const customIds = {
-			action: this.client.uuid(),
-			active: this.client.uuid()
+		const payload = {
+			cmd: this.id,
+			season: args.season,
+			week: args.week,
+			clans: args.clans,
+			clans_only: args.clans_only
 		};
+
+		const customIds = {
+			refresh: this.createId(payload),
+			toggle: this.createId({ ...payload, clans_only: !args.clans_only })
+		};
+
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setLabel('Show Top Contributors').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+			new ButtonBuilder()
+				.setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customIds.toggle)
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.action) {
-				const embed = new EmbedBuilder()
-					.setColor(this.client.embed(interaction))
-					.setAuthor({ name: `${interaction.guild.name} Top Contributors` })
-					.setDescription(
-						[
-							`**${this.i18n('command.capital.contribution.title', { lng: interaction.locale })} (${season!})**`,
-							'```',
-							'\u200e #  TOTAL  NAME',
-							membersGroup
-								.map((mem, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.total)}  ${mem.name}`)
-								.join('\n'),
-							'```'
-						].join('\n')
-					);
-
-				if (week) {
-					embed.setFooter({ text: `Week ${Util.dateRangeFormat(startWeek, endWeek)}` });
-				} else {
-					embed.setFooter({ text: `Season ${season!}` });
-				}
-
-				await action.update({ embeds: [embed], components: [] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(customIds)) this.client.components.delete(id);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearId(interaction);
 	}
 
 	private padding(num: number) {

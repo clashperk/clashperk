@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
@@ -15,8 +15,8 @@ export default class SummaryCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string }) {
-		if (!season) season = Season.ID;
+	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans_only?: boolean; asc_order?: boolean }) {
+		const season = args.season ?? Season.ID;
 		const clans = await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length) {
@@ -25,71 +25,37 @@ export default class SummaryCommand extends Command {
 			);
 		}
 
-		const collection: { online: number; total: number; name: string; tag: string }[] = [];
-		for (const clan of clans) {
-			const action = await this.getActivity(clan.tag);
+		const embed = args.clans_only
+			? await this.getClansEmbed(interaction, clans)
+			: await this.getMembersEmbed(interaction, clans, season, Boolean(args.asc_order));
 
-			collection.push({
-				online: action?.avg_online ?? 0,
-				total: action?.avg_total ?? 0,
-				name: clan.name,
-				tag: clan.tag
-			});
+		const payload = {
+			cmd: this.id,
+			clans_only: args.clans_only,
+			season: args.season,
+			asc_order: args.asc_order
+		};
 
-			if (!action) continue;
-		}
+		const customIds = {
+			refresh: this.createId(payload),
+			toggle: this.createId({ ...payload, clans_only: !args.clans_only }),
+			asc_order: this.createId({ ...payload, asc_order: !args.asc_order })
+		};
 
-		collection.sort((a, b) => b.total - a.total);
-		const embed = new EmbedBuilder();
-		embed.setAuthor({ name: 'Clan Activity Summary', iconURL: interaction.guild.iconURL()! });
-		embed.setDescription(
-			[
-				`\u200e${EMOJIS.HASH}  \`AVG\`  \`SCORE\`  \` ${'CLAN NAME'.padEnd(15, ' ')}\``,
-				...collection.map((clan, i) => {
-					const online = clan.online.toFixed(0).padStart(3, ' ');
-					const total = clan.total.toFixed(0).padStart(5, ' ');
-					return `\u200e${BLUE_NUMBERS[i + 1]}  \`${online}\`  \`${total}\`  \` ${clan.name.padEnd(15, ' ')}\``;
-				})
-			].join('\n')
-		);
-		embed.setFooter({ text: [`avg = daily average active members`, 'based on the last 30 days of activities'].join('\n') });
-
-		const customIds = { action: this.client.uuid(), reverse: this.client.uuid() };
-		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setLabel('Show Most Active Members').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+			new ButtonBuilder()
+				.setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customIds.toggle),
+			new ButtonBuilder()
+				.setLabel(args.asc_order ? 'Most Active' : 'Least Active')
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customIds.toggle)
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
-		});
-
-		collector.on('collect', async (action) => {
-			await action.deferUpdate();
-			const reversed = action.customId === customIds.reverse;
-			const embed = new EmbedBuilder();
-			embed.setAuthor({ name: `${interaction.guild.name} Most Active Members` });
-			const members = await this.aggregationQuery(clans, season!, reversed);
-			embed.setDescription(
-				[
-					`\`\`\`\n\u200eLAST-ON SCORE  NAME\n${members
-						.map((m) => `${this.getTime(m.lastSeen!.getTime())}  ${m.score!.toString().padStart(4, ' ')}  ${m.name}`)
-						.join('\n')}`,
-					'```'
-				].join('\n')
-			);
-
-			const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-				new ButtonBuilder().setLabel('Reverse Order').setStyle(ButtonStyle.Primary).setCustomId(customIds.reverse)
-			);
-
-			await action.editReply({ embeds: [embed], components: reversed ? [] : [row] });
-		});
-
-		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(customIds)) this.client.components.delete(id);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearId(interaction);
 	}
 
 	private async getActivity(tag: string): Promise<{ avg_total: number; avg_online: number } | null> {
@@ -163,7 +129,7 @@ export default class SummaryCommand extends Command {
 			.next();
 	}
 
-	private async aggregationQuery(clans: any[], season: string, reserve: boolean) {
+	private async aggregationQuery(clans: any[], season: string, ascOrder: boolean) {
 		const db = this.client.db.collection(Collections.LAST_SEEN);
 		const result = await db
 			.aggregate<{ name: string; tag: string; lastSeen?: Date; score?: number }>([
@@ -176,7 +142,7 @@ export default class SummaryCommand extends Command {
 				},
 				{
 					$sort: {
-						[`seasons.${season}`]: reserve ? 1 : -1
+						[`seasons.${season}`]: ascOrder ? 1 : -1
 					}
 				},
 				{
@@ -204,6 +170,53 @@ export default class SummaryCommand extends Command {
 			.toArray();
 
 		return result.filter((r) => r.score && r.lastSeen);
+	}
+
+	private async getClansEmbed(interaction: CommandInteraction<'cached'>, clans: any[]) {
+		const collection: { online: number; total: number; name: string; tag: string }[] = [];
+		for (const clan of clans) {
+			const action = await this.getActivity(clan.tag);
+			collection.push({
+				online: action?.avg_online ?? 0,
+				total: action?.avg_total ?? 0,
+				name: clan.name,
+				tag: clan.tag
+			});
+			if (!action) continue;
+		}
+
+		collection.sort((a, b) => b.total - a.total);
+		const embed = new EmbedBuilder();
+		embed.setAuthor({ name: 'Clan Activity Summary', iconURL: interaction.guild.iconURL()! });
+		embed.setDescription(
+			[
+				'Daily average active members (AVG)',
+
+				`\u200e${EMOJIS.HASH}  \`AVG\`  \`SCORE\`  \` ${'CLAN NAME'.padEnd(15, ' ')}\``,
+				...collection.map((clan, i) => {
+					const online = clan.online.toFixed(0).padStart(3, ' ');
+					const total = clan.total.toFixed(0).padStart(5, ' ');
+					return `\u200e${BLUE_NUMBERS[i + 1]}  \`${online}\`  \`${total}\`  \` ${clan.name.padEnd(15, ' ')}\``;
+				})
+			].join('\n')
+		);
+		embed.setFooter({ text: ['Based on the last 30 days of activities'].join('\n') });
+		return embed;
+	}
+
+	private async getMembersEmbed(interaction: CommandInteraction<'cached'>, clans: any[], season: string, ascOrder: boolean) {
+		const embed = new EmbedBuilder();
+		embed.setAuthor({ name: `${interaction.guild.name} Most Active Members` });
+		const members = await this.aggregationQuery(clans, season, ascOrder);
+		embed.setDescription(
+			[
+				`\`\`\`\n\u200eLAST-ON SCORE  NAME\n${members
+					.map((m) => `${this.getTime(m.lastSeen!.getTime())}  ${m.score!.toString().padStart(4, ' ')}  ${m.name}`)
+					.join('\n')}`,
+				'```'
+			].join('\n')
+		);
+		return embed;
 	}
 
 	private getTime(ms: number) {
