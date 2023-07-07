@@ -3,6 +3,7 @@ import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Listener } from '../../lib/index.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
+import { welcomeEmbedMaker } from '../../util/Helper.js';
 
 export default class GuildCreateListener extends Listener {
 	private webhook: Webhook | null = null;
@@ -71,34 +72,7 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private async intro(guild: Guild) {
-		const embed = new EmbedBuilder()
-			.setAuthor({
-				name: 'Thanks for inviting me, have a nice day!',
-				iconURL: this.client.user!.displayAvatarURL()
-			})
-			.setDescription(
-				[
-					'Text-based commands are being replaced in favour of slash commands.',
-					'Try typing `/` to see a list of available commands.'
-				].join('\n')
-			)
-			.addFields([
-				{
-					name: 'Add to Discord',
-					value: [
-						'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. [Invite Link](https://clashperk.com/invite)'
-					].join('\n')
-				},
-				{
-					name: 'Support',
-					value: [
-						'Join [Support Server](https://discord.gg/ppuppun) if you need any help or visit our [Website](https://clashperk.com) for a guide.',
-						'',
-						'If you like the bot, please support us on [Patreon](https://www.patreon.com/clashperk)'
-					].join('\n')
-				}
-			])
-			.setImage('https://i.imgur.com/jcWPjDf.png');
+		const embed = welcomeEmbedMaker();
 
 		if (guild.systemChannelId) {
 			const channel = guild.channels.cache.get(guild.systemChannelId) as TextChannel;

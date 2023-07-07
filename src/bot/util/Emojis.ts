@@ -332,6 +332,7 @@ export const EMOJIS = {
 	REFRESH: '🔁',
 	SETTINGS: '⚙️',
 	EXPORT: '📥',
+	MAINTENANCE: '🛠️',
 	LEGEND_LEAGUE: '<:legend:696301773513818162>',
 
 	STAR: '<:Star:812625750809116704>',

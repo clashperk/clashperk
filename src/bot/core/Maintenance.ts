@@ -39,26 +39,30 @@ export default class MaintenanceHandler {
 		return this;
 	}
 
-	private async sendMessages(dur = 0) {
+	private sendMessages(dur = 0) {
 		this.client.logger.info(this.getMessage(), { label: 'API_STATUS' });
-		const channel = this.client.channels.cache.get(SUPPORT_SERVER_GENERAL_CHANNEL_ID);
-		if (channel) await (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
+		this.deliverMessages(dur);
+		this.sendSupportServerMessage(dur);
+	}
 
+	private async deliverMessages(dur = 0) {
 		for (const setting of this.client.settings.flatten()) {
 			if (!setting.eventsChannel) continue;
 			if (setting.eventsChannel === SUPPORT_SERVER_GENERAL_CHANNEL_ID) continue;
 			const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
-			if (
-				channel?.isTextBased() &&
-				channel.permissionsFor(this.client.user!)?.has(['SendMessages', 'UseExternalEmojis', 'ViewChannel'])
-			) {
+			if (channel?.isTextBased() && channel.permissionsFor(this.client.user!)?.has(['SendMessages', 'ViewChannel'])) {
 				const message = i18n(this.isMaintenance ? 'common.maintenance_start' : 'common.maintenance_end', {
 					lng: channel.guild.preferredLocale,
 					duration: `(~${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })})`
 				});
-				await channel.send(`**${EMOJIS.COC_LOGO} ${message}**`);
+				await channel.send(`**${EMOJIS.MAINTENANCE} ${message}**`);
 			}
 		}
+	}
+
+	private async sendSupportServerMessage(dur = 0) {
+		const channel = this.client.channels.cache.get(SUPPORT_SERVER_GENERAL_CHANNEL_ID);
+		if (channel) await (channel as TextChannel).send(`**${EMOJIS.MAINTENANCE} ${this.getMessage(dur)}**`);
 	}
 
 	private getMessage(dur = 0) {

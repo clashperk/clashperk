@@ -99,12 +99,7 @@ export default class RedeemCommand extends Command {
 
 		const embed = new EmbedBuilder()
 			.setColor(16345172)
-			.setDescription(
-				[
-					`Subscription enabled for **${interaction.guild.name}**`,
-					`Thank you so much for the support ${interaction.user.toString()}`
-				].join('\n')
-			);
+			.setDescription([`Subscription enabled for **${interaction.guild.name}**`].join('\n'));
 
 		if (!user) {
 			await collection.updateOne(
@@ -219,7 +214,7 @@ export default class RedeemCommand extends Command {
 			}
 
 			if (action.customId === customIds.menu && action.isStringSelectMenu()) {
-				const id = action.values[0].trim();
+				const id = action.values.at(0)!.trim();
 				const guild = user.guilds.find((guild) => guild.id === id);
 				if (!guild) {
 					await action.update({
