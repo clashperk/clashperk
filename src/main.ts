@@ -22,7 +22,7 @@ await i18next.use(Backend).init({
 if (process.env.SENTRY && process.env.GIT_SHA) {
 	Sentry.init({
 		dsn: process.env.SENTRY,
-		serverName: 'clashperk_bot',
+		serverName: process.env.SERVICE_NAME ?? 'clashperk_bot',
 		environment: process.env.NODE_ENV ?? 'development',
 		release: process.env.GIT_SHA!,
 		integrations: [
