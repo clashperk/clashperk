@@ -637,7 +637,7 @@ export default class SummaryBestCommand extends Command {
 			new ButtonBuilder()
 				.setCustomId(customIds.order)
 				.setStyle(ButtonStyle.Secondary)
-				.setLabel(args.order === 'asc' ? 'Ascending' : 'Descending')
+				.setLabel(args.order === 'desc' ? 'Ascending' : 'Descending')
 		);
 
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
