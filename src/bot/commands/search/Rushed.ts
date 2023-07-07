@@ -1,10 +1,20 @@
-import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, ComponentType, User } from 'discord.js';
-import { Player, Clan } from 'clashofclans.js';
-import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
-import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { Clan, Player } from 'clashofclans.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	StringSelectMenuBuilder,
+	User
+} from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
 import { TroopJSON } from '../../types/index.js';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
+import { getMenuFromMessage } from '../../util/Helper.js';
+import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { Util } from '../../util/index.js';
 
 export default class RushedCommand extends Command {
 	public constructor() {
@@ -32,7 +42,10 @@ export default class RushedCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { clan_tag?: string; tag?: string; user?: User }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		args: { clan_tag?: string; tag?: string; user?: User }
+	) {
 		if (args.clan_tag) {
 			const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
 			if (!clan) return null;
@@ -42,44 +55,53 @@ export default class RushedCommand extends Command {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return null;
 
-		const embed = this.embed(data as Player, interaction).setColor(this.client.embed(interaction));
-		const msg = await interaction.editReply({ embeds: [embed] });
+		const embed = this.embed(data as Player, interaction.locale).setColor(this.client.embed(interaction));
+		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
 
-		if (!data.user) return null;
-		const players = await this.client.resolver.getPlayers(data.user.id);
-		if (!players.length) return null;
+		const payload = {
+			cmd: this.id,
+			tag: data.tag
+		};
 
+		const customIds = {
+			accounts: JSON.stringify({ ...payload, string_key: 'tag' }),
+			refresh: JSON.stringify({ ...payload }),
+			units: JSON.stringify({ ...payload, cmd: 'units' }),
+			upgrades: JSON.stringify({ ...payload, cmd: 'upgrades' }),
+			player: JSON.stringify({ ...payload, cmd: 'player' })
+		};
+
+		const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
+		const mainRow = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(refreshButton)
+			.addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.units))
+			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
+			.addComponents(new ButtonBuilder().setLabel('Profile').setStyle(ButtonStyle.Secondary).setCustomId(customIds.player));
+
+		if (interaction.isMessageComponent()) {
+			return interaction.editReply({
+				embeds: [embed],
+				components: [mainRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
+			});
+		}
+
+		const players = data.user ? await this.client.resolver.getPlayers(data.user.id) : [];
 		const options = players.map((op) => ({
 			description: op.tag,
 			label: op.name,
 			value: op.tag,
+			default: op.tag === data.tag,
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
 
-		const customID = this.client.uuid(interaction.user.id);
-		const menu = new StringSelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
+		);
 
-		await interaction.editReply({ components: [new ActionRowBuilder<StringSelectMenuBuilder>({ components: [menu] })] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customID && action.isStringSelectMenu()) {
-				const data = players.find((en) => en.tag === action.values[0])!;
-				const embed = this.embed(data, interaction).setColor(this.client.embed(interaction));
-				await action.update({ embeds: [embed] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		return interaction.editReply({ embeds: [embed], components: options.length > 1 ? [mainRow, menuRow] : [mainRow] });
 	}
 
-	private embed(data: Player, interaction: CommandInteraction) {
+	private embed(data: Player, locale: string) {
 		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const apiTroops = this.apiTroops(data);
@@ -178,14 +200,12 @@ export default class RushedCommand extends Command {
 		if (embed.data.fields?.length) {
 			embed.setFooter({ text: `Total ${this.totalPercentage(data.townHallLevel, Troops.length)}` });
 		} else {
-			embed.setDescription(
-				this.i18n('command.rushed.no_rushed', { lng: interaction.locale, townhall: data.townHallLevel.toString() })
-			);
+			embed.setDescription(this.i18n('command.rushed.no_rushed', { lng: locale, townhall: data.townHallLevel.toString() }));
 		}
 		return embed;
 	}
 
-	private async clan(interaction: CommandInteraction, data: Clan) {
+	private async clan(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, data: Clan) {
 		if (data.members < 1) {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
 		}

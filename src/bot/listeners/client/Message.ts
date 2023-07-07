@@ -52,7 +52,7 @@ export default class MessageListener extends Listener {
 
 		if (!command) return;
 		if (!this.client.isOwner(message.author.id)) {
-			return this.client.logger.log(`${command.id} ~ text-command`, { label: `${message.guild.name}/${message.author.tag}` });
+			return this.client.logger.log(`${command.id} ~ text-command`, { label: `${message.guild.name}/${message.author.displayName}` });
 		}
 
 		try {
@@ -62,10 +62,12 @@ export default class MessageListener extends Listener {
 			keys.forEach((key, index) => (resolved[key] = contents[index]));
 			if (!keys.length) resolved.content = content;
 
-			this.client.logger.debug(`${command.id}`, { label: `${message.guild.name}/${message.author.tag}` });
+			this.client.logger.debug(`${command.id}`, { label: `${message.guild.name}/${message.author.displayName}` });
 			await command.run(message, resolved);
 		} catch (error) {
-			this.client.logger.error(`${command.id} ~ ${error as string}`, { label: `${message.guild.name}/${message.author.tag}` });
+			this.client.logger.error(`${command.id} ~ ${error as string}`, {
+				label: `${message.guild.name}/${message.author.displayName}`
+			});
 			console.error(error);
 			await message.channel.send('**Something went wrong while executing this command.**');
 		}

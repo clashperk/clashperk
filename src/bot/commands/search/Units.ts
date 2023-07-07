@@ -6,15 +6,15 @@ import {
 	EmbedBuilder,
 	StringSelectMenuBuilder,
 	ButtonStyle,
-	ComponentType,
 	User,
-	MessageActionRowComponentBuilder,
-	BaseInteraction
+	ButtonInteraction
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
-import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { getMenuFromMessage } from '../../util/Helper.js';
+
 export default class UnitsCommand extends Command {
 	public constructor() {
 		super('units', {
@@ -37,97 +37,70 @@ export default class UnitsCommand extends Command {
 		};
 	}
 
-	private getComponents(interaction: BaseInteraction) {
-		if (interaction.isButton() && interaction.message.components.length) {
-			const row = ActionRowBuilder.from(interaction.message.components.at(0)!);
-			return [row as ActionRowBuilder<MessageActionRowComponentBuilder>];
-		}
-		return [];
-	}
-
-	private isButton(interaction: BaseInteraction) {
-		return interaction.isButton();
-	}
-
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
-		let data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
+	public async exec(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		args: { tag?: string; user?: User; max_level?: boolean }
+	) {
+		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
-		const embed = this.embed(data, true)
+		const embed = this.embed(data, Boolean(args.max_level))
 			.setColor(this.client.embed(interaction))
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
+		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
 
-		const CustomIds = {
-			MaxLevel: this.client.uuid(interaction.user.id),
-			TownHallLevel: this.client.uuid(interaction.user.id),
-			SelectAccount: this.client.uuid(interaction.user.id)
+		const payload = {
+			cmd: this.id,
+			tag: data.tag
 		};
 
-		const ButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setCustomId(CustomIds.MaxLevel).setLabel('Max Level').setStyle(ButtonStyle.Secondary)
+		const customIds = {
+			accounts: JSON.stringify({ ...payload, string_key: 'tag' }),
+			refresh: JSON.stringify({ ...payload }),
+			player: JSON.stringify({ ...payload, cmd: 'player' }),
+			upgrades: JSON.stringify({ ...payload, cmd: 'upgrades' }),
+			rushed: JSON.stringify({ ...payload, cmd: 'rushed' }),
+			maxLevel: JSON.stringify({ ...payload, max_level: !args.max_level })
+		};
+
+		const maxButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setCustomId(customIds.maxLevel)
+				.setLabel(args.max_level ? 'Town Hall Max Level' : 'Max Level')
+				.setStyle(ButtonStyle.Secondary)
 		);
 
-		if (this.isButton(interaction)) return interaction.editReply({ embeds: [embed] });
+		const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
+		const mainRow = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(refreshButton)
+			.addComponents(new ButtonBuilder().setLabel('Profile').setStyle(ButtonStyle.Secondary).setCustomId(customIds.player))
+			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
+			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [ButtonRow] });
+		if (interaction.isMessageComponent()) {
+			return interaction.editReply({
+				embeds: [embed],
+				components: [maxButtonRow, mainRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
+			});
+		}
+
 		const players = data.user ? await this.client.resolver.getPlayers(data.user.id) : [];
 		const options = players.map((op) => ({
 			description: op.tag,
 			label: op.name,
 			value: op.tag,
+			default: op.tag === data.tag,
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
-		const MenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-			new StringSelectMenuBuilder().setCustomId(CustomIds.SelectAccount).setPlaceholder('Select an account!').addOptions(options)
+
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
 		);
 
-		if (options.length) await interaction.editReply({ components: [ButtonRow, MenuRow] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(CustomIds).includes(action.customId) && action.user.id === interaction.user.id
-			// time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === CustomIds.MaxLevel) {
-				// TODO: Fix !
-				const embed = this.embed(data!, false);
-				embed.setColor(this.client.embed(interaction));
-				embed.setDescription(
-					`Units for TH${data!.townHallLevel} ${data!.builderHallLevel ? `and BH${data!.builderHallLevel}` : ''}`
-				);
-
-				ButtonRow.components[0].setLabel('Town Hall Max Level').setCustomId(CustomIds.TownHallLevel);
-				await action.update({ embeds: [embed], components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
-			}
-
-			if (action.customId === CustomIds.TownHallLevel) {
-				const embed = this.embed(data!, true);
-				embed.setColor(this.client.embed(interaction));
-				embed.setDescription(
-					`Units for TH${data!.townHallLevel} Max ${data!.builderHallLevel ? `and BH${data!.builderHallLevel} Max` : ''}`
-				);
-
-				ButtonRow.components[0].setLabel('Max Level').setCustomId(CustomIds.MaxLevel);
-				await action.update({ embeds: [embed], components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
-			}
-
-			if (action.customId === CustomIds.SelectAccount && action.isStringSelectMenu()) {
-				data = players.find((en) => en.tag === action.values[0])!;
-				const option = action.message.components[0].components[0].customId === CustomIds.MaxLevel;
-				const embed = this.embed(data, option).setColor(this.client.embed(interaction));
-				await action.update({ embeds: [embed] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			for (const customID of Object.values(CustomIds)) {
-				this.client.components.delete(customID);
-			}
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		return interaction.editReply({ embeds: [embed], components: options.length > 1 ? [maxButtonRow, mainRow, menuRow] : [mainRow] });
 	}
 
-	private embed(data: Player, option = true) {
+	private embed(data: Player, showMaxLevel = false) {
 		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
@@ -197,7 +170,7 @@ export default class UnitsCommand extends Command {
 									.map((unit) => {
 										const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
 										const level = this.padStart(unit.level);
-										const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
+										const maxLevel = showMaxLevel ? this.padEnd(unit.maxLevel) : this.padEnd(unit.hallMaxLevel);
 										return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
 									})
 									.join(' ')
@@ -240,7 +213,7 @@ export default class UnitsCommand extends Command {
 									.map((unit) => {
 										const unitIcon = SUPER_TROOPS[unit.name];
 										const level = this.padStart(unit.level);
-										const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
+										const maxLevel = showMaxLevel ? this.padEnd(unit.maxLevel) : this.padEnd(unit.hallMaxLevel);
 										return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
 									})
 									.join(' ')

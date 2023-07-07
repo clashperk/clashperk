@@ -1,5 +1,14 @@
 import { Clan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	ComponentType,
+	EmbedBuilder,
+	Guild,
+	StringSelectMenuBuilder
+} from 'discord.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { PlayerLinks } from '../types/index.js';
@@ -492,4 +501,24 @@ export const welcomeEmbedMaker = () => {
 		.setImage('https://i.imgur.com/jcWPjDf.png');
 
 	return embed;
+};
+
+export const getMenuFromMessage = (interaction: ButtonInteraction<'cached'>, selected: string, customId: string) => {
+	const _components = interaction.message.components;
+	const mainIndex = _components.findIndex(({ components }) => components.length === 4);
+	const components = _components.slice(mainIndex + 1);
+	const component = components.at(0)?.components.at(0);
+
+	if (component && component.type === ComponentType.StringSelect) {
+		const menu = StringSelectMenuBuilder.from(component.toJSON());
+		const options = component.options.map((op) => ({
+			...op,
+			default: op.value === selected
+		}));
+		menu.setOptions(options);
+		menu.setCustomId(customId);
+		return [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)];
+	}
+
+	return [];
 };

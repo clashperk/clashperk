@@ -2,9 +2,9 @@ import { Player, WarClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
+	ButtonInteraction,
 	ButtonStyle,
 	CommandInteraction,
-	ComponentType,
 	EmbedBuilder,
 	Guild,
 	Message,
@@ -18,6 +18,7 @@ import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/Emojis.js';
 import { Season } from '../../util/index.js';
+import { getMenuFromMessage } from '../../util/Helper.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -67,82 +68,70 @@ export default class PlayerCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+	public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { tag?: string; user?: User }) {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
-		const customIds = {
-			accounts: this.client.uuid(interaction.user.id),
-			troops: this.client.uuid(interaction.user.id),
-			upgrades: this.client.uuid(interaction.user.id),
-			rushed: this.client.uuid(interaction.user.id),
-			clan: this.client.uuid(interaction.user.id),
-			export: this.client.uuid(interaction.user.id)
+		const embed = (await this.embed(interaction.guild, data)).setColor(this.client.embed(interaction));
+		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
+
+		const payload = {
+			cmd: this.id,
+			tag: data.tag
 		};
 
-		const embed = (await this.embed(interaction.guild, data)).setColor(this.client.embed(interaction));
-		const players = data.user ? await this.getPlayers(data.user.id) : [];
+		const customIds = {
+			accounts: JSON.stringify({ ...payload, string_key: 'tag' }),
+			refresh: JSON.stringify({ ...payload }),
+			units: JSON.stringify({ ...payload, cmd: 'units' }),
+			upgrades: JSON.stringify({ ...payload, cmd: 'upgrades' }),
+			rushed: JSON.stringify({ ...payload, cmd: 'rushed' }),
+			clan: JSON.stringify({ ...payload, cmd: 'clan', tag: data.clan?.tag })
+		};
 
+		const clanRows: ActionRowBuilder<ButtonBuilder>[] = [];
+		// if (data.clan) {
+		// 	clanRows.push(
+		// 		new ActionRowBuilder<ButtonBuilder>().addComponents(
+		// 			new ButtonBuilder()
+		// 				.setLabel(`${data.clan.name} (${data.clan.tag})`)
+		// 				.setStyle(ButtonStyle.Secondary)
+		// 				.setEmoji(EMOJIS.CLAN)
+		// 				.setCustomId(customIds.clan)
+		// 		)
+		// 	);
+		// }
+
+		const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
+		const mainRow = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(refreshButton)
+			.addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.units))
+			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
+			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
+
+		if (interaction.isMessageComponent()) {
+			return interaction.editReply({
+				embeds: [embed],
+				components: [...clanRows, mainRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
+			});
+		}
+
+		const players = data.user ? await this.getPlayers(data.user.id) : [];
 		const options = players.map((op) => ({
 			description: op.tag,
 			label: op.name,
 			value: op.tag,
+			default: op.tag === data.tag,
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
 
-		const refreshButton = new ButtonBuilder()
-			.setEmoji(EMOJIS.REFRESH)
-			.setStyle(ButtonStyle.Secondary)
-			.setCustomId(JSON.stringify({ cmd: this.id, tag: data.tag }));
-
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(refreshButton)
-			.addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.troops))
-			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
-			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed))
-			.addComponents(new ButtonBuilder().setLabel('Export Wars').setStyle(ButtonStyle.Primary).setCustomId(customIds.export));
-
-		const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: options.length > 1 ? [row, menu] : [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
-			// time: 5 * 60 * 1000
-		});
-
-		args.tag = data.tag;
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.accounts && action.isStringSelectMenu()) {
-				await action.deferUpdate();
-				const data = players.find((en) => en.tag === action.values.at(0))!;
-				args.tag = data.tag;
-				refreshButton.setCustomId(JSON.stringify({ cmd: this.id, tag: data.tag }));
-				const embed = await this.embed(action.guild, data);
-				embed.setColor(this.client.embed(action));
-				await action.editReply({ embeds: [embed], components: options.length > 1 ? [row, menu] : [row] });
-			}
-			if (action.customId === customIds.troops && action.isButton()) {
-				await action.deferUpdate();
-				return this.handler.exec(action, this.handler.modules.get('units')!, { tag: args.tag });
-			}
-			if (action.customId === customIds.upgrades && action.isButton()) {
-				await action.deferUpdate();
-				return this.handler.exec(action, this.handler.modules.get('upgrades')!, { tag: args.tag });
-			}
-			if (action.customId === customIds.rushed && action.isButton()) {
-				await action.deferUpdate();
-				return this.handler.exec(action, this.handler.modules.get('rushed')!, { tag: args.tag });
-			}
-			if (action.customId === customIds.export && action.isButton()) {
-				await action.reply(`This command has been moved to ${this.client.getCommand('/history')} command.`);
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			Object.values(customIds).forEach((id) => this.client.components.delete(id));
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		return interaction.editReply({
+			embeds: [embed],
+			components: options.length > 1 ? [...clanRows, mainRow, menuRow] : [...clanRows, mainRow]
 		});
 	}
 
@@ -176,7 +165,7 @@ export default class PlayerCommand extends Command {
 		const weaponLevel = data.townHallWeaponLevel ? weaponLevels[data.townHallWeaponLevel] : '';
 		const embed = new EmbedBuilder()
 			.setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setURL(this.client.http.getPlayerURL(data.tag))
 			.setThumbnail(data.league?.iconUrls.small ?? `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`)
 			.setDescription(
 				[
