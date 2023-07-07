@@ -65,7 +65,12 @@ export class RoleManager {
 			)
 			.on('change', async (change) => {
 				if (this.client.shard?.ids[0] === 0) {
-					this.client.logger.debug(`Player ${change.operationType}ed`, { label: 'PlayerLink' });
+					if (change.operationType === 'insert' || change.operationType === 'update') {
+						const link = change.fullDocument!;
+						this.client.logger.debug(`Player ${change.operationType} - ${link.name} (${link.tag})`, { label: 'PlayerLink' });
+					} else {
+						this.client.logger.debug(`Player ${change.operationType}`, { label: 'PlayerLink' });
+					}
 				}
 				if (change.operationType === 'insert' || change.operationType === 'update') {
 					const link = change.fullDocument!;

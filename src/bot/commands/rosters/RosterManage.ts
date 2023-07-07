@@ -186,7 +186,7 @@ export default class RosterManageCommand extends Command {
 		if (args.action === 'add-user') {
 			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
 			if (!player) return;
-			const user = await this.client.resolver.getUser(args.player_tag);
+			const user = await this.client.resolver.getUser(player.tag);
 
 			const updated = await this.client.rosterManager.signup({
 				interaction,
