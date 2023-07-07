@@ -22,4 +22,6 @@ process.on('unhandledRejection', (error) => {
 	console.error(error);
 });
 
+console.log(process.env);
+
 ShardingManager.init();
