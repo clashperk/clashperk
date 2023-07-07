@@ -269,6 +269,7 @@ export default class CWLStatsCommand extends Command {
 		];
 		const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setTitle('Clan War League Ranking');
 
+		const medals = leagueId ? calculateCWLMedals(leagueId, 8, rankIndex + 1) : 0;
 		if (leagueId) {
 			embed.setDescription(
 				[
@@ -291,7 +292,7 @@ export default class CWLStatsCommand extends Command {
 					'',
 					`Rank #${rankIndex + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}% ${
 						EMOJIS.CWL_MEDAL
-					} (Max. ${calculateCWLMedals(leagueId, 8, rankIndex + 1)})`
+					} (Max. ${medals})`
 				].join('\n')
 			);
 		} else {
@@ -324,6 +325,7 @@ export default class CWLStatsCommand extends Command {
 				ranks,
 				rankIndex: rankIndex,
 				season: body.season,
+				medals: medals,
 				leagueName: WarLeagueMap[leagueId],
 				rounds: `${activeRounds}/${body.rounds.length}`
 			})
