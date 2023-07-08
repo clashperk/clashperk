@@ -51,7 +51,7 @@ export default class SummaryCommand extends Command {
 			new ButtonBuilder()
 				.setLabel(args.asc_order ? 'Most Active' : 'Least Active')
 				.setStyle(ButtonStyle.Secondary)
-				.setCustomId(customIds.toggle)
+				.setCustomId(customIds.asc_order)
 		);
 
 		await interaction.editReply({ embeds: [embed], components: [row] });
