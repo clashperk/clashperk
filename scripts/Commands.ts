@@ -1731,6 +1731,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						max_value: MAX_TOWN_HALL_LEVEL
 					},
 					{
+						name: 'max_town_hall',
+						description: 'Maximum Town Hall level of the roster.',
+						type: ApplicationCommandOptionType.Integer,
+						min_value: 2,
+						max_value: MAX_TOWN_HALL_LEVEL
+					},
+					{
 						name: 'min_hero_level',
 						min_value: 0,
 						description: 'Minimum combined Hero level of the roster.',
@@ -1771,7 +1778,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'CLAN_NAME'
 							},
 							{
-								name: 'Last Signup',
+								name: 'Signup Time',
 								value: 'SIGNUP_TIME'
 							}
 						]
@@ -1930,6 +1937,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.Integer
 					},
 					{
+						name: 'max_town_hall',
+						description: 'Maximum Town Hall level of the roster.',
+						type: ApplicationCommandOptionType.Integer,
+						min_value: 2,
+						max_value: MAX_TOWN_HALL_LEVEL
+					},
+					{
 						name: 'min_hero_level',
 						min_value: 0,
 						description: 'Minimum combined Hero level of the roster.',
@@ -1952,10 +1966,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'TH/DISCORD/NAME/CLAN',
 								value: 'TH/DISCORD/NAME/CLAN'
-							},
-							{
-								name: 'Custom',
-								value: 'CUSTOM'
 							}
 						]
 					},
@@ -1989,7 +1999,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'CLAN_NAME'
 							},
 							{
-								name: 'Last Signup',
+								name: 'Signup Time',
 								value: 'SIGNUP_TIME'
 							}
 						]
