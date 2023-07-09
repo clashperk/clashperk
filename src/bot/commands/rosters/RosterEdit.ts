@@ -42,6 +42,7 @@ export default class RosterEditCommand extends Command {
 			use_clan_alias?: boolean;
 			delete_roster?: boolean;
 			allow_unlinked?: boolean;
+			components_only?: boolean;
 		}
 	) {
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
@@ -92,7 +93,7 @@ export default class RosterEditCommand extends Command {
 		const keys = Object.entries(rosterLayoutMap);
 		const menu = new StringSelectMenuBuilder()
 			.setCustomId(customIds.select)
-			.setPlaceholder('Select a layout!')
+			.setPlaceholder('Select a custom layout!')
 			.setMinValues(3)
 			.setMaxValues(5)
 			.setOptions(
@@ -155,7 +156,26 @@ export default class RosterEditCommand extends Command {
 		this.client.rosterManager.setDefaultSettings(interaction.guild.id, updated);
 
 		const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
-		const message = await interaction.editReply({ embeds: [embed], components: [menuRow] });
+		embed.setDescription(
+			[
+				`- ${this.client.getCommand('/roster post')} to signup.`,
+				`- ${this.client.getCommand('/roster manage')} to manage the roster.`,
+				`- ${this.client.getCommand('/roster edit')} to change the roster settings.`,
+				`- ${this.client.getCommand('/roster delete')} to delete the roster.`,
+				`- ${this.client.getCommand('/roster list')} to list all rosters or search for a roster.`,
+				`- ${this.client.getCommand('/roster clone')} to clone a roster.`,
+				`- ${this.client.getCommand('/roster groups create')} to create a user group.`,
+				`- ${this.client.getCommand('/roster groups modify')} to edit/delete a user group.`
+			].join('\n')
+		);
+
+		const message = await interaction.editReply({
+			embeds: args.components_only ? [] : [embed],
+			components: [menuRow],
+			content: args.components_only
+				? `**Change Roster Layout** \n- More settings can be edited using ${this.client.getCommand('/roster edit')} command.`
+				: null
+		});
 
 		createInteractionCollector({
 			customIds,
