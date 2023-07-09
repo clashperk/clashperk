@@ -31,24 +31,30 @@ export default class RosterSignupCommand extends Command {
 			return interaction.followUp({ content: 'Roster is closed.', ephemeral: true });
 		}
 
-		const players = await this.client.resolver.getPlayers(interaction.user.id);
+		const players = await this.client.resolver.getPlayers(interaction.user.id, 75);
 		const customIds = {
 			select: this.client.uuid(interaction.user.id),
 			category: this.client.uuid(interaction.user.id)
 		};
 
 		const signedUp = roster.members.map((member) => member.tag);
-		const linked = players.map((player) => {
-			const heroes = player.heroes.filter((hero) => hero.village === 'home');
-			return {
-				label: `${signedUp.includes(player.tag) ? '[SIGNED UP] ' : ''}${player.name} (${player.tag})`,
-				value: player.tag,
-				emoji: TOWN_HALLS[player.townHallLevel],
-				description: heroes.length ? `${heroes.map((hero) => `${this.initials(hero.name)} ${hero.level}`).join(', ')}` : undefined
-			};
-		});
+		const linked = players
+			.filter((player) => (players.length > 25 ? !signedUp.includes(player.tag) : true))
+			.slice(0, 25)
+			.map((player) => {
+				const heroes = player.heroes.filter((hero) => hero.village === 'home');
+				return {
+					label: `${signedUp.includes(player.tag) ? '[SIGNED UP] ' : ''}${player.name} (${player.tag})`,
+					value: player.tag,
+					emoji: TOWN_HALLS[player.townHallLevel],
+					description: heroes.length
+						? `${heroes.map((hero) => `${this.initials(hero.name)} ${hero.level}`).join(', ')}`
+						: undefined
+				};
+			});
 		const registered = roster.members
 			.filter((mem) => mem.userId === interaction.user.id)
+			.slice(0, 25)
 			.map((mem) => ({
 				label: `${mem.name} (${mem.tag})`,
 				value: mem.tag,

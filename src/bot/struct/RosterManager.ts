@@ -111,6 +111,37 @@ export const rosterLayoutMap = {
 	}
 } as const;
 
+export const sortingItems = [
+	{
+		label: 'Player Name',
+		value: 'PLAYER_NAME'
+	},
+	{
+		label: 'Discord Username',
+		value: 'DISCORD_NAME'
+	},
+	{
+		label: 'Town Hall Level',
+		value: 'TOWN_HALL_LEVEL'
+	},
+	{
+		label: 'Hero Levels',
+		value: 'HERO_LEVEL'
+	},
+	{
+		label: 'TH + Hero Levels',
+		value: 'TH_HERO_LEVEL'
+	},
+	{
+		label: 'Clan Name',
+		value: 'CLAN_NAME'
+	},
+	{
+		label: 'Signup Time',
+		value: 'SIGNUP_TIME'
+	}
+];
+
 export interface IRoster {
 	name: string;
 	guildId: string;
@@ -701,7 +732,7 @@ export class RosterManager {
 		const sortKey = roster.sortBy ?? 'SIGNUP_TIME';
 		switch (sortKey) {
 			case 'TOWN_HALL_LEVEL':
-				roster.members.sort((a, b) => a.townHallLevel - b.townHallLevel);
+				roster.members.sort((a, b) => b.townHallLevel - a.townHallLevel);
 				break;
 			case 'HERO_LEVEL':
 				roster.members.sort((a, b) => this.sum(Object.values(a.heroes)) - this.sum(Object.values(b.heroes)));

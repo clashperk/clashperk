@@ -116,7 +116,8 @@ export const createInteractionCollector = ({
 	onRoleSelect,
 	onChannelSelect,
 	interaction,
-	message
+	message,
+	clear
 }: {
 	customIds: Record<string, string>;
 	onClick?: (interaction: ButtonInteraction<'cached'>) => unknown;
@@ -126,6 +127,7 @@ export const createInteractionCollector = ({
 	onChannelSelect?: (interaction: ChannelSelectMenuInteraction<'cached'>) => unknown;
 	interaction: CommandInteraction<'cached'>;
 	message: Message<true>;
+	clear?: boolean;
 }) => {
 	const client = container.resolve(Client);
 
@@ -146,7 +148,7 @@ export const createInteractionCollector = ({
 		collector.off('collect', () => null);
 		collector.off('end', () => null);
 		Object.values(customIds).forEach((id) => client.components.delete(id));
-		if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		if (!/delete/i.test(reason) && clear) await interaction.editReply({ components: [] });
 	});
 
 	return collector;

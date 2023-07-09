@@ -229,20 +229,16 @@ export default class Resolver {
 		return (await Promise.all(playerTags.map((tag) => this.client.http.player(tag)))).filter((res) => res.ok);
 	}
 
-	public async getPlayers(userId: string) {
+	public async getPlayers(userId: string, limit = 25) {
 		const [players, others] = await Promise.all([
 			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),
 			this.client.http.getPlayerTags(userId)
 		]);
 		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
-
-		return (
-			await Promise.all(
-				Array.from(playerTagSet)
-					.slice(0, 25)
-					.map((tag) => this.client.http.player(tag))
-			)
-		).filter((res) => res.ok);
+		const playerTags = Array.from(playerTagSet)
+			.slice(0, limit)
+			.map((tag) => this.client.http.player(tag));
+		return (await Promise.all(playerTags)).filter((res) => res.ok);
 	}
 
 	public async resolveArgs(args?: string) {

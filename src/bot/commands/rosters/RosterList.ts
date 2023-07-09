@@ -1,5 +1,5 @@
 import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
-import { Filter } from 'mongodb';
+import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { IRoster } from '../../struct/RosterManager.js';
 
@@ -9,7 +9,7 @@ export default class RosterListCommand extends Command {
 			category: 'roster',
 			channel: 'guild',
 			description: {
-				content: ['Create, delete, edit or view rosters.']
+				content: ['List rosters and groups.']
 			},
 			defer: true,
 			ephemeral: true
@@ -18,8 +18,10 @@ export default class RosterListCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player_tag?: string; name?: string; clan?: string }) {
 		const query: Filter<IRoster> = { guildId: interaction.guild.id };
+
 		if (args.user) query['members.userId'] = args.user.id;
-		if (args.player_tag) query['members.playerTag'] = args.player_tag;
+		else if (args.player_tag) query['members.tag'] = args.player_tag;
+
 		if (args.name) {
 			const text = args.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 			query.name = { $regex: `.*${text}.*`, $options: 'i' };
@@ -27,23 +29,90 @@ export default class RosterListCommand extends Command {
 		if (args.clan) query['clan.tag'] = args.clan;
 
 		const isSearch = Object.keys(query).length > 1;
-		const rosters = isSearch
-			? await this.client.rosterManager.query(query)
-			: await this.client.rosterManager.list(interaction.guild.id);
+		const filter = args.user
+			? { $filter: { input: '$members', as: 'member', cond: { $eq: ['$$member.userId', args.user.id] } } }
+			: args.player_tag
+			? { $filter: { input: '$members', as: 'member', cond: { $eq: ['$$member.tag', args.player_tag] } } }
+			: null;
+
+		const cursor = this.client.rosterManager.rosters.aggregate<WithId<IRoster & { memberCount: number }>>([
+			{ $match: { ...query } },
+			{
+				$set: {
+					...(filter ? { members: { ...filter } } : { members: [] }),
+					memberCount: { $size: '$members' }
+				}
+			}
+		]);
+		if (!isSearch) cursor.sort({ _id: -1 });
+		const rosters = await cursor.toArray();
 
 		const embeds: EmbedBuilder[] = [];
-
 		const rosterEmbed = new EmbedBuilder().setTitle('Rosters');
 		if (rosters.length) {
 			rosterEmbed.setDescription(
 				rosters
 					.map((roster, i) => {
-						const closed = this.client.rosterManager.isClosed(roster) ? '[CLOSED] ' : '';
+						const closed = this.client.rosterManager.isClosed(roster) ? '[CLOSED] ' : '- ';
 						const memberCount = `${roster.memberCount}/${roster.maxMembers ?? 50}`;
 						return `**${i + 1}.** ${escapeMarkdown(`\u200e${roster.name} ${closed}${roster.clan.name} (${memberCount})`)}`;
 					})
 					.join('\n')
 			);
+
+			if (args.user) {
+				const members = rosters
+					.map((roster) => {
+						return roster.members.map((member) => ({
+							name: member.name,
+							tag: member.tag,
+							userId: member.userId,
+							username: member.username,
+							townHallLevel: member.townHallLevel,
+							roster: {
+								name: roster.name,
+								clan: roster.clan.name,
+								memberCount: roster.memberCount,
+								maxMembers: roster.maxMembers,
+								isClosed: this.client.rosterManager.isClosed(roster)
+							}
+						}));
+					})
+					.flat();
+
+				const membersMap = members.reduce<Record<string, Grouped>>((acc, member) => {
+					acc[member.tag] = member;
+					return acc;
+				}, {});
+
+				const grouped = members.reduce<Record<string, Grouped['roster'][]>>((acc, member) => {
+					acc[member.tag] = [];
+					acc[member.tag].push(member.roster);
+					return acc;
+				}, {});
+
+				const groupedMembers = Object.values(membersMap).map((member) => {
+					return {
+						...member,
+						rosters: grouped[member.tag]
+					};
+				});
+
+				rosterEmbed.setDescription(
+					groupedMembers
+						.map((member) => {
+							return [
+								`- ${member.name} (${member.tag})`,
+								...member.rosters.map((roster) => {
+									const closed = roster.isClosed ? '[CLOSED] ' : '- ';
+									const memberCount = `${roster.memberCount}/${roster.maxMembers ?? 50}`;
+									return ` - ${escapeMarkdown(`\u200e${roster.name} ${closed}${roster.clan} (${memberCount})`)}`;
+								})
+							].join('\n');
+						})
+						.join('\n\n')
+				);
+			}
 		}
 
 		if (isSearch) rosterEmbed.setFooter({ text: 'Search Results' });
@@ -72,4 +141,19 @@ export default class RosterListCommand extends Command {
 		if (!embeds.length) return interaction.editReply({ content: 'No rosters or groups found.' });
 		return interaction.editReply({ embeds });
 	}
+}
+
+interface Grouped {
+	name: string;
+	tag: string;
+	userId: string | null;
+	username: string | null;
+	townHallLevel: number;
+	roster: {
+		name: string;
+		clan: string;
+		memberCount: number;
+		isClosed: boolean;
+		maxMembers?: number;
+	};
 }

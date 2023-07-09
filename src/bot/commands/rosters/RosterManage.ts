@@ -1078,7 +1078,7 @@ export default class RosterManageCommand extends Command {
 		if (user) {
 			selected.userIds.push(user.id);
 			selected.user = user;
-			const players = await this.client.resolver.getPlayers(user.id);
+			const players = await this.client.resolver.getPlayers(user.id, 75);
 			selected.players = players.map((player) => ({
 				...player,
 				user: {
@@ -1190,7 +1190,7 @@ export default class RosterManageCommand extends Command {
 
 			if (selected.user) {
 				const user = selected.user;
-				const players = await this.client.resolver.getPlayers(user.id);
+				const players = await this.client.resolver.getPlayers(user.id, 75);
 				selected.players = players.map((player) => ({
 					...player,
 					user: {
