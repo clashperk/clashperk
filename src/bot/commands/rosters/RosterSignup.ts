@@ -26,7 +26,7 @@ export default class RosterSignupCommand extends Command {
 
 		const isClosed = this.client.rosterManager.isClosed(roster);
 		if (isClosed) {
-			const row = this.client.rosterManager.getRosterComponents({ roster });
+			const row = this.client.rosterManager.getRosterComponents({ roster, signupDisabled: false });
 			await interaction.editReply({ components: [row] });
 			return interaction.followUp({ content: 'Roster is closed.', ephemeral: true });
 		}

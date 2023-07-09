@@ -53,7 +53,6 @@ export default class SetupUtilsCommand extends Command {
 		const customIds = {
 			embed: this.client.uuid(),
 			link: this.client.uuid(),
-			modal: this.client.uuid(),
 			roles: this.client.uuid(),
 			token: this.client.uuid(),
 			title: this.client.uuid(),
@@ -164,7 +163,8 @@ export default class SetupUtilsCommand extends Command {
 			}
 
 			if (action.customId === customIds.embed) {
-				const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Link a Player Account');
+				const modalCustomId = this.client.uuid(action.user.id);
+				const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Link a Player Account');
 				const titleInput = new TextInputBuilder()
 					.setCustomId(customIds.title)
 					.setLabel('Title')
@@ -211,35 +211,32 @@ export default class SetupUtilsCommand extends Command {
 				await action.showModal(modal);
 
 				try {
-					await action
-						.awaitModalSubmit({
-							time: 10 * 60 * 1000,
-							filter: (action) => action.customId === customIds.modal
-						})
-						.then(async (modalSubmit) => {
-							const title = modalSubmit.fields.getTextInputValue(customIds.title);
-							const description = modalSubmit.fields.getTextInputValue(customIds.description);
-							const imageUrl = modalSubmit.fields.getTextInputValue(customIds.image_url);
-							const thumbnailUrl = modalSubmit.fields.getTextInputValue(customIds.thumbnail_url);
+					const modalSubmit = await action.awaitModalSubmit({
+						time: 10 * 60 * 1000,
+						filter: (action) => action.customId === modalCustomId
+					});
+					const title = modalSubmit.fields.getTextInputValue(customIds.title);
+					const description = modalSubmit.fields.getTextInputValue(customIds.description);
+					const imageUrl = modalSubmit.fields.getTextInputValue(customIds.image_url);
+					const thumbnailUrl = modalSubmit.fields.getTextInputValue(customIds.thumbnail_url);
 
-							state.title = title;
-							state.description = description;
-							state.image_url = URL_REGEX.test(imageUrl) ? imageUrl : '';
-							state.thumbnail_url = URL_REGEX.test(thumbnailUrl) ? thumbnailUrl : '';
+					state.title = title;
+					state.description = description;
+					state.image_url = URL_REGEX.test(imageUrl) ? imageUrl : '';
+					state.thumbnail_url = URL_REGEX.test(thumbnailUrl) ? thumbnailUrl : '';
 
-							await modalSubmit.deferUpdate();
+					await modalSubmit.deferUpdate();
 
-							embed.setTitle(state.title);
-							embed.setDescription(state.description);
-							embed.setImage(state.image_url || null);
-							embed.setThumbnail(state.thumbnail_url || null);
+					embed.setTitle(state.title);
+					embed.setDescription(state.description);
+					embed.setImage(state.image_url || null);
+					embed.setThumbnail(state.thumbnail_url || null);
 
-							linkButton.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }));
-							const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
+					linkButton.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }));
+					const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
-							await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
-							await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
-						});
+					await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
+					await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
 				} catch (e) {
 					if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
 						throw e;
@@ -273,9 +270,6 @@ export default class SetupUtilsCommand extends Command {
 			locations: this.client.uuid(interaction.user.id),
 			duration: this.client.uuid(interaction.user.id),
 			confirm: this.client.uuid(interaction.user.id),
-
-			images_modal: this.client.uuid(interaction.user.id),
-			locations_modal: this.client.uuid(interaction.user.id),
 
 			clan_games: this.client.uuid(interaction.user.id),
 			capital_raids: this.client.uuid(interaction.user.id),
@@ -451,7 +445,8 @@ export default class SetupUtilsCommand extends Command {
 			}
 
 			if (action.customId === customIds.images) {
-				const modal = new ModalBuilder().setCustomId(customIds.images_modal).setTitle('Custom Images');
+				const modalCustomId = this.client.uuid(action.user.id);
+				const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Custom Images');
 				const seasonResetImageInput = new TextInputBuilder()
 					.setCustomId(customIds.season_reset)
 					.setLabel('Season Reset Image URL')
@@ -498,25 +493,23 @@ export default class SetupUtilsCommand extends Command {
 				await action.showModal(modal);
 
 				try {
-					await action
-						.awaitModalSubmit({
-							time: 10 * 60 * 1000,
-							filter: (action) => action.customId === customIds.images_modal
-						})
-						.then(async (modalSubmit) => {
-							const season_reset_image_url = modalSubmit.fields.getTextInputValue(customIds.season_reset);
-							const cwl_image_url = modalSubmit.fields.getTextInputValue(customIds.cwl);
-							const raid_week_image_url = modalSubmit.fields.getTextInputValue(customIds.capital_raids);
-							const clan_games_image_url = modalSubmit.fields.getTextInputValue(customIds.clan_games);
+					const modalSubmit = await action.awaitModalSubmit({
+						time: 10 * 60 * 1000,
+						filter: (action) => action.customId === modalCustomId
+					});
 
-							state.season_reset_image_url = URL_REGEX.test(season_reset_image_url) ? season_reset_image_url : '';
-							state.cwl_image_url = URL_REGEX.test(cwl_image_url) ? cwl_image_url : '';
-							state.raid_week_image_url = URL_REGEX.test(raid_week_image_url) ? raid_week_image_url : '';
-							state.clan_games_image_url = URL_REGEX.test(clan_games_image_url) ? clan_games_image_url : '';
+					const season_reset_image_url = modalSubmit.fields.getTextInputValue(customIds.season_reset);
+					const cwl_image_url = modalSubmit.fields.getTextInputValue(customIds.cwl);
+					const raid_week_image_url = modalSubmit.fields.getTextInputValue(customIds.capital_raids);
+					const clan_games_image_url = modalSubmit.fields.getTextInputValue(customIds.clan_games);
 
-							await modalSubmit.deferUpdate();
-							await modalSubmit.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
-						});
+					state.season_reset_image_url = URL_REGEX.test(season_reset_image_url) ? season_reset_image_url : '';
+					state.cwl_image_url = URL_REGEX.test(cwl_image_url) ? cwl_image_url : '';
+					state.raid_week_image_url = URL_REGEX.test(raid_week_image_url) ? raid_week_image_url : '';
+					state.clan_games_image_url = URL_REGEX.test(clan_games_image_url) ? clan_games_image_url : '';
+
+					await modalSubmit.deferUpdate();
+					await modalSubmit.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
 				} catch (e) {
 					if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
 						throw e;
@@ -525,7 +518,8 @@ export default class SetupUtilsCommand extends Command {
 			}
 
 			if (action.customId === customIds.locations) {
-				const modal = new ModalBuilder().setCustomId(customIds.locations_modal).setTitle('Event Locations');
+				const modalCustomId = this.client.uuid(action.user.id);
+				const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Event Locations');
 				const seasonResetLocationInput = new TextInputBuilder()
 					.setCustomId(customIds.season_reset)
 					.setLabel('Season Reset Location')
@@ -572,25 +566,22 @@ export default class SetupUtilsCommand extends Command {
 				await action.showModal(modal);
 
 				try {
-					await action
-						.awaitModalSubmit({
-							time: 10 * 60 * 1000,
-							filter: (action) => action.customId === customIds.locations_modal
-						})
-						.then(async (modalSubmit) => {
-							const season_reset_location = modalSubmit.fields.getTextInputValue(customIds.season_reset);
-							const cwl_location = modalSubmit.fields.getTextInputValue(customIds.cwl);
-							const raid_week_location = modalSubmit.fields.getTextInputValue(customIds.capital_raids);
-							const clan_games_location = modalSubmit.fields.getTextInputValue(customIds.clan_games);
+					const modalSubmit = await action.awaitModalSubmit({
+						time: 10 * 60 * 1000,
+						filter: (action) => action.customId === modalCustomId
+					});
+					const season_reset_location = modalSubmit.fields.getTextInputValue(customIds.season_reset);
+					const cwl_location = modalSubmit.fields.getTextInputValue(customIds.cwl);
+					const raid_week_location = modalSubmit.fields.getTextInputValue(customIds.capital_raids);
+					const clan_games_location = modalSubmit.fields.getTextInputValue(customIds.clan_games);
 
-							state.season_reset_location = season_reset_location || null;
-							state.cwl_location = cwl_location || null;
-							state.raid_week_location = raid_week_location || null;
-							state.clan_games_location = clan_games_location || null;
+					state.season_reset_location = season_reset_location || null;
+					state.cwl_location = cwl_location || null;
+					state.raid_week_location = raid_week_location || null;
+					state.clan_games_location = clan_games_location || null;
 
-							await modalSubmit.deferUpdate();
-							await modalSubmit.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
-						});
+					await modalSubmit.deferUpdate();
+					await modalSubmit.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
 				} catch (e) {
 					if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
 						throw e;

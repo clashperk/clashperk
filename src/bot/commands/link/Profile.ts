@@ -62,8 +62,8 @@ export default class ProfileCommand extends Command {
 		const whitelist = this.client.settings.get<string[]>('global', 'whitelist', []);
 
 		if (args.player_tag && !whitelist.includes(interaction.user.id)) {
-			const command = this.handler.modules.get('player');
-			return command!.exec(interaction, { tag: args.player_tag });
+			const command = this.handler.modules.get('player')!;
+			return command.exec(interaction, { tag: args.player_tag });
 		}
 
 		const user =

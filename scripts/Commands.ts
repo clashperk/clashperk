@@ -1789,10 +1789,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								name: 'TH/DISCORD/NAME/CLAN',
 								value: 'TH/DISCORD/NAME/CLAN'
 							}
-							// {
-							// 	name: 'Custom',
-							// 	value: 'CUSTOM'
-							// }
 						]
 					},
 					{
@@ -2088,10 +2084,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'player_tag',
-						required: true,
 						autocomplete: true,
 						description: 'Select a player to manage.',
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'user',
+						description: 'Select a user to manage.',
+						type: ApplicationCommandOptionType.User
 					},
 					{
 						name: 'target_group',

@@ -18,7 +18,7 @@ export default class RosterEditCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; signup_disabled: boolean }) {
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 
 		const rosterId = new ObjectId(args.roster);
@@ -29,10 +29,12 @@ export default class RosterEditCommand extends Command {
 			select: this.client.uuid(interaction.user.id)
 		};
 
+		const isClosed = this.client.rosterManager.isClosed(roster);
+
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
 				.setMinValues(1)
-				.setPlaceholder('Select an option!')
+				.setPlaceholder('Select an action!')
 				.setCustomId(customIds.select)
 				.setOptions([
 					{
@@ -41,14 +43,9 @@ export default class RosterEditCommand extends Command {
 						value: 'export'
 					},
 					{
-						label: 'Close Roster',
-						description: 'Prevent new signups to the roster.',
-						value: 'close'
-					},
-					{
-						label: 'Open Roster',
-						description: 'Allow new signups to the roster.',
-						value: 'open'
+						label: `${isClosed ? 'Open' : 'Close'} Roster`,
+						description: `${isClosed ? 'Allow' : 'Prevent'} new signups to the roster.`,
+						value: isClosed ? 'open' : 'close'
 					},
 					{
 						label: 'Clear Roster',
@@ -56,9 +53,34 @@ export default class RosterEditCommand extends Command {
 						value: 'clear'
 					},
 					{
-						label: 'Remove Buttons',
+						label: `${args.signup_disabled ? 'Show' : 'Hide'} Buttons`,
+						description: `${args.signup_disabled ? 'Show' : 'Hide'} signup buttons from the message.`,
+						value: 'toggle-signup'
+					},
+					{
+						label: 'Archive Mode',
 						description: 'Remove action buttons from the message.',
 						value: 'archive'
+					},
+					{
+						label: 'Add User',
+						description: 'Add a user or players to the roster.',
+						value: 'add-user'
+					},
+					{
+						label: 'Remove User',
+						description: 'Remove a user or players from the roster.',
+						value: 'del-user'
+					},
+					{
+						label: 'Change Roster',
+						description: 'Move a user or players to another roster.',
+						value: 'change-roster'
+					},
+					{
+						label: 'Change Group',
+						description: 'Move a user or players to another user group.',
+						value: 'change-category'
 					}
 				])
 		);
@@ -72,7 +94,7 @@ export default class RosterEditCommand extends Command {
 			await action.update({ content: 'Roster closed!', components: [] });
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-			const row = this.client.rosterManager.getRosterComponents({ roster: updated });
+			const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
 			return interaction.editReply({ embeds: [embed], components: [row] });
 		};
 
@@ -103,7 +125,7 @@ export default class RosterEditCommand extends Command {
 			await action.update({ content: 'Roster opened!', components: [] });
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-			const row = this.client.rosterManager.getRosterComponents({ roster: updated });
+			const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
 			return interaction.editReply({ embeds: [embed], components: [row] });
 		};
 
@@ -114,14 +136,14 @@ export default class RosterEditCommand extends Command {
 			await action.update({ content: 'Roster cleared!', components: [] });
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-			const row = this.client.rosterManager.getRosterComponents({ roster: updated });
+			const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
 			return interaction.editReply({ embeds: [embed], components: [row] });
 		};
 
 		const archiveRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
 			const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
 			await interaction.editReply({ embeds: [embed], components: [] });
-			await action.update({ content: 'Roster buttons removed!', components: [] });
+			await action.update({ content: 'Roster message archived!', components: [] });
 
 			const clan = await this.client.http.clan(roster.clan.tag);
 			if (!clan.ok) return null;
@@ -135,6 +157,16 @@ export default class RosterEditCommand extends Command {
 
 			const components = getExportComponents(sheet);
 			return interaction.editReply({ embeds: [embed], components: [...components] });
+		};
+
+		const toggleSignup = async (action: StringSelectMenuInteraction<'cached'>) => {
+			await action.update({
+				content: `${args.signup_disabled ? 'Signup buttons updated.' : 'Signup buttons removed.'}`,
+				components: []
+			});
+
+			const row = this.client.rosterManager.getRosterComponents({ roster, signupDisabled: !args.signup_disabled });
+			return interaction.editReply({ components: [row] });
 		};
 
 		const exportSheet = async (action: StringSelectMenuInteraction<'cached'>) => {
@@ -161,7 +193,7 @@ export default class RosterEditCommand extends Command {
 			interaction,
 			customIds,
 			message,
-			onSelect: (action) => {
+			onSelect: async (action: StringSelectMenuInteraction<'cached'>) => {
 				const value = action.values.at(0)!;
 
 				if (!this.client.util.isManager(action.member) && !['export'].includes(value)) {
@@ -180,8 +212,30 @@ export default class RosterEditCommand extends Command {
 						return clearRoster(action);
 					case 'archive':
 						return archiveRoster(action);
+					case 'toggle-signup':
+						return toggleSignup(action);
 					case 'export':
 						return exportSheet(action);
+					case 'add-user': {
+						await action.deferUpdate();
+						const command = this.client.commandHandler.modules.get('roster-manage')!;
+						return command.exec(action, { roster: rosterId.toHexString(), action: 'add-user' });
+					}
+					case 'del-user': {
+						await action.deferUpdate();
+						const command = this.client.commandHandler.modules.get('roster-manage')!;
+						return command.exec(action, { roster: rosterId.toHexString(), action: 'del-user' });
+					}
+					case 'change-roster': {
+						await action.deferUpdate();
+						const command = this.client.commandHandler.modules.get('roster-manage')!;
+						return command.exec(action, { roster: rosterId.toHexString(), action: 'change-roster' });
+					}
+					case 'change-category': {
+						await action.deferUpdate();
+						const command = this.client.commandHandler.modules.get('roster-manage')!;
+						return command.exec(action, { roster: rosterId.toHexString(), action: 'change-category' });
+					}
 				}
 			}
 		});

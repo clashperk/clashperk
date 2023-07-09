@@ -225,6 +225,10 @@ export default class Resolver {
 		return this.client.users.fetch(link.userId).catch(() => null);
 	}
 
+	public async fetchPlayers(playerTags: string[]) {
+		return (await Promise.all(playerTags.map((tag) => this.client.http.player(tag)))).filter((res) => res.ok);
+	}
+
 	public async getPlayers(userId: string) {
 		const [players, others] = await Promise.all([
 			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),

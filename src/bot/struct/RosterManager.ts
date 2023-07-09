@@ -9,7 +9,6 @@ import {
 	Guild,
 	PermissionFlagsBits,
 	StringSelectMenuInteraction,
-	User,
 	time
 } from 'discord.js';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
@@ -152,6 +151,13 @@ export interface IRosterDefaultSettings {
 	allowCategorySelection: boolean;
 	allowUnlinked: boolean;
 }
+
+export type PlayerWithLink = Player & {
+	user: {
+		id: string;
+		displayName: string;
+	} | null;
+};
 
 export interface IRosterCategory {
 	displayName: string;
@@ -490,35 +496,6 @@ export class RosterManager {
 		return value;
 	}
 
-	public async _optOut(roster: WithId<IRoster>, tag: string) {
-		const member = roster.members.find((mem) => mem.tag === tag);
-		if (!member) return roster;
-		const members = roster.members.filter((mem) => mem.userId === member.userId);
-
-		const { value } = await this.rosters.findOneAndUpdate(
-			{ _id: roster._id },
-			{ $pull: { members: { tag } } },
-			{ returnDocument: 'after' }
-		);
-
-		if (!value) return null;
-		if (!member.userId) return value;
-
-		const roleIds: string[] = [];
-		if (value.roleId && members.length <= 1) roleIds.push(value.roleId);
-
-		if (member.categoryId) {
-			const category = await this.getCategory(member.categoryId);
-			const categorizedMembers = members.filter(
-				(mem) => mem.categoryId && category && mem.categoryId.toHexString() === category._id.toHexString()
-			);
-			if (category?.roleId && categorizedMembers.length <= 1) roleIds.push(category.roleId);
-		}
-
-		if (roleIds.length && member.userId) this.removeRole(value.guildId, roleIds, member.userId);
-		return value;
-	}
-
 	public async optOut(roster: WithId<IRoster>, ...playerTags: string[]) {
 		const members = roster.members.filter((mem) => playerTags.includes(mem.tag));
 		if (!members.length) return roster;
@@ -562,40 +539,51 @@ export class RosterManager {
 		return value;
 	}
 
-	public async swapRoster(
-		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>,
-		oldRoster: WithId<IRoster>,
-		player: Player,
-		user: User | null,
-		newRosterId: ObjectId,
-		categoryId: string | null
-	) {
-		const attempt = await this.signup({
-			interaction,
+	public async swapRoster({
+		oldRoster,
+		player,
+		user,
+		newRosterId,
+		categoryId
+	}: {
+		oldRoster: WithId<IRoster>;
+		player: Player;
+		user: { id: string; displayName: string } | null;
+		newRosterId: ObjectId;
+		categoryId: string | null;
+	}) {
+		const attempt = await this.selfSignup({
 			rosterId: newRosterId,
 			player,
 			user,
 			categoryId,
+			isOwner: false,
 			isDryRun: true
 		});
-		if (!attempt) return null;
+		if (!attempt.success) return attempt;
 
-		const roster = await this.optOut(oldRoster, player.tag);
-		if (!roster) return null;
+		await this.optOut(oldRoster, player.tag);
 
-		return this.signup({
-			interaction,
+		return this.selfSignup({
 			rosterId: newRosterId,
 			player,
 			user,
-			categoryId
+			categoryId,
+			isOwner: false
 		});
 	}
 
-	public async swapCategory(rosterId: ObjectId, player: Player, user: User | null, newCategoryId: ObjectId | null) {
-		const roster = await this.get(rosterId);
-		if (!roster) return null;
-
+	public async swapCategory({
+		roster,
+		player,
+		user,
+		newCategoryId
+	}: {
+		roster: WithId<IRoster>;
+		player: Player;
+		user: { id: string; displayName: string } | null;
+		newCategoryId: ObjectId | null;
+	}) {
 		const oldCategoryId = roster.members.find((mem) => mem.tag === player.tag)?.categoryId;
 		if (oldCategoryId?.toHexString() === newCategoryId?.toHexString()) return roster;
 
@@ -610,7 +598,7 @@ export class RosterManager {
 		}
 
 		const { value } = await this.rosters.findOneAndUpdate(
-			{ '_id': rosterId, 'members.tag': player.tag },
+			{ '_id': roster._id, 'members.tag': player.tag },
 			{ $set: { 'members.$.categoryId': newCategoryId } },
 			{ returnDocument: 'after' }
 		);
@@ -809,19 +797,31 @@ export class RosterManager {
 				const padding = layout.align === 'left' ? 'padEnd' : 'padStart';
 				return layout.isEmoji ? layout.label : `\`${layout.label[padding](layout.width, ' ')}\``;
 			})
-			.join('\u2002');
+			.join(' ')
+			.replace(/` `/g, ' ');
 
-		embed.setDescription(
+		const [description, rest] = Util.splitMessage(
 			[
 				heading,
 				...groups.flatMap(({ categoryLabel, members }) => [
 					`${categoryLabel}`,
 					...members.map((member) => {
-						return layouts.map((layout) => (layout.isEmoji ? member[layout.key] : `\`${member[layout.key]}\``)).join('\u2002');
+						return layouts
+							.map((layout) => (layout.isEmoji ? member[layout.key] : `\`${member[layout.key]}\``))
+							.join(' ')
+							.replace(/` `/g, ' ');
 					})
 				])
-			].join('\n')
+			].join('\n'),
+			{ maxLength: 4096 }
 		);
+
+		embed.setDescription(description);
+		if (rest) {
+			for (const value of Util.splitMessage(rest, { maxLength: 1024 })) {
+				embed.addFields({ name: '\u200e', value });
+			}
+		}
 
 		if (roster.startTime && roster.startTime > new Date()) {
 			embed.addFields({
@@ -917,7 +917,7 @@ export class RosterManager {
 		return embed;
 	}
 
-	public getRosterComponents({ roster }: { roster: WithId<IRoster> }) {
+	public getRosterComponents({ roster, signupDisabled }: { roster: WithId<IRoster>; signupDisabled: boolean }) {
 		const isClosed = this.isClosed(roster);
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -925,6 +925,7 @@ export class RosterManager {
 				.setCustomId(
 					JSON.stringify({
 						cmd: 'roster-post',
+						signup_disabled: signupDisabled,
 						roster: roster._id.toHexString()
 					})
 				)
@@ -932,24 +933,27 @@ export class RosterManager {
 				.setStyle(ButtonStyle.Secondary)
 		);
 
-		row.addComponents(
-			new ButtonBuilder()
-				.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: true }))
-				.setLabel('Signup')
-				.setStyle(ButtonStyle.Success)
-				.setDisabled(isClosed),
-			new ButtonBuilder()
-				.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: false }))
-				.setLabel('Opt-out')
-				.setStyle(ButtonStyle.Danger)
-				.setDisabled(isClosed)
-		);
+		if (!signupDisabled) {
+			row.addComponents(
+				new ButtonBuilder()
+					.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: true }))
+					.setLabel('Signup')
+					.setStyle(ButtonStyle.Success)
+					.setDisabled(isClosed),
+				new ButtonBuilder()
+					.setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: false }))
+					.setLabel('Opt-out')
+					.setStyle(ButtonStyle.Danger)
+					.setDisabled(isClosed)
+			);
+		}
 
 		row.addComponents(
 			new ButtonBuilder()
 				.setCustomId(
 					JSON.stringify({
 						cmd: 'roster-settings',
+						signup_disabled: signupDisabled,
 						roster: roster._id.toHexString()
 					})
 				)
@@ -1234,14 +1238,14 @@ export class RosterManager {
 		return members;
 	}
 
-	private async getClanMemberLinks(memberList: { tag: string }[], allowUnlinked = false) {
+	public async getClanMemberLinks(memberList: { tag: string }[], allowUnlinked = false) {
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.find({ tag: { $in: memberList.map((mem) => mem.tag) } })
 			.toArray();
 		const players = await Promise.all(memberList.map((mem) => this.client.http.player(mem.tag)));
 
-		const members: (Player & { user: { id: string; displayName: string } | null })[] = [];
+		const members: PlayerWithLink[] = [];
 		players.forEach((player) => {
 			if (!player.ok) return;
 

@@ -14,10 +14,7 @@ export default class RosterPostCommand extends Command {
 		});
 	}
 
-	public async exec(
-		interaction: CommandInteraction<'cached'>,
-		args: { roster: string; list_option?: 'pending' | 'unwanted' | 'all'; group?: string; message?: string }
-	) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; signup_disabled: boolean }) {
 		// if (args.list_option || args.group) return this.ping(interaction, args);
 
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
@@ -30,7 +27,7 @@ export default class RosterPostCommand extends Command {
 
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
-		const row = this.client.rosterManager.getRosterComponents({ roster: updated });
+		const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
 		const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 
 		return interaction.editReply({ embeds: [embed], components: [row] });

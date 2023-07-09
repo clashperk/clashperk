@@ -1,16 +1,28 @@
 import {
 	ActionRowBuilder,
 	AutocompleteInteraction,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
 	CommandInteraction,
+	DiscordjsError,
+	DiscordjsErrorCodes,
+	ModalBuilder,
 	StringSelectMenuBuilder,
-	StringSelectMenuInteraction
+	StringSelectMenuInteraction,
+	TextInputBuilder,
+	TextInputStyle,
+	User,
+	UserSelectMenuBuilder,
+	UserSelectMenuInteraction
 } from 'discord.js';
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { IRoster, IRosterCategory } from '../../struct/RosterManager.js';
+import { IRoster, IRosterCategory, PlayerWithLink } from '../../struct/RosterManager.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Collections } from '../../util/Constants.js';
 import { PlayerModel } from '../../types/index.js';
+import { Util } from '../../util/index.js';
 
 export default class RosterManageCommand extends Command {
 	public constructor() {
@@ -163,8 +175,8 @@ export default class RosterManageCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		args: {
 			roster: string;
-			signup: boolean;
-			player_tag: string;
+			player_tag?: string;
+			user?: User;
 			target_group?: string;
 			target_roster?: string;
 			action: 'add-user' | 'del-user' | 'change-roster' | 'change-category' | '/';
@@ -177,13 +189,21 @@ export default class RosterManageCommand extends Command {
 		if (!roster) return interaction.editReply({ content: 'Roster was deleted.' });
 
 		if (args.action === 'del-user') {
+			if (!args.player_tag) {
+				return this.delUsers(interaction, { roster, user: args.user });
+			}
+
 			const updated = await this.client.rosterManager.optOut(roster, args.player_tag);
 			if (!updated) return interaction.editReply({ content: 'Roster was deleted.' });
 
-			return interaction.editReply({ content: 'User removed successfully.' });
+			return interaction.editReply({ content: 'Player removed successfully.' });
 		}
 
 		if (args.action === 'add-user') {
+			if (!args.player_tag) {
+				return this.addUsers(interaction, { roster, user: args.user, categoryId: args.target_group });
+			}
+
 			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
 			if (!player) return;
 			const user = await this.client.resolver.getUser(player.tag);
@@ -201,7 +221,16 @@ export default class RosterManageCommand extends Command {
 		}
 
 		if (args.action === 'change-roster') {
-			if (!args.target_roster) return this.changeRoster(interaction, roster, args.player_tag);
+			if (!args.player_tag || !args.target_roster) {
+				return this.changeRoster(interaction, {
+					roster,
+					playerTag: args.player_tag,
+					user: args.user,
+					rosterId: args.target_roster,
+					categoryId: args.target_group
+				});
+			}
+			const playerTag = this.client.http.parseTag(args.player_tag);
 
 			if (!ObjectId.isValid(args.target_roster)) return interaction.editReply({ content: 'Invalid target roster ID.' });
 			const newRosterId = new ObjectId(args.target_roster);
@@ -210,7 +239,7 @@ export default class RosterManageCommand extends Command {
 				return interaction.editReply({ content: 'Invalid target group ID.' });
 			}
 
-			const rosterMember = roster.members.find((member) => member.tag === this.client.http.parseTag(args.player_tag));
+			const rosterMember = roster.members.find((member) => member.tag === playerTag);
 			if (!rosterMember) return interaction.editReply({ content: 'User not found in roster.' });
 
 			const newGroupId = args.target_group
@@ -228,130 +257,1055 @@ export default class RosterManageCommand extends Command {
 
 			const user = await this.client.resolver.getUser(args.player_tag);
 
-			const swapped = await this.client.rosterManager.swapRoster(interaction, roster, player, user, newRosterId, newGroupId);
-			if (!swapped) return null;
+			const swapped = await this.client.rosterManager.swapRoster({
+				oldRoster: roster,
+				player,
+				user,
+				newRosterId,
+				categoryId: newGroupId
+			});
+			if (!swapped.success) return interaction.editReply({ content: swapped.message });
 
-			return interaction.editReply({ content: 'User moved to the new roster.', components: [] });
+			return interaction.editReply({ content: 'Players moved to the new roster.', components: [] });
 		}
 
 		if (args.action === 'change-category') {
-			if (!args.target_group) return this.changeCategory(interaction, roster, args.player_tag);
+			if (!args.player_tag || !args.target_group) {
+				return this.changeCategory(interaction, {
+					roster,
+					playerTag: args.player_tag,
+					categoryId: args.target_group,
+					user: args.user
+				});
+			}
+			const playerTag = this.client.http.parseTag(args.player_tag);
 
-			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+			const player = await this.client.resolver.resolvePlayer(interaction, playerTag);
 			if (!player) return;
 
-			const user = await this.client.resolver.getUser(args.player_tag);
-			const swapped = await this.client.rosterManager.swapCategory(roster._id, player, user, new ObjectId(args.target_group));
+			const user = await this.client.resolver.getUser(playerTag);
+			const swapped = await this.client.rosterManager.swapCategory({
+				roster,
+				player,
+				user,
+				newCategoryId: new ObjectId(args.target_group)
+			});
 			if (!swapped) return null;
 
-			return interaction.editReply({ content: 'User moved to the new group.', components: [] });
+			return interaction.editReply({ content: 'Players moved to the new user group.', components: [] });
 		}
 	}
 
-	private async changeCategory(interaction: CommandInteraction<'cached'>, roster: WithId<IRoster>, playerTag: string) {
+	private async changeCategory(
+		interaction: CommandInteraction<'cached'>,
+		{ roster, playerTag, user, categoryId }: { roster: WithId<IRoster>; playerTag?: string; user?: User; categoryId?: string }
+	) {
+		const playerCustomIds: Record<string, string> = {
+			0: this.client.uuid(interaction.user.id),
+			1: this.client.uuid(interaction.user.id),
+			2: this.client.uuid(interaction.user.id)
+		};
 		const customIds = {
-			select: this.client.uuid(interaction.user.id)
+			category: this.client.uuid(interaction.user.id),
+			categorySelect: this.client.uuid(interaction.user.id),
+			confirm: this.client.uuid(interaction.user.id),
+			deselect: this.client.uuid(interaction.user.id),
+			user: this.client.uuid(interaction.user.id),
+			...playerCustomIds
 		};
+
 		const selected = {
-			categoryId: null as null | string
+			categoryId: null as null | string,
+			user: null as null | User,
+			userIds: [] as string[],
+			playerTags: [] as string[],
+			targetCategory: null as null | WithId<IRosterCategory>
 		};
+		if (playerTag) selected.playerTags.push(playerTag);
+		if (user) {
+			selected.user = user;
+			selected.userIds.push(user.id);
+		}
+		if (categoryId) {
+			selected.categoryId = categoryId;
+			selected.targetCategory = await this.client.rosterManager.getCategory(new ObjectId(categoryId));
+		}
 
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
-		if (!categories.length) return interaction.editReply({ content: 'No categories found.' });
+		if (!categories.length) return interaction.editReply({ content: 'No user groups found.' });
 
-		const categoryMenu = new StringSelectMenuBuilder()
-			.setMinValues(1)
-			.setPlaceholder('Choose new category')
-			.setCustomId(customIds.select)
-			.setOptions(
-				categories.slice(0, 25).map((category) => ({
-					label: category.displayName,
-					value: category._id.toHexString(),
-					default: selected.categoryId === category._id.toHexString()
+		const maxItems = 25;
+		const getOptions = () => {
+			const filtered = selected.userIds.length
+				? roster.members.filter((mem) => mem.userId && selected.userIds.includes(mem.userId))
+				: roster.members;
+
+			if (selected.userIds.length) {
+				const filteredTags = filtered.map((op) => op.tag);
+				selected.playerTags = selected.playerTags.filter((tag) => filteredTags.includes(tag));
+			}
+
+			const options = filtered
+				.map((player) => ({
+					label: `${player.name} (${player.tag})`,
+					value: player.tag
 				}))
-			);
-		const categoryRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(categoryMenu);
+				.map((player) => ({
+					...player,
+					default: selected.playerTags.includes(player.value)
+				}));
+			return options.slice(0, 75);
+		};
 
+		const playerRows = () => {
+			const _playerRows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
+			const options = getOptions();
+			const chunks = Util.chunk(options, maxItems);
+
+			chunks.forEach((chunk, i) => {
+				const playerMenu = new StringSelectMenuBuilder()
+					.setMinValues(1)
+					.setMaxValues(chunk.length)
+					.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`)
+					.setCustomId(playerCustomIds[i])
+					.setOptions(chunk);
+				const playerRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(playerMenu);
+				_playerRows.push(playerRow);
+			});
+			return _playerRows;
+		};
+
+		const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(0);
+		const userRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userMenu);
+
+		const confirmButton = new ButtonBuilder()
+			.setLabel('Confirm')
+			.setCustomId(customIds.confirm)
+			.setStyle(ButtonStyle.Primary)
+			.setDisabled(!(selected.playerTags.length && selected.targetCategory));
+
+		const deselectButton = new ButtonBuilder()
+			.setLabel('Deselect')
+			.setCustomId(customIds.deselect)
+			.setStyle(ButtonStyle.Danger)
+			.setDisabled(false);
+
+		const categorySelectButton = new ButtonBuilder()
+			.setLabel('Select Group')
+			.setCustomId(customIds.category)
+			.setStyle(ButtonStyle.Secondary);
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, categorySelectButton, deselectButton);
+
+		const headerTexts = [
+			'**Changing User Group**',
+			'',
+			'- Select the **user** or **players** you want to move to the new user group.',
+			'- Click the button below to confirm.'
+		];
+
+		const getTexts = () => {
+			const options = getOptions();
+			let messageTexts = [...headerTexts, ''];
+
+			if (selected.targetCategory) {
+				messageTexts = [...messageTexts, '- Group selected:', `  - **\u200e${selected.targetCategory.displayName}**`];
+			}
+
+			if (selected.user) {
+				messageTexts = [
+					...messageTexts,
+					'- User selected:',
+					`  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
+					`  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
+				];
+			}
+
+			const players = roster.members.filter((member) => selected.playerTags.includes(member.tag));
+			if (players.length) {
+				messageTexts = [
+					...messageTexts,
+					`- Players selected: ${selected.playerTags.length}`,
+					players.map((player) => `  - ${player.name} (${player.tag})`).join('\n')
+				];
+			}
+
+			return messageTexts;
+		};
+
+		const messageTexts = getTexts();
 		const message = await interaction.editReply({
-			components: [categoryRow],
-			content: 'Select the group you want to move this user to.'
+			components: [userRow, ...playerRows(), buttonRow],
+			content: messageTexts.join('\n')
 		});
 
-		const selectCategory = async (action: StringSelectMenuInteraction<'cached'>) => {
-			selected.categoryId = action.values[0];
+		const confirm = async (action: ButtonInteraction<'cached'>) => {
 			await action.deferUpdate();
+			const players = await this.client.rosterManager.getClanMemberLinks(
+				selected.playerTags.map((tag) => ({ tag })),
+				true
+			);
 
-			const player = await this.client.resolver.resolvePlayer(interaction, playerTag);
-			if (!player) return;
+			for (const player of players) {
+				await this.client.rosterManager.swapCategory({
+					roster,
+					player,
+					user: player.user,
+					newCategoryId: new ObjectId(selected.categoryId!)
+				});
+			}
 
-			const user = await this.client.resolver.getUser(playerTag);
-			const swapped = await this.client.rosterManager.swapCategory(roster._id, player, user, new ObjectId(selected.categoryId));
-			if (!swapped) return null;
+			return action.editReply({ content: 'Players moved successfully.', components: [] });
+		};
 
-			return action.editReply({ content: 'User moved successfully.', components: [] });
+		const deselect = async (action: ButtonInteraction<'cached'>) => {
+			selected.playerTags = [];
+			selected.userIds = [];
+			selected.user = null;
+			selected.categoryId = null;
+			selected.targetCategory = null;
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const selectUser = async (action: UserSelectMenuInteraction<'cached'>) => {
+			selected.userIds = action.values;
+			selected.user = action.users.first() ?? null;
+
+			const _playerRows = playerRows();
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ..._playerRows, buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const playerTagsMap: Record<string, string[]> = {};
+		const selectPlayers = async (action: StringSelectMenuInteraction<'cached'>) => {
+			playerTagsMap[action.customId] = action.values;
+			selected.playerTags = Object.values(playerTagsMap).flat();
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const chooseCategory = async (action: ButtonInteraction<'cached'>) => {
+			const rosterMenu = new StringSelectMenuBuilder()
+				.setMinValues(1)
+				.setPlaceholder('Select Group')
+				.setCustomId(customIds.categorySelect)
+				.setOptions(
+					categories.slice(0, 25).map((category) => ({
+						label: category.displayName,
+						value: category._id.toHexString(),
+						default: selected.categoryId === category._id.toHexString()
+					}))
+				);
+			const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
+			return action.update({ components: [rosterMenuRow, buttonRow] });
+		};
+
+		const selectCategory = async (action: StringSelectMenuInteraction<'cached'>) => {
+			selected.categoryId = action.values.at(0)!;
+
+			const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
+			if (!target) return action.reply({ content: 'Target group was deleted.', ephemeral: true });
+
+			selected.targetCategory = target;
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
 		};
 
 		createInteractionCollector({
 			interaction,
 			customIds,
 			message,
-			onSelect: (action) => selectCategory(action)
+			onClick: (action) => {
+				if (action.customId === customIds.deselect) return deselect(action);
+				if (action.customId === customIds.confirm) return confirm(action);
+				if (action.customId === customIds.category) return chooseCategory(action);
+			},
+			onSelect: (action) => {
+				if (action.customId === customIds.categorySelect) return selectCategory(action);
+				if (Object.values(playerCustomIds).includes(action.customId)) return selectPlayers(action);
+			},
+			onUserSelect(interaction) {
+				if (interaction.customId === customIds.user) return selectUser(interaction);
+			}
 		});
 	}
 
-	private async changeRoster(interaction: CommandInteraction<'cached'>, roster: WithId<IRoster>, playerTag: string) {
-		const customIds = {
-			select: this.client.uuid(interaction.user.id)
+	private async changeRoster(
+		interaction: CommandInteraction<'cached'>,
+		{
+			roster,
+			playerTag,
+			user,
+			categoryId,
+			rosterId
+		}: { roster: WithId<IRoster>; playerTag?: string; user?: User; categoryId?: string; rosterId?: string }
+	) {
+		const playerCustomIds: Record<string, string> = {
+			0: this.client.uuid(interaction.user.id),
+			1: this.client.uuid(interaction.user.id),
+			2: this.client.uuid(interaction.user.id)
 		};
-		const selected = {
-			rosterId: null as null | string
+		const customIds = {
+			roster: this.client.uuid(interaction.user.id),
+			category: this.client.uuid(interaction.user.id),
+			rosterSelect: this.client.uuid(interaction.user.id),
+			categorySelect: this.client.uuid(interaction.user.id),
+			confirm: this.client.uuid(interaction.user.id),
+			deselect: this.client.uuid(interaction.user.id),
+			user: this.client.uuid(interaction.user.id),
+			...playerCustomIds
 		};
 
-		const rosters = await this.client.rosterManager.list(interaction.guild.id);
+		const selected = {
+			rosterId: null as null | string,
+			categoryId: null as null | string,
+			user: null as null | User,
+			userIds: [] as string[],
+			playerTags: [] as string[],
+			targetRoster: null as null | WithId<IRoster>,
+			targetCategory: null as null | WithId<IRosterCategory>
+		};
+		if (playerTag) selected.playerTags.push(playerTag);
+		if (user) {
+			selected.user = user;
+			selected.userIds.push(user.id);
+		}
+		if (categoryId) {
+			selected.categoryId = categoryId;
+			selected.targetCategory = await this.client.rosterManager.getCategory(new ObjectId(categoryId));
+		}
+		if (rosterId) {
+			selected.rosterId = rosterId;
+			selected.targetRoster = await this.client.rosterManager.get(new ObjectId(rosterId));
+		}
+
+		const rosters = await this.client.rosterManager.query({ guildId: interaction.guild.id, _id: { $ne: roster._id }, closed: false });
 		if (!rosters.length) return interaction.editReply({ content: 'No rosters found.' });
 
-		const rosterMenu = new StringSelectMenuBuilder()
-			.setMinValues(1)
-			.setPlaceholder('Choose new roster')
-			.setCustomId(customIds.select)
-			.setOptions(
-				rosters.slice(0, 25).map((roster) => ({
-					label: roster.name,
-					description: `${roster.clan.name} (${roster.clan.tag})`,
-					value: roster._id.toHexString(),
-					default: selected.rosterId === roster._id.toHexString()
-				}))
-			);
-		const rosterRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
+		const maxItems = 25;
+		const getOptions = () => {
+			const filtered = selected.userIds.length
+				? roster.members.filter((mem) => mem.userId && selected.userIds.includes(mem.userId))
+				: roster.members;
+
+			if (selected.userIds.length) {
+				const filteredTags = filtered.map((op) => op.tag);
+				selected.playerTags = selected.playerTags.filter((tag) => filteredTags.includes(tag));
+			}
+
+			const options = filtered
+				.map((player) => ({
+					label: `${player.name} (${player.tag})`,
+					value: player.tag
+				}))
+				.map((player) => ({
+					...player,
+					default: selected.playerTags.includes(player.value)
+				}));
+			return options.slice(0, 75);
+		};
+
+		const playerRows = () => {
+			const _playerRows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
+			const options = getOptions();
+			const chunks = Util.chunk(options, maxItems);
+
+			chunks.forEach((chunk, i) => {
+				const playerMenu = new StringSelectMenuBuilder()
+					.setMinValues(1)
+					.setMaxValues(chunk.length)
+					.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`)
+					.setCustomId(playerCustomIds[i])
+					.setOptions(chunk);
+				const playerRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(playerMenu);
+				_playerRows.push(playerRow);
+			});
+			return _playerRows;
+		};
+
+		const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(0);
+		const userRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userMenu);
+
+		const confirmButton = new ButtonBuilder()
+			.setLabel('Confirm')
+			.setCustomId(customIds.confirm)
+			.setStyle(ButtonStyle.Primary)
+			.setDisabled(!(selected.playerTags.length && selected.targetRoster));
+
+		const deselectButton = new ButtonBuilder()
+			.setLabel('Deselect')
+			.setCustomId(customIds.deselect)
+			.setStyle(ButtonStyle.Danger)
+			.setDisabled(false);
+
+		const rosterSelectButton = new ButtonBuilder()
+			.setLabel('Select Roster')
+			.setCustomId(customIds.roster)
+			.setStyle(ButtonStyle.Secondary);
+
+		const categorySelectButton = new ButtonBuilder()
+			.setLabel('Select Group')
+			.setCustomId(customIds.category)
+			.setStyle(ButtonStyle.Secondary);
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, rosterSelectButton);
+		if (categories.length) buttonRow.addComponents(categorySelectButton);
+		buttonRow.addComponents(deselectButton);
+
+		const headerTexts = [
+			'**Moving Roster Users**',
+			'',
+			'- Select the **user** or **players** you want to move to the new roster.',
+			'- Click the button below to confirm.'
+		];
+
+		const getTexts = () => {
+			const options = getOptions();
+			let messageTexts = [...headerTexts, ''];
+			if (selected.targetRoster) {
+				messageTexts = [
+					...messageTexts,
+					'- Roster selected:',
+					`  - **\u200e${selected.targetRoster.clan.name} - ${selected.targetRoster.name}**`
+				];
+			}
+
+			if (selected.targetCategory) {
+				messageTexts = [...messageTexts, '- Group selected:', `  - **\u200e${selected.targetCategory.displayName}**`];
+			}
+
+			if (selected.user) {
+				messageTexts = [
+					...messageTexts,
+					'- User selected:',
+					`  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
+					`  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
+				];
+			}
+
+			const players = roster.members.filter((member) => selected.playerTags.includes(member.tag));
+			if (players.length) {
+				messageTexts = [
+					...messageTexts,
+					`- Players selected: ${selected.playerTags.length}`,
+					players.map((player) => `  - ${player.name} (${player.tag})`).join('\n')
+				];
+			}
+
+			return messageTexts;
+		};
+
+		const messageTexts = getTexts();
 		const message = await interaction.editReply({
-			components: [rosterRow],
-			content: 'Select the roster you want to move this user to.'
+			components: [userRow, ...playerRows(), buttonRow],
+			content: messageTexts.join('\n')
 		});
 
+		const confirm = async (action: ButtonInteraction<'cached'>) => {
+			await action.deferUpdate();
+			const players = await this.client.rosterManager.getClanMemberLinks(
+				selected.playerTags.map((tag) => ({ tag })),
+				true
+			);
+			const result = [];
+
+			for (const player of players) {
+				const swapped = await this.client.rosterManager.swapRoster({
+					oldRoster: roster,
+					player,
+					user: player.user ?? null,
+					newRosterId: new ObjectId(selected.rosterId!),
+					categoryId: null
+				});
+				result.push({
+					success: swapped.success,
+					message: `- **\u200e${player.name} (${player.tag})** \n  - ${swapped.message}`
+				});
+			}
+
+			const errored = result.some((res) => !res.success);
+			if (errored) {
+				const content = [
+					'**Failed to move a few accounts!**',
+					...result.filter((res) => !res.success).map((res) => res.message)
+				].join('\n');
+				return action.editReply({ content, embeds: [], components: [] });
+			}
+			return action.editReply({ content: 'Players moved successfully.', components: [] });
+		};
+
+		const deselect = async (action: ButtonInteraction<'cached'>) => {
+			selected.playerTags = [];
+			selected.userIds = [];
+			selected.user = null;
+			selected.categoryId = null;
+			selected.rosterId = null;
+			selected.targetCategory = null;
+			selected.targetRoster = null;
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const selectUser = async (action: UserSelectMenuInteraction<'cached'>) => {
+			selected.userIds = action.values;
+			selected.user = action.users.first() ?? null;
+
+			const _playerRows = playerRows();
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ..._playerRows, buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const playerTagsMap: Record<string, string[]> = {};
+		const selectPlayers = async (action: StringSelectMenuInteraction<'cached'>) => {
+			playerTagsMap[action.customId] = action.values;
+			selected.playerTags = Object.values(playerTagsMap).flat();
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const chooseCategory = async (action: ButtonInteraction<'cached'>) => {
+			const rosterMenu = new StringSelectMenuBuilder()
+				.setMinValues(1)
+				.setPlaceholder('Select Group')
+				.setCustomId(customIds.categorySelect)
+				.setOptions(
+					categories.slice(0, 25).map((category) => ({
+						label: category.displayName,
+						value: category._id.toHexString(),
+						default: selected.categoryId === category._id.toHexString()
+					}))
+				);
+			const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
+			return action.update({ components: [rosterMenuRow, buttonRow] });
+		};
+
+		const chooseRoster = async (action: ButtonInteraction<'cached'>) => {
+			const rosterMenu = new StringSelectMenuBuilder()
+				.setMinValues(1)
+				.setPlaceholder('Select Roster')
+				.setCustomId(customIds.rosterSelect)
+				.setOptions(
+					rosters.slice(0, 25).map((roster) => ({
+						label: roster.name,
+						description: `${roster.clan.name} (${roster.clan.tag})`,
+						value: roster._id.toHexString(),
+						default: selected.rosterId === roster._id.toHexString()
+					}))
+				);
+			const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
+			return action.update({ components: [rosterMenuRow, buttonRow] });
+		};
+
+		const selectCategory = async (action: StringSelectMenuInteraction<'cached'>) => {
+			selected.categoryId = action.values.at(0)!;
+
+			const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
+			if (!target) return action.reply({ content: 'Target group was deleted.', ephemeral: true });
+
+			selected.targetCategory = target;
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
 		const selectRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
-			selected.rosterId = action.values[0];
+			selected.rosterId = action.values.at(0)!;
 			if (roster._id.toHexString() === selected.rosterId) {
 				return action.reply({ content: 'You cannot move a user to the same roster.', ephemeral: true });
 			}
+			const target = await this.client.rosterManager.get(new ObjectId(selected.rosterId));
+			if (!target) return action.reply({ content: 'Target roster was deleted.', ephemeral: true });
 
-			await action.deferUpdate();
+			selected.targetRoster = target;
+			confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
 
-			const player = await this.client.resolver.resolvePlayer(interaction, playerTag);
-			if (!player) return;
-
-			const user = await this.client.resolver.getUser(playerTag);
-			const swapped = await this.client.rosterManager.swapRoster(action, roster, player, user, new ObjectId(selected.rosterId), null);
-			if (!swapped) return null;
-
-			return action.editReply({ content: 'User moved successfully.', components: [] });
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
 		};
 
 		createInteractionCollector({
 			interaction,
 			customIds,
 			message,
-			onSelect: (action) => selectRoster(action)
+			onClick: (action) => {
+				if (action.customId === customIds.deselect) return deselect(action);
+				if (action.customId === customIds.confirm) return confirm(action);
+				if (action.customId === customIds.roster) return chooseRoster(action);
+				if (action.customId === customIds.category) return chooseCategory(action);
+			},
+			onSelect: (action) => {
+				if (action.customId === customIds.categorySelect) return selectCategory(action);
+				if (Object.values(playerCustomIds).includes(action.customId)) return selectPlayers(action);
+				if (action.customId === customIds.rosterSelect) return selectRoster(action);
+			},
+			onUserSelect(interaction) {
+				if (interaction.customId === customIds.user) return selectUser(interaction);
+			}
+		});
+	}
+
+	private async delUsers(
+		interaction: CommandInteraction<'cached'>,
+		{
+			roster,
+			user
+		}: {
+			roster: WithId<IRoster>;
+			user?: User | null;
+		}
+	) {
+		const playerCustomIds: Record<string, string> = {
+			0: this.client.uuid(interaction.user.id),
+			1: this.client.uuid(interaction.user.id),
+			2: this.client.uuid(interaction.user.id)
+		};
+		const customIds = {
+			user: this.client.uuid(interaction.user.id),
+			confirm: this.client.uuid(interaction.user.id),
+			deselect: this.client.uuid(interaction.user.id),
+			...playerCustomIds
+		};
+
+		const selected = {
+			playerTags: [] as string[],
+			userIds: [] as string[],
+			user: null as User | null
+		};
+		if (user) {
+			selected.userIds.push(user.id);
+			selected.user = user;
+		}
+
+		const maxItems = 25;
+		const getOptions = () => {
+			const filtered = selected.userIds.length
+				? roster.members.filter((mem) => mem.userId && selected.userIds.includes(mem.userId))
+				: roster.members;
+
+			if (selected.userIds.length) {
+				const filteredTags = filtered.map((op) => op.tag);
+				selected.playerTags = selected.playerTags.filter((tag) => filteredTags.includes(tag));
+			}
+
+			const options = filtered
+				.map((member) => ({
+					label: `${member.name} (${member.tag})`,
+					value: member.tag
+				}))
+				.map((member) => ({
+					...member,
+					default: selected.playerTags.includes(member.value)
+				}));
+			return options.slice(0, 75);
+		};
+
+		const playerRows = () => {
+			const _playerRows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
+			const options = getOptions();
+			const chunks = Util.chunk(options, maxItems);
+
+			chunks.forEach((chunk, i) => {
+				const playerMenu = new StringSelectMenuBuilder()
+					.setMinValues(0)
+					.setMaxValues(chunk.length)
+					.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`)
+					.setCustomId(playerCustomIds[i])
+					.setOptions(chunk);
+				const playerRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(playerMenu);
+				_playerRows.push(playerRow);
+			});
+			return _playerRows;
+		};
+
+		const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(0);
+		const userRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userMenu);
+
+		const confirmButton = new ButtonBuilder()
+			.setLabel('Confirm')
+			.setCustomId(customIds.confirm)
+			.setStyle(ButtonStyle.Primary)
+			.setDisabled(!selected.playerTags.length);
+		const deselectButton = new ButtonBuilder().setLabel('Deselect').setCustomId(customIds.deselect).setStyle(ButtonStyle.Danger);
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, deselectButton);
+
+		const headerTexts = [
+			'**Removing Roster Users**',
+			'',
+			'- Select the **user** or **players** you want to remove from the roster.',
+			'- Click the button below to confirm.'
+		];
+
+		const getTexts = () => {
+			const options = getOptions();
+			let messageTexts = [...headerTexts, ''];
+			if (selected.user) {
+				messageTexts = [
+					...messageTexts,
+					'- User selected:',
+					`  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
+					`  - ${options.length} ${Util.plural(options.length, 'player')} for removal.`
+				];
+			}
+
+			const players = roster.members.filter((member) => selected.playerTags.includes(member.tag));
+			if (players.length) {
+				messageTexts = [
+					...messageTexts,
+					`- Players selected: \n${players.map((player) => `  - ${player.name} (${player.tag})`).join('\n')}`
+				];
+			}
+
+			return messageTexts;
+		};
+
+		const messageTexts = getTexts();
+		const message = await interaction.editReply({
+			components: [userRow, ...playerRows(), buttonRow],
+			content: messageTexts.join('\n')
+		});
+
+		const playerTagsMap: Record<string, string[]> = {};
+		const selectPlayers = async (action: StringSelectMenuInteraction<'cached'>) => {
+			playerTagsMap[action.customId] = action.values;
+			selected.playerTags = Object.values(playerTagsMap).flat();
+			confirmButton.setDisabled(!selected.playerTags.length);
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const selectUsers = async (action: UserSelectMenuInteraction<'cached'>) => {
+			selected.userIds = action.values;
+			selected.user = action.users.first() ?? null;
+
+			const _playerRows = playerRows();
+			confirmButton.setDisabled(!selected.playerTags.length);
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ..._playerRows, buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const deselect = async (action: ButtonInteraction<'cached'>) => {
+			selected.playerTags = [];
+			selected.userIds = [];
+			selected.user = null;
+
+			confirmButton.setDisabled(!selected.playerTags.length);
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const confirm = async (action: ButtonInteraction<'cached'>) => {
+			await action.deferUpdate();
+
+			const updated = await this.client.rosterManager.optOut(roster, ...selected.playerTags);
+			if (!updated) return action.editReply({ content: 'Roster was deleted.', components: [] });
+
+			return action.editReply({ content: 'Players removed successfully.', components: [] });
+		};
+
+		createInteractionCollector({
+			interaction,
+			customIds,
+			message,
+			onClick: (action) => {
+				if (action.customId === customIds.deselect) return deselect(action);
+				return confirm(action);
+			},
+			onSelect: (action) => selectPlayers(action),
+			onUserSelect: (action) => selectUsers(action)
+		});
+	}
+
+	private async addUsers(
+		interaction: CommandInteraction<'cached'>,
+		{
+			roster,
+			user,
+			categoryId
+		}: {
+			roster: WithId<IRoster>;
+			user?: User | null;
+			categoryId?: string;
+		}
+	) {
+		const playerCustomIds: Record<string, string> = {
+			0: this.client.uuid(interaction.user.id),
+			1: this.client.uuid(interaction.user.id),
+			2: this.client.uuid(interaction.user.id)
+		};
+		const customIds = {
+			user: this.client.uuid(interaction.user.id),
+			confirm: this.client.uuid(interaction.user.id),
+			bulk: this.client.uuid(interaction.user.id),
+			deselect: this.client.uuid(interaction.user.id),
+			tags: this.client.uuid(interaction.user.id),
+			...playerCustomIds
+		};
+
+		const selected = {
+			playerTags: [] as string[],
+			userIds: [] as string[],
+			user: null as User | null,
+			players: [] as PlayerWithLink[]
+		};
+		if (user) {
+			selected.userIds.push(user.id);
+			selected.user = user;
+			const players = await this.client.resolver.getPlayers(user.id);
+			selected.players = players.map((player) => ({
+				...player,
+				user: {
+					id: user.id,
+					displayName: user.displayName
+				}
+			}));
+		}
+
+		const maxItems = 25;
+		const getOptions = () => {
+			const options = selected.players
+				.map((player) => ({
+					label: `${player.name} (${player.tag})`,
+					value: player.tag
+				}))
+				.map((player) => ({
+					...player,
+					default: selected.playerTags.includes(player.value)
+				}));
+			return options.slice(0, 75);
+		};
+
+		const playerRows = () => {
+			const _playerRows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
+			const options = getOptions();
+			const chunks = Util.chunk(options, maxItems);
+
+			chunks.forEach((chunk, i) => {
+				const playerMenu = new StringSelectMenuBuilder()
+					.setMinValues(1)
+					.setMaxValues(chunk.length)
+					.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`)
+					.setCustomId(playerCustomIds[i])
+					.setOptions(chunk);
+				const playerRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(playerMenu);
+				_playerRows.push(playerRow);
+			});
+			return _playerRows;
+		};
+
+		const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(1);
+		const userRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userMenu);
+
+		const confirmButton = new ButtonBuilder()
+			.setLabel('Confirm')
+			.setCustomId(customIds.confirm)
+			.setStyle(ButtonStyle.Primary)
+			.setDisabled(!selected.playerTags.length);
+
+		const bulkAddButton = new ButtonBuilder().setLabel('Bulk Add').setCustomId(customIds.bulk).setStyle(ButtonStyle.Secondary);
+		const deselectButton = new ButtonBuilder().setLabel('Deselect').setCustomId(customIds.deselect).setStyle(ButtonStyle.Danger);
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, bulkAddButton, deselectButton);
+
+		const headerTexts = [
+			'**Adding Roster Users**',
+			'',
+			'- Select the **user** or **players** you want to add to the roster.',
+			'- Click the button below to confirm.'
+		];
+
+		const getTexts = () => {
+			const options = getOptions();
+			let messageTexts = [...headerTexts, ''];
+			if (selected.user) {
+				messageTexts = [
+					...messageTexts,
+					'- User selected:',
+					`  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
+					`  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
+				];
+			}
+
+			const players = selected.players.filter((member) => selected.playerTags.includes(member.tag));
+			if (players.length) {
+				messageTexts = [
+					...messageTexts,
+					`- Players selected: ${selected.playerTags.length}`,
+					players.map((player) => `  - ${player.name} (${player.tag})`).join('\n')
+				];
+			}
+
+			return messageTexts;
+		};
+
+		const messageTexts = getTexts();
+		const message = await interaction.editReply({
+			components: [userRow, ...playerRows(), buttonRow],
+			content: messageTexts.join('\n')
+		});
+
+		const playerTagsMap: Record<string, string[]> = {};
+		const selectPlayers = async (action: StringSelectMenuInteraction<'cached'>) => {
+			playerTagsMap[action.customId] = action.values;
+			selected.playerTags = Object.values(playerTagsMap).flat();
+			confirmButton.setDisabled(!selected.playerTags.length);
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const selectUsers = async (action: UserSelectMenuInteraction<'cached'>) => {
+			selected.userIds = action.values;
+			selected.user = action.users.first() ?? null;
+			selected.playerTags = [];
+			confirmButton.setDisabled(!selected.playerTags.length);
+
+			await action.deferUpdate();
+
+			if (selected.user) {
+				const user = selected.user;
+				const players = await this.client.resolver.getPlayers(user.id);
+				selected.players = players.map((player) => ({
+					...player,
+					user: {
+						id: user.id,
+						displayName: user.displayName
+					}
+				}));
+			}
+
+			const messageTexts = getTexts();
+			return action.editReply({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const bulkAdd = async (action: ButtonInteraction<'cached'>) => {
+			const modalCustomId = this.client.uuid(action.user.id);
+
+			const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Bulk Player Add');
+			const titleInput = new TextInputBuilder()
+				.setCustomId(customIds.tags)
+				.setLabel('Player Tags')
+				.setPlaceholder('Enter Player Tags')
+				.setStyle(TextInputStyle.Paragraph)
+				.setMaxLength(2000)
+				.setRequired(true);
+			modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput));
+
+			await action.showModal(modal);
+
+			try {
+				const modalSubmit = await action.awaitModalSubmit({
+					time: 10 * 60 * 1000,
+					filter: (action) => action.customId === modalCustomId
+				});
+				const inputValue = modalSubmit.fields.getTextInputValue(customIds.tags);
+
+				const pattern = /^#?[0289CGJLOPQRUVY]{3,}$/i;
+				const playerTags = inputValue
+					.split(/\W+/)
+					.filter((tag) => pattern.test(tag))
+					.map((tag) => this.client.http.parseTag(tag));
+
+				if (!playerTags.length) {
+					return await modalSubmit.reply({ content: 'No valid player tags detected.' });
+				}
+
+				await modalSubmit.deferUpdate();
+
+				selected.players = await this.client.rosterManager.getClanMemberLinks(
+					playerTags.map((tag) => ({ tag })),
+					true
+				);
+				selected.playerTags = selected.players.map((player) => player.tag);
+				confirmButton.setDisabled(!selected.playerTags.length);
+
+				const messageTexts = getTexts();
+				return await modalSubmit.editReply({ components: [buttonRow], content: messageTexts.join('\n') });
+			} catch (e) {
+				if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+					throw e;
+				}
+			}
+		};
+
+		const deselect = async (action: ButtonInteraction<'cached'>) => {
+			selected.playerTags = [];
+			selected.players = [];
+			selected.user = null;
+			selected.userIds = [];
+			confirmButton.setDisabled(!selected.playerTags.length);
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const confirm = async (action: ButtonInteraction<'cached'>) => {
+			await action.deferUpdate();
+
+			const result = [];
+			for (const tag of selected.playerTags) {
+				const player = selected.players.find((player) => player.tag === tag)!;
+				const updated = await this.client.rosterManager.selfSignup({
+					player,
+					rosterId: roster._id,
+					user: player.user,
+					isOwner: false,
+					categoryId: categoryId
+				});
+				result.push({
+					success: updated.success,
+					message: `- **\u200e${player.name} (${player.tag})** \n  - ${updated.message}`
+				});
+			}
+
+			const errored = result.some((res) => !res.success);
+			if (errored) {
+				const content = [
+					'**Failed to add a few players!**',
+					...result.filter((res) => !res.success).map((res) => res.message)
+				].join('\n');
+				return action.editReply({ content, embeds: [], components: [] });
+			}
+			return action.editReply({ content: 'Players added successfully.', components: [] });
+		};
+
+		createInteractionCollector({
+			interaction,
+			customIds,
+			message,
+			onClick: (action) => {
+				if (action.customId === customIds.bulk) return bulkAdd(action);
+				if (action.customId === customIds.deselect) return deselect(action);
+				return confirm(action);
+			},
+			onSelect: (action) => selectPlayers(action),
+			onUserSelect: (action) => selectUsers(action)
 		});
 	}
 }

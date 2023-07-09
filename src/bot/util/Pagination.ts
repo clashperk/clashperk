@@ -3,11 +3,14 @@ import {
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
+	ChannelSelectMenuInteraction,
 	CommandInteraction,
 	EmbedBuilder,
 	InteractionEditReplyOptions,
 	Message,
-	StringSelectMenuInteraction
+	RoleSelectMenuInteraction,
+	StringSelectMenuInteraction,
+	UserSelectMenuInteraction
 } from 'discord.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
@@ -96,6 +99,8 @@ export const handlePagination = async (
 	});
 
 	collector.on('end', async (_, reason) => {
+		collector.off('collect', () => null);
+		collector.off('end', () => null);
 		Object.values(customIds).forEach((id) => client.components.delete(id));
 		if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 	});
@@ -103,35 +108,45 @@ export const handlePagination = async (
 	return row;
 };
 
-export const createInteractionCollector = (param: {
+export const createInteractionCollector = ({
+	customIds,
+	onClick,
+	onSelect,
+	onUserSelect,
+	onRoleSelect,
+	onChannelSelect,
+	interaction,
+	message
+}: {
 	customIds: Record<string, string>;
 	onClick?: (interaction: ButtonInteraction<'cached'>) => unknown;
 	onSelect?: (interaction: StringSelectMenuInteraction<'cached'>) => unknown;
+	onUserSelect?: (interaction: UserSelectMenuInteraction<'cached'>) => unknown;
+	onRoleSelect?: (interaction: RoleSelectMenuInteraction<'cached'>) => unknown;
+	onChannelSelect?: (interaction: ChannelSelectMenuInteraction<'cached'>) => unknown;
 	interaction: CommandInteraction<'cached'>;
 	message: Message<true>;
 }) => {
 	const client = container.resolve(Client);
-	const customIds = {
-		...param.customIds
-	};
 
-	const collector = param.message.createMessageComponentCollector({
-		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === param.interaction.user.id
+	const collector = message.createMessageComponentCollector({
+		time: 10 * 60 * 1000,
+		filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
 	});
 
 	collector.on('collect', async (action) => {
-		if (action.isButton()) {
-			await param.onClick?.(action);
-		}
-
-		if (action.isStringSelectMenu()) {
-			await param.onSelect?.(action);
-		}
+		if (action.isButton()) await onClick?.(action);
+		if (action.isStringSelectMenu()) await onSelect?.(action);
+		if (action.isUserSelectMenu()) await onUserSelect?.(action);
+		if (action.isRoleSelectMenu()) await onRoleSelect?.(action);
+		if (action.isChannelSelectMenu()) await onChannelSelect?.(action);
 	});
 
 	collector.on('end', async (_, reason) => {
+		collector.off('collect', () => null);
+		collector.off('end', () => null);
 		Object.values(customIds).forEach((id) => client.components.delete(id));
-		if (!/delete/i.test(reason)) await param.interaction.editReply({ components: [] });
+		if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 	});
 
 	return collector;
