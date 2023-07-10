@@ -1168,6 +1168,11 @@ export default class RosterManageCommand extends Command {
 		const getTexts = () => {
 			const options = getOptions();
 			let messageTexts = [...headerTexts, ''];
+
+			if (selected.targetCategory) {
+				messageTexts = [...messageTexts, '- Group selected:', `  - **\u200e${selected.targetCategory.displayName}**`];
+			}
+
 			if (selected.user) {
 				messageTexts = [
 					...messageTexts,
@@ -1175,10 +1180,6 @@ export default class RosterManageCommand extends Command {
 					`  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
 					`  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
 				];
-			}
-
-			if (selected.targetCategory) {
-				messageTexts = [...messageTexts, '- Group selected:', `  - **\u200e${selected.targetCategory.displayName}**`];
 			}
 
 			const players = selected.players.filter((member) => selected.playerTags.includes(member.tag));

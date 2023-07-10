@@ -28,7 +28,7 @@ export default class RosterListCommand extends Command {
 		}
 		if (args.clan) query['clan.tag'] = args.clan;
 
-		const isSearch = Object.keys(query).length > 1;
+		const isQuery = Object.keys(query).length > 1;
 		const filter = args.user
 			? { $filter: { input: '$members', as: 'member', cond: { $eq: ['$$member.userId', args.user.id] } } }
 			: args.player_tag
@@ -44,11 +44,11 @@ export default class RosterListCommand extends Command {
 				}
 			}
 		]);
-		if (!isSearch) cursor.sort({ _id: -1 });
+		if (!isQuery) cursor.sort({ _id: -1 });
 		const rosters = await cursor.toArray();
 
 		const embeds: EmbedBuilder[] = [];
-		const rosterEmbed = new EmbedBuilder().setTitle('Rosters');
+		const rosterEmbed = new EmbedBuilder().setColor(this.client.embed(interaction)).setTitle('Rosters');
 		if (rosters.length) {
 			rosterEmbed.setDescription(
 				rosters
@@ -62,8 +62,8 @@ export default class RosterListCommand extends Command {
 
 			if (args.user) {
 				const members = rosters
-					.map((roster) => {
-						return roster.members.map((member) => ({
+					.map((roster) =>
+						roster.members.map((member) => ({
 							name: member.name,
 							tag: member.tag,
 							userId: member.userId,
@@ -76,8 +76,8 @@ export default class RosterListCommand extends Command {
 								maxMembers: roster.maxMembers,
 								isClosed: this.client.rosterManager.isClosed(roster)
 							}
-						}));
-					})
+						}))
+					)
 					.flat();
 
 				const membersMap = members.reduce<Record<string, Grouped>>((acc, member) => {
@@ -112,19 +112,20 @@ export default class RosterListCommand extends Command {
 						})
 						.join('\n\n')
 				);
+				rosterEmbed.setTitle(`${args.user.displayName}'s Rosters`);
 			}
 		}
 
-		if (isSearch) rosterEmbed.setFooter({ text: 'Search Results' });
+		if (isQuery) rosterEmbed.setFooter({ text: 'Search Results' });
 		if (rosters.length) embeds.push(rosterEmbed);
 
-		if (isSearch) {
+		if (isQuery) {
 			if (!embeds.length) return interaction.editReply({ content: 'No rosters found.' });
 			return interaction.editReply({ embeds });
 		}
 
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
-		const groupEmbed = new EmbedBuilder().setTitle('User Groups');
+		const groupEmbed = new EmbedBuilder().setColor(this.client.embed(interaction)).setTitle('User Groups');
 		if (categories.length) {
 			groupEmbed.setDescription(
 				categories
