@@ -1,13 +1,13 @@
 export const MembersCommandOptions = {
+	heroes: {
+		id: 'heroes',
+		label: 'Heroes/War Weight',
+		description: 'Heroes and Town Hall levels of the clan members.'
+	},
 	discord: {
 		id: 'link-list',
 		label: 'Discord Links',
 		description: 'Discord links of the clan members.'
-	},
-	heroes: {
-		id: 'heroes',
-		label: 'War Weight',
-		description: 'Heroes and town hall levels of the clan members.'
 	},
 	warPref: {
 		id: 'war-pref',
@@ -31,8 +31,8 @@ export const MembersCommandOptions = {
 	},
 	joinDate: {
 		id: 'join-date',
-		label: 'Join Date',
-		description: 'Last joining dates of the clan members.'
+		label: 'Last Joining Date',
+		description: 'Last joining and leave/join count of the clan members.'
 	},
 	progress: {
 		id: 'progress',

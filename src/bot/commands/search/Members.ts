@@ -172,16 +172,21 @@ export default class MembersCommand extends Command {
 				if (b.inTime) return 1;
 				return 0;
 			});
+
 			embed.setDescription(
-				members
-					.map((m) => {
+				[
+					`\`TH  IN OUT NAME${' '.repeat(13)}\``,
+					...members.map((m) => {
 						const inTime = m.inTime ? time(m.inTime, 'R') : '';
 						const hall = m.townHallLevel.toString().padStart(2, ' ');
-						return `\u200e\`${hall}  ${Util.escapeBackTick(m.name).padEnd(15, ' ')}\u200f\`\u200e ${inTime}`;
+						const inCount = m.in.toString().padStart(3, ' ');
+						const outCount = m.out.toString().padStart(3, ' ');
+						const name = Util.escapeBackTick(m.name).substring(0, 13).padEnd(13, ' ');
+						return `\u200e\`${hall} ${inCount} ${outCount} ${name}\u200f\`\u200e ${inTime}`;
 					})
-					.join('\n')
+				].join('\n')
 			);
-			embed.setFooter({ text: `Last Join Dates` });
+			embed.setFooter({ text: `Last Joining and Leave/Join count` });
 		}
 
 		if (args.option === options.progress.id) {
@@ -416,7 +421,9 @@ export default class MembersCommand extends Command {
 					townHallLevel: player.townHallLevel,
 					name: player.name,
 					inTime: null,
-					outTime: null
+					outTime: null,
+					in: 0,
+					out: 0
 				};
 
 			const { in_stats, out_stats } = playersMap[player.tag];
@@ -427,7 +434,9 @@ export default class MembersCommand extends Command {
 				name: player.name,
 				townHallLevel: player.townHallLevel,
 				inTime: inTime ? new Date(inTime) : null,
-				outTime: outTime ? new Date(outTime) : null
+				outTime: outTime ? new Date(outTime) : null,
+				in: in_stats.doc_count,
+				out: out_stats.doc_count
 			};
 		});
 
@@ -481,11 +490,11 @@ interface AggsBucket {
 	doc_count: number;
 	in_stats: {
 		doc_count: number;
-		aggregated: { max: number | null; min: number | null };
+		aggregated: { max: number | null; min: number | null; count: number };
 	};
 	out_stats: {
 		doc_count: number;
-		aggregated: { max: number | null; min: number | null };
+		aggregated: { max: number | null; min: number | null; count: number };
 	};
 }
 
