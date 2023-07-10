@@ -108,6 +108,15 @@ export const rosterLayoutMap = {
 		align: 'left',
 		name: 'Role',
 		description: 'The role of the player in the clan.'
+	},
+	'PREF': {
+		width: 4,
+		label: 'PREF',
+		isEmoji: false,
+		key: 'warPreference',
+		align: 'left',
+		name: 'War Preference',
+		description: 'The war preference of the player in the clan.'
 	}
 } as const;
 
@@ -150,6 +159,7 @@ export interface IRoster {
 	maxTownHall?: number;
 	minHeroLevels?: number;
 	roleId?: string | null;
+	colorCode?: number;
 	clan: {
 		tag: string;
 		name: string;
@@ -179,6 +189,7 @@ export interface IRosterDefaultSettings {
 	layout: string;
 	useClanAlias: boolean;
 	sortBy: RosterSortTypes;
+	colorCode: number;
 	allowCategorySelection: boolean;
 	allowUnlinked: boolean;
 }
@@ -772,7 +783,6 @@ export class RosterManager {
 		membersGroup.sort(([a], [b]) => {
 			if (a === 'none') return 1;
 			if (b === 'none') return -1;
-			// return categoriesMap[a].displayName.localeCompare(categoriesMap[b].displayName);
 			return categoriesMap[a].createdAt.getTime() - categoriesMap[b].createdAt.getTime();
 		});
 
@@ -785,6 +795,7 @@ export class RosterManager {
 				iconURL: roster.clan.badgeUrl,
 				url: this.client.http.getClanURL(roster.clan.tag)
 			});
+		if (roster.colorCode) embed.setColor(roster.colorCode);
 
 		const groups = membersGroup.map(([categoryId, members]) => {
 			const categoryLabel = categoryId === 'none' ? '**Ungrouped**' : `**${categoriesMap[categoryId].displayName}**`;
@@ -802,6 +813,7 @@ export class RosterManager {
 					const townHallIcon = TOWN_HALLS[mem.townHallLevel];
 					const heroes = `${this.sum(Object.values(mem.heroes))}`.padEnd(rosterLayoutMap.HERO_LEVEL.width, ' ');
 					const role = (mem.role ? roleNames[mem.role] : ' ').padEnd(rosterLayoutMap.ROLE.width, ' ');
+					const warPreference = `${mem.warPreference?.toUpperCase() ?? ' '}`.padEnd(rosterLayoutMap.PREF.width, ' ');
 
 					return {
 						index,
@@ -811,7 +823,8 @@ export class RosterManager {
 						townHallLevel,
 						townHallIcon,
 						heroes,
-						role
+						role,
+						warPreference
 					};
 				})
 			};
@@ -940,10 +953,16 @@ export class RosterManager {
 				value: roster.allowCategorySelection ? 'Yes' : 'No'
 			})
 			.addFields({
+				name: 'Sorting Order',
+				inline: true,
+				value: roster.sortBy ?? 'SIGNUP_TIME'
+			})
+			.addFields({
 				name: 'Roster Layout',
 				inline: true,
 				value: roster.layout ?? '#/TH_ICON/DISCORD/NAME/CLAN'
 			});
+		if (roster.colorCode) embed.setColor(roster.colorCode);
 
 		return embed;
 	}
@@ -1210,6 +1229,7 @@ export class RosterManager {
 			sortBy: data.sortBy,
 			allowUnlinked: data.allowUnlinked,
 			layout: data.layout,
+			colorCode: data.colorCode,
 			useClanAlias: data.useClanAlias
 		};
 		return this.client.settings.set(guildId, Settings.ROSTER_DEFAULT_SETTINGS, settings);

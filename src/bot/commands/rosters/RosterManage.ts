@@ -589,7 +589,7 @@ export default class RosterManageCommand extends Command {
 		}
 
 		const rosters = await this.client.rosterManager.query({ guildId: interaction.guild.id, _id: { $ne: roster._id }, closed: false });
-		if (!rosters.length) return interaction.editReply({ content: 'No rosters found.' });
+		if (!rosters.length) return interaction.editReply({ content: 'No rosters found.', components: [] });
 
 		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 

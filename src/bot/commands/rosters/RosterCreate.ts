@@ -1,6 +1,6 @@
 import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { IRoster, RosterSortTypes } from '../../struct/RosterManager.js';
 
 // /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2})$/
@@ -17,6 +17,14 @@ export default class RosterCreateCommand extends Command {
 			defer: true,
 			ephemeral: true
 		});
+	}
+
+	public args(): Args {
+		return {
+			color_code: {
+				match: 'COLOR'
+			}
+		};
 	}
 
 	public async exec(
@@ -39,6 +47,7 @@ export default class RosterCreateCommand extends Command {
 			timezone?: string;
 			use_clan_alias?: boolean;
 			allow_unlinked?: boolean;
+			color_code?: number;
 		}
 	) {
 		// Create default categories
@@ -68,6 +77,7 @@ export default class RosterCreateCommand extends Command {
 			maxTownHall: args.max_town_hall ?? defaultSettings.maxTownHall,
 			useClanAlias: args.use_clan_alias ?? defaultSettings.useClanAlias,
 			roleId: args.roster_role?.id ?? null,
+			colorCode: args.color_code ?? defaultSettings.colorCode,
 			members: [],
 			startTime: null,
 			endTime: null,

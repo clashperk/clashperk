@@ -1828,12 +1828,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'use_clan_alias',
 						description: 'Whether to use clan alias in the roster (created by /alias command)',
 						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'color_code',
+						description: 'Hex color code of the roster embed.',
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
 			{
 				name: 'post',
-				description: 'Post a roster.',
+				description: 'Post a roster to signup or view members.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1847,7 +1852,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'clone',
-				description: 'Clone a roster.',
+				description: 'Clone a roster to create a new one.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1896,7 +1901,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'edit',
-				description: 'Edit a roster.',
+				description: 'Edit a roster and its settings.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1915,6 +1920,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'clan',
 						description: 'Clan of the roster.',
+						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
@@ -2039,6 +2045,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'use_clan_alias',
 						description: 'Whether to use clan alias in the roster (created by /alias command)',
 						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'color_code',
+						description: 'Hex color code of the roster embed.',
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},

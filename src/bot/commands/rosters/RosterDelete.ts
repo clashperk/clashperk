@@ -23,9 +23,10 @@ export default class RosterDeleteCommand extends Command {
 		}
 	) {
 		if (!ObjectId.isValid(args.roster)) return interaction.editReply({ content: 'Invalid roster ID.' });
-
 		const rosterId = new ObjectId(args.roster);
-		const roster = await this.client.rosterManager.get(rosterId);
+
+		await interaction.editReply({ content: 'Deleting roster...' });
+		const roster = await this.client.rosterManager.clear(rosterId);
 		if (!roster) return interaction.editReply({ content: 'Roster was deleted.' });
 
 		await this.client.rosterManager.delete(rosterId);

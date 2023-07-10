@@ -1,7 +1,7 @@
 import { ActionRowBuilder, CommandInteraction, Role, StringSelectMenuBuilder } from 'discord.js';
 import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 
@@ -17,6 +17,14 @@ export default class RosterEditCommand extends Command {
 			defer: true,
 			ephemeral: true
 		});
+	}
+
+	public args(): Args {
+		return {
+			color_code: {
+				match: 'COLOR'
+			}
+		};
 	}
 
 	public async exec(
@@ -42,6 +50,7 @@ export default class RosterEditCommand extends Command {
 			use_clan_alias?: boolean;
 			delete_roster?: boolean;
 			allow_unlinked?: boolean;
+			color_code?: number;
 			components_only?: boolean;
 		}
 	) {
@@ -81,6 +90,7 @@ export default class RosterEditCommand extends Command {
 		if (args.layout && args.layout !== 'CUSTOM') data.layout = args.layout;
 		if (typeof args.use_clan_alias === 'boolean') data.useClanAlias = args.use_clan_alias;
 		if (typeof args.allow_unlinked === 'boolean') data.allowUnlinked = args.allow_unlinked;
+		if (typeof args.color_code === 'number') data.colorCode = args.color_code;
 
 		const selected = {
 			layoutIds: [] as string[]
@@ -119,7 +129,7 @@ export default class RosterEditCommand extends Command {
 					'guildId': interaction.guild.id,
 					'members.tag': { $in: roster.members.map((mem) => mem.tag) }
 				},
-				{ projection: { _id: 1 } }
+				{ projection: { name: 1, clan: 1 } }
 			);
 
 			if (dup)
