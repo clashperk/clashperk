@@ -299,7 +299,6 @@ export default class StatsCommand extends Command {
 		embed.setTimestamp();
 
 		const customId = this.createId({ cmd: this.id, ...args, view: 'avg' });
-		this.clearId(interaction);
 
 		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Primary);
 		if (interaction.isButton()) {
@@ -309,7 +308,8 @@ export default class StatsCommand extends Command {
 			button.setLabel('Avg. Stars');
 		}
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(button);
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearId(interaction);
 	}
 
 	private percentage(num: number) {

@@ -5,9 +5,10 @@ import moment from 'moment';
 import { command, common } from '../locales/en.js';
 import { defaultOptions, fallbackLng } from '../locales/index.js';
 import { Backend } from '../src/bot/util/Backend.js';
+import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/bot/util/CommandOptions.js';
+import { MAX_TOWN_HALL_LEVEL } from '../src/bot/util/Constants.js';
 import { TranslationKey } from '../src/bot/util/i18n.js';
 import { Season } from '../src/bot/util/index.js';
-import { MAX_TOWN_HALL_LEVEL } from '../src/bot/util/Constants.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
@@ -495,44 +496,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('command.members.options.option.description'),
 				type: ApplicationCommandOptionType.String,
 				required: true,
-				choices: [
-					{
-						name: 'War weight',
-						value: 'heroes'
-					},
-					{
-						name: 'Player tags',
-						value: 'tags'
-					},
-					{
-						name: 'Discord links',
-						value: 'discord'
-					},
-					{
-						name: 'War preferences',
-						value: 'warPref'
-					},
-					{
-						name: 'Join dates',
-						value: 'joinLeave'
-					},
-					{
-						name: 'Player progress',
-						value: 'progress'
-					},
-					{
-						name: 'Trophies',
-						value: 'trophies'
-					},
-					{
-						name: 'Attacks',
-						value: 'attacks'
-					},
-					{
-						name: 'Clan roles',
-						value: 'roles'
-					}
-				]
+				choices: [...Object.values(MembersCommandOptions).map((choice) => ({ name: choice.label, value: choice.id }))]
 			},
 			{
 				name: 'tag',
@@ -1752,36 +1716,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'sort_by',
 						description: 'Sorting order of the roster member list.',
 						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Player Name',
-								value: 'PLAYER_NAME'
-							},
-							{
-								name: 'Discord Username',
-								value: 'DISCORD_NAME'
-							},
-							{
-								name: 'Town Hall Level',
-								value: 'TOWN_HALL_LEVEL'
-							},
-							{
-								name: 'Hero Levels',
-								value: 'HERO_LEVEL'
-							},
-							{
-								name: 'TH + Hero Levels',
-								value: 'TH_HERO_LEVEL'
-							},
-							{
-								name: 'Clan Name',
-								value: 'CLAN_NAME'
-							},
-							{
-								name: 'Signup Time',
-								value: 'SIGNUP_TIME'
-							}
-						]
+						choices: [...RosterCommandSortOptions]
 					},
 					{
 						name: 'layout',
@@ -1979,36 +1914,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'sort_by',
 						description: 'Sorting order of the roster member list.',
 						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Player Name',
-								value: 'PLAYER_NAME'
-							},
-							{
-								name: 'Discord Username',
-								value: 'DISCORD_NAME'
-							},
-							{
-								name: 'Town Hall Level',
-								value: 'TOWN_HALL_LEVEL'
-							},
-							{
-								name: 'Hero Levels',
-								value: 'HERO_LEVEL'
-							},
-							{
-								name: 'TH + Hero Levels',
-								value: 'TH_HERO_LEVEL'
-							},
-							{
-								name: 'Clan Name',
-								value: 'CLAN_NAME'
-							},
-							{
-								name: 'Signup Time',
-								value: 'SIGNUP_TIME'
-							}
-						]
+						choices: [...RosterCommandSortOptions]
 					},
 					{
 						name: 'delete_role',
@@ -2087,19 +1993,19 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						choices: [
 							{
 								name: 'Add User',
-								value: 'add-user'
+								value: RosterManageActions.ADD_USER
 							},
 							{
 								name: 'Remove User',
-								value: 'del-user'
+								value: RosterManageActions.DEL_USER
 							},
 							{
 								name: 'Change Roster',
-								value: 'change-roster'
+								value: RosterManageActions.CHANGE_ROSTER
 							},
 							{
 								name: 'Change Group',
-								value: 'change-category'
+								value: RosterManageActions.CHANGE_CATEGORY
 							}
 						]
 					},

@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, parseEmoji, User } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, parseEmoji, User, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { TOWN_HALLS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 
@@ -50,6 +50,21 @@ export default class CompoCommand extends Command {
 
 		const diff = process.hrtime(hrStart);
 		this.client.logger.debug(`Executed in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'COMPO' });
-		return interaction.editReply({ embeds: [embed] });
+
+		const payload = {
+			cmd: this.id,
+			tag: clan.tag
+		};
+
+		const customIds = {
+			refresh: this.createId(payload)
+		};
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh).setStyle(ButtonStyle.Secondary)
+		);
+
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearId(interaction);
 	}
 }

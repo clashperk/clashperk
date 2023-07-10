@@ -7,7 +7,8 @@ import {
 	EmbedBuilder,
 	ButtonStyle,
 	User,
-	ButtonInteraction
+	ButtonInteraction,
+	StringSelectMenuBuilder
 } from 'discord.js';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
@@ -15,6 +16,7 @@ import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 import { PlayerLinks } from '../../types/index.js';
+import { MembersCommandOptions } from '../../util/CommandOptions.js';
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -29,7 +31,7 @@ export default class LinkListCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; showTags?: boolean; user?: User; links?: boolean }
+		args: { tag?: string; showTags?: boolean; user?: User; links?: boolean; with_options?: boolean }
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
@@ -68,29 +70,6 @@ export default class LinkListCommand extends Command {
 			}
 		}
 
-		// const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
-		// const dbMembers = await this.client.db
-		// 	.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-		// 	.find({ tag: { $in: clan.memberList.map((m) => m.tag) } })
-		// 	.toArray();
-
-		// for (const m of memberTags) {
-		// 	const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
-		// 	if (!clanMember) continue;
-		// 	members.push({ tag: m.tag, userId: m.userId, name: clanMember.name, verified: false });
-		// }
-
-		// if (dbMembers.length) this.updateUsers(interaction, dbMembers);
-		// for (const member of dbMembers) {
-		// 	const clanMember = clan.memberList.find((mem) => mem.tag === member.tag);
-		// 	if (!clanMember) continue;
-
-		// 	const mem = members.find((mem) => mem.tag === member.tag);
-		// 	if (mem) mem.verified = member.verified;
-		// 	if (mem && member.userId !== mem.userId) mem.userId = member.userId;
-		// 	else members.push({ tag: member.tag, userId: member.userId, name: clanMember.name, verified: member.verified });
-		// }
-
 		const userIds = [...new Set(members.map((mem) => mem.userId))];
 		const guildMembers = await interaction.guild.members.fetch({ user: userIds });
 
@@ -103,28 +82,40 @@ export default class LinkListCommand extends Command {
 			(m) => !notInDiscord.some((en) => en.tag === m.tag) && !members.some((en) => en.tag === m.tag && guildMembers.has(en.userId))
 		);
 
+		const payload = {
+			cmd: this.id,
+			tag: clan.tag,
+			with_options: args.with_options
+		};
+		const customIds = {
+			refresh: this.createId(payload),
+			tag: this.createId({ ...payload, show_tags: true }),
+			manage: this.createId({ ...payload, links: true }),
+			option: this.createId({ ...payload, cmd: 'members', string_key: 'option' })
+		};
+
 		const embed = this.getEmbed(guildMembers, clan, args.showTags!, onDiscord, notLinked, notInDiscord);
 		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh))
+			.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.HASH).setCustomId(customIds.tag))
 			.addComponents(
-				new ButtonBuilder()
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EMOJIS.REFRESH)
-					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id }))
-			)
-			.addComponents(
-				new ButtonBuilder()
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EMOJIS.HASH)
-					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, showTags: true }))
-			)
-			.addComponents(
-				new ButtonBuilder()
-					.setStyle(ButtonStyle.Primary)
-					.setEmoji('🔗')
-					.setLabel('Manage')
-					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, links: true }))
+				new ButtonBuilder().setStyle(ButtonStyle.Primary).setEmoji('🔗').setLabel('Manage').setCustomId(customIds.manage)
 			);
-		return interaction.editReply({ embeds: [embed], components: [row] });
+
+		const menu = new StringSelectMenuBuilder()
+			.setPlaceholder('Select an option!')
+			.setCustomId(customIds.option)
+			.addOptions(
+				Object.values(MembersCommandOptions).map((option) => ({
+					label: option.label,
+					value: option.id,
+					description: option.description,
+					default: option.id === MembersCommandOptions.discord.id
+				}))
+			);
+
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
+		return interaction.editReply({ embeds: [embed], components: args.with_options ? [row, menuRow] : [row] });
 	}
 
 	private getEmbed(

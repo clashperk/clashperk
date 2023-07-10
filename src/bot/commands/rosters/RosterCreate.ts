@@ -1,7 +1,7 @@
 import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Args, Command } from '../../lib/index.js';
-import { IRoster, RosterSortTypes } from '../../struct/RosterManager.js';
+import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
 
 // /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2})$/
 
@@ -84,6 +84,15 @@ export default class RosterCreateCommand extends Command {
 			lastUpdated: new Date(),
 			createdAt: new Date()
 		};
+
+		if (args.layout) {
+			const layoutIds = args.layout.split('/');
+			if (layoutIds.length >= 3 && layoutIds.every((id) => id in rosterLayoutMap)) {
+				data.layout = args.layout;
+			} else {
+				data.layout = defaultSettings.layout;
+			}
+		}
 
 		if (args.roster_role) {
 			const dup = await this.client.rosterManager.rosters.findOne(

@@ -14,20 +14,14 @@ import {
 import moment from 'moment';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
+import { RosterCommandSortOptions } from '../util/CommandOptions.js';
 import { Collections, MAX_TOWN_HALL_LEVEL, Settings, WarType } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
 import Google, { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from './Google.js';
 
-export type RosterSortTypes =
-	| 'PLAYER_NAME'
-	| 'DISCORD_USERNAME'
-	| 'HERO_LEVEL'
-	| 'TOWN_HALL_LEVEL'
-	| 'TH_HERO_LEVEL'
-	| 'CLAN_NAME'
-	| 'SIGNUP_TIME';
+export type RosterSortTypes = (typeof RosterCommandSortOptions)[number]['value'];
 
 const roleNames: Record<string, string> = {
 	member: 'Mem',
@@ -119,37 +113,6 @@ export const rosterLayoutMap = {
 		description: 'The war preference of the player in the clan.'
 	}
 } as const;
-
-export const sortingItems = [
-	{
-		label: 'Player Name',
-		value: 'PLAYER_NAME'
-	},
-	{
-		label: 'Discord Username',
-		value: 'DISCORD_NAME'
-	},
-	{
-		label: 'Town Hall Level',
-		value: 'TOWN_HALL_LEVEL'
-	},
-	{
-		label: 'Hero Levels',
-		value: 'HERO_LEVEL'
-	},
-	{
-		label: 'TH + Hero Levels',
-		value: 'TH_HERO_LEVEL'
-	},
-	{
-		label: 'Clan Name',
-		value: 'CLAN_NAME'
-	},
-	{
-		label: 'Signup Time',
-		value: 'SIGNUP_TIME'
-	}
-];
 
 export interface IRoster {
 	name: string;
@@ -759,7 +722,7 @@ export class RosterManager {
 			case 'CLAN_NAME':
 				roster.members.sort((a, b) => (a.clan?.name ?? '').localeCompare(b.clan?.name ?? ''));
 				break;
-			case 'DISCORD_USERNAME':
+			case 'DISCORD_NAME':
 				roster.members.sort((a, b) => (a.username ?? '').localeCompare(b.username ?? ''));
 				break;
 			case 'SIGNUP_TIME':

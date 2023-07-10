@@ -1,11 +1,21 @@
 import { Clan, Player, PlayerItem } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, User, time } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	StringSelectMenuBuilder,
+	User,
+	time
+} from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
 import { Command } from '../../lib/index.js';
 import { UP_ARROW } from '../../util/Constants.js';
-import { HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { EMOJIS, HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
+import { MembersCommandOptions as options } from '../../util/CommandOptions.js';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -26,6 +36,8 @@ const PETS = Object.keys(HERO_PETS).reduce<Record<string, number>>((prev, curr, 
 	return prev;
 }, {});
 
+// type MemberCommandOption = (typeof MemberCommandOptions)[keyof typeof MemberCommandOptions]['id'];
+
 export default class MembersCommand extends Command {
 	public constructor() {
 		super('members', {
@@ -40,12 +52,8 @@ export default class MembersCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; option: string; user?: User }) {
-		const command = {
-			discord: this.handler.modules.get('link-list')!,
-			trophies: this.handler.modules.get('trophies')!,
-			attacks: this.handler.modules.get('attacks')!
-		}[args.option];
-		if (command) return this.handler.exec(interaction, command, { tag: args.tag });
+		const command = this.handler.modules.get(args.option);
+		if (command) return this.handler.exec(interaction, command, { tag: args.tag, with_options: true });
 
 		const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
@@ -66,9 +74,6 @@ export default class MembersCommand extends Command {
 				heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
 				pets: m.troops.filter((troop) => troop.name in PETS).sort((a, b) => PETS[a.name] - PETS[b.name])
 			}));
-
-		// map tags
-		this.progress(data, fetched);
 
 		members
 			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
@@ -96,7 +101,7 @@ export default class MembersCommand extends Command {
 				].join('\n')
 			);
 
-		if (args.option === 'tags') {
+		if (args.option === options.tags.id) {
 			embed.setDescription(
 				[
 					'```',
@@ -107,7 +112,7 @@ export default class MembersCommand extends Command {
 			);
 		}
 
-		if (args.option === 'roles') {
+		if (args.option === options.roles.id) {
 			const _members = [...members].sort((a, b) => b.role.id - a.role.id);
 			embed.setDescription(
 				[
@@ -119,7 +124,7 @@ export default class MembersCommand extends Command {
 			);
 		}
 
-		if (args.option === 'warPref') {
+		if (args.option === options.warPref.id) {
 			const members = await this.getWarPref(data, fetched);
 			const optedIn = members.filter((m) => m.warPreference === 'in');
 			const optedOut = members.filter((m) => m.warPreference !== 'in');
@@ -159,7 +164,7 @@ export default class MembersCommand extends Command {
 			);
 		}
 
-		if (args.option === 'joinLeave') {
+		if (args.option === options.joinDate.id) {
 			const members = await this.joinLeave(data, fetched);
 			members.sort((a, b) => {
 				if (a.inTime && b.inTime) return b.inTime.getTime() - a.inTime.getTime();
@@ -179,7 +184,7 @@ export default class MembersCommand extends Command {
 			embed.setFooter({ text: `Last Join Dates` });
 		}
 
-		if (args.option === 'progress') {
+		if (args.option === options.progress.id) {
 			const members = await this.progress(data, fetched);
 
 			const upgrades = fetched.map((player) => ({
@@ -226,28 +231,50 @@ export default class MembersCommand extends Command {
 			});
 		}
 
-		const customId = this.client.uuid(interaction.user.id);
-		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setEmoji('📥').setLabel('Download').setCustomId(customId).setStyle(ButtonStyle.Secondary)
+		if (args.option === options.trophies.id) {
+			embed.setDescription(
+				[
+					'```',
+					`\u200e # TROPHY  ${'NAME'}`,
+					data.memberList
+						.map((member, index) => {
+							const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
+							return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
+						})
+						.join('\n'),
+					'```'
+				].join('\n')
+			);
+		}
+
+		const payload = {
+			cmd: this.id,
+			tag: data.tag,
+			option: args.option
+		};
+		const customIds = {
+			refresh: this.createId(payload),
+			option: this.createId({ ...payload, string_key: 'option' })
+		};
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh).setStyle(ButtonStyle.Secondary)
 		);
+		const menu = new StringSelectMenuBuilder()
+			.setPlaceholder('Select an option!')
+			.setCustomId(customIds.option)
+			.addOptions(
+				Object.values(options).map((option) => ({
+					label: option.label,
+					value: option.id,
+					description: option.description,
+					default: option.id === args.option
+				}))
+			);
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => [customId].includes(action.customId) && action.user.id === interaction.user.id,
-			time: 10 * 60 * 1000,
-			max: 1
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customId) {
-				return this.handler.exec(action, this.handler.modules.get('export-members')!, { clans: data.tag });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customId);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
+		return this.clearIds(interaction);
 	}
 
 	private heroes(items: PlayerItem[]) {

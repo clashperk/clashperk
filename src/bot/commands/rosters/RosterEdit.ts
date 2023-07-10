@@ -87,7 +87,12 @@ export default class RosterEditCommand extends Command {
 		if (typeof args.allow_group_selection === 'boolean') data.allowCategorySelection = args.allow_group_selection;
 		if (args.clear_members) data.members = [];
 		if (args.sort_by) data.sortBy = args.sort_by;
-		if (args.layout && args.layout !== 'CUSTOM') data.layout = args.layout;
+		if (args.layout) {
+			const layoutIds = args.layout.split('/');
+			if (layoutIds.length >= 3 && layoutIds.every((id) => id in rosterLayoutMap)) {
+				data.layout = args.layout;
+			}
+		}
 		if (typeof args.use_clan_alias === 'boolean') data.useClanAlias = args.use_clan_alias;
 		if (typeof args.allow_unlinked === 'boolean') data.allowUnlinked = args.allow_unlinked;
 		if (typeof args.color_code === 'number') data.colorCode = args.color_code;
@@ -106,14 +111,7 @@ export default class RosterEditCommand extends Command {
 			.setPlaceholder('Select a custom layout!')
 			.setMinValues(3)
 			.setMaxValues(5)
-			.setOptions(
-				keys.map(([key, { name, description }]) => ({
-					label: name,
-					description,
-					value: key,
-					default: selected.layoutIds.includes(key)
-				}))
-			);
+			.setOptions(keys.map(([key, { name, description }]) => ({ label: name, description, value: key })));
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
 		if (

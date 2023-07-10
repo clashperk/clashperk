@@ -193,7 +193,6 @@ export default class DonationsCommand extends Command {
 			sort: this.createId({ ...payload, array_key: 'sort_by' }),
 			refresh: this.createId({ ...payload })
 		};
-		this.clearId(interaction);
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
@@ -256,7 +255,8 @@ export default class DonationsCommand extends Command {
 				])
 		);
 
-		return interaction.editReply({ embeds: [embed], components: [row, sortingRow, orderingRow] });
+		await interaction.editReply({ embeds: [embed], components: [row, sortingRow, orderingRow] });
+		return this.clearId(interaction);
 	}
 
 	private padEnd(name: string) {

@@ -9,10 +9,11 @@ import {
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { RosterSortTypes, rosterLayoutMap, sortingItems } from '../../struct/RosterManager.js';
+import { RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
+import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/CommandOptions.js';
 
 export default class RosterEditCommand extends Command {
 	public constructor() {
@@ -82,22 +83,22 @@ export default class RosterEditCommand extends Command {
 					{
 						label: 'Add User',
 						description: 'Add a user or players to the roster.',
-						value: 'add-user'
+						value: RosterManageActions.ADD_USER
 					},
 					{
 						label: 'Remove User',
 						description: 'Remove a user or players from the roster.',
-						value: 'del-user'
+						value: RosterManageActions.DEL_USER
 					},
 					{
 						label: 'Change Roster',
 						description: 'Move a user or players to another roster.',
-						value: 'change-roster'
+						value: RosterManageActions.CHANGE_ROSTER
 					},
 					{
 						label: 'Change Group',
 						description: 'Move a user or players to another user group.',
-						value: 'change-category'
+						value: RosterManageActions.CHANGE_CATEGORY
 					},
 					{
 						label: 'Edit Roster',
@@ -270,20 +271,15 @@ export default class RosterEditCommand extends Command {
 				.setPlaceholder('Select a custom layout!')
 				.setMinValues(3)
 				.setMaxValues(5)
-				.setOptions(
-					keys.map(([key, { name, description }]) => ({
-						label: name,
-						description,
-						value: key,
-						default: selected.layoutIds?.includes(key)
-					}))
-				);
+				.setOptions(keys.map(([key, { name, description }]) => ({ label: name, description, value: key })));
 			const layoutMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(layoutMenu);
 
 			const sortMenu = new StringSelectMenuBuilder()
 				.setCustomId(customIds.sort)
 				.setPlaceholder('Select a sort order!')
-				.setOptions(sortingItems.map((option) => ({ ...option, default: roster.sortBy === option.value })));
+				.setOptions(
+					sortingItems.map((option) => ({ label: option.name, value: option.value, default: roster.sortBy === option.value }))
+				);
 			const sortMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(sortMenu);
 
 			return action.update({
@@ -337,25 +333,14 @@ export default class RosterEditCommand extends Command {
 						return exportSheet(action);
 					case 'edit':
 						return editRoster(action);
-					case 'add-user': {
+
+					case RosterManageActions.ADD_USER:
+					case RosterManageActions.DEL_USER:
+					case RosterManageActions.CHANGE_ROSTER:
+					case RosterManageActions.CHANGE_CATEGORY: {
 						await action.deferUpdate();
 						const command = this.client.commandHandler.modules.get('roster-manage')!;
-						return command.exec(action, { roster: rosterId.toHexString(), action: 'add-user' });
-					}
-					case 'del-user': {
-						await action.deferUpdate();
-						const command = this.client.commandHandler.modules.get('roster-manage')!;
-						return command.exec(action, { roster: rosterId.toHexString(), action: 'del-user' });
-					}
-					case 'change-roster': {
-						await action.deferUpdate();
-						const command = this.client.commandHandler.modules.get('roster-manage')!;
-						return command.exec(action, { roster: rosterId.toHexString(), action: 'change-roster' });
-					}
-					case 'change-category': {
-						await action.deferUpdate();
-						const command = this.client.commandHandler.modules.get('roster-manage')!;
-						return command.exec(action, { roster: rosterId.toHexString(), action: 'change-category' });
+						return command.exec(action, { roster: rosterId.toHexString(), action: value });
 					}
 				}
 			}
