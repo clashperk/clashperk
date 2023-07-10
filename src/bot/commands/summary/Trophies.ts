@@ -12,9 +12,17 @@ export default class SummaryTrophiesCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number }) {
-		const clans = await this.client.storage.find(interaction.guild.id);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string }) {
+		const tags = await this.client.resolver.resolveArgs(args.clans);
 
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.find(interaction.guildId);
+
+		if (!clans.length && tags.length)
+			return interaction.editReply(
+				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		if (!clans.length) {
 			return interaction.editReply(
 				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })

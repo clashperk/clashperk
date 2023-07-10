@@ -2866,17 +2866,44 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'wars',
 				description: 'Shows a summary of current wars.',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					}
+				]
 			},
 			{
 				name: 'cwl-ranks',
 				description: 'Shows a summary of CWL ranks.',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					}
+				]
 			},
 			{
 				name: 'leagues',
 				description: 'Shows a summary of clan leagues.',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					}
+				]
 			},
 			{
 				name: 'donations',
@@ -2902,13 +2929,29 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'clans',
 				description: 'Shows a summary of family clans.',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					}
+				]
 			},
 			{
 				name: 'attacks',
 				description: 'Shows a summary of multiplayer attacks and defenses.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					},
 					{
 						name: 'season',
 						required: false,
@@ -2924,6 +2967,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					},
+					{
 						name: 'limit',
 						required: false,
 						type: ApplicationCommandOptionType.Integer,
@@ -2936,6 +2986,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description: 'Shows a summary of war results.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					},
 					{
 						name: 'season',
 						required: false,
@@ -3018,7 +3075,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'activity',
 				description: 'Shows a summary of clan activities (last seen).',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					}
+				]
 			},
 			{
 				name: 'clan-games',

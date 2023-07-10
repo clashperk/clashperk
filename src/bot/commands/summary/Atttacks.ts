@@ -14,10 +14,17 @@ export default class SummaryAttacksCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction, args: { season?: string; clans?: string; clans_only?: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string; clans_only?: boolean }) {
 		const season = args.season ?? Season.ID;
-		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
+		const tags = await this.client.resolver.resolveArgs(args.clans);
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.find(interaction.guildId);
 
+		if (!clans.length && tags.length)
+			return interaction.editReply(
+				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		if (!clans.length) {
 			return interaction.editReply(
 				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
@@ -53,7 +60,7 @@ export default class SummaryAttacksCommand extends Command {
 
 		const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
 		if (args.clans_only) {
-			embed.setAuthor({ name: `${interaction.guild!.name} Attack Wins` });
+			embed.setAuthor({ name: `${interaction.guild.name} Attack Wins` });
 			embed.setDescription(
 				[
 					'```',
@@ -69,7 +76,7 @@ export default class SummaryAttacksCommand extends Command {
 			);
 		} else {
 			members.sort((a, b) => b.attackWins - a.attackWins);
-			embed.setAuthor({ name: `${interaction.guild!.name} Attack Wins` });
+			embed.setAuthor({ name: `${interaction.guild.name} Attack Wins` });
 			embed.setDescription(
 				[
 					'```',
