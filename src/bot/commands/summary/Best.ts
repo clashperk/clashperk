@@ -159,7 +159,7 @@ export default class SummaryBestCommand extends Command {
 							$subtract: ['$versusTrophies.current', '$versusTrophies.initial']
 						},
 						_versusAttackWins: {
-							$max: [{ $subtract: ['$versusBattleWins.current', '$versusBattleWins.initial'] }, '$builderBaseAttacksWon']
+							$max: [{ $subtract: ['$versusBattleWins.current', '$versusBattleWins.initial'] }, '$builderBaseAttacksWon', 0]
 						},
 						_capitalLoot: {
 							$subtract: ['$clanCapitalRaids.current', '$clanCapitalRaids.initial']
@@ -628,7 +628,7 @@ export default class SummaryBestCommand extends Command {
 
 		const customIds = {
 			refresh: this.createId(payload),
-			order: this.createId({ ...payload, order: order === 'asc' ? 'desc' : 'asc' }),
+			order: this.createId({ ...payload, order: order === 'desc' ? 'asc' : 'desc' }),
 			selected: this.createId({ ...payload, array_key: 'selected' })
 		};
 
@@ -637,7 +637,7 @@ export default class SummaryBestCommand extends Command {
 			new ButtonBuilder()
 				.setCustomId(customIds.order)
 				.setStyle(ButtonStyle.Secondary)
-				.setLabel(args.order === 'desc' ? 'Ascending' : 'Descending')
+				.setLabel(order === 'desc' ? 'Ascending' : 'Descending')
 		);
 
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(

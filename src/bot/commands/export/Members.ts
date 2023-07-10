@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
-import { HERO_PETS, HOME_HEROES, SUPER_TROOPS } from '../../util/Emojis.js';
+import { HERO_PETS, HOME_HEROES, HOME_TROOPS, SUPER_TROOPS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
@@ -33,10 +33,7 @@ const roleNames: Record<string, string> = {
 
 const HERO_LIST = Object.keys(HOME_HEROES);
 const PET_LIST = Object.keys(HERO_PETS);
-const PETS = PET_LIST.reduce<Record<string, number>>((prev, curr, i) => {
-	prev[curr] = i + 1;
-	return prev;
-}, {});
+const TROOP_LIST = Object.keys(HOME_TROOPS);
 
 export default class ExportClanMembersCommand extends Command {
 	public constructor() {
@@ -65,27 +62,69 @@ export default class ExportClanMembersCommand extends Command {
 		}
 
 		const _clans = await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)));
-		const members: any[] = [];
+
+		const members: {
+			name: string;
+			tag: string;
+			userTag: string;
+			clan: string;
+			role: string;
+			clanRank: number;
+			townHallLevel: number;
+			warPreference: 'in' | 'out' | undefined;
+			achievements: {
+				name: string;
+				value: number;
+			}[];
+			heroes: {
+				name: string;
+				level: number;
+			}[];
+			pets: {
+				name: string;
+				level: number;
+			}[];
+			troops: {
+				name: string;
+				level: number;
+			}[];
+			rushed: number;
+			heroRem: number;
+			labRem: number;
+		}[] = [];
+
 		for (const clan of _clans.filter((res) => res.ok)) {
-			for (const mem of clan.memberList) {
-				const m = await this.client.http.player(mem.tag);
-				if (!m.ok) continue;
-				members.push({
-					name: m.name,
-					tag: m.tag,
+			clan.memberList.sort((a, b) => b.clanRank - a.clanRank);
+			const players = await this.client.resolver.fetchPlayers(clan.memberList.map((mem) => mem.tag));
+
+			players.forEach((player, n) => {
+				const troopsMap = [...player.heroes, ...player.troops, ...player.spells]
+					.filter((tr) => tr.village === 'home')
+					.filter((tr) => TROOP_LIST.includes(tr.name))
+					.reduce<Record<string, number | null>>((prev, curr) => {
+						prev[curr.name] = curr.level;
+						return prev;
+					}, {});
+
+				const payload = {
+					name: player.name,
+					tag: player.tag,
+					userTag: '',
 					clan: clan.name,
-					role: roleNames[mem.role],
-					clanRank: mem.clanRank,
-					townHallLevel: m.townHallLevel,
-					warPreference: m.warPreference,
-					heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
-					achievements: this.getAchievements(m),
-					pets: m.troops.filter((troop) => troop.name in PETS).sort((a, b) => PETS[a.name] - PETS[b.name]),
-					rushed: Number(this.rushedPercentage(m)),
-					heroRem: Number(this.heroUpgrades(m)),
-					labRem: Number(this.labUpgrades(m))
-				});
-			}
+					role: roleNames[player.role!],
+					clanRank: n + 1,
+					townHallLevel: player.townHallLevel,
+					warPreference: player.warPreference,
+					achievements: this.getAchievements(player),
+					heroes: HERO_LIST.map((name) => ({ name, level: troopsMap[name] ?? 0 })),
+					pets: PET_LIST.map((name) => ({ name, level: troopsMap[name] ?? 0 })),
+					troops: TROOP_LIST.map((name) => ({ name, level: troopsMap[name] ?? 0 })),
+					rushed: Number(this.rushedPercentage(player)),
+					heroRem: Number(this.heroUpgrades(player)),
+					labRem: Number(this.labUpgrades(player))
+				};
+				members.push(payload);
+			});
 		}
 
 		const memberTags = [];
@@ -153,11 +192,22 @@ export default class ExportClanMembersCommand extends Command {
 					m.rushed,
 					m.labRem,
 					m.heroRem,
-					...m.heroes.map((h: any) => h.level).concat(Array(HERO_LIST.length - m.heroes.length).fill('')),
-					...m.pets.map((h: any) => h.level).concat(Array(PET_LIST.length - m.pets.length).fill('')),
-					...m.achievements.map((v: any) => v.value)
+					...m.heroes.map((h) => h.level),
+					...m.pets.map((h) => h.level),
+					...m.achievements.map((v) => v.value)
 				]),
 				title: 'All Members'
+			},
+			{
+				title: 'Units',
+				columns: [
+					{ name: 'NAME', width: 160, align: 'LEFT' },
+					{ name: 'TAG', width: 120, align: 'LEFT' },
+					{ name: 'Town-Hall', width: 100, align: 'RIGHT' },
+					{ name: 'Rushed %', width: 100, align: 'RIGHT' },
+					...TROOP_LIST.map((name) => ({ name, width: 100, align: 'RIGHT' }))
+				],
+				rows: members.map((m) => [m.name, m.tag, m.townHallLevel, m.rushed, ...m.troops.map((h) => h.level)])
 			}
 		];
 
