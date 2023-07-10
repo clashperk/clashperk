@@ -285,22 +285,29 @@ export default class RosterEditCommand extends Command {
 			customIds,
 			message,
 			onClick: (action) => {
+				if (!this.client.util.isManager(action.member)) {
+					return action.reply({
+						ephemeral: true,
+						content: `You are missing the **Manage Server** permission or the **Bot Manager** role to perform this action.`
+					});
+				}
+
 				if (action.customId === customIds.clear) return clearRoster(action);
 			},
 			onSelect: async (action: StringSelectMenuInteraction<'cached'>) => {
-				if (action.customId === customIds.layout) {
-					return selectLayout(action);
-				}
-				if (action.customId === customIds.sort) {
-					return selectSortBy(action);
-				}
-
 				const value = action.values.at(0)!;
 				if (!this.client.util.isManager(action.member) && !['export'].includes(value)) {
 					return action.reply({
 						ephemeral: true,
 						content: `You are missing the **Manage Server** permission or the **Bot Manager** role to perform this action.`
 					});
+				}
+
+				if (action.customId === customIds.layout) {
+					return selectLayout(action);
+				}
+				if (action.customId === customIds.sort) {
+					return selectSortBy(action);
 				}
 
 				switch (value) {

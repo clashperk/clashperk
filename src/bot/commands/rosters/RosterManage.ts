@@ -83,10 +83,6 @@ export default class RosterManageCommand extends Command {
 		}
 
 		if (focused.name === 'target_group') {
-			if (!args.player_tag) {
-				return interaction.respond([{ name: 'Player tag is not selected.', value: '0' }]);
-			}
-
 			const roster = await this.client.rosterManager.get(rosterId);
 			if (!roster) return interaction.respond([{ name: 'Roster was deleted.', value: '0' }]);
 
@@ -94,7 +90,9 @@ export default class RosterManageCommand extends Command {
 				guildId: interaction.guild.id
 			};
 
-			const categoryId = roster.members.find((member) => member.tag === this.client.http.parseTag(args.player_tag!))?.categoryId;
+			const playerTag = args.player_tag ? this.client.http.parseTag(args.player_tag) : null;
+
+			const categoryId = roster.members.find((member) => member.tag === playerTag)?.categoryId;
 			if (categoryId && args.action === 'change-category') filter._id = { $ne: categoryId };
 
 			if (args.target_group) {
@@ -451,7 +449,7 @@ export default class RosterManageCommand extends Command {
 					roster,
 					player,
 					user: player.user,
-					newCategoryId: new ObjectId(selected.categoryId!)
+					newCategoryId: selected.targetCategory?._id ?? null
 				});
 			}
 
@@ -728,7 +726,7 @@ export default class RosterManageCommand extends Command {
 					player,
 					user: player.user ?? null,
 					newRosterId: new ObjectId(selected.rosterId!),
-					categoryId: null
+					categoryId: selected.targetCategory?._id.toHexString() ?? null
 				});
 				result.push({
 					success: swapped.success,
@@ -1063,6 +1061,8 @@ export default class RosterManageCommand extends Command {
 		const customIds = {
 			user: this.client.uuid(interaction.user.id),
 			confirm: this.client.uuid(interaction.user.id),
+			category: this.client.uuid(interaction.user.id),
+			categorySelect: this.client.uuid(interaction.user.id),
 			bulk: this.client.uuid(interaction.user.id),
 			deselect: this.client.uuid(interaction.user.id),
 			tags: this.client.uuid(interaction.user.id),
@@ -1073,7 +1073,9 @@ export default class RosterManageCommand extends Command {
 			playerTags: [] as string[],
 			userIds: [] as string[],
 			user: null as User | null,
-			players: [] as PlayerWithLink[]
+			players: [] as PlayerWithLink[],
+			categoryId: null as null | string,
+			targetCategory: null as null | WithId<IRosterCategory>
 		};
 		if (user) {
 			selected.userIds.push(user.id);
@@ -1087,6 +1089,12 @@ export default class RosterManageCommand extends Command {
 				}
 			}));
 		}
+		if (categoryId) {
+			selected.categoryId = categoryId;
+			selected.targetCategory = await this.client.rosterManager.getCategory(new ObjectId(categoryId));
+		}
+
+		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
 		const maxItems = 25;
 		const getOptions = () => {
@@ -1129,9 +1137,26 @@ export default class RosterManageCommand extends Command {
 			.setStyle(ButtonStyle.Primary)
 			.setDisabled(!selected.playerTags.length);
 
-		const bulkAddButton = new ButtonBuilder().setLabel('Bulk Add').setCustomId(customIds.bulk).setStyle(ButtonStyle.Secondary);
-		const deselectButton = new ButtonBuilder().setLabel('Deselect').setCustomId(customIds.deselect).setStyle(ButtonStyle.Danger);
-		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, bulkAddButton, deselectButton);
+		const bulkAddButton = new ButtonBuilder()
+			.setLabel('Bulk Add')
+			.setCustomId(customIds.bulk)
+			.setStyle(ButtonStyle.Secondary)
+			.setDisabled(false);
+
+		const categorySelectButton = new ButtonBuilder()
+			.setLabel('Select Group')
+			.setCustomId(customIds.category)
+			.setStyle(ButtonStyle.Secondary);
+
+		const deselectButton = new ButtonBuilder()
+			.setLabel('Deselect')
+			.setCustomId(customIds.deselect)
+			.setStyle(ButtonStyle.Danger)
+			.setDisabled(false);
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, bulkAddButton);
+		if (categories.length) buttonRow.addComponents(categorySelectButton);
+		buttonRow.addComponents(deselectButton);
 
 		const headerTexts = [
 			'**Adding Roster Users**',
@@ -1150,6 +1175,10 @@ export default class RosterManageCommand extends Command {
 					`  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
 					`  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
 				];
+			}
+
+			if (selected.targetCategory) {
+				messageTexts = [...messageTexts, '- Group selected:', `  - **\u200e${selected.targetCategory.displayName}**`];
 			}
 
 			const players = selected.players.filter((member) => selected.playerTags.includes(member.tag));
@@ -1254,6 +1283,37 @@ export default class RosterManageCommand extends Command {
 			}
 		};
 
+		const selectCategory = async (action: StringSelectMenuInteraction<'cached'>) => {
+			selected.categoryId = action.values.at(0)!;
+
+			const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
+			if (!target) return action.reply({ content: 'Target group was deleted.', ephemeral: true });
+
+			selected.targetCategory = target;
+			confirmButton.setDisabled(!selected.playerTags.length);
+
+			const messageTexts = getTexts();
+			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+		};
+
+		const chooseCategory = async (action: ButtonInteraction<'cached'>) => {
+			const rosterMenu = new StringSelectMenuBuilder()
+				.setMinValues(1)
+				.setPlaceholder('Select Group')
+				.setCustomId(customIds.categorySelect)
+				.setOptions(
+					categories.slice(0, 25).map((category) => ({
+						label: category.displayName,
+						value: category._id.toHexString(),
+						default: selected.categoryId === category._id.toHexString()
+					}))
+				);
+			const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+
+			confirmButton.setDisabled(!selected.playerTags.length);
+			return action.update({ components: [rosterMenuRow, buttonRow] });
+		};
+
 		const deselect = async (action: ButtonInteraction<'cached'>) => {
 			selected.playerTags = [];
 			selected.players = [];
@@ -1276,7 +1336,7 @@ export default class RosterManageCommand extends Command {
 					rosterId: roster._id,
 					user: player.user,
 					isOwner: false,
-					categoryId: categoryId
+					categoryId: selected.targetCategory?._id.toHexString() ?? null
 				});
 				result.push({
 					success: updated.success,
@@ -1302,9 +1362,13 @@ export default class RosterManageCommand extends Command {
 			onClick: (action) => {
 				if (action.customId === customIds.bulk) return bulkAdd(action);
 				if (action.customId === customIds.deselect) return deselect(action);
+				if (action.customId === customIds.category) return chooseCategory(action);
 				return confirm(action);
 			},
-			onSelect: (action) => selectPlayers(action),
+			onSelect: (action) => {
+				if (action.customId === customIds.categorySelect) return selectCategory(action);
+				return selectPlayers(action);
+			},
 			onUserSelect: (action) => selectUsers(action)
 		});
 	}
