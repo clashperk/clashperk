@@ -1,6 +1,7 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class SummaryTrophiesCommand extends Command {
 	public constructor() {
@@ -12,7 +13,7 @@ export default class SummaryTrophiesCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string; clans_only?: boolean }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 
 		const clans = tags.length
@@ -53,10 +54,10 @@ export default class SummaryTrophiesCommand extends Command {
 		).sort((a, b) => b.clanPoints - a.clanPoints);
 		members.sort((a, b) => b.trophies - a.trophies);
 
-		const embed = new EmbedBuilder()
-			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild.name} Best Trophies` })
-			.setDescription(
+		const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+
+		if (args.clans_only) {
+			embed.setAuthor({ name: `${interaction.guild.name} Best Trophies` }).setDescription(
 				[
 					'```',
 					`\u200e # >4K >5K ${'POINTS'.padStart(6, ' ')} NAME`,
@@ -72,47 +73,41 @@ export default class SummaryTrophiesCommand extends Command {
 					'```'
 				].join('\n')
 			);
+		} else {
+			embed.setAuthor({ name: `${interaction.guild.name} Best Trophies` }).setDescription(
+				[
+					members
+						.slice(0, Math.min(69, Math.max(5, args.limit ?? 69)))
+						.map((member, index) => {
+							const trophies = `${member.trophies.toString().padStart(4, ' ')}`;
+							const rank = (index + 1).toString().padStart(2, ' ');
+							return `\u200e\`${rank}\` \` ${trophies}\` \u200b ${Util.escapeBackTick(`${member.name}`)}`;
+						})
+						.join('\n')
+				].join('\n')
+			);
+		}
 
+		const payload = {
+			cmd: this.id,
+			clans: args.clans,
+			limit: args.limit,
+			clans_only: args.clans_only
+		};
 		const customIds = {
-			action: this.client.uuid(),
-			active: this.client.uuid()
+			refresh: this.createId(payload),
+			toggle: this.createId({ ...payload, clans_only: !args.clans_only })
 		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setLabel('Show Top Members').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+			new ButtonBuilder()
+				.setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
+				.setStyle(ButtonStyle.Primary)
+				.setCustomId(customIds.toggle)
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.action) {
-				const embed = new EmbedBuilder()
-					.setColor(this.client.embed(interaction))
-					.setAuthor({ name: `${interaction.guild.name} Best Trophies` })
-					.setDescription(
-						[
-							members
-								.slice(0, Math.min(69, Math.max(5, args.limit ?? 69)))
-								.map((member, index) => {
-									const trophies = `${member.trophies.toString().padStart(4, ' ')}`;
-									const rank = (index + 1).toString().padStart(2, ' ');
-									return `\u200e\`${rank} ${trophies}\` \u200b ${Util.escapeBackTick(`${member.name}`)}`;
-								})
-								.join('\n')
-						].join('\n')
-					);
-
-				await action.update({ embeds: [embed], components: [] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(customIds)) this.client.components.delete(id);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearIds(interaction);
 	}
 }

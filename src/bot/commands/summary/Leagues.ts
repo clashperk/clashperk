@@ -1,5 +1,5 @@
 import { Clan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, Guild } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { CapitalLeagueMap, Collections, UnrankedCapitalLeagueId, UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
@@ -16,7 +16,7 @@ export default class SummaryLeaguesCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; is_capital?: boolean }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -33,52 +33,30 @@ export default class SummaryLeaguesCommand extends Command {
 		}
 
 		const __clans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
-		const embed = this.getWarLeagueGroups(interaction.guild, __clans);
+		const embed = args.is_capital
+			? await this.getCapitalLeagueGroups(interaction.guild, __clans)
+			: this.getWarLeagueGroups(interaction.guild, __clans);
 
+		const payload = {
+			cmd: this.id,
+			clans: args.clans,
+			is_capital: args.is_capital
+		};
 		const customIds = {
-			capital: this.client.uuid(),
-			cwl: this.client.uuid()
+			refresh: this.createId(payload),
+			toggle: this.createId({ ...payload, is_capital: !args.is_capital })
 		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
 			new ButtonBuilder()
-				.setLabel('Capital Leagues')
-				.setEmoji(EMOJIS.CAPITAL_TROPHY)
+				.setLabel(args.is_capital ? 'Clan War Leagues' : 'Capital Leagues')
+				.setEmoji(args.is_capital ? EMOJIS.CWL : EMOJIS.CAPITAL_TROPHY)
 				.setStyle(ButtonStyle.Primary)
-				.setCustomId(customIds.capital)
+				.setCustomId(customIds.toggle)
 		);
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
-			// time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.capital) {
-				row.setComponents(
-					new ButtonBuilder()
-						.setLabel('Clan War Leagues')
-						.setEmoji(EMOJIS.CWL)
-						.setStyle(ButtonStyle.Primary)
-						.setCustomId(customIds.cwl)
-				);
-				const embed = await this.getCapitalLeagueGroups(interaction.guild, __clans);
-				await action.update({ embeds: [embed], components: [row] });
-			}
-			if (action.customId === customIds.cwl) {
-				row.setComponents(
-					new ButtonBuilder()
-						.setLabel('Capital Leagues')
-						.setEmoji(EMOJIS.CAPITAL_TROPHY)
-						.setStyle(ButtonStyle.Primary)
-						.setCustomId(customIds.capital)
-				);
-				const embed = this.getWarLeagueGroups(interaction.guild, __clans);
-				await action.update({ embeds: [embed], components: [row] });
-			}
-		});
-
-		return interaction.editReply({ embeds: [embed] });
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearIds(interaction);
 	}
 
 	private getWarLeagueId(clan: Clan) {

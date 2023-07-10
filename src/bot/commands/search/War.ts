@@ -43,7 +43,7 @@ export default class WarCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { tag?: string; war_id?: number; user?: User; attacks?: boolean; openBases?: boolean }
+		args: { tag?: string; war_id?: number; user?: User; attacks?: boolean; open_bases?: boolean; openBases?: boolean }
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
@@ -60,7 +60,7 @@ export default class WarCommand extends Command {
 			return interaction.followUp({ embeds: [em], ephemeral: true });
 		}
 
-		if (args.openBases && args.war_id) {
+		if ((args.open_bases || args.openBases) && args.war_id) {
 			const collection = this.client.db.collection(Collections.CLAN_WARS);
 			const body = await collection.findOne({ id: args.war_id });
 			if (!body) return interaction.followUp({ content: 'No war found with that ID.', ephemeral: true });
@@ -213,7 +213,7 @@ export default class WarCommand extends Command {
 			download: this.client.uuid(interaction.user.id),
 			attacks: this.client.uuid(interaction.user.id),
 			defenses: this.client.uuid(interaction.user.id),
-			openBases: this.client.uuid(interaction.user.id)
+			open_bases: this.client.uuid(interaction.user.id)
 		};
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
@@ -234,9 +234,10 @@ export default class WarCommand extends Command {
 				.setLabel('Open Bases')
 				.setEmoji(EMOJIS.EMPTY_STAR)
 				.setStyle(ButtonStyle.Secondary)
-				.setCustomId(customIds.openBases),
+				.setCustomId(customIds.open_bases),
 			new ButtonBuilder().setLabel('Download').setEmoji('📥').setStyle(ButtonStyle.Secondary).setCustomId(customIds.download)
 		);
+
 		const msg = await interaction.editReply({ embeds: [embed], components: [row, row2] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
@@ -259,7 +260,7 @@ export default class WarCommand extends Command {
 				await action.reply({ embeds: [em] });
 			}
 
-			if (action.customId === customIds.openBases) {
+			if (action.customId === customIds.open_bases) {
 				const em = await this.openBases(interaction, body);
 				await action.reply({ embeds: [em] });
 			}

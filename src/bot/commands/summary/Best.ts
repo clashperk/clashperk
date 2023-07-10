@@ -159,7 +159,7 @@ export default class SummaryBestCommand extends Command {
 							$subtract: ['$versusTrophies.current', '$versusTrophies.initial']
 						},
 						_versusAttackWins: {
-							$subtract: ['$versusBattleWins.current', '$versusBattleWins.initial']
+							$max: [{ $subtract: ['$versusBattleWins.current', '$versusBattleWins.initial'] }, '$builderBaseAttacksWon']
 						},
 						_capitalLoot: {
 							$subtract: ['$clanCapitalRaids.current', '$clanCapitalRaids.initial']

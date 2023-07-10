@@ -64,11 +64,11 @@ export default class SummaryAttacksCommand extends Command {
 			embed.setDescription(
 				[
 					'```',
-					` # ${'CLAN'.padEnd(14, ' ')} ${'ATTACK'.padStart(5, ' ')}`,
+					`\u200e # ${'ATTACK'.padStart(5, ' ')}  ${'CLAN'.padEnd(14, ' ')} `,
 					grouped
 						.map(({ clan, attackWins }, index) => {
 							const attacks = `${attackWins.toString().padStart(5, ' ')}`;
-							return `\u200e${(index + 1).toString().padStart(2, ' ')} ${clan.name.padEnd(15, ' ')} ${attacks}`;
+							return `\u200e${(index + 1).toString().padStart(2, ' ')}  ${attacks}  ${clan.name.padEnd(14, ' ')}`;
 						})
 						.join('\n'),
 					'```'
@@ -80,7 +80,7 @@ export default class SummaryAttacksCommand extends Command {
 			embed.setDescription(
 				[
 					'```',
-					' # ATTACK  PLAYER',
+					`\u200e # ATTACK  PLAYER`,
 					members
 						.slice(0, 99)
 						.map((member, index) => {

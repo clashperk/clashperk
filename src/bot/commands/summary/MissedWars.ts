@@ -1,7 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class SummaryMissedWarsCommand extends Command {
 	public constructor() {
@@ -13,7 +14,7 @@ export default class SummaryMissedWarsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string; is_reversed?: boolean }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -60,37 +61,36 @@ export default class SummaryMissedWarsCommand extends Command {
 			.filter((m) => m.missed > 0)
 			.sort((a, b) => a.missed - b.missed);
 
-		members.sort((a, b) => b.wars - a.wars);
-		members.sort((a, b) => b.missed - a.missed);
+		if (args.is_reversed) {
+			members.sort((a, b) => b.wars - a.wars);
+			members.sort((a, b) => a.missed - b.missed);
+		} else {
+			members.sort((a, b) => b.wars - a.wars);
+			members.sort((a, b) => b.missed - a.missed);
+		}
 
 		const embed = this.getEmbed(members, season);
-		const customIds = {
-			up: this.client.uuid(interaction.user.id)
+
+		const payload = {
+			cmd: this.id,
+			clans: args.clans,
+			is_reversed: args.is_reversed
 		};
+		const customIds = {
+			refresh: this.createId(payload),
+			toggle: this.createId({ ...payload, is_reversed: !args.is_reversed })
+		};
+
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setCustomId(customIds.up).setStyle(ButtonStyle.Secondary).setEmoji('🔃').setLabel('Reverse Order')
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+			new ButtonBuilder()
+				.setCustomId(customIds.toggle)
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji('🔃')
+				.setLabel(args.is_reversed ? 'High to Low' : 'Low to High')
 		);
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.up) {
-				members.sort((a, b) => b.wars - a.wars);
-				members.sort((a, b) => a.missed - b.missed);
-
-				const embed = this.getEmbed(members, season);
-				await action.update({ embeds: [embed] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			Object.values(customIds).forEach((id) => this.client.components.delete(id));
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		await interaction.editReply({ embeds: [embed], components: [row] });
+		return this.clearIds(interaction);
 	}
 
 	private getEmbed(members: { name: string; tag: string; wars: number; missed: number }[], season: string) {
