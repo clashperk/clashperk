@@ -9,10 +9,9 @@ import {
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { RosterSortTypes, rosterLayoutMap, sortingItems } from '../../struct/RosterManager.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
-import { RosterSortTypes, rosterLayoutMap, sortingItems } from '../../struct/RosterManager.js';
 import { Util } from '../../util/index.js';
 
 export default class RosterEditCommand extends Command {
@@ -134,7 +133,7 @@ export default class RosterEditCommand extends Command {
 						'guildId': action.guild.id,
 						'members.tag': { $in: roster.members.map((mem) => mem.tag) }
 					},
-					{ projection: { members: 0 } }
+					{ projection: { name: 1, clan: 1 } }
 				);
 
 				if (dup)
@@ -210,11 +209,24 @@ export default class RosterEditCommand extends Command {
 		const exportSheet = async (action: StringSelectMenuInteraction<'cached'>) => {
 			if (!roster.members.length) return action.reply({ content: 'Roster is empty.', ephemeral: true });
 
+			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+					.setLabel('Updating spreadsheet...')
+					.setStyle(ButtonStyle.Link)
+					.setURL('https://google.com')
+					.setDisabled(true)
+			);
 			const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
-			await action.update({ content: `## Updating spreadsheet... ${EMOJIS.LOADING}`, embeds: [embed], components: [] });
+			await action.update({ embeds: [embed], components: [row] });
 
 			const clan = await this.client.http.clan(roster.clan.tag);
-			if (!clan.ok) return action.reply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
+			if (!clan.ok) {
+				return action.editReply({
+					content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})`,
+					embeds: [],
+					components: []
+				});
+			}
 
 			const sheet = await this.client.rosterManager.exportSheet({
 				name: interaction.guild.name,

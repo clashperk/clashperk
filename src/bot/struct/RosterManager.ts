@@ -1,4 +1,4 @@
-import { Clan, ClanMember, Player } from 'clashofclans.js';
+import { Clan, ClanMember, ClanWar, ClanWarAttack, Player, WarClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -11,10 +11,10 @@ import {
 	StringSelectMenuInteraction,
 	time
 } from 'discord.js';
-import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import moment from 'moment';
+import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
-import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/Constants.js';
+import { Collections, MAX_TOWN_HALL_LEVEL, Settings, WarType } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
@@ -786,7 +786,6 @@ export class RosterManager {
 			return categoriesMap[a].createdAt.getTime() - categoriesMap[b].createdAt.getTime();
 		});
 
-		// let count = 0;
 		const embed = new EmbedBuilder()
 			.setTitle(roster.name)
 			.setURL(this.client.http.getClanURL(roster.clan.tag))
@@ -955,12 +954,12 @@ export class RosterManager {
 			.addFields({
 				name: 'Sorting Order',
 				inline: true,
-				value: roster.sortBy ?? 'SIGNUP_TIME'
+				value: `\`${roster.sortBy ?? 'SIGNUP_TIME'}\``
 			})
 			.addFields({
 				name: 'Roster Layout',
 				inline: true,
-				value: roster.layout ?? '#/TH_ICON/DISCORD/NAME/CLAN'
+				value: `\`${roster.layout ?? '#/TH_ICON/DISCORD/NAME/CLAN'}\``
 			});
 		if (roster.colorCode) embed.setColor(roster.colorCode);
 
@@ -1332,6 +1331,12 @@ export class RosterManager {
 			{}
 		);
 
+		const seasonId = moment().date() >= 10 ? moment().format('YYYY-MM') : moment().subtract(1, 'month').format('YYYY-MM');
+		const cwlMembers = await this.client.rosterManager.getCWLStats(
+			roster.members.map((m) => m.tag),
+			seasonId
+		);
+
 		const sheets: CreateGoogleSheet[] = [
 			{
 				title: `${roster.name} - ${roster.clan.name}`,
@@ -1342,14 +1347,28 @@ export class RosterManager {
 					{ name: 'Clan Tag', align: 'LEFT', width: 120 },
 					{ name: 'Discord', align: 'LEFT', width: 160 },
 					{ name: 'War Preference', align: 'LEFT', width: 100 },
+					{ name: 'Group', align: 'LEFT', width: 160 },
 					{ name: 'Town Hall', align: 'RIGHT', width: 100 },
 					{ name: 'Heroes', align: 'RIGHT', width: 100 },
-					{ name: 'Group', align: 'LEFT', width: 160 },
-					{ name: 'Signed up at', align: 'LEFT', width: 160 }
+					{ name: 'Total Attacks', align: 'RIGHT', width: 100 },
+					{ name: 'Stars', align: 'RIGHT', width: 100 },
+					{ name: 'Avg. Stars', align: 'RIGHT', width: 100 },
+					{ name: 'Destruction', align: 'RIGHT', width: 100 },
+					{ name: 'Avg. Destruction', align: 'RIGHT', width: 100 },
+					{ name: '3 Stars', align: 'RIGHT', width: 100 },
+					{ name: '2 Stars', align: 'RIGHT', width: 100 },
+					{ name: '1 Stars', align: 'RIGHT', width: 100 },
+					{ name: '0 Stars', align: 'RIGHT', width: 100 },
+					{ name: 'Missed', align: 'RIGHT', width: 100 },
+					{ name: 'Defense Stars', align: 'RIGHT', width: 100 },
+					{ name: 'Defense Avg. Stars', align: 'RIGHT', width: 100 },
+					{ name: 'Defense Destruction', align: 'RIGHT', width: 100 },
+					{ name: 'Defense Avg. Destruction', align: 'RIGHT', width: 100 }
 				],
 				rows: roster.members.map((member) => {
 					const key = member.categoryId?.toHexString();
 					const category = key && key in categoriesMap ? categoriesMap[key].displayName : '';
+					const cwlMember = cwlMembers[member.tag];
 					return [
 						member.name,
 						member.tag,
@@ -1357,10 +1376,23 @@ export class RosterManager {
 						member.clan?.tag ?? '',
 						member.username ?? '',
 						member.warPreference ?? '',
+						category,
 						member.townHallLevel,
 						Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
-						category,
-						member.createdAt
+						cwlMember?.attacks,
+						cwlMember?.stars,
+						cwlMember?.participated ? (cwlMember.stars / cwlMember.participated).toFixed(2) : '',
+						cwlMember?.destruction,
+						cwlMember?.participated ? (cwlMember.destruction / cwlMember.participated).toFixed(2) : '',
+						cwlMember?.threeStars,
+						cwlMember?.twoStars,
+						cwlMember?.oneStar,
+						cwlMember?.zeroStars,
+						cwlMember?.missedAttacks,
+						cwlMember?.defenseStars,
+						cwlMember?.defenseCount ? (cwlMember.defenseStars / cwlMember.defenseCount).toFixed(2) : '',
+						cwlMember?.defenseDestruction,
+						cwlMember?.defenseCount ? (cwlMember.defenseDestruction / cwlMember.defenseCount).toFixed(2) : ''
 					];
 				})
 			},
@@ -1417,5 +1449,118 @@ export class RosterManager {
 		} finally {
 			this.timeoutId = setTimeout(this.init.bind(this), 10 * 60 * 1000);
 		}
+	}
+
+	private getPreviousBestAttack(attacks: ClanWarAttack[], opponent: WarClan, atk: ClanWarAttack) {
+		const defender = opponent.members.find((m) => m.tag === atk.defenderTag);
+		const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defender?.tag);
+		const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
+		const previousBestAttack = isFresh
+			? null
+			: [...attacks]
+					.filter((_atk) => _atk.defenderTag === defender?.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
+					.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
+					.at(0) ?? null;
+		return isFresh ? null : previousBestAttack;
+	}
+
+	public async getCWLStats(playerTags: string[], seasonId: string) {
+		const members: Partial<
+			Record<
+				string,
+				{
+					name: string;
+					tag: string;
+					participated: number;
+					attacks: number;
+					stars: number;
+					destruction: number;
+					trueStars: number;
+					threeStars: number;
+					twoStars: number;
+					oneStar: number;
+					zeroStars: number;
+					missedAttacks: number;
+					defenseStars: number;
+					defenseDestruction: number;
+					defenseCount: number;
+				}
+			>
+		> = {};
+
+		const wars = this.client.db.collection<ClanWar>(Collections.CLAN_WARS).find({
+			$or: [
+				{
+					'clan.members.tag': { $in: playerTags }
+				},
+				{
+					'opponent.members.tag': { $in: playerTags }
+				}
+			],
+			season: seasonId,
+			warType: WarType.CWL
+		});
+
+		for await (const data of wars) {
+			const clanMemberTags = data.opponent.members.map((m) => m.tag);
+			const opponentMemberTags = data.clan.members.map((m) => m.tag);
+
+			for (const playerTag of playerTags) {
+				if (![...clanMemberTags, ...opponentMemberTags].includes(playerTag)) continue;
+
+				const clan = data.clan.members.find((m) => m.tag === playerTag) ? data.clan : data.opponent;
+				const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
+
+				clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
+				opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
+
+				const __attacks = clan.members.flatMap((m) => m.attacks ?? []);
+				for (const m of clan.members) {
+					if (m.tag !== playerTag) continue;
+
+					// eslint-disable-next-line
+					members[m.tag] ??= {
+						name: m.name,
+						tag: m.tag,
+						participated: 0,
+						attacks: 0,
+						stars: 0,
+						trueStars: 0,
+						destruction: 0,
+						threeStars: 0,
+						twoStars: 0,
+						oneStar: 0,
+						zeroStars: 0,
+						missedAttacks: 0,
+						defenseStars: 0,
+						defenseDestruction: 0,
+						defenseCount: 0
+					};
+
+					const member = members[m.tag]!;
+					member.participated += 1;
+					for (const atk of m.attacks ?? []) {
+						const previousBestAttack = this.getPreviousBestAttack(__attacks, opponent, atk);
+						member.attacks += 1;
+						member.stars += atk.stars;
+						member.trueStars += previousBestAttack ? Math.max(0, atk.stars - previousBestAttack.stars) : atk.stars;
+						member.destruction += atk.destructionPercentage;
+						member.threeStars += atk.stars === 3 ? 1 : 0;
+						member.twoStars += atk.stars === 2 ? 1 : 0;
+						member.oneStar += atk.stars === 1 ? 1 : 0;
+						member.zeroStars += atk.stars === 0 ? 1 : 0;
+					}
+
+					member.missedAttacks += m.attacks?.length ? 0 : 1;
+					if (m.bestOpponentAttack) {
+						member.defenseStars += m.bestOpponentAttack.stars;
+						member.defenseDestruction += m.bestOpponentAttack.destructionPercentage;
+						member.defenseCount += 1;
+					}
+				}
+			}
+		}
+
+		return members;
 	}
 }
