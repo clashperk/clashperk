@@ -96,7 +96,8 @@ export default class SummaryAttacksCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			clans: args.clans,
+			uuid: interaction.id,
+			clans: tags.join(','),
 			clans_only: args.clans_only
 		};
 

@@ -74,7 +74,8 @@ export default class SummaryClanGamesCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			clans: args.clans,
+			uuid: interaction.id,
+			clans: tags.join(','),
 			season: args.season,
 			max_points: args.max_points,
 			clans_only: args.clans_only,

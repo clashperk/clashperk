@@ -242,11 +242,22 @@ export default class Resolver {
 	}
 
 	public async resolveArgs(args?: string) {
-		if (args?.startsWith('AC-')) {
+		if (!args) return [];
+
+		const pattern = /^#?[0289CGJLOPQRUVY]{3,}$/i;
+		if (args.startsWith('AC-')) {
 			const tags = await this.client.redis.connection.get(args);
-			if (tags) return tags.split(/[, ]+/g);
+			if (tags)
+				return tags
+					.split(/\W+/)
+					.filter((tag) => pattern.test(tag))
+					.map((tag) => this.client.http.parseTag(tag));
 		}
-		return args?.split(/[, ]+/g) ?? [];
+
+		return args
+			.split(/\W+/)
+			.filter((tag) => pattern.test(tag))
+			.map((tag) => this.client.http.parseTag(tag));
 	}
 
 	public async enforceSecurity(

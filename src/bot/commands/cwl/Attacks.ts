@@ -269,7 +269,7 @@ export default class CWLAttacksCommand extends Command {
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
 		await interaction.editReply({ embeds: [embed], components: args.missed ? [buttonRow] : [buttonRow, menuRow] });
-		return this.clearIds(interaction);
+		return this.clearId(interaction);
 	}
 
 	private padEnd(name: string) {

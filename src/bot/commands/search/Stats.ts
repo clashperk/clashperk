@@ -297,8 +297,12 @@ export default class StatsCommand extends Command {
 		}
 
 		embed.setTimestamp();
-
-		const customId = this.createId({ cmd: this.id, ...args, view: 'avg' });
+		const customId = this.createId({
+			cmd: this.id,
+			uuid: interaction.id,
+			...args,
+			view: 'avg'
+		});
 
 		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Primary);
 		if (interaction.isButton()) {

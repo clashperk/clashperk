@@ -149,9 +149,10 @@ export default class SummaryCapitalContributionCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
+			uuid: interaction.id,
 			season: args.season,
 			week: args.week,
-			clans: args.clans,
+			clans: tags.join(','),
 			clans_only: args.clans_only
 		};
 

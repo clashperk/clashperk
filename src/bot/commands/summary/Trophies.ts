@@ -90,7 +90,8 @@ export default class SummaryTrophiesCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			clans: args.clans,
+			uuid: interaction.id,
+			clans: tags.join(','),
 			limit: args.limit,
 			clans_only: args.clans_only
 		};
@@ -108,6 +109,6 @@ export default class SummaryTrophiesCommand extends Command {
 		);
 
 		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearIds(interaction);
+		return this.clearId(interaction);
 	}
 }

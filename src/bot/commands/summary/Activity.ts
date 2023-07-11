@@ -41,8 +41,10 @@ export default class SummaryCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
+			uuid: interaction.id,
 			clans_only: args.clans_only,
 			season: args.season,
+			clans: tags.join(','),
 			asc_order: args.asc_order
 		};
 

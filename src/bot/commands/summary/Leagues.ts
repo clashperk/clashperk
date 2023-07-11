@@ -39,7 +39,8 @@ export default class SummaryLeaguesCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			clans: args.clans,
+			uuid: interaction.id,
+			clans: tags.join(','),
 			is_capital: args.is_capital
 		};
 		const customIds = {
@@ -56,7 +57,7 @@ export default class SummaryLeaguesCommand extends Command {
 				.setCustomId(customIds.toggle)
 		);
 		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearIds(interaction);
+		return this.clearId(interaction);
 	}
 
 	private getWarLeagueId(clan: Clan) {

@@ -73,7 +73,8 @@ export default class SummaryMissedWarsCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			clans: args.clans,
+			uuid: interaction.id,
+			clans: tags.join(','),
 			is_reversed: args.is_reversed
 		};
 		const customIds = {
@@ -90,7 +91,7 @@ export default class SummaryMissedWarsCommand extends Command {
 				.setLabel(args.is_reversed ? 'High to Low' : 'Low to High')
 		);
 		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearIds(interaction);
+		return this.clearId(interaction);
 	}
 
 	private getEmbed(members: { name: string; tag: string; wars: number; missed: number }[], season: string) {

@@ -191,7 +191,7 @@ export default class CWLRoundCommand extends Command {
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
 		await interaction.editReply({ embeds: [round.embed], components: [buttonRow, menuRow] });
-		return this.clearIds(interaction);
+		return this.clearId(interaction);
 	}
 
 	private count(members: ClanWarMember[]) {

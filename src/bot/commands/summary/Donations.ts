@@ -69,7 +69,8 @@ export default class DonationSummaryCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			clans: args.clans,
+			uuid: interaction.id,
+			clans: tags.join(','),
 			season: args.season,
 			sort_by: args.sort_by,
 			order_by: args.order_by,

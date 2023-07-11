@@ -620,8 +620,9 @@ export default class SummaryBestCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
+			uuid: interaction.id,
 			order: args.order,
-			clans: args.clans ? clans.map((clan) => clan.tag).join(',') : args.clans,
+			clans: tags.join(','),
 			limit: args.limit,
 			selected: args.selected
 		};
@@ -642,18 +643,18 @@ export default class SummaryBestCommand extends Command {
 
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
+				.setPlaceholder('Select fields to Display')
 				.setCustomId(customIds.selected)
-				.setMinValues(1)
 				.setMaxValues(_fields.length)
+				.setMinValues(1)
 				.setOptions(
-					_fields
-						.map((field) => {
-							const labelText = fields[field as keyof typeof fields];
-							const emoji = /<a?:.+:(\d+)>/.exec(labelText)?.[1];
-							const label = emoji ? labelText.replace(/<a?:.+:(\d+)>/, '').trim() : labelText;
-							return { label, emoji, value: field };
-						})
-						.map((option) => ({ ...option, default: args.selected?.includes(option.value) }))
+					_fields.map((field) => {
+						const labelText = fields[field as keyof typeof fields];
+						const emoji = /<a?:.+:(\d+)>/.exec(labelText)?.[1];
+						const label = emoji ? labelText.replace(/<a?:.+:(\d+)>/, '').trim() : labelText;
+						return { label, emoji, value: field };
+					})
+					// .map((option) => ({ ...option, default: args.selected?.includes(option.value) }))
 				)
 		);
 

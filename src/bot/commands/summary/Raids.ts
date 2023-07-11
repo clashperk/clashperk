@@ -106,7 +106,8 @@ export default class SummaryCapitalRaidsCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			clans: args.clans,
+			uuid: interaction.id,
+			clans: tags.join(','),
 			week: args.week,
 			clans_only: args.clans_only,
 			avg_loot: args.avg_loot

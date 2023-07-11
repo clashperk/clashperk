@@ -96,6 +96,6 @@ export default class ClanAttacksCommand extends Command {
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
 		await interaction.editReply({ embeds: [embed], components: args.with_options ? [buttonRow, menuRow] : [buttonRow] });
-		return this.clearIds(interaction);
+		return this.clearId(interaction);
 	}
 }
