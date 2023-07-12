@@ -53,6 +53,12 @@ export default class Patrons {
 		return this.patrons.has(interaction.guild!.id);
 	}
 
+	public async isEligible(userId: string, guildId: string) {
+		const user = await this.collection.findOne({ userId, active: true, rewardId: { $in: [rewards.silver, rewards.gold] } });
+		if (!user) return false;
+		return user.guilds.some((guild) => guild.id === guildId);
+	}
+
 	public async refresh() {
 		const patrons = await this.collection.find({ active: true }).toArray();
 		this.patrons.clear(); // clear old user_id and guild_id

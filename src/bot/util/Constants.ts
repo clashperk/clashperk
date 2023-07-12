@@ -185,7 +185,16 @@ export const MAX_CLAN_SIZE = 50;
 
 export const LEGEND_LEAGUE_ID = 29000022;
 
-export const BIT_FIELD = new PermissionsBitField(292997688385n).bitfield;
+export const BIT_FIELD = new PermissionsBitField(17893773667409n).bitfield;
+
+export const getInviteLink = (id: string) => {
+	const query = new URLSearchParams({
+		client_id: id,
+		scope: 'bot applications.commands',
+		permissions: BIT_FIELD.toString()
+	}).toString();
+	return `https://discord.com/api/oauth2/authorize?${query}`;
+};
 
 export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
 	29000000: 'unranked',

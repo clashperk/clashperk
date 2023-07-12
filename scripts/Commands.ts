@@ -3501,5 +3501,9 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				required: false
 			}
 		]
+	},
+	{
+		name: 'bot-personalizer',
+		description: 'Build your own Discord bot!'
 	}
 ];
