@@ -154,16 +154,16 @@ export default class UpgradesCommand extends Command {
 			'Dark Hero': `${EMOJIS.DARK_ELIXIR} Heroes`,
 			'Elixir Hero': `${EMOJIS.ELIXIR} Heroes`,
 			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
-			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`,
-			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
-			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
+			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`
+			// 'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
+			// 'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};
 
 		const units = [];
 		const indexes = Object.values(titles);
 		for (const [key, value] of Object.entries(Troops)) {
 			const title = titles[key];
-			// if (!title) continue;
+			if (!title) continue;
 			units.push({
 				index: indexes.indexOf(title),
 				title,
@@ -171,6 +171,12 @@ export default class UpgradesCommand extends Command {
 				units: value
 			});
 		}
+
+		const summary: Record<string, number> = {
+			'Elixir': 0,
+			'Dark Elixir': 0,
+			'Time': 0
+		};
 
 		for (const category of units.sort((a, b) => a.index - b.index)) {
 			const unitsArray = category.units.map((unit) => {
@@ -211,6 +217,22 @@ export default class UpgradesCommand extends Command {
 			const totalTime = this.dur(_totalTime).padStart(5, ' ');
 			const totalCost = this.format(_totalCost).padStart(6, ' ');
 
+			const totalMaxLevel = unitsArray.reduce((prev, curr) => prev + curr.hallMaxLevel, 0);
+			const totalLevel = unitsArray.reduce((prev, curr) => prev + curr.level, 0);
+			const remaining = `${Math.round((totalLevel * 100) / totalMaxLevel)}%`;
+
+			const costPerResource = unitsArray.reduce<Record<string, number>>((prev, curr) => {
+				if (!(curr.resource in prev)) prev[curr.resource] = 0;
+				prev[curr.resource] += curr.remainingCost;
+				return prev;
+			}, {});
+
+			for (const [key, value] of Object.entries(costPerResource)) {
+				if (!(key in summary)) summary[key] = 0;
+				summary[key] += value;
+			}
+			summary['Time'] += _totalTime;
+
 			const descriptionTexts = [
 				`**${category.title}**`,
 				unitsArray
@@ -224,7 +246,9 @@ export default class UpgradesCommand extends Command {
 						return `\u200e${unitIcon} \` ${level}/${maxLevel} \` \` ${upgradeTime} \` \` ${upgradeCost} \` ${rushed}`;
 					})
 					.join('\n'),
-				unitsArray.length > 1 ? `\u200e${EMOJIS.CLOCK} \`   -   \` \` ${totalTime} \` \` ${totalCost} \` \`   \`` : ''
+				unitsArray.length > 1
+					? `\u200e${EMOJIS.CLOCK} \` ${this.centerText(remaining, 5)} \` \` ${totalTime} \` \` ${totalCost} \` \`   \``
+					: ''
 			];
 
 			if (category.key === 'Barracks' && unitsArray.length) {
@@ -248,12 +272,14 @@ export default class UpgradesCommand extends Command {
 		}
 
 		if (remaining > 0) {
+			const elixir = this.format(summary['Elixir'] || 0);
+			const dark = this.format(summary['Dark Elixir'] || 0);
+			const time = this.dur(summary['Time'] || 0);
 			embed.setFooter({
-				text: [`Remaining ~${remaining}% (Home Village)`].join('\n')
+				text: [`Remaining ~${remaining}%`, `Total ${elixir} Elixir, ${dark} Dark, ${time}`].join('\n')
 			});
 		}
 
-		// TODO: add pages
 		if (embedLength(embed.toJSON()) > 6000) {
 			embed.spliceFields(embed.data.fields!.length - 1, 1);
 		}
@@ -267,6 +293,12 @@ export default class UpgradesCommand extends Command {
 
 	private padStart(num: number) {
 		return num.toString().padStart(2, ' ');
+	}
+
+	public centerText(text: string, width: number) {
+		const padding = width - text.length;
+		const leftPadding = Math.floor(padding / 2);
+		return text.padStart(text.length + leftPadding, ' ').padEnd(width, ' ');
 	}
 
 	private apiTroops(data: Player) {

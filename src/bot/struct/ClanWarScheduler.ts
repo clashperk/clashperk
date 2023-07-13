@@ -321,6 +321,8 @@ export default class ClanWarScheduler {
 			if (!this.client.guilds.cache.has(schedule.guild)) continue;
 			if (this.queued.has(schedule._id.toHexString())) continue;
 
+			if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) continue;
+
 			if (schedule.timestamp.getTime() < now) {
 				this.trigger(schedule);
 			} else {

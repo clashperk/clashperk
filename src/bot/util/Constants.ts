@@ -130,7 +130,8 @@ export const enum Settings {
 	CLAN_GAMES_REMINDER_TIMESTAMP = 'clanGamesReminderTimestamp',
 	NICKNAME_EXPRESSION = 'nicknameExpression',
 	AUTO_NICKNAME = 'autoNickname',
-	ROSTER_DEFAULT_SETTINGS = 'rosterDefaultSettings'
+	ROSTER_DEFAULT_SETTINGS = 'rosterDefaultSettings',
+	HAS_CUSTOM_BOT = 'hasCustomBot'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {

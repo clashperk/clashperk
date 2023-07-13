@@ -39,18 +39,27 @@ export class CustomBot {
 	}
 
 	public async hasDeployed(serviceId: string) {
-		const edges = await this.getDeployments(serviceId);
-		if (!edges) return false;
-
-		return edges.some((edge) => edge.node.status === 'SUCCESS');
+		try {
+			const edges = await this.getDeployments(serviceId);
+			if (!edges) return false;
+			return edges.some((edge) => edge.node.status === 'SUCCESS');
+		} catch (error) {
+			console.error(error);
+			captureException(error);
+			return false;
+		}
 	}
 
 	public async getDeploymentStatus(serviceId: string) {
-		const edges = await this.getDeployments(serviceId);
-		if (!edges) return 'UNKNOWN';
-
-		this.status = edges.at(0)?.node.status ?? 'UNKNOWN';
-		return this.status;
+		try {
+			const edges = await this.getDeployments(serviceId);
+			if (!edges) return 'UNKNOWN';
+			return edges.at(0)?.node.status ?? 'UNKNOWN';
+		} catch (error) {
+			console.error(error);
+			captureException(error);
+			return 'UNKNOWN';
+		}
 		// 'BUILDING', 'DEPLOYING', 'INITIALIZING', 'QUEUED', 'WAITING'
 		// 'SUCCESS', 'SKIPPED', 'CRASHED', 'FAILED', 'REMOVED'
 	}
@@ -80,24 +89,22 @@ export class CustomBot {
 	}
 
 	private async gql<T>(query: string): Promise<T> {
-		const url = 'https://backboard.railway.app/graphql/v2';
-		const apiToken = process.env.RAILWAY_API_TOKEN!;
+		try {
+			const res = await fetch('https://backboard.railway.app/graphql/v2', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${process.env.RAILWAY_API_TOKEN!}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ query })
+			});
 
-		const headers = {
-			'Authorization': `Bearer ${apiToken}`,
-			'Content-Type': 'application/json'
-		};
-
-		const res = await fetch(url, {
-			method: 'POST',
-			headers,
-			body: JSON.stringify({ query })
-		});
-
-		const body = await res.json();
-		if (!res.ok) throw new Error(body.errors?.at?.(0)?.message ?? res.statusText);
-
-		return body as T;
+			const body = await res.json();
+			if (!res.ok) throw new Error(body.errors?.at?.(0)?.message ?? res.statusText);
+			return body as T;
+		} catch (error) {
+			throw error;
+		}
 	}
 
 	public async createService(botToken: string, app: Application) {

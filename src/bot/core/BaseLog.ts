@@ -58,10 +58,15 @@ export default class BaseLog {
 		const clans = this.cached.filter((d) => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
+
+			// double posting prevention
 			if (data.channel && cache && cache.channel !== data.channel) continue;
+
+			// double posting prevention for custom bots
+			if (cache?.guild && this.client.settings.hasCustomBot(cache.guild) && !this.client.isCustom()) continue;
+
 			if (cache) await this.permissionsFor(cache, data);
 		}
-
 		return clans.clear();
 	}
 

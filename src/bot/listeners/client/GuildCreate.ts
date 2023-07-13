@@ -1,8 +1,8 @@
-import { Guild, EmbedBuilder, TextChannel, Webhook, PermissionFlagsBits, ChannelType } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, Webhook } from 'discord.js';
 import { Listener } from '../../lib/index.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
+import { Collections } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { welcomeEmbedMaker } from '../../util/Helper.js';
 
 export default class GuildCreateListener extends Listener {
@@ -35,7 +35,6 @@ export default class GuildCreateListener extends Listener {
 
 		const values = (await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0])) as number[];
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);
-
 		const user = await this.client.users.fetch(guild.ownerId);
 
 		mixpanel.track('Guild create', {

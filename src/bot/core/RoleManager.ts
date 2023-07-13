@@ -175,6 +175,9 @@ export class RoleManager {
 		for (const { guild, clans } of queried) {
 			if (!clans.length) continue;
 			if (!this.client.guilds.cache.has(guild)) continue;
+
+			if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
+
 			const clan = clans.find((c) => c.tag === tag)!;
 			await this.run(guild, clans, clan, roleChanges);
 		}
@@ -225,6 +228,9 @@ export class RoleManager {
 		for (const { guild, clans } of queried) {
 			if (!clans.length) continue;
 			if (!this.client.guilds.cache.has(guild)) continue;
+
+			if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
+
 			if (members.length) await this.processNickname(guild, members);
 		}
 	}
@@ -329,6 +335,9 @@ export class RoleManager {
 		for (const { guild, clans } of queried) {
 			if (!clans.length) continue;
 			if (!this.client.guilds.cache.has(guild)) continue;
+
+			if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
+
 			await this.runTownHallRoles(
 				guild,
 				clans,
@@ -375,6 +384,9 @@ export class RoleManager {
 		for (const { guild, clans } of queried) {
 			if (!clans.length) continue;
 			if (!this.client.guilds.cache.has(guild)) continue;
+
+			if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
+
 			await this.runLeagueRoles(
 				guild,
 				clans,

@@ -4,12 +4,15 @@ import { Collections, ElasticIndex, Settings, status } from '../util/Constants.j
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
+import { ElasticIndexer } from './Indexer.js';
 
 export default class Resolver {
 	private readonly client: Client;
+	private readonly indexer: ElasticIndexer;
 
 	public constructor(client: Client) {
 		this.client = client;
+		this.indexer = new ElasticIndexer(client);
 	}
 
 	public async resolvePlayer(interaction: BaseInteraction<'cached'>, args?: string): Promise<(Player & { user?: User }) | null> {
@@ -99,7 +102,7 @@ export default class Resolver {
 	public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(Player & { user?: User }) | null> {
 		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) {
-			this.client.indexer.index({ name: data.name, tag: data.tag, userId: interaction.user.id }, ElasticIndex.RECENT_PLAYERS);
+			this.indexer.index({ name: data.name, tag: data.tag, userId: interaction.user.id }, ElasticIndex.RECENT_PLAYERS);
 		}
 		if (data.ok) return { ...data, user };
 
@@ -109,7 +112,7 @@ export default class Resolver {
 	public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<Clan | null> {
 		const data: Clan = await this.client.http.fetch(`/clans/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) {
-			this.client.indexer.index({ name: data.name, tag: data.tag, userId: interaction.user.id }, ElasticIndex.RECENT_CLANS);
+			this.indexer.index({ name: data.name, tag: data.tag, userId: interaction.user.id }, ElasticIndex.RECENT_CLANS);
 		}
 		if (data.ok) return data;
 

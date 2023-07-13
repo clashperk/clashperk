@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
 import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'discord.js';
 import { Collection, ObjectId, WithId } from 'mongodb';
-import { Collections, Flags, Settings } from '../util/Constants.js';
+import fetch from 'node-fetch';
+import { Collections, Flags, Settings, UnrankedWarLeagueId } from '../util/Constants.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
 import { Client } from './Client.js';
 
@@ -687,12 +688,7 @@ export default class StorageHandler {
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		if (rounds.length !== body.clans.length - 1) return null;
 
-		const data = await this.client.db
-			.collection(Collections.CWL_GROUPS)
-			.find({ 'clans.tag': tag })
-			.sort({ createdAt: -1 })
-			.limit(1)
-			.next();
+		const data = await this.client.db.collection(Collections.CWL_GROUPS).findOne({ 'clans.tag': tag }, { sort: { _id: -1 } });
 		if (data?.season === this.seasonID) return null;
 		if (data && new Date().getMonth() <= new Date(data.season as string).getMonth()) return null;
 
@@ -717,37 +713,64 @@ export default class StorageHandler {
 		return createHash('md5').update(id).digest('hex');
 	}
 
-	// private async pushToDB(_tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
-	// 	const uid = this.md5(
-	// 		`${season}-${clans
-	// 			.map((clan) => clan.tag)
-	// 			.sort((a, b) => a.localeCompare(b))
-	// 			.join('-')}`
-	// 	);
-	// 	return this.client.db.collection(Collections.CWL_GROUPS).updateOne(
-	// 		{ uid },
-	// 		{
-	// 			$set: {
-	// 				warTags,
-	// 				rounds
-	// 			},
-	// 			$setOnInsert: {
-	// 				uid,
-	// 				season,
-	// 				id: await this.uuid(),
-	// 				createdAt: new Date(),
-	// 				clans: clans.map((clan) => ({ tag: clan.tag, name: clan.name }))
-	// 			}
-	// 		},
-	// 		{ upsert: true }
-	// 	);
-	// }
+	private async pushToDB(_tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
+		const uid = this.md5(
+			`${season}-${clans
+				.map((clan) => clan.tag)
+				.sort((a, b) => a.localeCompare(b))
+				.join('-')}`
+		);
+
+		const { leagues, clans: _clans } = await this.leagueIds(clans, season);
+		if (clans.length !== _clans.length) return null;
+
+		return this.client.db.collection(Collections.CWL_GROUPS).updateOne(
+			{ uid },
+			{
+				$set: {
+					warTags,
+					rounds
+				},
+				$setOnInsert: {
+					uid,
+					season,
+					id: await this.uuid(),
+					clans: clans.map((clan) => ({ tag: clan.tag, name: clan.name, leagueId: leagues[clan.tag] })),
+					leagues,
+					createdAt: new Date()
+				}
+			},
+			{ upsert: true }
+		);
+	}
+
+	private async leagueIds(_clans: { tag: string }[], seasonId: string) {
+		const clans = (await Promise.all(_clans.map((clan) => this.client.http.clan(clan.tag))))
+			.filter((clan) => clan.ok)
+			.map((data) => {
+				const leagueId = data.warLeague?.id ?? UnrankedWarLeagueId;
+				return { name: data.name, tag: data.tag, leagueId };
+			});
+
+		const leagues = clans.reduce<Record<string, number>>((acc, curr) => {
+			acc[curr.tag] = curr.leagueId;
+			return acc;
+		}, {});
+
+		for (const clan of clans) {
+			const res = await fetch(`https://api.clashperk.com/clans/${encodeURIComponent(clan.tag)}/cwl/seasons`);
+			const seasons = (await res.json()) as { leagueId: string; seasonId: string }[];
+			const season = seasons.find((season) => season.seasonId === seasonId);
+			if (!season?.leagueId) continue;
+			leagues[clan.tag] = Number(season.leagueId);
+		}
+
+		return { clans, leagues };
+	}
 
 	private async uuid() {
 		const cursor = this.client.db.collection(Collections.CWL_GROUPS).find().sort({ id: -1 }).limit(1);
-
 		const uuid: number = (await cursor.next())?.id ?? 0;
-		cursor.close();
 		return uuid + 1;
 	}
 

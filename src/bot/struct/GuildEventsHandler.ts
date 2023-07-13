@@ -196,6 +196,9 @@ export class GuildEventsHandler {
 			for await (const guildEvent of cursor) {
 				const guild = this.client.guilds.cache.get(guildEvent.guildId);
 				if (!guild) continue;
+
+				if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
+
 				await this.create(guild, guildEvent);
 			}
 		} finally {

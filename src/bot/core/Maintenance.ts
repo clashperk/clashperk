@@ -49,6 +49,9 @@ export default class MaintenanceHandler {
 		for (const setting of this.client.settings.flatten()) {
 			if (!setting.eventsChannel) continue;
 			if (setting.eventsChannel === SUPPORT_SERVER_GENERAL_CHANNEL_ID) continue;
+
+			if (this.client.settings.hasCustomBot(setting.guildId) && !this.client.isCustom()) continue;
+
 			const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
 			if (channel?.isTextBased() && channel.permissionsFor(this.client.user!)?.has(['SendMessages', 'ViewChannel'])) {
 				const message = i18n(this.isMaintenance ? 'common.maintenance_start' : 'common.maintenance_end', {

@@ -13,6 +13,8 @@ export default class GuildMemberAddListener extends Listener {
 	}
 
 	public async exec(member: GuildMember) {
+		if (this.client.settings.hasCustomBot(member.guild) && !this.client.isCustom()) return;
+
 		const clans = await this.client.db
 			.collection<{ tag: string }>(Collections.CLAN_STORES)
 			.find({ guild: member.guild.id, active: true, paused: false }, { projection: { tag: 1, _id: 0 } })

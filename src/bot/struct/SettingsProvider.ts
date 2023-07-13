@@ -1,6 +1,6 @@
 import { Collection, Db } from 'mongodb';
 import { Guild } from 'discord.js';
-import { Collections } from '../util/Constants.js';
+import { Collections, Settings as SettingsEnum } from '../util/Constants.js';
 
 export default class SettingsProvider {
 	protected db: Collection<Settings>;
@@ -69,6 +69,10 @@ export default class SettingsProvider {
 
 	public flatten() {
 		return this.settings.values();
+	}
+
+	public hasCustomBot(guild: string | Guild) {
+		return this.get(guild, SettingsEnum.HAS_CUSTOM_BOT, false);
 	}
 
 	private static guildId(guild: string | Guild) {

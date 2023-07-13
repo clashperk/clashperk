@@ -1,6 +1,6 @@
 import Client from './Client.js';
 
-export class Indexer {
+export class ElasticIndexer {
 	public constructor(private readonly client: Client) {}
 
 	public async upsert(doc: SearchDocument, index: string) {

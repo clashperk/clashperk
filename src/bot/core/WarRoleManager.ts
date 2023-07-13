@@ -38,7 +38,13 @@ export class WarRoleManager {
 				}
 			])
 			.toArray();
-		const clans = result.filter((clan) => this.client.guilds.cache.has(clan.guild) && clan.warRole);
+
+		const clans = result
+			.filter((clan) => this.client.guilds.cache.has(clan.guild) && clan.warRole)
+			.filter((clan) => {
+				if (this.client.settings.hasCustomBot(clan.guild) && !this.client.isCustom()) return false;
+				return true;
+			});
 		if (!clans.length) return null;
 
 		if (data.warTag) {
@@ -48,7 +54,7 @@ export class WarRoleManager {
 		return this.handleRegularWar(clans, data);
 	}
 
-	public async handleRegularWar(clans: { guild: string; warRole: string }[], data: Feed) {
+	private async handleRegularWar(clans: { guild: string; warRole: string }[], data: Feed) {
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.find({ tag: { $in: data.clan._members.map((tag) => tag) } })
@@ -93,7 +99,7 @@ export class WarRoleManager {
 		}
 	}
 
-	public async handleCWLWar(clans: { guild: string; warRole: string }[], data: Feed) {
+	private async handleCWLWar(clans: { guild: string; warRole: string }[], data: Feed) {
 		const removed = data.clan.changedRosters?.removed ?? [];
 
 		const links = await this.client.db
@@ -168,7 +174,7 @@ export class WarRoleManager {
 		}
 	}
 
-	public async handleRoles({
+	private async handleRoles({
 		members,
 		guildId,
 		userId,

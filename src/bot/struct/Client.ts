@@ -20,7 +20,6 @@ import Resolver from './Resolver.js';
 import ClanWarScheduler from './ClanWarScheduler.js';
 import CapitalRaidScheduler from './CapitalRaidScheduler.js';
 import ClanGamesScheduler from './ClanGamesScheduler.js';
-import { Indexer } from './Indexer.js';
 import { CommandsMap } from './CommandsMap.js';
 import { NicknameHandler } from './NicknameHandler.js';
 import { GuildEventsHandler } from './GuildEventsHandler.js';
@@ -51,7 +50,6 @@ export class Client extends Discord.Client {
 	public warScheduler!: ClanWarScheduler;
 	public raidScheduler!: CapitalRaidScheduler;
 	public cgScheduler!: ClanGamesScheduler;
-	public indexer!: Indexer;
 	public i18n = i18n;
 	public guildEvents!: GuildEventsHandler;
 
@@ -138,6 +136,15 @@ export class Client extends Discord.Client {
 		return userId === process.env.OWNER!;
 	}
 
+	public isCustom() {
+		// const appId = Buffer.from(process.env.TOKEN!.split('.').at(0)!, 'base64').toString();
+		return !['635462521729581058', '526971716711350273'].includes(this.user!.id);
+	}
+
+	public isPrimary() {
+		return this.user!.id === '526971716711350273';
+	}
+
 	public embed(guild: Message | Snowflake | BaseInteraction) {
 		return this.settings.get<number>(typeof guild === 'string' ? guild : guild.guild!, Settings.COLOR, null);
 	}
@@ -175,8 +182,6 @@ export class Client extends Discord.Client {
 		await Database.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
 		this.db = Database.db('clashperk');
 		await Database.createIndex(this.db);
-
-		this.indexer = new Indexer(this);
 
 		this.settings = new SettingsProvider(this.db);
 		await this.settings.init();

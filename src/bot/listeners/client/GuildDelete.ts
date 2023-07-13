@@ -69,8 +69,9 @@ export default class GuildDeleteListener extends Listener {
 	}
 
 	private async delete(guild: Guild) {
-		const db = this.client.db.collection(Collections.CLAN_STORES);
+		if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) return;
 
+		const db = this.client.db.collection(Collections.CLAN_STORES);
 		for await (const data of db.find({ guild: guild.id })) {
 			this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild: guild.id });
 		}
