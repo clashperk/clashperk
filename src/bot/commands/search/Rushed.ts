@@ -231,9 +231,9 @@ export default class RushedCommand extends Command {
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private per(num: string) {
-		if (Number(num) === 100) return '100';
-		return Number(num).toFixed(1).padStart(4, ' ');
+	private per(num: number) {
+		if (Number(num) === 100) return '100%';
+		return Math.round(num).toFixed(0).concat('%').padStart(4, ' ');
 	}
 
 	private padding(num: number) {
@@ -295,8 +295,8 @@ export default class RushedCommand extends Command {
 			},
 			{ total: 0, levels: 0 }
 		);
-		if (rem.total === 0) return (0).toFixed(2);
-		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
+		if (rem.total === 0) return 0;
+		return Number((100 - (rem.levels * 100) / rem.total).toFixed(2));
 	}
 
 	private heroRushed(data: Player) {
@@ -312,8 +312,8 @@ export default class RushedCommand extends Command {
 			},
 			{ total: 0, levels: 0 }
 		);
-		if (rem.total === 0) return (0).toFixed(2);
-		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
+		if (rem.total === 0) return 0;
+		return Number((100 - (rem.levels * 100) / rem.total).toFixed(2));
 	}
 
 	private rushedOverall(data: Player) {
@@ -329,8 +329,8 @@ export default class RushedCommand extends Command {
 			},
 			{ total: 0, levels: 0 }
 		);
-		if (rem.total === 0) return (0).toFixed(2);
-		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
+		if (rem.total === 0) return 0;
+		return Number((100 - (rem.levels * 100) / rem.total).toFixed(2));
 	}
 
 	private totalPercentage(hallLevel: number, rushed: number) {
