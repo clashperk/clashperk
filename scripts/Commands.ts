@@ -3440,15 +3440,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		name: 'army',
 		type: ApplicationCommandType.Message,
 		dm_permission: false
-	}
-];
-
-export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
+	},
 	{
 		name: 'bot-personalizer',
 		description: 'Build your own Discord bot!'
 	}
 ];
+
+export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [];
 
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
