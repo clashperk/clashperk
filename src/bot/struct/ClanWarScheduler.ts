@@ -313,10 +313,10 @@ export default class ClanWarScheduler {
 	}
 
 	private async _refresh() {
-		const schedulers = await this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } }).toArray();
+		const cursor = this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } });
 
 		const now = new Date().getTime();
-		for (const schedule of schedulers) {
+		for await (const schedule of cursor) {
 			if (schedule.triggered) continue;
 			if (!this.client.guilds.cache.has(schedule.guild)) continue;
 			if (this.queued.has(schedule._id.toHexString())) continue;

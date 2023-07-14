@@ -79,10 +79,14 @@ export default class ClanGamesScheduler {
 		if (!(Date.now() >= startTime && Date.now() <= endTime)) return null;
 
 		this.client.logger.info(`Inserting new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
-		const cursor = this.reminders.find({});
-		while (await cursor.hasNext()) {
-			const reminder = await cursor.next();
-			if (reminder) await this.create(reminder);
+
+		const cursor = this.reminders.find({
+			guild: {
+				$in: this.client.guilds.cache.map((guild) => guild.id)
+			}
+		});
+		for await (const reminder of cursor) {
+			await this.create(reminder);
 		}
 
 		this.client.settings.set('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, currentSeasonId);
@@ -319,10 +323,10 @@ export default class ClanGamesScheduler {
 	}
 
 	private async _refresh() {
-		const schedulers = await this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } }).toArray();
+		const cursor = this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } });
 
 		const now = new Date().getTime();
-		for (const schedule of schedulers) {
+		for await (const schedule of cursor) {
 			if (schedule.triggered) continue;
 			if (!this.client.guilds.cache.has(schedule.guild)) continue;
 			if (this.queued.has(schedule._id.toHexString())) continue;

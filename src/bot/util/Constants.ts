@@ -61,6 +61,8 @@ export const enum Collections {
 
 	GUILD_EVENTS = 'GuildEvents',
 
+	CUSTOM_BOTS = 'CustomBots',
+
 	ROSTERS = 'Rosters',
 	ROSTER_CATEGORIES = 'RosterCategories',
 

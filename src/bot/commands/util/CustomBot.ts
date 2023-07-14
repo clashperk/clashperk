@@ -11,11 +11,13 @@ import {
 	TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
+import { WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { CustomBot } from '../../struct/CustomBot.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { getInviteLink } from '../../util/Constants.js';
+import { Patron, rewards } from '../../struct/Patrons.js';
 
 export default class BotPersonalizerCommand extends Command {
 	public constructor() {
@@ -26,9 +28,18 @@ export default class BotPersonalizerCommand extends Command {
 			},
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			defer: true,
-			// ownerOnly: true,
 			ephemeral: false
 		});
+	}
+
+	private isEligible(patron: WithId<Patron>) {
+		if (patron.rewardId === rewards.gold) return true;
+		if (patron.rewardId === rewards.bronze) return patron.sponsored;
+		return patron.rewardId === rewards.silver && (patron.createdAt < new Date('2023-06') || patron.sponsored);
+	}
+
+	private isAllowedGuild(patron: Patron, guildId: string) {
+		return patron.guilds.some((guild) => guild.id === guildId);
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
@@ -36,18 +47,28 @@ export default class BotPersonalizerCommand extends Command {
 			token: this.client.uuid(interaction.user.id)
 		};
 
-		const isEligible = await this.client.patrons.isEligible(interaction.user.id, interaction.guildId);
+		const patron = await this.client.patrons.findOne(interaction.user.id);
+		const isEligible = Boolean(patron && this.isEligible(patron) && this.isAllowedGuild(patron, interaction.guildId));
+
+		if (patron?.applicationId) {
+			return interaction.editReply(
+				[
+					`${EMOJIS.WRONG} You already have a bot deployed!`,
+					`\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`
+				].join('\n')
+			);
+		}
+
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
 				.setCustomId(customIds.token)
 				.setLabel("Let's start!")
-				// .setDisabled(!isEligible),
+				.setDisabled(!isEligible)
 				.setStyle(ButtonStyle.Primary),
 			new ButtonBuilder()
-				// .setURL(isEligible ? 'https://discord.com/developers/applications' : 'https://www.patreon.com/clashperk')
+				.setURL(isEligible ? 'https://discord.com/developers/applications' : 'https://www.patreon.com/clashperk')
 				.setLabel(isEligible ? 'Developer Portal' : 'Become a Patron')
 				.setURL('https://discord.com/developers/applications')
-				.setLabel('Developer Portal')
 				.setStyle(ButtonStyle.Link)
 		);
 
@@ -85,6 +106,10 @@ export default class BotPersonalizerCommand extends Command {
 				const now = Date.now();
 				await modalSubmit.deferUpdate();
 
+				if (!patron) {
+					return await modalSubmit.editReply({ content: `You must be a patron to deploy your own bot!`, components: [] });
+				}
+
 				const inputValue = modalSubmit.fields.getTextInputValue(customIds.token);
 				const customBot = new CustomBot(inputValue);
 				const app = await customBot.getApplication();
@@ -116,7 +141,7 @@ export default class BotPersonalizerCommand extends Command {
 				const commands = await customBot.createCommands(app, interaction.guildId);
 				if (!commands.length) {
 					messages.push(`${EMOJIS.WRONG} Failed to create application commands...`);
-					messages.push(`\nPlease contact us on [Support Server](https://discord.gg/ppuppun) for assistance.`);
+					messages.push(`\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`);
 					return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
 				}
 
@@ -129,13 +154,22 @@ export default class BotPersonalizerCommand extends Command {
 				const service = await customBot.createService(inputValue, app);
 				if (!service) {
 					messages.push(`${EMOJIS.WRONG} Failed to deploy application...`);
-					messages.push(`\nPlease contact us on [Support Server](https://discord.gg/ppuppun) for assistance.`);
+					messages.push(`\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`);
 					return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
 				}
 
 				await modalSubmit.editReply({
 					content: [...messages, `${EMOJIS.LOADING} Deploying application... [took ${timeTaken()}]`].join('\n'),
 					components: []
+				});
+
+				await customBot.registerBot({
+					application: app,
+					guildId: interaction.guildId,
+					patronId: patron.id,
+					serviceId: service.id,
+					token: inputValue,
+					user: interaction.user
 				});
 
 				const status = await customBot.checkDeploymentStatus(service.id, async (status) => {
@@ -151,7 +185,7 @@ export default class BotPersonalizerCommand extends Command {
 				}
 
 				messages.push(`${EMOJIS.WRONG} Failed to deploy application! (with status **${status}**)`);
-				messages.push(`Please contact us on [Support Server](https://discord.gg/ppuppun) for assistance.`);
+				messages.push(`Contact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`);
 				return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
 			} catch (e) {
 				if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {

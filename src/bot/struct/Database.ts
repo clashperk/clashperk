@@ -43,6 +43,13 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.CUSTOM_BOTS).createIndexes([
+				{
+					key: { applicationId: 1 },
+					unique: true
+				}
+			]),
+
 			db.collection(Collections.CWL_GROUPS).createIndexes([
 				{
 					key: { 'clans.tag': 1, 'season': 1 }

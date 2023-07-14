@@ -29,7 +29,7 @@ export default class ComponentHandler {
 		const values = interaction.values;
 		if (parsed.array_key) return { [parsed.array_key]: values };
 		if (parsed.string_key) return { [parsed.string_key]: values.at(0) };
-		return { selected: values.length === 1 ? values.at(0) : values };
+		return { selected: values };
 	}
 
 	public async exec(interaction: ButtonInteraction | StringSelectMenuInteraction) {

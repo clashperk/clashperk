@@ -5,7 +5,7 @@ import { BaseInteraction } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
 import { Client } from './Client.js';
 
-const rewards = {
+export const rewards = {
 	bronze: '3705318',
 	silver: '4742718',
 	gold: '5352215'
@@ -23,7 +23,6 @@ export default class Patrons {
 
 	public constructor(private readonly client: Client) {
 		this.collection = this.client.db.collection(Collections.PATRONS);
-
 		this.collection
 			.watch(
 				[
@@ -50,18 +49,21 @@ export default class Patrons {
 
 	public get(interaction: BaseInteraction | string): boolean {
 		if (typeof interaction === 'string') return this.patrons.has(interaction);
-		return this.patrons.has(interaction.guild!.id);
+		return this.patrons.has(interaction.guildId!);
 	}
 
-	public async isEligible(userId: string, guildId: string) {
-		const user = await this.collection.findOne({ userId, active: true, rewardId: { $in: [rewards.silver, rewards.gold] } });
-		if (!user) return false;
-		return user.guilds.some((guild) => guild.id === guildId);
+	public async findOne(userId: string) {
+		return this.collection.findOne({ userId, active: true });
+	}
+
+	public async attachCustomBot(userId: string, applicationId: string) {
+		return this.collection.updateOne({ userId }, { $set: { applicationId } });
 	}
 
 	public async refresh() {
 		const patrons = await this.collection.find({ active: true }).toArray();
 		this.patrons.clear(); // clear old user_id and guild_id
+
 		for (const data of patrons) {
 			if (data.userId) this.patrons.add(data.userId);
 
@@ -230,6 +232,9 @@ export interface Patron {
 
 	entitledAmount: number;
 	lifetimeSupport: number;
+
+	sponsored: boolean;
+	applicationId?: string;
 
 	createdAt: Date;
 	lastChargeDate: Date;

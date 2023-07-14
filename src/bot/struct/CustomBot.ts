@@ -1,21 +1,32 @@
-import { APIApplication, APIApplicationCommand, APIUser, ApplicationFlags, ApplicationFlagsBitField, REST, Routes } from 'discord.js';
+import { APIApplication, APIApplicationCommand, APIUser, ApplicationFlags, ApplicationFlagsBitField, REST, Routes, User } from 'discord.js';
 import { container } from 'tsyringe';
 import { captureException } from '@sentry/node';
+import { Collection } from 'mongodb';
 import { COMMANDS } from '../../../scripts/Commands.js';
+import { Collections } from '../util/Constants.js';
 import Client from './Client.js';
 
 const projectId = process.env.RAILWAY_PROJECT_ID!;
 const environmentId = process.env.RAILWAY_ENV_ID!;
 
+interface ICustomBot {
+	applicationId: string;
+	token: string;
+	name: string;
+	userId: string;
+	patronId: string;
+	guildIds: string[];
+}
+
 export class CustomBot {
 	private readonly rest: REST;
 	private readonly client: Client;
-	public status: string;
+	protected collection: Collection<ICustomBot>;
 
 	public constructor(token: string) {
-		this.status = 'UNKNOWN';
 		this.client = container.resolve(Client);
 		this.rest = new REST({ version: '10' }).setToken(token);
+		this.collection = this.client.db.collection(Collections.CUSTOM_BOTS);
 	}
 
 	public async getApplication() {
@@ -75,6 +86,49 @@ export class CustomBot {
 				callback(status);
 			}, 3500);
 		});
+	}
+
+	public async findBot({ applicationId }: { applicationId: string }) {
+		return this.collection.findOne({ applicationId });
+	}
+
+	public async registerBot({
+		application,
+		guildId,
+		user,
+		patronId,
+		token,
+		serviceId
+	}: {
+		application: Application;
+		guildId: string;
+		user: User;
+		patronId: string;
+		token: string;
+		serviceId: string;
+	}) {
+		return this.collection.findOneAndUpdate(
+			{
+				applicationId: application.id
+			},
+			{
+				$addToSet: {
+					guildIds: guildId
+				},
+				$set: {
+					name: application.bot.username,
+					token,
+					patronId,
+					serviceId,
+					userId: user.id,
+					updatedAt: new Date()
+				},
+				$setOnInsert: {
+					createdAt: new Date()
+				}
+			},
+			{ upsert: true, returnDocument: 'after' }
+		);
 	}
 
 	public async createCommands(app: Application, guildId: string) {
