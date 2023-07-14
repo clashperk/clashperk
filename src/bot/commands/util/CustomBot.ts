@@ -48,9 +48,11 @@ export default class BotPersonalizerCommand extends Command {
 		};
 
 		const patron = await this.client.patrons.findOne(interaction.user.id);
-		const isEligible = Boolean(patron && this.isEligible(patron) && this.isAllowedGuild(patron, interaction.guildId));
+		const isEligible =
+			Boolean(patron && this.isEligible(patron) && this.isAllowedGuild(patron, interaction.guildId)) ||
+			this.client.isOwner(interaction.user.id);
 
-		if (patron?.applicationId) {
+		if (patron?.applicationId && !this.client.isOwner(interaction.user.id)) {
 			return interaction.editReply(
 				[
 					`${EMOJIS.WRONG} You already have a bot deployed!`,
@@ -68,7 +70,6 @@ export default class BotPersonalizerCommand extends Command {
 			new ButtonBuilder()
 				.setURL(isEligible ? 'https://discord.com/developers/applications' : 'https://www.patreon.com/clashperk')
 				.setLabel(isEligible ? 'Developer Portal' : 'Become a Patron')
-				.setURL('https://discord.com/developers/applications')
 				.setStyle(ButtonStyle.Link)
 		);
 
@@ -171,6 +172,7 @@ export default class BotPersonalizerCommand extends Command {
 					token: inputValue,
 					user: interaction.user
 				});
+				await this.client.patrons.attachCustomBot(interaction.user.id, app.id);
 
 				const status = await customBot.checkDeploymentStatus(service.id, async (status) => {
 					await modalSubmit.editReply({
