@@ -44,7 +44,7 @@ export default class Patrons {
 	public async init() {
 		await this.refresh();
 		await this._autoDelete(true);
-		setInterval(() => this._autoDelete(false), 30 * 60 * 1000).unref();
+		setInterval(() => this._autoDelete(false), 10 * 60 * 1000).unref();
 	}
 
 	public get(interaction: BaseInteraction | string): boolean {
@@ -58,6 +58,10 @@ export default class Patrons {
 
 	public async attachCustomBot(userId: string, applicationId: string) {
 		return this.collection.updateOne({ userId }, { $set: { applicationId } });
+	}
+
+	public async findGuild(guildId: string) {
+		return this.collection.findOne({ active: true, guilds: { $elemMatch: { id: guildId } } });
 	}
 
 	public async refresh() {

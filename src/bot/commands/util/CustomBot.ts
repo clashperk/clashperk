@@ -139,9 +139,12 @@ export default class BotPersonalizerCommand extends Command {
 					components: []
 				});
 
-				const commands = await customBot.createCommands(app, interaction.guildId);
+				const commands = await customBot.createCommands(app.id, interaction.guildId);
 				if (!commands.length) {
+					const member = await interaction.guild.members.fetch(app.id).catch(() => null);
 					messages.push(`${EMOJIS.WRONG} Failed to create application commands...`);
+					if (!member) messages.push(`\n[Click here to invite the bot](${getInviteLink(app.id)}) and try again.`);
+
 					messages.push(`\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`);
 					return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
 				}
@@ -172,6 +175,7 @@ export default class BotPersonalizerCommand extends Command {
 					token: inputValue,
 					user: interaction.user
 				});
+				await this.client.settings.setCustomBot(interaction.guild);
 				await this.client.patrons.attachCustomBot(interaction.user.id, app.id);
 
 				const status = await customBot.checkDeploymentStatus(service.id, async (status) => {
@@ -184,6 +188,10 @@ export default class BotPersonalizerCommand extends Command {
 				if (status === 'SUCCESS') {
 					messages.push(`${EMOJIS.OK} Successfully deployed application! [took ${timeTaken()}]`);
 					return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
+				}
+
+				if (status === 'FAILED') {
+					await this.client.settings.deleteCustomBot(interaction.guild);
 				}
 
 				messages.push(`${EMOJIS.WRONG} Failed to deploy application! (with status **${status}**)`);

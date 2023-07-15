@@ -4,6 +4,7 @@ import { mixpanel } from '../../struct/Mixpanel.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { welcomeEmbedMaker } from '../../util/Helper.js';
+import { CustomBot, ICustomBot } from '../../struct/CustomBot.js';
 
 export default class GuildCreateListener extends Listener {
 	private webhook: Webhook | null = null;
@@ -28,6 +29,7 @@ export default class GuildCreateListener extends Listener {
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
 		await this.intro(guild).catch(() => null);
+		if (this.client.isCustom()) await this.createCommands(guild);
 		await this.restore(guild);
 		await this.client.stats.post();
 		await this.client.stats.addition(guild.id);
@@ -105,5 +107,24 @@ export default class GuildCreateListener extends Listener {
 		}
 
 		await db.updateMany({ guild: guild.id }, { $set: { paused: false } });
+	}
+
+	private async createCommands(guild: Guild) {
+		const patron = await this.client.patrons.findGuild(guild.id);
+		if (!patron?.applicationId) return;
+
+		const collection = this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS);
+		const app = await collection.findOne({ applicationId: patron.applicationId });
+		if (!app) return;
+
+		const customBot = new CustomBot(app.token);
+		const commands = await customBot.createCommands(app.applicationId, guild.id);
+
+		if (commands.length) {
+			await collection.updateOne({ _id: app._id }, { $addToSet: { guildIds: guild.id } });
+			await this.client.settings.setCustomBot(guild);
+		}
+
+		return commands;
 	}
 }

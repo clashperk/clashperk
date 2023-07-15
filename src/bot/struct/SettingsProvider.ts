@@ -75,6 +75,14 @@ export default class SettingsProvider {
 		return this.get(guild, SettingsEnum.HAS_CUSTOM_BOT, false);
 	}
 
+	public setCustomBot(guild: string | Guild) {
+		return this.set(guild, SettingsEnum.HAS_CUSTOM_BOT, true);
+	}
+
+	public deleteCustomBot(guild: string | Guild) {
+		return this.delete(guild, SettingsEnum.HAS_CUSTOM_BOT);
+	}
+
 	private static guildId(guild: string | Guild) {
 		if (guild instanceof Guild) return guild.id;
 		if (guild === 'global' || guild === null) return 'global'; // eslint-disable-line

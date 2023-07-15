@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { inspect } from 'util';
 import { Routes, RouteBases, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import fetch from 'node-fetch';
-import { BETA_COMMANDS, COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
+import { ALPHA_COMMANDS, BETA_COMMANDS, COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
 
@@ -41,7 +41,7 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 (async () => {
 	const token = process.env.BOT_TOKEN!;
 	if (process.argv.includes('--gh-action')) {
-		return applicationCommands(token, COMMANDS);
+		return applicationCommands(token, [...COMMANDS, ...ALPHA_COMMANDS]);
 	}
 
 	if (process.argv.includes('--delete')) {
@@ -55,11 +55,13 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 	if (process.argv.includes('--beta')) {
 		const guilds = process.env.GUILD_IDS!.split(',');
 		for (const guildId of new Set(guilds)) {
-			const commands = masterGuilds.includes(guildId) ? [...BETA_COMMANDS, ...PRIVATE_COMMANDS] : [...BETA_COMMANDS];
+			const commands = masterGuilds.includes(guildId)
+				? [...BETA_COMMANDS, ...ALPHA_COMMANDS, ...PRIVATE_COMMANDS]
+				: [...BETA_COMMANDS];
 			await applicationGuildCommands(process.env.PROD_TOKEN!, guildId, commands);
 		}
 		return;
 	}
 
-	return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...PRIVATE_COMMANDS]);
+	return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...ALPHA_COMMANDS, ...PRIVATE_COMMANDS]);
 })();

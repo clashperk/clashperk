@@ -9,7 +9,7 @@ import Client from './Client.js';
 const projectId = process.env.RAILWAY_PROJECT_ID!;
 const environmentId = process.env.RAILWAY_ENV_ID!;
 
-interface ICustomBot {
+export interface ICustomBot {
 	applicationId: string;
 	token: string;
 	name: string;
@@ -34,7 +34,7 @@ export class CustomBot {
 			const app = await this.rest.get(Routes.oauth2CurrentApplication());
 			return app as Application;
 		} catch (error) {
-			console.error(error);
+			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
 			captureException(error);
 			return null;
 		}
@@ -55,7 +55,7 @@ export class CustomBot {
 			if (!edges) return false;
 			return edges.some((edge) => edge.node.status === 'SUCCESS');
 		} catch (error) {
-			console.error(error);
+			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
 			captureException(error);
 			return false;
 		}
@@ -67,7 +67,7 @@ export class CustomBot {
 			if (!edges) return 'UNKNOWN';
 			return edges.at(0)?.node.status ?? 'UNKNOWN';
 		} catch (error) {
-			console.error(error);
+			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
 			captureException(error);
 			return 'UNKNOWN';
 		}
@@ -131,12 +131,12 @@ export class CustomBot {
 		);
 	}
 
-	public async createCommands(app: Application, guildId: string) {
+	public async createCommands(appId: string, guildId: string) {
 		try {
-			const commands = await this.rest.put(Routes.applicationGuildCommands(app.id, guildId), { body: COMMANDS });
+			const commands = await this.rest.put(Routes.applicationGuildCommands(appId, guildId), { body: COMMANDS });
 			return commands as APIApplicationCommand[];
 		} catch (error) {
-			console.error(error);
+			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
 			captureException(error);
 			return [];
 		}
@@ -212,7 +212,7 @@ export class CustomBot {
 			if (!data) return null;
 			return data.serviceCreate;
 		} catch (error) {
-			console.error(error);
+			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
 			captureException(error);
 			return null;
 		}
@@ -246,7 +246,7 @@ export class CustomBot {
 			if (!data) return null;
 			return data.deployments.edges;
 		} catch (error) {
-			console.error(error);
+			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
 			captureException(error);
 			return null;
 		}
@@ -264,7 +264,7 @@ export class CustomBot {
 			if (!data) return null;
 			return data.serviceDelete;
 		} catch (error) {
-			console.error(error);
+			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
 			captureException(error);
 			return null;
 		}
