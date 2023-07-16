@@ -1677,7 +1677,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'allow_unlinked',
-						description: 'Whether to allow unlinked members to join.',
+						description: 'Whether to allow unlinked members.',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
@@ -1860,7 +1860,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'allow_unlinked',
-						description: 'Whether to allow unlinked members to join.',
+						description: 'Whether to allow unlinked members.',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
