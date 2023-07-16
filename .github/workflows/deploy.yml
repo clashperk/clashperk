@@ -1,4 +1,4 @@
-name: CORN
+name: CRON
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    name: Application Commands
+    name: BOT COMMANDS
     runs-on: ubuntu-latest
 
     steps:
