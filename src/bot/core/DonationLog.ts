@@ -81,6 +81,10 @@ export default class DonationLog extends BaseLog {
 					value: [
 						data.donated
 							.map((m) => {
+								if (this.client.isCustom() && m.donated > 100) {
+									return `\u200e${PLAYER_LEAGUES[m.league]!} ${m.donated} ${m.name}`;
+								}
+
 								if (m.donated > 200) {
 									const [div, mod] = this.divmod(m.donated);
 									const list = [
@@ -108,6 +112,10 @@ export default class DonationLog extends BaseLog {
 					value: [
 						data.received
 							.map((m) => {
+								if (this.client.isCustom() && m.received > 100) {
+									return `\u200e${PLAYER_LEAGUES[m.league]!} ${m.received} ${m.name}`;
+								}
+
 								if (m.received > 200) {
 									const [div, mod] = this.divmod(m.received);
 									const list = [
