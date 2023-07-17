@@ -3444,10 +3444,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 ];
 
 export const ALPHA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
-	// {
-	// 	name: 'bot-personalizer',
-	// 	description: 'Build your own Discord bot!'
-	// }
+	{
+		name: 'bot-personalizer',
+		description: 'Build your own Discord bot!'
+	}
 ];
 
 export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [];

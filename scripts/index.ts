@@ -64,4 +64,5 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 	}
 
 	return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...ALPHA_COMMANDS, ...PRIVATE_COMMANDS]);
+	// return applicationCommands(token, []);
 })();

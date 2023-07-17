@@ -148,7 +148,9 @@ export default class HelpCommand extends Command {
 	}
 
 	public async commandMenu(interaction: CommandInteraction<'cached'>, args: { category?: string }) {
-		const applicationCommands = (await this.client.application?.commands.fetch())!;
+		const applicationCommands = this.client.isCustom()
+			? (await this.client.application?.commands.fetch({ guildId: interaction.guildId }))!
+			: (await this.client.application?.commands.fetch())!;
 		const commands = applicationCommands
 			.filter((command) => command.type === ApplicationCommandType.ChatInput)
 			.map((command) => {
