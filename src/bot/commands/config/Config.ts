@@ -84,29 +84,39 @@ export default class ConfigCommand extends Command {
 			.addFields([
 				{
 					name: 'Prefix',
-					value: '/'
+					value: '/',
+					inline: true
 				},
 				{
 					name: 'Patron',
-					value: this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No'
+					value: this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No',
+					inline: true
 				},
 				{
 					name: 'Manager Role',
-					value: `${role?.toString() ?? 'None'}`
+					value: `${role?.toString() ?? 'None'}`,
+					inline: true
 				},
 				{
 					name: 'Webhook Limit',
-					value: `${this.client.settings.get<string>(interaction.guild, Settings.WEBHOOK_LIMIT, 8)}`
+					value: `${this.client.settings.get<string>(interaction.guild, Settings.WEBHOOK_LIMIT, 8)}`,
+					inline: true
 				},
 				{
 					name: this.i18n('common.color_code', { lng: interaction.locale }),
-					value: color ? `#${color.toString(16).toUpperCase()}` : 'None'
+					value: color ? `#${color.toString(16).toUpperCase()}` : 'None',
+					inline: true
 				},
 				{
 					name: this.i18n('command.config.events_channel', { lng: interaction.locale }),
-					value: channel?.toString() ?? 'None'
+					value: channel?.toString() ?? 'None',
+					inline: true
 				}
 			]);
+
+		if (process.env.RAILWAY_SERVICE_ID) {
+			embed.setFooter({ text: `Service ID: ${process.env.RAILWAY_SERVICE_ID!}` });
+		}
 
 		return interaction.reply({ embeds: [embed] });
 	}
