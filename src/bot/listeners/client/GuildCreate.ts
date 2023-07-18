@@ -1,13 +1,13 @@
-import { ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, Webhook } from 'discord.js';
+import { ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, WebhookClient } from 'discord.js';
 import { Listener } from '../../lib/index.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { welcomeEmbedMaker } from '../../util/Helper.js';
 import { CustomBot, ICustomBot } from '../../struct/CustomBot.js';
 
 export default class GuildCreateListener extends Listener {
-	private webhook: Webhook | null = null;
+	private webhook: WebhookClient | null = null;
 
 	public constructor() {
 		super('guildCreate', {
@@ -17,11 +17,14 @@ export default class GuildCreateListener extends Listener {
 		});
 	}
 
-	private async fetchWebhook() {
+	private getWebhook() {
 		if (this.webhook) return this.webhook;
-		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'defaultWebhook', null)).catch(() => null);
-		this.webhook = webhook;
-		return webhook;
+
+		const url = this.client.settings.get<string>('global', Settings.GUILD_LOG_WEBHOOK_URL, null);
+		if (!url) return null;
+
+		this.webhook = new WebhookClient({ url });
+		return this.webhook;
 	}
 
 	public async exec(guild: Guild) {
@@ -29,27 +32,35 @@ export default class GuildCreateListener extends Listener {
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
 		await this.intro(guild).catch(() => null);
-		if (this.client.isCustom()) await this.createCommands(guild);
+		if (this.client.isCustom()) {
+			await this.createCommands(guild);
+		}
+
+		if (this.client.isOwner(guild.ownerId)) {
+			await this.client.stats.post();
+			await this.client.stats.addition(guild.id);
+		}
+
 		await this.restore(guild);
-		await this.client.stats.post();
-		await this.client.stats.addition(guild.id);
 		await this.client.stats.guilds(guild, 0);
 
 		const values = (await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0])) as number[];
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);
 		const user = await this.client.users.fetch(guild.ownerId);
 
-		mixpanel.track('Guild create', {
-			distinct_id: guild.ownerId,
-			guild_id: guild.id,
-			name: guild.name,
-			owner_id: guild.ownerId,
-			owner_name: user.username,
-			member_count: guild.memberCount,
-			total_guild_count: guilds
-		});
+		if (!this.client.isOwner(guild.ownerId)) {
+			mixpanel.track('Guild create', {
+				distinct_id: guild.ownerId,
+				guild_id: guild.id,
+				name: guild.name,
+				owner_id: guild.ownerId,
+				owner_name: user.username,
+				member_count: guild.memberCount,
+				total_guild_count: guilds
+			});
+		}
 
-		const webhook = await this.fetchWebhook().catch(() => null);
+		const webhook = this.getWebhook();
 		if (webhook) {
 			const embed = new EmbedBuilder()
 				.setColor(0x38d863)

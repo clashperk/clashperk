@@ -42,7 +42,7 @@ export default class MessageListener extends Listener {
 		if (!message.channel.permissionsFor(this.client.user!)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]))
 			return;
 
-		if (REGEX.test(message.content) && !this.client.isCustom()) return this.linkParser(message);
+		if (REGEX.test(message.content)) return this.linkParser(message);
 
 		const parsed = [`<@${this.client.user!.id}>`, `<@!${this.client.user!.id}>`]
 			.map((mention) => this.parseWithPrefix(message, mention))

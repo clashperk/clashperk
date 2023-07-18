@@ -1,12 +1,11 @@
-import { EmbedBuilder, RateLimitData, Webhook } from 'discord.js';
+import { EmbedBuilder, RateLimitData, WebhookClient } from 'discord.js';
 import { Listener } from '../../lib/index.js';
+import { Settings } from '../../util/Constants.js';
 
 export default class RateLimitListener extends Listener {
 	public count: number;
-
 	public embeds: EmbedBuilder[];
-
-	public webhook: Webhook | null = null;
+	public webhook: WebhookClient | null = null;
 
 	public constructor() {
 		super('rateLimit', {
@@ -21,26 +20,26 @@ export default class RateLimitListener extends Listener {
 		setInterval(async () => {
 			this.count = 0;
 			if (!this.embeds.length) return;
-			const webhook = await this.fetchWebhook().catch(() => null);
+			const webhook = this.getWebhook();
 			if (!webhook) return (this.embeds = []);
 
 			const embeds = [...this.embeds];
 			this.embeds = [];
 			return webhook.send({
+				embeds: [...embeds],
 				username: this.client.user?.displayName,
-				avatarURL: this.client.user?.displayAvatarURL(),
-				embeds: [...embeds]
+				avatarURL: this.client.user?.displayAvatarURL()
 			});
 		}, 5000);
 	}
 
-	private getWebhookId() {
-		return this.client.settings.get<string>('global', 'rateLimitWebhook', null);
-	}
-
-	private async fetchWebhook() {
+	private getWebhook() {
 		if (this.webhook) return this.webhook;
-		this.webhook = await this.client.fetchWebhook(this.getWebhookId()).catch(() => null);
+
+		const url = this.client.settings.get<string>('global', Settings.RATE_LIMIT_WEBHOOK_URL, null);
+		if (!url) return null;
+
+		this.webhook = new WebhookClient({ url });
 		return this.webhook;
 	}
 
@@ -48,7 +47,9 @@ export default class RateLimitListener extends Listener {
 		this.count += 1;
 		if (this.count >= 5) return this.client.rpcHandler.pause(true);
 		this.client.logger.warn({ timeToReset, limit, method, url, route, global, hash, majorParameter }, { label: 'RATE_LIMIT' });
-		if (url.includes(this.getWebhookId())) return;
+
+		const webhook = this.getWebhook();
+		if (webhook && url.includes(webhook.id)) return;
 
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: 'Rate Limit' })

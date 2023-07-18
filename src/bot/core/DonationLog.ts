@@ -70,7 +70,7 @@ export default class DonationLog extends BaseLog {
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
 			.setThumbnail(data.clan.badge)
-			.setFooter({ text: `${data.clan.members} Members`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
+			.setFooter({ text: `${data.clan.members}/50`, iconURL: data.clan.badge })
 			.setTimestamp();
 		if (cache.color) embed.setColor(cache.color);
 
