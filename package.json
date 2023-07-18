@@ -33,7 +33,7 @@
 		"chalk": "^4.1.2",
 		"clashofclans.js": "^1.5.5",
 		"common-tags": "^1.8.2",
-		"discord.js": "^14.11.1-dev.1686787797-b61e4fb.0",
+		"discord.js": "^14.11.1-dev.1689681916-afa9879.0",
 		"googleapis": "^105.0.0",
 		"i18next": "^21.6.13",
 		"jsonwebtoken": "^9.0.0",

@@ -32,11 +32,12 @@ export default class GuildCreateListener extends Listener {
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
 		await this.intro(guild).catch(() => null);
+
 		if (this.client.isCustom()) {
 			await this.createCommands(guild);
 		}
 
-		if (this.client.isOwner(guild.ownerId)) {
+		if (!this.client.isOwner(guild.ownerId)) {
 			await this.client.stats.post();
 			await this.client.stats.addition(guild.id);
 		}
