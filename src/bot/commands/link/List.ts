@@ -11,7 +11,7 @@ import {
 	StringSelectMenuBuilder
 } from 'discord.js';
 import { Clan, ClanMember } from 'clashofclans.js';
-import { Collections } from '../../util/Constants.js';
+import { BOT_MANAGER_HYPERLINK, Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -40,7 +40,7 @@ export default class LinkListCommand extends Command {
 		if (args.links) {
 			if (!this.client.util.isManager(interaction.member)) {
 				return interaction.followUp({
-					content: `You are missing the **Manage Server** permission or the **Bot Manager** role to use this component.`,
+					content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to use this component.`,
 					ephemeral: true
 				});
 			}

@@ -1,6 +1,6 @@
 import { CommandInteraction, HexColorString, EmbedBuilder, resolveColor, Role, PermissionFlagsBits } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Settings } from '../../util/Constants.js';
+import { BOT_MANAGER_HYPERLINK, Settings } from '../../util/Constants.js';
 
 export default class ConfigCommand extends Command {
 	public constructor() {
@@ -23,7 +23,7 @@ export default class ConfigCommand extends Command {
 			(args.color_code || args.events_channel || args.webhook_limit || args.manager_role)
 		) {
 			return interaction.reply({
-				content: 'You are missing the **Manage Server** permission or the **Bot Manager** role to change these settings.',
+				content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to change these settings.`,
 				ephemeral: true
 			});
 		}

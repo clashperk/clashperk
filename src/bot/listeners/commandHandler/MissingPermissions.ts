@@ -1,6 +1,6 @@
 import { TextChannel, PermissionsString, User, Interaction, AutocompleteInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib/index.js';
-import { missingPermissions } from '../../util/Constants.js';
+import { BOT_MANAGER_HYPERLINK, missingPermissions } from '../../util/Constants.js';
 
 export default class MissingPermissionsListener extends Listener {
 	public constructor() {
@@ -24,7 +24,7 @@ export default class MissingPermissionsListener extends Listener {
 			},
 			user: () => {
 				const name = this.missingPermissions(interaction.channel as TextChannel, interaction.user, missing);
-				return `You are missing the ${name} or the **Bot Manager** role to use this command.`;
+				return `You are missing the ${name} or the ${BOT_MANAGER_HYPERLINK} role to use this command.`;
 			}
 		}[type];
 

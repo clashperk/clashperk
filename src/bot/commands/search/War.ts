@@ -328,12 +328,15 @@ export default class WarCommand extends Command {
 		}
 
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-			new StringSelectMenuBuilder().setCustomId(customIds.menu).setOptions(
-				options.map((option) => ({
-					...option,
-					default: option.value === selected
-				}))
-			)
+			new StringSelectMenuBuilder()
+				.setCustomId(customIds.menu)
+				.setPlaceholder('Select an option...')
+				.setOptions(
+					options.map((option) => ({
+						...option,
+						default: option.value === selected
+					}))
+				)
 		);
 
 		return [primaryRow, menuRow];

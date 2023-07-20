@@ -14,6 +14,7 @@ import { getExportComponents } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
 import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/CommandOptions.js';
+import { BOT_MANAGER_HYPERLINK } from '../../util/Constants.js';
 
 export default class RosterEditCommand extends Command {
 	public constructor() {
@@ -296,7 +297,7 @@ export default class RosterEditCommand extends Command {
 				if (!this.client.util.isManager(action.member)) {
 					return action.reply({
 						ephemeral: true,
-						content: `You are missing the **Manage Server** permission or the **Bot Manager** role to perform this action.`
+						content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to perform this action.`
 					});
 				}
 
@@ -307,7 +308,7 @@ export default class RosterEditCommand extends Command {
 				if (!this.client.util.isManager(action.member) && !['export'].includes(value)) {
 					return action.reply({
 						ephemeral: true,
-						content: `You are missing the **Manage Server** permission or the **Bot Manager** role to perform this action.`
+						content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to perform this action.`
 					});
 				}
 

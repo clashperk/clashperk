@@ -95,6 +95,8 @@ export const enum WarType {
 	CWL
 }
 
+export const BOT_MANAGER_HYPERLINK = '[Bot Manager](<https://docs.clashperk.com/others/bot-manager>)';
+
 export const enum Flags {
 	DONATION_LOG = 1 << 0,
 	CLAN_FEED_LOG = 1 << 1,
