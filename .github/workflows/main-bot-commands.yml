@@ -1,4 +1,4 @@
-name: CRON
+name: CD/Main
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    name: BOT COMMANDS
+    name: Main Bot
     runs-on: ubuntu-latest
 
     steps:
