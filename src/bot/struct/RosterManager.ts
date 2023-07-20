@@ -51,7 +51,7 @@ export const rosterLayoutMap = {
 	},
 	'TH_ICON': {
 		width: 1,
-		label: EMOJIS.TOWNHALL,
+		label: EMOJIS.TOWN_HALL,
 		isEmoji: true,
 		key: 'townHallIcon',
 		align: 'left',

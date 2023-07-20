@@ -121,7 +121,7 @@ export const clanEmbedMaker = async (
 		{
 			name: 'Requirements',
 			value: [
-				`${EMOJIS.TOWNHALL} ${
+				`${EMOJIS.TOWN_HALL} ${
 					requirements?.toLowerCase() === 'auto'
 						? clan.requiredTownhallLevel
 							? `TH ${clan.requiredTownhallLevel}+`

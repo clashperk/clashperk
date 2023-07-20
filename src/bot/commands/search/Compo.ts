@@ -37,7 +37,7 @@ export default class CompoCommand extends Command {
 			.sort((a, b) => b.level - a.level);
 		const avg = townHalls.reduce((p, c) => p + c.total * c.level, 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
-		const { id } = parseEmoji(EMOJIS.TOWNHALL)!;
+		const { id } = parseEmoji(EMOJIS.TOWN_HALL)!;
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 			.setColor(this.client.embed(interaction))

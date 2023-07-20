@@ -247,7 +247,7 @@ export default class StatsCommand extends Command {
 				[
 					`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
 					'',
-					`${EMOJIS.HASH}${EMOJIS.TOWNHALL} \`RATE%  HITS  ${'NAME'.padEnd(15, ' ')}\u200f\``,
+					`${EMOJIS.HASH}${EMOJIS.TOWN_HALL} \`RATE%  HITS  ${'NAME'.padEnd(15, ' ')}\u200f\``,
 					stats
 						.map((m, i) => {
 							const percentage = this._padStart(m.rate.toFixed(1), 5);
@@ -467,7 +467,7 @@ export default class StatsCommand extends Command {
 					[
 						`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
 						'',
-						`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
+						`${EMOJIS.HASH} ${EMOJIS.TOWN_HALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
 						stats
 							.map((m, i) => {
 								const percentage = this._padStart(m.rate.toFixed(1), 5);

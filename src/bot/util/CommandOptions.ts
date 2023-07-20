@@ -83,3 +83,14 @@ export const RosterManageActions = {
 	CHANGE_ROSTER: 'change-roster',
 	CHANGE_CATEGORY: 'change-category'
 } as const;
+
+export const WarCommandOptions = {
+	ATTACKS: 'attacks',
+	DEFENSES: 'defenses',
+	LINEUP: 'lineup',
+	REMAINING: 'remaining',
+	OPEN_BASES: 'open-bases',
+	OVERVIEW: 'overview'
+} as const;
+
+export type WarCommandOptionValues = (typeof WarCommandOptions)[keyof typeof WarCommandOptions];
