@@ -11,6 +11,7 @@ export default class ReadyListener extends Listener {
 	}
 
 	public async exec() {
+		this.client.util.setPresence();
 		this.client.logger.info(
 			`${this.client.user!.displayName} (${this.client.user!.id}) [${(process.env.NODE_ENV ?? 'development').toUpperCase()}]`,
 			{ label: 'READY' }

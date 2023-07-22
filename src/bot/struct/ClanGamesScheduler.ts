@@ -69,6 +69,7 @@ export default class ClanGamesScheduler {
 
 	private async _insert() {
 		if (this.client.shard!.ids[0] !== 0) return null;
+		if (this.client.isCustom()) return null;
 
 		const insertedSeasonId = this.client.settings.get('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, '0');
 		const currentSeasonId = this.getSeasonId();
@@ -80,11 +81,7 @@ export default class ClanGamesScheduler {
 
 		this.client.logger.info(`Inserting new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
 
-		const cursor = this.reminders.find({
-			guild: {
-				$in: this.client.guilds.cache.map((guild) => guild.id)
-			}
-		});
+		const cursor = this.reminders.find();
 		for await (const reminder of cursor) {
 			await this.create(reminder);
 		}

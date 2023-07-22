@@ -52,6 +52,7 @@ export class Client extends Discord.Client {
 	public cgScheduler!: ClanGamesScheduler;
 	public i18n = i18n;
 	public guildEvents!: GuildEventsHandler;
+	public inMaintenance = Boolean(false);
 
 	public redis = new RedisService(this);
 

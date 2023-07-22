@@ -15,6 +15,7 @@ export interface ICustomBot {
 	name: string;
 	userId: string;
 	patronId: string;
+	serviceId: string;
 	guildIds: string[];
 }
 

@@ -24,6 +24,8 @@ export default class MaintenanceHandler {
 			this.client.rpcHandler.flush();
 			this.startTime = new Date();
 			this.sendMessages();
+			this.client.inMaintenance = Boolean(true);
+			this.client.util.setMaintenanceBreak(false);
 		}
 
 		if (res.statusCode === 200 && this.isMaintenance) {
@@ -33,6 +35,8 @@ export default class MaintenanceHandler {
 				this.startTime = null;
 				this.sendMessages(duration);
 				this.client.rpcHandler.init();
+				this.client.inMaintenance = Boolean(false);
+				this.client.util.setMaintenanceBreak(true);
 			}
 		}
 

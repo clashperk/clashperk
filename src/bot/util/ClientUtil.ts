@@ -1,10 +1,51 @@
-import { ChannelType, ForumChannel, GuildMember, NewsChannel, PermissionsBitField, PermissionsString, TextChannel } from 'discord.js';
+import {
+	ActivityType,
+	ChannelType,
+	ForumChannel,
+	GuildMember,
+	NewsChannel,
+	PermissionsBitField,
+	PermissionsString,
+	TextChannel
+} from 'discord.js';
 import jwt from 'jsonwebtoken';
 import Client from '../struct/Client.js';
 import { Settings } from './Constants.js';
 
 export class ClientUtil {
 	public constructor(private readonly client: Client) {}
+
+	public async setPresence() {
+		if (this.client.isCustom()) return null;
+		if (this.client.inMaintenance) return null;
+
+		const values = (await this.client.shard?.broadcastEval((client) => client.guilds.cache.size)) ?? [this.client.guilds.cache.size];
+		const guilds = values.reduce((acc, val) => acc + val, 0);
+
+		return this.client.user!.setPresence({
+			status: 'online',
+			activities: [
+				{
+					type: ActivityType.Watching,
+					name: `${guilds} servers`
+				}
+			]
+		});
+	}
+
+	public setMaintenanceBreak(cleared = false) {
+		if (cleared) return this.client.user!.setPresence({ status: 'online', activities: [] });
+
+		return this.client.user!.setPresence({
+			status: 'dnd',
+			activities: [
+				{
+					type: ActivityType.Playing,
+					name: 'Maintenance Break!'
+				}
+			]
+		});
+	}
 
 	public hasPermissions(channelId: string, permissions: PermissionsString[]) {
 		const channel = this.getTextBasedChannel(channelId);

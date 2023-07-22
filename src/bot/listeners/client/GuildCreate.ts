@@ -1,4 +1,4 @@
-import { ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, WebhookClient } from 'discord.js';
+import { ActivityType, ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, WebhookClient } from 'discord.js';
 import { Listener } from '../../lib/index.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
 import { Collections, Settings } from '../../util/Constants.js';
@@ -27,8 +27,21 @@ export default class GuildCreateListener extends Listener {
 		return this.webhook;
 	}
 
+	private setPresence() {
+		this.client.user!.setPresence({
+			status: 'online',
+			activities: [
+				{
+					type: ActivityType.Watching,
+					name: `${this.client.guilds.cache.size} servers`
+				}
+			]
+		});
+	}
+
 	public async exec(guild: Guild) {
 		if (!guild.available) return;
+		this.client.util.setPresence();
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
 		await this.intro(guild).catch(() => null);
