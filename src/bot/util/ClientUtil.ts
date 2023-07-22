@@ -19,8 +19,16 @@ export class ClientUtil {
 		if (this.client.isCustom()) return null;
 		if (this.client.inMaintenance) return null;
 
-		const values = (await this.client.shard?.broadcastEval((client) => client.guilds.cache.size)) ?? [this.client.guilds.cache.size];
-		const guilds = values.reduce((acc, val) => acc + val, 0);
+		let guilds = 0;
+
+		try {
+			const values = (await this.client.shard?.broadcastEval((client) => client.guilds.cache.size)) ?? [
+				this.client.guilds.cache.size
+			];
+			guilds = values.reduce((acc, val) => acc + val, 0);
+		} catch {}
+
+		if (!guilds) return null;
 
 		return this.client.user!.setPresence({
 			status: 'online',
