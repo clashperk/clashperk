@@ -1019,7 +1019,7 @@ export class RosterManager {
 		const member = await guild.members.fetch(userId).catch(() => null);
 		if (!member) return null;
 
-		roleIds = roleIds.filter((id) => member.roles.cache.has(id));
+		roleIds = roleIds.filter((id) => !member.roles.cache.has(id));
 		if (!roleIds.length) return null;
 
 		return member.roles.add(roleIds);
