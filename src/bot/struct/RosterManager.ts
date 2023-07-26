@@ -993,13 +993,15 @@ export class RosterManager {
 				const member = members.get(userId);
 				if (!member) continue;
 
-				const roles = rolesIds.filter((id) => this.hasPermission(guild, id)).filter((id) => !member.roles.cache.has(id));
-				if (!roles.length) continue;
+				const _roles = rolesIds.filter((id) => this.hasPermission(guild, id));
+				if (!_roles.length) continue;
 
 				if (addRoles) {
-					await member.roles.add(roles);
+					const roles = _roles.filter((id) => !member.roles.cache.has(id));
+					if (roles.length) await member.roles.add(roles);
 				} else {
-					await member.roles.remove(roles);
+					const roles = _roles.filter((id) => member.roles.cache.has(id));
+					if (roles.length) await member.roles.remove(roles);
 				}
 
 				await Util.delay(2000);
