@@ -633,7 +633,7 @@ export class RosterManager {
 
 		const { value } = await this.rosters.findOneAndUpdate(
 			{ _id: roster._id },
-			{ $set: { members: [], lastUpdated: new Date() } },
+			{ $set: { members: [], lastUpdated: new Date() }, $unset: { sheetId: '' } },
 			{ returnDocument: 'after' }
 		);
 
