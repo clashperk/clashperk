@@ -67,7 +67,7 @@ export default class DebugCommand extends Command {
 				'**Server ID**',
 				`${interaction.guild.id}`,
 				'**Shard ID**',
-				`[${interaction.guild.shard.id} / ${this.client.shard!.count}]`,
+				`[${interaction.guild.shard.id} / ${this.client.shard?.count ?? 1}]`,
 				'**Channel ID**',
 				`${interaction.channel!.id}`,
 				'',

@@ -85,7 +85,7 @@ export default class StatusCommand extends Command {
 				},
 				{
 					name: 'Shard',
-					value: `${guild.shard.id}/${this.client.shard!.count}`,
+					value: `${guild.shard.id}/${this.client.shard?.count ?? 1}`,
 					inline: true
 				},
 				{

@@ -100,7 +100,7 @@ export default class RPCHandler {
 
 		return this.client.publisher.publish(
 			'CONNECT',
-			JSON.stringify({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count })
+			JSON.stringify({ shardId: this.client.shard?.ids[0] ?? 0, shards: this.client.shard?.count ?? 1 })
 		);
 	}
 

@@ -68,7 +68,7 @@ export default class ClanGamesScheduler {
 	}
 
 	private async _insert() {
-		if (this.client.shard!.ids[0] !== 0) return null;
+		if ((this.client.shard?.ids[0] ?? 0) !== 0) return null;
 		if (this.client.isCustom()) return null;
 
 		const insertedSeasonId = this.client.settings.get('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, '0');

@@ -15,7 +15,9 @@ export default class StatsHandler {
 	public async post() {
 		if (this.client.isCustom() || !this.client.isPrimary()) return;
 
-		const values = (await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0])) as number[];
+		const values = this.client.shard
+			? ((await this.client.shard.fetchClientValues('guilds.cache.size').catch(() => [0])) as number[])
+			: [this.client.guilds.cache.size];
 		const guilds = values.reduce((prev, curr) => prev + curr, 0);
 		if (!guilds) return;
 
@@ -27,7 +29,10 @@ export default class StatsHandler {
 		await collection.updateOne({ name: 'PLAYERS' }, { $set: { count: players } });
 		await collection.updateOne({ name: 'CLANS' }, { $set: { count: clans } });
 
-		const form = new URLSearchParams({ server_count: guilds.toString(), shard_count: this.client.shard!.count.toString() }).toString();
+		const form = new URLSearchParams({
+			server_count: guilds.toString(),
+			shard_count: (this.client.shard?.count ?? 1).toString()
+		}).toString();
 		https
 			.request(
 				`https://top.gg/api/bots/${this.client.user!.id}/stats`,

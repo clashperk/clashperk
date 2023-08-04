@@ -12,7 +12,7 @@ class Manager extends Discord.ShardingManager {
 	}
 
 	public async init() {
-		return this.spawn({ timeout: 60000 });
+		return this.spawn();
 	}
 }
 
