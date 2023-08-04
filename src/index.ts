@@ -4,6 +4,8 @@ import { fileURLToPath, URL } from 'node:url';
 import Discord from 'discord.js';
 
 class Manager extends Discord.ShardingManager {
+	private retry = 0;
+
 	public constructor() {
 		super(fileURLToPath(new URL('main.js', import.meta.url)), {
 			token: process.env.TOKEN!,
@@ -12,7 +14,18 @@ class Manager extends Discord.ShardingManager {
 	}
 
 	public async init() {
-		return this.spawn();
+		try {
+			await this.spawn();
+			this.retry = 0;
+		} catch (error: any) {
+			if (error.code === 'ShardingAlreadySpawned') {
+				this.retry = 0;
+			} else {
+				this.retry++;
+				setTimeout(() => this.init(), this.retry * 5500);
+			}
+			console.error(error);
+		}
 	}
 }
 

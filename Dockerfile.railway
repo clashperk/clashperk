@@ -31,4 +31,4 @@ ENV GIT_SHA=$RAILWAY_GIT_COMMIT_SHA
 ENV SERVICE_ID=$RAILWAY_SERVICE_ID
 ENV SERVICE_NAME=$RAILWAY_SERVICE_NAME
 
-CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/src/main.js"]
+CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/src/index.js"]
