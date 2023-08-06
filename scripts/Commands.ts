@@ -1309,7 +1309,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
+						name: 'player_tag',
 						description: command.flag.create.options.tag.description,
 						description_localizations: translation('command.flag.create.options.tag.description'),
 						required: true,
@@ -1337,10 +1337,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
+						name: 'player_tag',
 						description: command.flag.search.options.tag.description,
 						description_localizations: translation('command.flag.search.options.tag.description'),
 						required: true,
+						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -1352,18 +1353,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
+						name: 'player_tag',
 						description: command.flag.delete.options.tag.description,
 						description_localizations: translation('command.flag.delete.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
-						required: true
-					},
-					{
-						// TODO: Translate
-						name: 'id',
-						description: 'Flag ID',
-						type: ApplicationCommandOptionType.String,
-						required: false
+						required: true,
+						autocomplete: true
 					}
 				]
 			}

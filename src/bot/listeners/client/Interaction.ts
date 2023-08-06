@@ -185,6 +185,9 @@ export default class InteractionListener extends Listener {
 				if (interaction.commandName === 'roster' && subCommand === 'manage') {
 					return this.client.autocomplete.handle(interaction);
 				}
+				if (interaction.commandName === 'flag' && subCommand && ['delete', 'search'].includes(subCommand)) {
+					return this.client.autocomplete.handle(interaction);
+				}
 				return this.playerTagAutocomplete(interaction, focused);
 			}
 			case 'clan_tag': {

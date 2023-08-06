@@ -13,8 +13,8 @@ export default class FlagCreateCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { reason?: string; tag?: string }) {
-		const tags = await this.client.resolver.resolveArgs(args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { reason?: string; player_tag?: string }) {
+		const tags = await this.client.resolver.resolveArgs(args.player_tag);
 
 		if (!args.reason) return interaction.editReply('You must provide a reason to flag.');
 		if (args.reason.length > 900) return interaction.editReply('Reason must be 1024 or fewer in length.');
@@ -24,7 +24,7 @@ export default class FlagCreateCommand extends Command {
 		if (flags >= 1000 && !this.client.patrons.get(interaction.guild.id)) {
 			const embed = new EmbedBuilder().setDescription(
 				[
-					'You can only flag 1000 players per guild!',
+					'You can only flag 1000 players per server!',
 					'',
 					'**Want more than that?**',
 					'Please consider supporting us on patreon!',
@@ -36,7 +36,7 @@ export default class FlagCreateCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const players: Player[] = await Promise.all(tags.map((en) => this.client.http.player(this.fixTag(en))));
+		const players: Player[] = await Promise.all(tags.map((tag) => this.client.http.player(this.client.http.parseTag(tag))));
 		const newFlags = [] as { name: string; tag: string }[];
 		for (const data of players.filter((en) => en.ok)) {
 			await this.client.db.collection(Collections.FLAGS).insertOne({
@@ -53,6 +53,7 @@ export default class FlagCreateCommand extends Command {
 
 			newFlags.push({ name: data.name, tag: data.tag });
 		}
+
 		return interaction.editReply(
 			this.i18n('command.flag.create.success', {
 				lng: interaction.locale,
@@ -60,9 +61,5 @@ export default class FlagCreateCommand extends Command {
 				players: newFlags.map((en) => en.name).join(', ')
 			})
 		);
-	}
-
-	private fixTag(tag: string) {
-		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O/g, '0')}`;
 	}
 }

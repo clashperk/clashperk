@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, time } from 'discord.js';
+import { AutocompleteInteraction, CommandInteraction, EmbedBuilder, time } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 
@@ -12,9 +12,14 @@ export default class FlagSearchCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const player = await this.client.resolver.resolvePlayer(interaction, args.tag);
+	public async autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {
+		return this.client.autocomplete.flagSearchAutoComplete(interaction, args);
+	}
+
+	public async exec(interaction: CommandInteraction<'cached'>, args: { player_tag?: string }) {
+		const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
 		if (!player) return;
+
 		const flag = await this.client.db
 			.collection(Collections.FLAGS)
 			.aggregate<{

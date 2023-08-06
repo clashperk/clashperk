@@ -19,15 +19,9 @@ export default class FlagCommand extends Command {
 		});
 	}
 
-	public exec(interaction: CommandInteraction, args: { command: string }) {
-		const command = {
-			list: this.handler.modules.get('flag-list')!,
-			create: this.handler.modules.get('flag-create')!,
-			search: this.handler.modules.get('flag-search')!,
-			delete: this.handler.modules.get('flag-delete')!
-		}[args.command];
-
-		if (!command) throw Error('Command not found.');
+	public exec(interaction: CommandInteraction, args: { commandName: string }) {
+		const command = this.handler.modules.get(args.commandName);
+		if (!command) throw Error(`Command "${args.commandName}" not found.`);
 		return this.handler.continue(interaction, command);
 	}
 }
