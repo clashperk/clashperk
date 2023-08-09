@@ -256,7 +256,7 @@ export default class ReminderNowCommand extends Command {
 				if (!reminder.warTypes.includes(warType)) continue;
 
 				const text = await this.client.warScheduler.getReminderText(
-					{ ...reminder, guild: interaction.guild.id, smartSkip: false },
+					{ ...reminder, guild: interaction.guild.id, smartSkip: false, linkedOnly: false },
 					{ tag: data.clan.tag, warTag: data.warTag },
 					data,
 					interaction.guild

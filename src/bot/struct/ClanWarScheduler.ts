@@ -118,7 +118,7 @@ export default class ClanWarScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip'>,
+		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly'>,
 		schedule: Pick<Schedule, 'tag' | 'warTag'>,
 		data: ClanWar,
 		_guild: Guild
@@ -142,17 +142,18 @@ export default class ClanWarScheduler {
 		if (!members.length) return null;
 
 		const links = await this.client.resolver.getLinkedUsers(members);
-		if (!links.length) return null;
+		// if (!links.length) return null;
 
 		// const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
 		const mentions: UserMention[] = [];
 
-		for (const link of links) {
-			const member = members.find((mem) => mem.tag === link.tag)!;
-			// const mention = guildMembers?.get(link.user) ?? `<@${link.user}>`;
-			const mention = `<@${link.userId}>`;
+		for (const member of members) {
+			const link = links.find((link) => link.tag === member.tag);
+			if (!link && reminder.linkedOnly) continue;
+
+			const mention = link ? `<@${link.userId}>` : '0x';
 			mentions.push({
-				id: link.userId,
+				id: link ? link.userId : '0x',
 				mention: mention.toString(),
 				name: member.name,
 				tag: member.tag,
@@ -173,6 +174,12 @@ export default class ClanWarScheduler {
 			}, {})
 		);
 
+		users.sort(([a], [b]) => {
+			if (a === '0x') return 1;
+			if (b === '0x') return -1;
+			return 0;
+		});
+
 		const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
 		const dur =
 			moment(data.state === 'preparation' ? data.startTime : data.endTime)
@@ -188,7 +195,7 @@ export default class ClanWarScheduler {
 				.map(([mention, members]) =>
 					members
 						.map((mem, i) => {
-							const ping = i === 0 ? ` ${mention}` : '';
+							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits =
 								data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
 							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${mem.name}${hits}`;
@@ -357,6 +364,7 @@ export interface Reminder {
 	threadId?: string;
 	roles: string[];
 	townHalls: number[];
+	linkedOnly?: boolean;
 	smartSkip: boolean;
 	warTypes: string[];
 	clans: string[];

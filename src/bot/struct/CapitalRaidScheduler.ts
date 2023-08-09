@@ -143,7 +143,7 @@ export default class CapitalRaidScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers'>,
+		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly'>,
 		schedule: Pick<RaidSchedule, 'tag'>,
 		data: Required<RaidSeason>
 	) {
@@ -186,7 +186,7 @@ export default class CapitalRaidScheduler {
 		if (!members.length) return null;
 
 		const links = await this.client.resolver.getLinkedUsers(members);
-		if (!links.length) return null;
+		// if (!links.length) return null;
 
 		const mentions: UserMention[] = [];
 
@@ -195,6 +195,20 @@ export default class CapitalRaidScheduler {
 			mentions.push({
 				id: link.userId,
 				mention: `<@${link.userId}>` as const,
+				name: member.name,
+				tag: member.tag,
+				attacks: member.attacks,
+				attackLimit: member.attackLimit + member.bonusAttackLimit
+			});
+		}
+
+		for (const member of members) {
+			const link = links.find((link) => link.tag === member.tag);
+			if (!link && reminder.linkedOnly) continue;
+
+			mentions.push({
+				id: link ? link.userId : '0x',
+				mention: link ? (`<@${link.userId}>` as const) : '0x',
 				name: member.name,
 				tag: member.tag,
 				attacks: member.attacks,
@@ -212,6 +226,12 @@ export default class CapitalRaidScheduler {
 			}, {})
 		);
 
+		users.sort(([a], [b]) => {
+			if (a === '0x') return 1;
+			if (b === '0x') return -1;
+			return 0;
+		});
+
 		const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
 		const dur =
 			moment(data.state === 'preparation' ? data.startTime : data.endTime)
@@ -227,7 +247,7 @@ export default class CapitalRaidScheduler {
 				.map(([mention, members]) =>
 					members
 						.map((mem, i) => {
-							const ping = i === 0 ? ` ${mention}` : '';
+							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits = ` (${mem.attacks}/${mem.attackLimit})`;
 							return `\u200e${ping} ${mem.name}${hits}`;
 						})
@@ -364,6 +384,7 @@ export interface RaidReminder {
 	allMembers: boolean;
 	webhook?: { id: string; token: string } | null;
 	threadId?: string;
+	linkedOnly?: boolean;
 	roles: string[];
 	clans: string[];
 	remaining: number[];

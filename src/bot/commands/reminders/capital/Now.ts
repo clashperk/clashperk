@@ -206,7 +206,11 @@ export default class CapitalReminderNowCommand extends Command {
 		for (const tag of reminder.clans) {
 			const data = await this.client.raidScheduler.getRaidSeason(tag);
 			if (!data) continue;
-			const text = await this.client.raidScheduler.getReminderText({ ...reminder, guild: interaction.guild.id }, { tag }, data);
+			const text = await this.client.raidScheduler.getReminderText(
+				{ ...reminder, guild: interaction.guild.id, linkedOnly: false },
+				{ tag },
+				data
+			);
 			if (text) texts.push(text);
 		}
 		return texts;

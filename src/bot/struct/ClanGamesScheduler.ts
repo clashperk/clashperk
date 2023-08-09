@@ -178,7 +178,7 @@ export default class ClanGamesScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<ClanGamesReminder, 'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers'>,
+		reminder: Pick<ClanGamesReminder, 'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers' | 'linkedOnly'>,
 		schedule: Pick<ClanGamesSchedule, 'tag'>
 	) {
 		const clan = await this.client.http.clan(schedule.tag);
@@ -201,22 +201,23 @@ export default class ClanGamesScheduler {
 		if (!members.length) return null;
 
 		const links = await this.client.resolver.getLinkedUsers(members);
-		if (!links.length) return null;
+		// if (!links.length) return null;
 
 		const mentions: UserMention[] = [];
 
-		for (const link of links) {
-			const member = members.find((mem) => mem.tag === link.tag)!;
+		for (const member of members) {
+			const link = links.find((link) => link.tag === member.tag);
+			if (!link && reminder.linkedOnly) continue;
+
 			mentions.push({
-				id: link.userId,
-				mention: `<@${link.userId}>` as const,
+				id: link ? link.userId : '0x',
+				mention: link ? (`<@${link.userId}>` as const) : '0x',
 				name: member.name,
 				townHallLevel: member.townHallLevel,
 				tag: member.tag,
 				points: member.points
 			});
 		}
-
 		if (!mentions.length) return null;
 
 		const users = Object.entries(
@@ -226,6 +227,12 @@ export default class ClanGamesScheduler {
 				return acc;
 			}, {})
 		);
+
+		users.sort(([a], [b]) => {
+			if (a === '0x') return 1;
+			if (b === '0x') return -1;
+			return 0;
+		});
 
 		const { endTime } = this.timings();
 		const warTiming = moment.duration(endTime - Date.now()).format('D[d] H[h], m[m], s[s]', { trim: 'both mid' });
@@ -238,7 +245,7 @@ export default class ClanGamesScheduler {
 				.map(([mention, members]) =>
 					members
 						.map((mem, i) => {
-							const ping = i === 0 ? ` ${mention}` : '';
+							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits = ` (${mem.points}/${reminder.minPoints === 0 ? ClanGames.MAX_POINT : reminder.minPoints})`;
 							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]} ${ping} ${mem.name}${hits}`;
 						})
@@ -364,6 +371,7 @@ export interface ClanGamesReminder {
 	webhook?: { id: string; token: string } | null;
 	threadId?: string;
 	minPoints: number;
+	linkedOnly?: boolean;
 	roles: string[];
 	clans: string[];
 	createdAt: Date;

@@ -12,7 +12,7 @@ export default class FlagSearchCommand extends Command {
 		});
 	}
 
-	public async autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {
+	public autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {
 		return this.client.autocomplete.flagSearchAutoComplete(interaction, args);
 	}
 
