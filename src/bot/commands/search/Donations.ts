@@ -99,7 +99,7 @@ export default class DonationsCommand extends Command {
 		for (const mem of clan.memberList) {
 			const m = dbMembers.find((m) => m.tag === mem.tag);
 			if (m) {
-				const curr = m.clans[clan.tag] ?? { donations: { current: 0, total: 0 }, donationsReceived: { current: 0, total: 0 } };
+				const curr = m.clans?.[clan.tag] ?? { donations: { current: 0, total: 0 }, donationsReceived: { current: 0, total: 0 } };
 				const donated = isSameSeason
 					? mem.donations >= curr.donations.current
 						? curr.donations.total + (mem.donations - curr.donations.current)

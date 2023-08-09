@@ -43,7 +43,7 @@ export interface PlayerSeasonModel extends AchievementsMap {
 		initial: number;
 		current: number;
 	};
-	clans: Record<
+	clans?: Record<
 		string,
 		{
 			tag: string;
