@@ -10,8 +10,9 @@ import {
 	StringSelectMenuBuilder
 } from 'discord.js';
 import { container } from 'tsyringe';
+import { AnyBulkWriteOperation } from 'mongodb';
 import Client from '../struct/Client.js';
-import { PlayerLinks } from '../types/index.js';
+import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Util } from './index.js';
@@ -522,3 +523,131 @@ export const getMenuFromMessage = (interaction: ButtonInteraction<'cached'>, sel
 
 	return [];
 };
+
+export const recoverDonations = async (clanTag: string) => {
+	if (Date.now() >= new Date('2023-08-28').getTime()) return;
+
+	const client = container.resolve(Client);
+	const inserted = await client.redis.connection.get(`RECOVERY:${clanTag}`);
+	if (inserted) return;
+
+	const { aggregations } = await client.elastic.search({
+		query: {
+			bool: {
+				filter: [
+					{
+						term: {
+							clan_tag: clanTag
+						}
+					},
+					{
+						range: {
+							created_at: {
+								gte: '2023-07-31'
+							}
+						}
+					}
+				]
+			}
+		},
+		from: 0,
+		size: 0,
+		aggs: {
+			players: {
+				terms: {
+					field: 'tag',
+					size: 10000
+				},
+				aggs: {
+					donated: {
+						filter: {
+							term: {
+								op: 'DONATED'
+							}
+						},
+						aggs: {
+							total: {
+								sum: {
+									field: 'value'
+								}
+							}
+						}
+					},
+					received: {
+						filter: {
+							term: {
+								op: 'RECEIVED'
+							}
+						},
+						aggs: {
+							total: {
+								sum: {
+									field: 'value'
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	});
+
+	const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
+	const playersMap = buckets.reduce<Record<string, { donated: number; received: number }>>((acc, cur) => {
+		acc[cur.key] = {
+			donated: cur.donated.total.value,
+			received: cur.received.total.value
+		};
+		return acc;
+	}, {});
+
+	const tags = Object.keys(playersMap);
+	if (!tags.length) return;
+
+	const cursor = client.db
+		.collection(Collections.PLAYER_SEASONS)
+		.find({ tag: { $in: tags } })
+		.project({ tag: 1, clans: 1, _id: 1 });
+
+	const ops: AnyBulkWriteOperation<PlayerSeasonModel>[] = [];
+	for await (const player of cursor) {
+		if (!player.clans?.[clanTag]) continue;
+
+		const record = playersMap[player.tag];
+		const donations = Math.max(player.clans[clanTag].donations.total, record.donated);
+		const received = Math.max(player.clans[clanTag].donationsReceived.total, record.received);
+
+		ops.push({
+			updateOne: {
+				filter: { _id: player._id },
+				update: {
+					$set: {
+						[`clans.${clanTag}.donations.total`]: donations,
+						[`clans.${clanTag}.donationsReceived.total`]: received
+					}
+				}
+			}
+		});
+	}
+
+	if (ops.length) {
+		await client.db.collection<PlayerSeasonModel>(Collections.PLAYER_SEASONS).bulkWrite(ops);
+	}
+
+	return client.redis.connection.set(`RECOVERY:${clanTag}`, '-0-', { EX: 60 * 60 * 24 * 30 });
+};
+
+interface AggsBucket {
+	key: string;
+	doc_count: number;
+	donated: {
+		total: {
+			value: number;
+		};
+	};
+	received: {
+		total: {
+			value: number;
+		};
+	};
+}

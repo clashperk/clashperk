@@ -15,6 +15,7 @@ import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
 import { Command } from '../../lib/index.js';
+import { recoverDonations } from '../../util/Helper.js';
 
 export default class DonationSummaryCommand extends Command {
 	public constructor() {
@@ -52,6 +53,7 @@ export default class DonationSummaryCommand extends Command {
 			return interaction.editReply(this.i18n('common.fetch_failed', { lng: interaction.locale }));
 		}
 
+		await Promise.allSettled(fetched.map((clan) => recoverDonations(clan.tag)));
 		const [topClansEmbed, topPlayersEmbed] = await Promise.all([
 			this.clanDonations(interaction, {
 				clans: fetched,

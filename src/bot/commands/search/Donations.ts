@@ -4,6 +4,7 @@ import { PlayerSeasonModel } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
+import { recoverDonations } from '../../util/Helper.js';
 
 export default class DonationsCommand extends Command {
 	public constructor() {
@@ -57,6 +58,7 @@ export default class DonationsCommand extends Command {
 		if (!season) season = Season.ID;
 		const isSameSeason = Season.ID === Season.generateID(season);
 
+		await Promise.allSettled([recoverDonations(clan.tag)]);
 		const dbMembers = await this.client.db
 			.collection<Pick<PlayerSeasonModel, 'tag' | 'clans' | 'townHallLevel'>>(Collections.PLAYER_SEASONS)
 			.find(
