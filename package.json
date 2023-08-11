@@ -22,7 +22,7 @@
 		"deploy": "ts-node-esm -r dotenv/config scripts/index.ts",
 		"patrons": "ts-node-esm -r dotenv/config scripts/Patrons.ts",
 		"pull": "git submodule init && git submodule update --remote",
-		"build:sentry": "tsc && sentry-cli sourcemaps inject --org suvajit --project clashperk_bot ./dist && sentry-cli sourcemaps upload --org suvajit --project clashperk_bot ./dist"
+		"build:sentry": "sentry-cli sourcemaps inject --org suvajit --project clashperk_bot ./dist && sentry-cli sourcemaps upload --org suvajit --project clashperk_bot ./dist --release=$(git rev-parse HEAD)"
 	},
 	"dependencies": {
 		"@discordjs/rest": "^1.7.2-dev.1686787816-b61e4fb.0",
