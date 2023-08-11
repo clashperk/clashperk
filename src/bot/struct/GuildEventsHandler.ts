@@ -157,7 +157,7 @@ export class GuildEventsHandler {
 	}
 
 	public async create(guild: Guild, guildEvent: GuildEventData) {
-		if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageEvents)) return null;
+		if (!guild.members.me?.permissions.has([PermissionFlagsBits.ManageEvents, 1n << 44n])) return null;
 
 		for (const event of this.getEvents(guild.preferredLocale)) {
 			if (guildEvent.allowedEvents && !guildEvent.allowedEvents.includes(event.type)) continue;

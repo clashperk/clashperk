@@ -260,8 +260,10 @@ export default class SetupUtilsCommand extends Command {
 			return interaction.editReply({ content: 'Successfully disabled automatic events schedular.' });
 		}
 
-		if (!interaction.guild.members.me?.permissions.has(PermissionFlagsBits.ManageEvents)) {
-			return interaction.editReply({ content: "I'm missing **Manage Events** permission to execute this command." });
+		if (!interaction.guild.members.me?.permissions.has([PermissionFlagsBits.ManageEvents, 1n << 44n])) {
+			return interaction.editReply({
+				content: "I'm missing **Create Events** and **Manage Events** permissions to execute this command."
+			});
 		}
 
 		const customIds = {

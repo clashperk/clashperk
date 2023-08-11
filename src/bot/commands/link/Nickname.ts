@@ -10,7 +10,7 @@ export default class NickNameCommand extends Command {
 		super('nickname', {
 			category: 'setup',
 			channel: 'guild',
-			clientPermissions: ['EmbedLinks'],
+			clientPermissions: ['EmbedLinks', 'ManageNicknames'],
 			description: {
 				content: ['Sets nickname of a member in Discord.']
 			},

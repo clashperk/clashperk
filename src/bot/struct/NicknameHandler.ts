@@ -1,5 +1,5 @@
 import { Player } from 'clashofclans.js';
-import { GuildMember } from 'discord.js';
+import { GuildMember, PermissionFlagsBits } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
 import Client from './Client.js';
 
@@ -24,7 +24,8 @@ export class NicknameHandler {
 
 	public async handle(member: GuildMember, player: Player, reason?: string) {
 		if (member.id === member.guild.ownerId) return null;
-		if (member.guild.members.me!.roles.highest.position <= member.roles.highest.position) return null;
+		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames)) return null;
+		if (member.guild.members.me.roles.highest.position <= member.roles.highest.position) return null;
 
 		const clan = player.clan
 			? await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: member.guild.id, tag: player.clan.tag })
