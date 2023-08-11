@@ -35,6 +35,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install Sentry CLI
+        run: npm i -g @sentry/cli
+
       - name: Release to Sentry
         run: npm run build:sentry
         env:
