@@ -10,3 +10,4 @@ auth.js
 test/
 .DS_Store
 http_ca.crt
+.sentryclirc

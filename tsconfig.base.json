@@ -36,6 +36,7 @@
 
 		// Completeness
 		"skipLibCheck": true,
+		"sourceRoot": "/",
 
 		// Interop Constraints
 		"allowSyntheticDefaultImports": true
