@@ -137,10 +137,10 @@ export default class DonationsHistoryCommand extends Command {
 						`\u200e${'DON'.padStart(7, ' ')} ${'REC'.padStart(7, ' ')}    SEASON`,
 						seasons
 							.map((season) => {
-								const { donations, donationsReceived } = Object.values(season.clans).reduce(
+								const { donations, donationsReceived } = Object.values(season.clans ?? {}).reduce(
 									(acc, cur) => {
-										acc.donations += cur.donations.total;
-										acc.donationsReceived += cur.donationsReceived.total;
+										acc.donations += cur?.donations.total ?? 0;
+										acc.donationsReceived += cur?.donationsReceived.total ?? 0;
 										return acc;
 									},
 									{ donations: 0, donationsReceived: 0 }
@@ -165,10 +165,10 @@ export default class DonationsHistoryCommand extends Command {
 			.map((r) => {
 				const records = r.seasons.reduce<Record<string, ISeason>>((prev, acc) => {
 					prev[acc.season] ??= { ...acc, donationsReceived: 0 }; // eslint-disable-line
-					const { donations, donationsReceived } = Object.values(acc.clans).reduce(
+					const { donations, donationsReceived } = Object.values(acc.clans ?? {}).reduce(
 						(_acc, _cur) => {
-							_acc.donations += _cur.donations.total;
-							_acc.donationsReceived += _cur.donationsReceived.total;
+							_acc.donations += _cur?.donations.total ?? 0;
+							_acc.donationsReceived += _cur?.donationsReceived.total ?? 0;
 							return _acc;
 						},
 						{ donations: 0, donationsReceived: 0 }
@@ -211,12 +211,12 @@ export default class DonationsHistoryCommand extends Command {
 }
 
 interface ISeason {
-	clans: Record<
+	clans?: Record<
 		string,
 		{
 			donations: { total: number };
 			donationsReceived: { total: number };
-		}
+		} | null
 	>;
 	season: string;
 	donations: number;
