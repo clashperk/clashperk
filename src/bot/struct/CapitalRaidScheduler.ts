@@ -190,18 +190,6 @@ export default class CapitalRaidScheduler {
 
 		const mentions: UserMention[] = [];
 
-		for (const link of links) {
-			const member = members.find((mem) => mem.tag === link.tag)!;
-			mentions.push({
-				id: link.userId,
-				mention: `<@${link.userId}>` as const,
-				name: member.name,
-				tag: member.tag,
-				attacks: member.attacks,
-				attackLimit: member.attackLimit + member.bonusAttackLimit
-			});
-		}
-
 		for (const member of members) {
 			const link = links.find((link) => link.tag === member.tag);
 			if (!link && reminder.linkedOnly) continue;
@@ -220,8 +208,8 @@ export default class CapitalRaidScheduler {
 
 		const users = Object.entries(
 			mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-				if (!acc.hasOwnProperty(cur.mention)) acc[cur.mention] = [];
-				acc[cur.mention]!.push(cur);
+				acc[cur.mention] ??= []; // eslint-disable-line
+				acc[cur.mention].push(cur);
 				return acc;
 			}, {})
 		);

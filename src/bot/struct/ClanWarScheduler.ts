@@ -144,7 +144,6 @@ export default class ClanWarScheduler {
 		const links = await this.client.resolver.getLinkedUsers(members);
 		// if (!links.length) return null;
 
-		// const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
 		const mentions: UserMention[] = [];
 
 		for (const member of members) {
@@ -168,8 +167,8 @@ export default class ClanWarScheduler {
 
 		const users = Object.entries(
 			mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-				if (!acc.hasOwnProperty(cur.mention)) acc[cur.mention] = [];
-				acc[cur.mention]!.push(cur);
+				acc[cur.mention] ??= []; // eslint-disable-line
+				acc[cur.mention].push(cur);
 				return acc;
 			}, {})
 		);

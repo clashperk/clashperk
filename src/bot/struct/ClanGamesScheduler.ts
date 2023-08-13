@@ -222,8 +222,8 @@ export default class ClanGamesScheduler {
 
 		const users = Object.entries(
 			mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-				if (!acc.hasOwnProperty(cur.mention)) acc[cur.mention] = [];
-				acc[cur.mention]!.push(cur);
+				acc[cur.mention] ??= []; // eslint-disable-line
+				acc[cur.mention].push(cur);
 				return acc;
 			}, {})
 		);
