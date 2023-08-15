@@ -20,7 +20,8 @@ export default class HistoryCommand extends Command {
 			'join-leave': this.handler.modules.get('join-leave-history')!,
 			'donations': this.handler.modules.get('donations-history')!,
 			'attacks': this.handler.modules.get('attacks-history')!,
-			'loot': this.handler.modules.get('loot-history')!
+			'loot': this.handler.modules.get('loot-history')!,
+			'legend-attacks': this.handler.modules.get('history-legend-attacks')!
 		}[args.option];
 
 		if (!command) throw Error('Command not found.');

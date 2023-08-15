@@ -1013,6 +1013,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'Join/Leave',
 						value: 'join-leave'
+					},
+					{
+						name: 'Legend Attacks',
+						value: 'legend-attacks'
 					}
 				]
 			},
