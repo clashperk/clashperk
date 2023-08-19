@@ -1,5 +1,12 @@
 import { Result } from '@sapphire/result';
-import { APICapitalRaidSeason, APIClanWar, APIClanWarLeagueGroup, APIWarClan, RESTManager as ClashOfClansClient } from 'clashofclans.js';
+import {
+	APICapitalRaidSeason,
+	APIClanWar,
+	APIClanWarLeagueGroup,
+	APIWarClan,
+	RESTManager as ClashOfClansClient,
+	RequestHandler
+} from 'clashofclans.js';
 import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
 import { request } from 'undici';
@@ -8,10 +15,23 @@ export default class Http extends ClashOfClansClient {
 	private bearerToken!: string;
 
 	public constructor() {
+		const keys = process.env.CLASH_TOKENS?.split(',') ?? [];
+
 		super({
 			restRequestTimeout: 10_000,
 			baseURL: process.env.BASE_URL,
-			keys: [...(process.env.CLASH_TOKENS?.split(',') ?? [])]
+			keys: [...keys]
+		});
+
+		this.requestHandler = new RequestHandler({
+			restRequestTimeout: 10_000,
+			rejectIfNotValid: false,
+			cache: false,
+			retryLimit: 0,
+			connections: 50,
+			pipelining: 10,
+			keys: [...keys],
+			baseURL: process.env.BASE_URL
 		});
 	}
 
