@@ -1,4 +1,4 @@
-import { Player } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import { GuildMember, PermissionFlagsBits } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
 import Client from './Client.js';
@@ -15,14 +15,14 @@ export class NicknameHandler {
 		this.client = client;
 	}
 
-	public async exec(member: GuildMember, player: Player, reason?: string) {
+	public async exec(member: GuildMember, player: APIPlayer, reason?: string) {
 		const isAuto = this.client.settings.get<boolean>(member.guild, Settings.AUTO_NICKNAME, false);
 		if (!isAuto) return null;
 
 		return this.handle(member, player, reason);
 	}
 
-	public async handle(member: GuildMember, player: Player, reason?: string) {
+	public async handle(member: GuildMember, player: APIPlayer, reason?: string) {
 		if (member.id === member.guild.ownerId) return null;
 		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames)) return null;
 		if (member.guild.members.me.roles.highest.position <= member.roles.highest.position) return null;

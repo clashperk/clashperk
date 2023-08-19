@@ -1,4 +1,4 @@
-import { ClanWar, ClanWarAttack, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
+import { APIClanWar, APIClanWarAttack, APIClanWarLeagueGroup, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
@@ -39,8 +39,8 @@ export default class ExportCWL extends Command {
 
 		const chunks = [];
 		for (const clan of clans) {
-			const res = season ? null : await this.client.http.clanWarLeague(clan.tag);
-			if (!res?.ok || res.state === 'notInWar') {
+			const result = season ? null : await this.client.http.getClanWarLeagueGroup(clan.tag);
+			if (!result?.res.ok || result.body.state === 'notInWar') {
 				const data = await this.client.storage.getWarTags(clan.tag, season);
 				if (!data) continue;
 				if (args.season && data.season !== args.season) continue;
@@ -58,8 +58,8 @@ export default class ExportCWL extends Command {
 				continue;
 			}
 
-			if (args.season && res.season !== args.season) continue;
-			const { members, perRound, ranking } = await this.rounds(res, clan);
+			if (args.season && result.body.season !== args.season) continue;
+			const { members, perRound, ranking } = await this.rounds(result.body, clan);
 			if (!members.length) continue;
 			chunks.push({
 				name: clan.name,
@@ -236,7 +236,7 @@ export default class ExportCWL extends Command {
 		return stars.filter((star) => star === count).length;
 	}
 
-	private async rounds(body: ClanWarLeagueGroup, clan: { tag: string }, season?: string | null) {
+	private async rounds(body: APIClanWarLeagueGroup, clan: { tag: string }, season?: string | null) {
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};
@@ -255,10 +255,10 @@ export default class ExportCWL extends Command {
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const data = season
-					? await this.client.db.collection<ClanWar>(Collections.CLAN_WARS).findOne({ warTag })
-					: await this.client.http.clanWarLeagueWar(warTag);
+					? await this.client.db.collection<APIClanWar>(Collections.CLAN_WARS).findOne({ warTag })
+					: await this.client.http.getCWLRoundWithWarTag(warTag);
 				if (!data) continue;
-				if ((!data.ok || data.state === 'notInWar') && !season) continue;
+				if (data.state === 'notInWar' && !season) continue;
 
 				// eslint-disable-next-line
 				ranking[data.clan.tag] ??= {
@@ -355,7 +355,7 @@ export default class ExportCWL extends Command {
 		};
 	}
 
-	private getPreviousBestAttack(attacks: ClanWarAttack[], opponent: WarClan, atk: ClanWarAttack) {
+	private getPreviousBestAttack(attacks: APIClanWarAttack[], opponent: APIWarClan, atk: APIClanWarAttack) {
 		const defender = opponent.members.find((m) => m.tag === atk.defenderTag)!;
 		const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defender.tag);
 		const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));

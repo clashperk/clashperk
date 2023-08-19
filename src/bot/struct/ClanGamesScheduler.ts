@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
@@ -95,8 +95,8 @@ export default class ClanGamesScheduler {
 		if (!(Date.now() >= startTime && Date.now() <= endTime)) return;
 
 		for (const tag of reminder.clans) {
-			const clan = await this.client.http.clan(tag);
-			if (!clan.ok) continue;
+			const { res, body: clan } = await this.client.http.getClan(tag);
+			if (!res.ok) continue;
 			const rand = Math.random();
 
 			const ms = endTime - reminder.duration;
@@ -142,14 +142,12 @@ export default class ClanGamesScheduler {
 		return now.toISOString().substring(0, 7);
 	}
 
-	private async query(clan: Clan) {
-		const fetched = await this.client.http.detailedClanMembers(clan.memberList);
-		const clanMembers = fetched
-			.filter((res) => res.ok)
-			.map((m) => {
-				const value = m.achievements.find((a) => a.name === 'Games Champion')?.value ?? 0;
-				return { tag: m.tag, name: m.name, points: value, role: m.role, townHallLevel: m.townHallLevel };
-			});
+	private async query(clan: APIClan) {
+		const fetched = await this.client.http._getPlayers(clan.memberList);
+		const clanMembers = fetched.map((data) => {
+			const value = data.achievements.find((a) => a.name === 'Games Champion')?.value ?? 0;
+			return { tag: data.tag, name: data.name, points: value, role: data.role, townHallLevel: data.townHallLevel };
+		});
 
 		const dbMembers = await this.client.db
 			.collection(Collections.CLAN_GAMES_POINTS)
@@ -181,9 +179,9 @@ export default class ClanGamesScheduler {
 		reminder: Pick<ClanGamesReminder, 'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers' | 'linkedOnly'>,
 		schedule: Pick<ClanGamesSchedule, 'tag'>
 	) {
-		const clan = await this.client.http.clan(schedule.tag);
-		if (clan.statusCode === 503) throw new Error('MaintenanceBreak');
-		if (!clan.ok) return null;
+		const { res, body: clan } = await this.client.http.getClan(schedule.tag);
+		if (res.status === 503) throw new Error('MaintenanceBreak');
+		if (!res.ok) return null;
 
 		const clanMembers = await this.query(clan);
 		const maxParticipants = clanMembers.filter((mem) => mem.points >= 1).length;
@@ -238,7 +236,7 @@ export default class ClanGamesScheduler {
 		const warTiming = moment.duration(endTime - Date.now()).format('D[d] H[h], m[m], s[s]', { trim: 'both mid' });
 
 		return [
-			`\u200e🔔 **${clan.name} (Clan Games ends in ${warTiming})**`,
+			`\u200e🔔 **${clan.name} (APIClan Games ends in ${warTiming})**`,
 			`📨 ${reminder.message}`,
 			'',
 			users

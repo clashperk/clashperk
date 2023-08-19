@@ -31,7 +31,7 @@ export default class SummaryAttacksCommand extends Command {
 			);
 		}
 
-		const allClans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((clan) => clan.ok);
+		const allClans = await this.client.http._getClans(clans);
 		const members: { name: string; tag: string; attackWins: number; clan: { name: string; tag: string } }[] = [];
 
 		for (const clan of allClans) {

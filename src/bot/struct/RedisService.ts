@@ -1,4 +1,4 @@
-import { Clan, Player } from 'clashofclans.js';
+import { APIClan, APIPlayer } from 'clashofclans.js';
 import * as Redis from 'redis';
 import { nanoid } from 'nanoid';
 import Client from './Client.js';
@@ -20,13 +20,13 @@ class RedisService {
 			clanTags.map((tag) => `C${tag}`),
 			'$'
 		);
-		return raw.flat().filter((_) => _) as unknown as Clan[];
+		return raw.flat().filter((_) => _) as unknown as APIClan[];
 	}
 
 	public async getClan(clanTag: string) {
 		const raw = await this.connection.json.get(`$C${clanTag}`);
 		if (!raw) return null;
-		return raw as unknown as Clan;
+		return raw as unknown as APIClan;
 	}
 
 	public async getPlayers(playerTags: string[]) {
@@ -34,13 +34,13 @@ class RedisService {
 			playerTags.map((tag) => `P${tag}`),
 			'$'
 		);
-		return raw.flat().filter((_) => _) as unknown as Player[];
+		return raw.flat().filter((_) => _) as unknown as APIPlayer[];
 	}
 
 	public async getPlayer(playerTag: string) {
 		const raw = await this.connection.json.get(`$P${playerTag}`);
 		if (!raw) return null;
-		return raw as unknown as Player;
+		return raw as unknown as APIPlayer;
 	}
 
 	public createCustomId(payload: Record<string, unknown>) {

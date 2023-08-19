@@ -18,8 +18,8 @@ export default class MaintenanceHandler {
 	public async init() {
 		setTimeout(this.init.bind(this), 30000).unref();
 
-		const res = await this.client.http.clans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
-		if (res.statusCode === 503 && !this.isMaintenance) {
+		const { res } = await this.client.http.getClans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
+		if (res.status === 503 && !this.isMaintenance) {
 			this.isMaintenance = Boolean(true);
 			this.client.rpcHandler.flush();
 			this.startTime = new Date();
@@ -28,7 +28,7 @@ export default class MaintenanceHandler {
 			this.client.util.setMaintenanceBreak(false);
 		}
 
-		if (res.statusCode === 200 && this.isMaintenance) {
+		if (res.status === 200 && this.isMaintenance) {
 			const duration = Date.now() - this.startTime!.getTime();
 			if (duration > 60_000) {
 				this.isMaintenance = Boolean(false);

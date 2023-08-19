@@ -31,8 +31,8 @@ export default class VerifyPlayerCommand extends Command {
 		const data = await this.client.resolver.resolvePlayer(interaction, tag);
 		if (!data) return;
 
-		const post = await this.client.http.verifyPlayerToken(data.tag, token);
-		if (post.status !== 'ok') {
+		const { body } = await this.client.http.verifyPlayerToken(data.tag, token);
+		if (body.status !== 'ok') {
 			return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
 		}
 

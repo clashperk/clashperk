@@ -90,7 +90,7 @@ export default class RosterManageCommand extends Command {
 				guildId: interaction.guild.id
 			};
 
-			const playerTag = args.player_tag ? this.client.http.parseTag(args.player_tag) : null;
+			const playerTag = args.player_tag ? this.client.http.fixTag(args.player_tag) : null;
 
 			const categoryId = roster.members.find((member) => member.tag === playerTag)?.categoryId;
 			if (categoryId && args.action === 'change-category') filter._id = { $ne: categoryId };
@@ -228,7 +228,7 @@ export default class RosterManageCommand extends Command {
 					categoryId: args.target_group
 				});
 			}
-			const playerTag = this.client.http.parseTag(args.player_tag);
+			const playerTag = this.client.http.fixTag(args.player_tag);
 
 			if (!ObjectId.isValid(args.target_roster)) return interaction.editReply({ content: 'Invalid target roster ID.' });
 			const newRosterId = new ObjectId(args.target_roster);
@@ -276,7 +276,7 @@ export default class RosterManageCommand extends Command {
 					user: args.user
 				});
 			}
-			const playerTag = this.client.http.parseTag(args.player_tag);
+			const playerTag = this.client.http.fixTag(args.player_tag);
 
 			const player = await this.client.resolver.resolvePlayer(interaction, playerTag);
 			if (!player) return;
@@ -1260,7 +1260,7 @@ export default class RosterManageCommand extends Command {
 				const playerTags = inputValue
 					.split(/\W+/)
 					.filter((tag) => pattern.test(tag))
-					.map((tag) => this.client.http.parseTag(tag));
+					.map((tag) => this.client.http.fixTag(tag));
 
 				if (!playerTags.length) {
 					return await modalSubmit.reply({ content: 'No valid player tags detected.' });

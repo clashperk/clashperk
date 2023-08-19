@@ -30,7 +30,7 @@ export default class SummaryTrophiesCommand extends Command {
 			);
 		}
 
-		const allClans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		const allClans = await this.client.http._getClans(clans);
 		const members = allClans
 			.map((clan) => clan.memberList.map((mem) => ({ clan: clan.name, name: mem.name, trophies: mem.trophies })))
 			.flat();

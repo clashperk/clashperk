@@ -125,8 +125,8 @@ export default class NickNameCommand extends Command {
 		if (!clans.length) return;
 
 		for (const { tag } of clans) {
-			const clan = await this.client.http.clan(tag);
-			if (!clan.ok) continue;
+			const { body: clan, res } = await this.client.http.getClan(tag);
+			if (!res.ok) continue;
 
 			const memberTags = clan.memberList.map((mem) => mem.tag);
 			const flattened = await this.client.db
@@ -172,7 +172,7 @@ export default class NickNameCommand extends Command {
 
 			const guildMembers = await interaction.guild.members.fetch({ user: flattened.map((link) => link.userId) }).catch(() => null);
 			if (!guildMembers?.size) continue;
-			const players = await Promise.all(flattened.map((link) => this.client.http.player(link.tag)));
+			const players = await this.client.http._getPlayers(flattened);
 
 			for (const { userId, tag } of flattened) {
 				const member = guildMembers.get(userId);

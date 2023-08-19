@@ -1,4 +1,4 @@
-import { ClanWar, ClanWarAttack, ClanWarMember, Player, WarClan } from 'clashofclans.js';
+import { APIClanWar, APIClanWarAttack, APIClanWarMember, APIPlayer, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -136,7 +136,7 @@ export default class WarHistoryCommand extends Command {
 	}
 
 	private async getWars(tags: string[]) {
-		const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<ClanWar & { warType: number }>([
+		const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<APIClanWar & { warType: number }>([
 			{
 				$match: {
 					preparationStartTime: {
@@ -238,7 +238,7 @@ export default class WarHistoryCommand extends Command {
 		return `${num}%`.toString().padStart(4, ' ');
 	}
 
-	private getPreviousBestAttack(attacks: ClanWarAttack[], opponent: WarClan, atk: ClanWarAttack) {
+	private getPreviousBestAttack(attacks: APIClanWarAttack[], opponent: APIWarClan, atk: APIClanWarAttack) {
 		const defender = opponent.members.find((m) => m.tag === atk.defenderTag)!;
 		const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defender.tag);
 		const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
@@ -251,7 +251,7 @@ export default class WarHistoryCommand extends Command {
 		return { previousBestAttack: isFresh ? null : previousBestAttack, defender, isFresh };
 	}
 
-	private async export(interaction: CommandInteraction<'cached'>, wars: WarHistory[], player: Player) {
+	private async export(interaction: CommandInteraction<'cached'>, wars: WarHistory[], player: APIPlayer) {
 		const warsFlatten = wars
 			.map((war) => {
 				if (war.attacks.length) {
@@ -327,13 +327,13 @@ interface WarHistory {
 }
 
 interface IWar {
-	attack: ClanWarAttack | null;
-	previousBestAttack: ClanWarAttack | null;
-	defender: ClanWarMember | null;
+	attack: APIClanWarAttack | null;
+	previousBestAttack: APIClanWarAttack | null;
+	defender: APIClanWarMember | null;
 	clan: {
 		name: string;
 		tag: string;
 	};
 	endTime: Date;
-	member: ClanWarMember;
+	member: APIClanWarMember;
 }

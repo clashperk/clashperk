@@ -1,9 +1,9 @@
-import { Clan, Player } from 'clashofclans.js';
+import { APIClan, APIPlayer } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, PermissionFlagsBits } from 'discord.js';
-import { Collections, PLAYER_LEAGUE_MAPS, Settings } from '../util/Constants.js';
 import { Client } from '../struct/Client.js';
 import Queue from '../struct/Queue.js';
 import { PlayerLinks } from '../types/index.js';
+import { Collections, PLAYER_LEAGUE_MAPS, Settings } from '../util/Constants.js';
 
 const ActionType: Record<string, string> = {
 	LEFT: '"%PLAYER% left"',
@@ -67,20 +67,20 @@ export class RoleManager {
 				if (this.client.shard?.ids[0] === 0) {
 					if (change.operationType === 'insert' || change.operationType === 'update') {
 						const link = change.fullDocument!;
-						this.client.logger.debug(`Player ${change.operationType} - ${link.name} (${link.tag})`, { label: 'PlayerLink' });
+						this.client.logger.debug(`APIPlayer ${change.operationType} - ${link.name} (${link.tag})`, { label: 'PlayerLink' });
 					} else {
-						this.client.logger.debug(`Player ${change.operationType}`, { label: 'PlayerLink' });
+						this.client.logger.debug(`APIPlayer ${change.operationType}`, { label: 'PlayerLink' });
 					}
 				}
 				if (change.operationType === 'insert' || change.operationType === 'update') {
 					const link = change.fullDocument!;
-					const res = await this.client.http.player(link.tag);
-					if (res.ok && res.clan) return this.newLink(res);
+					const { res, body } = await this.client.http.getPlayer(link.tag);
+					if (res.ok && body.clan) return this.newLink(body);
 				}
 			});
 	}
 
-	public async queue(clan: Clan, { isThRole = false, isLeagueRole = false }) {
+	public async queue(clan: APIClan, { isThRole = false, isLeagueRole = false }) {
 		if (this.queues.has(clan.tag)) return null;
 
 		const data = {
@@ -105,9 +105,9 @@ export class RoleManager {
 		}
 	}
 
-	public async newLink(player: Player) {
-		const clan = await this.client.http.clan(player.clan!.tag);
-		if (!clan.ok) return null;
+	public async newLink(player: APIPlayer) {
+		const { body: clan, res } = await this.client.http.getClan(player.clan!.tag);
+		if (!res.ok) return null;
 
 		await this.execTownHall(clan.tag, [{ tag: player.tag }]);
 		await this.execLeagueRoles(clan.tag, [{ tag: player.tag }]);
@@ -289,10 +289,10 @@ export class RoleManager {
 			const member = guildMembers?.get(userId);
 			if (!member) continue;
 
-			const player = await this.client.http.player(tag);
-			if (!player.ok) continue;
+			const { body, res } = await this.client.http.getPlayer(tag);
+			if (!res.ok) continue;
 
-			await this.client.nickHandler.exec(member, player);
+			await this.client.nickHandler.exec(member, body);
 			await this.delay(1000);
 		}
 	}
@@ -449,7 +449,7 @@ export class RoleManager {
 		if (!guildMembers?.size) return null;
 
 		// getting roles of all linked players
-		const players = (await this.client.http.detailedClanMembers(flattened)).filter((res) => res.ok);
+		const players = await this.client.http._getPlayers(flattened);
 
 		// going through all clan members
 		for (const member of members) {
@@ -465,7 +465,7 @@ export class RoleManager {
 				.map((clan) => ({
 					roles: clan.roles,
 					highestRole: this.getHighestRole(
-						players.filter((en) => tags.includes(en.tag)),
+						players.filter((data) => tags.includes(data.tag)),
 						[clan.tag]
 					),
 					commonRoleId: clan.roles.everyone // <- this is the role that is common to all clan members
@@ -495,7 +495,7 @@ export class RoleManager {
 		return members.length;
 	}
 
-	private handleTHRoles(players: Player[], clans: string[], rolesMap: Record<string, string>, allowExternal: boolean) {
+	private handleTHRoles(players: APIPlayer[], clans: string[], rolesMap: Record<string, string>, allowExternal: boolean) {
 		// at least one account should be in the clan
 		if (allowExternal && !players.some((player) => player.clan && clans.includes(player.clan.tag))) {
 			return [];
@@ -513,7 +513,7 @@ export class RoleManager {
 		return roles;
 	}
 
-	private handleLeagueRoles(players: Player[], clans: string[], rolesMap: Record<string, string>, allowExternal: boolean) {
+	private handleLeagueRoles(players: APIPlayer[], clans: string[], rolesMap: Record<string, string>, allowExternal: boolean) {
 		// at least one account should be in the clan
 		if (allowExternal && !players.some((player) => player.clan && clans.includes(player.clan.tag))) {
 			return [];
@@ -577,7 +577,7 @@ export class RoleManager {
 		if (!members?.size) return null;
 
 		// getting roles of all linked players
-		const players = (await this.client.http.detailedClanMembers(flattened)).filter((res) => res.ok);
+		const players = await this.client.http._getPlayers(flattened);
 
 		// going through all clan members
 		for (const tag of memberTags) {
@@ -590,7 +590,7 @@ export class RoleManager {
 
 			// getting linked user's accounts
 			const thRoles = this.handleTHRoles(
-				players.filter((en) => tags.includes(en.tag)),
+				players.filter((data) => tags.includes(data.tag)),
 				clans.map((clan) => clan.tag),
 				rolesMap,
 				allowExternal
@@ -658,7 +658,7 @@ export class RoleManager {
 		if (!members?.size) return null;
 
 		// getting roles of all linked players
-		const players = (await this.client.http.detailedClanMembers(flattened)).filter((res) => res.ok);
+		const players = await this.client.http._getPlayers(flattened);
 
 		// going through all clan members
 		for (const tag of memberTags) {
@@ -671,7 +671,7 @@ export class RoleManager {
 
 			// getting linked user's accounts
 			const thRoles = this.handleLeagueRoles(
-				players.filter((en) => tags.includes(en.tag)),
+				players.filter((data) => tags.includes(data.tag)),
 				clans.map((clan) => clan.tag),
 				rolesMap,
 				allowExternal

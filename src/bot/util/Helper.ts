@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -60,18 +60,16 @@ export const clanGamesLatestSeasonId = () => {
 };
 
 export const clanEmbedMaker = async (
-	clan: Clan,
+	clan: APIClan,
 	{ description, requirements, color }: { description?: string; requirements?: string; color?: number; userId?: string }
 ) => {
 	const client = container.resolve(Client);
-	const fetched = await client.http.detailedClanMembers(clan.memberList);
-	const reduced = fetched
-		.filter((res) => res.ok)
-		.reduce<{ [key: string]: number }>((count, member) => {
-			const townHall = member.townHallLevel;
-			count[townHall] = (count[townHall] || 0) + 1;
-			return count;
-		}, {});
+	const fetched = await client.http._getPlayers(clan.memberList);
+	const reduced = fetched.reduce<{ [key: string]: number }>((count, member) => {
+		const townHall = member.townHallLevel;
+		count[townHall] = (count[townHall] || 0) + 1;
+		return count;
+	}, {});
 
 	const townHalls = Object.entries(reduced)
 		.map(([level, total]) => ({ level: Number(level), total }))
@@ -79,11 +77,11 @@ export const clanEmbedMaker = async (
 
 	const location = clan.location
 		? clan.location.isCountry
-			? `:flag_${clan.location.countryCode.toLowerCase()}: ${clan.location.name}`
+			? `:flag_${clan.location.countryCode!.toLowerCase()}: ${clan.location.name}`
 			: `🌐 ${clan.location.name}`
 		: `${EMOJIS.WRONG} None`;
 
-	const capitalHall = clan.clanCapital?.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
+	const capitalHall = clan.clanCapital.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
 
 	const embed = new EmbedBuilder()
 		.setTitle(`${clan.name} (${clan.tag})`)
@@ -91,7 +89,7 @@ export const clanEmbedMaker = async (
 		.setThumbnail(clan.badgeUrls.medium)
 		.setDescription(
 			[
-				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanVersusPoints}**`,
+				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanBuilderBasePoints}**`,
 				'',
 				description?.toLowerCase() === 'auto' ? clan.description : description ?? ''
 			].join('\n')
@@ -154,7 +152,7 @@ export const clanEmbedMaker = async (
 				'**Clan Capital**',
 				`${CAPITAL_LEAGUES[clan.capitalLeague?.id ?? UnrankedCapitalLeagueId]} ${clan.capitalLeague?.name ?? 'Unranked'} ${
 					EMOJIS.CAPITAL_TROPHY
-				} ${clan.clanCapitalPoints ?? 0}`
+				} ${clan.clanCapitalPoints || 0}`
 			].join('\n')
 		}
 	]);
@@ -178,7 +176,7 @@ export const clanEmbedMaker = async (
 	return embed;
 };
 
-export const lastSeenEmbedMaker = async (clan: Clan, { color, scoreView }: { color?: number; scoreView?: boolean }) => {
+export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { color?: number; scoreView?: boolean }) => {
 	const client = container.resolve(Client);
 
 	const db = client.db.collection(Collections.LAST_SEEN);
@@ -279,7 +277,7 @@ export const lastSeenEmbedMaker = async (clan: Clan, { color, scoreView }: { col
 };
 
 export const clanGamesEmbedMaker = (
-	clan: Clan,
+	clan: APIClan,
 	{
 		color,
 		seasonId,
@@ -337,7 +335,7 @@ export const clanGamesEmbedMaker = (
 	return embed;
 };
 
-export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: Clan; guild: Guild; showTag?: boolean }) => {
+export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APIClan; guild: Guild; showTag?: boolean }) => {
 	const client = container.resolve(Client);
 	const memberTags = await client.http.getDiscordLinks(clan.memberList);
 	const dbMembers = await client.db
@@ -431,18 +429,24 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: Clan;
 	return embed;
 };
 
-export const attacksEmbedMaker = async ({ clan, guild, sortKey }: { clan: Clan; guild: Guild; sortKey: 'attackWins' | 'defenseWins' }) => {
+export const attacksEmbedMaker = async ({
+	clan,
+	guild,
+	sortKey
+}: {
+	clan: APIClan;
+	guild: Guild;
+	sortKey: 'attackWins' | 'defenseWins';
+}) => {
 	const client = container.resolve(Client);
 
-	const fetched = await client.http.detailedClanMembers(clan.memberList);
-	const members = fetched
-		.filter((res) => res.ok)
-		.map((m) => ({
-			name: m.name,
-			tag: m.tag,
-			attackWins: m.attackWins,
-			defenseWins: m.defenseWins
-		}));
+	const fetched = await client.http._getPlayers(clan.memberList);
+	const members = fetched.map((data) => ({
+		name: data.name,
+		tag: data.tag,
+		attackWins: data.attackWins,
+		defenseWins: data.defenseWins
+	}));
 	members.sort((a, b) => b[sortKey] - a[sortKey]);
 
 	const embed = new EmbedBuilder()

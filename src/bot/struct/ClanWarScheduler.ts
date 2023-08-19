@@ -1,4 +1,4 @@
-import { ClanWar } from 'clashofclans.js';
+import { APIClanWar } from 'clashofclans.js';
 import { APIMessage, ForumChannel, Guild, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
@@ -62,7 +62,6 @@ export default class ClanWarScheduler {
 			const wars = await this.client.http.getCurrentWars(tag);
 			const rand = Math.random();
 			for (const data of wars) {
-				if (!data.ok) continue;
 				if (['notInWar', 'warEnded'].includes(data.state)) continue;
 				const endTime = moment(data.endTime).toDate();
 
@@ -108,11 +107,11 @@ export default class ClanWarScheduler {
 	}
 
 	private async getClanMembers(tag: string) {
-		const data = await this.client.http.clan(tag);
-		return data.ok ? data.memberList : [];
+		const { body, res } = await this.client.http.getClan(tag);
+		return res.ok ? body.memberList : [];
 	}
 
-	private wasInMaintenance(schedule: Schedule, data: ClanWar) {
+	private wasInMaintenance(schedule: Schedule, data: APIClanWar) {
 		const timestamp = moment(data.endTime).toDate().getTime() - schedule.duration;
 		return timestamp > schedule.timestamp.getTime();
 	}
@@ -120,12 +119,12 @@ export default class ClanWarScheduler {
 	public async getReminderText(
 		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly'>,
 		schedule: Pick<Schedule, 'tag' | 'warTag'>,
-		data: ClanWar,
+		data: APIClanWar,
 		_guild: Guild
 	) {
 		const clanMembers = reminder.roles.length === 4 ? [] : await this.getClanMembers(schedule.tag);
 		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
-		const attacksPerMember = data.attacksPerMember || 1;
+		const attacksPerMember = data.attacksPerMember ?? 1;
 		if (reminder.smartSkip && clan.destructionPercentage >= 100) return null;
 
 		const members = clan.members
@@ -208,7 +207,7 @@ export default class ClanWarScheduler {
 	private warEndReminderText(
 		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message'>,
 		schedule: Pick<Schedule, 'tag' | 'warTag'>,
-		data: ClanWar
+		data: APIClanWar
 	) {
 		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
 		return [`\u200e🔔 **${clan.name} (War has ended)**`, `📨 ${reminder.message}`].join('\n');
@@ -223,10 +222,10 @@ export default class ClanWarScheduler {
 			const warType = schedule.warTag ? 'cwl' : schedule.isFriendly ? 'friendly' : 'normal';
 			if (!reminder.warTypes.includes(warType)) return await this.delete(schedule);
 
-			const data = schedule.warTag
-				? await this.client.http.clanWarLeagueWar(schedule.warTag)
-				: await this.client.http.currentClanWar(schedule.tag);
-			if (!data.ok) return this.clear(id);
+			const { body: data, res } = schedule.warTag
+				? await this.client.http.getClanWarLeagueRound(schedule.warTag)
+				: await this.client.http.getCurrentWar(schedule.tag);
+			if (!res.ok) return this.clear(id);
 
 			if (data.state === 'notInWar') return await this.delete(schedule);
 			if (data.state === 'warEnded' && schedule.duration !== 0) return await this.delete(schedule);

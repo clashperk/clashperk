@@ -1,5 +1,5 @@
 import { GuildMember, CommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
-import { Clan, Player } from 'clashofclans.js';
+import { APIClan, APIPlayer } from 'clashofclans.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
@@ -84,7 +84,7 @@ export default class LinkCreateCommand extends Command {
 		return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
 	}
 
-	private async clanLink(member: GuildMember, clan: Clan) {
+	private async clanLink(member: GuildMember, clan: APIClan) {
 		return this.client.db.collection(Collections.USERS).updateOne(
 			{ userId: member.id },
 			{
@@ -108,7 +108,7 @@ export default class LinkCreateCommand extends Command {
 
 	public async playerLink(
 		interaction: CommandInteraction<'cached'>,
-		{ player, member, def }: { player: Player; member: GuildMember; def: boolean }
+		{ player, member, def }: { player: APIPlayer; member: GuildMember; def: boolean }
 	) {
 		const [doc, accounts] = await this.getPlayer(player.tag, member.id);
 		// only owner can set default account
@@ -194,8 +194,8 @@ export default class LinkCreateCommand extends Command {
 		const clans = await this.client.storage.find(guildId);
 		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
 		for (const clan of clans) {
-			const data = await this.client.http.clan(clan.tag);
-			if (!data.ok) continue;
+			const { body: data, res } = await this.client.http.getClan(clan.tag);
+			if (!res.ok) continue;
 
 			const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
 			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
@@ -204,8 +204,9 @@ export default class LinkCreateCommand extends Command {
 				if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
 				const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
 
-				const player = data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.player(tag));
-				if (!player.name) continue;
+				const player =
+					data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.getPlayer(tag).then(({ body }) => body));
+				if (!player?.name) continue;
 
 				const user = await this.client.users.fetch(userId).catch(() => null);
 				if (!user) continue;

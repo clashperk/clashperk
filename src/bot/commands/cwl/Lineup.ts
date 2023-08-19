@@ -1,7 +1,7 @@
-import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonStyle, User } from 'discord.js';
-import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player, WarClan } from 'clashofclans.js';
-import { EMOJIS, HERO_PETS, BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
+import { APIClan, APIClanWarLeagueGroup, APIClanWarMember, APIWarClan } from 'clashofclans.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {
@@ -26,14 +26,14 @@ export default class CWLLineupCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
-		const body = await this.client.http.clanWarLeague(clan.tag);
-		if (body.statusCode === 504 || body.state === 'notInWar') {
+		const { body, res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+		if (res.status === 504 || body.state === 'notInWar') {
 			return interaction.editReply(
 				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
 
-		if (!body.ok) {
+		if (!res.ok) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
@@ -49,25 +49,25 @@ export default class CWLLineupCommand extends Command {
 			clan,
 			args
 		}: {
-			body: ClanWarLeagueGroup;
-			clan: Clan;
+			body: APIClanWarLeagueGroup;
+			clan: APIClan;
 			args: { tag?: string; user?: User; player_list?: boolean; state?: string };
 		}
 	) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter((d) => !d.warTags.includes('#0'));
 
-		const chunks: { state: string; clan: WarClan; opponent: WarClan; round: number }[] = [];
+		const chunks: { state: string; clan: APIWarClan; opponent: APIWarClan; round: number }[] = [];
 		for (const { warTags } of rounds.slice(-2)) {
 			for (const warTag of warTags) {
-				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok) continue;
+				const { body, res } = await this.client.http.getClanWarLeagueRound(warTag);
+				if (!res.ok) continue;
 
-				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
-					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
+				if (body.clan.tag === clanTag || body.opponent.tag === clanTag) {
+					const clan = body.clan.tag === clanTag ? body.clan : body.opponent;
+					const opponent = body.clan.tag === clanTag ? body.opponent : body.clan;
 					const round = rounds.findIndex((en) => en.warTags.includes(warTag)) + 1;
-					chunks.push({ state: data.state, clan, opponent, round });
+					chunks.push({ state: body.state, clan, opponent, round });
 				}
 			}
 		}
@@ -126,38 +126,34 @@ export default class CWLLineupCommand extends Command {
 		return this.clearId(interaction);
 	}
 
-	private async rosters(clanMembers: ClanWarMember[], opponentMembers: ClanWarMember[]) {
-		const clanPlayers: Player[] = await this.client.http.detailedClanMembers(clanMembers);
-		const a = clanPlayers
-			.filter((res) => res.ok)
-			.map((m, i) => {
-				const heroes = m.heroes.filter((en) => en.village === 'home');
-				const pets = m.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
-				return {
-					e: 0,
-					m: i + 1,
-					t: m.townHallLevel,
-					p: pets.map((en) => en.level).reduce((prev, en) => en + prev, 0),
-					h: heroes.map((en) => en.level).reduce((prev, en) => en + prev, 0)
-					// .concat(...Array(4 - heroes.length).fill(' '))
-				};
-			});
+	private async rosters(clanMembers: APIClanWarMember[], opponentMembers: APIClanWarMember[]) {
+		const clanPlayers = await this.client.http._getPlayers(clanMembers);
+		const a = clanPlayers.map((data, i) => {
+			const heroes = data.heroes.filter((en) => en.village === 'home');
+			const pets = data.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
+			return {
+				e: 0,
+				m: i + 1,
+				t: data.townHallLevel,
+				p: pets.map((en) => en.level).reduce((prev, en) => en + prev, 0),
+				h: heroes.map((en) => en.level).reduce((prev, en) => en + prev, 0)
+				// .concat(...Array(4 - heroes.length).fill(' '))
+			};
+		});
 
-		const opponentPlayers: Player[] = await this.client.http.detailedClanMembers(opponentMembers as any);
-		const b = opponentPlayers
-			.filter((res) => res.ok)
-			.map((m, i) => {
-				const heroes = m.heroes.filter((en) => en.village === 'home');
-				const pets = m.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
-				return {
-					e: 1,
-					m: i + 1,
-					t: m.townHallLevel,
-					p: pets.map((en) => en.level).reduce((prev, en) => en + prev, 0),
-					h: heroes.map((en) => en.level).reduce((prev, en) => en + prev, 0)
-					// .concat(...Array(4 - heroes.length).fill(' '))
-				};
-			});
+		const opponentPlayers = await this.client.http._getPlayers(opponentMembers as any);
+		const b = opponentPlayers.map((data, i) => {
+			const heroes = data.heroes.filter((en) => en.village === 'home');
+			const pets = data.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
+			return {
+				e: 1,
+				m: i + 1,
+				t: data.townHallLevel,
+				p: pets.map((en) => en.level).reduce((prev, en) => en + prev, 0),
+				h: heroes.map((en) => en.level).reduce((prev, en) => en + prev, 0)
+				// .concat(...Array(4 - heroes.length).fill(' '))
+			};
+		});
 
 		return Util.chunk(
 			[...a, ...b].sort((a, b) => a.e - b.e).sort((a, b) => a.m - b.m),
@@ -165,7 +161,7 @@ export default class CWLLineupCommand extends Command {
 		);
 	}
 
-	private async getComparisonLineup(state: string, round: number, clan: WarClan, opponent: WarClan) {
+	private async getComparisonLineup(state: string, round: number, clan: APIWarClan, opponent: APIWarClan) {
 		const lineups = await this.rosters(
 			clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
 			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
@@ -192,7 +188,7 @@ export default class CWLLineupCommand extends Command {
 		return [embed];
 	}
 
-	private getLineupList(state: string, round: number, data: { clan: WarClan; opponent: WarClan }) {
+	private getLineupList(state: string, round: number, data: { clan: APIWarClan; opponent: APIWarClan }) {
 		const embeds = [
 			new EmbedBuilder()
 				.setAuthor({

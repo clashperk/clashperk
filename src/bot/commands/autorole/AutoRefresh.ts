@@ -33,8 +33,8 @@ export default class AutoTownHallRoleCommand extends Command {
 
 		// const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
 		for (const clan of clans) {
-			const data = await this.client.http.clan(clan.tag);
-			if (!data.ok) continue;
+			const { body: data, res } = await this.client.http.getClan(clan.tag);
+			if (!res.ok) continue;
 
 			// const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
 			// const unknowns = await this.client.http.getDiscordLinks(data.memberList);
@@ -79,7 +79,6 @@ export default class AutoTownHallRoleCommand extends Command {
 			await interaction.editReply(`Refreshing war roles for ${clan.name}...`);
 			const wars = await this.client.http.getCurrentWars(clan.tag);
 			for (const war of wars) {
-				if (!war.ok) continue;
 				if (war.state === 'notInWar') continue;
 				await this.client.rpcHandler.warRoleManager.exec(clan.tag, {
 					...war,

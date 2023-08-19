@@ -23,14 +23,12 @@ export default class CompoCommand extends Command {
 		}
 
 		const hrStart = process.hrtime();
-		const fetched = await this.client.http.detailedClanMembers(clan.memberList);
-		const reduced = fetched
-			.filter((res) => res.ok)
-			.reduce<{ [key: string]: number }>((count, member) => {
-				const townHall = member.townHallLevel;
-				count[townHall] = (count[townHall] || 0) + 1;
-				return count;
-			}, {});
+		const fetched = await this.client.http._getPlayers(clan.memberList);
+		const reduced = fetched.reduce<{ [key: string]: number }>((count, member) => {
+			const townHall = member.townHallLevel;
+			count[townHall] = (count[townHall] || 0) + 1;
+			return count;
+		}, {});
 
 		const townHalls = Object.entries(reduced)
 			.map((arr) => ({ level: Number(arr[0]), total: Number(arr[1]) }))

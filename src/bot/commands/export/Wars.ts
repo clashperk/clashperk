@@ -1,4 +1,4 @@
-import { ClanWarAttack, WarClan } from 'clashofclans.js';
+import { APIClanWarAttack, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
@@ -59,7 +59,7 @@ export default class WarExport extends Command {
 
 			const members: { [key: string]: any } = {};
 			for (const war of wars) {
-				const clan: WarClan = war.clan.tag === tag ? war.clan : war.opponent;
+				const clan: APIWarClan = war.clan.tag === tag ? war.clan : war.opponent;
 				const attacks = clan.members
 					.filter((m) => m.attacks?.length)
 					.map((m) => m.attacks!)
@@ -171,13 +171,13 @@ export default class WarExport extends Command {
 		return stars.filter((star) => star === count).length;
 	}
 
-	private getPreviousBestAttack(attacks: ClanWarAttack[], defenderTag: string, attackerTag: string) {
+	private getPreviousBestAttack(attacks: APIClanWarAttack[], defenderTag: string, attackerTag: string) {
 		return attacks
 			.filter((atk) => atk.defenderTag === defenderTag && atk.attackerTag !== attackerTag)
 			.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)[0]!;
 	}
 
-	private freshAttack(attacks: ClanWarAttack[], defenderTag: string, order: number) {
+	private freshAttack(attacks: APIClanWarAttack[], defenderTag: string, order: number) {
 		const hits = attacks.filter((atk) => atk.defenderTag === defenderTag).sort((a, b) => a.order - b.order);
 		return hits.length === 1 || hits[0]!.order === order;
 	}

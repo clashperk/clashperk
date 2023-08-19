@@ -1,4 +1,4 @@
-import { ClanWar, WarClan } from 'clashofclans.js';
+import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -37,8 +37,8 @@ export default class SummaryWarsCommand extends Command {
 			);
 		}
 
-		const result = await Promise.all(clans.map((clan) => this.getWAR(clan.tag) as Promise<ClanWar & { round?: number }>));
-		const wars = result.filter((res) => res.ok && res.state !== 'notInWar');
+		const result = (await Promise.all(clans.map((clan) => this.getWAR(clan.tag)))).flat();
+		const wars = result.filter((res) => res.state !== 'notInWar');
 
 		wars.sort((a, b) => this.remAtkDiff(a) - this.remAtkDiff(b));
 		wars.sort((a, b) => this.dateDiff(a) - this.dateDiff(b));
@@ -74,43 +74,30 @@ export default class SummaryWarsCommand extends Command {
 		return new Date().getDate() >= 1 && new Date().getDate() <= 10;
 	}
 
-	private getWAR(clanTag: string) {
+	private async getWAR(clanTag: string) {
 		if (this.onGoingCWL) return this.getCWL(clanTag);
-		return this.client.http.currentClanWar(clanTag);
+		const { res, body } = await this.client.http.getCurrentWar(clanTag);
+		return res.ok ? [{ ...body, round: 0 }] : [];
 	}
 
 	private async getCWL(clanTag: string) {
-		const res = await this.client.http.clanWarLeague(clanTag);
-		if (res.statusCode === 504 || res.state === 'notInWar') return { statusCode: 504 };
-		if (!res.ok) return this.client.http.currentClanWar(clanTag);
-		const rounds = res.rounds.filter((d) => !d.warTags.includes('#0'));
+		const { res, body: group } = await this.client.http.getClanWarLeagueGroup(clanTag);
 
-		const chunks = [];
-		for (const { warTags } of rounds.slice(-2)) {
-			for (const warTag of warTags) {
-				const data = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok) continue;
-				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
-					chunks.push({
-						...data,
-						round: res.rounds.findIndex((d) => d.warTags.includes(warTag)) + 1,
-						clan: data.clan.tag === clanTag ? data.clan : data.opponent,
-						opponent: data.clan.tag === clanTag ? data.opponent : data.clan
-					});
-					break;
-				}
-			}
+		if (res.status === 504 || group.state === 'notInWar') return [];
+		if (!res.ok) {
+			const { res, body } = await this.client.http.getCurrentWar(clanTag);
+			return res.ok ? [{ ...body, round: 0 }] : [];
 		}
 
-		if (!chunks.length) return { statusCode: 504 };
-		return (
-			chunks.find((en) => en.state === 'inWar') ??
-			chunks.find((en) => en.state === 'preparation') ??
-			chunks.find((en) => en.state === 'warEnded')!
-		);
+		const chunks = await this.client.http._clanWarLeagueRounds(clanTag, group);
+		const war =
+			chunks.find((data) => data.state === 'inWar') ??
+			chunks.find((data) => data.state === 'preparation') ??
+			chunks.find((data) => data.state === 'warEnded');
+		return war ? [war] : [];
 	}
 
-	private getLeaderBoard(clan: WarClan, opponent: WarClan) {
+	private getLeaderBoard(clan: APIWarClan, opponent: APIWarClan) {
 		return [
 			`${EMOJIS.STAR} ${clan.stars}/${opponent.stars}`,
 			`${EMOJIS.SWORD} ${clan.attacks}/${opponent.attacks}`,
@@ -118,19 +105,19 @@ export default class SummaryWarsCommand extends Command {
 		].join(' ');
 	}
 
-	private _getTime(data: ClanWar) {
+	private _getTime(data: APIClanWar) {
 		return data.state === 'preparation' ? data.startTime : data.endTime;
 	}
 
-	private dateDiff(data: ClanWar) {
+	private dateDiff(data: APIClanWar) {
 		return Math.abs(moment(data.endTime).toDate().getTime() - new Date().getTime());
 	}
 
-	private remAtkDiff(data: ClanWar) {
-		return (data.clan.attacks * 100) / (data.teamSize * (data.attacksPerMember || 1));
+	private remAtkDiff(data: APIClanWar) {
+		return (data.clan.attacks * 100) / (data.teamSize * (data.attacksPerMember ?? 1));
 	}
 
-	private isCompleted(data: ClanWar) {
-		return data.clan.attacks === data.teamSize * (data.attacksPerMember || 1);
+	private isCompleted(data: APIClanWar) {
+		return data.clan.attacks === data.teamSize * (data.attacksPerMember ?? 1);
 	}
 }

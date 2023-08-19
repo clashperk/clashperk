@@ -1,5 +1,5 @@
 import { CommandInteraction, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder, ButtonStyle, User } from 'discord.js';
-import { Player } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Collections, BOOST_DURATION } from '../../util/Constants.js';
@@ -29,7 +29,7 @@ export default class BoostsCommand extends Command {
 			});
 		}
 
-		const members = (await this.client.http.detailedClanMembers(clan.memberList)).filter((res) => res.ok);
+		const members = await this.client.http._getPlayers(clan.memberList);
 		const players = members.filter((mem) => mem.troops.filter((en) => en.superTroopIsActive).length);
 		if (!players.length)
 			return interaction.followUp({ content: this.i18n('command.boosts.no_boosts', { lng: interaction.locale }), ephemeral: true });
@@ -136,7 +136,7 @@ export default class BoostsCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: [buttons, menus] });
 	}
 
-	private boostable(players: Player[]) {
+	private boostable(players: APIPlayer[]) {
 		const superTroops = RAW_TROOPS_DATA.SUPER_TROOPS;
 		return players
 			.filter((en) => en.townHallLevel >= 11)

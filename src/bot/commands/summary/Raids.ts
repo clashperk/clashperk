@@ -1,6 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { RaidSeason } from '../../struct/Http.js';
 import { Collections } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -219,41 +218,6 @@ export default class SummaryCapitalRaidsCommand extends Command {
 		const membersGroup = result?.members ?? [];
 
 		return { clansGroup, membersGroup };
-	}
-
-	private async queryFromAPI(clans: { tag: string; name: string }[]) {
-		const raids = (
-			await Promise.all(
-				clans.map(async (clan) => {
-					const raid = await this.client.http.getCurrentRaidSeason(clan.tag);
-					if (raid) return { ...raid, name: clan.name, tag: clan.tag };
-					return null;
-				})
-			)
-		).filter((_) => _) as unknown as Required<RaidSeason & { name: string; tag: string }>[];
-
-		const members = raids.map((raid) => raid.members).flat();
-		members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted);
-
-		return {
-			clansGroup: raids
-				.reduce<{ name: string; tag: string; attacks: number; looted: number; attackLimit: number }[]>((acc, raid) => {
-					const looted = raid.members.reduce((acc, mem) => acc + mem.capitalResourcesLooted, 0);
-					const attacks = raid.members.reduce((acc, mem) => acc + mem.attacks, 0);
-					const attackLimit = raid.members.reduce((acc, mem) => acc + mem.attackLimit + mem.bonusAttackLimit, 0);
-
-					acc.push({
-						name: raid.name,
-						tag: raid.tag,
-						attacks,
-						looted,
-						attackLimit
-					});
-					return acc;
-				}, [])
-				.sort((a, b) => b.looted - a.looted),
-			membersGroup: members.map((mem) => ({ ...mem, attackLimit: mem.attackLimit + mem.bonusAttackLimit })).slice(0, 99)
-		};
 	}
 
 	private padding(num: number, pad = 5) {

@@ -1,4 +1,4 @@
-import { Clan, Player } from 'clashofclans.js';
+import { APIClan, APIPlayer } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -55,7 +55,7 @@ export default class RushedCommand extends Command {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return null;
 
-		const embed = this.embed(data as Player, interaction.locale).setColor(this.client.embed(interaction));
+		const embed = this.embed(data, interaction.locale).setColor(this.client.embed(interaction));
 		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
 
 		const payload = {
@@ -101,7 +101,7 @@ export default class RushedCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: options.length > 1 ? [mainRow, menuRow] : [mainRow] });
 	}
 
-	private embed(data: Player, locale: string) {
+	private embed(data: APIPlayer, locale: string) {
 		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const apiTroops = this.apiTroops(data);
@@ -205,14 +205,14 @@ export default class RushedCommand extends Command {
 		return embed;
 	}
 
-	private async clan(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, data: Clan) {
+	private async clan(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, data: APIClan) {
 		if (data.members < 1) {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
 		}
 
-		const fetched = await this.client.http.detailedClanMembers(data.memberList);
+		const fetched = await this.client.http._getPlayers(data.memberList);
 		const members = [];
-		for (const obj of fetched.filter((res) => res.ok)) {
+		for (const obj of fetched) {
 			members.push({ name: obj.name, rushed: this.reduce(obj), townHallLevel: obj.townHallLevel });
 		}
 
@@ -240,7 +240,7 @@ export default class RushedCommand extends Command {
 		return num.toFixed(0).padStart(2, ' ');
 	}
 
-	private reduce(data: Player) {
+	private reduce(data: APIPlayer) {
 		return {
 			overall: this.rushedOverall(data),
 			lab: this.rushedPercentage(data),
@@ -256,7 +256,7 @@ export default class RushedCommand extends Command {
 		return num.toString().padStart(2, ' ');
 	}
 
-	private apiTroops(data: Player) {
+	private apiTroops(data: APIPlayer) {
 		return [
 			...data.troops.map((u) => ({
 				name: u.name,
@@ -282,7 +282,7 @@ export default class RushedCommand extends Command {
 		];
 	}
 
-	private rushedPercentage(data: Player) {
+	private rushedPercentage(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -299,7 +299,7 @@ export default class RushedCommand extends Command {
 		return Number((100 - (rem.levels * 100) / rem.total).toFixed(2));
 	}
 
-	private heroRushed(data: Player) {
+	private heroRushed(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -316,7 +316,7 @@ export default class RushedCommand extends Command {
 		return Number((100 - (rem.levels * 100) / rem.total).toFixed(2));
 	}
 
-	private rushedOverall(data: Player) {
+	private rushedOverall(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {

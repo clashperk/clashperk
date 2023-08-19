@@ -1,4 +1,4 @@
-import { Clan, Player, PlayerItem } from 'clashofclans.js';
+import { APIClan, APIPlayer, APIPlayerItem } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -59,21 +59,19 @@ export default class MembersCommand extends Command {
 		if (!data) return;
 		if (!data.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
 
-		const fetched = (await this.client.http.detailedClanMembers(data.memberList)).filter((res) => res.ok);
-		const members = fetched
-			.filter((res) => res.ok)
-			.map((m) => ({
-				name: m.name,
-				tag: m.tag,
-				warPreference: m.warPreference === 'in',
-				role: {
-					id: roleIds[m.role ?? data.memberList.find((mem) => mem.tag === m.tag)!.role],
-					name: roleNames[m.role ?? data.memberList.find((mem) => mem.tag === m.tag)!.role]
-				},
-				townHallLevel: m.townHallLevel,
-				heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
-				pets: m.troops.filter((troop) => troop.name in PETS).sort((a, b) => PETS[a.name] - PETS[b.name])
-			}));
+		const fetched = await this.client.http._getPlayers(data.memberList);
+		const members = fetched.map((m) => ({
+			name: m.name,
+			tag: m.tag,
+			warPreference: m.warPreference === 'in',
+			role: {
+				id: roleIds[m.role ?? data.memberList.find((mem) => mem.tag === m.tag)!.role],
+				name: roleNames[m.role ?? data.memberList.find((mem) => mem.tag === m.tag)!.role]
+			},
+			townHallLevel: m.townHallLevel,
+			heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
+			pets: m.troops.filter((troop) => troop.name in PETS).sort((a, b) => PETS[a.name] - PETS[b.name])
+		}));
 
 		members
 			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
@@ -282,7 +280,7 @@ export default class MembersCommand extends Command {
 		return this.clearId(interaction);
 	}
 
-	private heroes(items: PlayerItem[]) {
+	private heroes(items: APIPlayerItem[]) {
 		return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
 	}
 
@@ -290,7 +288,7 @@ export default class MembersCommand extends Command {
 		return num.toString().padStart(pad, ' ');
 	}
 
-	private async getWarPref(clan: Clan, players: Player[]) {
+	private async getWarPref(clan: APIClan, players: APIPlayer[]) {
 		const { aggregations } = await this.client.elastic.search({
 			index: 'war_pref_events',
 			query: {
@@ -365,7 +363,7 @@ export default class MembersCommand extends Command {
 		return warPref;
 	}
 
-	private async joinLeave(clan: Clan, players: Player[]) {
+	private async joinLeave(clan: APIClan, players: APIPlayer[]) {
 		const { aggregations } = await this.client.elastic.search({
 			index: 'join_leave_events',
 			query: {
@@ -443,7 +441,7 @@ export default class MembersCommand extends Command {
 		return warPref;
 	}
 
-	private async progress(clan: Clan, players: Player[]) {
+	private async progress(clan: APIClan, players: APIPlayer[]) {
 		const gte = moment().subtract(1, 'month').toDate().toISOString();
 
 		const { aggregations } = await this.client.elastic.search({

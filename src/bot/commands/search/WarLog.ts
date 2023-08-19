@@ -50,8 +50,8 @@ export default class WarLogCommand extends Command {
 			.limit(20)
 			.toArray();
 
-		const body = await this.client.http.clanWarLog(data.tag, { limit: 10 });
-		if (!body.ok) {
+		const { body, res } = await this.client.http.getClanWarLog(data.tag, { limit: 10 });
+		if (!res.ok) {
 			return interaction.editReply('**504 Request Timeout!**');
 		}
 
@@ -62,7 +62,7 @@ export default class WarLogCommand extends Command {
 			const _time = time(new Date(moment(item.endTime).toDate()), 'R');
 			embed.addFields([
 				{
-					name: `\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${
+					name: `\u200b\n\u200e${this.result(item.result)} ${opponent.name ?? 'Clan War League'} ${
 						extra ? `\u200e(#${extra.id as string})` : ''
 					}`,
 					value: [
@@ -73,7 +73,7 @@ export default class WarLogCommand extends Command {
 						}`,
 						`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${
 							EMOJIS.SWORD
-						} ${clan.attacks}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${_time}`
+						} ${clan.attacks!}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${_time}`
 					].join('\n')
 				}
 			]);

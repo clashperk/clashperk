@@ -18,7 +18,7 @@ export default class FlagDeleteCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, { player_tag }: { player_tag?: string }) {
 		if (!player_tag) return interaction.editReply(this.i18n('command.flag.delete.no_tag', { lng: interaction.locale }));
-		const playerTag = this.client.http.parseTag(player_tag);
+		const playerTag = this.client.http.fixTag(player_tag);
 
 		const flags = await this.client.db
 			.collection(Collections.FLAGS)

@@ -1,4 +1,4 @@
-import { Clan, ClanMember } from 'clashofclans.js';
+import { APIClan, APIClanMember } from 'clashofclans.js';
 import { Collection, CommandInteraction, GuildMember } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
@@ -35,8 +35,8 @@ export default class ExportSeason extends Command {
 
 		const season = args.season ?? Season.ID;
 
-		const _clans: Clan[] = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
-		const allMembers = _clans.reduce<(ClanMember & { clanTag: string })[]>((previous, current) => {
+		const _clans = await this.client.http._getClans(clans);
+		const allMembers = _clans.reduce<(APIClanMember & { clanTag: string })[]>((previous, current) => {
 			previous.push(...current.memberList.map((mem) => ({ ...mem, clanTag: current.tag })));
 			return previous;
 		}, []);
@@ -134,7 +134,7 @@ export default class ExportSeason extends Command {
 		return interaction.editReply({ content: `**Season Export (${season})**`, components: getExportComponents(spreadsheet) });
 	}
 
-	private async aggregationQuery(clan: Clan, seasonId: string) {
+	private async aggregationQuery(clan: APIClan, seasonId: string) {
 		const cursor = this.client.db.collection(Collections.PLAYER_SEASONS).aggregate<PlayerSeasonModelAggregated>([
 			{
 				$match: {

@@ -1,12 +1,12 @@
-import { Player, PlayerItem } from 'clashofclans.js';
+import { APIPlayer, APIPlayerItem } from 'clashofclans.js';
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections, DeepLinkTypes } from '../util/Constants.js';
 import { EMOJIS, HEROES, PLAYER_LEAGUES, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
-import { Util } from '../util/index.js';
 import RAW_TROOPS_DATA from '../util/Troops.js';
+import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 
 const OP: { [key: string]: number } = {
@@ -61,8 +61,8 @@ export default class JoinLeaveLog extends BaseLog {
 	}
 
 	private async embed(cache: Cache, member: Member, data: Feed) {
-		const player: Player = await this.client.http.player(member.tag);
-		if (!player.ok) return null;
+		const { body: player, res } = await this.client.http.getPlayer(member.tag);
+		if (!res.ok) return null;
 
 		let content = null;
 		const embed = new EmbedBuilder().setColor(OP[member.op]).setTitle(`\u200e${player.name} (${player.tag})`);
@@ -128,11 +128,11 @@ export default class JoinLeaveLog extends BaseLog {
 		return { content, embed };
 	}
 
-	private formatHeroes(heroes: PlayerItem[]) {
+	private formatHeroes(heroes: APIPlayerItem[]) {
 		return heroes.length ? `${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}` : ``;
 	}
 
-	private remainingUpgrades(data: Player) {
+	private remainingUpgrades(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -149,7 +149,7 @@ export default class JoinLeaveLog extends BaseLog {
 		return (100 - (rem.levels * 100) / rem.total).toFixed(1);
 	}
 
-	private apiTroops(data: Player) {
+	private apiTroops(data: APIPlayer) {
 		return [
 			...data.troops.map((u) => ({
 				name: u.name,

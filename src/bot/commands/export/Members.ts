@@ -1,4 +1,4 @@
-import { Player } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import { Collection, CommandInteraction, GuildMember } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
@@ -61,7 +61,7 @@ export default class ExportClanMembersCommand extends Command {
 			);
 		}
 
-		const _clans = await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)));
+		const _clans = await this.client.http._getClans(clans);
 
 		const members: {
 			name: string;
@@ -93,9 +93,9 @@ export default class ExportClanMembersCommand extends Command {
 			labRem: number;
 		}[] = [];
 
-		for (const clan of _clans.filter((res) => res.ok)) {
+		for (const clan of _clans) {
 			clan.memberList.sort((a, b) => b.clanRank - a.clanRank);
-			const players = await this.client.resolver.fetchPlayers(clan.memberList.map((mem) => mem.tag));
+			const players = await this.client.http._getPlayers(clan.memberList);
 
 			players.forEach((player, n) => {
 				const troopsMap = [...player.heroes, ...player.troops, ...player.spells]
@@ -215,7 +215,7 @@ export default class ExportClanMembersCommand extends Command {
 		return interaction.editReply({ content: `**Clan Members Export**`, components: getExportComponents(spreadsheet) });
 	}
 
-	private getAchievements(data: Player) {
+	private getAchievements(data: APIPlayer) {
 		return achievements.map((name) => ({ name, value: data.achievements.find((en) => en.name === name)?.value ?? 0 }));
 	}
 
@@ -233,7 +233,7 @@ export default class ExportClanMembersCommand extends Command {
 		}
 	}
 
-	private rushedPercentage(data: Player) {
+	private rushedPercentage(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -250,7 +250,7 @@ export default class ExportClanMembersCommand extends Command {
 		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
 	}
 
-	private labUpgrades(data: Player) {
+	private labUpgrades(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -267,7 +267,7 @@ export default class ExportClanMembersCommand extends Command {
 		return ((rem.levels * 100) / rem.total).toFixed(2);
 	}
 
-	private heroUpgrades(data: Player) {
+	private heroUpgrades(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -284,7 +284,7 @@ export default class ExportClanMembersCommand extends Command {
 		return ((rem.levels * 100) / rem.total).toFixed(2);
 	}
 
-	private apiTroops(data: Player) {
+	private apiTroops(data: APIPlayer) {
 		return [
 			...data.troops.map((u) => ({
 				name: u.name,

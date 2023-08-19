@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { AttachmentBuilder, Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
@@ -81,20 +81,20 @@ export default class CapitalLog extends BaseLog {
 	}
 
 	private async embed(cache: Cache) {
-		const clan = await this.client.http.clan(cache.tag);
-		if (!clan.ok) return null;
+		const { body: clan, res: _res } = await this.client.http.getClan(cache.tag);
+		if (!_res.ok) return null;
 
-		const raidSeason = await this.client.http.getRaidSeason({ tag: clan.tag });
-		if (!raidSeason.ok) return null;
-		if (!raidSeason.items.length) return null;
-		const [data] = raidSeason.items;
-		if (!data.members) return null;
+		const { body: data, res } = await this.client.http.getRaidSeasons(clan.tag, 1);
+		if (!res.ok) return null;
+		if (!data.items.length) return null;
+		const raid = data.items.at(0);
+		if (!raid?.members) return null;
 
 		const season = await this.client.db
 			.collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
-			.findOne({ weekId: moment(data.startTime).format('YYYY-MM-DD'), tag: clan.tag });
+			.findOne({ weekId: moment(raid.startTime).format('YYYY-MM-DD'), tag: clan.tag });
 
-		const members = data.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
+		const members = raid.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
 		clan.memberList.forEach((member) => {
 			const attack = members.find((attack) => attack.tag === member.tag);
 			if (!attack) {
@@ -110,7 +110,7 @@ export default class CapitalLog extends BaseLog {
 		});
 
 		members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted);
-		const weekend = Util.raidWeekDateFormat(moment(data.startTime).toDate(), moment(data.endTime).toDate());
+		const weekend = Util.raidWeekDateFormat(moment(raid.startTime).toDate(), moment(raid.endTime).toDate());
 
 		const embed = new EmbedBuilder()
 			.setAuthor({
@@ -136,19 +136,19 @@ export default class CapitalLog extends BaseLog {
 			].join('\n')
 		);
 
-		const offensiveReward = this.client.http.calcRaidMedals(data);
-		const raidsCompleted = this.client.http.calcRaidCompleted(data.attackLog);
+		const offensiveReward = this.client.http.calcRaidMedals(raid);
+		const raidsCompleted = this.client.http.calcRaidCompleted(raid.attackLog);
 
 		const query = new URLSearchParams({
 			clanName: clan.name,
 			clanBadgeUrl: clan.badgeUrls.large,
-			startDate: moment(data.startTime).toDate().toUTCString(),
-			endDate: moment(data.endTime).toDate().toUTCString(),
+			startDate: moment(raid.startTime).toDate().toUTCString(),
+			endDate: moment(raid.endTime).toDate().toUTCString(),
 			offensiveReward: offensiveReward.toString(),
-			defensiveReward: data.defensiveReward.toString(),
-			totalLoot: data.capitalTotalLoot.toString(),
-			totalAttacks: data.totalAttacks.toString(),
-			enemyDistrictsDestroyed: data.enemyDistrictsDestroyed.toString(),
+			defensiveReward: raid.defensiveReward.toString(),
+			totalLoot: raid.capitalTotalLoot.toString(),
+			totalAttacks: raid.totalAttacks.toString(),
+			enemyDistrictsDestroyed: raid.enemyDistrictsDestroyed.toString(),
 			raidsCompleted: raidsCompleted.toString()
 		});
 
@@ -192,8 +192,8 @@ export default class CapitalLog extends BaseLog {
 	}
 
 	private async capitalDonations(cache: Cache) {
-		const clan = await this.client.http.clan(cache.tag);
-		if (!clan.ok) return null;
+		const { body: clan, res } = await this.client.http.getClan(cache.tag);
+		if (!res.ok) return null;
 
 		const { endTime, prevWeekEndTime } = Util.getRaidWeekEndTimestamp();
 
@@ -256,7 +256,7 @@ export default class CapitalLog extends BaseLog {
 		weekend,
 		contributions
 	}: {
-		clan: Clan;
+		clan: APIClan;
 		weekend: string;
 		contributions: (ClanCapitalGoldModel & { total: number })[];
 	}) {

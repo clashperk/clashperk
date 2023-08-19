@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
-import { ClanWarAttack, WarClan } from 'clashofclans.js';
+import { APIClanWarAttack, APIWarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Collections, MAX_TOWN_HALL_LEVEL, WarType } from '../../util/Constants.js';
@@ -141,8 +141,8 @@ export default class StatsCommand extends Command {
 			{ name: string; tag: string; total: number; success: number; hall: number; attacks: number; stars: number }
 		> = {};
 		for (const war of wars) {
-			const clan: WarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
-			const opponent: WarClan = war.clan.tag === data.tag ? war.opponent : war.clan;
+			const clan: APIWarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
+			const opponent: APIWarClan = war.clan.tag === data.tag ? war.opponent : war.clan;
 			const attacks = (mode === 'attacks' ? clan : opponent).members
 				.filter((m) => m.attacks?.length)
 				.map((m) => m.attacks!)
@@ -363,8 +363,8 @@ export default class StatsCommand extends Command {
 
 		const members: { [key: string]: { name: string; tag: string; total: number; success: number; hall: number } } = {};
 		for (const war of wars) {
-			const clan: WarClan = war.clan.members.some((mem: any) => playerTags.includes(mem.tag)) ? war.clan : war.opponent;
-			const opponent: WarClan = war.clan.tag === clan.tag ? war.opponent : war.clan;
+			const clan: APIWarClan = war.clan.members.some((mem: any) => playerTags.includes(mem.tag)) ? war.clan : war.opponent;
+			const opponent: APIWarClan = war.clan.tag === clan.tag ? war.opponent : war.clan;
 			const attacks = (mode === 'attacks' ? clan : opponent).members
 				.filter((m) => m.attacks?.length)
 				.map((m) => m.attacks!)
@@ -511,7 +511,7 @@ export default class StatsCommand extends Command {
 		return num.toString().padStart(maxLength, ' ');
 	}
 
-	private _isFreshAttack(attacks: ClanWarAttack[], defenderTag: string, order: number) {
+	private _isFreshAttack(attacks: APIClanWarAttack[], defenderTag: string, order: number) {
 		const hits = attacks.filter((atk) => atk.defenderTag === defenderTag).sort((a, b) => a.order - b.order);
 		return hits.length === 1 || hits[0]!.order === order;
 	}

@@ -83,7 +83,7 @@ export default class DonationsCommand extends Command {
 
 		if (isSameSeason) {
 			const notFound = clan.memberList.filter((m) => !dbMembers.some((d) => d.tag === m.tag));
-			const notFoundMembers = (await this.client.http.detailedClanMembers(notFound)).filter((res) => res.ok);
+			const notFoundMembers = await this.client.http._getPlayers(notFound);
 			for (const member of notFoundMembers) {
 				const { tag, name, townHallLevel, donations, donationsReceived } = member;
 				members.push({

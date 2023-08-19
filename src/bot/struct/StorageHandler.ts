@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ClanWarLeagueGroup } from 'clashofclans.js';
+import { APIClanWarLeagueGroup } from 'clashofclans.js';
 import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'discord.js';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import fetch from 'node-fetch';
@@ -684,7 +684,7 @@ export default class StorageHandler {
 		return null;
 	}
 
-	public async pushWarTags(tag: string, body: ClanWarLeagueGroup) {
+	public async pushWarTags(tag: string, body: APIClanWarLeagueGroup) {
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		if (rounds.length !== body.clans.length - 1) return null;
 
@@ -699,8 +699,8 @@ export default class StorageHandler {
 
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
-				const data = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok) continue;
+				const { body: data, res } = await this.client.http.getClanWarLeagueRound(warTag);
+				if (!res.ok) continue;
 				if (!warTags[data.clan.tag].includes(warTag)) warTags[data.clan.tag]!.push(warTag);
 				if (!warTags[data.opponent.tag].includes(warTag)) warTags[data.opponent.tag]!.push(warTag);
 			}
@@ -745,12 +745,10 @@ export default class StorageHandler {
 	}
 
 	private async leagueIds(_clans: { tag: string }[], seasonId: string) {
-		const clans = (await Promise.all(_clans.map((clan) => this.client.http.clan(clan.tag))))
-			.filter((clan) => clan.ok)
-			.map((data) => {
-				const leagueId = data.warLeague?.id ?? UnrankedWarLeagueId;
-				return { name: data.name, tag: data.tag, leagueId };
-			});
+		const clans = (await this.client.http._getClans(_clans)).map((data) => {
+			const leagueId = data.warLeague?.id ?? UnrankedWarLeagueId;
+			return { name: data.name, tag: data.tag, leagueId };
+		});
 
 		const leagues = clans.reduce<Record<string, number>>((acc, curr) => {
 			acc[curr.tag] = curr.leagueId;
@@ -779,6 +777,6 @@ export default class StorageHandler {
 	}
 }
 
-interface ClanWarLeagueGroupData extends ClanWarLeagueGroup {
+interface ClanWarLeagueGroupData extends APIClanWarLeagueGroup {
 	leagues?: Record<string, number>;
 }

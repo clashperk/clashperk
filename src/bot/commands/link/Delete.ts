@@ -50,12 +50,12 @@ export default class LinkDeleteCommand extends Command {
 				return interaction.editReply(this.i18n('command.link.delete.no_access', { lng: interaction.locale }));
 			}
 
-			const data = await this.client.http.player(playerTag);
+			const { body: data } = await this.client.http.getPlayer(playerTag);
 			if (!data.clan) {
 				return interaction.editReply(this.i18n('command.link.delete.no_access', { lng: interaction.locale }));
 			}
 
-			const clan = await this.client.http.clan(data.clan.tag);
+			const { body: clan } = await this.client.http.getClan(data.clan.tag);
 			if (!clan.memberList.find((mem) => ['leader', 'coLeader'].includes(mem.role) && playerTags.includes(mem.tag))) {
 				return interaction.editReply(this.i18n('command.link.delete.no_access', { lng: interaction.locale }));
 			}

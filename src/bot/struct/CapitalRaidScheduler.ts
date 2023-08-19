@@ -1,10 +1,10 @@
+import { APICapitalRaidSeason } from 'clashofclans.js';
 import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
 import { Util } from '../util/index.js';
 import { Client } from './Client.js';
-import { RaidSeason } from './Http.js';
 
 export default class CapitalRaidScheduler {
 	protected schedulers!: Collection<RaidSchedule>;
@@ -67,11 +67,11 @@ export default class CapitalRaidScheduler {
 		setInterval(this._refresh.bind(this), this.refreshRate).unref();
 	}
 
-	public async getRaidSeason(tag: string) {
-		const res = await this.client.http.getRaidSeason({ tag });
-		if (!res.ok || !res.items.length) return null;
-		if (!res.items[0].members) return null;
-		return res.items[0] as Required<RaidSeason>;
+	public async getLastRaidSeason(tag: string) {
+		const { body: data, res } = await this.client.http.getRaidSeasons(tag, 1);
+		if (!res.ok || !data.items.length) return null;
+		if (!data.items[0].members) return null;
+		return data.items[0] as Required<APICapitalRaidSeason>;
 	}
 
 	public toDate(date: string) {
@@ -80,10 +80,10 @@ export default class CapitalRaidScheduler {
 
 	public async create(reminder: RaidReminder) {
 		for (const tag of reminder.clans) {
-			const data = await this.getRaidSeason(tag);
+			const data = await this.getLastRaidSeason(tag);
 			if (!data) continue;
-			const clan = await this.client.http.clan(tag);
-			if (!clan.ok) continue;
+			const { body: clan, res } = await this.client.http.getClan(tag);
+			if (!res.ok) continue;
 			const rand = Math.random();
 			const endTime = moment(data.endTime).toDate();
 
@@ -125,7 +125,7 @@ export default class CapitalRaidScheduler {
 		return this.queued.delete(id);
 	}
 
-	private wasInMaintenance(schedule: RaidSchedule, data: RaidSeason) {
+	private wasInMaintenance(schedule: RaidSchedule, data: APICapitalRaidSeason) {
 		const timestamp = moment(data.endTime).toDate().getTime() - schedule.duration;
 		return timestamp > schedule.timestamp.getTime();
 	}
@@ -145,11 +145,11 @@ export default class CapitalRaidScheduler {
 	public async getReminderText(
 		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly'>,
 		schedule: Pick<RaidSchedule, 'tag'>,
-		data: Required<RaidSeason>
+		data: Required<APICapitalRaidSeason>
 	) {
-		const clan = await this.client.http.clan(schedule.tag);
-		if (clan.statusCode === 503) throw new Error('MaintenanceBreak');
-		if (!clan.ok) return null;
+		const { body: clan, res } = await this.client.http.getClan(schedule.tag);
+		if (res.status === 503) throw new Error('MaintenanceBreak');
+		if (!res.ok) return null;
 		const unwantedMembers = reminder.allMembers
 			? await this.unwantedMembers(clan.memberList, this.getWeekId(data.startTime), schedule.tag)
 			: [];
@@ -220,11 +220,9 @@ export default class CapitalRaidScheduler {
 			return 0;
 		});
 
-		const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
-		const dur =
-			moment(data.state === 'preparation' ? data.startTime : data.endTime)
-				.toDate()
-				.getTime() - Date.now();
+		const prefix = 'ends in'; // data.state === 'preparation' ? 'starts in' : 'ends in';
+		const ends = data.endTime; // data.state === 'preparation' ? data.startTime : data.endTime;
+		const dur = moment(ends).toDate().getTime() - Date.now();
 		const warTiming = moment.duration(dur).format('D[d] H[h], m[m], s[s]', { trim: 'both mid' });
 
 		return [
@@ -252,7 +250,7 @@ export default class CapitalRaidScheduler {
 			if (!reminder) return await this.delete(schedule);
 			if (!this.client.channels.cache.has(reminder.channel)) return await this.delete(schedule);
 
-			const data = await this.getRaidSeason(schedule.tag);
+			const data = await this.getLastRaidSeason(schedule.tag);
 			if (!data) return this.clear(id);
 			if (this.toDate(data.endTime).getTime() < Date.now()) return await this.delete(schedule);
 

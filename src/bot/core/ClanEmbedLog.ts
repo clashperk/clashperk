@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { Collection, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
@@ -19,7 +19,7 @@ export interface Cache {
 }
 
 interface Feed {
-	clan: Clan;
+	clan: APIClan;
 }
 
 export default class ClanEmbedLog extends BaseLog {
@@ -67,7 +67,7 @@ export default class ClanEmbedLog extends BaseLog {
 		}
 	}
 
-	private async embed(cache: Cache, data: Clan) {
+	private async embed(cache: Cache, data: APIClan) {
 		const embed = await clanEmbedMaker(data, {
 			description: cache.embed.description,
 			requirements: cache.embed.accepts,

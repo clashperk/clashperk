@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { ClanGamesModel } from '../../types/index.js';
@@ -13,7 +13,7 @@ export default class ClanGamesCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
-				content: ['Clan Games points of clan members.', '', '**[How does it work?](https://clashperk.com/faq)**']
+				content: ['APIClan Games points of clan members.', '', '**[How does it work?](https://clashperk.com/faq)**']
 			},
 			defer: true
 		});
@@ -57,13 +57,11 @@ export default class ClanGamesCommand extends Command {
 			);
 		}
 
-		const fetched = await this.client.http.detailedClanMembers(clan.memberList);
-		const memberList = fetched
-			.filter((res) => res.ok)
-			.map((m) => {
-				const value = m.achievements.find((a) => a.name === 'Games Champion')?.value ?? 0;
-				return { tag: m.tag, name: m.name, points: value };
-			});
+		const fetched = await this.client.http._getPlayers(clan.memberList);
+		const memberList = fetched.map((player) => {
+			const value = player.achievements.find((a) => a.name === 'Games Champion')?.value ?? 0;
+			return { tag: player.tag, name: player.name, points: value };
+		});
 
 		const queried = await this.query(clan.tag, clan, seasonId);
 		const members = this.filter(queried, memberList, seasonId);
@@ -104,7 +102,7 @@ export default class ClanGamesCommand extends Command {
 		return now.toISOString().substring(0, 7);
 	}
 
-	private query(clanTag: string, _clan: Clan, seasonId: string) {
+	private query(clanTag: string, _clan: APIClan, seasonId: string) {
 		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesModel>([
 			{
 				$match: { __clans: clanTag, season: seasonId }

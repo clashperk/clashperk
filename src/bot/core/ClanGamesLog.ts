@@ -8,7 +8,7 @@ import {
 	SnowflakeUtil,
 	WebhookClient
 } from 'discord.js';
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
@@ -177,7 +177,7 @@ interface Cache {
 }
 
 interface Feed {
-	clan: Clan;
+	clan: APIClan;
 	total: number;
 	members: { name: string; points: number }[];
 }

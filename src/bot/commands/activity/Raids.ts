@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APICapitalRaidSeason, APIClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
@@ -12,7 +12,6 @@ import {
 import moment from 'moment';
 import fetch from 'node-fetch';
 import { Args, Command } from '../../lib/index.js';
-import { RaidSeason } from '../../struct/Http.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -79,13 +78,13 @@ export default class CapitalRaidsCommand extends Command {
 		const currentWeekId = this.raidWeek().weekId;
 		const weekId = args.week ?? currentWeekId;
 
-		const res = await this.client.http.getRaidLastSeason(clan);
-		if (!res.ok || !res.items.length) {
+		const { res, body: raid } = await this.client.http.getRaidSeasons(clan.tag, 6);
+		if (!res.ok || !raid.items.length) {
 			return interaction.followUp({
 				content: `Raid weekend info isn't available for ${clan.name} (${clan.tag})`
 			});
 		}
-		const data = res.items.find((item) => moment(item.startTime).format('YYYY-MM-DD') === weekId);
+		const data = raid.items.find((item) => moment(item.startTime).format('YYYY-MM-DD') === weekId);
 
 		if (args.card) {
 			const season = await this.client.db
@@ -197,7 +196,7 @@ export default class CapitalRaidsCommand extends Command {
 			});
 		}
 
-		const previousAttacks = res.items
+		const previousAttacks = raid.items
 			.filter((raid) => raid.state !== 'ongoing')
 			.map((item) => item.totalAttacks)
 			.slice(0, 10);
@@ -216,7 +215,7 @@ export default class CapitalRaidsCommand extends Command {
 		const url = await this.performancesCardURL({
 			clanName: clan.name,
 			clanBadgeUrl: clan.badgeUrls.large,
-			trophies: clan.clanCapitalPoints ?? 0,
+			trophies: clan.clanCapitalPoints || 0,
 			startDate: moment(data.startTime).toDate(),
 			endDate: moment(data.endTime).toDate(),
 			offensive,
@@ -227,7 +226,7 @@ export default class CapitalRaidsCommand extends Command {
 		if (url) await interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private async aggregateCapitalRaids(clan: Clan, weekId: string) {
+	private async aggregateCapitalRaids(clan: APIClan, weekId: string) {
 		const season = await this.client.db
 			.collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
 			.findOne({ weekId, tag: clan.tag });
@@ -251,7 +250,7 @@ export default class CapitalRaidsCommand extends Command {
 
 		return {
 			members: members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted),
-			data: season as unknown as RaidSeason
+			data: season as unknown as APICapitalRaidSeason
 		};
 	}
 
@@ -262,10 +261,10 @@ export default class CapitalRaidsCommand extends Command {
 		// raidSeason
 		locale
 	}: {
-		clan: Clan;
+		clan: APIClan;
 		weekId: string;
 		locale: string;
-		raidSeason: RaidSeason;
+		raidSeason: APICapitalRaidSeason;
 		previousAttacks: number[];
 		members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[];
 	}) {
@@ -335,7 +334,7 @@ export default class CapitalRaidsCommand extends Command {
 		return embed;
 	}
 
-	private calculateStats(raidSeason: RaidSeason) {
+	private calculateStats(raidSeason: APICapitalRaidSeason) {
 		const offensive = {
 			totalLoot: 0,
 			totalAttacks: 0,

@@ -9,7 +9,7 @@ import {
 	DiscordjsError,
 	DiscordjsErrorCodes
 } from 'discord.js';
-import { Player } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
@@ -29,7 +29,7 @@ export default class LinkAddCommand extends Command {
 
 	private async playerLink(
 		interaction: ModalSubmitInteraction<'cached'>,
-		{ player, member, def }: { player: Player; member: GuildMember; def: boolean; token?: string }
+		{ player, member, def }: { player: APIPlayer; member: GuildMember; def: boolean; token?: string }
 	) {
 		const [doc, accounts] = await this.getPlayer(player.tag, member.id);
 		// only owner can set default account
@@ -138,8 +138,8 @@ export default class LinkAddCommand extends Command {
 					const token = token_field === 'hidden' ? null : modalSubmit.fields.getTextInputValue(customIds.token);
 					await modalSubmit.deferReply({ ephemeral: true });
 
-					const data = await this.client.http.player(tag);
-					if (!data.ok) {
+					const { body: data, res } = await this.client.http.getPlayer(tag);
+					if (!res.ok) {
 						return modalSubmit.editReply({ content: 'Invalid player tag was provided.' });
 					}
 
@@ -156,9 +156,9 @@ export default class LinkAddCommand extends Command {
 		}
 	}
 
-	private async verify(interaction: ModalSubmitInteraction<'cached'>, data: Player, token: string) {
-		const post = await this.client.http.verifyPlayerToken(data.tag, token);
-		if (post.status !== 'ok') {
+	private async verify(interaction: ModalSubmitInteraction<'cached'>, data: APIPlayer, token: string) {
+		const { body } = await this.client.http.verifyPlayerToken(data.tag, token);
+		if (body.status !== 'ok') {
 			return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
 		}
 

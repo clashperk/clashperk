@@ -54,10 +54,10 @@ export default class QuickBoardActionCommand extends Command {
 				const link = await this.client.db
 					.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 					.findOne({ userId: interaction.user.id }, { sort: { order: 1 } });
-				const player = await this.client.http.player(link?.tag ?? '/');
+				const { body: player, res } = await this.client.http.getPlayer(link?.tag ?? '/');
 				const member = interaction.member;
-				if (!player.ok) {
-					await action.followUp({ ephemeral: true, content: `**${status(player.statusCode, interaction.locale)}**` });
+				if (!res.ok) {
+					await action.followUp({ ephemeral: true, content: `**${status(res.status, interaction.locale)}**` });
 					return;
 				}
 				if (interaction.guild.members.me?.permissions.has('ManageNicknames')) {
@@ -161,9 +161,7 @@ export default class QuickBoardActionCommand extends Command {
 				if (!links.length) return;
 
 				const clanTags = clans.map((clan) => clan.tag);
-				const players = (await this.client.http.detailedClanMembers(links))
-					.filter((res) => res.ok)
-					.filter((en) => en.clan && clanTags.includes(en.clan.tag));
+				const players = (await this.client.http._getPlayers(links)).filter((data) => data.clan && clanTags.includes(data.clan.tag));
 
 				for (const data of players) await this.client.rpcHandler.roleManager.newLink(data);
 				await action.followUp({ content: 'Roles have been updated.', ephemeral: true });

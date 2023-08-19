@@ -1,4 +1,3 @@
-import { Player } from 'clashofclans.js';
 import { cleanContent, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -36,9 +35,9 @@ export default class FlagCreateCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const players: Player[] = await Promise.all(tags.map((tag) => this.client.http.player(this.client.http.parseTag(tag))));
+		const players = await this.client.http._getPlayers(tags.map((tag) => ({ tag })));
 		const newFlags = [] as { name: string; tag: string }[];
-		for (const data of players.filter((en) => en.ok)) {
+		for (const data of players) {
 			await this.client.db.collection(Collections.FLAGS).insertOne({
 				guild: interaction.guild.id,
 				user: interaction.user.id,

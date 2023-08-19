@@ -1,4 +1,4 @@
-import { Clan, Player } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -91,12 +91,12 @@ export default class ProfileCommand extends Command {
 			.setAuthor({ name: `${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() })
 			.setDescription(['**Created**', `${moment(user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`].join('\n'));
 
-		const clan: Clan = await this.client.http.clan(data?.clan?.tag ?? '💩');
-		if (clan.statusCode === 503) {
+		const { res, body: clan } = await this.client.http.getClan(data?.clan?.tag ?? '💩');
+		if (res.status === 503) {
 			return interaction.editReply('**Service is temporarily unavailable because of maintenance.**');
 		}
 
-		if (clan.ok) {
+		if (res.ok) {
 			embed.setDescription(
 				[
 					embed.data.description,
@@ -122,13 +122,13 @@ export default class ProfileCommand extends Command {
 		const collection: { field: string; values: string[] }[] = [];
 		const playerTags = [...new Set([...players.map((en) => en.tag), ...otherTags])];
 		const hideLink = Boolean(playerTags.length >= 120);
-		const __players = await Promise.all(playerTags.map((tag) => this.client.http.player(tag)));
-		const playerLinks = __players.filter((res) => res.ok);
+		const __players = await Promise.all(playerTags.map((tag) => this.client.http.getPlayer(tag)));
+		const playerLinks = __players.filter(({ res }) => res.ok).map(({ body }) => body);
 		const defaultPlayer = playerLinks.at(0);
 
-		__players.forEach((player, n) => {
+		__players.forEach(({ res }, n) => {
 			const tag = playerTags[n];
-			if (player.statusCode === 404) {
+			if (res.status === 404) {
 				this.deleteBanned(user.id, tag);
 			}
 		});
@@ -272,7 +272,7 @@ export default class ProfileCommand extends Command {
 		});
 	}
 
-	private heroSum(player: Player) {
+	private heroSum(player: APIPlayer) {
 		return player.heroes.reduce((prev, curr) => {
 			if (curr.village === 'builderBase') return prev;
 			return curr.level + prev;
@@ -287,13 +287,13 @@ export default class ProfileCommand extends Command {
 		return Boolean(players.find((en) => en.tag === tag && en.verified));
 	}
 
-	private clanName(player: Player) {
+	private clanName(player: APIPlayer) {
 		if (!player.clan) return '';
 		const warPref = player.warPreference === 'in' ? `${EMOJIS.WAR_PREF_IN}` : `${EMOJIS.WAR_PREF_OUT}`;
 		return `${warPref} ${roles[player.role!]} of ${player.clan.name}`;
 	}
 
-	private heroes(data: Player) {
+	private heroes(data: APIPlayer) {
 		if (!data.heroes.length) return '';
 		const heroes = data.heroes
 			.filter((hero) => hero.village === 'home')

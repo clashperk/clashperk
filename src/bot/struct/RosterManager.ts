@@ -1,4 +1,4 @@
-import { Clan, ClanMember, ClanWar, ClanWarAttack, Player, WarClan } from 'clashofclans.js';
+import { APIClan, APIClanMember, APIClanWar, APIClanWarAttack, APIPlayer, APIWarClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -73,7 +73,7 @@ export const rosterLayoutMap = {
 		isEmoji: false,
 		key: 'name',
 		align: 'left',
-		name: 'Player Name',
+		name: 'APIPlayer Name',
 		description: 'The name of the player.'
 	},
 	'CLAN': {
@@ -157,7 +157,7 @@ export interface IRosterDefaultSettings {
 	allowUnlinked: boolean;
 }
 
-export type PlayerWithLink = Player & {
+export type PlayerWithLink = APIPlayer & {
 	user: {
 		id: string;
 		displayName: string;
@@ -267,7 +267,7 @@ export class RosterManager {
 		isDryRun = false
 	}: {
 		roster: WithId<IRoster>;
-		player: Player;
+		player: APIPlayer;
 		user: { id: string; displayName: string } | null;
 		isOwner: boolean;
 		isDryRun: boolean;
@@ -383,7 +383,7 @@ export class RosterManager {
 	}: {
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>;
 		rosterId: ObjectId;
-		player: Player;
+		player: APIPlayer;
 		user: { id: string; displayName: string } | null;
 		categoryId?: string | null;
 		isDryRun?: boolean;
@@ -428,7 +428,7 @@ export class RosterManager {
 		isOwner = true
 	}: {
 		rosterId: ObjectId;
-		player: Player;
+		player: APIPlayer;
 		user: { id: string; displayName: string } | null;
 		categoryId?: string | null;
 		isDryRun?: boolean;
@@ -464,7 +464,7 @@ export class RosterManager {
 		categoryId
 	}: {
 		roster: WithId<IRoster>;
-		player: Player;
+		player: APIPlayer;
 		user: { id: string; displayName: string } | null;
 		categoryId?: string | null;
 	}) {
@@ -552,7 +552,7 @@ export class RosterManager {
 		categoryId
 	}: {
 		oldRoster: WithId<IRoster>;
-		player: Player;
+		player: APIPlayer;
 		user: { id: string; displayName: string } | null;
 		newRosterId: ObjectId;
 		categoryId: string | null;
@@ -585,7 +585,7 @@ export class RosterManager {
 		newCategoryId
 	}: {
 		roster: WithId<IRoster>;
-		player: Player;
+		player: APIPlayer;
 		user: { id: string; displayName: string } | null;
 		newCategoryId: ObjectId | null;
 	}) {
@@ -656,7 +656,7 @@ export class RosterManager {
 		const aliases = await this.getClanAliases(roster.guildId, [
 			...new Set(members.filter((mem) => mem.clan?.tag).map((mem) => mem.clan!.tag))
 		]);
-		const players = await Promise.all(members.map((mem) => this.client.http.player(mem.tag)));
+		const players = await Promise.all(members.map((mem) => this.client.http.getPlayer(mem.tag)));
 
 		const _categories = await this.getCategories(roster.guildId);
 		const categories = _categories.reduce<Record<string, IRosterCategory>>(
@@ -674,8 +674,8 @@ export class RosterManager {
 				if (category?.roleId) rolesMap[member.userId].push(category.roleId);
 			}
 
-			const player = players[i];
-			if (!player.ok) return;
+			const { body: player, res } = players[i];
+			if (!res.ok) return;
 
 			member.name = player.name;
 			member.townHallLevel = player.townHallLevel;
@@ -1221,17 +1221,15 @@ export class RosterManager {
 		}
 	}
 
-	public async getClanMembers(memberList: ClanMember[], allowUnlinked = false) {
+	public async getClanMembers(memberList: APIClanMember[], allowUnlinked = false) {
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.find({ tag: { $in: memberList.map((mem) => mem.tag) } })
 			.toArray();
-		const players = await Promise.all(memberList.map((mem) => this.client.http.player(mem.tag)));
+		const players = await this.client.http._getPlayers(memberList);
 
 		const members: IRosterMember[] = [];
 		players.forEach((player) => {
-			if (!player.ok) return;
-
 			const link = links.find((link) => link.tag === player.tag);
 			if (!link && !allowUnlinked) return;
 
@@ -1258,12 +1256,10 @@ export class RosterManager {
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.find({ tag: { $in: memberList.map((mem) => mem.tag) } })
 			.toArray();
-		const players = await Promise.all(memberList.map((mem) => this.client.http.player(mem.tag)));
+		const players = await this.client.http._getPlayers(memberList);
 
 		const members: PlayerWithLink[] = [];
 		players.forEach((player) => {
-			if (!player.ok) return;
-
 			const link = links.find((link) => link.tag === player.tag);
 			if (!link && !allowUnlinked) return;
 
@@ -1284,7 +1280,7 @@ export class RosterManager {
 	}: {
 		roster: WithId<IRoster>;
 		categories: WithId<IRosterCategory>[];
-		clan: Clan;
+		clan: APIClan;
 		name: string;
 	}) {
 		const clanMembers = await this.client.rosterManager.getClanMembers(clan.memberList, true);
@@ -1416,7 +1412,7 @@ export class RosterManager {
 		}
 	}
 
-	private getPreviousBestAttack(attacks: ClanWarAttack[], opponent: WarClan, atk: ClanWarAttack) {
+	private getPreviousBestAttack(attacks: APIClanWarAttack[], opponent: APIWarClan, atk: APIClanWarAttack) {
 		const defender = opponent.members.find((m) => m.tag === atk.defenderTag);
 		const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defender?.tag);
 		const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
@@ -1453,7 +1449,7 @@ export class RosterManager {
 			>
 		> = {};
 
-		const wars = this.client.db.collection<ClanWar>(Collections.CLAN_WARS).find({
+		const wars = this.client.db.collection<APIClanWar>(Collections.CLAN_WARS).find({
 			$or: [
 				{
 					'clan.members.tag': { $in: playerTags }

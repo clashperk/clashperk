@@ -37,7 +37,7 @@ export default class LastWarsExport extends Command {
 
 		let num = Number(args.limit ?? 25);
 		num = Math.min(100, num);
-		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		const clanList = await this.client.http._getClans(clans);
 		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
 		const query: Record<string, string | number> = args.season ? { season: args.season } : {};

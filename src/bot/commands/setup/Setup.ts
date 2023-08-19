@@ -122,7 +122,7 @@ export default class SetupCommand extends Command {
 
 	private async getClanList(interaction: CommandInteraction) {
 		const clans = await this.client.storage.find(interaction.guild!.id);
-		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		const clanList = await this.client.http._getClans(clans);
 		if (!clans.length) return [];
 
 		// clanList.sort((a, b) => b.members - a.members);

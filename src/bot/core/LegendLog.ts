@@ -51,8 +51,8 @@ export default class LegendLog extends BaseLog {
 	}
 
 	private async embed(cache: Cache) {
-		const clan = await this.client.http.clan(cache.tag);
-		if (!clan.ok) return null;
+		const { body: clan, res } = await this.client.http.getClan(cache.tag);
+		if (!res.ok) return null;
 
 		const { startTime, endTime } = Util.getPreviousLegendTimestamp();
 		const timestamp = new Date(endTime);

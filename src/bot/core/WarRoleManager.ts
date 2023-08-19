@@ -1,19 +1,19 @@
-import { ClanWar, WarClan } from 'clashofclans.js';
+import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { Collection, Guild, GuildMember } from 'discord.js';
 import Client from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
 import { PlayerLinks } from '../types/index.js';
 import { Util } from '../util/index.js';
 
-interface Feed extends ClanWar {
+interface Feed extends APIClanWar {
 	result: string;
 	round: number;
 	uid: string;
 	id: number;
 	warTag?: string;
-	attacksPerMember: number;
-	clan: WarClan & { changedRosters?: { added: string[]; removed: string[] }; _members: string[] };
-	opponent: WarClan;
+	attacksPerMember?: number;
+	clan: APIWarClan & { changedRosters?: { added: string[]; removed: string[] }; _members: string[] };
+	opponent: APIWarClan;
 }
 
 export class WarRoleManager {

@@ -1,12 +1,12 @@
-import { Collection, PermissionsString, Snowflake, WebhookClient, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../util/Constants.js';
 import { Client } from '../struct/Client.js';
-import { Util } from '../util/index.js';
-import { EMOJIS } from '../util/Emojis.js';
 import { LastSeenLogModel } from '../types/index.js';
+import { Collections } from '../util/Constants.js';
+import { EMOJIS } from '../util/Emojis.js';
 import { lastSeenEmbedMaker } from '../util/Helper.js';
+import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 
 export default class LastSeenLog extends BaseLog {
@@ -87,7 +87,7 @@ export default class LastSeenLog extends BaseLog {
 	}
 
 	private async embed(cache: Cache) {
-		const clan = (await this.client.redis.connection.json.get(`C${cache.tag}`)) as unknown as Clan | null;
+		const clan = (await this.client.redis.connection.json.get(`C${cache.tag}`)) as unknown as APIClan | null;
 		if (!clan) return null;
 
 		const embed = await lastSeenEmbedMaker(clan, { color: cache.color, scoreView: false });

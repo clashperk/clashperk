@@ -1,4 +1,4 @@
-import { Player } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
@@ -110,8 +110,8 @@ export default class ClanFeedLog extends BaseLog {
 	}
 
 	private async embed(cache: Cache, member: Member, data: Feed) {
-		const player: Player = await this.client.http.player(member.tag);
-		if (!player.ok) return null;
+		const { body: player, res } = await this.client.http.getPlayer(member.tag);
+		if (!res.ok) return null;
 
 		// do not post if the logTypes are set and the logType is not included
 		if (cache.logTypes && !cache.logTypes.includes(logTypes[member.op])) return null;
@@ -160,7 +160,7 @@ export default class ClanFeedLog extends BaseLog {
 		return { embed, content };
 	}
 
-	private remainingUpgrades(data: Player) {
+	private remainingUpgrades(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -177,7 +177,7 @@ export default class ClanFeedLog extends BaseLog {
 		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
 	}
 
-	private apiTroops(data: Player) {
+	private apiTroops(data: APIPlayer) {
 		return [
 			...data.troops.map((u) => ({
 				name: u.name,

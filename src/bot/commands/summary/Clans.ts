@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, embedLength } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -31,7 +31,8 @@ export default class SummaryClansCommand extends Command {
 			);
 		}
 
-		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		const clanList = await this.client.http._getClans(clans);
+
 		clanList.sort((a, b) => a.name.localeCompare(b.name));
 		const joinLeaves = await this.getJoinLeave(clanList);
 
@@ -125,7 +126,7 @@ export default class SummaryClansCommand extends Command {
 		return interaction.followUp({ embeds });
 	}
 
-	private async getJoinLeave(clans: Clan[]) {
+	private async getJoinLeave(clans: APIClan[]) {
 		const gte = moment().subtract(1, 'month').toDate().toISOString();
 		const { aggregations } = await this.client.elastic.search({
 			index: 'join_leave_events',

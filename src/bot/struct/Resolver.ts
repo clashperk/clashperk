@@ -1,5 +1,5 @@
 import { Guild, User, CommandInteraction, BaseInteraction } from 'discord.js';
-import { Player, Clan } from 'clashofclans.js';
+import { APIPlayer, APIClan } from 'clashofclans.js';
 import { Collections, ElasticIndex, Settings, status } from '../util/Constants.js';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { i18n } from '../util/i18n.js';
@@ -15,7 +15,7 @@ export default class Resolver {
 		this.indexer = new ElasticIndexer(client);
 	}
 
-	public async resolvePlayer(interaction: BaseInteraction<'cached'>, args?: string): Promise<(Player & { user?: User }) | null> {
+	public async resolvePlayer(interaction: BaseInteraction<'cached'>, args?: string): Promise<(APIPlayer & { user?: User }) | null> {
 		args = (args?.replace(/[\u200e|\u200f|\u200b|\u2002|\)|\()]+/g, '') ?? '').trim();
 		const parsed = await this.parseArgument(interaction, args);
 
@@ -62,7 +62,7 @@ export default class Resolver {
 			.findOne({ guild, alias }, { collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } });
 	}
 
-	public async resolveClan(interaction: BaseInteraction<'cached'>, args?: string): Promise<Clan | null> {
+	public async resolveClan(interaction: BaseInteraction<'cached'>, args?: string): Promise<APIClan | null> {
 		args = (args?.replace(/[\u200e|\u200f|\u200b|\u2002|\)|\()]+/g, '') ?? '').trim();
 		const parsed = await this.parseArgument(interaction, args);
 
@@ -99,29 +99,29 @@ export default class Resolver {
 		);
 	}
 
-	public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(Player & { user?: User }) | null> {
-		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
-		if (data.ok) {
-			this.indexer.index({ name: data.name, tag: data.tag, userId: interaction.user.id }, ElasticIndex.RECENT_PLAYERS);
+	public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(APIPlayer & { user?: User }) | null> {
+		const { body, res } = await this.client.http.getPlayer(tag);
+		if (res.ok) {
+			this.indexer.index({ name: body.name, tag: body.tag, userId: interaction.user.id }, ElasticIndex.RECENT_PLAYERS);
 		}
-		if (data.ok) return { ...data, user };
+		if (res.ok) return { ...body, user };
 
-		return this.fail(interaction, `**${status(data.statusCode, interaction.locale)}**`);
+		return this.fail(interaction, `**${status(res.status, interaction.locale)}**`);
 	}
 
-	public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<Clan | null> {
-		const data: Clan = await this.client.http.fetch(`/clans/${encodeURIComponent(this.parseTag(tag))}`);
-		if (data.ok) {
-			this.indexer.index({ name: data.name, tag: data.tag, userId: interaction.user.id }, ElasticIndex.RECENT_CLANS);
+	public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<APIClan | null> {
+		const { body, res } = await this.client.http.getClan(tag);
+		if (res.ok) {
+			this.indexer.index({ name: body.name, tag: body.tag, userId: interaction.user.id }, ElasticIndex.RECENT_CLANS);
 		}
-		if (data.ok) return data;
+		if (res.ok) return body;
 
-		if (checkAlias && data.statusCode === 404 && !tag.startsWith('#')) {
+		if (checkAlias && res.status === 404 && !tag.startsWith('#')) {
 			const clan = await this.clanAlias(interaction.guild!.id, tag);
 			if (clan) return this.getClan(interaction, clan.tag);
 		}
 
-		return this.fail(interaction, `**${status(data.statusCode, interaction.locale)}**`);
+		return this.fail(interaction, `**${status(res.status, interaction.locale)}**`);
 	}
 
 	private async fail(interaction: BaseInteraction, content: string) {
@@ -228,10 +228,6 @@ export default class Resolver {
 		return this.client.users.fetch(link.userId).catch(() => null);
 	}
 
-	public async fetchPlayers(playerTags: string[]) {
-		return (await Promise.all(playerTags.map((tag) => this.client.http.player(tag)))).filter((res) => res.ok);
-	}
-
 	public async getPlayers(userId: string, limit = 25) {
 		const [players, others] = await Promise.all([
 			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),
@@ -240,8 +236,8 @@ export default class Resolver {
 		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
 		const playerTags = Array.from(playerTagSet)
 			.slice(0, limit)
-			.map((tag) => this.client.http.player(tag));
-		return (await Promise.all(playerTags)).filter((res) => res.ok);
+			.map((tag) => this.client.http.getPlayer(tag));
+		return (await Promise.all(playerTags)).filter(({ res }) => res.ok).map(({ body }) => body);
 	}
 
 	public async resolveArgs(args?: string) {
@@ -254,13 +250,13 @@ export default class Resolver {
 				return tags
 					.split(/\W+/)
 					.filter((tag) => pattern.test(tag))
-					.map((tag) => this.client.http.parseTag(tag));
+					.map((tag) => this.client.http.fixTag(tag));
 		}
 
 		return args
 			.split(/\W+/)
 			.filter((tag) => pattern.test(tag))
-			.map((tag) => this.client.http.parseTag(tag));
+			.map((tag) => this.client.http.fixTag(tag));
 	}
 
 	public async enforceSecurity(
@@ -341,7 +337,7 @@ export default class Resolver {
 		return data;
 	}
 
-	private verifyClan(code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) {
+	private verifyClan(code: string, clan: APIClan, tags: { tag: string; verified: boolean }[]) {
 		const verifiedTags = tags.filter((en) => en.verified).map((en) => en.tag);
 		return (
 			clan.memberList.filter((m) => ['coLeader', 'leader'].includes(m.role)).some((m) => verifiedTags.includes(m.tag)) ||

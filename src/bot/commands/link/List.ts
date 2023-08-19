@@ -10,7 +10,7 @@ import {
 	ButtonInteraction,
 	StringSelectMenuBuilder
 } from 'discord.js';
-import { Clan, ClanMember } from 'clashofclans.js';
+import { APIClan, APIClanMember } from 'clashofclans.js';
 import { BOT_MANAGER_HYPERLINK, Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -120,10 +120,10 @@ export default class LinkListCommand extends Command {
 
 	private getEmbed(
 		guildMembers: Collection<string, GuildMember>,
-		clan: Clan,
+		clan: APIClan,
 		showTag: boolean,
 		onDiscord: { tag: string; userId: string; verified: boolean }[],
-		notLinked: ClanMember[],
+		notLinked: APIClanMember[],
 		notInDiscord: { name: string; tag: string; verified: boolean }[]
 	) {
 		const chunks = Util.splitMessage(
@@ -189,8 +189,8 @@ export default class LinkListCommand extends Command {
 		const clans = await this.client.storage.find(guildId);
 		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
 		for (const clan of clans) {
-			const data = await this.client.http.clan(clan.tag);
-			if (!data.ok) continue;
+			const { body: data, res } = await this.client.http.getClan(clan.tag);
+			if (!res.ok) continue;
 
 			const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
 			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
@@ -199,8 +199,9 @@ export default class LinkListCommand extends Command {
 				if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
 				const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
 
-				const player = data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.player(tag));
-				if (!player.name) continue;
+				const player =
+					data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.getPlayer(tag).then(({ body }) => body));
+				if (!player?.name) continue;
 
 				const user = await this.client.users.fetch(userId).catch(() => null);
 				if (!user) continue;

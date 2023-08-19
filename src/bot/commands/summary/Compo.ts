@@ -30,7 +30,7 @@ export default class SummaryCompoCommand extends Command {
 			);
 		}
 
-		const allClans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((clan) => clan.ok);
+		const allClans = await this.client.http._getClans(clans);
 
 		const texts: string[] = [];
 		const allPlayers: { tag: string; townHallLevel: number }[] = [];

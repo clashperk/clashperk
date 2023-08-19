@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -21,24 +21,6 @@ const clanTypes: Record<string, string> = {
 	open: 'Anybody Can Join'
 };
 
-declare module 'clashofclans.js' {
-	interface Clan {
-		clanCapital?: {
-			capitalHallLevel: number;
-			districts: {
-				id: number;
-				name: string;
-				districtHallLevel: number;
-			}[];
-		};
-		capitalLeague?: {
-			id: number;
-			name: string;
-		};
-		clanCapitalPoints?: number;
-	}
-}
-
 export default class ClanCommand extends Command {
 	public constructor() {
 		super('clan', {
@@ -53,8 +35,8 @@ export default class ClanCommand extends Command {
 	}
 
 	public async run(message: Message, { tag }: { tag: string }) {
-		const clan = await this.client.http.clan(tag);
-		if (!clan.ok) return null;
+		const { res, body: clan } = await this.client.http.getClan(tag);
+		if (!res.ok) return null;
 		const embed = await this.embed(message.guild!, clan);
 		return message.channel.send({
 			embeds: [embed],
@@ -80,18 +62,18 @@ export default class ClanCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private async embed(guild: Guild, clan: Clan) {
+	private async embed(guild: Guild, clan: APIClan) {
 		const embed = new EmbedBuilder()
 			.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
 			.setColor(this.client.embed(guild.id))
 			.setThumbnail(clan.badgeUrls.medium);
 
-		const capitalHall = clan.clanCapital?.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
+		const capitalHall = clan.clanCapital.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
 
 		embed.setDescription(
 			[
-				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanVersusPoints}**`,
+				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanBuilderBasePoints}**`,
 				'',
 				`${clan.description}${clan.description ? '\n\n' : ''}${clan.labels
 					.map((d) => `${CLAN_LABELS[d.name]} ${d.name}`)
@@ -101,7 +83,7 @@ export default class ClanCommand extends Command {
 
 		const location = clan.location
 			? clan.location.isCountry
-				? `:flag_${clan.location.countryCode.toLowerCase()}: ${clan.location.name}`
+				? `:flag_${clan.location.countryCode!.toLowerCase()}: ${clan.location.name}`
 				: `🌐 ${clan.location.name}`
 			: `${EMOJIS.WRONG} None`;
 
@@ -187,9 +169,9 @@ export default class ClanCommand extends Command {
 
 	private async clanRank(tag: string, clanPoints: number) {
 		if (clanPoints >= 50000) {
-			const clanRank = await this.client.http.clanRanks('global').catch(() => null);
-			if (!clanRank?.ok) return null;
-			const clan = clanRank.items.find((clan: any) => clan?.tag === tag);
+			const { res, body: clanRank } = await this.client.http.getClanRanks('global');
+			if (!res.ok) return null;
+			const clan = clanRank.items.find((clan) => clan.tag === tag);
 			if (!clan) return null;
 
 			return {
@@ -200,7 +182,7 @@ export default class ClanCommand extends Command {
 		return null;
 	}
 
-	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {
+	private async getActivity(clan: APIClan): Promise<{ avg_total: number; avg_online: number } | null> {
 		return this.client.db
 			.collection(Collections.LAST_SEEN)
 			.aggregate<{ avg_total: number; avg_online: number }>([
@@ -265,7 +247,7 @@ export default class ClanCommand extends Command {
 			.next();
 	}
 
-	private async getSeason(clan: Clan) {
+	private async getSeason(clan: APIClan) {
 		[
 			{
 				$limit: 100

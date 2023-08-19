@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { EmbedBuilder, CommandInteraction, ActionRowBuilder, escapeMarkdown, time, ButtonBuilder, ButtonStyle, User } from 'discord.js';
-import { Clan, Player } from 'clashofclans.js';
+import { APIClan, APIPlayer } from 'clashofclans.js';
 import moment from 'moment';
 import fetch from 'node-fetch';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { attackCounts, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { Season, Util } from '../../util/index.js';
-import { LegendAttacks, PlayerLinks } from '../../types/index.js';
+import { LegendAttacks } from '../../types/index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function randomlySelectItems(array: { timestamp: Date; trophies: null | number }[], itemCount: number) {
@@ -122,20 +122,6 @@ export default class LegendDaysCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: [row], content: null });
 	}
 
-	public async getPlayers(userId: string) {
-		const players = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray();
-		const others = await this.client.http.getPlayerTags(userId);
-		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
-
-		return (
-			await Promise.all(
-				Array.from(playerTagSet)
-					.slice(0, 25)
-					.map((tag) => this.client.http.player(tag))
-			)
-		).filter((res) => res.ok);
-	}
-
 	private calc(clanRank: number) {
 		if (clanRank >= 41) return 3;
 		else if (clanRank >= 31) return 10;
@@ -172,10 +158,10 @@ export default class LegendDaysCommand extends Command {
 		};
 	}
 
-	private async embed(interaction: CommandInteraction<'cached'>, data: Player, _day?: number) {
+	private async embed(interaction: CommandInteraction<'cached'>, data: APIPlayer, _day?: number) {
 		const seasonId = Season.ID;
 		const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
-		const clan = data.clan ? ((await this.client.redis.connection.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
+		const clan = data.clan ? ((await this.client.redis.connection.json.get(`C${data.clan.tag}`)) as APIClan | null) : null;
 
 		const { startTime, endTime, day } = this.getDay(_day);
 		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
@@ -272,7 +258,7 @@ export default class LegendDaysCommand extends Command {
 		return embed;
 	}
 
-	private async graph(data: Player) {
+	private async graph(data: APIPlayer) {
 		const seasonIds = Array(Math.min(3))
 			.fill(0)
 			.map((_, m) => {
@@ -465,7 +451,7 @@ export default class LegendDaysCommand extends Command {
 		return `${process.env.ASSET_API_BACKEND!}/${(res as any).id as string}`;
 	}
 
-	private async logs(data: Player) {
+	private async logs(data: APIPlayer) {
 		const seasonId = Season.ID;
 		const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
 

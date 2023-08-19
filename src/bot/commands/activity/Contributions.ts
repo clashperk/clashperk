@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -102,7 +102,7 @@ export default class CapitalContributionsCommand extends Command {
 		contributions,
 		locale
 	}: {
-		clan: Clan;
+		clan: APIClan;
 		weekId: string;
 		locale: string;
 		contributions: (ClanCapitalGoldModel & { total: number })[];

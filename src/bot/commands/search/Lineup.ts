@@ -1,5 +1,5 @@
 import { EmbedBuilder, CommandInteraction, User } from 'discord.js';
-import { ClanWarMember, Player, WarClan } from 'clashofclans.js';
+import { APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -32,7 +32,7 @@ export default class LineupCommand extends Command {
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
 		if (!clan.isWarLogPublic) {
-			const res = await this.client.http.clanWarLeague(clan.tag);
+			const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
 			if (res.ok) {
 				// TODO: Fix
 				return this.handler.exec(interaction, this.handler.modules.get('cwl-lineup')!, { tag: clan.tag });
@@ -41,10 +41,11 @@ export default class LineupCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const body = await this.client.http.currentClanWar(clan.tag);
-		if (!body.ok) return interaction.editReply('**504 Request Timeout!');
+		const { body, res } = await this.client.http.getCurrentWar(clan.tag);
+		if (!res.ok) return interaction.editReply('**504 Request Timeout!');
+
 		if (body.state === 'notInWar') {
-			const res = await this.client.http.clanWarLeague(clan.tag);
+			const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
 			if (res.ok) {
 				// TODO: Fix
 				return this.handler.exec(interaction, this.handler.modules.get('cwl-lineup')!, { tag: clan.tag });
@@ -59,7 +60,7 @@ export default class LineupCommand extends Command {
 		return interaction.editReply({ embeds });
 	}
 
-	private async getComparisonLineup(state: string, clan: WarClan, opponent: WarClan) {
+	private async getComparisonLineup(state: string, clan: APIWarClan, opponent: APIWarClan) {
 		const linups = await this.rosters(
 			clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
 			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
@@ -86,38 +87,34 @@ export default class LineupCommand extends Command {
 		return [embed];
 	}
 
-	private async rosters(clanMembers: ClanWarMember[], opponentMembers: ClanWarMember[]) {
-		const clanPlayers: Player[] = await this.client.http.detailedClanMembers(clanMembers);
-		const a = clanPlayers
-			.filter((res) => res.ok)
-			.map((m, i) => {
-				const heroes = m.heroes.filter((en) => en.village === 'home');
-				const pets = m.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
-				return {
-					e: 0,
-					m: i + 1,
-					t: m.townHallLevel,
-					p: pets.map((en) => en.level).reduce((prev, en) => en + prev, 0),
-					h: heroes.map((en) => en.level).reduce((prev, en) => en + prev, 0)
-					// .concat(...Array(4 - heroes.length).fill(' '))
-				};
-			});
+	private async rosters(clanMembers: APIClanWarMember[], opponentMembers: APIClanWarMember[]) {
+		const clanPlayers = await this.client.http._getPlayers(clanMembers);
+		const a = clanPlayers.map((m, i) => {
+			const heroes = m.heroes.filter((en) => en.village === 'home');
+			const pets = m.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
+			return {
+				e: 0,
+				m: i + 1,
+				t: m.townHallLevel,
+				p: pets.map((en) => en.level).reduce((prev, en) => en + prev, 0),
+				h: heroes.map((en) => en.level).reduce((prev, en) => en + prev, 0)
+				// .concat(...Array(4 - heroes.length).fill(' '))
+			};
+		});
 
-		const opponentPlayers: Player[] = await this.client.http.detailedClanMembers(opponentMembers as any);
-		const b = opponentPlayers
-			.filter((res) => res.ok)
-			.map((m, i) => {
-				const heroes = m.heroes.filter((en) => en.village === 'home');
-				const pets = m.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
-				return {
-					e: 1,
-					m: i + 1,
-					t: m.townHallLevel,
-					p: pets.map((en) => en.level).reduce((prev, en) => en + prev, 0),
-					h: heroes.map((en) => en.level).reduce((prev, en) => en + prev, 0)
-					// .concat(...Array(4 - heroes.length).fill(' '))
-				};
-			});
+		const opponentPlayers = await this.client.http._getPlayers(opponentMembers);
+		const b = opponentPlayers.map((m, i) => {
+			const heroes = m.heroes.filter((en) => en.village === 'home');
+			const pets = m.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
+			return {
+				e: 1,
+				m: i + 1,
+				t: m.townHallLevel,
+				p: pets.map((en) => en.level).reduce((prev, en) => en + prev, 0),
+				h: heroes.map((en) => en.level).reduce((prev, en) => en + prev, 0)
+				// .concat(...Array(4 - heroes.length).fill(' '))
+			};
+		});
 
 		return Util.chunk(
 			[...a, ...b].sort((a, b) => a.e - b.e).sort((a, b) => a.m - b.m),

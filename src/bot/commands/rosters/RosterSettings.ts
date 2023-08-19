@@ -184,8 +184,8 @@ export default class RosterEditCommand extends Command {
 			await interaction.editReply({ embeds: [embed], components: [] });
 			await action.update({ content: 'Roster message archived!', components: [] });
 
-			const clan = await this.client.http.clan(roster.clan.tag);
-			if (!clan.ok) return action.reply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
+			const { res, body: clan } = await this.client.http.getClan(roster.clan.tag);
+			if (!res.ok) return action.reply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
 
 			const sheet = await this.client.rosterManager.exportSheet({
 				name: interaction.guild.name,
@@ -221,8 +221,8 @@ export default class RosterEditCommand extends Command {
 			const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
 			await action.update({ embeds: [embed], components: [row] });
 
-			const clan = await this.client.http.clan(roster.clan.tag);
-			if (!clan.ok) {
+			const { res, body: clan } = await this.client.http.getClan(roster.clan.tag);
+			if (!res.ok) {
 				return action.editReply({
 					content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})`,
 					embeds: [],

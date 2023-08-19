@@ -9,7 +9,7 @@ import {
 	APIMessage,
 	ButtonStyle
 } from 'discord.js';
-import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
+import { APIClanWar, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
 import { TOWN_HALLS, EMOJIS, WAR_STARS, BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/Emojis.js';
@@ -432,7 +432,7 @@ export default class ClanWarLog extends BaseLog {
 		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
-	private getLeaderBoard(clan: WarClan, opponent: WarClan) {
+	private getLeaderBoard(clan: APIWarClan, opponent: APIWarClan) {
 		return [
 			`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars
 				.toString()
@@ -529,7 +529,7 @@ interface Recent {
 	defender: Defender;
 }
 
-interface Feed extends ClanWar {
+interface Feed extends APIClanWar {
 	recent?: Recent[];
 	result: string;
 	round: number;
@@ -537,9 +537,9 @@ interface Feed extends ClanWar {
 	id: number;
 	warTag?: string;
 	attacksPerMember: number;
-	remaining: ClanWarMember[];
-	clan: WarClan & { rosters: Roster[] };
-	opponent: WarClan & { rosters: Roster[] };
+	remaining: APIClanWarMember[];
+	clan: APIWarClan & { rosters: Roster[] };
+	opponent: APIWarClan & { rosters: Roster[] };
 }
 
 interface Cache {

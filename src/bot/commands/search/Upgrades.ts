@@ -9,7 +9,7 @@ import {
 	ButtonBuilder,
 	ButtonInteraction
 } from 'discord.js';
-import { Player } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
 import { Args, Command } from '../../lib/index.js';
@@ -99,7 +99,7 @@ export default class UpgradesCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: options.length > 1 ? [mainRow, menuRow] : [mainRow] });
 	}
 
-	public embed(data: Player) {
+	public embed(data: APIPlayer) {
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${data.name} (${data.tag})` })
 			.setDescription(
@@ -301,7 +301,7 @@ export default class UpgradesCommand extends Command {
 		return text.padStart(text.length + leftPadding, ' ').padEnd(width, ' ');
 	}
 
-	private apiTroops(data: Player) {
+	private apiTroops(data: APIPlayer) {
 		return [
 			...data.troops.map((u) => ({
 				name: u.name,

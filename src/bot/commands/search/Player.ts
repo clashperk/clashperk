@@ -1,4 +1,4 @@
-import { Player, WarClan } from 'clashofclans.js';
+import { APIClanWar, APIPlayer } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -58,9 +58,9 @@ export default class PlayerCommand extends Command {
 	}
 
 	public async run(message: Message, { tag }: { tag: string }) {
-		const data = await this.client.http.player(tag);
-		if (!data.ok) return null;
-		const embed = (await this.embed(message.guild!, data)).setColor(this.client.embed(message));
+		const { body, res } = await this.client.http.getPlayer(tag);
+		if (!res.ok) return null;
+		const embed = (await this.embed(message.guild!, body)).setColor(this.client.embed(message));
 		return message.channel.send({
 			embeds: [embed],
 			allowedMentions: { repliedUser: false },
@@ -116,7 +116,7 @@ export default class PlayerCommand extends Command {
 			});
 		}
 
-		const players = data.user ? await this.getPlayers(data.user.id) : [];
+		const players = data.user ? await this.client.resolver.getPlayers(data.user.id) : [];
 		const options = players.map((op) => ({
 			description: op.tag,
 			label: op.name,
@@ -135,7 +135,7 @@ export default class PlayerCommand extends Command {
 		});
 	}
 
-	private async embed(guild: Guild, data: Player) {
+	private async embed(guild: Guild, data: APIPlayer) {
 		const aggregated = await this.client.db
 			.collection(Collections.LAST_SEEN)
 			.aggregate([
@@ -259,21 +259,6 @@ export default class PlayerCommand extends Command {
 			: Math.abs(num).toFixed(2);
 	}
 
-	public async getPlayers(userId: string) {
-		const players = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray();
-		const others = await this.client.http.getPlayerTags(userId);
-
-		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
-
-		return (
-			await Promise.all(
-				Array.from(playerTagSet)
-					.slice(0, 25)
-					.map((tag) => this.client.http.player(tag))
-			)
-		).filter((res) => res.ok);
-	}
-
 	private async getWars(tag: string) {
 		const member = {
 			tag,
@@ -289,7 +274,7 @@ export default class PlayerCommand extends Command {
 		};
 
 		const wars = await this.client.db
-			.collection(Collections.CLAN_WARS)
+			.collection<Omit<APIClanWar, 'preparationStartTime'>>(Collections.CLAN_WARS)
 			.find({
 				preparationStartTime: { $gte: Season.startTimestamp },
 				$or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }],
@@ -299,11 +284,11 @@ export default class PlayerCommand extends Command {
 			.toArray();
 
 		for (const data of wars) {
-			const clan: WarClan = data.clan.members.find((m: any) => m.tag === tag) ? data.clan : data.opponent;
+			const clan = data.clan.members.find((m) => m.tag === tag) ? data.clan : data.opponent;
 			member.total += 1;
 			for (const m of clan.members) {
 				if (m.tag !== tag) continue;
-				member.of += data.attacksPerMember;
+				member.of += data.attacksPerMember ?? 2;
 
 				if (m.attacks) {
 					member.attacks += m.attacks.length;

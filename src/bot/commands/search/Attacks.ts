@@ -27,15 +27,13 @@ export default class ClanAttacksCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 		}
 
-		const fetched = await this.client.http.detailedClanMembers(clan.memberList);
-		const members = fetched
-			.filter((res) => res.ok)
-			.map((m) => ({
-				name: m.name,
-				tag: m.tag,
-				attackWins: m.attackWins,
-				defenseWins: m.defenseWins
-			}));
+		const fetched = await this.client.http._getPlayers(clan.memberList);
+		const members = fetched.map((player) => ({
+			name: player.name,
+			tag: player.tag,
+			attackWins: player.attackWins,
+			defenseWins: player.defenseWins
+		}));
 
 		if (args.sort_by_defense) {
 			members.sort((a, b) => b.defenseWins - a.defenseWins);

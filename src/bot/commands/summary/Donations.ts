@@ -9,7 +9,7 @@ import {
 	BaseInteraction,
 	embedLength
 } from 'discord.js';
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
@@ -48,7 +48,7 @@ export default class DonationSummaryCommand extends Command {
 			);
 		}
 
-		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);
+		const fetched = await this.client.http._getClans(clans);
 		if (!fetched.length) {
 			return interaction.editReply(this.i18n('common.fetch_failed', { lng: interaction.locale }));
 		}
@@ -176,7 +176,7 @@ export default class DonationSummaryCommand extends Command {
 			sortBy,
 			orderBy
 		}: {
-			clans: Clan[];
+			clans: APIClan[];
 			seasonId: string;
 			sortBy?: SortType[];
 			orderBy?: OrderType;
@@ -300,7 +300,7 @@ export default class DonationSummaryCommand extends Command {
 			sortBy,
 			orderBy
 		}: {
-			clans: Clan[];
+			clans: APIClan[];
 			seasonId: string;
 			sortBy?: SortType[];
 			orderBy?: OrderType;

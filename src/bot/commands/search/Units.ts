@@ -1,4 +1,4 @@
-import { Player } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import {
 	CommandInteraction,
 	ActionRowBuilder,
@@ -100,7 +100,7 @@ export default class UnitsCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: options.length > 1 ? [maxButtonRow, mainRow, menuRow] : [mainRow] });
 	}
 
-	private embed(data: Player, showMaxLevel = false) {
+	private embed(data: APIPlayer, showMaxLevel = false) {
 		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
@@ -243,7 +243,7 @@ export default class UnitsCommand extends Command {
 		return num.toString().padStart(2, ' ');
 	}
 
-	private apiTroops(data: Player) {
+	private apiTroops(data: APIPlayer) {
 		return [
 			...data.troops.map((u) => ({
 				name: u.name,

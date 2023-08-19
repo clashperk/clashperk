@@ -1,5 +1,5 @@
+import { APIPlayer } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, escapeInlineCode, User } from 'discord.js';
-import { Player } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
@@ -19,29 +19,27 @@ export default class CWLMembersCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
-		const body = await this.client.http.clanWarLeague(clan.tag);
-		if (body.statusCode === 504 || body.state === 'notInWar') {
+		const { body, res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+		if (res.status === 504 || body.state === 'notInWar') {
 			return interaction.editReply(
 				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
 
-		if (!body.ok) {
+		if (!res.ok) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
 
 		const clanMembers = body.clans.find((_clan) => _clan.tag === clan.tag)!.members;
-		const fetched = await this.client.http.detailedClanMembers(clanMembers);
-		const memberList = fetched
-			.filter((m) => m.ok)
-			.map((m) => ({
-				name: m.name,
-				tag: m.tag,
-				townHallLevel: m.townHallLevel,
-				heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : []
-			}));
+		const fetched = await this.client.http._getPlayers(clanMembers);
+		const memberList = fetched.map((data) => ({
+			name: data.name,
+			tag: data.tag,
+			townHallLevel: data.townHallLevel,
+			heroes: data.heroes.length ? data.heroes.filter((a) => a.village === 'home') : []
+		}));
 
 		/* [[1, 4], [2], [3]].reduce((a, b) => {
 			a.push(...b);
@@ -69,7 +67,7 @@ export default class CWLMembersCommand extends Command {
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private heroes(items: Player['heroes']) {
+	private heroes(items: APIPlayer['heroes']) {
 		return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
 	}
 

@@ -1,8 +1,8 @@
-import { ClanWar, ClanWarLeagueGroup, ClanWarMember, Clan } from 'clashofclans.js';
-import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, User, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { APIClan, APIClanWarLeagueGroup, APIClanWarMember } from 'clashofclans.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import moment from 'moment';
-import { EMOJIS, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
+import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class CWLRoundCommand extends Command {
@@ -23,16 +23,16 @@ export default class CWLRoundCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
-		const body = await this.client.http.clanWarLeague(clan.tag);
-		if (body.statusCode === 504 || body.state === 'notInWar') {
+		const { body, res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+		if (res.status === 504 || body.state === 'notInWar') {
 			return interaction.editReply(
 				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
 
-		if (!body.ok) {
-			const cw = await this.client.storage.getWarTags(clan.tag);
-			if (cw) return this.rounds(interaction, { body: cw, clan, args });
+		if (!res.ok) {
+			const group = await this.client.storage.getWarTags(clan.tag);
+			if (group) return this.rounds(interaction, { body: group, clan, args });
 
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
@@ -50,8 +50,8 @@ export default class CWLRoundCommand extends Command {
 			clan,
 			args
 		}: {
-			body: ClanWarLeagueGroup;
-			clan: Clan;
+			body: APIClanWarLeagueGroup;
+			clan: APIClan;
 			args: { tag?: string; user?: User; round?: number };
 		}
 	) {
@@ -62,8 +62,8 @@ export default class CWLRoundCommand extends Command {
 		let index = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
-				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok || data.state === 'notInWar') continue;
+				const { body: data, res } = await this.client.http.getClanWarLeagueRound(warTag);
+				if (!res.ok || data.state === 'notInWar') continue;
 
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
@@ -194,7 +194,7 @@ export default class CWLRoundCommand extends Command {
 		return this.clearId(interaction);
 	}
 
-	private count(members: ClanWarMember[]) {
+	private count(members: APIClanWarMember[]) {
 		const reduced = members.reduce<{ [key: string]: number }>((count, member) => {
 			const townHall = member.townhallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;

@@ -29,7 +29,7 @@ export default class GuildMemberAddListener extends Listener {
 		if (!links.length) return;
 
 		const clanTags = clans.map((clan) => clan.tag);
-		const players = (await this.client.http.detailedClanMembers(links)).filter((res) => res.ok);
+		const players = await this.client.http._getPlayers(links);
 
 		try {
 			const link = links.at(0)!;

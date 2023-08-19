@@ -1,4 +1,4 @@
-import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
+import { APIClanWar, APIClanWarLeagueGroup } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections, promotionMap, UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
@@ -41,12 +41,12 @@ export default class SummaryCWLRanks extends Command {
 			);
 		}
 
-		const __clans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		const __clans = await this.client.http._getClans(clans);
 
 		const chunks = [];
 		for (const clan of __clans) {
-			const res = season ? null : await this.client.http.clanWarLeague(clan.tag);
-			if (!res?.ok || ['notInWar', 'ended'].includes(res.state)) {
+			const result = season ? null : await this.client.http.getClanWarLeagueGroup(clan.tag);
+			if (season || !result?.res.ok || ['notInWar', 'ended'].includes(result.body.state)) {
 				const data = await this.client.storage.getWarTags(clan.tag, season);
 				if (data && data.season !== Season.ID) continue;
 
@@ -65,16 +65,16 @@ export default class SummaryCWLRanks extends Command {
 				continue;
 			}
 
-			if (args.season && res.season !== args.season) continue;
-			if (res.season !== Season.ID) continue;
+			if (args.season && result.body.season !== args.season) continue;
+			if (result.body.season !== Season.ID) continue;
 
-			const ranking = await this.rounds(res, clan.tag);
+			const ranking = await this.rounds(result.body, clan.tag);
 			if (!ranking) continue;
 
 			chunks.push({
 				warLeagueId: clan.warLeague?.id ?? UnrankedWarLeagueId,
 				...ranking,
-				status: res.state
+				status: result.body.state
 			});
 		}
 
@@ -129,7 +129,7 @@ export default class SummaryCWLRanks extends Command {
 		return this.clearId(interaction);
 	}
 
-	private async rounds(body: ClanWarLeagueGroup, clanTag: string, season?: string | null) {
+	private async rounds(body: APIClanWarLeagueGroup, clanTag: string, season?: string | null) {
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		const ranking: {
 			[key: string]: {
@@ -144,12 +144,14 @@ export default class SummaryCWLRanks extends Command {
 		const warTags = rounds.flatMap((r) => r.warTags);
 		const wars = season
 			? await this.client.db
-					.collection<ClanWar>(Collections.CLAN_WARS)
+					.collection<APIClanWar>(Collections.CLAN_WARS)
 					.find({ warTag: { $in: warTags } })
 					.toArray()
-			: await Promise.all(warTags.map((warTag) => this.client.http.clanWarLeagueWar(warTag)));
+			: (await Promise.all(warTags.map((warTag) => this.client.http.getClanWarLeagueRound(warTag))))
+					.filter(({ res }) => res.ok)
+					.map(({ body }) => body);
 		for (const data of wars) {
-			if ((!data.ok || data.state === 'notInWar') && !season) continue;
+			if (data.state === 'notInWar' && !season) continue;
 
 			// eslint-disable-next-line
 			ranking[data.clan.tag] ??= {

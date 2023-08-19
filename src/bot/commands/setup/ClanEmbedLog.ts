@@ -1,4 +1,4 @@
-import { Clan } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	AnyThreadChannel,
@@ -274,7 +274,7 @@ export default class ClanEmbedCommand extends Command {
 		return `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
 	}
 
-	private async getUser(clan: Clan): Promise<{ id: string; name: string; toString: () => string } | null> {
+	private async getUser(clan: APIClan): Promise<{ id: string; name: string; toString: () => string } | null> {
 		const leader = clan.memberList.find((m) => m.role === 'leader');
 		if (leader) {
 			const user = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: leader.tag });

@@ -1,5 +1,4 @@
 import { CommandInteraction, PermissionsString, Interaction, TextBasedChannel, DMChannel, PartialDMChannel } from 'discord.js';
-import { Clan } from 'clashofclans.js';
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -42,7 +41,7 @@ export default class DebugCommand extends Command {
 		];
 
 		const clans = await this.client.storage.find(interaction.guild.id);
-		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);
+		const fetched = await this.client.http._getClans(clans);
 
 		const cycle = await this.client.redis.connection.hGetAll('cycle').then((data) => ({
 			clans: Number(data.CLAN_LOOP || 0),
@@ -100,7 +99,7 @@ export default class DebugCommand extends Command {
 				clans
 					.map((clan) => {
 						const lastRan = clan.lastRan ? ms(Date.now() - clan.lastRan.getTime()) : '...';
-						const warLog = fetched.find((res) => res.tag === clan.tag)?.isWarLogPublic;
+						const warLog = fetched.find((data) => data.tag === clan.tag)?.isWarLogPublic;
 						const sign = clan.active && !clan.paused && clan.flag > 0 && warLog ? emojis.tick : emojis.cross;
 						return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(
 							3,

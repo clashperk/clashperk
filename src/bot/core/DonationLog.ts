@@ -153,8 +153,8 @@ export default class DonationLog extends BaseLog {
 			interval: string;
 		}
 	) {
-		const clan = await this.client.http.clan(tag);
-		if (!clan.ok) return null;
+		const { body: clan, res } = await this.client.http.getClan(tag);
+		if (!res.ok) return null;
 		if (!clan.members) return null;
 
 		const { aggregations } = await this.client.elastic.search({

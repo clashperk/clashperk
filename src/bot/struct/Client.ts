@@ -208,7 +208,7 @@ export class Client extends Discord.Client {
 		this.rosterManager = new RosterManager(this);
 		this.autocomplete = new Autocomplete(this);
 
-		await this.http.login();
+		await this.http.autoLogin();
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();

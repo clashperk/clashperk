@@ -45,8 +45,8 @@ export default class RosterPostCommand extends Command {
 		if (!roster) return interaction.editReply({ content: 'Roster not found.' });
 		if (!roster.members.length) return interaction.editReply({ content: 'This roster has no members.' });
 
-		const clan = await this.client.http.clan(roster.clan.tag);
-		if (!clan.ok) return interaction.editReply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
+		const { body: clan, res } = await this.client.http.getClan(roster.clan.tag);
+		if (!res.ok) return interaction.editReply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
 
 		const updated = await this.client.rosterManager.updateMembers(roster, roster.members);
 		if (!updated) return interaction.editReply({ content: 'This roster no longer exists.' });

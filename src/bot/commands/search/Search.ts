@@ -19,8 +19,8 @@ export default class ClanSearchCommand extends Command {
 		if (!name) {
 			return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
 		}
-		const data = await this.client.http.clans({ name, limit: 10 });
-		if (!(data.ok && data.items.length)) {
+		const { body, res } = await this.client.http.getClans({ name, limit: 10 });
+		if (!(res.ok && body.items.length)) {
 			return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
 		}
 
@@ -29,7 +29,7 @@ export default class ClanSearchCommand extends Command {
 			.setTitle(this.i18n('command.search.searching', { lng: interaction.locale, name }))
 			.setDescription(
 				[
-					data.items
+					body.items
 						.map((clan) => {
 							const clanType = clan.type
 								.replace(/inviteOnly/g, 'Invite Only')

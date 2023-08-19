@@ -1,18 +1,18 @@
+import { APIClan, APIClanWarLeagueGroup } from 'clashofclans.js';
 import {
-	EmbedBuilder,
-	CommandInteraction,
-	StringSelectMenuBuilder,
 	ActionRowBuilder,
 	ButtonBuilder,
-	escapeInlineCode,
 	ButtonStyle,
-	escapeMarkdown,
-	User
+	CommandInteraction,
+	EmbedBuilder,
+	StringSelectMenuBuilder,
+	User,
+	escapeInlineCode,
+	escapeMarkdown
 } from 'discord.js';
-import { ClanWar, ClanWarLeagueGroup, Clan } from 'clashofclans.js';
 import moment from 'moment';
-import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
+import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
 const stars: Record<string, string> = {
@@ -42,14 +42,14 @@ export default class CWLAttacksCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
-		const body = await this.client.http.clanWarLeague(clan.tag);
-		if (body.statusCode === 504 || body.state === 'notInWar') {
+		const { res, body } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+		if (res.status === 504 || body.state === 'notInWar') {
 			return interaction.editReply(
 				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
 
-		if (!body.ok) {
+		if (!res.ok) {
 			const group = await this.client.storage.getWarTags(clan.tag);
 			if (group) return this.rounds(interaction, { body: group, clan, args });
 
@@ -69,8 +69,8 @@ export default class CWLAttacksCommand extends Command {
 			clan,
 			args
 		}: {
-			body: ClanWarLeagueGroup;
-			clan: Clan;
+			body: APIClanWarLeagueGroup;
+			clan: APIClan;
 			args: { tag?: string; user?: User; round?: number; missed?: boolean };
 		}
 	) {
@@ -82,8 +82,8 @@ export default class CWLAttacksCommand extends Command {
 		const chunks: { embed: EmbedBuilder; state: string; round: number }[] = [];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
-				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok || data.state === 'notInWar') continue;
+				const { res, body: data } = await this.client.http.getClanWarLeagueRound(warTag);
+				if (!res.ok || data.state === 'notInWar') continue;
 
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;

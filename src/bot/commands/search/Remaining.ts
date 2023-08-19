@@ -1,5 +1,5 @@
 import { EmbedBuilder, CommandInteraction, escapeMarkdown, User } from 'discord.js';
-import { ClanWar, Player } from 'clashofclans.js';
+import { APIClanWar, APIPlayer } from 'clashofclans.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { BLUE_NUMBERS } from '../../util/Emojis.js';
@@ -38,7 +38,7 @@ export default class RemainingCommand extends Command {
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
 		if (!clan.isWarLogPublic) {
-			const res = await this.client.http.clanWarLeague(clan.tag);
+			const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
 			if (res.ok) {
 				return this.handler.exec(interaction, this.handler.modules.get('cwl-attacks')!, { tag: clan.tag });
 			}
@@ -46,12 +46,12 @@ export default class RemainingCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const body = await this.client.http.currentClanWar(clan.tag);
-		if (!body.ok) {
+		const { body, res } = await this.client.http.getCurrentWar(clan.tag);
+		if (!res.ok) {
 			return interaction.editReply('**504 Request Timeout!**');
 		}
 		if (body.state === 'notInWar') {
-			const res = await this.client.http.clanWarLeague(clan.tag);
+			const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
 			if (res.ok) {
 				return this.handler.exec(interaction, this.handler.modules.get('cwl-attacks')!, { tag: clan.tag });
 			}
@@ -87,7 +87,7 @@ export default class RemainingCommand extends Command {
 		return this.sendResult(interaction, { ...data, clan, opponent });
 	}
 
-	private sendResult(interaction: CommandInteraction, body: ClanWar & { id?: number }) {
+	private sendResult(interaction: CommandInteraction, body: APIClanWar & { id?: number }) {
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
@@ -128,7 +128,7 @@ export default class RemainingCommand extends Command {
 				[
 					embed.data.description,
 					'',
-					`**${body.attacksPerMember} ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
+					`**${body.attacksPerMember ?? 2} ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 					...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
 				].join('\n')
 			);
@@ -149,12 +149,12 @@ export default class RemainingCommand extends Command {
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: Player | null; user?: User }) {
+	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
 		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
 
 		const wars = await this.client.db
 			.collection(Collections.CLAN_WARS)
-			.aggregate<ClanWar>([
+			.aggregate<APIClanWar>([
 				{
 					$match: {
 						endTime: {
@@ -188,7 +188,7 @@ export default class RemainingCommand extends Command {
 					attacksPerMember: data.attacksPerMember,
 					state: data.state,
 					endTime: new Date(data.endTime),
-					remaining: data.attacksPerMember - attacks.length
+					remaining: (data.attacksPerMember ?? 2) - attacks.length
 				});
 			}
 		}
