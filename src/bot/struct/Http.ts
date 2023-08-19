@@ -8,7 +8,11 @@ export default class Http extends ClashOfClansClient {
 	private bearerToken!: string;
 
 	public constructor() {
-		super({ baseURL: process.env.BASE_URL });
+		super({
+			restRequestTimeout: 10_000,
+			baseURL: process.env.BASE_URL,
+			keys: [...(process.env.CLASH_TOKENS?.split(',') ?? [])]
+		});
 	}
 
 	public getClanURL(clanTag: string) {
