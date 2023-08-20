@@ -39,7 +39,9 @@ export class NicknameHandler {
 				townHallLevel: player.townHallLevel,
 				alias,
 				clan: player.clan?.name ?? null,
-				role: player.role
+				role: player.role,
+				displayName: member.user.displayName,
+				username: member.user.username
 			},
 			format
 		);
@@ -57,15 +59,19 @@ export class NicknameHandler {
 			role?: string | null;
 			clan?: string | null;
 			alias?: string | null;
+			displayName: string;
+			username: string;
 		},
 		format: string
 	) {
 		return format
-			.replace(/{NAME}/gi, player.name)
-			.replace(/{TH}/gi, player.townHallLevel.toString())
-			.replace(/{ROLE}/gi, player.role ? roles[player.role] : '')
-			.replace(/{ALIAS}/gi, player.alias ?? '')
-			.replace(/{CLAN}/gi, player.clan ?? '')
+			.replace(/{NAME}|{PLAYER_NAME}/gi, player.name)
+			.replace(/{TH}|{TOWN_HALL}/gi, player.townHallLevel.toString())
+			.replace(/{ROLE}|{CLAN_ROLE}/gi, player.role ? roles[player.role] : '')
+			.replace(/{ALIAS}|{CLAN_ALIAS}/gi, player.alias ?? '')
+			.replace(/{CLAN}|{CLAN_NAME}/gi, player.clan ?? '')
+			.replace(/{DISCORD}|{DISCORD_NAME}/gi, player.displayName)
+			.replace(/{USERNAME}|{DISCORD_USERNAME}/gi, player.username)
 			.trim();
 	}
 }
