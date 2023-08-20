@@ -31,7 +31,7 @@ export default class LinkListCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; showTags?: boolean; user?: User; links?: boolean; with_options?: boolean }
+		args: { tag?: string; show_tags?: boolean; user?: User; links?: boolean; with_options?: boolean }
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
@@ -89,15 +89,20 @@ export default class LinkListCommand extends Command {
 		};
 		const customIds = {
 			refresh: this.createId(payload),
-			tag: this.createId({ ...payload, show_tags: true }),
+			tag: this.createId({ ...payload, show_tags: !args.show_tags }),
 			manage: this.createId({ ...payload, links: true }),
 			option: this.createId({ ...payload, cmd: 'members', string_key: 'option' })
 		};
 
-		const embed = this.getEmbed(guildMembers, clan, args.showTags!, onDiscord, notLinked, notInDiscord);
+		const embed = this.getEmbed(guildMembers, clan, args.show_tags!, onDiscord, notLinked, notInDiscord);
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh))
-			.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.HASH).setCustomId(customIds.tag))
+			.addComponents(
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji(args.show_tags ? EMOJIS.DISCORD : EMOJIS.HASH)
+					.setCustomId(customIds.tag)
+			)
 			.addComponents(
 				new ButtonBuilder().setStyle(ButtonStyle.Primary).setEmoji('🔗').setLabel('Manage').setCustomId(customIds.manage)
 			);
