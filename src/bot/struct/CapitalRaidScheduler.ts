@@ -2,7 +2,7 @@ import { APICapitalRaidSeason } from 'clashofclans.js';
 import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
-import { Collections } from '../util/Constants.js';
+import { Collections, MAX_TOWN_HALL_LEVEL } from '../util/Constants.js';
 import { Util } from '../util/index.js';
 import { Client } from './Client.js';
 
@@ -156,22 +156,32 @@ export default class CapitalRaidScheduler {
 
 		const currentMemberTags = clan.memberList.map((m) => m.tag);
 		const missingMembers = data.members.filter((m) => !currentMemberTags.includes(m.tag));
-		const clanMembers = clan.memberList
-			.map((m) => {
-				const member = data.members.find((mem) => mem.tag === m.tag);
-				if (member) return { ...member, role: m.role, isParticipating: true };
+		const players = await this.client.http._getPlayers(clan.memberList);
+		const clanMembers = players
+			.map((player) => {
+				const clanMember = clan.memberList.find((mem) => mem.tag === player.tag)!;
+				const raidMember = data.members.find((mem) => mem.tag === player.tag);
+				if (raidMember)
+					return {
+						...raidMember,
+						role: player.role ?? clanMember.role,
+						isParticipating: true,
+						townHallLevel: player.townHallLevel
+					};
 				return {
-					tag: m.tag,
-					name: m.name,
-					role: m.role,
+					tag: player.tag,
+					name: player.name,
+					role: player.role ?? clanMember.role,
 					attacks: 0,
 					attackLimit: 5,
 					bonusAttackLimit: 0,
 					capitalResourcesLooted: 0,
-					isParticipating: false
+					isParticipating: false,
+					townHallLevel: player.townHallLevel
 				};
 			})
-			.concat(missingMembers.map((mem) => ({ ...mem, role: 'member', isParticipating: true })))
+			.concat(missingMembers.map((mem) => ({ ...mem, role: 'member', isParticipating: true, townHallLevel: MAX_TOWN_HALL_LEVEL })))
+			.filter((player) => player.townHallLevel > 5)
 			.filter((m) => !unwantedMembers.includes(m.tag))
 			.filter((m) => (reminder.allMembers ? m.attacks >= 0 : m.attacks >= 1))
 			.filter((m) => (data.members.length >= 50 ? m.isParticipating : true));

@@ -73,7 +73,7 @@ export const rosterLayoutMap = {
 		isEmoji: false,
 		key: 'name',
 		align: 'left',
-		name: 'APIPlayer Name',
+		name: 'Player Name',
 		description: 'The name of the player.'
 	},
 	'CLAN': {

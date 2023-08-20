@@ -13,7 +13,7 @@ export default class ClanGamesCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
-				content: ['APIClan Games points of clan members.', '', '**[How does it work?](https://clashperk.com/faq)**']
+				content: ['Clan Games points of clan members.', '', '**[How does it work?](https://clashperk.com/faq)**']
 			},
 			defer: true
 		});

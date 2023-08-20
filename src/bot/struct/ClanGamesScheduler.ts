@@ -236,7 +236,7 @@ export default class ClanGamesScheduler {
 		const warTiming = moment.duration(endTime - Date.now()).format('D[d] H[h], m[m], s[s]', { trim: 'both mid' });
 
 		return [
-			`\u200e🔔 **${clan.name} (APIClan Games ends in ${warTiming})**`,
+			`\u200e🔔 **${clan.name} (Clan Games ends in ${warTiming})**`,
 			`📨 ${reminder.message}`,
 			'',
 			users
