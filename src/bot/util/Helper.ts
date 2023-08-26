@@ -61,10 +61,10 @@ export const clanGamesLatestSeasonId = () => {
 
 export const clanEmbedMaker = async (
 	clan: APIClan,
-	{ description, requirements, color }: { description?: string; requirements?: string; color?: number; userId?: string }
+	{ description, requirements, color, isDryRun }: { description?: string; requirements?: string; color?: number; isDryRun?: boolean }
 ) => {
 	const client = container.resolve(Client);
-	const fetched = await client.http._getPlayers(clan.memberList);
+	const fetched = isDryRun ? [] : await client.http._getPlayers(clan.memberList);
 	const reduced = fetched.reduce<{ [key: string]: number }>((count, member) => {
 		const townHall = member.townHallLevel;
 		count[townHall] = (count[townHall] || 0) + 1;

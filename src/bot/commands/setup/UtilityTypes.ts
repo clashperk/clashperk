@@ -327,7 +327,7 @@ export default class SetupUtilsCommand extends Command {
 		const durationEvents = this.client.guildEvents.eventTypes.filter((name) => name.endsWith('_start'));
 		const durationMenu = new StringSelectMenuBuilder()
 			.setCustomId(customIds.duration)
-			.setPlaceholder('Max duration overrides...')
+			.setPlaceholder('Allow full duration events...')
 			.setOptions(
 				durationEvents.map((id) => ({
 					label: eventsMap[id],

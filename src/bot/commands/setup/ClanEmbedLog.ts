@@ -97,6 +97,10 @@ export default class ClanEmbedCommand extends Command {
 			]
 		});
 
+		const existing = await this.client.db
+			.collection(Collections.CLAN_EMBED_LOGS)
+			.findOne({ tag: data.tag, guild: interaction.guild.id });
+
 		try {
 			await m
 				.awaitMessageComponent<ComponentType.Button | ComponentType.StringSelect>({
@@ -117,7 +121,8 @@ export default class ClanEmbedCommand extends Command {
 										customId: 'description',
 										label: 'Clan Description',
 										placeholder: 'Write anything or `auto` to sync with the clan.',
-										maxLength: 1000
+										maxLength: 1000,
+										value: existing?.embed?.description ?? undefined
 									}
 								]
 							},
@@ -130,7 +135,8 @@ export default class ClanEmbedCommand extends Command {
 										customId: 'accepts',
 										label: 'Requirements',
 										placeholder: 'Write anything or `auto` to sync with the clan.',
-										maxLength: 500
+										maxLength: 500,
+										value: existing?.embed?.accepts ?? undefined
 									}
 								]
 							}
@@ -196,10 +202,6 @@ export default class ClanEmbedCommand extends Command {
 				tag: data.tag
 			});
 		};
-
-		const existing = await this.client.db
-			.collection(Collections.CLAN_EMBED_LOGS)
-			.findOne({ tag: data.tag, guild: interaction.guild.id });
 
 		if (!existing) {
 			const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
