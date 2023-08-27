@@ -79,11 +79,11 @@ class RedisService {
 		const query = this.connection.multi();
 		if (data.uuid) {
 			const customIds = await this.connection.sMembers(`SID-${data.uuid}`);
-			if (customIds.length) query.del(customIds);
-			query.del(`SID-${data.uuid}`);
+			if (customIds.length) for (const id of customIds) query.expire(id, 60);
+			query.expire(`SID-${data.uuid}`, 60);
 		}
 
-		query.del(customId);
+		query.expire(customId, 60);
 		return query.exec();
 	}
 }
