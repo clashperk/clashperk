@@ -1,5 +1,5 @@
 import { APIClanWar } from 'clashofclans.js';
-import { APIMessage, ForumChannel, Guild, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
+import { APIMessage, ForumChannel, Guild, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
@@ -196,7 +196,7 @@ export default class ClanWarScheduler {
 							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits =
 								data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
-							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${mem.name}${hits}`;
+							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
 						})
 						.join('\n')
 				)

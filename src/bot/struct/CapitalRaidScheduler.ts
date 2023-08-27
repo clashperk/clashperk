@@ -1,5 +1,5 @@
 import { APICapitalRaidSeason } from 'clashofclans.js';
-import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
+import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../util/Constants.js';
@@ -245,7 +245,7 @@ export default class CapitalRaidScheduler {
 						.map((mem, i) => {
 							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits = ` (${mem.attacks}/${mem.attackLimit})`;
-							return `\u200e${ping} ${mem.name}${hits}`;
+							return `\u200e${ping} ${escapeMarkdown(mem.name)}${hits}`;
 						})
 						.join('\n')
 				)

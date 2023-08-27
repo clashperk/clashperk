@@ -186,7 +186,7 @@ export default class RosterSignupCommand extends Command {
 	private initials(str: string) {
 		return str
 			.split(/\s+/)
-			.map((word) => word[0])
+			.map((word) => word.at(0))
 			.join('');
 	}
 }

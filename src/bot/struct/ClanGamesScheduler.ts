@@ -1,5 +1,5 @@
 import { APIClan } from 'clashofclans.js';
-import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
+import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { ClanGamesModel } from '../types/index.js';
@@ -245,7 +245,7 @@ export default class ClanGamesScheduler {
 						.map((mem, i) => {
 							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits = ` (${mem.points}/${reminder.minPoints === 0 ? ClanGames.MAX_POINT : reminder.minPoints})`;
-							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]} ${ping} ${mem.name}${hits}`;
+							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]} ${ping} ${escapeMarkdown(mem.name)}${hits}`;
 						})
 						.join('\n')
 				)
