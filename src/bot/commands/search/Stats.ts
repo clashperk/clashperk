@@ -34,6 +34,10 @@ export default class StatsCommand extends Command {
 
 	public args(): Args {
 		return {
+			clan: {
+				match: 'STRING',
+				id: 'tag'
+			},
 			stars: {
 				match: 'STRING',
 				default: '==3'

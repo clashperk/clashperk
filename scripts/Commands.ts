@@ -528,19 +528,19 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
+						name: 'clan',
 						description: common.options.tag.description,
 						description_localizations: translation('common.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
 						autocomplete: true
 					},
-					{
-						name: 'user',
-						description: common.options.user.description,
-						description_localizations: translation('common.options.user.description'),
-						type: ApplicationCommandOptionType.User,
-						required: false
-					},
+					// {
+					// 	name: 'user',
+					// 	description: common.options.user.description,
+					// 	description_localizations: translation('common.options.user.description'),
+					// 	type: ApplicationCommandOptionType.User,
+					// 	required: false
+					// },
 					{
 						name: 'compare',
 						description: command.stats.options.compare.description,
@@ -656,19 +656,19 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
+						name: 'clan',
 						description: common.options.tag.description,
 						description_localizations: translation('common.options.tag.description'),
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
-					{
-						name: 'user',
-						description: common.options.user.description,
-						description_localizations: translation('common.options.user.description'),
-						type: ApplicationCommandOptionType.User,
-						required: false
-					},
+					// {
+					// 	name: 'user',
+					// 	description: common.options.user.description,
+					// 	description_localizations: translation('common.options.user.description'),
+					// 	type: ApplicationCommandOptionType.User,
+					// 	required: false
+					// },
 					{
 						name: 'compare',
 						description: command.stats.options.compare.description,
