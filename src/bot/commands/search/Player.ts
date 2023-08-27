@@ -178,8 +178,8 @@ export default class PlayerCommand extends Command {
 			{
 				name: '**Season Stats**',
 				value: [
-					`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations} ${EMOJIS.UP_KEY}`,
-					`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived} ${EMOJIS.DOWN_KEY}`,
+					`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations.toLocaleString()} ${EMOJIS.UP_KEY}`,
+					`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived.toLocaleString()} ${EMOJIS.DOWN_KEY}`,
 					`**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
 					`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${war.total > 0 ? `\n**War Stats**\n${warStats}` : ''}`,
 					`[View war attack history](https://app.clashperk.com/members/${encodeURIComponent(data.tag)})`,
@@ -197,31 +197,32 @@ export default class PlayerCommand extends Command {
 				].join('\n')
 			}
 		]);
+
+		// convert achievements to object
+		const achievements: Record<string, number> = {};
+		for (const achievement of data.achievements) {
+			achievements[achievement.name] = achievement.value;
+		}
+
 		embed.addFields([
 			{
 				name: '**Achievement Stats**',
 				value: [
 					'**Total Loots**',
 					[
-						`${EMOJIS.GOLD} ${this.format(data.achievements.find((d) => d.name === 'Gold Grab')!.value)}`,
-						`${EMOJIS.ELIXIR} ${this.format(data.achievements.find((d) => d.name === 'Elixir Escapade')!.value)}`,
-						`${EMOJIS.DARK_ELIXIR} ${this.format(data.achievements.find((d) => d.name === 'Heroic Heist')!.value)}`
+						`${EMOJIS.GOLD} ${this.format(achievements['Gold Grab'])}`,
+						`${EMOJIS.ELIXIR} ${this.format(achievements['Elixir Escapade'])}`,
+						`${EMOJIS.DARK_ELIXIR} ${this.format(achievements['Heroic Heist'])}`
 					].join(' '),
-					`**Troops Donated**\n${EMOJIS.TROOPS_DONATE} ${data.achievements.find((d) => d.name === 'Friend in Need')!.value}`,
-					`**Spells Donated**\n${EMOJIS.SPELL_DONATE} ${data.achievements.find((d) => d.name === 'Sharing is caring')!.value}`,
-					`**Siege Donated**\n${SIEGE_MACHINES['Wall Wrecker']} ${
-						data.achievements.find((d) => d.name === 'Siege Sharer')!.value
-					}`,
-					`**Attacks Won**\n${EMOJIS.SWORD} ${data.achievements.find((d) => d.name === 'Conqueror')!.value}`,
-					`**Defense Won**\n${EMOJIS.SHIELD} ${data.achievements.find((d) => d.name === 'Unbreakable')!.value}`,
-					`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find((d) => d.name === 'War League Legend')!.value}`,
-					`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${data.achievements.find((d) => d.name === 'Games Champion')!.value}`,
-					`**Capital Gold Looted**\n${EMOJIS.CAPITAL_GOLD} ${
-						data.achievements.find((d) => d.name === 'Aggressive Capitalism')?.value ?? 0
-					}`,
-					`**Capital Gold Contributed**\n${EMOJIS.CAPITAL_GOLD} ${
-						data.achievements.find((d) => d.name === 'Most Valuable Clanmate')?.value ?? 0
-					}`,
+					`**Troops Donated**\n${EMOJIS.TROOPS_DONATE} ${achievements['Friend in Need'].toLocaleString()}`,
+					`**Spells Donated**\n${EMOJIS.SPELL_DONATE} ${achievements['Sharing is caring'].toLocaleString()}`,
+					`**Siege Donated**\n${SIEGE_MACHINES['Wall Wrecker']} ${achievements['Siege Sharer'].toLocaleString()}`,
+					`**Attacks Won**\n${EMOJIS.SWORD} ${achievements['Conqueror'].toLocaleString()}`,
+					`**Defense Won**\n${EMOJIS.SHIELD} ${achievements['Unbreakable'].toLocaleString()}`,
+					`**CWL War Stars**\n${EMOJIS.STAR} ${achievements['War League Legend'].toLocaleString()}`,
+					`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${achievements['Games Champion'].toLocaleString()}`,
+					`**Capital Gold Looted**\n${EMOJIS.CAPITAL_GOLD} ${achievements['Aggressive Capitalism'].toLocaleString()}`,
+					`**Capital Gold Contributed**\n${EMOJIS.CAPITAL_GOLD} ${achievements['Most Valuable Clanmate'].toLocaleString()}`,
 					'\u200b\u2002'
 				].join('\n')
 			}
