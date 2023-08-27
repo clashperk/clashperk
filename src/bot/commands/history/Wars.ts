@@ -1,4 +1,4 @@
-import { APIClanWar, APIClanWarAttack, APIClanWarMember, APIPlayer, APIWarClan } from 'clashofclans.js';
+import { APIClanWar, APIClanWarAttack, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -36,8 +36,7 @@ export default class WarHistoryCommand extends Command {
 		if (args.player_tag) {
 			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
 			if (!player) return null;
-			const playerTags = [player.tag];
-			return this.getHistory(interaction, playerTags);
+			return this.getIndividualWars(interaction, [player]);
 		}
 
 		if (args.clans) {
@@ -57,16 +56,16 @@ export default class WarHistoryCommand extends Command {
 			}
 
 			const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag).slice(0, 1));
-			const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
-			return this.getHistory(interaction, playerTags);
+			const players = _clans.flatMap((clan) => clan.memberList);
+			return this.getIndividualWars(interaction, players);
 		}
 
-		const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);
-		return this.getHistory(interaction, playerTags);
+		const players = await this.client.resolver.getPlayers(args.user?.id ?? interaction.user.id);
+		return this.getIndividualWars(interaction, players);
 	}
 
-	public async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
-		const { attacks: _wars } = await this.getWars(playerTags);
+	private async getHistory(interaction: CommandInteraction<'cached'>, _playerTags: string[]) {
+		const { attacks: _wars } = await this.getWars('', { name: '', tag: '' });
 
 		const warMap = _wars.reduce<Record<string, IWar[]>>((acc, war) => {
 			const key = `${war.member.name} (${war.member.tag})`;
@@ -129,7 +128,12 @@ export default class WarHistoryCommand extends Command {
 		return handlePagination(interaction, embeds);
 	}
 
-	private async getWars(tags: string[]) {
+	private async getIndividualWars(interaction: CommandInteraction<'cached'>, players: { name: string; tag: string }[]) {
+		const result = await Promise.all(players.map((player) => this.getWars(player.tag, player)));
+		return this.export(interaction, result);
+	}
+
+	private async getWars(tag: string, player: { name: string; tag: string }) {
 		const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<APIClanWar & { warType: number }>([
 			{
 				$match: {
@@ -137,7 +141,7 @@ export default class WarHistoryCommand extends Command {
 						$gte: moment().startOf('month').subtract(6, 'month').toDate()
 					},
 					warType: WarType.REGULAR,
-					$or: [{ 'clan.members.tag': { $in: tags } }, { 'opponent.members.tag': { $in: tags } }]
+					$or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }]
 				}
 			},
 			{ $sort: { _id: -1 } }
@@ -149,83 +153,80 @@ export default class WarHistoryCommand extends Command {
 			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
 			data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
 
-			for (const tag of tags) {
-				const __member = data.clan.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
-				const member =
-					__member ?? data.opponent.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
-				if (!member) continue;
+			const clanMember = data.clan.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
+			const member = clanMember ?? data.opponent.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
+			if (!member) continue;
 
-				const clan = __member ? data.clan : data.opponent;
-				const opponent = clan.tag === data.clan.tag ? data.opponent : data.clan;
-				const __attacks = clan.members.flatMap((m) => m.attacks ?? []);
+			const clan = clanMember ? data.clan : data.opponent;
+			const opponent = clan.tag === data.clan.tag ? data.opponent : data.clan;
+			const __attacks = clan.members.flatMap((m) => m.attacks ?? []);
 
-				const war: WarHistory = {
-					warType: data.warType,
+			const war: WarHistory = {
+				warType: data.warType,
+				clan: {
+					name: clan.name,
+					tag: clan.tag
+				},
+				opponent: {
+					name: opponent.name,
+					tag: opponent.tag
+				},
+				startTime: new Date(data.startTime),
+				endTime: new Date(data.endTime),
+				attacker: {
+					name: member.name,
+					mapPosition: member.mapPosition,
+					tag: member.tag,
+					townHallLevel: member.townhallLevel
+				},
+				attacks: []
+			};
+
+			const memberAttacks = __attacks.filter((atk) => atk.attackerTag === tag);
+			if (!memberAttacks.length) {
+				attacks.push({
+					attack: null,
+					previousBestAttack: null,
+					defender: null,
 					clan: {
 						name: clan.name,
 						tag: clan.tag
 					},
-					opponent: {
-						name: opponent.name,
-						tag: opponent.tag
-					},
-					startTime: new Date(data.startTime),
 					endTime: new Date(data.endTime),
-					attacker: {
-						name: member.name,
-						mapPosition: member.mapPosition,
-						tag: member.tag,
-						townHallLevel: member.townhallLevel
-					},
-					attacks: []
-				};
-
-				const memberAttacks = __attacks.filter((atk) => atk.attackerTag === tag);
-				if (!memberAttacks.length) {
-					attacks.push({
-						attack: null,
-						previousBestAttack: null,
-						defender: null,
-						clan: {
-							name: clan.name,
-							tag: clan.tag
-						},
-						endTime: new Date(data.endTime),
-						member
-					});
-				}
-
-				for (const atk of memberAttacks) {
-					const { previousBestAttack, defender } = this.getPreviousBestAttack(__attacks, opponent, atk);
-
-					attacks.push({
-						attack: atk,
-						previousBestAttack,
-						defender,
-						clan: {
-							name: clan.name,
-							tag: clan.tag
-						},
-						endTime: new Date(data.endTime),
-						member
-					});
-
-					war.attacks.push({
-						defender: {
-							tag: defender.tag,
-							mapPosition: defender.mapPosition,
-							townHallLevel: defender.townhallLevel
-						},
-						defenderTag: defender.tag,
-						destructionPercentage: atk.destructionPercentage,
-						stars: atk.stars
-					});
-				}
-				wars.push(war);
+					member
+				});
 			}
+
+			for (const atk of memberAttacks) {
+				const { previousBestAttack, defender } = this.getPreviousBestAttack(__attacks, opponent, atk);
+
+				attacks.push({
+					attack: atk,
+					previousBestAttack,
+					defender,
+					clan: {
+						name: clan.name,
+						tag: clan.tag
+					},
+					endTime: new Date(data.endTime),
+					member
+				});
+
+				war.attacks.push({
+					defender: {
+						tag: defender.tag,
+						mapPosition: defender.mapPosition,
+						townHallLevel: defender.townhallLevel
+					},
+					defenderTag: defender.tag,
+					destructionPercentage: atk.destructionPercentage,
+					stars: atk.stars
+				});
+			}
+			wars.push(war);
 		}
 
-		return { wars, attacks };
+		return { wars, attacks, player };
 	}
 
 	private percentage(num: number) {
@@ -245,18 +246,23 @@ export default class WarHistoryCommand extends Command {
 		return { previousBestAttack: isFresh ? null : previousBestAttack, defender, isFresh };
 	}
 
-	private async export(interaction: CommandInteraction<'cached'>, wars: WarHistory[], player: APIPlayer) {
-		const warsFlatten = wars
-			.map((war) => {
-				if (war.attacks.length) {
-					return war.attacks.map((attack) => ({ ...war, attack }));
-				}
-				return [{ ...war, attack: null }];
-			})
-			.flat();
+	private async export(
+		interaction: CommandInteraction<'cached'>,
+		aggregated: { wars: WarHistory[]; player: { name: string; tag: string } }[]
+	) {
+		const sheets: CreateGoogleSheet[] = [];
 
-		const sheets: CreateGoogleSheet[] = [
-			{
+		for (const { wars, player } of aggregated) {
+			const warsFlatten = wars
+				.map((war) => {
+					if (war.attacks.length) {
+						return war.attacks.map((attack) => ({ ...war, attack }));
+					}
+					return [{ ...war, attack: null }];
+				})
+				.flat();
+
+			sheets.push({
 				title: Util.escapeSheetName(`${player.name} (${player.tag})`),
 				columns: [
 					{ name: 'War Type', width: 100, align: 'LEFT' },
@@ -282,8 +288,8 @@ export default class WarHistoryCommand extends Command {
 					war.attack?.defender.mapPosition,
 					war.attack?.defender.townHallLevel
 				])
-			}
-		];
+			});
+		}
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Attack History]`, sheets);
 		return interaction.editReply({ content: '**War Attacks History (last 6 months)**', components: getExportComponents(spreadsheet) });
