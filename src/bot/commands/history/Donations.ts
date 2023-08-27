@@ -206,7 +206,7 @@ export default class DonationsHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Donations History]`, sheets);
-		return interaction.editReply({ components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**Donations History**', components: getExportComponents(spreadsheet) });
 	}
 }
 

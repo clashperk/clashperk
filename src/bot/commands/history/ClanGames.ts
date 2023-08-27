@@ -195,7 +195,7 @@ export default class ClanGamesHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`[${interaction.guild.name}] Clan Games History`, sheets);
-		return interaction.editReply({ components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**Clan Games History**', components: getExportComponents(spreadsheet) });
 	}
 }
 

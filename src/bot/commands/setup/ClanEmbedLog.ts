@@ -1,24 +1,26 @@
-import { APIClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	AnyThreadChannel,
 	ButtonBuilder,
+	ButtonInteraction,
 	ButtonStyle,
 	cleanContent,
 	CommandInteraction,
-	ComponentType,
-	EmbedBuilder,
+	DiscordjsError,
+	DiscordjsErrorCodes,
 	Interaction,
+	messageLink,
 	ModalBuilder,
 	PermissionsString,
 	TextChannel,
+	TextInputBuilder,
 	TextInputStyle,
 	WebhookClient
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { PlayerLinks } from '../../types/index.js';
-import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
+import { Collections, Flags, missingPermissions, URL_REGEX } from '../../util/Constants.js';
 import { clanEmbedMaker } from '../../util/Helper.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class ClanEmbedCommand extends Command {
 	public constructor() {
@@ -31,15 +33,6 @@ export default class ClanEmbedCommand extends Command {
 			ephemeral: true
 		});
 	}
-
-	private readonly permissions: PermissionsString[] = [
-		'EmbedLinks',
-		'UseExternalEmojis',
-		'SendMessages',
-		'ReadMessageHistory',
-		'ManageWebhooks',
-		'ViewChannel'
-	];
 
 	public args(interaction: Interaction<'cached'>): Args {
 		return {
@@ -56,13 +49,7 @@ export default class ClanEmbedCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		{
-			tag,
-			description,
-			color,
-			accepts,
-			channel
-		}: { tag: string; description?: string; color?: number; accepts?: string; channel: TextChannel | AnyThreadChannel }
+		{ tag, color, channel }: { tag: string; color?: number; channel: TextChannel | AnyThreadChannel }
 	) {
 		const data = await this.client.resolver.enforceSecurity(interaction, { tag, collection: Collections.CLAN_EMBED_LOGS });
 		if (!data) return;
@@ -78,107 +65,99 @@ export default class ClanEmbedCommand extends Command {
 			);
 		}
 
-		const __customIds = {
-			a: this.client.uuid(interaction.user.id),
-			b: this.client.uuid(interaction.user.id),
-			c: this.client.uuid(interaction.user.id)
-		};
-
-		const m = await interaction.editReply({
-			embeds: [
-				new EmbedBuilder()
-					.setAuthor({ name: `${data.name} | Clan Embed`, iconURL: data.badgeUrls.medium })
-					.setDescription(data.description || 'No description')
-			],
-			components: [
-				new ActionRowBuilder<ButtonBuilder>()
-					.addComponents(new ButtonBuilder().setLabel('Customize').setStyle(ButtonStyle.Secondary).setCustomId(__customIds.a))
-					.addComponents(new ButtonBuilder().setLabel('Save').setStyle(ButtonStyle.Secondary).setCustomId(__customIds.b))
-			]
-		});
-
 		const existing = await this.client.db
 			.collection(Collections.CLAN_EMBED_LOGS)
 			.findOne({ tag: data.tag, guild: interaction.guild.id });
 
-		try {
-			await m
-				.awaitMessageComponent<ComponentType.Button | ComponentType.StringSelect>({
-					filter: ({ customId }) => Object.values(__customIds).includes(customId),
-					time: 5 * 60 * 1000
-				})
-				.then(async (interaction) => {
-					const modal = new ModalBuilder({
-						customId: __customIds.c,
-						title: `${data.name} | Clan Embed`,
-						components: [
-							{
-								type: ComponentType.ActionRow,
-								components: [
-									{
-										type: ComponentType.TextInput,
-										style: TextInputStyle.Paragraph,
-										customId: 'description',
-										label: 'Clan Description',
-										placeholder: 'Write anything or `auto` to sync with the clan.',
-										maxLength: 1000,
-										value: existing?.embed?.description ?? undefined
-									}
-								]
-							},
-							{
-								type: ComponentType.ActionRow,
-								components: [
-									{
-										type: ComponentType.TextInput,
-										style: TextInputStyle.Paragraph,
-										customId: 'accepts',
-										label: 'Requirements',
-										placeholder: 'Write anything or `auto` to sync with the clan.',
-										maxLength: 500,
-										value: existing?.embed?.accepts ?? undefined
-									}
-								]
-							}
-						]
-					});
+		const customIds = {
+			customize: this.client.uuid(interaction.user.id),
+			confirm: this.client.uuid(interaction.user.id),
+			resend: this.client.uuid(interaction.user.id)
+		};
 
-					if (interaction.customId === __customIds.b) {
-						await interaction.update({ components: [] });
-					} else {
-						await interaction.showModal(modal);
-						await interaction.editReply({ components: [] });
-						try {
-							await interaction
-								.awaitModalSubmit({
-									time: 5 * 60 * 1000,
-									filter: (interaction) => interaction.customId === __customIds.c
-								})
-								.then(async (action) => {
-									description = action.fields.getTextInputValue('description');
-									accepts = action.fields.getTextInputValue('accepts');
-									await action.deferUpdate();
-								});
-						} catch {
-							return interaction.update({ components: [] });
-						}
-					}
-				});
-		} catch {
-			return;
+		const state: Partial<{ description: string; bannerImage: string; accepts: string }> = {
+			description: existing?.embed?.description ?? 'auto',
+			bannerImage: existing?.embed?.bannerImage ?? null,
+			accepts: existing?.embed?.accepts ?? 'auto'
+		};
+
+		let embed = await clanEmbedMaker(data, { color, ...state });
+
+		const customizeButton = new ButtonBuilder().setLabel('Customize').setStyle(ButtonStyle.Primary).setCustomId(customIds.customize);
+		const confirmButton = new ButtonBuilder().setLabel('Confirm').setStyle(ButtonStyle.Success).setCustomId(customIds.confirm);
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(customizeButton, confirmButton);
+
+		if (existing) {
+			const resendButton = new ButtonBuilder().setLabel('Resend').setStyle(ButtonStyle.Secondary).setCustomId(customIds.resend);
+			const linkButton = new ButtonBuilder()
+				.setLabel('Jump')
+				.setURL(messageLink(existing.channel, existing.message, existing.guild))
+				.setStyle(ButtonStyle.Link);
+			buttonRow.addComponents(resendButton, linkButton);
 		}
 
-		description = description?.toLowerCase() === 'auto' ? 'auto' : cleanContent(description ?? '', interaction.channel!);
-		accepts = !accepts || accepts.toLowerCase() === 'auto' ? 'auto' : cleanContent(accepts, interaction.channel!);
-		const embed = await clanEmbedMaker(data, { description, requirements: accepts, color });
+		const message = await interaction.editReply({ embeds: [embed], components: [buttonRow] });
 
-		const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
-		if (!webhook) {
-			return interaction.editReply(
-				// eslint-disable-next-line
-				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
+		const onCustomization = async (action: ButtonInteraction<'cached'>) => {
+			const modalCustomIds = {
+				modal: this.client.uuid(action.user.id),
+				description: this.client.uuid(action.user.id),
+				bannerImage: this.client.uuid(action.user.id)
+			};
+
+			const modal = new ModalBuilder().setCustomId(modalCustomIds.modal).setTitle(`${data.name} | Clan Embed`);
+			const descriptionInput = new TextInputBuilder()
+				.setCustomId(modalCustomIds.description)
+				.setLabel('Description')
+				.setPlaceholder('Enter a custom description. \nOr type "auto" to use the in-game clan description.')
+				.setStyle(TextInputStyle.Paragraph)
+				.setMaxLength(1024)
+				.setRequired(false);
+			if (state.description) descriptionInput.setValue(state.description);
+
+			const bannerImageInput = new TextInputBuilder()
+				.setCustomId(modalCustomIds.bannerImage)
+				.setLabel('Banner Image URL')
+				.setPlaceholder('Enter an image URL')
+				.setStyle(TextInputStyle.Short)
+				.setMaxLength(256)
+				.setRequired(false);
+			if (state.bannerImage) bannerImageInput.setValue(state.bannerImage);
+
+			modal.addComponents(
+				new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput),
+				new ActionRowBuilder<TextInputBuilder>().addComponents(bannerImageInput)
 			);
-		}
+
+			await action.showModal(modal);
+
+			try {
+				const modalSubmit = await action.awaitModalSubmit({
+					time: 10 * 60 * 1000,
+					filter: (action) => action.customId === modalCustomIds.modal
+				});
+
+				const description = modalSubmit.fields.getTextInputValue(modalCustomIds.description);
+				state.description = description.toLowerCase() === 'auto' ? 'auto' : cleanContent(description, interaction.channel!);
+
+				const bannerImage = modalSubmit.fields.getTextInputValue(modalCustomIds.bannerImage);
+				state.bannerImage = URL_REGEX.test(bannerImage) ? bannerImage : '';
+
+				await modalSubmit.deferUpdate();
+
+				embed = await clanEmbedMaker(data, {
+					color,
+					isDryRun: true,
+					...state
+				});
+
+				await modalSubmit.editReply({ embeds: [embed], components: [buttonRow] });
+			} catch (error) {
+				if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+					throw error;
+				}
+			}
+		};
 
 		const mutate = async (message: string, channel: string, webhook: { id: string; token: string }) => {
 			const id = await this.client.storage.register(interaction, {
@@ -190,8 +169,9 @@ export default class ClanEmbedCommand extends Command {
 				name: data.name,
 				message,
 				embed: {
-					accepts: cleanContent(accepts!, interaction.channel!),
-					description: cleanContent(description!, interaction.channel!)
+					accepts: state.accepts!,
+					bannerImage: state.bannerImage!,
+					description: cleanContent(state.description!, interaction.channel!)
 				},
 				webhook: { id: webhook.id, token: webhook.token }
 			});
@@ -203,85 +183,66 @@ export default class ClanEmbedCommand extends Command {
 			});
 		};
 
-		if (!existing) {
+		const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
+		if (!webhook) {
+			return interaction.editReply(
+				// eslint-disable-next-line
+				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
+			);
+		}
+
+		const onResend = async (action: ButtonInteraction<'cached'>) => {
 			const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
-			return mutate(msg.id, channel.id, { id: webhook.id, token: webhook.token! });
-		}
-
-		const customIds = {
-			edit: this.client.uuid(interaction.user.id),
-			create: this.client.uuid(interaction.user.id)
+			await mutate(msg.id, msg.channel.id, { id: webhook.id, token: webhook.token! });
+			return action.update({ content: '**Clan embed created!**', embeds: [], components: [] });
 		};
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(new ButtonBuilder().setCustomId(customIds.edit).setStyle(ButtonStyle.Secondary).setLabel('Edit Existing Embed'))
-			.addComponents(new ButtonBuilder().setCustomId(customIds.create).setStyle(ButtonStyle.Primary).setLabel('Create New Embed'));
 
-		const messageURL = this.getMessageURL(interaction.guild.id, existing.channel, existing.message);
-		const msg = await interaction.editReply({
-			content: [`**This clan already has an active Clan Embed. [Jump ↗️](<${messageURL}>)**`].join('\n'),
-			components: [row]
-		});
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
+		const onConfirm = async (action: ButtonInteraction<'cached'>) => {
+			try {
+				if (!existing) throw new Error('No existing embed found', { cause: '6969' });
 
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.edit) {
-				try {
-					const channel = interaction.guild.channels.cache.get(existing.channel);
-					const webhook = new WebhookClient(existing.webhook);
-					const msg = await webhook.editMessage(
-						existing.message,
-						channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] }
-					);
-					await mutate(existing.message, msg.channel_id, existing.webhook);
-				} catch {
-					row.components[0].setDisabled(true);
-					await action.update({
-						content: '**Failed to update the existing embed!**',
-						components: [row]
-					});
-					return;
-				}
+				const channel = interaction.guild.channels.cache.get(existing.channel);
+				const webhook = new WebhookClient(existing.webhook);
+				const msg = await webhook.editMessage(
+					existing.message,
+					channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] }
+				);
 
-				await action.update({
+				await mutate(existing.message, msg.channel_id, existing.webhook);
+				return await action.update({
+					embeds: [],
 					components: [],
-					content: `**Successfully updated the existing embed. [Jump ↗️](<${messageURL}>)**`
+					content: `**Clan embed updated!** [Jump ↗️](${messageLink(msg.channel_id, msg.id, interaction.guildId)})`
 				});
+			} catch {
+				return onResend(action);
 			}
+		};
 
-			if (action.customId === customIds.create) {
-				await action.update({ content: '**Successfully created a new embed.**', components: [] });
-
-				try {
-					const webhook = new WebhookClient(existing.webhook);
-					const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
-					return await mutate(msg.id, msg.channel_id, existing.webhook);
-				} catch (error: any) {
-					this.client.logger.error(error, { label: 'ClanEmbedSetup' });
-					const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
-					return mutate(msg.id, msg.channel.id, { id: webhook.id, token: webhook.token! });
+		createInteractionCollector({
+			interaction,
+			message,
+			customIds,
+			onClick(action) {
+				if (action.customId === customIds.customize) {
+					return onCustomization(action);
+				}
+				if (action.customId === customIds.confirm) {
+					return onConfirm(action);
+				}
+				if (action.customId === customIds.resend) {
+					return onResend(action);
 				}
 			}
 		});
-
-		collector.on('end', () => {
-			this.client.components.delete(customIds.edit);
-			this.client.components.delete(customIds.create);
-		});
 	}
 
-	private getMessageURL(guildId: string, channelId: string, messageId: string) {
-		return `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
-	}
-
-	private async getUser(clan: APIClan): Promise<{ id: string; name: string; toString: () => string } | null> {
-		const leader = clan.memberList.find((m) => m.role === 'leader');
-		if (leader) {
-			const user = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: leader.tag });
-			if (user) return { id: user.userId, toString: () => `<@${user.userId}>`, ...user, name: leader.name };
-		}
-		return null;
-	}
+	private readonly permissions: PermissionsString[] = [
+		'EmbedLinks',
+		'UseExternalEmojis',
+		'SendMessages',
+		'ReadMessageHistory',
+		'ManageWebhooks',
+		'ViewChannel'
+	];
 }

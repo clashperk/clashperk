@@ -209,7 +209,7 @@ export default class CapitalRaidsHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Capital Raid History]`, sheets);
-		return interaction.editReply({ components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**Capital Raid History**', components: getExportComponents(spreadsheet) });
 	}
 
 	private padding(num: number) {

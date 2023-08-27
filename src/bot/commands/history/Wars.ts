@@ -33,42 +33,36 @@ export default class WarHistoryCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player_tag?: string; user?: User }) {
-		const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag ?? args.user?.id ?? interaction.user.id);
-		if (!player) return null;
-		const playerTags = [player.tag];
-		const { wars } = await this.getWars(playerTags);
-		return this.export(interaction, wars, player);
+		if (args.player_tag) {
+			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+			if (!player) return null;
+			const playerTags = [player.tag];
+			return this.getHistory(interaction, playerTags);
+		}
 
-		// if (args.player_tag) {
-		// 	const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
-		// 	if (!player) return null;
-		// 	const playerTags = [player.tag];
-		// 	return this.getHistory(interaction, playerTags);
-		// }
+		if (args.clans) {
+			const tags = await this.client.resolver.resolveArgs(args.clans);
+			const clans = tags.length
+				? await this.client.storage.search(interaction.guildId, tags)
+				: await this.client.storage.find(interaction.guildId);
 
-		// if (args.clans) {
-		// 	const tags = await this.client.resolver.resolveArgs(args.clans);
-		// 	const clans = tags.length
-		// 		? await this.client.storage.search(interaction.guildId, tags)
-		// 		: await this.client.storage.find(interaction.guildId);
+			if (!clans.length && tags.length)
+				return interaction.editReply(
+					this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+				);
+			if (!clans.length) {
+				return interaction.editReply(
+					this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+				);
+			}
 
-		// 	if (!clans.length && tags.length)
-		// 		return interaction.editReply(
-		// 			this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-		// 		);
-		// 	if (!clans.length) {
-		// 		return interaction.editReply(
-		// 			this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-		// 		);
-		// 	}
+			const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag).slice(0, 1));
+			const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
+			return this.getHistory(interaction, playerTags);
+		}
 
-		// 	const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag).slice(0, 1));
-		// 	const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
-		// 	return this.getHistory(interaction, playerTags);
-		// }
-
-		// const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);
-		// return this.getHistory(interaction, playerTags);
+		const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);
+		return this.getHistory(interaction, playerTags);
 	}
 
 	public async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
@@ -292,7 +286,7 @@ export default class WarHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Attack History]`, sheets);
-		return interaction.editReply({ content: 'War Attacks History (last 6 months)', components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**War Attacks History (last 6 months)**', components: getExportComponents(spreadsheet) });
 	}
 }
 

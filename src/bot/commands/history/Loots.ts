@@ -208,7 +208,7 @@ export default class LootHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Loot History]`, sheets);
-		return interaction.editReply({ components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**Loot History**', components: getExportComponents(spreadsheet) });
 	}
 }
 

@@ -178,7 +178,7 @@ export default class LegendAttacksHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Legend Attacks History]`, sheets);
-		return interaction.editReply({ components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**Legend Attacks History**', components: getExportComponents(spreadsheet) });
 	}
 }
 

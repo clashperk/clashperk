@@ -211,7 +211,7 @@ export default class CapitalContributionHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Capital Contribution History]`, sheets);
-		return interaction.editReply({ components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**Capital Contribution History**', components: getExportComponents(spreadsheet) });
 	}
 
 	private padding(num: number) {

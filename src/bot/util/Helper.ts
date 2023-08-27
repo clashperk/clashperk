@@ -61,10 +61,18 @@ export const clanGamesLatestSeasonId = () => {
 
 export const clanEmbedMaker = async (
 	clan: APIClan,
-	{ description, requirements, color, isDryRun }: { description?: string; requirements?: string; color?: number; isDryRun?: boolean }
+	{
+		description,
+		requirements,
+		color,
+		isDryRun,
+		bannerImage
+	}: { description?: string; requirements?: string; color?: number; bannerImage?: string; isDryRun?: boolean }
 ) => {
 	const client = container.resolve(Client);
-	const fetched = isDryRun ? [] : await client.http._getPlayers(clan.memberList);
+	const fetched = isDryRun
+		? await client.redis.getPlayers(clan.memberList.map((m) => m.tag))
+		: await client.http._getPlayers(clan.memberList);
 	const reduced = fetched.reduce<{ [key: string]: number }>((count, member) => {
 		const townHall = member.townHallLevel;
 		count[townHall] = (count[townHall] || 0) + 1;
@@ -94,7 +102,9 @@ export const clanEmbedMaker = async (
 				description?.toLowerCase() === 'auto' ? clan.description : description ?? ''
 			].join('\n')
 		);
+
 	if (color) embed.setColor(color);
+	if (bannerImage) embed.setImage(bannerImage);
 
 	const leaders = clan.memberList.filter((m) => m.role === 'leader');
 	const users = await client.db

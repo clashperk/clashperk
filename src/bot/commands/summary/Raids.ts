@@ -37,8 +37,9 @@ export default class SummaryCapitalRaidsCommand extends Command {
 			);
 		}
 
-		// const { clansGroup, membersGroup } = week === weekId ? await this.queryFromAPI(clans) : await this.queryFromDB(week, clans);
 		const { clansGroup, membersGroup } = await this.queryFromDB(week, clans);
+
+		args.clans_only ??= clansGroup.length >= 4;
 
 		const maxPad = Math.max(...clansGroup.map((clan) => clan.looted.toString().length));
 		const embed = new EmbedBuilder();
@@ -100,7 +101,6 @@ export default class SummaryCapitalRaidsCommand extends Command {
 				].join('\n')
 			);
 		}
-
 		embed.setFooter({ text: `Week ${week}` });
 
 		const payload = {

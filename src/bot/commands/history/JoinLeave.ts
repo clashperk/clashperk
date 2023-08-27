@@ -149,7 +149,7 @@ export default class JoinLeaveHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Join/Leave History]`, sheets);
-		return interaction.editReply({ content: 'Join/Leave history of last 30 days.', components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**Join/Leave history of last 30 days**', components: getExportComponents(spreadsheet) });
 	}
 }
 

@@ -176,7 +176,7 @@ export default class AttacksHistoryCommand extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Attacks History]`, sheets);
-		return interaction.editReply({ components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: '**Attacks History**', components: getExportComponents(spreadsheet) });
 	}
 }
 
