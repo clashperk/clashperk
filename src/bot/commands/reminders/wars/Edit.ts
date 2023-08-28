@@ -7,7 +7,8 @@ import {
 	ComponentType,
 	ModalBuilder,
 	TextInputBuilder,
-	TextInputStyle
+	TextInputStyle,
+	escapeMarkdown
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
@@ -49,7 +50,6 @@ export default class ReminderEditCommand extends Command {
 			save: this.client.uuid(interaction.user.id),
 			warTypes: this.client.uuid(interaction.user.id),
 			message: this.client.uuid(interaction.user.id),
-			modal: this.client.uuid(interaction.user.id),
 			modalMessage: this.client.uuid(interaction.user.id)
 		};
 
@@ -116,6 +116,7 @@ export default class ReminderEditCommand extends Command {
 					])
 					.setDisabled(disable)
 			);
+
 			const townHallRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
@@ -225,7 +226,8 @@ export default class ReminderEditCommand extends Command {
 			}
 
 			if (action.customId === customIds.message && action.isButton()) {
-				const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Reminder Message');
+				const modalCustomId = this.client.uuid(interaction.user.id);
+				const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Reminder Message');
 				const messageInput = new TextInputBuilder()
 					.setCustomId(customIds.modalMessage)
 					.setLabel('Reminder Message')
@@ -241,21 +243,21 @@ export default class ReminderEditCommand extends Command {
 					await action
 						.awaitModalSubmit({
 							time: 5 * 60 * 1000,
-							filter: (_interaction) => _interaction.customId === customIds.modal
+							filter: (action) => action.customId === modalCustomId
 						})
-						.then(async (_action) => {
-							state.message = _action.fields.getTextInputValue(customIds.modalMessage);
-							await _action.deferUpdate();
-							await _action.editReply({
+						.then(async (modalSubmit) => {
+							state.message = modalSubmit.fields.getTextInputValue(customIds.modalMessage);
+							await modalSubmit.deferUpdate();
+							await modalSubmit.editReply({
 								components: mutate(),
 								content: [
 									`**Edit War Reminder (${
 										reminder.duration === 0 ? 'at the end' : `${this.getStatic(reminder.duration)} remaining`
 									})** <#${reminder.channel}>`,
 									'',
-									`${state.message}`,
+									clans.map((clan) => escapeMarkdown(clan.name)).join(', '),
 									'',
-									clans.map((clan) => clan.name).join(', ')
+									`${state.message}`
 								].join('\n')
 							});
 						});

@@ -7,7 +7,8 @@ import {
 	StringSelectMenuBuilder,
 	TextInputStyle,
 	TextInputBuilder,
-	ModalBuilder
+	ModalBuilder,
+	escapeMarkdown
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
@@ -49,7 +50,6 @@ export default class ReminderEditCommand extends Command {
 			save: this.client.uuid(interaction.user.id),
 			minPoints: this.client.uuid(interaction.user.id),
 			message: this.client.uuid(interaction.user.id),
-			modal: this.client.uuid(interaction.user.id),
 			modalMessage: this.client.uuid(interaction.user.id),
 			memberType: this.client.uuid(interaction.user.id)
 		};
@@ -62,7 +62,7 @@ export default class ReminderEditCommand extends Command {
 		};
 
 		const mutate = (disable = false) => {
-			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const minPointsRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Minimum Points')
 					.setMaxValues(1)
@@ -77,7 +77,7 @@ export default class ReminderEditCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const memberTypeRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Participation Type')
 					.setMaxValues(1)
@@ -99,7 +99,7 @@ export default class ReminderEditCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row3 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const clanRolesRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
 					.setCustomId(customIds.roles)
@@ -129,11 +129,19 @@ export default class ReminderEditCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
-			);
+			const buttonRow = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId(customIds.message)
+						.setLabel('Set Custom Message')
+						.setStyle(ButtonStyle.Secondary)
+						.setDisabled(disable)
+				)
+				.addComponents(
+					new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
+				);
 
-			return [row1, row2, row3, row4];
+			return [minPointsRow, memberTypeRow, clanRolesRow, buttonRow];
 		};
 
 		const msg = await interaction.editReply({
@@ -169,7 +177,8 @@ export default class ReminderEditCommand extends Command {
 			}
 
 			if (action.customId === customIds.message && action.isButton()) {
-				const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Reminder Message');
+				const modalCustomId = this.client.uuid(interaction.user.id);
+				const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Reminder Message');
 				const messageInput = new TextInputBuilder()
 					.setCustomId(customIds.modalMessage)
 					.setLabel('Reminder Message')
@@ -185,20 +194,21 @@ export default class ReminderEditCommand extends Command {
 					await action
 						.awaitModalSubmit({
 							time: 5 * 60 * 1000,
-							filter: (_interaction) => _interaction.customId === customIds.modal
+							filter: (action) => action.customId === modalCustomId
 						})
-						.then(async (_action) => {
-							state.message = _action.fields.getTextInputValue(customIds.modalMessage);
-							await _action.deferUpdate();
-							await _action.editReply({
+						.then(async (modalSubmit) => {
+							state.message = modalSubmit.fields.getTextInputValue(customIds.modalMessage);
+							await modalSubmit.deferUpdate();
+							await modalSubmit.editReply({
 								components: mutate(),
 								content: [
 									`**Edit Clan Games Reminder (${this.getStatic(reminder.duration)})** <#${reminder.channel}>`,
 									'',
-									`${state.message}`,
+									clans.map((clan) => escapeMarkdown(clan.name)).join(', '),
 									'',
-									clans.map((clan) => clan.name).join(', ')
-								].join('\n')
+									`${state.message}`
+								].join('\n'),
+								allowedMentions: { parse: [] }
 							});
 						});
 				} catch {}
