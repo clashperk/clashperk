@@ -481,6 +481,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('common.options.user.description'),
 				type: ApplicationCommandOptionType.User,
 				required: false
+			},
+			{
+				name: 'season',
+				description: 'The season to show attacks for.',
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				choices: getSeasonIds()
 			}
 		]
 	},

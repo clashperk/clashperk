@@ -2,6 +2,8 @@ import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, Butt
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { MembersCommandOptions } from '../../util/CommandOptions.js';
+import { Collections } from '../../util/Constants.js';
+import { Season } from '../../util/index.js';
 
 export default class ClanAttacksCommand extends Command {
 	public constructor() {
@@ -18,7 +20,7 @@ export default class ClanAttacksCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { tag?: string; user?: User; sort_by_defense?: boolean; with_options?: boolean }
+		args: { tag?: string; user?: User; sort_by_defense?: boolean; with_options?: boolean; season?: string }
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
@@ -27,7 +29,17 @@ export default class ClanAttacksCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 		}
 
-		const fetched = await this.client.http._getPlayers(clan.memberList);
+		args.season ??= Season.ID;
+
+		const fetched = await this.client.db
+			.collection(Collections.PLAYER_SEASONS)
+			.find<{ name: string; tag: string; attackWins: number; defenseWins: number }>({
+				season: args.season,
+				tag: { $in: clan.memberList.map((m) => m.tag) }
+			})
+			.toArray();
+
+		// const fetched = await this.client.http._getPlayers(clan.memberList);
 		const members = fetched.map((player) => ({
 			name: player.name,
 			tag: player.tag,
