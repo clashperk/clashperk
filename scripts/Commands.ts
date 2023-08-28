@@ -650,6 +650,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'cleanup'
 							}
 						]
+					},
+					{
+						name: 'clan_only',
+						description: "Only include the specified clan's war attacks.",
+						type: ApplicationCommandOptionType.Boolean,
+						required: false
 					}
 				]
 			},
@@ -764,6 +770,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'cleanup'
 							}
 						]
+					},
+					{
+						name: 'clan_only',
+						description: "Only include the specified clan's war attacks.",
+						type: ApplicationCommandOptionType.Boolean,
+						required: false
 					}
 				]
 			}

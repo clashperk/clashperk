@@ -89,6 +89,7 @@ export default class StatsCommand extends Command {
 			user?: User;
 			days?: number;
 			wars?: number;
+			clan_only?: boolean;
 			view?: 'starsAvg' | 'hitRates';
 		}
 	) {
@@ -117,23 +118,33 @@ export default class StatsCommand extends Command {
 		if (args.days && args.days >= 1) season = moment().subtract(args.days, 'days').format('YYYY-MM-DD');
 		const filters = args.wars && args.wars >= 1 ? {} : { preparationStartTime: { $gte: new Date(season) } };
 
-		const cursor = this.client.db.collection(Collections.CLAN_WARS).find({
-			// $or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }],
-			$or: [
-				{
-					'clan.members.tag': {
-						$in: data.memberList.map((m) => m.tag)
-					}
-				},
-				{
-					'opponent.members.tag': {
-						$in: data.memberList.map((m) => m.tag)
-					}
+		const inFamilyQuery = {
+			$match: {
+				$or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }]
+			}
+		};
+
+		const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate([
+			{
+				$match: {
+					$or: [
+						{
+							'clan.members.tag': {
+								$in: data.memberList.map((m) => m.tag)
+							}
+						},
+						{
+							'opponent.members.tag': {
+								$in: data.memberList.map((m) => m.tag)
+							}
+						}
+					],
+					...filters,
+					...extra
 				}
-			],
-			...filters,
-			...extra
-		});
+			},
+			...(args.clan_only ? [inFamilyQuery] : [])
+		]);
 		cursor.sort({ _id: -1 });
 		if (args.wars && args.wars >= 1) cursor.limit(args.wars);
 
@@ -145,6 +156,7 @@ export default class StatsCommand extends Command {
 		for (const war of wars) {
 			const clan: APIWarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
 			const opponent: APIWarClan = war.clan.tag === data.tag ? war.opponent : war.clan;
+
 			const attacks = (mode === 'attacks' ? clan : opponent).members
 				.filter((m) => m.attacks?.length)
 				.map((m) => m.attacks!)
