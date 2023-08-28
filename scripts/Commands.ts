@@ -1494,14 +1494,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							}
 						]
 					},
-					{
-						name: 'max_duration',
-						description: 'Maximum duration of the events in minutes.',
-						type: ApplicationCommandOptionType.Integer,
-						required: false,
-						max_value: 60,
-						min_value: 10
-					},
+					// {
+					// 	name: 'max_duration',
+					// 	description: 'Maximum duration of the events in minutes.',
+					// 	type: ApplicationCommandOptionType.Integer,
+					// 	required: false,
+					// 	max_value: 60,
+					// 	min_value: 10
+					// },
 					{
 						name: 'disable',
 						description: 'Disable the events schedular.',

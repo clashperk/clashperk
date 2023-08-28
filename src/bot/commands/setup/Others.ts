@@ -290,7 +290,7 @@ export default class SetupUtilsCommand extends Command {
 					createdAt: new Date()
 				},
 				$set: {
-					maxDuration: max_duration ?? 60
+					maxDuration: max_duration ?? 30
 				}
 			},
 			{ upsert: true, returnDocument: 'after' }
@@ -327,7 +327,7 @@ export default class SetupUtilsCommand extends Command {
 		const durationEvents = this.client.guildEvents.eventTypes.filter((name) => name.endsWith('_start'));
 		const durationMenu = new StringSelectMenuBuilder()
 			.setCustomId(customIds.duration)
-			.setPlaceholder('Allow full duration events...')
+			.setPlaceholder('Allowed full duration events...')
 			.setOptions(
 				durationEvents.map((id) => ({
 					label: eventsMap[id],
@@ -366,7 +366,8 @@ export default class SetupUtilsCommand extends Command {
 					.join('\n'),
 
 				'',
-				'*Note: Click the Confirm button to save the events.*'
+				'- *Click the Confirm button to save the events.*',
+				'- *By default the events last for 30 minutes, you can change this by using the following option.*'
 			].join('\n');
 		};
 
