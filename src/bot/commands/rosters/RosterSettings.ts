@@ -14,7 +14,7 @@ import { getExportComponents } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
 import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/CommandOptions.js';
-import { BOT_MANAGER_HYPERLINK } from '../../util/Constants.js';
+import { BOT_MANAGER_HYPERLINK, Settings } from '../../util/Constants.js';
 
 export default class RosterEditCommand extends Command {
 	public constructor() {
@@ -305,7 +305,19 @@ export default class RosterEditCommand extends Command {
 			},
 			onSelect: async (action: StringSelectMenuInteraction<'cached'>) => {
 				const value = action.values.at(0)!;
-				if (!this.client.util.isManager(action.member) && !['export'].includes(value)) {
+
+				const roleKey = (
+					[
+						RosterManageActions.ADD_USER,
+						RosterManageActions.DEL_USER,
+						RosterManageActions.CHANGE_CATEGORY,
+						RosterManageActions.CHANGE_ROSTER
+					] as string[]
+				).includes(value)
+					? Settings.ROSTER_MANAGER_ROLE
+					: Settings.MANAGER_ROLE;
+
+				if (!this.client.util.isManager(action.member, roleKey) && !['export'].includes(value)) {
 					return action.reply({
 						ephemeral: true,
 						content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to perform this action.`

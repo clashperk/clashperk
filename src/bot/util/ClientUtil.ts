@@ -104,10 +104,15 @@ export class ClientUtil {
 		return token;
 	}
 
-	public isManager(member: GuildMember) {
+	public isManager(member: GuildMember, roleKey?: string) {
 		if (this.client.isOwner(member.user)) return true;
 		const roleId = this.client.settings.get<string>(member.guild, Settings.MANAGER_ROLE, null);
-		return member.permissions.has(PermissionsBitField.Flags.ManageGuild) || member.roles.cache.has(roleId);
+		const scopedRoleId = roleKey ? this.client.settings.get<string>(member.guild, roleKey, null) : null;
+		return (
+			member.permissions.has(PermissionsBitField.Flags.ManageGuild) ||
+			member.roles.cache.has(roleId) ||
+			Boolean(scopedRoleId && member.roles.cache.has(scopedRoleId))
+		);
 	}
 
 	public hasWebhookPermission(channel: TextChannel | NewsChannel | ForumChannel) {

@@ -3438,6 +3438,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Role
 			},
 			{
+				name: 'roster_manager_role',
+				description: command.config.options.roster_manager_role.description,
+				description_localizations: translation('command.config.options.roster_manager_role.description'),
+				type: ApplicationCommandOptionType.Role
+			},
+			{
 				name: 'webhook_limit',
 				description: 'The maximum number of webhooks that can be created in a channel.',
 				type: ApplicationCommandOptionType.Integer,

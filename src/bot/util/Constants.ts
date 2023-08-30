@@ -119,6 +119,7 @@ export const enum Settings {
 	PREFIX = 'prefix',
 	COLOR = 'color',
 	MANAGER_ROLE = 'managerRole',
+	ROSTER_MANAGER_ROLE = 'rosterManagerRole',
 	CLAN_LIMIT = 'clanLimit',
 	USER_BLACKLIST = 'blacklist',
 	GUILD_BLACKLIST = 'guildBans',
@@ -294,6 +295,12 @@ export const enum DonationLogFrequencyTypes {
 	Daily = 'DAILY',
 	Weekly = 'WEEKLY',
 	Monthly = 'MONTHLY'
+}
+
+export const enum UserPermissionTypes {
+	ManageRoster = 'MANGE_ROSTER',
+	ManageClans = 'MANAGE_CLANS',
+	FullControl = 'FULL_CONTROL'
 }
 
 export const URL_REGEX = /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$/;

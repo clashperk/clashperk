@@ -20,7 +20,7 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { IRoster, IRosterCategory, PlayerWithLink } from '../../struct/RosterManager.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 import { PlayerModel } from '../../types/index.js';
 import { Util } from '../../util/index.js';
 
@@ -30,9 +30,10 @@ export default class RosterManageCommand extends Command {
 			category: 'roster',
 			channel: 'guild',
 			description: {
-				content: ['Create, delete, edit or view rosters.']
+				content: ['Manage roster members.']
 			},
 			userPermissions: ['ManageGuild'],
+			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			defer: true,
 			ephemeral: true
 		});

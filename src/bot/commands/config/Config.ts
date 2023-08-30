@@ -1,4 +1,4 @@
-import { CommandInteraction, HexColorString, EmbedBuilder, resolveColor, Role, PermissionFlagsBits } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, HexColorString, PermissionFlagsBits, Role, resolveColor } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { BOT_MANAGER_HYPERLINK, Settings } from '../../util/Constants.js';
 
@@ -16,7 +16,7 @@ export default class ConfigCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { color_code?: string; events_channel?: string; webhook_limit?: number; manager_role?: Role }
+		args: { color_code?: string; events_channel?: string; webhook_limit?: number; manager_role?: Role; roster_manager_role?: Role }
 	) {
 		if (
 			!this.client.util.isManager(interaction.member) &&
@@ -40,14 +40,21 @@ export default class ConfigCommand extends Command {
 			await this.client.settings.set(interaction.guild, Settings.WEBHOOK_LIMIT, webhookLimit);
 		}
 
-		if (args.manager_role) {
+		if (args.manager_role || args.roster_manager_role) {
 			if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
 				return interaction.reply({
 					content: 'You are missing the **Manage Server** permission to change this setting.',
 					ephemeral: true
 				});
 			}
+		}
+
+		if (args.manager_role) {
 			await this.client.settings.set(interaction.guild, Settings.MANAGER_ROLE, args.manager_role.id);
+		}
+
+		if (args.roster_manager_role) {
+			await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, args.roster_manager_role.id);
 		}
 
 		if (args.events_channel) {
@@ -76,7 +83,12 @@ export default class ConfigCommand extends Command {
 		const channel = interaction.guild.channels.cache.get(
 			this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null)
 		);
-		const role = interaction.guild.roles.cache.get(this.client.settings.get<string>(interaction.guild, Settings.MANAGER_ROLE, null));
+		const managerRole = interaction.guild.roles.cache.get(
+			this.client.settings.get<string>(interaction.guild, Settings.MANAGER_ROLE, null)
+		);
+		const rosterManagerRole = interaction.guild.roles.cache.get(
+			this.client.settings.get<string>(interaction.guild, Settings.ROSTER_MANAGER_ROLE, null)
+		);
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -94,7 +106,12 @@ export default class ConfigCommand extends Command {
 				},
 				{
 					name: 'Manager Role',
-					value: `${role?.toString() ?? 'None'}`,
+					value: `${managerRole?.toString() ?? 'None'}`,
+					inline: true
+				},
+				{
+					name: 'Roster Manager Role',
+					value: `${rosterManagerRole?.toString() ?? 'None'}`,
 					inline: true
 				},
 				{

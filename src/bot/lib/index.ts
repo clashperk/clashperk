@@ -307,6 +307,11 @@ export class CommandHandler extends BaseHandler {
 			);
 			if (managerRole && interaction.member.roles.cache.has(managerRole.id)) return false;
 
+			if (command.roleKey) {
+				const role = interaction.guild.roles.cache.get(this.client.settings.get<string>(interaction.guild, command.roleKey, null));
+				if (role && interaction.member.roles.cache.has(role.id)) return false;
+			}
+
 			if (missing?.length) {
 				this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);
 				return true;
@@ -382,6 +387,7 @@ export interface CommandOptions {
 	defer?: boolean;
 	userPermissions?: PermissionsString[];
 	clientPermissions?: PermissionsString[];
+	roleKey?: string;
 	description?: {
 		content: string | string[];
 		usage?: string;
@@ -404,6 +410,7 @@ export class Command implements CommandOptions {
 	public defer?: boolean;
 	public userPermissions?: PermissionsString[];
 	public clientPermissions?: PermissionsString[];
+	public roleKey?: string;
 	public description?: {
 		content: string | string[];
 		usage?: string;
@@ -419,7 +426,18 @@ export class Command implements CommandOptions {
 
 	public constructor(
 		id: string,
-		{ defer, aliases, ephemeral, userPermissions, clientPermissions, description, channel, ownerOnly, category }: CommandOptions
+		{
+			defer,
+			aliases,
+			ephemeral,
+			userPermissions,
+			clientPermissions,
+			description,
+			channel,
+			ownerOnly,
+			category,
+			roleKey
+		}: CommandOptions
 	) {
 		this.id = id;
 		this.aliases = aliases;
@@ -427,6 +445,7 @@ export class Command implements CommandOptions {
 		this.ephemeral = ephemeral;
 		this.userPermissions = userPermissions;
 		this.clientPermissions = clientPermissions;
+		this.roleKey = roleKey;
 		this.description = description;
 		this.channel = channel;
 		this.ownerOnly = ownerOnly;
