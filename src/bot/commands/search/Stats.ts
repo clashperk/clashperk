@@ -1,4 +1,4 @@
-import { APIClanWarAttack, APIWarClan } from 'clashofclans.js';
+import { APIClanWar, APIClanWarAttack } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
@@ -76,6 +76,25 @@ export default class StatsCommand extends Command {
 		return { attackerTownHall, defenderTownHall };
 	}
 
+	private async getDataSource(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		args: { tag?: string; user?: User | null; user_id?: string }
+	) {
+		if (args.user_id && !args.user) {
+			args.user = await this.client.users.fetch(args.user_id).catch(() => null);
+		}
+
+		if (args.user) {
+			const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
+			return { name: args.user.displayName, tag: args.user.id, iconURL: args.user.displayAvatarURL(), playerTags };
+		}
+
+		const data = await this.client.resolver.resolveClan(interaction, args.tag ?? interaction.user.id);
+		if (!data) return null;
+
+		return { name: data.name, tag: data.tag, iconURL: data.badgeUrls.small, playerTags: data.memberList.map((m) => m.tag) };
+	}
+
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
 		args: {
@@ -87,6 +106,7 @@ export default class StatsCommand extends Command {
 			season: string;
 			attempt?: string;
 			user?: User;
+			user_id?: string;
 			days?: number;
 			wars?: number;
 			clan_only?: boolean;
@@ -100,8 +120,8 @@ export default class StatsCommand extends Command {
 		const compare = this.compare(args.compare as string);
 		const mode = args.command || 'attacks'; // eslint-disable-line
 
-		const data = await this.client.resolver.resolveClan(interaction, args.tag);
-		if (!data) return;
+		const data = await this.getDataSource(interaction, args);
+		if (!data) return null;
 
 		const extra =
 			type === 'regular'
@@ -118,35 +138,29 @@ export default class StatsCommand extends Command {
 		if (args.days && args.days >= 1) season = moment().subtract(args.days, 'days').format('YYYY-MM-DD');
 		const filters = args.wars && args.wars >= 1 ? {} : { preparationStartTime: { $gte: new Date(season) } };
 
-		const inFamilyQuery = {
-			$match: {
-				$or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }]
-			}
-		};
+		const clanOnlyQuery = { $match: { $or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }] } };
 
-		const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate([
+		const playerTags = data.playerTags;
+		const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<APIClanWar>([
 			{
 				$match: {
-					$or: [
-						{
-							'clan.members.tag': {
-								$in: data.memberList.map((m) => m.tag)
-							}
-						},
-						{
-							'opponent.members.tag': {
-								$in: data.memberList.map((m) => m.tag)
-							}
-						}
-					],
+					$or: [{ 'clan.members.tag': { $in: playerTags } }, { 'opponent.members.tag': { $in: playerTags } }],
 					...filters,
 					...extra
 				}
 			},
-			...(args.clan_only ? [inFamilyQuery] : [])
+			...(args.clan_only ? [clanOnlyQuery] : [])
 		]);
 		cursor.sort({ _id: -1 });
 		if (args.wars && args.wars >= 1) cursor.limit(args.wars);
+
+		const getWarClan = (war: APIClanWar, playerTag: string) => {
+			const isMember = war.clan.members.some((m) => m.tag === playerTag);
+			const isOpponent = war.opponent.members.some((m) => m.tag === playerTag);
+
+			if (!isMember && !isOpponent) return null;
+			return isMember ? war.clan : war.opponent;
+		};
 
 		const wars = await cursor.toArray();
 		const members: Record<
@@ -154,94 +168,97 @@ export default class StatsCommand extends Command {
 			{ name: string; tag: string; total: number; success: number; hall: number; attacks: number; stars: number }
 		> = {};
 		for (const war of wars) {
-			const clan: APIWarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
-			const opponent: APIWarClan = war.clan.tag === data.tag ? war.opponent : war.clan;
+			for (const playerTag of playerTags) {
+				const clan = getWarClan(war, playerTag);
+				if (!clan) continue;
+				const opponent = clan.tag === war.clan.tag ? war.opponent : war.clan;
 
-			const attacks = (mode === 'attacks' ? clan : opponent).members
-				.filter((m) => m.attacks?.length)
-				.map((m) => m.attacks!)
-				.flat();
-			for (const m of clan.members) {
-				if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
-				const clanMember = data.memberList.find((mem) => mem.tag === m.tag);
-				// eslint-disable-next-line
-				members[m.tag] ??= {
-					name: clanMember?.name ?? m.name,
-					tag: m.tag,
-					total: 0,
-					success: 0,
-					attacks: 0,
-					stars: 0,
-					hall: m.townhallLevel
-				};
-				const member = members[m.tag];
+				const attacks = (mode === 'attacks' ? clan : opponent).members
+					.filter((m) => m.attacks?.length)
+					.map((m) => m.attacks!)
+					.flat();
+				for (const m of clan.members) {
+					if (m.tag !== playerTag) continue;
 
-				for (const attack of mode === 'attacks' ? m.attacks ?? [] : []) {
-					member.attacks += 1;
-					member.stars += attack.stars;
+					if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
+					// eslint-disable-next-line
+					members[m.tag] ??= {
+						name: m.name,
+						tag: m.tag,
+						total: 0,
+						success: 0,
+						attacks: 0,
+						stars: 0,
+						hall: m.townhallLevel
+					};
+					const member = members[m.tag];
 
-					if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
-					if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+					for (const attack of mode === 'attacks' ? m.attacks ?? [] : []) {
+						member.attacks += 1;
+						member.stars += attack.stars;
 
-					if (typeof compare === 'string' && compare === 'equal') {
-						const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
-						if (defender.townhallLevel === m.townhallLevel) {
-							member.total += 1;
-							if (this.getStars(attack.stars, stars)) member.success += 1;
-						}
-					} else if (typeof compare === 'object') {
-						const { attackerTownHall, defenderTownHall } = compare;
-						if (m.townhallLevel === attackerTownHall) {
+						if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+						if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+
+						if (typeof compare === 'string' && compare === 'equal') {
 							const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
-							if (defender.townhallLevel === defenderTownHall) {
+							if (defender.townhallLevel === m.townhallLevel) {
 								member.total += 1;
 								if (this.getStars(attack.stars, stars)) member.success += 1;
 							}
-						}
-					} else {
-						member.total += 1;
-						if (this.getStars(attack.stars, stars)) member.success += 1;
-					}
-				}
-
-				for (const _attack of m.bestOpponentAttack && mode === 'defense' ? [m.bestOpponentAttack] : []) {
-					const attack =
-						m.opponentAttacks > 1 && attempt === 'fresh'
-							? attacks.filter((atk) => atk.defenderTag === _attack.defenderTag).sort((a, b) => a.order - b.order)[0]!
-							: attacks
-									.filter((atk) => atk.defenderTag === _attack.defenderTag)
-									.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)[0]!;
-
-					const isFresh = this._isFreshAttack(attacks, attack.defenderTag, attack.order);
-					if (attempt === 'cleanup' && isFresh) continue;
-					if (attempt === 'fresh' && !isFresh) continue;
-
-					if (typeof compare === 'string' && compare === 'equal') {
-						const attacker = opponent.members.find((m) => m.tag === attack.attackerTag)!;
-						if (attacker.townhallLevel === m.townhallLevel) {
+						} else if (typeof compare === 'object') {
+							const { attackerTownHall, defenderTownHall } = compare;
+							if (m.townhallLevel === attackerTownHall) {
+								const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
+								if (defender.townhallLevel === defenderTownHall) {
+									member.total += 1;
+									if (this.getStars(attack.stars, stars)) member.success += 1;
+								}
+							}
+						} else {
 							member.total += 1;
 							if (this.getStars(attack.stars, stars)) member.success += 1;
 						}
-					} else if (typeof compare === 'object') {
-						const { attackerTownHall, defenderTownHall } = compare;
-						if (m.townhallLevel === defenderTownHall) {
+					}
+
+					for (const _attack of m.bestOpponentAttack && mode === 'defense' ? [m.bestOpponentAttack] : []) {
+						const attack =
+							m.opponentAttacks > 1 && attempt === 'fresh'
+								? attacks.filter((atk) => atk.defenderTag === _attack.defenderTag).sort((a, b) => a.order - b.order)[0]!
+								: attacks
+										.filter((atk) => atk.defenderTag === _attack.defenderTag)
+										.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)[0]!;
+
+						const isFresh = this._isFreshAttack(attacks, attack.defenderTag, attack.order);
+						if (attempt === 'cleanup' && isFresh) continue;
+						if (attempt === 'fresh' && !isFresh) continue;
+
+						if (typeof compare === 'string' && compare === 'equal') {
 							const attacker = opponent.members.find((m) => m.tag === attack.attackerTag)!;
-							if (attacker.townhallLevel === attackerTownHall) {
+							if (attacker.townhallLevel === m.townhallLevel) {
 								member.total += 1;
 								if (this.getStars(attack.stars, stars)) member.success += 1;
 							}
+						} else if (typeof compare === 'object') {
+							const { attackerTownHall, defenderTownHall } = compare;
+							if (m.townhallLevel === defenderTownHall) {
+								const attacker = opponent.members.find((m) => m.tag === attack.attackerTag)!;
+								if (attacker.townhallLevel === attackerTownHall) {
+									member.total += 1;
+									if (this.getStars(attack.stars, stars)) member.success += 1;
+								}
+							}
+						} else {
+							member.total += 1;
+							if (this.getStars(attack.stars, stars)) member.success += 1;
 						}
-					} else {
-						member.total += 1;
-						if (this.getStars(attack.stars, stars)) member.success += 1;
 					}
 				}
 			}
 		}
 
-		const clanMemberTags = data.memberList.map((m) => m.tag);
 		const stats = Object.values(members)
-			.filter((m) => m.total > 0 && clanMemberTags.includes(m.tag) && (attempt ? m.success > 0 : true))
+			.filter((m) => m.total > 0 && playerTags.includes(m.tag) && (attempt ? m.success > 0 : true))
 			.map((mem) => ({ ...mem, rate: (mem.success * 100) / mem.total }))
 			.sort((a, b) => b.success - a.success)
 			.sort((a, b) => b.rate - a.rate);
@@ -256,7 +273,10 @@ export default class StatsCommand extends Command {
 		const tail = attempt ? `% (${attempt.replace(/\b(\w)/g, (char) => char.toUpperCase())})` : 'Rates';
 		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
 
-		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.small }).setDescription(
+		const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+		embed.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.iconURL });
+
+		embed.setDescription(
 			Util.splitMessage(
 				[
 					`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
@@ -273,7 +293,7 @@ export default class StatsCommand extends Command {
 						.join('\n')
 				].join('\n'),
 				{ maxLength: 4096 }
-			)[0]
+			).at(0)!
 		);
 
 		if (args.days && args.days >= 1) {
@@ -314,7 +334,17 @@ export default class StatsCommand extends Command {
 		const payload = {
 			cmd: this.id,
 			uuid: interaction.id,
-			...args,
+			command: args.command,
+			tag: args.tag,
+			compare: args.compare,
+			type: args.type,
+			stars: args.stars,
+			season: args.season,
+			attempt: args.attempt,
+			days: args.days,
+			wars: args.wars,
+			user_id: args.user?.id,
+			clan_only: args.clan_only,
 			view: args.view
 		};
 

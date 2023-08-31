@@ -299,6 +299,8 @@ export default class RosterManageCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		{ roster, playerTag, user, categoryId }: { roster: WithId<IRoster>; playerTag?: string; user?: User; categoryId?: string }
 	) {
+		if (categoryId && !ObjectId.isValid(categoryId)) return interaction.editReply({ content: 'Invalid target group ID.' });
+
 		const playerCustomIds: Record<string, string> = {
 			0: this.client.uuid(interaction.user.id),
 			1: this.client.uuid(interaction.user.id),
@@ -550,6 +552,9 @@ export default class RosterManageCommand extends Command {
 			rosterId
 		}: { roster: WithId<IRoster>; playerTag?: string; user?: User; categoryId?: string; rosterId?: string }
 	) {
+		if (rosterId && !ObjectId.isValid(rosterId)) return interaction.editReply({ content: 'Invalid target roster ID.' });
+		if (categoryId && !ObjectId.isValid(categoryId)) return interaction.editReply({ content: 'Invalid target group ID.' });
+
 		const playerCustomIds: Record<string, string> = {
 			0: this.client.uuid(interaction.user.id),
 			1: this.client.uuid(interaction.user.id),
