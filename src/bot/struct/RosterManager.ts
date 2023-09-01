@@ -594,12 +594,12 @@ export class RosterManager {
 
 		if (oldCategoryId) {
 			const category = await this.getCategory(oldCategoryId);
-			if (category?.roleId && user) this.removeRole(roster.guildId, [category.roleId], user.id);
+			if (category?.roleId && user) await this.removeRole(roster.guildId, [category.roleId], user.id);
 		}
 
 		if (newCategoryId) {
 			const newCategory = await this.getCategory(newCategoryId);
-			if (newCategory?.roleId && user) this.addRole(roster.guildId, [newCategory.roleId], user.id);
+			if (newCategory?.roleId && user) await this.addRole(roster.guildId, [newCategory.roleId], user.id);
 		}
 
 		const { value } = await this.rosters.findOneAndUpdate(
@@ -1047,6 +1047,7 @@ export class RosterManager {
 		const role = guild.roles.cache.get(roleId);
 		return (
 			role &&
+			!role.managed &&
 			guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles) &&
 			guild.members.me.roles.highest.position > role.position
 		);
