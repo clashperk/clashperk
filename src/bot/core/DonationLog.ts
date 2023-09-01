@@ -3,7 +3,7 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import Client from '../struct/Client.js';
 import { Collections, DonationLogFrequencyTypes } from '../util/Constants.js';
-import { BLUE_NUMBERS, EMOJIS, PLAYER_LEAGUES, RED_NUMBERS } from '../util/Emojis.js';
+import { BLUE_NUMBERS, EMOJIS, HOME_BASE_LEAGUES, RED_NUMBERS } from '../util/Emojis.js';
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 
@@ -82,21 +82,23 @@ export default class DonationLog extends BaseLog {
 						data.donated
 							.map((m) => {
 								if (this.client.isCustom() && m.donated > 100) {
-									return `\u200e${PLAYER_LEAGUES[m.league]!} ${m.donated} ${m.name}`;
+									return `\u200e${HOME_BASE_LEAGUES[m.league]!} ${m.donated} ${m.name}`;
 								}
 
 								if (m.donated > 200) {
 									const [div, mod] = this.divmod(m.donated);
 									const list = [
-										`\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${m.name}`
+										`\u200e${HOME_BASE_LEAGUES[m.league]!} ${BLUE_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${
+											m.name
+										}`
 									];
 									if (mod > 0)
 										return list
-											.concat(`\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[mod.toString()]!} ${m.name}`)
+											.concat(`\u200e${HOME_BASE_LEAGUES[m.league]!} ${BLUE_NUMBERS[mod.toString()]!} ${m.name}`)
 											.join('\n');
 									return list.join('\n');
 								}
-								return `\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[m.donated]!} ${m.name}`;
+								return `\u200e${HOME_BASE_LEAGUES[m.league]!} ${BLUE_NUMBERS[m.donated]!} ${m.name}`;
 							})
 							.join('\n')
 							.substring(0, 1024)
@@ -113,21 +115,23 @@ export default class DonationLog extends BaseLog {
 						data.received
 							.map((m) => {
 								if (this.client.isCustom() && m.received > 100) {
-									return `\u200e${PLAYER_LEAGUES[m.league]!} ${m.received} ${m.name}`;
+									return `\u200e${HOME_BASE_LEAGUES[m.league]!} ${m.received} ${m.name}`;
 								}
 
 								if (m.received > 200) {
 									const [div, mod] = this.divmod(m.received);
 									const list = [
-										`\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${m.name}`
+										`\u200e${HOME_BASE_LEAGUES[m.league]!} ${RED_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${
+											m.name
+										}`
 									];
 									if (mod > 0)
 										return list
-											.concat(`\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[mod.toString()]!} ${m.name}`)
+											.concat(`\u200e${HOME_BASE_LEAGUES[m.league]!} ${RED_NUMBERS[mod.toString()]!} ${m.name}`)
 											.join('\n');
 									return list.join('\n');
 								}
-								return `\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[m.received]!} ${m.name}`;
+								return `\u200e${HOME_BASE_LEAGUES[m.league]!} ${RED_NUMBERS[m.received]!} ${m.name}`;
 							})
 							.join('\n')
 							.substring(0, 1024)

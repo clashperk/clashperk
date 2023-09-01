@@ -51,7 +51,7 @@ export default class SummaryLeaguesCommand extends Command {
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
 			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
 			new ButtonBuilder()
-				.setLabel(args.is_capital ? 'APIClan War Leagues' : 'Capital Leagues')
+				.setLabel(args.is_capital ? 'Clan War Leagues' : 'Capital Leagues')
 				.setEmoji(args.is_capital ? EMOJIS.CWL : EMOJIS.CAPITAL_TROPHY)
 				.setStyle(ButtonStyle.Primary)
 				.setCustomId(customIds.toggle)

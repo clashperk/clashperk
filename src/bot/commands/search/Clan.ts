@@ -73,7 +73,7 @@ export default class ClanCommand extends Command {
 
 		embed.setDescription(
 			[
-				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanBuilderBasePoints}**`,
+				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.BB_TROPHY} **${clan.clanBuilderBasePoints}**`,
 				'',
 				`${clan.description}${clan.description ? '\n\n' : ''}${clan.labels
 					.map((d) => `${CLAN_LABELS[d.name]} ${d.name}`)

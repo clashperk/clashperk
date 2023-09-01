@@ -57,7 +57,7 @@ const fields = {
 
 	_trophiesGained: `${EMOJIS.TROPHY} Trophies Gained`,
 	_trophies: `${EMOJIS.TROPHY} Current Trophies`,
-	// _versusTrophies: `${EMOJIS.VERSUS_TROPHY} Versus Trophies`,
+	// _versusTrophies: `${EMOJIS.BB_TROPHY} Versus Trophies`,
 	_warStars: `${EMOJIS.WAR_STAR} War Stars`,
 	// _cwlStars: `${EMOJIS.STAR} CWL Stars`,
 

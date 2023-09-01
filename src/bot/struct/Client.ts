@@ -85,6 +85,7 @@ export class Client extends Discord.Client {
 		super({
 			intents: [
 				GatewayIntentBits.Guilds,
+				GatewayIntentBits.GuildEmojisAndStickers,
 				GatewayIntentBits.GuildMembers,
 				GatewayIntentBits.GuildWebhooks,
 				GatewayIntentBits.GuildMessages
@@ -101,7 +102,7 @@ export class Client extends Discord.Client {
 				ReactionUserManager: 0,
 				ReactionManager: 0,
 				BaseGuildEmojiManager: 0,
-				GuildEmojiManager: 0,
+				// GuildEmojiManager: 0,
 				ApplicationCommandManager: 0,
 				ThreadMemberManager: 0,
 				MessageManager: 10,

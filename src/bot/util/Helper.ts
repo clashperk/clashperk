@@ -97,7 +97,7 @@ export const clanEmbedMaker = async (
 		.setThumbnail(clan.badgeUrls.medium)
 		.setDescription(
 			[
-				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanBuilderBasePoints}**`,
+				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.BB_TROPHY} **${clan.clanBuilderBasePoints}**`,
 				'',
 				description?.toLowerCase() === 'auto' ? clan.description : description ?? ''
 			].join('\n')

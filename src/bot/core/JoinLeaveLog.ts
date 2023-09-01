@@ -4,7 +4,7 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections, DeepLinkTypes } from '../util/Constants.js';
-import { EMOJIS, HEROES, PLAYER_LEAGUES, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
+import { EMOJIS, HEROES, HOME_BASE_LEAGUES, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
 import RAW_TROOPS_DATA from '../util/Troops.js';
 import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
@@ -86,7 +86,7 @@ export default class JoinLeaveLog extends BaseLog {
 			embed.setDescription(
 				[
 					`${TOWN_HALLS[player.townHallLevel]!} **${player.townHallLevel}**`,
-					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
+					`${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
 					`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
 				].join(' ')
 			);
@@ -99,7 +99,7 @@ export default class JoinLeaveLog extends BaseLog {
 			embed.setDescription(
 				[
 					`${TOWN_HALLS[player.townHallLevel]!}**${player.townHallLevel}**`,
-					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
+					`${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
 					`${this.formatHeroes(heroes)}`,
 					`${heroes.length >= 2 ? '\n' : ''}${EMOJIS.WAR_STAR}**${player.warStars}**`,
 					`${EMOJIS.TROOPS}${this.remainingUpgrades(player)}% rushed`
