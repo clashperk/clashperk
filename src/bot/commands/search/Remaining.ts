@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { BLUE_NUMBERS } from '../../util/Emojis.js';
 import { Collections, WarType } from '../../util/Constants.js';
-import { ClanGames, Util } from '../../util/index.js';
+import { Util } from '../../util/index.js';
 import { ClanCapitalRaidAttackData, ClanGamesModel } from '../../types/index.js';
 
 export default class RemainingCommand extends Command {
@@ -221,20 +221,21 @@ export default class RemainingCommand extends Command {
 			embed.addFields({
 				name: `${member.name} (${member.tag})`,
 				value: [
-					`${remaining} remaining in ${clan.name}`,
+					`${remaining} remaining in **${escapeMarkdown(clan.name)}**`,
 					`- ${Util.getRelativeTime(endTime.getTime())}`,
 					i === players.length - 1 ? '' : '\u200b'
 				].join('\n')
 			});
 		});
-		embed.setFooter({ text: `${remaining} remaining ${Util.plural(remaining, 'attack')}` });
+		embed.setFooter({ text: `${remaining} Remaining` });
 
 		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private async capitalRaids(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
 		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
-		const { weekId } = Util.getRaidWeekEndTimestamp();
+		const { weekId, startTime, endTime } = Util.getRaidWeekEndTimestamp();
+		const weekend = Util.raidWeekDateFormat(startTime, endTime);
 
 		const raids = await this.client.db
 			.collection(Collections.CAPITAL_RAID_SEASONS)
@@ -258,7 +259,7 @@ export default class RemainingCommand extends Command {
 						tag: raid.tag
 					},
 					member: raidMember,
-					remaining: raidMember.attackLimit + raidMember.bonusAttackLimit - raidMember.attacks,
+					attacks: raidMember.attacks,
 					attackLimit: raidMember.attackLimit + raidMember.bonusAttackLimit,
 					endTime: new Date(raid.endDate)
 				});
@@ -270,18 +271,17 @@ export default class RemainingCommand extends Command {
 		embed.setTitle('Remaining Capital Raid Attacks');
 		if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
-		const remaining = players.reduce((a, b) => a + b.remaining, 0);
-		players.slice(0, 25).map(({ member, clan, remaining, endTime }, i) => {
+		const totalAttacks = players.reduce((a, b) => a + b.attacks, 0);
+		const maxTotalAttacks = players.reduce((a, b) => a + b.attackLimit, 0);
+		players.slice(0, 25).map(({ member, clan, attacks, attackLimit }, i) => {
 			embed.addFields({
 				name: `${member.name} (${member.tag})`,
-				value: [
-					`${remaining} remaining in ${clan.name}`,
-					`- ${Util.getRelativeTime(endTime.getTime())}`,
-					i === players.length - 1 ? '' : '\u200b'
-				].join('\n')
+				value: [`${attacks}/${attackLimit} in **${escapeMarkdown(clan.name)}**`, i === players.length - 1 ? '' : '\u200b'].join(
+					'\n'
+				)
 			});
 		});
-		embed.setFooter({ text: `${remaining} remaining ${Util.plural(remaining, 'attack')}` });
+		embed.setFooter({ text: `${totalAttacks}/${maxTotalAttacks} ${Util.plural(totalAttacks, 'Raid')} (${weekend})` });
 
 		return interaction.editReply({ embeds: [embed] });
 	}
@@ -289,11 +289,14 @@ export default class RemainingCommand extends Command {
 	private async clanGames(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
 		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
 
+		const seasonId = Util.clanGamesSeasonId();
+		const maxPoints = Util.getClanGamesMaxPoints(seasonId);
+
 		const members = await this.client.db
 			.collection(Collections.CLAN_GAMES_POINTS)
 			.aggregate<ClanGamesModel>([
 				{
-					$match: { season: Util.clanGamesSeasonId(), tag: { $in: playerTags } }
+					$match: { season: seasonId, tag: { $in: playerTags } }
 				}
 			])
 			.toArray();
@@ -302,7 +305,7 @@ export default class RemainingCommand extends Command {
 		for (const member of members) {
 			for (const playerTag of playerTags) {
 				if (member.tag !== playerTag) continue;
-				if (member.current - member.initial >= ClanGames.MAX_POINT) continue;
+				if (member.current - member.initial >= maxPoints) continue;
 
 				players.push({
 					clan: {
@@ -314,7 +317,8 @@ export default class RemainingCommand extends Command {
 						tag: member.tag,
 						points: member.current - member.initial
 					},
-					remaining: ClanGames.MAX_POINT - (member.current - member.initial)
+					points: member.current - member.initial,
+					maxPoints
 				});
 			}
 		}
@@ -324,14 +328,17 @@ export default class RemainingCommand extends Command {
 		embed.setTitle('Remaining Clan Games Points');
 		if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
-		const remaining = players.reduce((a, b) => a + b.remaining, 0);
-		players.slice(0, 25).map(({ member, clan, remaining }, i) => {
+		const totalPoints = players.reduce((a, b) => a + b.points, 0);
+		const maxTotalPoints = players.reduce((a, b) => a + b.maxPoints, 0);
+		players.slice(0, 25).map(({ member, clan, maxPoints, points }, i) => {
 			embed.addFields({
 				name: `${member.name} (${member.tag})`,
-				value: [`${remaining} remaining in ${clan.name}`, i === players.length - 1 ? '' : '\u200b'].join('\n')
+				value: [`${points}/${maxPoints} in **${escapeMarkdown(clan.name)}**`, i === players.length - 1 ? '' : '\u200b'].join('\n')
 			});
 		});
-		embed.setFooter({ text: `${remaining} remaining ${Util.plural(remaining, 'point')}` });
+		embed.setFooter({
+			text: `${totalPoints.toLocaleString()}/${maxTotalPoints.toLocaleString()} ${Util.plural(totalPoints, 'Point')} (${seasonId})`
+		});
 
 		return interaction.editReply({ embeds: [embed] });
 	}

@@ -175,6 +175,13 @@ export class Util {
 		return now.toISOString().substring(0, 7);
 	}
 
+	public static getClanGamesMaxPoints(season?: string) {
+		if ([0, 7, 11].includes(new Date(season || Date.now()).getMonth())) {
+			return 5000;
+		}
+		return 4000;
+	}
+
 	public static getRaidWeekEndTimestamp() {
 		const start = moment();
 		const day = start.day();
