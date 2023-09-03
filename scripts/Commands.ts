@@ -920,6 +920,25 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				required: false
 			},
 			{
+				name: 'type',
+				description: 'The type of remaining tasks to show.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'War Attacks',
+						value: 'war-attacks'
+					},
+					{
+						name: 'Clan Games',
+						value: 'clan-games'
+					},
+					{
+						name: 'Capital Raids',
+						value: 'capital-raids'
+					}
+				]
+			},
+			{
 				name: 'user',
 				description: 'Remaining attacks of a linked user.',
 				type: ApplicationCommandOptionType.User,

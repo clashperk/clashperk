@@ -169,6 +169,12 @@ export class Util {
 		return { raidWeekStartTime: start.toDate(), raidWeekEndTime: end.toDate() };
 	}
 
+	public static clanGamesSeasonId() {
+		const now = new Date();
+		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
+		return now.toISOString().substring(0, 7);
+	}
+
 	public static getRaidWeekEndTimestamp() {
 		const start = moment();
 		const day = start.day();

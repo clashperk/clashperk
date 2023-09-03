@@ -4,7 +4,8 @@ import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { BLUE_NUMBERS } from '../../util/Emojis.js';
 import { Collections, WarType } from '../../util/Constants.js';
-import { Util } from '../../util/index.js';
+import { ClanGames, Util } from '../../util/index.js';
+import { ClanCapitalRaidAttackData, ClanGamesModel } from '../../types/index.js';
 
 export default class RemainingCommand extends Command {
 	public constructor() {
@@ -13,7 +14,11 @@ export default class RemainingCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
 			description: {
-				content: ['Remaining or missed clan war attacks.', '', 'Get War ID from `warlog` command.']
+				content: [
+					'Remaining or Missed Clan War Attacks or Clan Games Points or Capital Raid Attacks.',
+					'',
+					'Get the War ID from `/warlog` command.'
+				]
 			},
 			defer: true
 		});
@@ -21,12 +26,12 @@ export default class RemainingCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { tag?: string; war_id?: number; user?: User; player_tag?: string }
+		args: { tag?: string; war_id?: number; user?: User; player_tag?: string; type?: string }
 	) {
 		if ((args.user || args.player_tag) && !interaction.isButton()) {
 			const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
 			if (args.player_tag && !player) return null;
-			return this.forUsers(interaction, { user: args.user, player });
+			return this.forUsers(interaction, { user: args.user, player, type: args.type! });
 		}
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
@@ -149,7 +154,20 @@ export default class RemainingCommand extends Command {
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
+	private async forUsers(
+		interaction: CommandInteraction<'cached'>,
+		{ player, user, type }: { player?: APIPlayer | null; user?: User; type: string }
+	) {
+		if (type === 'capital-raids') {
+			return this.capitalRaids(interaction, { player, user });
+		}
+		if (type === 'clan-games') {
+			return this.clanGames(interaction, { player, user });
+		}
+		return this.warAttacks(interaction, { player, user });
+	}
+
+	private async warAttacks(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
 		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
 
 		const wars = await this.client.db
@@ -195,7 +213,7 @@ export default class RemainingCommand extends Command {
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		embed.setTitle('Remaining clan war attacks');
+		embed.setTitle('Remaining Clan War Attacks');
 		if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
 		const remaining = players.reduce((a, b) => a + b.remaining, 0);
@@ -210,6 +228,110 @@ export default class RemainingCommand extends Command {
 			});
 		});
 		embed.setFooter({ text: `${remaining} remaining ${Util.plural(remaining, 'attack')}` });
+
+		return interaction.editReply({ embeds: [embed] });
+	}
+
+	private async capitalRaids(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
+		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
+		const { weekId } = Util.getRaidWeekEndTimestamp();
+
+		const raids = await this.client.db
+			.collection(Collections.CAPITAL_RAID_SEASONS)
+			.aggregate<ClanCapitalRaidAttackData>([
+				{
+					$match: { weekId, 'members.tag': { $in: playerTags } }
+				}
+			])
+			.toArray();
+
+		const players = [];
+		for (const raid of raids) {
+			for (const playerTag of playerTags) {
+				const raidMember = raid.members.find((m) => m.tag === playerTag);
+				if (!raidMember) continue;
+				if (raidMember.attackLimit + raidMember.bonusAttackLimit === raidMember.attacks) continue;
+
+				players.push({
+					clan: {
+						name: raid.name,
+						tag: raid.tag
+					},
+					member: raidMember,
+					remaining: raidMember.attackLimit + raidMember.bonusAttackLimit - raidMember.attacks,
+					attackLimit: raidMember.attackLimit + raidMember.bonusAttackLimit,
+					endTime: new Date(raid.endDate)
+				});
+			}
+		}
+
+		const embed = new EmbedBuilder();
+		embed.setColor(this.client.embed(interaction));
+		embed.setTitle('Remaining Capital Raid Attacks');
+		if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
+
+		const remaining = players.reduce((a, b) => a + b.remaining, 0);
+		players.slice(0, 25).map(({ member, clan, remaining, endTime }, i) => {
+			embed.addFields({
+				name: `${member.name} (${member.tag})`,
+				value: [
+					`${remaining} remaining in ${clan.name}`,
+					`- ${Util.getRelativeTime(endTime.getTime())}`,
+					i === players.length - 1 ? '' : '\u200b'
+				].join('\n')
+			});
+		});
+		embed.setFooter({ text: `${remaining} remaining ${Util.plural(remaining, 'attack')}` });
+
+		return interaction.editReply({ embeds: [embed] });
+	}
+
+	private async clanGames(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
+		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
+
+		const members = await this.client.db
+			.collection(Collections.CLAN_GAMES_POINTS)
+			.aggregate<ClanGamesModel>([
+				{
+					$match: { season: Util.clanGamesSeasonId(), tag: { $in: playerTags } }
+				}
+			])
+			.toArray();
+
+		const players = [];
+		for (const member of members) {
+			for (const playerTag of playerTags) {
+				if (member.tag !== playerTag) continue;
+				if (member.current - member.initial >= ClanGames.MAX_POINT) continue;
+
+				players.push({
+					clan: {
+						name: member.clans.at(0)!.name,
+						tag: member.clans.at(0)!.tag
+					},
+					member: {
+						name: member.name,
+						tag: member.tag,
+						points: member.current - member.initial
+					},
+					remaining: ClanGames.MAX_POINT - (member.current - member.initial)
+				});
+			}
+		}
+
+		const embed = new EmbedBuilder();
+		embed.setColor(this.client.embed(interaction));
+		embed.setTitle('Remaining Clan Games Points');
+		if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
+
+		const remaining = players.reduce((a, b) => a + b.remaining, 0);
+		players.slice(0, 25).map(({ member, clan, remaining }, i) => {
+			embed.addFields({
+				name: `${member.name} (${member.tag})`,
+				value: [`${remaining} remaining in ${clan.name}`, i === players.length - 1 ? '' : '\u200b'].join('\n')
+			});
+		});
+		embed.setFooter({ text: `${remaining} remaining ${Util.plural(remaining, 'point')}` });
 
 		return interaction.editReply({ embeds: [embed] });
 	}
