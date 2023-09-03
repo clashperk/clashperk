@@ -400,6 +400,7 @@ export default class LegendDaysCommand extends Command {
 
 		const season = result.at(0)!;
 		const prevSeason = result.at(1);
+		const prevFinalTrophies = prevSeason?.logs.at(-1)?.trophies ?? '';
 
 		if (season._id !== Season.ID) return null;
 
@@ -440,6 +441,12 @@ export default class LegendDaysCommand extends Command {
 				avgNetGain: this.formatNumber(season.avgGain),
 				avgOffense: this.formatNumber(season.avgOffense),
 				avgDefense: this.formatNumber(season.avgDefense),
+				prevAvgNetGain: prevSeason ? this.formatNumber(prevSeason.avgGain) : '',
+				prevAvgOffense: prevSeason ? this.formatNumber(prevSeason.avgOffense) : '',
+				prevAvgDefense: prevSeason ? this.formatNumber(prevSeason.avgDefense) : '',
+				townHall: data.townHallLevel.toString(),
+				prevFinalTrophies,
+				prevSeason: prevSeason ? `${moment(prevSeason._id).format('MMM')}` : '',
 				currentTrophies: data.trophies.toFixed(0),
 				clanName: data.clan?.name,
 				clanBadgeURL: data.clan?.badgeUrls.large,
