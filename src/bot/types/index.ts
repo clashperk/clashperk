@@ -39,6 +39,7 @@ export interface PlayerSeasonModel extends AchievementsMap {
 		initial: number;
 		current: number;
 	};
+	builderBaseAttacksWon?: number;
 	trophies: {
 		initial: number;
 		current: number;
