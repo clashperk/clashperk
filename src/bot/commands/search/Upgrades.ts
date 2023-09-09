@@ -154,9 +154,9 @@ export default class UpgradesCommand extends Command {
 			'Dark Hero': `${EMOJIS.DARK_ELIXIR} Heroes`,
 			'Elixir Hero': `${EMOJIS.ELIXIR} Heroes`,
 			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
-			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`
-			// 'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
-			// 'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
+			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`,
+			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
+			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};
 
 		const units = [];
@@ -280,9 +280,12 @@ export default class UpgradesCommand extends Command {
 			});
 		}
 
-		if (embedLength(embed.toJSON()) > 6000) {
-			embed.spliceFields(embed.data.fields!.length - 1, 1);
+		function trimEmbedFields() {
+			while (embedLength(embed.toJSON()) > 6000 && embed.data.fields!.length > 0) {
+				embed.spliceFields(embed.data.fields!.length - 1, 1);
+			}
 		}
+		trimEmbedFields();
 
 		return embed;
 	}

@@ -229,7 +229,10 @@ export default class ExportCWL extends Command {
 			.flat();
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [CWL Stats]`, sheets);
-		return interaction.editReply({ content: '**CWL Exports**', components: getExportComponents(spreadsheet) });
+		return interaction.editReply({
+			content: `**CWL Exports** (${clans.map((clan) => clan.name).join(',')})`,
+			components: getExportComponents(spreadsheet)
+		});
 	}
 
 	private starCount(stars = [], count: number) {

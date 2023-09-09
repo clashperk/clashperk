@@ -34,8 +34,8 @@ export class ClientUtil {
 			status: 'online',
 			activities: [
 				{
-					type: ActivityType.Watching,
-					name: `${guilds} servers`
+					type: ActivityType.Custom,
+					name: `Watching ${guilds} servers`
 				}
 			]
 		});
@@ -45,10 +45,10 @@ export class ClientUtil {
 		if (cleared) return this.client.user!.setPresence({ status: 'online', activities: [] });
 
 		return this.client.user!.setPresence({
-			status: 'dnd',
+			status: 'online',
 			activities: [
 				{
-					type: ActivityType.Playing,
+					type: ActivityType.Custom,
 					name: 'Maintenance Break!'
 				}
 			]
