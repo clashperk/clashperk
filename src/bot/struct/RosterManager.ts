@@ -11,7 +11,7 @@ import {
 	StringSelectMenuInteraction,
 	time
 } from 'discord.js';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/CommandOptions.js';
@@ -1177,6 +1177,10 @@ export class RosterManager {
 		}
 
 		return raw.timezone.timeZoneId;
+	}
+
+	public convertTime(time: string, timezoneId: string) {
+		return moment.tz(time, timezoneId).toDate();
 	}
 
 	public getDefaultSettings(guildId: string) {

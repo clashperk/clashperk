@@ -104,7 +104,7 @@ export default class RosterCreateCommand extends Command {
 
 		if (args.start_time && moment(args.start_time).isValid()) {
 			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction, args.timezone);
-			data.startTime = moment.tz(moment(args.start_time), timezoneId).utc().toDate();
+			data.startTime = this.client.rosterManager.convertTime(args.start_time, timezoneId);
 			if (data.startTime < new Date()) return interaction.editReply('Start time cannot be in the past.');
 			if (data.startTime < moment().add(5, 'minutes').toDate()) {
 				return interaction.editReply('Start time must be at least 5 minutes from now.');
@@ -113,7 +113,7 @@ export default class RosterCreateCommand extends Command {
 
 		if (args.end_time && moment(args.end_time).isValid()) {
 			const timezoneId = await this.client.rosterManager.getTimezoneId(interaction, args.timezone);
-			data.endTime = moment.tz(moment(args.end_time), timezoneId).utc().toDate();
+			data.endTime = this.client.rosterManager.convertTime(args.end_time, timezoneId);
 			if (data.endTime < new Date()) return interaction.editReply('End time cannot be in the past.');
 			if (data.endTime < moment().add(5, 'minutes').toDate()) {
 				return interaction.editReply('End time must be at least 5 minutes from now.');
