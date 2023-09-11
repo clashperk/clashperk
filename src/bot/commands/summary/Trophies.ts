@@ -21,6 +21,9 @@ export default class SummaryTrophiesCommand extends Command {
 	) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 
+		let limit = 99;
+		if (args.limit) limit = Math.max(5, Math.min(99, args.limit));
+
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.find(interaction.guildId);
@@ -114,7 +117,7 @@ export default class SummaryTrophiesCommand extends Command {
 				[
 					'```',
 					`\u200e # TROPHY WON  NAME`,
-					...players.slice(0, 99).map((player, n) => {
+					...players.slice(0, limit).map((player, n) => {
 						const trophies = this.pad(player.trophies, 4);
 						const attacks = this.pad(player.attackWins, 3);
 						const name = Util.escapeBackTick(player.name);
@@ -133,7 +136,7 @@ export default class SummaryTrophiesCommand extends Command {
 				[
 					'```',
 					`\u200e # TROPHY WON  NAME`,
-					...players.slice(0, 99).map((player, n) => {
+					...players.slice(0, limit).map((player, n) => {
 						const trophies = this.pad(player.trophies, 4);
 						const attacks = this.pad(player.attackWins, 3);
 						const name = Util.escapeBackTick(player.name);
