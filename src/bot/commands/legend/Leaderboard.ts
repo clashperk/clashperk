@@ -95,7 +95,7 @@ export default class LegendLeaderboardCommand extends Command {
 			export_disabled: args.export_disabled
 		};
 		const customIds = {
-			refresh: this.createId(payload),
+			refresh: this.createId({ ...payload, export_disabled: false }),
 			sortBy: this.createId({ ...payload, string_key: 'sort_by' }),
 			export: this.createId({ ...payload, defer: false, export: true, export_disabled: true })
 		};
@@ -106,14 +106,14 @@ export default class LegendLeaderboardCommand extends Command {
 				.setEmoji(EMOJIS.EXPORT)
 				.setStyle(ButtonStyle.Secondary)
 				.setCustomId(customIds.export)
-				.setDisabled(args.export_disabled)
+				.setDisabled(Boolean(args.export_disabled))
 		);
 
 		const sortingRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
 				.setCustomId(customIds.sortBy)
 				.setPlaceholder('Sort by')
-				.addOptions([
+				.addOptions(
 					{
 						label: 'Town Hall Ascending',
 						description: 'Lowest Town Hall with highest Trophies',
@@ -132,13 +132,7 @@ export default class LegendLeaderboardCommand extends Command {
 						value: 'trophies_only',
 						default: args.sort_by === 'trophies_only'
 					}
-					// {
-					// 	label: 'Group By Town Hall',
-					// 	description: 'Group by Town Hall and Highest Trophies',
-					// 	value: 'group_by_town_hall',
-					// 	default: args.sort_by === 'group_by_town_hall'
-					// }
-				])
+				)
 		);
 
 		if (args.export && interaction.isButton()) {

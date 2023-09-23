@@ -41,34 +41,35 @@ export default class CapitalReminderNowCommand extends Command {
 			);
 		}
 
-		const CUSTOM_ID = {
-			ROLES: this.client.uuid(interaction.user.id),
-			REMAINING: this.client.uuid(interaction.user.id),
-			MEMBER_TYPE: this.client.uuid(interaction.user.id),
-			CLANS: this.client.uuid(interaction.user.id),
-			SAVE: this.client.uuid(interaction.user.id)
+		const customIds = {
+			roles: this.client.uuid(interaction.user.id),
+			remaining: this.client.uuid(interaction.user.id),
+			threshold: this.client.uuid(interaction.user.id),
+			memberType: this.client.uuid(interaction.user.id),
+			clans: this.client.uuid(interaction.user.id),
+			save: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
 			remaining: ['1', '2', '3', '4', '5', '6'],
+			minThreshold: 5,
 			allMembers: true,
 			roles: ['leader', 'coLeader', 'admin', 'member'],
 			clans: clans.map((clan) => clan.tag)
 		};
 
 		const mutate = (disable = false) => {
-			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const minThresholdRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
-					.setPlaceholder('Select Attacks Remaining')
-					.setMaxValues(6)
-					.setCustomId(CUSTOM_ID.REMAINING)
+					.setPlaceholder('Select Min. Attack Threshold')
+					.setCustomId(customIds.threshold)
 					.setOptions(
 						Array(6)
 							.fill(0)
 							.map((_, i) => ({
-								label: `${i + 1} Remaining${i === 5 ? ` (if eligible)` : ''}`,
+								label: `${i + 1} minimum attack${i === 0 ? '' : 's'}${i === 5 ? ` (if eligible)` : ''}`,
 								value: (i + 1).toString(),
-								default: state.remaining.includes((i + 1).toString())
+								default: state.minThreshold === i + 1
 							}))
 					)
 					.setDisabled(disable)
@@ -78,18 +79,18 @@ export default class CapitalReminderNowCommand extends Command {
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Min. Attacks Done')
 					.setMaxValues(1)
-					.setCustomId(CUSTOM_ID.MEMBER_TYPE)
+					.setCustomId(customIds.memberType)
 					.setOptions([
 						{
 							label: 'All Members',
 							value: 'allMembers',
-							description: 'With a minimum of 0 attacks done.',
+							description: 'With a minimum of 0 attacks done (@ping non-participants)',
 							default: state.allMembers
 						},
 						{
 							label: 'Only Participants',
 							value: 'onlyParticipants',
-							description: 'With a minimum of 1 attack done.',
+							description: 'With a minimum of 1 attack done (@ping participants only)',
 							default: !state.allMembers
 						}
 					])
@@ -99,7 +100,7 @@ export default class CapitalReminderNowCommand extends Command {
 			const row3 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
-					.setCustomId(CUSTOM_ID.ROLES)
+					.setCustomId(customIds.roles)
 					.setMaxValues(4)
 					.setOptions([
 						{
@@ -128,49 +129,55 @@ export default class CapitalReminderNowCommand extends Command {
 
 			const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
 				new ButtonBuilder()
-					.setCustomId(CUSTOM_ID.SAVE)
+					.setCustomId(customIds.save)
 					.setLabel('Remind Now')
 					.setEmoji('🔔')
 					.setStyle(ButtonStyle.Primary)
 					.setDisabled(disable)
 			);
 
-			return [row1, row2, row3, row4];
+			return [minThresholdRow, row2, row3, row4];
 		};
 
 		const msg = await interaction.editReply({ components: mutate(), content: '**Instant Capital Reminder Options**' });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.REMAINING && action.isStringSelectMenu()) {
+			if (action.customId === customIds.remaining && action.isStringSelectMenu()) {
 				state.remaining = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.ROLES && action.isStringSelectMenu()) {
+			if (action.customId === customIds.threshold && action.isStringSelectMenu()) {
+				state.minThreshold = Number(action.values.at(0));
+				await action.update({ components: mutate() });
+			}
+
+			if (action.customId === customIds.roles && action.isStringSelectMenu()) {
 				state.roles = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.CLANS && action.isStringSelectMenu()) {
+			if (action.customId === customIds.clans && action.isStringSelectMenu()) {
 				state.clans = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.MEMBER_TYPE && action.isStringSelectMenu()) {
+			if (action.customId === customIds.memberType && action.isStringSelectMenu()) {
 				state.allMembers = action.values.includes('allMembers');
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
+			if (action.customId === customIds.save && action.isButton()) {
 				await action.update({ components: [], content: `**Fetching capital raids...** ${EMOJIS.LOADING}` });
 
 				const texts = await this.getWars(action, {
 					remaining: state.remaining.map((num) => Number(num)),
 					roles: state.roles,
+					minThreshold: state.minThreshold,
 					clans: state.clans,
 					message: args.message,
 					allMembers: state.allMembers
@@ -187,7 +194,7 @@ export default class CapitalReminderNowCommand extends Command {
 		});
 
 		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(CUSTOM_ID)) this.client.components.delete(id);
+			for (const id of Object.values(customIds)) this.client.components.delete(id);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: mutate(true) });
 		});
 	}
@@ -200,6 +207,7 @@ export default class CapitalReminderNowCommand extends Command {
 			clans: string[];
 			message: string;
 			allMembers: boolean;
+			minThreshold: number;
 		}
 	) {
 		const texts: string[] = [];

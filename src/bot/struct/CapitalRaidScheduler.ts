@@ -143,7 +143,7 @@ export default class CapitalRaidScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly'>,
+		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly' | 'minThreshold'>,
 		schedule: Pick<RaidSchedule, 'tag'>,
 		data: Required<APICapitalRaidSeason>
 	) {
@@ -187,6 +187,11 @@ export default class CapitalRaidScheduler {
 			.filter((m) => (data.members.length >= 50 ? m.isParticipating : true));
 		const members = clanMembers
 			.filter((mem) => {
+				if (reminder.minThreshold) {
+					const totalAttacks = mem.attackLimit + mem.bonusAttackLimit;
+					return totalAttacks < reminder.minThreshold;
+				}
+				// This logic will be removed later
 				return reminder.remaining.includes(mem.attackLimit + mem.bonusAttackLimit - mem.attacks);
 			})
 			.filter((mem) => {
@@ -378,6 +383,7 @@ export interface RaidReminder {
 	message: string;
 	duration: number;
 	allMembers: boolean;
+	minThreshold: number;
 	webhook?: { id: string; token: string } | null;
 	threadId?: string;
 	linkedOnly?: boolean;

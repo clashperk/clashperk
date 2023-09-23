@@ -1,18 +1,18 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	ComponentType,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
-	ButtonStyle,
-	ComponentType,
 	time
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../../../util/Constants.js';
 import { Args, Command } from '../../../lib/index.js';
 import { RaidReminder, RaidSchedule } from '../../../struct/CapitalRaidScheduler.js';
+import { Collections } from '../../../util/Constants.js';
 import { Util } from '../../../util/index.js';
 
 const roles: Record<string, string> = {
@@ -131,10 +131,14 @@ export default class CapitalReminderDeleteCommand extends Command {
 				embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => roles[role]).join(', ') }]);
 			}
 
-			if (reminder.remaining.length === 6) {
-				embed.addFields([{ name: 'Remaining Hits', value: 'Any' }]);
+			if (reminder.minThreshold) {
+				embed.addFields({ name: 'Min. Attack Threshold', value: `${reminder.minThreshold}` });
 			} else {
-				embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') }]);
+				if (reminder.remaining.length === 6) {
+					embed.addFields([{ name: 'Remaining Hits', value: 'Any' }]);
+				} else {
+					embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') }]);
+				}
 			}
 
 			embed.addFields([{ name: 'Members', value: reminder.allMembers ? 'All Members' : 'Only Participants' }]);

@@ -1,9 +1,9 @@
 import { CommandInteraction, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
-import { Collections } from '../../../util/Constants.js';
 import { Command } from '../../../lib/index.js';
-import { Util } from '../../../util/index.js';
 import { RaidReminder } from '../../../struct/CapitalRaidScheduler.js';
+import { Collections } from '../../../util/Constants.js';
+import { Util } from '../../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -45,8 +45,12 @@ export default class ReminderListCommand extends Command {
 				`<#${reminder.channel}>`,
 				'**Roles**',
 				reminder.roles.length === 4 ? 'Any' : `${reminder.roles.map((role) => roles[role]).join(', ')}`,
-				'**Remaining Hits**',
-				reminder.remaining.length === 6 ? 'Any' : `${reminder.remaining.join(', ')}`,
+				reminder.minThreshold ? '**Min. Attack Threshold**' : '**Remaining Hits**',
+				reminder.minThreshold
+					? reminder.minThreshold
+					: reminder.remaining.length === 6
+					? 'Any'
+					: `${reminder.remaining.join(', ')}`,
 				'**Members**',
 				reminder.allMembers ? 'All Members' : 'Only Participants',
 				'**Clans**',

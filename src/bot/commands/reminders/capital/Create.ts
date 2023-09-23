@@ -1,20 +1,20 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
-	ButtonBuilder,
-	TextChannel,
-	ButtonStyle,
-	PermissionsString,
 	AnyThreadChannel,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
 	ComponentType,
-	StringSelectMenuBuilder
+	PermissionsString,
+	StringSelectMenuBuilder,
+	TextChannel
 } from 'discord.js';
-import ms from 'ms';
-import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { Collections, missingPermissions } from '../../../util/Constants.js';
+import { ObjectId } from 'mongodb';
+import ms from 'ms';
 import { Args, Command } from '../../../lib/index.js';
 import { RaidReminder } from '../../../struct/CapitalRaidScheduler.js';
+import { Collections, missingPermissions } from '../../../util/Constants.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
@@ -108,12 +108,14 @@ export default class ReminderCreateCommand extends Command {
 			remaining: this.client.uuid(interaction.user.id),
 			clans: this.client.uuid(interaction.user.id),
 			save: this.client.uuid(interaction.user.id),
-			memberType: this.client.uuid(interaction.user.id)
+			memberType: this.client.uuid(interaction.user.id),
+			minThreshold: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
 			remaining: ['1', '2', '3', '4', '5', '6'],
 			allMembers: true,
+			minThreshold: 5,
 			roles: ['leader', 'coLeader', 'admin', 'member'],
 			clans: clans.map((clan) => clan.tag)
 		};
@@ -121,16 +123,15 @@ export default class ReminderCreateCommand extends Command {
 		const mutate = (disable = false) => {
 			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
-					.setPlaceholder('Select Attacks Remaining')
-					.setMaxValues(6)
-					.setCustomId(customIds.remaining)
+					.setPlaceholder('Select Min. Attack Threshold')
+					.setCustomId(customIds.minThreshold)
 					.setOptions(
 						Array(6)
 							.fill(0)
 							.map((_, i) => ({
-								label: `${i + 1} Remaining${i === 5 ? ` (if eligible)` : ''}`,
+								label: `${i + 1} minimum attack${i === 0 ? '' : 's'}${i === 5 ? ` (if eligible)` : ''}`,
 								value: (i + 1).toString(),
-								default: state.remaining.includes((i + 1).toString())
+								default: state.minThreshold === i + 1
 							}))
 					)
 					.setDisabled(disable)
@@ -145,13 +146,13 @@ export default class ReminderCreateCommand extends Command {
 						{
 							label: 'All Members',
 							value: 'allMembers',
-							description: 'With a minimum of 0 attacks done.',
+							description: 'With a minimum of 0 attacks done (@ping non-participants)',
 							default: state.allMembers
 						},
 						{
 							label: 'Only Participants',
 							value: 'onlyParticipants',
-							description: 'With a minimum of 1 attack done.',
+							description: 'With a minimum of 1 attack done (@ping participants only)',
 							default: !state.allMembers
 						}
 					])
@@ -217,6 +218,11 @@ export default class ReminderCreateCommand extends Command {
 				await action.update({ components: mutate() });
 			}
 
+			if (action.customId === customIds.minThreshold && action.isStringSelectMenu()) {
+				state.minThreshold = Number(action.values.at(0));
+				await action.update({ components: mutate() });
+			}
+
 			if (action.customId === customIds.roles && action.isStringSelectMenu()) {
 				state.roles = action.values;
 				await action.update({ components: mutate() });
@@ -241,6 +247,7 @@ export default class ReminderCreateCommand extends Command {
 					channel: args.channel.id,
 					remaining: state.remaining.map((num) => Number(num)),
 					roles: state.roles,
+					minThreshold: state.minThreshold,
 					allMembers: state.allMembers,
 					clans: state.clans,
 					webhook: { id: webhook.id, token: webhook.token! },
