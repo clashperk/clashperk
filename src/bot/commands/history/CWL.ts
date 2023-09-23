@@ -181,7 +181,7 @@ export default class CWLHistoryCommand extends Command {
 						},
 						endTime: new Date(data.endTime),
 						member,
-						// @ts-expect-error
+						// @ts-expect-error it exists
 						leagueGroupId: data.leagueGroupId as number
 					});
 				}
@@ -199,7 +199,7 @@ export default class CWLHistoryCommand extends Command {
 						},
 						endTime: new Date(data.endTime),
 						member,
-						// @ts-expect-error
+						// @ts-expect-error it exists
 						leagueGroupId: data.leagueGroupId as number
 					});
 				}

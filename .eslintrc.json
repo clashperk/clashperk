@@ -1,8 +1,10 @@
 {
 	"root": true,
+	"plugins": ["@typescript-eslint/eslint-plugin", "prettier", "import"],
 	"extends": [
-		"marine/prettier/node",
+		"plugin:@typescript-eslint/recommended",
 		"plugin:prettier/recommended"
+		// "eslint:recommended"
 	],
 	"parserOptions": {
 		"project": "./tsconfig.eslint.json"
@@ -10,37 +12,14 @@
 	"env": {
 		"jest": true
 	},
-	"plugins": [
-		"prettier"
-	],
-	"ignorePatterns": [
-		"**/dist/*",
-		"node_modules"
-	],
+	"ignorePatterns": ["**/dist/*", "node_modules"],
 	"parser": "@typescript-eslint/parser",
 	"rules": {
 		"no-process-env": 0,
 		"no-inline-comments": 0,
 		"no-warning-comments": 0,
-		"comma-dangle": [
-			"error",
-			"never"
-		],
-		"arrow-parens": [
-			"error",
-			"always"
-		],
-		"import/order": [
-			"error",
-			{
-				"pathGroups": [
-					{
-						"pattern": "~/**",
-						"group": "external"
-					}
-				]
-			}
-		],
+		"comma-dangle": ["error", "never"],
+		"arrow-parens": ["error", "always"],
 		"import/extensions": [
 			"error",
 			"ignorePackages",
@@ -56,6 +35,9 @@
 		"@typescript-eslint/no-unsafe-member-access": 0,
 		"@typescript-eslint/no-unsafe-call": 0,
 		"@typescript-eslint/no-unsafe-assignment": 0,
+		"@typescript-eslint/no-non-null-assertion": 0,
+		"@typescript-eslint/no-explicit-any": 0,
+		"@typescript-eslint/restrict-template-expressions": "error",
 		"@typescript-eslint/no-unused-vars": [
 			"error",
 			{

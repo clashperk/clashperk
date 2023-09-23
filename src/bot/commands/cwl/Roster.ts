@@ -243,11 +243,14 @@ export default class CWLRosterCommand extends Command {
 	}
 
 	private roster(clan: any) {
-		return clan.members.reduce((count: any, member: any) => {
-			const townHall = member.townHallLevel || member.townhallLevel;
-			count[townHall] = ((count[townHall] as number) || 0) + 1;
-			return count;
-		}, {} as { [key: string]: number });
+		return clan.members.reduce(
+			(count: any, member: any) => {
+				const townHall = member.townHallLevel || member.townhallLevel;
+				count[townHall] = ((count[townHall] as number) || 0) + 1;
+				return count;
+			},
+			{} as { [key: string]: number }
+		);
 	}
 
 	private winner(clan: APIWarClan, opponent: APIWarClan) {

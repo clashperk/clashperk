@@ -18,7 +18,10 @@ export default class BaseLog {
 	public lastReq: Map<string, NodeJS.Timeout>;
 	public wait: boolean;
 
-	public constructor(public client: Client, wait = true) {
+	public constructor(
+		public client: Client,
+		wait = true
+	) {
 		this.cached = new Collection();
 		this.wait = Boolean(wait);
 		this.lastReq = new Map();

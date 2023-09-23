@@ -169,7 +169,7 @@ export default class Patrons {
 				await this.client.shard!.broadcastEval(
 					(client, data) => {
 						if (client.guilds.cache.has(data.guild)) {
-							// @ts-expect-error
+							// @ts-expect-error it exists
 							client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
 						}
 					},

@@ -54,7 +54,10 @@ export class BaseHandler extends EventEmitter {
 	public readonly directory: string;
 	public readonly modules: Collection<string, Command | Listener | Inhibitor>;
 
-	public constructor(public client: Client, { directory }: { directory: string }) {
+	public constructor(
+		public client: Client,
+		{ directory }: { directory: string }
+	) {
 		super();
 
 		this.directory = directory;
@@ -84,7 +87,10 @@ export class CommandHandler extends BaseHandler {
 	public readonly aliases: Collection<string, string>;
 	public declare modules: Collection<string, Command>;
 
-	public constructor(public client: Client, { directory }: { directory: string }) {
+	public constructor(
+		public client: Client,
+		{ directory }: { directory: string }
+	) {
 		super(client, { directory });
 
 		container.register(CommandHandler, { useValue: this });

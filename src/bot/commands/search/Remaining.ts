@@ -88,7 +88,7 @@ export default class RemainingCommand extends Command {
 
 		const clan = data.clan.tag === tag ? data.clan : data.opponent;
 		const opponent = data.clan.tag === tag ? data.opponent : data.clan;
-		// @ts-expect-error
+		// @ts-expect-error it exists
 		return this.sendResult(interaction, { ...data, clan, opponent });
 	}
 

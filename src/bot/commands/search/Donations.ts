@@ -3,8 +3,8 @@ import { Args, Command } from '../../lib/index.js';
 import { PlayerSeasonModel } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
-import { Season, Util } from '../../util/index.js';
 import { recoverDonations } from '../../util/Helper.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class DonationsCommand extends Command {
 	public constructor() {
@@ -48,14 +48,14 @@ export default class DonationsCommand extends Command {
 			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
 		}
 
-		let { season, sort_by: sortBy, order_by: orderBy } = args;
+		const { sort_by: sortBy, order_by: orderBy } = args;
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (clan.members < 1) {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 		}
 
-		if (!season) season = Season.ID;
+		const season = args.season || Season.ID;
 		const isSameSeason = Season.ID === Season.generateID(season);
 
 		await Promise.allSettled([recoverDonations(clan.tag)]);

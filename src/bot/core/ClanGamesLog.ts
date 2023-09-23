@@ -111,13 +111,16 @@ export default class ClanGamesLog extends BaseLog {
 		}
 
 		clearInterval(this.intervalId);
-		this.intervalId = setInterval(async () => {
-			if (ClanGames.Started) {
-				this._flush();
-				await this._init();
-				clearInterval(this.intervalId);
-			}
-		}, 5 * 60 * 1000).unref();
+		this.intervalId = setInterval(
+			async () => {
+				if (ClanGames.Started) {
+					this._flush();
+					await this._init();
+					clearInterval(this.intervalId);
+				}
+			},
+			5 * 60 * 1000
+		).unref();
 	}
 
 	private async _init() {
@@ -158,9 +161,12 @@ export default class ClanGamesLog extends BaseLog {
 	}
 
 	private _flush() {
-		const intervalId: NodeJS.Timeout = setInterval(() => {
-			this.flush(intervalId);
-		}, 5 * 60 * 1000);
+		const intervalId: NodeJS.Timeout = setInterval(
+			() => {
+				this.flush(intervalId);
+			},
+			5 * 60 * 1000
+		);
 		return intervalId.unref();
 	}
 }
