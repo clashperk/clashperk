@@ -602,7 +602,7 @@ export default class InteractionListener extends Listener {
 			return interaction.respond([{ value: '0', name: 'Enter clan tags or names!' }]);
 		}
 
-		const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: clan.name }));
+		const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` }));
 		if (response.length > 1) {
 			const clanTags = clans.map((clan) => clan.tag).join(',');
 			const value = await this.getQuery(clanTags);
