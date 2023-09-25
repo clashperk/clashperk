@@ -211,7 +211,7 @@ export class WarRoleManager {
 		// filter out the roles that should be added
 		const included = roleIds
 			.filter((id) => guild.roles.cache.has(id))
-			.filter((id) => guild.members.me!.roles.highest.position > guild.roles.cache.get(id)!.position)
+			.filter((id) => this.checkRole(guild, guild.members.me!, id))
 			.filter((id) => !member.roles.cache.has(id));
 
 		if (!included.length) return excluded.length;
