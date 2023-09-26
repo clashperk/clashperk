@@ -216,7 +216,7 @@ export default class ReminderCreateCommand extends Command {
 									'',
 									`${state.message}`,
 									'',
-									clans.map((clan) => clan.name).join(', ')
+									escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', '))
 								].join('\n')
 							});
 						});

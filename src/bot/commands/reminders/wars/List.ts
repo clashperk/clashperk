@@ -1,8 +1,8 @@
 import { CommandInteraction, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
-import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
-import { Reminder } from '../../../struct/ClanWarScheduler.js';
 import { Command } from '../../../lib/index.js';
+import { Reminder } from '../../../struct/ClanWarScheduler.js';
+import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
 import { Util } from '../../../util/index.js';
 
 const roles: Record<string, string> = {
@@ -31,7 +31,7 @@ export default class ReminderListCommand extends Command {
 		const label = (duration: number) => moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 		const chunks = reminders.map((reminder, index) => {
-			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
+			const clanNames = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => `${clan.name} (${clan.tag})`);
 			return [
 				`**🔔 Reminder (ID: ${index + 1})**`,
 				`${label(reminder.duration)} remaining`,
@@ -46,7 +46,7 @@ export default class ReminderListCommand extends Command {
 				'**War Types**',
 				reminder.warTypes.length === 3 ? 'Any' : `${reminder.warTypes.join(', ').toUpperCase()}`,
 				'**Clans**',
-				_clans.length ? `${escapeMarkdown(_clans.join(', '))}` : 'Any',
+				clanNames.length ? `${escapeMarkdown(clanNames.join(', '))}` : 'Any',
 				'**Message**',
 				`${escapeMarkdown(reminder.message.substring(0, 300))}`
 			].join('\n');

@@ -36,7 +36,7 @@ export default class ReminderListCommand extends Command {
 		const { raidWeekEndTime } = Util.geRaidWeekend();
 
 		const chunks = reminders.map((reminder, index) => {
-			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
+			const clanNames = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => `${clan.name} (${clan.tag})`);
 			const timestamp = moment(raidWeekEndTime).subtract(reminder.duration, 'milliseconds').toDate();
 			return [
 				`**🔔 Reminder (ID: ${index + 1})**`,
@@ -54,7 +54,7 @@ export default class ReminderListCommand extends Command {
 				'**Members**',
 				reminder.allMembers ? 'All Members' : 'Only Participants',
 				'**Clans**',
-				_clans.length ? `${escapeMarkdown(_clans.join(', '))}` : 'Any',
+				clanNames.length ? `${escapeMarkdown(clanNames.join(', '))}` : 'Any',
 				'**Message**',
 				`${escapeMarkdown(reminder.message.substring(0, 300))}`
 			].join('\n');

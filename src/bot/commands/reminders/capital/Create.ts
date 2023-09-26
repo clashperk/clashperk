@@ -7,7 +7,8 @@ import {
 	ComponentType,
 	PermissionsString,
 	StringSelectMenuBuilder,
-	TextChannel
+	TextChannel,
+	escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
@@ -201,7 +202,7 @@ export default class ReminderCreateCommand extends Command {
 			content: [
 				`**Setup Raid Attack Reminder (${this.getStatic(dur)} remaining)** <#${args.channel.id}>`,
 				'',
-				clans.map((clan) => clan.name).join(', '),
+				escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')),
 				'',
 				`${args.message}`
 			].join('\n'),

@@ -1,20 +1,21 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
-	ButtonBuilder,
-	TextChannel,
-	ButtonStyle,
-	PermissionsString,
 	AnyThreadChannel,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
 	ComponentType,
-	StringSelectMenuBuilder
+	PermissionsString,
+	StringSelectMenuBuilder,
+	TextChannel,
+	escapeMarkdown
 } from 'discord.js';
-import ms from 'ms';
-import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { CLAN_GAMES_MINIMUM_POINTS, Collections, missingPermissions } from '../../../util/Constants.js';
+import { ObjectId } from 'mongodb';
+import ms from 'ms';
 import { Args, Command } from '../../../lib/index.js';
 import { ClanGamesReminder } from '../../../struct/ClanGamesScheduler.js';
+import { CLAN_GAMES_MINIMUM_POINTS, Collections, missingPermissions } from '../../../util/Constants.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
@@ -200,7 +201,7 @@ export default class ReminderCreateCommand extends Command {
 			content: [
 				`**Setup Clan Games Reminder (${this.getStatic(dur)} remaining)** <#${args.channel.id}>`,
 				'',
-				clans.map((clan) => clan.name).join(', '),
+				escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')),
 				'',
 				`${args.message}`
 			].join('\n'),

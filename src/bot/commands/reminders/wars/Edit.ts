@@ -1,20 +1,20 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
-	StringSelectMenuBuilder,
 	ButtonStyle,
+	CommandInteraction,
 	ComponentType,
 	ModalBuilder,
+	StringSelectMenuBuilder,
 	TextInputBuilder,
 	TextInputStyle,
 	escapeMarkdown
 } from 'discord.js';
-import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
-import { Reminder } from '../../../struct/ClanWarScheduler.js';
+import { ObjectId } from 'mongodb';
 import { Command } from '../../../lib/index.js';
+import { Reminder } from '../../../struct/ClanWarScheduler.js';
+import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
 
 export default class ReminderEditCommand extends Command {
 	public constructor() {
@@ -191,7 +191,7 @@ export default class ReminderEditCommand extends Command {
 			content: [
 				`**Edit War Reminder (${dur})** <#${reminder.channel}>`,
 				'',
-				clans.map((clan) => clan.name).join(', '),
+				escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')),
 				'',
 				`${reminder.message}`
 			].join('\n'),

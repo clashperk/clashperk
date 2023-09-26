@@ -204,7 +204,7 @@ export default class ReminderEditCommand extends Command {
 								content: [
 									`**Edit Clan Games Reminder (${this.getStatic(reminder.duration)})** <#${reminder.channel}>`,
 									'',
-									clans.map((clan) => escapeMarkdown(clan.name)).join(', '),
+									clans.map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`)).join(', '),
 									'',
 									`${state.message}`
 								].join('\n'),

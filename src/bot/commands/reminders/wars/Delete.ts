@@ -1,17 +1,18 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	ComponentType,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
-	ButtonStyle,
-	ComponentType
+	escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
-import { Reminder, Schedule } from '../../../struct/ClanWarScheduler.js';
 import { Args, Command } from '../../../lib/index.js';
+import { Reminder, Schedule } from '../../../struct/ClanWarScheduler.js';
+import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -137,8 +138,10 @@ export default class ReminderDeleteCommand extends Command {
 			} else {
 				embed.addFields([{ name: 'War Types', value: reminder.warTypes.join(', ').toUpperCase() }]);
 			}
-			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
-			if (_clans.length) embed.addFields([{ name: 'Clans', value: _clans.join(', ').substring(0, 1024) }]);
+			const clanNames = clans
+				.filter((clan) => reminder.clans.includes(clan.tag))
+				.map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`));
+			if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').substring(0, 1024) }]);
 			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').substring(0, 1024) }]);
 			embed.addFields([{ name: 'Message', value: reminder.message.substring(0, 1024) }]);
 			return embed;

@@ -7,7 +7,8 @@ import {
 	ButtonStyle,
 	PermissionsString,
 	AnyThreadChannel,
-	ComponentType
+	ComponentType,
+	escapeMarkdown
 } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
@@ -241,7 +242,7 @@ export default class ReminderCreateCommand extends Command {
 			content: [
 				`**Setup War Reminder (${dur === 0 ? 'at the end' : `${this.getStatic(dur)} remaining`})** <#${args.channel.id}>`,
 				'',
-				clans.map((clan) => clan.name).join(', '),
+				escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')),
 				'',
 				`${args.message}`
 			].join('\n'),

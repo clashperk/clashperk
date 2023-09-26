@@ -6,6 +6,7 @@ import {
 	ComponentType,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
+	escapeMarkdown,
 	time
 } from 'discord.js';
 import moment from 'moment';
@@ -143,9 +144,13 @@ export default class CapitalReminderDeleteCommand extends Command {
 
 			embed.addFields([{ name: 'Members', value: reminder.allMembers ? 'All Members' : 'Only Participants' }]);
 
-			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
-			if (_clans.length) embed.addFields([{ name: 'Clans', value: _clans.join(', ').substring(0, 1024) }]);
+			const clanNames = clans
+				.filter((clan) => reminder.clans.includes(clan.tag))
+				.map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`));
+
+			if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').substring(0, 1024) }]);
 			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').substring(0, 1024) }]);
+
 			embed.addFields([{ name: 'Message', value: reminder.message.substring(0, 1024) }]);
 			return embed;
 		};
