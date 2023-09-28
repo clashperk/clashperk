@@ -13,6 +13,7 @@ import LegendLog from './LegendLog.js';
 import JoinLeaveLog from './JoinLeaveLog.js';
 import CapitalLog from './CapitalLog.js';
 import { WarRoleManager } from './WarRoleManager.js';
+import { captureException } from '@sentry/node';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -93,6 +94,7 @@ export default class RPCHandler {
 				}
 			} catch (e) {
 				console.error(e);
+				captureException(e);
 			} finally {
 				this.queue.shift();
 			}

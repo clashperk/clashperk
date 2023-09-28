@@ -175,7 +175,7 @@ export class CustomBot {
 						projectId: "${projectId}",
 						variables: {
 							TOKEN: "${botToken}",
-							NODE_ENV: "\${{shared.NODE_ENV}}",
+							SENTRY: "\${{shared.SENTRY}}",
 							ASSET_API_BACKEND: "\${{shared.ASSET_API_BACKEND}}",
 							BASE_URL: "\${{shared.BASE_URL}}",
 							CLASH_TOKENS: "\${{shared.CLASH_TOKENS}}",

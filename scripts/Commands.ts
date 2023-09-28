@@ -1,7 +1,7 @@
-import { fileURLToPath } from 'node:url';
 import { ApplicationCommandOptionType, ApplicationCommandType, ChannelType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import i18next from 'i18next';
 import moment from 'moment';
+import { fileURLToPath } from 'node:url';
 import { command, common } from '../locales/en.js';
 import { defaultOptions, fallbackLng } from '../locales/index.js';
 import { Backend } from '../src/bot/util/Backend.js';
@@ -2050,6 +2050,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'player_tag',
 						autocomplete: true,
 						description: 'Select a player to manage.',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clan_tag',
+						autocomplete: true,
+						description: 'Select a clan to add players from.',
 						type: ApplicationCommandOptionType.String
 					},
 					{

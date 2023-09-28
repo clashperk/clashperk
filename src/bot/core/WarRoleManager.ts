@@ -1,8 +1,8 @@
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
-import { Collection, Guild, GuildMember } from 'discord.js';
+import { Collection, Guild, GuildMember, PermissionFlagsBits } from 'discord.js';
 import Client from '../struct/Client.js';
-import { Collections } from '../util/Constants.js';
 import { PlayerLinks } from '../types/index.js';
+import { Collections } from '../util/Constants.js';
 import { Util } from '../util/index.js';
 
 interface Feed extends APIClanWar {
@@ -192,7 +192,7 @@ export class WarRoleManager {
 		const guild = this.client.guilds.cache.get(guildId);
 
 		if (!roleIds.length && !roles.length) return 0;
-		if (!guild?.members.me?.permissions.has('ManageRoles')) return 0;
+		if (!guild?.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) return 0;
 
 		if (!members.has(userId)) return 0;
 		const member = members.get(userId)!;

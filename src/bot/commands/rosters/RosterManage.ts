@@ -1,3 +1,4 @@
+import { APIClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	AutocompleteInteraction,
@@ -19,9 +20,9 @@ import {
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { IRoster, IRosterCategory, PlayerWithLink } from '../../struct/RosterManager.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
-import { Collections, Settings } from '../../util/Constants.js';
 import { PlayerModel } from '../../types/index.js';
+import { Collections, Settings } from '../../util/Constants.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
 
 export default class RosterManageCommand extends Command {
@@ -175,6 +176,7 @@ export default class RosterManageCommand extends Command {
 		args: {
 			roster: string;
 			player_tag?: string;
+			clan_tag?: string;
 			user?: User;
 			target_group?: string;
 			target_roster?: string;
@@ -199,6 +201,12 @@ export default class RosterManageCommand extends Command {
 		}
 
 		if (args.action === 'add-user') {
+			if (args.clan_tag) {
+				const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
+				if (!clan) return;
+				return this.addUsers(interaction, { roster, clan, categoryId: args.target_group });
+			}
+
 			if (!args.player_tag) {
 				return this.addUsers(interaction, { roster, user: args.user, categoryId: args.target_group });
 			}
@@ -367,9 +375,15 @@ export default class RosterManageCommand extends Command {
 				const playerMenu = new StringSelectMenuBuilder()
 					.setMinValues(1)
 					.setMaxValues(chunk.length)
-					.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`)
 					.setCustomId(playerCustomIds[i])
 					.setOptions(chunk);
+
+				if (options.length > 25) {
+					playerMenu.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`);
+				} else {
+					playerMenu.setPlaceholder('Select Players');
+				}
+
 				const playerRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(playerMenu);
 				_playerRows.push(playerRow);
 			});
@@ -631,9 +645,15 @@ export default class RosterManageCommand extends Command {
 				const playerMenu = new StringSelectMenuBuilder()
 					.setMinValues(1)
 					.setMaxValues(chunk.length)
-					.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`)
 					.setCustomId(playerCustomIds[i])
 					.setOptions(chunk);
+
+				if (options.length > 25) {
+					playerMenu.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`);
+				} else {
+					playerMenu.setPlaceholder('Select Players');
+				}
+
 				const playerRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(playerMenu);
 				_playerRows.push(playerRow);
 			});
@@ -936,9 +956,15 @@ export default class RosterManageCommand extends Command {
 				const playerMenu = new StringSelectMenuBuilder()
 					.setMinValues(0)
 					.setMaxValues(chunk.length)
-					.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`)
 					.setCustomId(playerCustomIds[i])
 					.setOptions(chunk);
+
+				if (options.length > 25) {
+					playerMenu.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`);
+				} else {
+					playerMenu.setPlaceholder('Select Players');
+				}
+
 				const playerRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(playerMenu);
 				_playerRows.push(playerRow);
 			});
@@ -1052,10 +1078,12 @@ export default class RosterManageCommand extends Command {
 		{
 			roster,
 			user,
+			clan,
 			categoryId
 		}: {
 			roster: WithId<IRoster>;
 			user?: User | null;
+			clan?: APIClan;
 			categoryId?: string;
 		}
 	) {
@@ -1083,6 +1111,11 @@ export default class RosterManageCommand extends Command {
 			categoryId: null as null | string,
 			targetCategory: null as null | WithId<IRosterCategory>
 		};
+
+		if (clan) {
+			const players = await this.client.rosterManager.getClanMemberLinks(clan.memberList, roster.allowUnlinked);
+			selected.players = players;
+		}
 		if (user) {
 			selected.userIds.push(user.id);
 			selected.user = user;
@@ -1125,9 +1158,15 @@ export default class RosterManageCommand extends Command {
 				const playerMenu = new StringSelectMenuBuilder()
 					.setMinValues(1)
 					.setMaxValues(chunk.length)
-					.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`)
 					.setCustomId(playerCustomIds[i])
 					.setOptions(chunk);
+
+				if (options.length > 25) {
+					playerMenu.setPlaceholder(`Select Players [${maxItems * i + 1} - ${maxItems * (i + 1)}]`);
+				} else {
+					playerMenu.setPlaceholder('Select Players');
+				}
+
 				const playerRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(playerMenu);
 				_playerRows.push(playerRow);
 			});
@@ -1135,6 +1174,11 @@ export default class RosterManageCommand extends Command {
 		};
 
 		const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(1);
+		if (clan && selected.players.length) {
+			userMenu.setPlaceholder(`${clan.name} (${clan.tag})`);
+			userMenu.setDisabled(true);
+		}
+
 		const userRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userMenu);
 
 		const confirmButton = new ButtonBuilder()
@@ -1184,6 +1228,15 @@ export default class RosterManageCommand extends Command {
 					...messageTexts,
 					'- User selected:',
 					`  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
+					`  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
+				];
+			}
+
+			if (clan && selected.players.length) {
+				messageTexts = [
+					...messageTexts,
+					'- User clan:',
+					`  - **\u200e${clan.name} (${clan.tag})**`,
 					`  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
 				];
 			}
@@ -1323,10 +1376,13 @@ export default class RosterManageCommand extends Command {
 
 		const deselect = async (action: ButtonInteraction<'cached'>) => {
 			selected.playerTags = [];
-			selected.players = [];
 			selected.user = null;
+			selected.players = [];
 			selected.userIds = [];
 			confirmButton.setDisabled(!selected.playerTags.length);
+
+			userMenu.setDisabled(false);
+			userMenu.setPlaceholder('Select User');
 
 			const messageTexts = getTexts();
 			return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });

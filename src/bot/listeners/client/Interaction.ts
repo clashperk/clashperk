@@ -723,6 +723,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async getQuery(query: string) {
+		query = query.trim();
 		if (query.length > 100) {
 			const key = `AC-${nanoid()}`;
 			await this.client.redis.connection.set(key, query, { EX: 60 * 60 });
