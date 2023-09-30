@@ -141,14 +141,14 @@ export default class SummaryCommand extends Command {
 			.next();
 	}
 
-	private async aggregationQuery(clans: any[], season: string, ascOrder: boolean) {
+	private async aggregationQuery(playerTags: string[], season: string, ascOrder: boolean) {
 		const db = this.client.db.collection(Collections.LAST_SEEN);
 		const result = await db
 			.aggregate<{ name: string; tag: string; lastSeen?: Date; score?: number }>([
 				{
 					$match: {
-						'clan.tag': {
-							$in: clans.map((c) => c.tag)
+						tag: {
+							$in: playerTags
 						}
 					}
 				},
@@ -219,7 +219,11 @@ export default class SummaryCommand extends Command {
 	private async getMembersEmbed(interaction: CommandInteraction<'cached'>, clans: any[], season: string, ascOrder: boolean) {
 		const embed = new EmbedBuilder();
 		embed.setAuthor({ name: `${interaction.guild.name} Most Active Members` });
-		const members = await this.aggregationQuery(clans, season, ascOrder);
+
+		const clanList = await this.client.redis.getClans(clans.map((clan) => clan.tag));
+		const clanMemberTags = clanList.flatMap((clan) => clan.memberList).map((m) => m.tag);
+		const members = await this.aggregationQuery(clanMemberTags, season, ascOrder);
+
 		embed.setDescription(
 			[
 				`\`\`\`\n\u200eLAST-ON SCORE  NAME\n${members
