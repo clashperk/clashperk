@@ -43,7 +43,12 @@ export default class RosterGroupsModifyCommand extends Command {
 
 		const data: Partial<IRosterCategory> = {};
 
-		if (args.name) data.name = args.name;
+		if (args.name) {
+			const category = await this.client.rosterManager.searchCategory(interaction.guild.id, args.name);
+			if (category) return interaction.editReply({ content: 'A group with this name already exists.' });
+		}
+
+		if (args.name) data.displayName = args.name;
 		if (args.selectable) data.selectable = args.selectable;
 		if (args.group_role) data.roleId = args.group_role.id;
 		if (args.delete_role) data.roleId = null;

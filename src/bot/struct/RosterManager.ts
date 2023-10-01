@@ -1074,16 +1074,16 @@ export class RosterManager {
 	}
 
 	public async searchCategory(guildId: string, name: string) {
-		return this.categories.findOne({ guildId, name: this.formatName(name) });
+		return this.categories.findOne({ guildId, name: this.formatCategoryName(name) });
 	}
 
 	public async createCategory(category: IRosterCategory) {
-		category.name = this.formatName(category.name);
+		category.name = this.formatCategoryName(category.name);
 		const { insertedId } = await this.categories.insertOne(category);
 		return { ...category, _id: insertedId };
 	}
 
-	private formatName(name: string) {
+	private formatCategoryName(name: string) {
 		return name.toLowerCase().trim().replace(/\s+/g, '_');
 	}
 
@@ -1137,6 +1137,7 @@ export class RosterManager {
 	}
 
 	public async editCategory(categoryId: ObjectId, data: Partial<IRosterCategory>) {
+		if (data.displayName) data.name = this.formatCategoryName(data.displayName);
 		const { value } = await this.categories.findOneAndUpdate({ _id: categoryId }, { $set: data }, { returnDocument: 'after' });
 		return value;
 	}
