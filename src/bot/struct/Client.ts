@@ -1,31 +1,31 @@
-import { fileURLToPath, URL } from 'node:url';
-import Discord, { Message, Options, Snowflake, GatewayIntentBits, BaseInteraction } from 'discord.js';
-import { Db } from 'mongodb';
-import { container } from 'tsyringe';
-import { nanoid } from 'nanoid';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
+import Discord, { BaseInteraction, GatewayIntentBits, Message, Options, Snowflake } from 'discord.js';
+import { Db } from 'mongodb';
+import { nanoid } from 'nanoid';
+import { URL, fileURLToPath } from 'node:url';
+import { container } from 'tsyringe';
 import RPCHandler from '../core/RPCHandler.js';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/index.js';
-import Logger from '../util/Logger.js';
-import { Settings } from '../util/Constants.js';
-import { i18n } from '../util/i18n.js';
 import { ClientUtil } from '../util/ClientUtil.js';
+import { Settings } from '../util/Constants.js';
+import Logger from '../util/Logger.js';
+import { i18n } from '../util/i18n.js';
+import { Autocomplete } from './Autocomplete.js';
+import CapitalRaidScheduler from './CapitalRaidScheduler.js';
+import ClanGamesScheduler from './ClanGamesScheduler.js';
+import ClanWarScheduler from './ClanWarScheduler.js';
+import { CommandsMap } from './CommandsMap.js';
 import { Database } from './Database.js';
+import { GuildEventsHandler } from './GuildEventsHandler.js';
 import Http from './Http.js';
+import { NicknameHandler } from './NicknameHandler.js';
 import Patrons from './Patrons.js';
+import RedisService from './RedisService.js';
+import Resolver from './Resolver.js';
+import { RosterManager } from './RosterManager.js';
 import SettingsProvider from './SettingsProvider.js';
 import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
-import Resolver from './Resolver.js';
-import ClanWarScheduler from './ClanWarScheduler.js';
-import CapitalRaidScheduler from './CapitalRaidScheduler.js';
-import ClanGamesScheduler from './ClanGamesScheduler.js';
-import { CommandsMap } from './CommandsMap.js';
-import { NicknameHandler } from './NicknameHandler.js';
-import { GuildEventsHandler } from './GuildEventsHandler.js';
-import RedisService from './RedisService.js';
-import { RosterManager } from './RosterManager.js';
-import { Autocomplete } from './Autocomplete.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -85,7 +85,6 @@ export class Client extends Discord.Client {
 		super({
 			intents: [
 				GatewayIntentBits.Guilds,
-				GatewayIntentBits.GuildEmojisAndStickers,
 				GatewayIntentBits.GuildMembers,
 				GatewayIntentBits.GuildWebhooks,
 				GatewayIntentBits.GuildMessages
@@ -102,18 +101,21 @@ export class Client extends Discord.Client {
 				ReactionUserManager: 0,
 				ReactionManager: 0,
 				BaseGuildEmojiManager: 0,
-				// GuildEmojiManager: 0,
+				GuildEmojiManager: 0,
 				ApplicationCommandManager: 0,
 				ThreadMemberManager: 0,
-				MessageManager: 10,
+				MessageManager: 5,
 				UserManager: {
-					maxSize: 10,
+					maxSize: 2,
 					keepOverLimit: (user) => user.id === this.user!.id
 				},
 				GuildMemberManager: {
-					maxSize: 5,
+					maxSize: 2,
 					keepOverLimit: (member) => member.id === this.user!.id
-				}
+				},
+				AutoModerationRuleManager: 0,
+				DMMessageManager: 0,
+				GuildMessageManager: 5
 			}),
 			sweepers: {
 				...Options.DefaultSweeperSettings,
