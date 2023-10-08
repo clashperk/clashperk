@@ -1,19 +1,20 @@
-import { Collections, Flags } from '../util/Constants.js';
+import { captureException } from '@sentry/node';
+import { inspect } from 'node:util';
 import { Client } from '../struct/Client.js';
 import Queue from '../struct/Queue.js';
+import { Collections, Flags } from '../util/Constants.js';
+import CapitalLog from './CapitalLog.js';
+import ClanEmbedLog from './ClanEmbedLog.js';
+import ClanFeedLog from './ClanFeedLog.js';
+import ClanGamesLog from './ClanGamesLog.js';
+import ClanWarLog from './ClanWarLog.js';
+import DonationLog from './DonationLog.js';
+import JoinLeaveLog from './JoinLeaveLog.js';
+import LastSeenLog from './LastSeenLog.js';
+import LegendLog from './LegendLog.js';
 import MaintenanceHandler from './Maintenance.js';
 import { RoleManager } from './RoleManager.js';
-import ClanEmbedLog from './ClanEmbedLog.js';
-import ClanGamesLog from './ClanGamesLog.js';
-import LastSeenLog from './LastSeenLog.js';
-import ClanFeedLog from './ClanFeedLog.js';
-import DonationLog from './DonationLog.js';
-import ClanWarLog from './ClanWarLog.js';
-import LegendLog from './LegendLog.js';
-import JoinLeaveLog from './JoinLeaveLog.js';
-import CapitalLog from './CapitalLog.js';
 import { WarRoleManager } from './WarRoleManager.js';
-import { captureException } from '@sentry/node';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -92,9 +93,9 @@ export default class RPCHandler {
 					default:
 						break;
 				}
-			} catch (e) {
-				console.error(e);
-				captureException(e);
+			} catch (error) {
+				console.error(inspect(error, { depth: Infinity, colors: true }));
+				captureException(error);
 			} finally {
 				this.queue.shift();
 			}

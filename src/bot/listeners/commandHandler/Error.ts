@@ -1,4 +1,3 @@
-import { inspect } from 'node:util';
 import { addBreadcrumb, captureException, setContext } from '@sentry/node';
 import {
 	ActionRowBuilder,
@@ -10,6 +9,7 @@ import {
 	Interaction,
 	InteractionType
 } from 'discord.js';
+import { inspect } from 'node:util';
 import { Command, Listener } from '../../lib/index.js';
 
 export default class ErrorListener extends Listener {
@@ -25,7 +25,7 @@ export default class ErrorListener extends Listener {
 		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
 		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
-		console.error(inspect(error, { depth: Infinity }));
+		console.error(inspect(error, { depth: Infinity, colors: true }));
 
 		addBreadcrumb({
 			message: 'command_errored',
