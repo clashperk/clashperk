@@ -94,7 +94,7 @@ export default class RPCHandler {
 						break;
 				}
 			} catch (error) {
-				console.error(inspect(error, { depth: Infinity, colors: true }));
+				console.error(inspect(error, { depth: Infinity }));
 				captureException(error);
 			} finally {
 				this.queue.shift();

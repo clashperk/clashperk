@@ -25,7 +25,7 @@ export default class ErrorListener extends Listener {
 		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
 		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
-		console.error(inspect(error, { depth: Infinity, colors: true }));
+		console.error(inspect(error, { depth: Infinity }));
 
 		addBreadcrumb({
 			message: 'command_errored',
