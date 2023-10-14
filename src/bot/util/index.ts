@@ -142,8 +142,8 @@ export class Util {
 		return count === 1 ? text : `${text}${suffix}`;
 	}
 
-	public static geRaidWeekend() {
-		const start = moment();
+	public static geRaidWeekend(now: Date) {
+		const start = moment(now);
 		const day = start.day();
 		const hour = start.hours();
 
@@ -160,6 +160,10 @@ export class Util {
 		}
 
 		if (day > 1 && day < 5) {
+			start.weekday(5);
+		}
+
+		if (day === 6) {
 			start.weekday(5);
 		}
 

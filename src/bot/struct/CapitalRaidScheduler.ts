@@ -82,8 +82,10 @@ export default class CapitalRaidScheduler {
 		for (const tag of reminder.clans) {
 			const data = await this.getLastRaidSeason(tag);
 			if (!data) continue;
+
 			const { body: clan, res } = await this.client.http.getClan(tag);
 			if (!res.ok) continue;
+
 			const rand = Math.random();
 			const endTime = moment(data.endTime).toDate();
 

@@ -1,9 +1,9 @@
 import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, PermissionFlagsBits, time } from 'discord.js';
 import moment from 'moment';
 import { Collections } from '../util/Constants.js';
-import { i18n } from '../util/i18n.js';
-import { Season } from '../util/index.js';
 import { EMOJIS } from '../util/Emojis.js';
+import { i18n } from '../util/i18n.js';
+import { Season, Util } from '../util/index.js';
 import Client from './Client.js';
 
 export const imageMaps: Record<string, string> = {
@@ -72,7 +72,7 @@ export class GuildEventsHandler {
 		const CWLEndTime = moment(CWLStartTime).add(9, 'days').toDate();
 
 		const seasonEndTime = moment(Season.endTimestamp).toDate();
-		const { raidWeekEndTime, raidWeekStartTime } = this.getRaidWeek(now);
+		const { raidWeekEndTime, raidWeekStartTime } = Util.geRaidWeekend(now);
 
 		const events = [
 			{
@@ -204,37 +204,6 @@ export class GuildEventsHandler {
 		} finally {
 			setTimeout(this.init.bind(this), 1000 * 60 * 30).unref();
 		}
-	}
-
-	private getRaidWeek(now: Date) {
-		const start = moment(now);
-		const day = start.day();
-		const hour = start.hours();
-
-		if (day === 1) {
-			if (hour < 7) {
-				start.day(-7).weekday(5);
-			} else {
-				start.weekday(5);
-			}
-		}
-
-		if (day === 0) {
-			start.day(-1).weekday(5);
-		}
-
-		if (day > 1 && day < 5) {
-			start.weekday(5);
-		}
-
-		if (day === 6) {
-			start.weekday(5);
-		}
-
-		start.hour(7).minute(0).second(0).millisecond(0);
-		const end = moment(start).add(3, 'days');
-
-		return { raidWeekStartTime: start.toDate(), raidWeekEndTime: end.toDate() };
 	}
 }
 

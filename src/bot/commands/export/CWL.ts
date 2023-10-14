@@ -342,9 +342,6 @@ export default class ExportCWL extends Command {
 								member.dest += atk.destructionPercentage;
 								member.starTypes.push(atk.stars);
 
-								// const defender = opponent.members.find((mem) => mem.tag === atk.defenderTag)!;
-								// if (defender.townhallLevel < m.townhallLevel) {}
-
 								const defenderIndex = opponent.members.findIndex((mem) => mem.tag === atk.defenderTag);
 								const attackerIndex = clan.members.findIndex((mem) => mem.tag === m.tag);
 

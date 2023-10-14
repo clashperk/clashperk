@@ -110,7 +110,7 @@ export default class CapitalReminderDeleteCommand extends Command {
 			return [menu, button];
 		};
 
-		const { raidWeekEndTime } = Util.geRaidWeekend();
+		const { raidWeekEndTime } = Util.geRaidWeekend(new Date());
 
 		const embeds = () => {
 			const reminder = reminders.find((rem) => rem._id.toHexString() === state.selected)!;

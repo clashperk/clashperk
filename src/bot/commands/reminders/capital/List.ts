@@ -33,7 +33,7 @@ export default class ReminderListCommand extends Command {
 
 		const label = (duration: number) => moment.duration(duration).format('d[d] H[h], m[m], s[s]', { trim: 'both mid' });
 
-		const { raidWeekEndTime } = Util.geRaidWeekend();
+		const { raidWeekEndTime } = Util.geRaidWeekend(new Date());
 
 		const chunks = reminders.map((reminder, index) => {
 			const clanNames = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => `${clan.name} (${clan.tag})`);
