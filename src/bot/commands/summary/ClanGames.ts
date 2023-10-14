@@ -11,9 +11,9 @@ import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { Collections } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/Helper.js';
 import { ClanGames, Util } from '../../util/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
 
 export default class SummaryClanGamesCommand extends Command {
 	public constructor() {
@@ -65,7 +65,6 @@ export default class SummaryClanGamesCommand extends Command {
 		});
 		const playersEmbed = this.playerScoreboard(interaction, {
 			members: queried?.members ?? [],
-			clans: queried?.clans ?? [],
 			maxPoints: args.max_points,
 			seasonId,
 			showTime: args.show_time
@@ -184,7 +183,6 @@ export default class SummaryClanGamesCommand extends Command {
 			showTime
 		}: {
 			members: { name: string; tag: string; points: number; completedAt?: Date; timeTaken?: number }[];
-			clans: { name: string; tag: string; points: number }[];
 			maxPoints?: boolean;
 			seasonId: string;
 			showTime?: boolean;
@@ -205,7 +203,8 @@ export default class SummaryClanGamesCommand extends Command {
 						: `\`\`\`\n\u200e\u2002# POINTS  ${'NAME'.padEnd(20, ' ')}`,
 					members
 						.slice(0, 99)
-						.filter((d) => (showTime ? d.points >= this.MAX : true))
+						// TODO: fix timing issues
+						.filter((d) => (showTime ? d.points >= this.MAX && d.timeTaken && d.timeTaken > 0 : true))
 						.map((m, i) => {
 							const completionTime = this._formatTime(m.timeTaken).padStart(7, ' ');
 							const points = m.points.toString().padStart(5, ' ');

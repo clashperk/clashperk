@@ -110,6 +110,7 @@ export default class SummaryBestCommand extends Command {
 
 		const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
 		const order = args.order ?? 'desc';
+
 		const aggregated = await this.client.db
 			.collection(Collections.PLAYER_SEASONS)
 			.aggregate<AggregatedResult>([
@@ -519,9 +520,6 @@ export default class SummaryBestCommand extends Command {
 								}
 							},
 							{
-								$limit: 10
-							},
-							{
 								$project: {
 									name: 1,
 									tag: 1,
@@ -533,6 +531,14 @@ export default class SummaryBestCommand extends Command {
 										}
 									}
 								}
+							},
+							{
+								$match: {
+									value: { $gt: 0 }
+								}
+							},
+							{
+								$limit: 10
 							}
 						],
 						_donations: [
