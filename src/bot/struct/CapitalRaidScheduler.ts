@@ -185,11 +185,11 @@ export default class CapitalRaidScheduler {
 			.filter((m) => !unwantedMembers.includes(m.tag))
 			.filter((m) => (reminder.allMembers ? m.attacks >= 0 : m.attacks >= 1))
 			.filter((m) => (data.members.length >= 50 ? m.isParticipating : true));
+
 		const members = clanMembers
 			.filter((mem) => {
 				if (reminder.minThreshold) {
-					const totalAttacks = mem.attackLimit + mem.bonusAttackLimit;
-					return totalAttacks < reminder.minThreshold;
+					return mem.attacks < reminder.minThreshold;
 				}
 				// This logic will be removed later
 				return reminder.remaining.includes(mem.attackLimit + mem.bonusAttackLimit - mem.attacks);

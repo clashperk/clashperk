@@ -7,11 +7,11 @@ import ms from 'ms';
 import { nanoid } from 'nanoid';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
+import Google from '../../struct/Google.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
 import { IRoster, IRosterCategory } from '../../struct/RosterManager.js';
-import { Collections, ElasticIndex, Settings } from '../../util/Constants.js';
-import Google from '../../struct/Google.js';
 import { UserInfoModel, UserTimezone } from '../../types/index.js';
+import { Collections, ElasticIndex, Settings } from '../../util/Constants.js';
 
 const ranges: Record<string, number> = {
 	'clan-wars': ms('46h'),
@@ -222,7 +222,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async timezoneAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused);
+		const query = interaction.options.getString(focused)?.trim();
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
@@ -312,7 +312,7 @@ export default class InteractionListener extends Listener {
 			guildId: interaction.guild.id
 		};
 
-		const query = interaction.options.getString(focused);
+		const query = interaction.options.getString(focused)?.trim();
 
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
@@ -343,7 +343,7 @@ export default class InteractionListener extends Listener {
 		const filter: Filter<IRosterCategory> = {
 			guildId: interaction.guild.id
 		};
-		const query = interaction.options.getString(focused);
+		const query = interaction.options.getString(focused)?.trim();
 
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
@@ -372,7 +372,10 @@ export default class InteractionListener extends Listener {
 
 	private async aliasAutoComplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const clans = await this.client.storage.find(interaction.guild.id);
-		const query = interaction.options.getString(focused)?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const query = interaction.options
+			.getString(focused)
+			?.trim()
+			?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
@@ -394,7 +397,7 @@ export default class InteractionListener extends Listener {
 
 	private async durationAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const cmd = interaction.options.getString('type');
-		const dur = interaction.options.getString(focused);
+		const dur = interaction.options.getString(focused)?.trim();
 		const matchedDur = dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
 
 		if (dur && !isNaN(parseInt(dur, 10))) {
@@ -418,7 +421,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
+		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '');
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
@@ -511,7 +514,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
+		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '');
 
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
@@ -615,7 +618,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused);
+		const query = interaction.options.getString(focused)?.trim();
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
