@@ -98,7 +98,10 @@ export default class ExportCWL extends Command {
 						{ name: 'Def Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Total Def Dest', width: 100, align: 'RIGHT' },
-						{ name: 'Avg Def Dest', width: 100, align: 'RIGHT' }
+						{ name: 'Avg Def Dest', width: 100, align: 'RIGHT' },
+						{ name: 'Lower Hits', width: 100, align: 'RIGHT' },
+						{ name: 'Mirror Hits', width: 100, align: 'RIGHT' },
+						{ name: 'Upper Hits', width: 100, align: 'RIGHT' }
 					],
 					rows: chunk.members
 						.filter((m) => m.of > 0)
@@ -121,7 +124,10 @@ export default class ExportCWL extends Command {
 							m.defStars,
 							Number((m.defStars / m.defCount || 0).toFixed()),
 							Number(m.defDestruction.toFixed(2)),
-							Number((m.defDestruction / m.defCount || 0).toFixed(2))
+							Number((m.defDestruction / m.defCount || 0).toFixed(2)),
+							m.lowerHits,
+							m.mirrorHits,
+							m.upperHits
 						])
 				},
 				{
@@ -300,6 +306,7 @@ export default class ExportCWL extends Command {
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
+
 					clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
 					opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
 
@@ -315,6 +322,9 @@ export default class ExportCWL extends Command {
 								attacks: 0,
 								stars: 0,
 								trueStars: 0,
+								upperHits: 0,
+								lowerHits: 0,
+								mirrorHits: 0,
 								dest: 0,
 								defStars: 0,
 								defDestruction: 0,
@@ -331,6 +341,20 @@ export default class ExportCWL extends Command {
 								member.trueStars += previousBestAttack ? Math.max(0, atk.stars - previousBestAttack.stars) : atk.stars;
 								member.dest += atk.destructionPercentage;
 								member.starTypes.push(atk.stars);
+
+								// const defender = opponent.members.find((mem) => mem.tag === atk.defenderTag)!;
+								// if (defender.townhallLevel < m.townhallLevel) {}
+
+								const defenderIndex = opponent.members.findIndex((mem) => mem.tag === atk.defenderTag);
+								const attackerIndex = clan.members.findIndex((mem) => mem.tag === m.tag);
+
+								if (attackerIndex > defenderIndex) {
+									member.upperHits += 1;
+								} else if (defenderIndex > attackerIndex) {
+									member.lowerHits += 1;
+								} else if (attackerIndex === defenderIndex) {
+									member.mirrorHits += 1;
+								}
 							}
 
 							if (m.bestOpponentAttack) {
