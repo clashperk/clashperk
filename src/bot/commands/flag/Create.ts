@@ -13,7 +13,7 @@ export default class FlagCreateCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { reason?: string; player_tag?: string }) {
-		const tags = await this.client.resolver.resolveArgs(args.player_tag);
+		const tags = (await this.client.resolver.resolveArgs(args.player_tag)).filter((tag) => this.client.http.isValidTag(tag));
 
 		if (!args.reason) return interaction.editReply('You must provide a reason to flag.');
 		if (args.reason.length > 900) return interaction.editReply('Reason must be 1024 or fewer in length.');

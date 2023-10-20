@@ -15,7 +15,7 @@ export default class AutoClanRoleCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { role: Role; clan_tag: string; command: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { role: Role; clan_tag: string; command: string; clans?: string }) {
 		if (args.command === 'disable') return this.disable(interaction, args);
 
 		const clan = await this.client.db
@@ -101,7 +101,7 @@ export default class AutoClanRoleCommand extends Command {
 		}
 	}
 
-	private async disable(interaction: CommandInteraction<'cached'>, args: { clan_tag: string; clear?: boolean }) {
+	private async disable(interaction: CommandInteraction<'cached'>, args: { clans?: string; clear?: boolean }) {
 		if (args.clear) {
 			const { matchedCount } = await this.client.db
 				.collection(Collections.CLAN_STORES)
@@ -115,7 +115,7 @@ export default class AutoClanRoleCommand extends Command {
 			);
 		}
 
-		const tags = await this.client.resolver.resolveArgs(args.clan_tag);
+		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length ? await this.client.storage.search(interaction.guildId, tags) : [];
 
 		if (!tags.length) {

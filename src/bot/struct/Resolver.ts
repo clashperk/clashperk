@@ -1,7 +1,7 @@
-import { Guild, User, CommandInteraction, BaseInteraction } from 'discord.js';
-import { APIPlayer, APIClan } from 'clashofclans.js';
-import { Collections, ElasticIndex, Settings, status } from '../util/Constants.js';
+import { APIClan, APIPlayer } from 'clashofclans.js';
+import { BaseInteraction, CommandInteraction, Guild, User } from 'discord.js';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
+import { Collections, ElasticIndex, Settings, status } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
 import { ElasticIndexer } from './Indexer.js';
@@ -246,17 +246,10 @@ export default class Resolver {
 		const pattern = /^#?[0289CGJLOPQRUVY]{3,}$/i;
 		if (args.startsWith('AC-')) {
 			const tags = await this.client.redis.connection.get(args);
-			if (tags)
-				return tags
-					.split(/\W+/)
-					.filter((tag) => pattern.test(tag))
-					.map((tag) => this.client.http.fixTag(tag));
+			if (tags) return tags.split(/\W+/).map((tag) => (pattern.test(tag) ? this.client.http.fixTag(tag) : tag));
 		}
 
-		return args
-			.split(/\W+/)
-			.filter((tag) => pattern.test(tag))
-			.map((tag) => this.client.http.fixTag(tag));
+		return args.split(/\W+/).map((tag) => (pattern.test(tag) ? this.client.http.fixTag(tag) : tag));
 	}
 
 	public async enforceSecurity(

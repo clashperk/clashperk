@@ -95,14 +95,6 @@ const getQuery = (query: string): QueryDslQueryContainer[] => {
 				}
 			}
 		},
-		// {
-		// 	wildcard: {
-		// 		name: {
-		// 			value: `*${query}*`,
-		// 			case_insensitive: true
-		// 		}
-		// 	}
-		// },
 		{
 			wildcard: {
 				tag: {

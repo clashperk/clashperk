@@ -99,9 +99,9 @@ export default class ExportCWL extends Command {
 						{ name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Total Def Dest', width: 100, align: 'RIGHT' },
 						{ name: 'Avg Def Dest', width: 100, align: 'RIGHT' },
-						{ name: 'Lower Hits', width: 100, align: 'RIGHT' },
-						{ name: 'Mirror Hits', width: 100, align: 'RIGHT' },
-						{ name: 'Upper Hits', width: 100, align: 'RIGHT' }
+						{ name: 'Dips', width: 100, align: 'RIGHT' }
+						// { name: 'Same TH Hits', width: 100, align: 'RIGHT' },
+						// { name: 'Upper TH Hits', width: 100, align: 'RIGHT' }
 					],
 					rows: chunk.members
 						.filter((m) => m.of > 0)
@@ -125,9 +125,9 @@ export default class ExportCWL extends Command {
 							Number((m.defStars / m.defCount || 0).toFixed()),
 							Number(m.defDestruction.toFixed(2)),
 							Number((m.defDestruction / m.defCount || 0).toFixed(2)),
-							m.lowerHits,
-							m.mirrorHits,
-							m.upperHits
+							m.lowerHits
+							// m.mirrorHits,
+							// m.upperHits
 						])
 				},
 				{
@@ -342,14 +342,14 @@ export default class ExportCWL extends Command {
 								member.dest += atk.destructionPercentage;
 								member.starTypes.push(atk.stars);
 
-								const defenderIndex = opponent.members.findIndex((mem) => mem.tag === atk.defenderTag);
-								const attackerIndex = clan.members.findIndex((mem) => mem.tag === m.tag);
+								const defenderTh = opponent.members.find((mem) => mem.tag === atk.defenderTag)!.townhallLevel;
+								const attackerTh = clan.members.find((mem) => mem.tag === m.tag)!.townhallLevel;
 
-								if (attackerIndex > defenderIndex) {
+								if (attackerTh > defenderTh) {
 									member.upperHits += 1;
-								} else if (defenderIndex > attackerIndex) {
+								} else if (defenderTh > attackerTh) {
 									member.lowerHits += 1;
-								} else if (attackerIndex === defenderIndex) {
+								} else if (attackerTh === defenderTh) {
 									member.mirrorHits += 1;
 								}
 							}

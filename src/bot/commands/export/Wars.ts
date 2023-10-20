@@ -164,7 +164,10 @@ export default class WarExport extends Command {
 		}));
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Stats]`, sheets);
-		return interaction.editReply({ content: `**War Export (Last ${num})**`, components: getExportComponents(spreadsheet) });
+		return interaction.editReply({
+			content: `**War Export [Last ${num}]** (${clans.map((clan) => clan.name).join(',')})`,
+			components: getExportComponents(spreadsheet)
+		});
 	}
 
 	private starCount(stars: number[] = [], count: number) {
