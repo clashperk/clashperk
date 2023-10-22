@@ -237,6 +237,7 @@ export class CustomBot {
 						}
 					}
 				)
+				serviceInstanceRedeploy(environmentId: "${environmentId}", serviceId: "${serviceId}")
 			}
 		`;
 
