@@ -147,24 +147,21 @@ export class CustomBot {
 	}
 
 	private async gql<T>(query: string): Promise<T> {
-		try {
-			const res = await fetch('https://backboard.railway.app/graphql/v2', {
-				method: 'POST',
-				headers: {
-					'Authorization': `Bearer ${process.env.RAILWAY_API_TOKEN!}`,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ query })
-			});
+		const res = await fetch('https://backboard.railway.app/graphql/v2', {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${process.env.RAILWAY_API_TOKEN!}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ query })
+		});
 
-			const body = await res.json();
-			if (!res.ok || body?.data === null) {
-				throw new Error(body.errors?.at?.(0)?.message ?? res.statusText);
-			}
-			return body as T;
-		} catch (error) {
-			throw error;
+		const body = await res.json();
+		if (!res.ok || body?.data === null) {
+			throw new Error(body.errors?.at?.(0)?.message ?? res.statusText);
 		}
+
+		return body as T;
 	}
 
 	public async createService(botToken: string, app: Application) {
@@ -244,15 +241,8 @@ export class CustomBot {
 			}
 		`;
 
-		try {
-			const { data } = await this.gql<SharedVariableConfigure>(query);
-			if (!data) return null;
-			return data.variableCollectionUpsert;
-		} catch (error) {
-			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
-			captureException(error);
-			return null;
-		}
+		const { data } = await this.gql<SharedVariableConfigure>(query);
+		return data?.variableCollectionUpsert;
 	}
 
 	public async getDeployments(serviceId: string) {
