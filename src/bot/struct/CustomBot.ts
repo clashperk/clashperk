@@ -158,7 +158,9 @@ export class CustomBot {
 			});
 
 			const body = await res.json();
-			if (!res.ok) throw new Error(body.errors?.at?.(0)?.message ?? res.statusText);
+			if (!res.ok || body?.data === null) {
+				throw new Error(body.errors?.at?.(0)?.message ?? res.statusText);
+			}
 			return body as T;
 		} catch (error) {
 			throw error;
@@ -179,6 +181,7 @@ export class CustomBot {
 						variables: {
 							TOKEN: "${botToken}",
 							SENTRY: "\${{shared.SENTRY}}",
+							RAILWAY_API_TOKEN: "\${{shared.RAILWAY_API_TOKEN}}",
 							ASSET_API_BACKEND: "\${{shared.ASSET_API_BACKEND}}",
 							BASE_URL: "\${{shared.BASE_URL}}",
 							CLASH_TOKENS: "\${{shared.CLASH_TOKENS}}",
@@ -312,7 +315,10 @@ export class CustomBot {
 		if (!hasInvited) return;
 
 		const customBot = new CustomBot(app.token);
-		await customBot.upsertCollectionVariables(app.serviceId);
+		const isProd = await customBot.upsertCollectionVariables(app.serviceId);
+		if (isProd) {
+			this.client.logger.debug(`Custom bot "${app.name}" was set to production.`, { label: 'CUSTOM-BOT' });
+		}
 
 		for (const guildId of app.guildIds) {
 			await this.client.settings.setCustomBot(guildId);
