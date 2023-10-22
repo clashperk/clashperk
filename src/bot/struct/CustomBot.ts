@@ -7,7 +7,7 @@ import { Collections, Settings } from '../util/Constants.js';
 import Client from './Client.js';
 
 const projectId = process.env.RAILWAY_PROJECT_ID!;
-const environmentId = process.env.RAILWAY_ENV_ID!;
+const environmentId = process.env.RAILWAY_ENVIRONMENT_ID!;
 
 export interface ICustomBot {
 	applicationId: string;
