@@ -1,7 +1,7 @@
+import { BaseInteraction } from 'discord.js';
 import { Collection } from 'mongodb';
 import fetch from 'node-fetch';
 import TimeoutSignal from 'timeout-signal';
-import { BaseInteraction } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
 import { Client } from './Client.js';
 
@@ -61,7 +61,7 @@ export default class Patrons {
 	}
 
 	public async findGuild(guildId: string) {
-		return this.collection.findOne({ active: true, guilds: { $elemMatch: { id: guildId } } });
+		return this.collection.findOne({ active: true, applicationId: { $exists: true }, guilds: { $elemMatch: { id: guildId } } });
 	}
 
 	public async refresh() {

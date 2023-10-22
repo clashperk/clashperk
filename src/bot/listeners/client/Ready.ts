@@ -1,5 +1,7 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 import { Listener } from '../../lib/index.js';
+import { CustomBot, ICustomBot } from '../../struct/CustomBot.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class ReadyListener extends Listener {
 	public constructor() {
@@ -17,8 +19,8 @@ export default class ReadyListener extends Listener {
 			{ label: 'READY' }
 		);
 
-		const applicationCommands = (await this.client.application?.commands.fetch())!;
-		const commands = applicationCommands
+		const applicationCommands = await this.client.application?.commands.fetch();
+		const commands = applicationCommands!
 			.filter((command) => command.type === ApplicationCommandType.ChatInput)
 			.map((command) => {
 				const subCommandGroups = command.options
@@ -52,5 +54,16 @@ export default class ReadyListener extends Listener {
 				];
 			});
 		commands.flat().map((cmd) => this.client.commandsMap.commands.set(cmd.name, cmd.formatted));
+
+		if (this.client.isCustom()) await this.onReady();
+	}
+
+	private async onReady() {
+		const collection = this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS);
+		const app = await collection.findOne({ applicationId: this.client.user!.id });
+		if (!app || app.isLive) return;
+
+		const customBot = new CustomBot(app.token);
+		return customBot.handleOnReady(app);
 	}
 }

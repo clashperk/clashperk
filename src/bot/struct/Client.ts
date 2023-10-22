@@ -141,7 +141,6 @@ export class Client extends Discord.Client {
 	}
 
 	public isCustom() {
-		// const appId = Buffer.from(process.env.TOKEN!.split('.').at(0)!, 'base64').toString();
 		return !['635462521729581058', '526971716711350273'].includes(this.user!.id);
 	}
 

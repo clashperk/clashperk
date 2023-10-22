@@ -1,10 +1,10 @@
-import { ActivityType, ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, WebhookClient } from 'discord.js';
+import { ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, WebhookClient } from 'discord.js';
 import { Listener } from '../../lib/index.js';
+import { CustomBot, ICustomBot } from '../../struct/CustomBot.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
 import { Collections, Settings } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { welcomeEmbedMaker } from '../../util/Helper.js';
-import { CustomBot, ICustomBot } from '../../struct/CustomBot.js';
 
 export default class GuildCreateListener extends Listener {
 	private webhook: WebhookClient | null = null;
@@ -27,18 +27,6 @@ export default class GuildCreateListener extends Listener {
 		return this.webhook;
 	}
 
-	private setPresence() {
-		this.client.user!.setPresence({
-			status: 'online',
-			activities: [
-				{
-					type: ActivityType.Watching,
-					name: `${this.client.guilds.cache.size} servers`
-				}
-			]
-		});
-	}
-
 	public async exec(guild: Guild) {
 		if (!guild.available) return;
 		this.client.util.setPresence();
@@ -48,6 +36,7 @@ export default class GuildCreateListener extends Listener {
 
 		if (this.client.isCustom()) {
 			await this.createCommands(guild);
+			await this.onReady();
 		}
 
 		if (!this.client.isOwner(guild.ownerId)) {
@@ -141,7 +130,7 @@ export default class GuildCreateListener extends Listener {
 		if (!patron?.applicationId) return;
 
 		const collection = this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS);
-		const app = await collection.findOne({ applicationId: patron.applicationId });
+		const app = await collection.findOne({ applicationId: this.client.user!.id });
 		if (!app) return;
 
 		const customBot = new CustomBot(app.token);
@@ -149,9 +138,17 @@ export default class GuildCreateListener extends Listener {
 
 		if (commands.length) {
 			await collection.updateOne({ _id: app._id }, { $addToSet: { guildIds: guild.id } });
-			await this.client.settings.setCustomBot(guild);
 		}
 
 		return commands;
+	}
+
+	private async onReady() {
+		const collection = this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS);
+		const app = await collection.findOne({ applicationId: this.client.user!.id });
+		if (!app || app.isLive) return;
+
+		const customBot = new CustomBot(app.token);
+		return customBot.handleOnReady(app);
 	}
 }

@@ -14,10 +14,10 @@ import moment from 'moment';
 import { WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { CustomBot } from '../../struct/CustomBot.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
-import { EMOJIS } from '../../util/Emojis.js';
-import { getInviteLink } from '../../util/Constants.js';
 import { Patron, rewards } from '../../struct/Patrons.js';
+import { getInviteLink } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class BotPersonalizerCommand extends Command {
 	public constructor() {
@@ -33,9 +33,8 @@ export default class BotPersonalizerCommand extends Command {
 	}
 
 	private isEligible(patron: WithId<Patron>) {
-		if (patron.rewardId === rewards.gold) return true;
+		if (patron.rewardId === rewards.gold || patron.rewardId === rewards.silver) return true;
 		if (patron.rewardId === rewards.bronze) return patron.sponsored;
-		return patron.rewardId === rewards.silver && (patron.createdAt < new Date('2023-06') || patron.sponsored);
 	}
 
 	private isAllowedGuild(patron: Patron, guildId: string) {
@@ -175,7 +174,6 @@ export default class BotPersonalizerCommand extends Command {
 					token: inputValue,
 					user: interaction.user
 				});
-				await this.client.settings.setCustomBot(interaction.guild);
 				await this.client.patrons.attachCustomBot(interaction.user.id, app.id);
 
 				const status = await customBot.checkDeploymentStatus(service.id, async (status) => {
@@ -187,7 +185,11 @@ export default class BotPersonalizerCommand extends Command {
 
 				if (status === 'SUCCESS') {
 					messages.push(`${EMOJIS.OK} Successfully deployed application! [took ${timeTaken()}]`);
-					return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
+					messages.push(`Last step is to invite the bot into our custom emoji servers.`);
+					messages.push(
+						`Join [Support Server](<https://discord.gg/ppuppun>) and check <#1130139203213197434> for the list of emoji servers.`
+					);
+					return modalSubmit.editReply({ content: messages.join('\n'), components: [] });
 				}
 
 				if (status === 'FAILED') {

@@ -1,9 +1,9 @@
-import { APIApplication, APIApplicationCommand, APIUser, ApplicationFlags, ApplicationFlagsBitField, REST, Routes, User } from 'discord.js';
-import { container } from 'tsyringe';
 import { captureException } from '@sentry/node';
+import { APIApplication, APIApplicationCommand, APIUser, ApplicationFlags, ApplicationFlagsBitField, REST, Routes, User } from 'discord.js';
 import { Collection } from 'mongodb';
+import { container } from 'tsyringe';
 import { COMMANDS } from '../../../scripts/Commands.js';
-import { Collections } from '../util/Constants.js';
+import { Collections, Settings } from '../util/Constants.js';
 import Client from './Client.js';
 
 const projectId = process.env.RAILWAY_PROJECT_ID!;
@@ -17,6 +17,7 @@ export interface ICustomBot {
 	patronId: string;
 	serviceId: string;
 	guildIds: string[];
+	isLive: boolean;
 }
 
 export class CustomBot {
@@ -108,7 +109,7 @@ export class CustomBot {
 		token: string;
 		serviceId: string;
 	}) {
-		return this.collection.findOneAndUpdate(
+		const { value } = await this.collection.findOneAndUpdate(
 			{
 				applicationId: application.id
 			},
@@ -122,6 +123,7 @@ export class CustomBot {
 					patronId,
 					serviceId,
 					userId: user.id,
+					isLive: false,
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
@@ -130,6 +132,7 @@ export class CustomBot {
 			},
 			{ upsert: true, returnDocument: 'after' }
 		);
+		return value!;
 	}
 
 	public async createCommands(appId: string, guildId: string) {
@@ -220,6 +223,34 @@ export class CustomBot {
 		}
 	}
 
+	public async upsertCollectionVariables(serviceId: string) {
+		const query = /* GraphQL */ `
+			mutation SharedVariableConfigure {
+				variableCollectionUpsert(
+					input: {
+						environmentId: "${environmentId}",
+						serviceId: "${serviceId}",
+						projectId: "${projectId}",
+						replace: false,
+						variables: {
+							NODE_ENV: "production",
+						}
+					}
+				)
+			}
+		`;
+
+		try {
+			const { data } = await this.gql<SharedVariableConfigure>(query);
+			if (!data) return null;
+			return data.variableCollectionUpsert;
+		} catch (error) {
+			this.client.logger.error(error, { label: 'CUSTOM_BOT' });
+			captureException(error);
+			return null;
+		}
+	}
+
 	public async getDeployments(serviceId: string) {
 		const query = /* GraphQL */ `
 			query Deployments {
@@ -271,6 +302,23 @@ export class CustomBot {
 			return null;
 		}
 	}
+
+	public async handleOnReady(app: ICustomBot) {
+		const emojiServers = this.client.settings.get<string[]>('global', Settings.EMOJI_SERVERS, []);
+		const guildIds = this.client.guilds.cache.map((guild) => guild.id);
+
+		const hasInvited = emojiServers.every((id) => guildIds.includes(id));
+		if (!hasInvited) return;
+
+		const customBot = new CustomBot(app.token);
+		await customBot.upsertCollectionVariables(app.serviceId);
+
+		for (const guildId of app.guildIds) {
+			await this.client.settings.setCustomBot(guildId);
+		}
+
+		return this.collection.updateOne({ applicationId: app.applicationId }, { $set: { isLive: true } });
+	}
 }
 
 interface ServiceCreate {
@@ -280,6 +328,12 @@ interface ServiceCreate {
 			name: string;
 			createdAt: string;
 		};
+	} | null;
+}
+
+interface SharedVariableConfigure {
+	data: {
+		variableCollectionUpsert: boolean;
 	} | null;
 }
 

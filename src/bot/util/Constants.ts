@@ -138,7 +138,8 @@ export const enum Settings {
 	ROSTER_DEFAULT_SETTINGS = 'rosterDefaultSettings',
 	HAS_CUSTOM_BOT = 'hasCustomBot',
 	GUILD_LOG_WEBHOOK_URL = 'guildLogWebhookURL',
-	RATE_LIMIT_WEBHOOK_URL = 'rateLimitWebhookURL'
+	RATE_LIMIT_WEBHOOK_URL = 'rateLimitWebhookURL',
+	EMOJI_SERVERS = 'emojiServers'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
