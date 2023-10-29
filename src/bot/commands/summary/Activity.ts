@@ -232,6 +232,7 @@ export default class SummaryCommand extends Command {
 				'```'
 			].join('\n')
 		);
+		embed.setFooter({ text: `Season ${season} ` });
 		return embed;
 	}
 

@@ -9,8 +9,8 @@ import {
 	Guild,
 	StringSelectMenuBuilder
 } from 'discord.js';
-import { container } from 'tsyringe';
 import { AnyBulkWriteOperation } from 'mongodb';
+import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';

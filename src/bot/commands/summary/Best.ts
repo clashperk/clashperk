@@ -57,7 +57,7 @@ const fields = {
 
 	_trophiesGained: `${EMOJIS.TROPHY} Trophies Gained`,
 	_trophies: `${EMOJIS.TROPHY} Current Trophies`,
-	// _versusTrophies: `${EMOJIS.BB_TROPHY} Versus Trophies`,
+	_versusTrophies: `${EMOJIS.BB_TROPHY} Builder Base Trophies`,
 	_warStars: `${EMOJIS.WAR_STAR} War Stars`,
 	// _cwlStars: `${EMOJIS.STAR} CWL Stars`,
 
@@ -156,9 +156,10 @@ export default class SummaryBestCommand extends Command {
 							$subtract: ['$trophies.current', '$trophies.initial']
 						},
 						_trophies: '$trophies.current',
-						_versusTrophies: {
-							$subtract: ['$versusTrophies.current', '$versusTrophies.initial']
-						},
+						// _versusTrophies: {
+						// 	$subtract: ['$versusTrophies.current', '$versusTrophies.initial']
+						// },
+						_versusTrophies: '$versusTrophies.current',
 						_versusAttackWins: {
 							$max: [{ $subtract: ['$versusBattleWins.current', '$versusBattleWins.initial'] }, '$builderBaseAttacksWon', 0]
 						},
@@ -587,41 +588,37 @@ export default class SummaryBestCommand extends Command {
 		}
 
 		const _fields = Object.keys(fields).filter((field) => (field === '_clanGamesCompletionTime' && order === 'asc' ? false : true));
-		_fields
-			.filter((field) => (args.selected ? args.selected.includes(field) : true))
-			.map((field) => {
-				const key = field as keyof typeof fields;
-				const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
+		const filtered = _fields.filter((field) => (args.selected ? args.selected.includes(field) : true));
 
-				if (!members.length) {
-					return embed.addFields({
-						name: fields[key],
-						value: 'No data available.'
-					});
-				}
+		for (const field of filtered) {
+			const key = field as keyof typeof fields;
+			const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
 
-				return embed.addFields({
+			if (!members.length) {
+				embed.addFields({
 					name: fields[key],
-					value: members
-						.map((member, n) => {
-							const num =
-								key === '_clanGamesCompletionTime'
-									? this._formatTime(member.value).padStart(7, ' ')
-									: Util.formatNumber(member.value).padStart(7, ' ');
-							return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${escapeMarkdown(member.name)}`;
-						})
-						.join('\n')
+					value: 'No data available.'
 				});
+				continue;
+			}
+
+			embed.addFields({
+				name: fields[key],
+				value: members
+					.map((member, n) => {
+						const num =
+							key === '_clanGamesCompletionTime'
+								? this._formatTime(member.value).padStart(7, ' ')
+								: this.formatNumber(key, member.value).padStart(7, ' ');
+						return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${escapeMarkdown(member.name)}`;
+					})
+					.join('\n')
 			});
 
-		if (embedLength(embed.toJSON()) > 6000) {
-			const fields = [...embed.data.fields!];
-			embed.setFields(fields.slice(0, 7));
-			await interaction.followUp({ embeds: [embed] });
-
-			embed.setFields(fields.slice(7));
-			embed.setFooter({ text: `Season ${seasonId}` });
-			return interaction.followUp({ embeds: [embed] });
+			if (embedLength(embed.toJSON()) > 6000) {
+				embed.spliceFields(embed.data.fields!.length - 1, 1);
+				break;
+			}
 		}
 
 		const payload = {
@@ -658,7 +655,8 @@ export default class SummaryBestCommand extends Command {
 						const labelText = fields[field as keyof typeof fields];
 						const emoji = /<a?:.+:(\d+)>/.exec(labelText)?.[1];
 						const label = emoji ? labelText.replace(/<a?:.+:(\d+)>/, '').trim() : labelText;
-						return { label, emoji, value: field };
+						const selected = args.selected?.includes(field);
+						return { label: `${selected ? '' : ''}${label}`, emoji, value: field };
 					})
 					// .map((option) => ({ ...option, default: args.selected?.includes(option.value) }))
 				)
@@ -675,5 +673,12 @@ export default class SummaryBestCommand extends Command {
 			return moment.duration(diff).format('d[d] h[h]', { trim: 'both mid' });
 		}
 		return moment.duration(diff).format('h[h] m[m]', { trim: 'both mid' });
+	}
+
+	private formatNumber(key: keyof typeof fields, value: number) {
+		if (key === '_trophies' || key === '_trophiesGained' || key === '_versusTrophies') {
+			return value.toString();
+		}
+		return Util.formatNumber(value);
 	}
 }

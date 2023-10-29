@@ -1,21 +1,21 @@
+import { APIClan } from 'clashofclans.js';
 import {
-	EmbedBuilder,
-	CommandInteraction,
 	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	StringSelectMenuBuilder,
-	ButtonInteraction,
 	BaseInteraction,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	StringSelectMenuBuilder,
 	embedLength
 } from 'discord.js';
-import { APIClan } from 'clashofclans.js';
 import moment from 'moment';
-import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
-import { Collections } from '../../util/Constants.js';
-import { Season, Util } from '../../util/index.js';
 import { Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
+import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { recoverDonations } from '../../util/Helper.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class DonationSummaryCommand extends Command {
 	public constructor() {
@@ -201,7 +201,7 @@ export default class DonationSummaryCommand extends Command {
 				{
 					$match: {
 						season: seasonId,
-						$or: clans.map((clan) => clan.memberList.map((mem) => ({ __clans: clan.tag, tag: mem.tag }))).flat()
+						__clans: { $in: clans.map((clan) => clan.tag) }
 					}
 				},
 				{
@@ -280,7 +280,7 @@ export default class DonationSummaryCommand extends Command {
 								return `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clanDp)} ${this.donation(
 									clan.donationsReceived,
 									clanRp
-								)}  ${clan.name.padEnd(15, ' ')}\u200f\``;
+								)}  ${Util.escapeBackTick(clan.name).padEnd(15, ' ')}\u200f\``;
 							})
 							.join('\n'),
 						{ maxLength: 4000 }
@@ -404,7 +404,7 @@ export default class DonationSummaryCommand extends Command {
 								const icon = (isTH ? ORANGE_NUMBERS : BLUE_NUMBERS)[isTH ? mem.townHallLevel : i + 1];
 								const don = this.donation(mem.donations, memDp);
 								const rec = this.donation(mem.donationsReceived, memRp);
-								return `${icon} \`\u200e${don} ${rec}  ${mem.name.padEnd(15, ' ')}\u200f\``;
+								return `${icon} \`\u200e${don} ${rec}  ${Util.escapeBackTick(mem.name).padEnd(15, ' ')}\u200f\``;
 							})
 							.join('\n'),
 						{ maxLength: 4000 }
