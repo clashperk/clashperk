@@ -99,9 +99,9 @@ export default class ExportCWL extends Command {
 						{ name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Total Def Dest', width: 100, align: 'RIGHT' },
 						{ name: 'Avg Def Dest', width: 100, align: 'RIGHT' },
-						{ name: 'Dips', width: 100, align: 'RIGHT' }
+						{ name: 'Lower TH Hits (Dips)', width: 100, align: 'RIGHT' },
+						{ name: 'Upper TH Hits (Reaches)', width: 100, align: 'RIGHT' }
 						// { name: 'Same TH Hits', width: 100, align: 'RIGHT' },
-						// { name: 'Upper TH Hits', width: 100, align: 'RIGHT' }
 					],
 					rows: chunk.members
 						.filter((m) => m.of > 0)
@@ -125,9 +125,8 @@ export default class ExportCWL extends Command {
 							Number((m.defStars / m.defCount || 0).toFixed()),
 							Number(m.defDestruction.toFixed(2)),
 							Number((m.defDestruction / m.defCount || 0).toFixed(2)),
-							m.lowerHits
-							// m.mirrorHits,
-							// m.upperHits
+							m.lowerHits,
+							m.upperHits
 						])
 				},
 				{
@@ -346,9 +345,11 @@ export default class ExportCWL extends Command {
 								const attackerTh = clan.members.find((mem) => mem.tag === m.tag)!.townhallLevel;
 
 								if (attackerTh > defenderTh) {
-									member.upperHits += 1;
-								} else if (defenderTh > attackerTh) {
+									// hit a TH LOWER than yours (DIP)
 									member.lowerHits += 1;
+								} else if (defenderTh > attackerTh) {
+									// hit a TH HIGHER than yours (REACHES)
+									member.upperHits += 1;
 								} else if (attackerTh === defenderTh) {
 									member.mirrorHits += 1;
 								}
