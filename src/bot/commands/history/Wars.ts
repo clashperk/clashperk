@@ -130,6 +130,9 @@ export default class WarHistoryCommand extends Command {
 
 	private async getIndividualWars(interaction: CommandInteraction<'cached'>, players: { name: string; tag: string }[]) {
 		const result = await Promise.all(players.map((player) => this.getWars(player.tag, player)));
+		if (!result.length) {
+			return interaction.editReply('No war history available at this moment.');
+		}
 		return this.export(interaction, result);
 	}
 
