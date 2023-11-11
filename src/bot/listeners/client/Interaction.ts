@@ -413,7 +413,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '');
+		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '').substring(0, 500);
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
@@ -506,7 +506,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '');
+		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '')?.substring(0, 500);
 
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
@@ -610,7 +610,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused)?.trim();
+		const query = interaction.options.getString(focused)?.trim()?.substring(0, 500);
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
