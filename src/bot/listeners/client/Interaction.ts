@@ -615,8 +615,8 @@ export default class InteractionListener extends Listener {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
-		const userId = '745996444795928668';
-		const guildId = '1087399800036675674';
+		const userId = interaction.user.id;
+		const guildId = interaction.guild.id;
 
 		const now = Date.now();
 		const result = query
