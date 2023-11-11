@@ -104,10 +104,6 @@ export default class SummaryBestCommand extends Command {
 		const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
 		const members = _clans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
 
-		const embed = new EmbedBuilder()
-			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild.name} Best Players`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
-
 		const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
 		const order = args.order ?? 'desc';
 
@@ -587,6 +583,12 @@ export default class SummaryBestCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		}
 
+		const embed = new EmbedBuilder()
+			.setTimestamp()
+			.setColor(this.client.embed(interaction))
+			.setFooter({ text: `Season ${seasonId}` })
+			.setAuthor({ name: `${interaction.guild.name} Best Players`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
+
 		const _fields = Object.keys(fields).filter((field) => (field === '_clanGamesCompletionTime' && order === 'asc' ? false : true));
 		const filtered = _fields.filter((field) => (args.selected ? args.selected.includes(field) : true));
 
@@ -663,7 +665,6 @@ export default class SummaryBestCommand extends Command {
 		);
 
 		const isSameSeason = seasonId === Season.ID;
-		embed.setFooter({ text: `Season ${seasonId}` }).setTimestamp();
 		await interaction.editReply({ embeds: [embed], components: isSameSeason ? [row, menuRow] : [menuRow] });
 		return this.clearId(interaction);
 	}
