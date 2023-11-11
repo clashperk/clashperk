@@ -10,7 +10,7 @@ export default class GuildBanInhibitor extends Inhibitor {
 		});
 	}
 
-	public exec(interaction: Interaction) {
+	public exec(interaction: Interaction): boolean {
 		if (this.client.isOwner(interaction.user.id)) return false;
 		if (!interaction.guild) return false;
 		const blacklist = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);

@@ -9,7 +9,7 @@ export default class PermissionInhibitor extends Inhibitor {
 		});
 	}
 
-	public exec(interaction: Interaction) {
+	public exec(interaction: Interaction): boolean {
 		if (interaction.inGuild() && !interaction.inCachedGuild()) return true;
 		if (!interaction.inCachedGuild()) return true;
 		if (!interaction.channel) return true;

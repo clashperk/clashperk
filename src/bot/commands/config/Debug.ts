@@ -1,4 +1,4 @@
-import { CommandInteraction, PermissionsString, Interaction, TextBasedChannel, DMChannel, PartialDMChannel } from 'discord.js';
+import { CommandInteraction, DMChannel, Interaction, PartialDMChannel, PermissionsString, TextBasedChannel } from 'discord.js';
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -33,7 +33,6 @@ export default class DebugCommand extends Command {
 			'ViewChannel',
 			'SendMessages',
 			'EmbedLinks',
-
 			'AttachFiles',
 			'UseExternalEmojis',
 			'ReadMessageHistory',
@@ -49,7 +48,7 @@ export default class DebugCommand extends Command {
 			wars: Number(data.WAR_LOOP || 0)
 		}));
 
-		const UEE_FOR_SLASH = channel.permissionsFor(interaction.guild.roles.everyone)!.has('UseExternalEmojis');
+		const UEE_FOR_SLASH = interaction.appPermissions.has('UseExternalEmojis');
 		const emojis = UEE_FOR_SLASH
 			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
 			: { cross: '❌', tick: '☑️', none: '⬛' };
@@ -80,9 +79,6 @@ export default class DebugCommand extends Command {
 				'',
 				'**Webhooks**',
 				webhooks?.size ?? 0,
-				'',
-				`**Webhook Permissions (for ${interaction.guild.roles.everyone.toString()} role)**`,
-				`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
 				'',
 				`**Loop Time ${cycle.clans && cycle.players && cycle.wars ? '' : '(Processing...)'}**`,
 				`${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
