@@ -491,11 +491,11 @@ export default class InteractionListener extends Listener {
 		const players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
 			.flat()
-			.filter((player, index, self) => self.findIndex((p) => p.tag === player.tag) === index)
+			.filter((player, index, self) => player.name && player.tag && self.findIndex((p) => p.tag === player.tag) === index)
 			.slice(0, 25);
 
 		if (!players.length) {
-			if (query) {
+			if (query && this.isValidQuery(query)) {
 				const value = await this.getQuery(query);
 				return interaction.respond([{ value, name: query.substring(0, 100) }]);
 			}
@@ -587,10 +587,10 @@ export default class InteractionListener extends Listener {
 		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
 			.flat()
-			.filter((clan, index, self) => self.findIndex((p) => p.tag === clan.tag) === index);
+			.filter((clan, index, self) => clan.name && clan.tag && self.findIndex((p) => p.tag === clan.tag) === index);
 
 		if (!clans.length) {
-			if (query) {
+			if (query && this.isValidQuery(query)) {
 				const value = await this.getQuery(query);
 				return interaction.respond([{ value, name: query.substring(0, 100) }]);
 			}
@@ -615,6 +615,9 @@ export default class InteractionListener extends Listener {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
+		const userId = '745996444795928668';
+		const guildId = '1087399800036675674';
+
 		const now = Date.now();
 		const result = query
 			? await this.client.elastic.msearch({
@@ -623,9 +626,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									},
+									must: { term: { userId } },
 									should: getQuery(query),
 									minimum_should_match: 1
 								}
@@ -637,9 +638,7 @@ export default class InteractionListener extends Listener {
 							sort: [{ name: 'asc' }],
 							query: {
 								bool: {
-									must: {
-										term: { guildId: interaction.guild.id }
-									},
+									must: { term: { guildId } },
 									should: getQuery(query),
 									minimum_should_match: 1
 								}
@@ -650,9 +649,7 @@ export default class InteractionListener extends Listener {
 							sort: [{ lastSearched: 'desc' }],
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									},
+									must: { term: { userId } },
 									should: getQuery(query),
 									minimum_should_match: 1
 								}
@@ -666,9 +663,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									}
+									must: { term: { userId } }
 								}
 							}
 						},
@@ -678,9 +673,7 @@ export default class InteractionListener extends Listener {
 							sort: [{ name: 'asc' }],
 							query: {
 								bool: {
-									must: {
-										term: { guildId: interaction.guild.id }
-									}
+									must: { term: { guildId } }
 								}
 							}
 						},
@@ -689,9 +682,7 @@ export default class InteractionListener extends Listener {
 							sort: [{ lastSearched: 'desc' }],
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									}
+									must: { term: { userId } }
 								}
 							}
 						}
@@ -704,17 +695,21 @@ export default class InteractionListener extends Listener {
 		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
 			.flat()
-			.filter((clan, index, self) => self.findIndex((p) => p.tag === clan.tag) === index)
+			.filter((clan, index, self) => clan.name && clan.tag && self.findIndex((p) => p.tag === clan.tag) === index)
 			.slice(0, 25);
 
 		if (!clans.length) {
-			if (query) {
+			if (query && this.isValidQuery(query)) {
 				const value = await this.getQuery(query);
-				return interaction.respond([{ value, name: query.substring(0, 100) }]);
+				if (value) return interaction.respond([{ value, name: query.substring(0, 100) }]);
 			}
 			return interaction.respond([{ value: '0', name: 'Enter a clan tag!' }]);
 		}
 		return interaction.respond(clans.map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` })));
+	}
+
+	private isValidQuery(query: string) {
+		return query.trim();
 	}
 
 	private async getQuery(query: string) {
