@@ -221,6 +221,6 @@ export class WarRoleManager {
 
 	private checkRole(guild: Guild, member: GuildMember, roleId: string) {
 		const role = guild.roles.cache.get(roleId);
-		return role && !role.managed && member.roles.highest.position > role.position;
+		return role && !role.managed && member.roles.highest.position > role.position && role.id !== guild.id;
 	}
 }

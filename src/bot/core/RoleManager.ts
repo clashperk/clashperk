@@ -670,20 +670,20 @@ export class RoleManager {
 			const tags = acc.map((en) => en.tag);
 
 			// getting linked user's accounts
-			const thRoles = this.handleLeagueRoles(
+			const leagueRoles = this.handleLeagueRoles(
 				players.filter((data) => tags.includes(data.tag)),
 				clans.map((clan) => clan.tag),
 				rolesMap,
 				allowExternal
 			);
-			if (!thRoles.length) continue;
+			// if (!leagueRoles.length) continue;
 
 			// flatten all the role ids for each clan
 			const count = await this.addRoles({
 				members,
 				guildId,
 				userId: mem.userId,
-				roleIds: thRoles,
+				roleIds: leagueRoles.length ? leagueRoles : [guildId],
 				roles,
 				reason: 'League Roles Synced'
 			});
@@ -738,9 +738,9 @@ export class RoleManager {
 		return included.length;
 	}
 
-	private checkRole(guild: Guild, member: GuildMember, roleId: string) {
+	private checkRole(guild: Guild, bot: GuildMember, roleId: string) {
 		const role = guild.roles.cache.get(roleId);
-		return role && !role.managed && member.roles.highest.position > role.position;
+		return role && !role.managed && bot.roles.highest.position > role.position && role.id !== guild.id;
 	}
 
 	private getHighestRole(players: { tag: string; role?: string; clan?: { tag: string } }[], clans: string[]) {
