@@ -2,6 +2,7 @@ import {
 	APIMessage,
 	Collection,
 	ForumChannel,
+	MediaChannel,
 	NewsChannel,
 	PermissionsString,
 	SnowflakeUtil,
@@ -157,7 +158,7 @@ export default class BaseLog {
 		} catch {}
 	}
 
-	public async webhook(cache: Cache, channel: TextChannel | NewsChannel | ForumChannel): Promise<WebhookClient | null> {
+	public async webhook(cache: Cache, channel: TextChannel | NewsChannel | ForumChannel | MediaChannel): Promise<WebhookClient | null> {
 		if (cache.webhook) return cache.webhook;
 		if (cache.deleted) return null;
 

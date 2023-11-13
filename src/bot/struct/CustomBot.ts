@@ -156,7 +156,7 @@ export class CustomBot {
 			body: JSON.stringify({ query })
 		});
 
-		const body = await res.json();
+		const body = (await res.json()) as Record<string, any>;
 		if (!res.ok || body?.data === null) {
 			throw new Error(body.errors?.at?.(0)?.message ?? res.statusText);
 		}
