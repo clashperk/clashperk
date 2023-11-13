@@ -48,7 +48,8 @@ const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[]
 	ChannelType.GuildAnnouncement,
 	ChannelType.AnnouncementThread,
 	ChannelType.PublicThread,
-	ChannelType.PrivateThread
+	ChannelType.PrivateThread,
+	ChannelType.GuildMedia
 ];
 
 export const translation = (text: TranslationKey): Record<string, string> => {
