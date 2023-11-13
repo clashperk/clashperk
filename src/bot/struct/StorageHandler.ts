@@ -1,8 +1,8 @@
-import { createHash } from 'node:crypto';
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
-import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'discord.js';
+import { CommandInteraction, ForumChannel, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import fetch from 'node-fetch';
+import { createHash } from 'node:crypto';
 import { Collections, Flags, Settings, UnrankedWarLeagueId } from '../util/Constants.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
 import { Client } from './Client.js';
@@ -636,7 +636,7 @@ export default class StorageHandler {
 		return result.length ? Object.values(result.at(0)!).flat() : [];
 	}
 
-	public async getWebhook(channel: TextChannel | NewsChannel | ForumChannel) {
+	public async getWebhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | MediaChannel) {
 		const channelWebhooks = await channel.fetchWebhooks();
 
 		const clans = await this.getWebhookWorkloads(channel.guild.id);

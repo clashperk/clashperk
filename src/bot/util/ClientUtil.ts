@@ -3,6 +3,7 @@ import {
 	ChannelType,
 	ForumChannel,
 	GuildMember,
+	MediaChannel,
 	NewsChannel,
 	PermissionsBitField,
 	PermissionsString,
@@ -115,7 +116,7 @@ export class ClientUtil {
 		);
 	}
 
-	public hasWebhookPermission(channel: TextChannel | NewsChannel | ForumChannel) {
+	public hasWebhookPermission(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel) {
 		return channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks', 'ViewChannel']);
 	}
 }

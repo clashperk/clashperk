@@ -1,5 +1,5 @@
 import { APIClan } from 'clashofclans.js';
-import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
+import { APIMessage, ForumChannel, MediaChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { ClanGamesModel } from '../types/index.js';
@@ -300,7 +300,7 @@ export default class ClanGamesScheduler {
 		reminder: WithId<ClanGamesReminder>;
 		webhook: WebhookClient;
 		content: string;
-		channel: TextChannel | NewsChannel | ForumChannel | null;
+		channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | null;
 	}): Promise<APIMessage | null> {
 		try {
 			return await webhook.send({ content, allowedMentions: { parse: ['users'] }, threadId: reminder.threadId });
@@ -314,7 +314,7 @@ export default class ClanGamesScheduler {
 		}
 	}
 
-	private async webhook(channel: TextChannel | NewsChannel | ForumChannel, reminder: WithId<ClanGamesReminder>) {
+	private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<ClanGamesReminder>) {
 		const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
 		if (webhook) {
 			reminder.webhook = { id: webhook.id, token: webhook.token! };

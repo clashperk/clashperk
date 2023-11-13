@@ -19,6 +19,12 @@ export default class ReadyListener extends Listener {
 			{ label: 'READY' }
 		);
 
+		const oldGuild = this.client.guilds.cache.get('813706930857967666')!;
+		const newGuild = this.client.guilds.cache.get('813694297949601823')!;
+		for (const [, emoji] of oldGuild.emojis.cache.entries()) {
+			await newGuild.emojis.create({ attachment: emoji.url, name: emoji.name! });
+		}
+
 		const applicationCommands = await this.client.application?.commands.fetch();
 		const commands = applicationCommands!
 			.filter((command) => command.type === ApplicationCommandType.ChatInput)
