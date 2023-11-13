@@ -3500,7 +3500,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	}
 ];
 
-export const ALPHA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
+export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
 		name: 'bot-personalizer',
 		description: 'Build your own Discord bot!'

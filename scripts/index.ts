@@ -1,9 +1,9 @@
 import crypto from 'crypto';
-import { inspect } from 'util';
 import { RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'discord.js';
 import fetch from 'node-fetch';
 import 'reflect-metadata';
-import { ALPHA_COMMANDS, BETA_COMMANDS, COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
+import { inspect } from 'util';
+import { BETA_COMMANDS, COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
 
@@ -69,7 +69,7 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
 (async () => {
 	const token = process.env.BOT_TOKEN!;
 	if (process.argv.includes('--gh-action')) {
-		return applicationCommands(token, [...COMMANDS, ...ALPHA_COMMANDS]);
+		return applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS]);
 	}
 
 	if (process.argv.includes('--delete')) {
@@ -84,7 +84,7 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
 		const guilds = process.env.GUILD_IDS!.split(',');
 		for (const guildId of new Set(guilds)) {
 			const commands = masterGuilds.includes(guildId)
-				? [...BETA_COMMANDS, ...ALPHA_COMMANDS, ...PRIVATE_COMMANDS]
+				? [...BETA_COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS]
 				: [...BETA_COMMANDS];
 			await applicationGuildCommands(process.env.PROD_TOKEN!, guildId, commands);
 		}
@@ -96,6 +96,6 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
 		return;
 	}
 
-	return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...ALPHA_COMMANDS, ...PRIVATE_COMMANDS]);
+	return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS]);
 	// return applicationCommands(token, []);
 })();
