@@ -83,6 +83,7 @@ export default class ExportCWL extends Command {
 						{ name: 'Name', width: 160, align: 'LEFT' },
 						{ name: 'Tag', width: 120, align: 'LEFT' },
 						{ name: 'Town Hall', width: 100, align: 'RIGHT' },
+						{ name: 'War Count', width: 100, align: 'RIGHT' },
 						{ name: 'Total Attacks', width: 100, align: 'RIGHT' },
 						{ name: 'Total Stars', width: 100, align: 'RIGHT' },
 						{ name: 'Avg. Stars', width: 100, align: 'RIGHT' },
@@ -109,6 +110,7 @@ export default class ExportCWL extends Command {
 							m.name,
 							m.tag,
 							m.townHallLevel,
+							m.wars,
 							m.of,
 							m.stars,
 							Number((m.stars / m.of || 0).toFixed(2)),
@@ -328,10 +330,12 @@ export default class ExportCWL extends Command {
 								defStars: 0,
 								defDestruction: 0,
 								starTypes: [],
-								defCount: 0
+								defCount: 0,
+								wars: 0
 							};
 							const member = members[m.tag];
 							member.of += 1;
+							member.wars += 1;
 
 							for (const atk of m.attacks ?? []) {
 								const previousBestAttack = this.getPreviousBestAttack(__attacks, opponent, atk);

@@ -78,11 +78,13 @@ export default class WarExport extends Command {
 						starTypes: [],
 						defCount: 0,
 						of: 0,
-						defDestruction: 0
+						defDestruction: 0,
+						wars: 0
 					};
 
 					const member = members[m.tag];
 					member.of += war.attacksPerMember;
+					member.wars += 1;
 
 					for (const atk of m.attacks ?? []) {
 						const prev = this.freshAttack(attacks, atk.defenderTag, atk.order)
@@ -122,6 +124,7 @@ export default class WarExport extends Command {
 				{ name: 'Name', width: 160, align: 'LEFT' },
 				{ name: 'Tag', width: 120, align: 'LEFT' },
 				{ name: 'Town Hall', width: 100, align: 'RIGHT' },
+				{ name: 'War Count', width: 100, align: 'RIGHT' },
 				{ name: 'Total Attacks', width: 100, align: 'RIGHT' },
 				{ name: 'Total Stars', width: 100, align: 'RIGHT' },
 				{ name: 'Avg. Stars', width: 100, align: 'RIGHT' },
@@ -143,6 +146,7 @@ export default class WarExport extends Command {
 				m.name,
 				m.tag,
 				m.townHallLevel,
+				m.wars,
 				m.of,
 				m.stars,
 				Number((m.stars / m.of || 0).toFixed(2)),
