@@ -65,15 +65,11 @@ export const clanEmbedMaker = async (
 		description,
 		requirements,
 		color,
-		isDryRun,
 		bannerImage
 	}: { description?: string; requirements?: string; color?: number; bannerImage?: string; isDryRun?: boolean }
 ) => {
 	const client = container.resolve(Client);
-	const fetched = isDryRun
-		? await client.redis.getPlayers(clan.memberList.map((m) => m.tag))
-		: await client.http._getPlayers(clan.memberList);
-	const reduced = fetched.reduce<{ [key: string]: number }>((count, member) => {
+	const reduced = clan.memberList.reduce<{ [key: string]: number }>((count, member) => {
 		const townHall = member.townHallLevel;
 		count[townHall] = (count[townHall] || 0) + 1;
 		return count;
@@ -88,7 +84,6 @@ export const clanEmbedMaker = async (
 			? `:flag_${clan.location.countryCode!.toLowerCase()}: ${clan.location.name}`
 			: `🌐 ${clan.location.name}`
 		: `${EMOJIS.WRONG} None`;
-
 	const capitalHall = clan.clanCapital.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
 
 	const embed = new EmbedBuilder()
@@ -234,7 +229,7 @@ export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { 
 		return {
 			tag: m.tag,
 			name: m.name,
-			townHallLevel: `${mem?.townHallLevel ?? '-'}`,
+			townHallLevel: m.townHallLevel.toString(),
 			count: mem ? Number(mem.count) : 0,
 			lastSeen: mem ? new Date().getTime() - new Date(mem.lastSeen).getTime() : 0
 		};

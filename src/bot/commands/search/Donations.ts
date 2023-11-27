@@ -82,9 +82,7 @@ export default class DonationsCommand extends Command {
 		}[] = [];
 
 		if (isSameSeason) {
-			const notFound = clan.memberList.filter((m) => !dbMembers.some((d) => d.tag === m.tag));
-			const notFoundMembers = await this.client.http._getPlayers(notFound);
-			for (const member of notFoundMembers) {
+			for (const member of clan.memberList.filter((m) => !dbMembers.some((d) => d.tag === m.tag))) {
 				const { tag, name, townHallLevel, donations, donationsReceived } = member;
 				members.push({
 					tag,
@@ -116,7 +114,7 @@ export default class DonationsCommand extends Command {
 				members.push({
 					name: mem.name,
 					tag: mem.tag,
-					townHall: m.townHallLevel,
+					townHall: mem.townHallLevel,
 					donated,
 					received,
 					difference: donated - received,

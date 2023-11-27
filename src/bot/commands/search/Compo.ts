@@ -1,6 +1,6 @@
-import { EmbedBuilder, CommandInteraction, parseEmoji, User, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import { TOWN_HALLS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, parseEmoji } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/Emojis.js';
 
 export default class CompoCommand extends Command {
 	public constructor() {
@@ -22,9 +22,7 @@ export default class CompoCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 		}
 
-		const hrStart = process.hrtime();
-		const fetched = await this.client.http._getPlayers(clan.memberList);
-		const reduced = fetched.reduce<{ [key: string]: number }>((count, member) => {
+		const reduced = clan.memberList.reduce<{ [key: string]: number }>((count, member) => {
 			const townHall = member.townHallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
 			return count;
@@ -45,9 +43,6 @@ export default class CompoCommand extends Command {
 				text: `Avg: ${avg.toFixed(2)} [${clan.members}/50]`,
 				iconURL: `https://cdn.discordapp.com/emojis/${id!}.png?v=1`
 			});
-
-		const diff = process.hrtime(hrStart);
-		this.client.logger.debug(`Executed in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'COMPO' });
 
 		const payload = {
 			cmd: this.id,
