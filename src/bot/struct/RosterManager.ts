@@ -138,6 +138,7 @@ export interface IRoster {
 	useClanAlias?: boolean;
 	allowUnlinked?: boolean;
 	allowMultiSignup?: boolean;
+	category: 'GENERAL' | 'CWL' | 'WAR';
 	allowCategorySelection?: boolean;
 	lastUpdated: Date;
 	createdAt: Date;
@@ -336,7 +337,13 @@ export class RosterManager {
 
 		if (!roster.allowMultiSignup && !isDryRun) {
 			const dup = await this.rosters.findOne(
-				{ '_id': { $ne: roster._id }, 'closed': false, 'guildId': roster.guildId, 'members.tag': player.tag },
+				{
+					'_id': { $ne: roster._id },
+					'closed': false,
+					'guildId': roster.guildId,
+					'members.tag': player.tag,
+					'category': roster.category
+				},
 				{ projection: { members: 0 } }
 			);
 			if (dup) {
@@ -356,7 +363,8 @@ export class RosterManager {
 					'closed': false,
 					'guildId': roster.guildId,
 					'members.tag': player.tag,
-					'allowMultiSignup': false
+					'allowMultiSignup': false,
+					'category': roster.category
 				},
 				{ projection: { members: 0 } }
 			);
@@ -866,6 +874,11 @@ export class RosterManager {
 				value: `${roster.maxMembers ?? 65} max, ${roster.members.length} signed-up`
 			})
 			.addFields({
+				name: 'Roster Category',
+				inline: true,
+				value: `${roster.category}`
+			})
+			.addFields({
 				name: 'Town Hall',
 				inline: true,
 				value: `${roster.minTownHall ?? 2} min, ${roster.maxTownHall ?? MAX_TOWN_HALL_LEVEL} max`
@@ -1091,7 +1104,7 @@ export class RosterManager {
 		return this.categories.deleteOne({ _id: categoryId });
 	}
 
-	public async createDefaultCategories(guildId: string) {
+	public async createDefaultGroups(guildId: string) {
 		const categories = await this.getCategories(guildId);
 		if (categories.length) return null;
 

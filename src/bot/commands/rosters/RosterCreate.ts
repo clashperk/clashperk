@@ -48,10 +48,11 @@ export default class RosterCreateCommand extends Command {
 			use_clan_alias?: boolean;
 			allow_unlinked?: boolean;
 			color_code?: number;
+			category?: IRoster['category'];
 		}
 	) {
 		// Create default categories
-		this.client.rosterManager.createDefaultCategories(interaction.guild.id);
+		this.client.rosterManager.createDefaultGroups(interaction.guild.id);
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.clan);
 		if (!clan) return;
@@ -66,6 +67,7 @@ export default class RosterCreateCommand extends Command {
 			},
 			guildId: interaction.guild.id,
 			closed: false,
+			category: args.category || 'GENERAL',
 			allowMultiSignup: Boolean(args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true),
 			allowCategorySelection: Boolean(args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true),
 			allowUnlinked: Boolean(args.allow_unlinked ?? defaultSettings.allowUnlinked ?? false),

@@ -235,8 +235,8 @@ export default class CapitalRaidsCommand extends Command {
 
 		const members = season.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
 		clan.memberList.forEach((member) => {
-			const attack = members.find((attack) => attack.tag === member.tag);
-			if (!attack) {
+			const raidMember = members.find((mem) => mem.tag === member.tag);
+			if (!raidMember) {
 				members.push({
 					name: member.name,
 					tag: member.tag,

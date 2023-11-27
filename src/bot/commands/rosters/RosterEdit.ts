@@ -33,6 +33,7 @@ export default class RosterEditCommand extends Command {
 			roster: string;
 			clan?: string;
 			name?: string;
+			category?: IRoster['category'];
 			max_members?: number;
 			min_town_hall?: number;
 			max_town_hall?: number;
@@ -96,6 +97,7 @@ export default class RosterEditCommand extends Command {
 		if (typeof args.use_clan_alias === 'boolean') data.useClanAlias = args.use_clan_alias;
 		if (typeof args.allow_unlinked === 'boolean') data.allowUnlinked = args.allow_unlinked;
 		if (typeof args.color_code === 'number') data.colorCode = args.color_code;
+		if (args.category) data.category = args.category;
 
 		const selected = {
 			layoutIds: [] as string[]
@@ -125,6 +127,7 @@ export default class RosterEditCommand extends Command {
 					'_id': { $ne: roster._id },
 					'closed': false,
 					'guildId': interaction.guild.id,
+					'category': roster.category,
 					'members.tag': { $in: roster.members.map((mem) => mem.tag) }
 				},
 				{ projection: { name: 1, clan: 1 } }

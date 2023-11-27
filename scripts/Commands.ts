@@ -1806,6 +1806,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'color_code',
 						description: 'Hex color code of the roster embed.',
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'category',
+						description: 'Category of the roster.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'CWL',
+								value: 'CWL'
+							},
+							{
+								name: 'WAR',
+								value: 'WAR'
+							}
+						]
 					}
 				]
 			},
@@ -1994,6 +2009,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'color_code',
 						description: 'Hex color code of the roster embed.',
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'category',
+						description: 'Category of the roster.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'CWL',
+								value: 'CWL'
+							},
+							{
+								name: 'WAR',
+								value: 'WAR'
+							}
+						]
 					}
 				]
 			},

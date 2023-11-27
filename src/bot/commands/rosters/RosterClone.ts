@@ -25,7 +25,7 @@ export default class RosterCloneCommand extends Command {
 		}
 	) {
 		// Create default categories
-		this.client.rosterManager.createDefaultCategories(interaction.guild.id);
+		this.client.rosterManager.createDefaultGroups(interaction.guild.id);
 
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 		const rosterId = new ObjectId(args.roster);
@@ -38,6 +38,7 @@ export default class RosterCloneCommand extends Command {
 			guildId: interaction.guild.id,
 			closed: false,
 			members: [],
+			category: roster.category,
 			allowMultiSignup: roster.allowMultiSignup,
 			allowCategorySelection: roster.allowCategorySelection,
 			allowUnlinked: roster.allowUnlinked,
