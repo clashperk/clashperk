@@ -626,6 +626,7 @@ export default class SummaryBestCommand extends Command {
 		const payload = {
 			cmd: this.id,
 			uuid: interaction.id,
+			season: args.season,
 			order: args.order,
 			clans: tags.join(','),
 			limit: args.limit,
