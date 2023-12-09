@@ -636,6 +636,7 @@ export default class SummaryBestCommand extends Command {
 		const customIds = {
 			refresh: this.createId(payload),
 			order: this.createId({ ...payload, order: order === 'desc' ? 'asc' : 'desc' }),
+			deselect: this.createId({ ...payload, selected: args.selected?.length ? null : [] }),
 			selected: this.createId({ ...payload, array_key: 'selected' })
 		};
 
@@ -644,7 +645,12 @@ export default class SummaryBestCommand extends Command {
 			new ButtonBuilder()
 				.setCustomId(customIds.order)
 				.setStyle(ButtonStyle.Secondary)
-				.setLabel(order === 'desc' ? 'Ascending' : 'Descending')
+				.setLabel(order === 'desc' ? 'Ascending' : 'Descending'),
+			new ButtonBuilder()
+				.setCustomId(customIds.deselect)
+				.setStyle(ButtonStyle.Secondary)
+				.setLabel('Full List')
+				.setDisabled(!payload.selected?.length)
 		);
 
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
