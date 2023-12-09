@@ -9,7 +9,7 @@ import { Included, Member } from '../src/bot/struct/Patrons.js';
 	const collection = Database.db('clashperk').collection(Collections.PATRONS);
 
 	const query = new URLSearchParams({
-		'page[size]': '500',
+		'page[size]': '1000',
 		'fields[tier]': 'amount_cents,created_at',
 		'include': 'user,currently_entitled_tiers',
 		'fields[user]': 'social_connections,email,full_name,email,image_url',

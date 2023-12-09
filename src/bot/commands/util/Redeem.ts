@@ -1,23 +1,17 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	ComponentType,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
-	ButtonStyle,
-	WebhookMessageEditOptions,
-	ComponentType
+	WebhookMessageEditOptions
 } from 'discord.js';
 import { WithId } from 'mongodb';
-import { Included, Patron } from '../../struct/Patrons.js';
-import { Collections } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
-
-const rewards = {
-	bronze: '3705318',
-	silver: '4742718',
-	gold: '5352215'
-};
+import { Included, Patron, guildLimits } from '../../struct/Patrons.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class RedeemCommand extends Command {
 	public constructor() {
@@ -93,8 +87,10 @@ export default class RedeemCommand extends Command {
 		}
 
 		const rewardId = pledge.relationships.currently_entitled_tiers.data[0]?.id;
-		if (!rewardId) {
-			return interaction.editReply('**Something went wrong (unknown tier), please [contact us.](https://discord.gg/ppuppun)**');
+		if (!rewardId || !(rewardId in guildLimits)) {
+			return interaction.editReply(
+				`**Something went wrong (unknown tier ${rewardId || '00000'}), please [contact us.](https://discord.gg/ppuppun)**`
+			);
 		}
 
 		const embed = new EmbedBuilder()
@@ -169,7 +165,7 @@ export default class RedeemCommand extends Command {
 					guilds: {
 						id: interaction.guild.id,
 						name: interaction.guild.name,
-						limit: 50
+						limit: 100
 					}
 				}
 			}
@@ -247,16 +243,15 @@ export default class RedeemCommand extends Command {
 	}
 
 	private async sync(guild: string) {
-		await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
-		for await (const data of this.client.db.collection(Collections.CLAN_STORES).find({ guild })) {
+		const collection = this.client.db.collection(Collections.CLAN_STORES);
+		await collection.updateMany({ guild }, { $set: { active: true, patron: true } });
+		for await (const data of collection.find({ guild })) {
 			this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
 		}
 	}
 
 	private redeemed(user: Patron) {
-		if (user.rewardId === rewards.gold && user.guilds.length >= 5) return true;
-		else if (user.rewardId === rewards.silver && user.guilds.length >= 3) return true;
-		else if (user.rewardId === rewards.bronze && user.guilds.length >= 1) return true;
+		if (user.rewardId in guildLimits && user.guilds.length >= guildLimits[user.rewardId]) return true;
 		return false;
 	}
 }

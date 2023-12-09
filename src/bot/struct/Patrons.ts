@@ -8,13 +8,15 @@ import { Client } from './Client.js';
 export const rewards = {
 	bronze: '3705318',
 	silver: '4742718',
+	platinum: '21789215',
 	gold: '5352215'
 };
 
-const guildLimits: Record<string, number> = {
+export const guildLimits: Record<string, number> = {
 	[rewards.bronze]: 1,
 	[rewards.silver]: 3,
-	[rewards.gold]: 5
+	[rewards.platinum]: 5,
+	[rewards.gold]: 10
 };
 
 export default class Patrons {
@@ -196,7 +198,7 @@ export default class Patrons {
 
 	public async fetchAPI() {
 		const query = new URLSearchParams({
-			'page[size]': '500',
+			'page[size]': '1000',
 			'fields[tier]': 'amount_cents,created_at',
 			'include': 'user,currently_entitled_tiers',
 			'fields[user]': 'social_connections,email,full_name,email,image_url',

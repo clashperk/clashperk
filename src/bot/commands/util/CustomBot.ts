@@ -33,7 +33,7 @@ export default class BotPersonalizerCommand extends Command {
 	}
 
 	private isEligible(patron: WithId<Patron>) {
-		if (patron.rewardId === rewards.gold || patron.rewardId === rewards.silver) return true;
+		if (patron.rewardId === rewards.gold || patron.rewardId === rewards.platinum) return true;
 		if (patron.rewardId === rewards.bronze) return patron.sponsored;
 	}
 
