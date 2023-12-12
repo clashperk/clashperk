@@ -3366,8 +3366,8 @@ export default {
 		},
 		{
 			hall: 16,
-			troops: 340,
-			spells: 12
+			troops: 320,
+			spells: 11
 		}
 	]
 };
