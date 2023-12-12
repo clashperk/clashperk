@@ -21,7 +21,8 @@ export const ELIXIR_TROOPS: Record<string, string> = {
 	'Electro Dragon': '<:ElectroDragon:696281556930527352>',
 	'Yeti': '<:Yeti:696281814293282857>',
 	'Dragon Rider': '<:DragonRider:854290952888909834>',
-	'Electro Titan': '<:ElectroTitan:1029113633243922572>'
+	'Electro Titan': '<:ElectroTitan:1029113633243922572>',
+	'Root Rider': '<:RootRider:1184210445544992788>'
 };
 
 export const HERO_PETS: Record<string, string> = {
@@ -32,7 +33,8 @@ export const HERO_PETS: Record<string, string> = {
 	'Poison Lizard': '<:PoisonLizard:1029115995845046323>',
 	'Diggy': '<:Diggy:1029115689157525504>',
 	'Frosty': '<:Frosty:1029115796271669369>',
-	'Phoenix': '<:Phoenix:1029115881982271549>'
+	'Phoenix': '<:Phoenix:1029115881982271549>',
+	'Spirit Fox': '<:SpiritFox:1184210185263259778>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
@@ -151,7 +153,8 @@ export const TOWN_HALLS: Record<string, string> = {
 	12: '<:TownHall12:766206520492818482>',
 	13: '<:TownHall13:766207117103071242>',
 	14: '<:TownHall14:829392900110549038>',
-	15: '<:TownHall15:1029109199105425530>'
+	15: '<:TownHall15:1029109199105425530>',
+	16: '<:TownHall16:1184211259130925166>'
 };
 
 export const BUILDER_HALLS: Record<string, string> = {

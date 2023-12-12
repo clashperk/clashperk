@@ -2324,6 +2324,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.Role
 					},
 					{
+						name: 'th_16',
+						description: 'Town Hall 16 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
 						name: 'allow_external_accounts',
 						description: 'Whether to give roles for the accounts that are not in the family clans.',
 						type: ApplicationCommandOptionType.String,

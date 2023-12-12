@@ -188,7 +188,7 @@ export const attackCounts: Record<string, string> = {
 
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
-export const MAX_TOWN_HALL_LEVEL = 15;
+export const MAX_TOWN_HALL_LEVEL = 16;
 
 export const MAX_CLAN_SIZE = 50;
 

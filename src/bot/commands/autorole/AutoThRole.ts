@@ -1,7 +1,7 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
-import { Collections, Settings } from '../../util/Constants.js';
+import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../../util/Constants.js';
 import { ORANGE_NUMBERS } from '../../util/Emojis.js';
 
 export interface IArgs {
@@ -49,7 +49,7 @@ export default class AutoTownHallRoleCommand extends Command {
 			);
 		}
 
-		const roles = Array(13)
+		const roles = Array(MAX_TOWN_HALL_LEVEL - 2)
 			.fill(0)
 			.map((_, i) => ({ role: args[`th_${i + 3}`], hall: i + 3 }));
 
