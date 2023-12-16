@@ -1,11 +1,11 @@
-import { EmbedBuilder, CommandInteraction, escapeMarkdown, User } from 'discord.js';
 import { APIClanWar, APIPlayer } from 'clashofclans.js';
+import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { BLUE_NUMBERS } from '../../util/Emojis.js';
-import { Collections, WarType } from '../../util/Constants.js';
-import { Util } from '../../util/index.js';
 import { ClanCapitalRaidAttackData, ClanGamesModel } from '../../types/index.js';
+import { Collections, WarType } from '../../util/Constants.js';
+import { BLUE_NUMBERS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 export default class RemainingCommand extends Command {
 	public constructor() {
@@ -36,7 +36,13 @@ export default class RemainingCommand extends Command {
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
-		if (args.war_id) return this.getWar(interaction, args.war_id, clan.tag);
+
+		let body: APIClanWar;
+		if (args.war_id) {
+			const war = await this.getWar(args.war_id, clan.tag);
+			if (!war) return interaction.editReply(this.i18n('command.remaining.no_war_id', { lng: interaction.locale }));
+			body = war;
+		}
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -51,10 +57,10 @@ export default class RemainingCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const { body, res } = await this.client.http.getCurrentWar(clan.tag);
-		if (!res.ok) {
-			return interaction.editReply('**504 Request Timeout!**');
-		}
+		const { body: war, res } = await this.client.http.getCurrentWar(clan.tag);
+		if (!res.ok) return interaction.editReply('**504 Request Timeout!**');
+		body = war;
+
 		if (body.state === 'notInWar') {
 			const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
 			if (res.ok) {
@@ -67,29 +73,25 @@ export default class RemainingCommand extends Command {
 		return this.sendResult(interaction, body);
 	}
 
-	private async getWar(interaction: CommandInteraction, id: number | string, tag: string) {
+	private async getWar(id: number | string, tag: string) {
 		const collection = this.client.db.collection(Collections.CLAN_WARS);
 		const data =
 			id === 'last'
-				? await collection
-						.find({
+				? await collection.findOne(
+						{
 							$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 							warType: { $ne: WarType.CWL },
 							state: 'warEnded'
-						})
-						.sort({ _id: -1 })
-						.limit(1)
-						.next()
+						},
+						{ sort: { _id: -1 } }
+				  )
 				: await collection.findOne({ id: Number(id), $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }] });
 
-		if (!data) {
-			return interaction.editReply(this.i18n('command.remaining.no_war_id', { lng: interaction.locale }));
-		}
+		if (!data) return null;
 
 		const clan = data.clan.tag === tag ? data.clan : data.opponent;
 		const opponent = data.clan.tag === tag ? data.opponent : data.clan;
-		// @ts-expect-error it exists
-		return this.sendResult(interaction, { ...data, clan, opponent });
+		return { ...data, clan, opponent } as unknown as APIClanWar;
 	}
 
 	private sendResult(interaction: CommandInteraction, body: APIClanWar & { id?: number }) {
