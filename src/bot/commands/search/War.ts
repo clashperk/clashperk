@@ -81,7 +81,7 @@ export default class WarCommand extends Command {
 			return interaction.followUp({ embeds: [embed], ephemeral: true });
 		}
 
-		let body: APIClanWar;
+		let body: APIClanWar | null = null;
 		if (args.war_id) {
 			const war = await this.getWar(args.war_id, clan.tag);
 			if (!war) return interaction.editReply(this.i18n('command.war.no_war_id', { lng: interaction.locale }));
@@ -101,9 +101,11 @@ export default class WarCommand extends Command {
 			return interaction.followUp({ embeds: [embed] });
 		}
 
-		const { body: war, res } = await this.client.http.getCurrentWar(clan.tag);
-		if (!res.ok) return interaction.followUp('**504 Request Timeout!**');
-		body = war;
+		if (!body) {
+			const { body: war, res } = await this.client.http.getCurrentWar(clan.tag);
+			if (!res.ok) return interaction.followUp('**504 Request Timeout!**');
+			body = war;
+		}
 
 		if (body.state === 'notInWar') {
 			const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
