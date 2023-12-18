@@ -23,27 +23,29 @@ export default class DonationsHistoryCommand extends Command {
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.find(interaction.guildId);
 
+		const includedClans = tags.length ? clans : [];
+
 		if (args.user) {
 			const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
-			const { embeds, result } = await this.getHistory(interaction, playerTags, clans);
+			const { embeds, result } = await this.getHistory(interaction, playerTags, includedClans);
 			if (!result.length) {
 				return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 			}
 
-			return handlePagination(interaction, embeds, (action) => this.export(action, result, clans));
+			return handlePagination(interaction, embeds, (action) => this.export(action, result, includedClans));
 		}
 
 		if (args.player_tag) {
 			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
 			if (!player) return null;
 			const playerTags = [player.tag];
-			const { embeds, result } = await this.getHistory(interaction, playerTags, clans);
+			const { embeds, result } = await this.getHistory(interaction, playerTags, includedClans);
 
 			if (!result.length) {
 				return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 			}
 
-			return handlePagination(interaction, embeds, (action) => this.export(action, result, clans));
+			return handlePagination(interaction, embeds, (action) => this.export(action, result, includedClans));
 		}
 
 		if (!clans.length && tags.length)
