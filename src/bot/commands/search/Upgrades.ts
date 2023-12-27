@@ -1,21 +1,21 @@
-import {
-	EmbedBuilder,
-	CommandInteraction,
-	StringSelectMenuBuilder,
-	ActionRowBuilder,
-	User,
-	embedLength,
-	ButtonStyle,
-	ButtonBuilder,
-	ButtonInteraction
-} from 'discord.js';
 import { APIPlayer } from 'clashofclans.js';
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
-import RAW_TROOPS_DATA from '../../util/Troops.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	StringSelectMenuBuilder,
+	User,
+	embedLength
+} from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
 import { TroopJSON } from '../../types/index.js';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import { getMenuFromMessage } from '../../util/Helper.js';
+import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { Util } from '../../util/index.js';
 
 export const EN_ESCAPE = '\u2002';
 
@@ -26,6 +26,10 @@ export const resourceMap = {
 	'Builder Elixir': EMOJIS.BUILDER_ELIXIR,
 	'Builder Gold': EMOJIS.BUILDER_GOLD
 };
+
+const RAW_TROOPS_DATA_FILTERED = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal)
+	.filter((u) => u.category !== 'equipment')
+	.filter((unit) => !(unit.name in SUPER_TROOPS));
 
 export default class UpgradesCommand extends Command {
 	public constructor() {
@@ -112,28 +116,26 @@ export default class UpgradesCommand extends Command {
 			);
 
 		const apiTroops = this.apiTroops(data);
-		const Troops = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS))
-			.filter((unit) => {
-				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
-				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > (apiTroop?.level ?? 0);
-				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 1] > (apiTroop?.level ?? 0);
-				return Boolean(homeTroops || builderTroops);
-			})
-			.reduce<TroopJSON>((prev, curr) => {
-				const unlockBuilding =
-					curr.category === 'hero'
-						? curr.village === 'home'
-							? curr.name === 'Grand Warden'
-								? 'Elixir Hero'
-								: 'Dark Hero'
-							: 'Builder Hall'
-						: curr.unlock.building;
-				if (!(unlockBuilding in prev)) prev[unlockBuilding] = [];
-				prev[unlockBuilding].push(curr);
-				return prev;
-			}, {});
+		const Troops = RAW_TROOPS_DATA_FILTERED.filter((unit) => {
+			const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+			const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > (apiTroop?.level ?? 0);
+			const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 1] > (apiTroop?.level ?? 0);
+			return Boolean(homeTroops || builderTroops);
+		}).reduce<TroopJSON>((prev, curr) => {
+			const unlockBuilding =
+				curr.category === 'hero'
+					? curr.village === 'home'
+						? curr.name === 'Grand Warden'
+							? 'Elixir Hero'
+							: 'Dark Hero'
+						: 'Builder Hall'
+					: curr.unlock.building;
+			if (!(unlockBuilding in prev)) prev[unlockBuilding] = [];
+			prev[unlockBuilding].push(curr);
+			return prev;
+		}, {});
 
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+		const rem = RAW_TROOPS_DATA_FILTERED.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {

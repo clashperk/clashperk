@@ -1,19 +1,19 @@
 import { APIPlayer } from 'clashofclans.js';
 import {
-	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
 	EmbedBuilder,
 	StringSelectMenuBuilder,
-	ButtonStyle,
-	User,
-	ButtonInteraction
+	User
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
-import RAW_TROOPS_DATA from '../../util/Troops.js';
 import { getMenuFromMessage } from '../../util/Helper.js';
+import RAW_TROOPS_DATA from '../../util/Troops.js';
 
 export default class UnitsCommand extends Command {
 	public constructor() {
@@ -103,8 +103,11 @@ export default class UnitsCommand extends Command {
 	private embed(data: APIPlayer, showMaxLevel = false) {
 		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
+		const activeEquipment = data.heroes.flatMap((hero) => (hero.equipment ?? []).map((u) => u.name));
+
 		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
 			.filter((unit) => {
+				if (unit.category === 'equipment' && !activeEquipment.includes(unit.name)) return false;
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > 0;
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 1] > 0;
 				return Boolean(homeTroops || builderTroops);
@@ -123,6 +126,7 @@ export default class UnitsCommand extends Command {
 			'Spell Factory': 'Elixir Spells',
 			'Dark Spell Factory': 'Dark Spells',
 			'Town Hall': 'Heroes',
+			'Blacksmith': 'Equipment',
 			'Pet House': 'Pets',
 			'Workshop': 'Siege Machines',
 			'Builder Hall': 'Builder Base Hero',
@@ -265,7 +269,16 @@ export default class UnitsCommand extends Command {
 				maxLevel: u.maxLevel,
 				type: 'spell',
 				village: u.village
-			}))
+			})),
+			...data.heroes.flatMap((hero) =>
+				(hero.equipment ?? []).map((u) => ({
+					name: u.name,
+					level: u.level,
+					maxLevel: u.maxLevel,
+					type: 'equipment',
+					village: u.village
+				}))
+			)
 		];
 	}
 }

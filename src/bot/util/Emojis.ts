@@ -37,6 +37,25 @@ export const HERO_PETS: Record<string, string> = {
 	'Spirit Fox': '<:SpiritFox:1184210185263259778>'
 };
 
+export const HERO_EQUIPMENTS: Record<string, string> = {
+	'Archer Puppet': '<:ArcherPuppet:1188865376193355886>',
+	'Barbarian Puppet': '<:BarbarianPuppet:1188865383587922000>',
+	'Earthquake Boots': '<:EarthquakeBoots:1188865390365908993>',
+	'Eternal Tome': '<:EternalTome:1188865397370400901>',
+	'Giant Arrow': '<:GiantArrow:1188865401908637706>',
+	'Healer Puppet': '<:HealerPuppet:1188865407923277915>',
+	'Healing Tome': '<:HealingTome:1188865415108104292>',
+	'Invisibility Vial': '<:InvisibilityVial:1188865423668687008>',
+	'Life Gem': '<:LifeGem:1188865430689939506>',
+	'Rage Gem': '<:RageGem:1188865437354688562>',
+	'Rage Vial': '<:RageVial:1188865442819866684>',
+	'Royal Gem': '<:RoyalGem:1188865449836941393>',
+	'Seeking Shield': '<:SeekingShield:1188865455469908033>',
+	'Vampstache': '<:Vampstache:1188865462675705927>',
+	'Giant Gauntlet': '<:GiantGauntlet:1189622189994025041>',
+	'Frozen Arrow': '<:FrozenArrow:1189622209568841748>'
+};
+
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
 	'Minion': '<:Minion:696281875794231326>',
 	'Hog Rider': '<:HogRider:696281961257238579>',
@@ -130,7 +149,8 @@ export const HOME_TROOPS: Record<string, string> = {
 	...SIEGE_MACHINES,
 	...ELIXIR_SPELLS,
 	...DARK_SPELLS,
-	...HERO_PETS
+	...HERO_PETS,
+	...HERO_EQUIPMENTS
 };
 
 export const BUILDER_TROOPS: Record<string, string> = {

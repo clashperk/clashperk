@@ -1,12 +1,12 @@
 import 'moment-duration-format';
 import 'reflect-metadata';
 
-import { fileURLToPath } from 'node:url';
-import { inspect } from 'node:util';
 import { RewriteFrames } from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
 import { DiscordAPIError } from 'discord.js';
 import i18next from 'i18next';
+import { fileURLToPath } from 'node:url';
+import { inspect } from 'node:util';
 import { defaultOptions } from '../locales/index.js';
 import { Client } from './bot/struct/Client.js';
 import { Backend } from './bot/util/Backend.js';
@@ -24,7 +24,7 @@ if (process.env.SENTRY && process.env.GIT_SHA) {
 		dsn: process.env.SENTRY,
 		serverName: process.env.SERVICE_NAME ?? 'clashperk_bot',
 		environment: process.env.NODE_ENV ?? 'development',
-		release: process.env.GIT_SHA!,
+		release: process.env.GIT_SHA,
 		integrations: [
 			new RewriteFrames({
 				iteratee(frame) {
