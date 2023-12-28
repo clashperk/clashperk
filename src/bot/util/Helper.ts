@@ -1,4 +1,4 @@
-import { APIClan } from 'clashofclans.js';
+import { APIClan, APIPlayer } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -644,6 +644,41 @@ export const recoverDonations = async (clanTag: string) => {
 	}
 
 	return client.redis.connection.set(`RECOVERY:${clanTag}`, '-0-', { EX: 60 * 60 * 24 * 30 });
+};
+
+export const unitsFlatten = (data: APIPlayer) => {
+	return [
+		...data.troops.map((u) => ({
+			name: u.name,
+			level: u.level,
+			maxLevel: u.maxLevel,
+			type: 'troop',
+			village: u.village
+		})),
+		...data.heroes.map((u) => ({
+			name: u.name,
+			level: u.level,
+			maxLevel: u.maxLevel,
+			type: 'hero',
+			village: u.village
+		})),
+		...data.spells.map((u) => ({
+			name: u.name,
+			level: u.level,
+			maxLevel: u.maxLevel,
+			type: 'spell',
+			village: u.village
+		})),
+		...data.heroes.flatMap((hero) =>
+			(hero.equipment ?? []).map((u) => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'equipment',
+				village: u.village
+			}))
+		)
+	];
 };
 
 interface AggsBucket {

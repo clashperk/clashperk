@@ -4,8 +4,9 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections, DeepLinkTypes } from '../util/Constants.js';
-import { EMOJIS, HEROES, HOME_BASE_LEAGUES, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
-import RAW_TROOPS_DATA from '../util/Troops.js';
+import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
+import { unitsFlatten } from '../util/Helper.js';
+import { RAW_TROOPS_FILTERED } from '../util/Troops.js';
 import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 
@@ -133,8 +134,8 @@ export default class JoinLeaveLog extends BaseLog {
 	}
 
 	private remainingUpgrades(data: APIPlayer) {
-		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+		const apiTroops = unitsFlatten(data);
+		const rem = RAW_TROOPS_FILTERED.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {
@@ -147,32 +148,6 @@ export default class JoinLeaveLog extends BaseLog {
 		);
 		if (rem.total === 0) return (0).toFixed(2);
 		return (100 - (rem.levels * 100) / rem.total).toFixed(1);
-	}
-
-	private apiTroops(data: APIPlayer) {
-		return [
-			...data.troops.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'troop',
-				village: u.village
-			})),
-			...data.heroes.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'hero',
-				village: u.village
-			})),
-			...data.spells.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'spell',
-				village: u.village
-			}))
-		];
 	}
 
 	public async init() {

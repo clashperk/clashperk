@@ -1,8 +1,8 @@
-import { URL } from 'node:url';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild, Message } from 'discord.js';
-import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis.js';
-import RAW_TROOPS from '../../util/Troops.js';
+import { URL } from 'node:url';
 import { Command } from '../../lib/index.js';
+import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis.js';
+import { ARMY_CAPACITY, RAW_SUPER_TROOPS, RAW_TROOPS } from '../../util/Troops.js';
 
 const [TOTAL_UNITS, TOTAL_SPELLS, TOTAL_SUPER_TROOPS, TOTAL_SIEGE] = [320, 11, 2, 1];
 const ARMY_URL_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=[u|s]([\d+x-])+[s|u]?([\d+x-])+/g;
@@ -107,9 +107,9 @@ export default class ArmyCommand extends Command {
 		};
 
 		const troops = TROOP_IDS.filter((parts) =>
-			RAW_TROOPS.TROOPS.find((en) => en.id === parts.id && en.category === 'troop' && en.name in TROOPS)
+			RAW_TROOPS.find((en) => en.id === parts.id && en.category === 'troop' && en.name in TROOPS)
 		).map((parts) => {
-			const unit = RAW_TROOPS.TROOPS.find((en) => en.id === parts.id && en.category === 'troop' && en.name in TROOPS)!;
+			const unit = RAW_TROOPS.find((en) => en.id === parts.id && en.category === 'troop' && en.name in TROOPS)!;
 			return {
 				id: parts.id,
 				total: parts.total,
@@ -122,9 +122,9 @@ export default class ArmyCommand extends Command {
 		});
 
 		const spells = SPELL_IDS.filter((parts) =>
-			RAW_TROOPS.TROOPS.find((en) => en.id === parts.id && en.category === 'spell' && en.name in SPELLS)
+			RAW_TROOPS.find((en) => en.id === parts.id && en.category === 'spell' && en.name in SPELLS)
 		).map((parts) => {
-			const unit = RAW_TROOPS.TROOPS.find((en) => en.id === parts.id && en.category === 'spell' && en.name in SPELLS)!;
+			const unit = RAW_TROOPS.find((en) => en.id === parts.id && en.category === 'spell' && en.name in SPELLS)!;
 			return {
 				id: parts.id,
 				total: parts.total,
@@ -136,26 +136,26 @@ export default class ArmyCommand extends Command {
 			};
 		});
 
-		const superTroops = TROOP_IDS.filter((parts) =>
-			RAW_TROOPS.SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS)
-		).map((parts) => {
-			const unit = RAW_TROOPS.SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS)!;
-			return {
-				id: parts.id,
-				total: parts.total,
-				name: unit.name,
-				category: 'troop',
-				subCategory: 'super',
-				hallLevel:
-					RAW_TROOPS.TROOPS.find((en) => en.name === unit.original)!.levels.findIndex((en) => en >= unit.minOriginalLevel) + 1,
-				housing: unit.housingSpace
-			};
-		});
+		const superTroops = TROOP_IDS.filter((parts) => RAW_SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS)).map(
+			(parts) => {
+				const unit = RAW_SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS)!;
+				return {
+					id: parts.id,
+					total: parts.total,
+					name: unit.name,
+					category: 'troop',
+					subCategory: 'super',
+					hallLevel:
+						RAW_TROOPS.find((en) => en.name === unit.original)!.levels.findIndex((en) => en >= unit.minOriginalLevel) + 1,
+					housing: unit.housingSpace
+				};
+			}
+		);
 
 		const siegeMachines = TROOP_IDS.filter((parts) =>
-			RAW_TROOPS.TROOPS.find((en) => en.id === parts.id && en.category === 'troop' && en.name in SIEGE_MACHINES)
+			RAW_TROOPS.find((en) => en.id === parts.id && en.category === 'troop' && en.name in SIEGE_MACHINES)
 		).map((parts) => {
-			const unit = RAW_TROOPS.TROOPS.find((en) => en.id === parts.id && en.category === 'troop' && en.name in SIEGE_MACHINES)!;
+			const unit = RAW_TROOPS.find((en) => en.id === parts.id && en.category === 'troop' && en.name in SIEGE_MACHINES)!;
 			return {
 				id: parts.id,
 				total: parts.total,
@@ -185,8 +185,8 @@ export default class ArmyCommand extends Command {
 			siegeMachines.reduce((pre, cur) => pre + cur.housing * cur.total, 0)
 		];
 
-		const hallByTroops = RAW_TROOPS.TROOPS_HOUSING.find((en) => en.troops >= Math.min(totalTroop, TOTAL_UNITS))?.hall ?? 0;
-		const hallBySpells = RAW_TROOPS.TROOPS_HOUSING.find((en) => en.spells >= Math.min(totalSpell, TOTAL_SPELLS))?.hall ?? 0;
+		const hallByTroops = ARMY_CAPACITY.find((en) => en.troops >= Math.min(totalTroop, TOTAL_UNITS))?.hall ?? 0;
+		const hallBySpells = ARMY_CAPACITY.find((en) => en.spells >= Math.min(totalSpell, TOTAL_SPELLS))?.hall ?? 0;
 		const townHallLevel = Math.max(hallByUnlockTH, hallByTroops, hallBySpells);
 
 		const embed = new EmbedBuilder()

@@ -12,8 +12,8 @@ import {
 import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
-import { getMenuFromMessage } from '../../util/Helper.js';
-import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { getMenuFromMessage, unitsFlatten } from '../../util/Helper.js';
+import { RAW_SUPER_TROOPS, RAW_TROOPS } from '../../util/Troops.js';
 
 export default class UnitsCommand extends Command {
 	public constructor() {
@@ -105,7 +105,7 @@ export default class UnitsCommand extends Command {
 
 		const activeEquipment = data.heroes.flatMap((hero) => (hero.equipment ?? []).map((u) => u.name));
 
-		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
+		const Troops = RAW_TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
 			.filter((unit) => {
 				if (unit.category === 'equipment' && !activeEquipment.includes(unit.name)) return false;
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > 0;
@@ -133,7 +133,7 @@ export default class UnitsCommand extends Command {
 			'Builder Barracks': 'Builder Troops'
 		};
 
-		const apiTroops = this.apiTroops(data);
+		const apiTroops = unitsFlatten(data);
 		const units = [];
 		const indexes = Object.values(titles);
 		for (const [key, value] of Object.entries(Troops)) {
@@ -185,7 +185,7 @@ export default class UnitsCommand extends Command {
 			}
 		}
 
-		const superTroops = RAW_TROOPS_DATA.SUPER_TROOPS.filter((unit) =>
+		const superTroops = RAW_SUPER_TROOPS.filter((unit) =>
 			apiTroops.find((un) => un.name === unit.original && un.village === unit.village && un.level >= unit.minOriginalLevel)
 		).map((unit) => {
 			const { maxLevel, level, name } = apiTroops.find((u) => u.name === unit.original && u.village === unit.village) ?? {
@@ -194,7 +194,7 @@ export default class UnitsCommand extends Command {
 			};
 			const hallLevel = data.townHallLevel;
 
-			const originalTroop = RAW_TROOPS_DATA.TROOPS.find((un) => un.name === name && un.category === 'troop' && un.village === 'home');
+			const originalTroop = RAW_TROOPS.find((un) => un.name === name && un.category === 'troop' && un.village === 'home');
 
 			return {
 				village: unit.village,
@@ -245,40 +245,5 @@ export default class UnitsCommand extends Command {
 
 	private padStart(num: number) {
 		return num.toString().padStart(2, ' ');
-	}
-
-	private apiTroops(data: APIPlayer) {
-		return [
-			...data.troops.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'troop',
-				village: u.village
-			})),
-			...data.heroes.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'hero',
-				village: u.village
-			})),
-			...data.spells.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'spell',
-				village: u.village
-			})),
-			...data.heroes.flatMap((hero) =>
-				(hero.equipment ?? []).map((u) => ({
-					name: u.name,
-					level: u.level,
-					maxLevel: u.maxLevel,
-					type: 'equipment',
-					village: u.village
-				}))
-			)
-		];
 	}
 }

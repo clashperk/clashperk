@@ -4,9 +4,9 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
-import { HERO_PETS, HOME_HEROES, HOME_TROOPS, SUPER_TROOPS } from '../../util/Emojis.js';
+import { HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
-import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { RAW_TROOPS_FILTERED } from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
 
 const achievements = [
@@ -235,7 +235,7 @@ export default class ExportClanMembersCommand extends Command {
 
 	private rushedPercentage(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+		const rem = RAW_TROOPS_FILTERED.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {
@@ -252,7 +252,7 @@ export default class ExportClanMembersCommand extends Command {
 
 	private labUpgrades(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+		const rem = RAW_TROOPS_FILTERED.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category !== 'hero' && unit.village === 'home') {
@@ -269,7 +269,7 @@ export default class ExportClanMembersCommand extends Command {
 
 	private heroUpgrades(data: APIPlayer) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+		const rem = RAW_TROOPS_FILTERED.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category === 'hero' && unit.village === 'home') {

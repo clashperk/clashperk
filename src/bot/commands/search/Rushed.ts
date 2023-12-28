@@ -11,14 +11,10 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TroopJSON } from '../../types/index.js';
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
-import { getMenuFromMessage } from '../../util/Helper.js';
-import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
+import { getMenuFromMessage, unitsFlatten } from '../../util/Helper.js';
+import { RAW_TROOPS_FILTERED } from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
-
-const RAW_TROOPS_DATA_FILTERED = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal)
-	.filter((u) => u.category !== 'equipment')
-	.filter((unit) => !(unit.name in SUPER_TROOPS));
 
 export default class RushedCommand extends Command {
 	public constructor() {
@@ -108,8 +104,8 @@ export default class RushedCommand extends Command {
 	private embed(data: APIPlayer, locale: string) {
 		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
-		const apiTroops = this.apiTroops(data);
-		const Troops = RAW_TROOPS_DATA_FILTERED.filter((unit) => {
+		const apiTroops = unitsFlatten(data);
+		const Troops = RAW_TROOPS_FILTERED.filter((unit) => {
 			const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 			const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
 			// const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
@@ -260,35 +256,9 @@ export default class RushedCommand extends Command {
 		return num.toString().padStart(2, ' ');
 	}
 
-	private apiTroops(data: APIPlayer) {
-		return [
-			...data.troops.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'troop',
-				village: u.village
-			})),
-			...data.heroes.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'hero',
-				village: u.village
-			})),
-			...data.spells.map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'spell',
-				village: u.village
-			}))
-		];
-	}
-
 	private rushedPercentage(data: APIPlayer) {
-		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA_FILTERED.reduce(
+		const apiTroops = unitsFlatten(data);
+		const rem = RAW_TROOPS_FILTERED.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home' && unit.category !== 'hero') {
@@ -304,8 +274,8 @@ export default class RushedCommand extends Command {
 	}
 
 	private heroRushed(data: APIPlayer) {
-		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA_FILTERED.reduce(
+		const apiTroops = unitsFlatten(data);
+		const rem = RAW_TROOPS_FILTERED.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category === 'hero' && unit.village === 'home') {
@@ -321,8 +291,8 @@ export default class RushedCommand extends Command {
 	}
 
 	private rushedOverall(data: APIPlayer) {
-		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA_FILTERED.reduce(
+		const apiTroops = unitsFlatten(data);
+		const rem = RAW_TROOPS_FILTERED.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {
@@ -338,7 +308,7 @@ export default class RushedCommand extends Command {
 	}
 
 	private totalPercentage(hallLevel: number, rushed: number) {
-		const totalTroops = RAW_TROOPS_DATA_FILTERED.filter((unit) => unit.village === 'home' && unit.levels[hallLevel - 2] > 0);
+		const totalTroops = RAW_TROOPS_FILTERED.filter((unit) => unit.village === 'home' && unit.levels[hallLevel - 2] > 0);
 		return `${rushed}/${totalTroops.length} (${((rushed * 100) / totalTroops.length).toFixed(2)}%)`;
 	}
 }

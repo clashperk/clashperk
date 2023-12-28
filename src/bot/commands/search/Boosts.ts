@@ -1,10 +1,10 @@
-import { CommandInteraction, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder, ButtonStyle, User } from 'discord.js';
 import { APIPlayer } from 'clashofclans.js';
-import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections, BOOST_DURATION } from '../../util/Constants.js';
+import { BOOST_DURATION, Collections } from '../../util/Constants.js';
+import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis.js';
+import { RAW_SUPER_TROOPS } from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
-import RAW_TROOPS_DATA from '../../util/Troops.js';
 
 export default class BoostsCommand extends Command {
 	public constructor() {
@@ -137,11 +137,10 @@ export default class BoostsCommand extends Command {
 	}
 
 	private boostable(players: APIPlayer[]) {
-		const superTroops = RAW_TROOPS_DATA.SUPER_TROOPS;
 		return players
 			.filter((en) => en.townHallLevel >= 11)
 			.reduce((pre, curr) => {
-				const troops = superTroops.filter((unit) =>
+				const troops = RAW_SUPER_TROOPS.filter((unit) =>
 					curr.troops.find((un) => un.village === 'home' && un.name === unit.original && un.level >= unit.minOriginalLevel)
 				);
 				return pre + (troops.length ? 1 : 0);
