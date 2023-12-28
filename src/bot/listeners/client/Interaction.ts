@@ -1,6 +1,7 @@
 import { MsearchMultiSearchItem, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types.js';
 
-import { AutocompleteInteraction, Interaction } from 'discord.js';
+import { addBreadcrumb } from '@sentry/node';
+import { AutocompleteInteraction, ChannelType, Interaction, InteractionType } from 'discord.js';
 import moment from 'moment';
 import { Filter } from 'mongodb';
 import ms from 'ms';
@@ -157,6 +158,28 @@ export default class InteractionListener extends Listener {
 			sub_command_id: interaction.options.getSubcommand(false),
 			autocomplete_field_name: focused,
 			autocomplete_query: interaction.options.getString(focused)?.substring(0, 10) ?? null
+		});
+
+		addBreadcrumb({
+			message: 'autocomplete_started',
+			data: {
+				user: {
+					id: interaction.user.id,
+					displayName: interaction.user.displayName,
+					username: interaction.user.username
+				},
+				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
+				channel: interaction.channel
+					? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
+					: interaction.channelId,
+				command: interaction.commandName,
+				interaction: {
+					id: interaction.id,
+					type: InteractionType[interaction.type]
+				},
+				[focused]: interaction.options.getString(focused)?.substring(0, 100),
+				args: this.client.commandHandler.rawArgs(interaction)
+			}
 		});
 
 		switch (focused) {
