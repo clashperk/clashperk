@@ -54,7 +54,7 @@ export default class ErrorListener extends Listener {
 			}
 		});
 
-		setContext('command_started', {
+		setContext('command_errored', {
 			user: {
 				id: interaction.user.id,
 				username: interaction.user.username,

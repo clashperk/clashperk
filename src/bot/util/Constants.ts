@@ -3,6 +3,10 @@ import i18next from 'i18next';
 
 export const status = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
 
+export const shouldCreateSpanForRequest = (url: string) => {
+	return !['discord.com', 'api.clashofclans.com', 'api.mixpanel.com'].includes(new URL(url).hostname);
+};
+
 export const RTL_LANGUAGE_SAMPLE = 'مرحبا بالعالم';
 
 export const UP_ARROW = '↑';

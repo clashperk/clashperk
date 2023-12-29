@@ -35,7 +35,7 @@ if (process.env.SENTRY && process.env.GIT_SHA) {
 					return frame;
 				}
 			}),
-			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: true })
+			new Sentry.Integrations.Http({ tracing: false, breadcrumbs: false })
 		]
 	});
 }
