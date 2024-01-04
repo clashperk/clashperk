@@ -90,8 +90,8 @@ export default class AutoLeagueRoleCommand extends Command {
 					.join('\n'),
 				'',
 				args.allowExternal
-					? '[External Accounts Allowed] Users will get roles based on each accounts that are linked (N.B. at least one account must be a part of the family).'
-					: '[No External Accounts Allowed] Users will get roles based on the accounts that are a part of the family clans.'
+					? '[External Accounts Allowed] - Users will get roles based on each accounts that are linked (at least one account must be a part of the family).'
+					: '[No External Accounts Allowed] - Users will get roles based on the accounts that are a part of the family clans.'
 			].join('\n')
 		});
 	}
@@ -146,6 +146,6 @@ export default class AutoLeagueRoleCommand extends Command {
 	private async disable(interaction: CommandInteraction<'cached'>) {
 		this.client.settings.delete(interaction.guildId, Settings.LEAGUE_ROLES);
 		this.client.settings.delete(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE);
-		return interaction.editReply('Successfully disabled automatic Town Hall roles.');
+		return interaction.editReply('Successfully disabled automatic league roles.');
 	}
 }

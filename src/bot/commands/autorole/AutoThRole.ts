@@ -83,8 +83,8 @@ export default class AutoTownHallRoleCommand extends Command {
 				roles.map((role) => `${ORANGE_NUMBERS[role.hall]} ${role.role ? `<@&${role.role.id}>` : ''}`).join('\n'),
 				'',
 				args.allowExternal
-					? '[External Accounts Allowed] Users will get roles based on each accounts that are linked (N.B. at least one account must be a part of the family).'
-					: '[No External Accounts Allowed] Users will get roles based on the accounts that are a part of the family clans.'
+					? '[External Accounts Allowed] - Users will get roles based on each accounts that are linked (at least one account must be a part of the family).'
+					: '[No External Accounts Allowed] - Users will get roles based on the accounts that are a part of the family clans.'
 			].join('\n')
 		});
 	}
