@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: AWS ECR
+    name: Build
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
 
     steps:
@@ -57,3 +57,14 @@ jobs:
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
           build-args: GIT_SHA=${{ github.sha }}
+
+  deploy:
+    name: Deploy
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    needs: build
+
+    steps:
+      - name: Deploy Custom Bot Services
+        run: |
+          curl --location --request POST 'http://${{ secrets.AUTO_DEPLOYMENT_SERVICE_HOST }}/github-webhook' \
+            --header 'x-api-key: ${{ secrets.AUTO_DEPLOYMENT_SERVICE_API_KEY }}'
