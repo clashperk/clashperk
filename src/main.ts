@@ -1,6 +1,5 @@
 import 'moment-duration-format';
 import 'reflect-metadata';
-
 import { RewriteFrames } from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
 import { DiscordAPIError } from 'discord.js';
