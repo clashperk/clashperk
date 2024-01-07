@@ -1505,7 +1505,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
-				name: 'utils',
+				name: 'utility',
 				description: 'Setup some other utility features.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
@@ -1526,14 +1526,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							}
 						]
 					},
-					// {
-					// 	name: 'max_duration',
-					// 	description: 'Maximum duration of the events in minutes.',
-					// 	type: ApplicationCommandOptionType.Integer,
-					// 	required: false,
-					// 	max_value: 60,
-					// 	min_value: 10
-					// },
 					{
 						name: 'disable',
 						description: 'Disable the events schedular.',
@@ -2429,6 +2421,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String,
 						description: 'The clan for which to set the war role.'
+					}
+				]
+			},
+			{
+				name: 'family',
+				description: 'Set family roles.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'family_role',
+						description: 'Family role.',
+						type: ApplicationCommandOptionType.Role
 					}
 				]
 			},

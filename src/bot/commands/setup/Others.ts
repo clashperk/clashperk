@@ -21,7 +21,7 @@ import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct
 
 export default class SetupUtilsCommand extends Command {
 	public constructor() {
-		super('setup-utils', {
+		super('setup-utility', {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],

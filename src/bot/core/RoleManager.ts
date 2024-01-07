@@ -450,6 +450,7 @@ export class RoleManager {
 
 		// getting roles of all linked players
 		const players = await this.client.http._getPlayers(flattened);
+		const familyRoleId = this.client.settings.get<string>(guildId, Settings.FAMILY_ROLE, null);
 
 		// going through all clan members
 		for (const member of members) {
@@ -462,19 +463,23 @@ export class RoleManager {
 
 			// getting the member's highest role for each clan
 			const highestClanRoles = clans
-				.map((clan) => ({
-					roles: clan.roles,
-					highestRole: this.getHighestRole(
+				.map((clan) => {
+					const highestRole = this.getHighestRole(
 						players.filter((data) => tags.includes(data.tag)),
 						[clan.tag]
-					),
-					commonRoleId: clan.roles.everyone // <- this is the role that is common to all clan members
-				}))
+					);
+					return {
+						roles: clan.roles,
+						highestRole,
+						commonRoleId: clan.roles.everyone, // <- this is the role that is common to all clan members
+						familyRoleId: familyRoleId
+					};
+				})
 				.filter((mem) => mem.highestRole);
 			// mapping the highest role with discord role ids
 			const highestRoles = highestClanRoles
 				// mapping the common role id with the highest role id
-				.map(({ roles, highestRole, commonRoleId }) => [roles[highestRole!], commonRoleId])
+				.map(({ roles, highestRole, commonRoleId, familyRoleId }) => [roles[highestRole!], commonRoleId, familyRoleId])
 				.flat()
 				.filter((id) => id);
 

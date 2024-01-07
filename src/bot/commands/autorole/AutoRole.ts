@@ -23,7 +23,8 @@ export default class AutoRoleCommand extends Command {
 				'town-hall': this.handler.modules.get('setup-town-hall-roles')!,
 				'clan-roles': this.handler.modules.get('setup-clan-roles')!,
 				'leagues': this.handler.modules.get('setup-league-roles')!,
-				'wars': this.handler.modules.get('setup-war-roles')!
+				'wars': this.handler.modules.get('setup-war-roles')!,
+				'family': this.handler.modules.get('setup-family-roles')!
 			}[args.type];
 			if (!command) throw Error('Command not found.');
 			return this.handler.continue(interaction, command);
@@ -33,7 +34,8 @@ export default class AutoRoleCommand extends Command {
 			'town-hall': this.handler.modules.get('setup-town-hall-roles')!,
 			'clan-roles': this.handler.modules.get('setup-clan-roles')!,
 			'leagues': this.handler.modules.get('setup-league-roles')!,
-			'wars': this.handler.modules.get('setup-war-roles')!
+			'wars': this.handler.modules.get('setup-war-roles')!,
+			'family': this.handler.modules.get('setup-family-roles')!
 		}[args.command];
 
 		if (!command) throw Error('Command not found.');

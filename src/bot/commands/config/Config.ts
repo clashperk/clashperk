@@ -16,7 +16,15 @@ export default class ConfigCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { color_code?: string; events_channel?: string; webhook_limit?: number; manager_role?: Role; roster_manager_role?: Role }
+		args: {
+			color_code?: string;
+			events_channel?: string;
+			webhook_limit?: number;
+			manager_role?: Role;
+			roster_manager_role?: Role;
+			account_linked_role?: Role;
+			account_verified_role?: Role;
+		}
 	) {
 		if (
 			!this.client.util.isManager(interaction.member) &&
@@ -55,6 +63,14 @@ export default class ConfigCommand extends Command {
 
 		if (args.roster_manager_role) {
 			await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, args.roster_manager_role.id);
+		}
+
+		if (args.account_linked_role) {
+			await this.client.settings.set(interaction.guild, Settings.ACCOUNT_LINKED_ROLE, args.account_linked_role.id);
+		}
+
+		if (args.account_verified_role) {
+			await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.account_verified_role.id);
 		}
 
 		if (args.events_channel) {

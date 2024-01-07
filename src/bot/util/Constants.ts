@@ -143,7 +143,10 @@ export const enum Settings {
 	HAS_CUSTOM_BOT = 'hasCustomBot',
 	GUILD_LOG_WEBHOOK_URL = 'guildLogWebhookURL',
 	RATE_LIMIT_WEBHOOK_URL = 'rateLimitWebhookURL',
-	EMOJI_SERVERS = 'emojiServers'
+	EMOJI_SERVERS = 'emojiServers',
+	FAMILY_ROLE = 'familyRole',
+	ACCOUNT_LINKED_ROLE = 'accountLinkedRole',
+	ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {

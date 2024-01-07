@@ -48,7 +48,7 @@ export default class SetupCommand extends Command {
 		const command = {
 			enable: this.handler.modules.get('setup-enable')!,
 			disable: this.handler.modules.get('setup-disable')!,
-			utils: this.handler.modules.get('setup-utils')!
+			utility: this.handler.modules.get('setup-utility')!
 		}[args.command];
 		if (command) {
 			return this.handler.continue(interaction, command);
