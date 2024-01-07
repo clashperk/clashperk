@@ -172,7 +172,7 @@ export class CustomBot {
 					input: {
 						name: "${serviceName}",
 						source: { repo: "clashperk/clashperk" },
-						branch: "railway",
+						branch: "deploy",
 						environmentId: "${environmentId}",
 						projectId: "${projectId}",
 						variables: {
