@@ -1,5 +1,4 @@
-name: CD/Main
-
+name: update-custom-bot-commands
 on:
   workflow_dispatch:
   schedule:
@@ -7,13 +6,13 @@ on:
     - cron: '0 8 * * 1'
   push:
     branches:
-      - main
+      - deploy
     paths:
       - 'scripts/**'
 
 jobs:
   build:
-    name: Main Bot
+    name: Custom Bot
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +34,9 @@ jobs:
         run: npm run build
 
       - name: Deploy
-        run: npm run deploy -- --gh-action
+        run: npm run deploy -- --custom-bot
         env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CRYPTO_KEY: ${{ secrets.CRYPTO_KEY }}
+          CRYPTO_IV: ${{ secrets.CRYPTO_IV }}
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+          SERVICE_API_URL: ${{ secrets.SERVICE_API_URL }}

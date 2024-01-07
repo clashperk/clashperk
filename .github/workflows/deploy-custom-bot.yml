@@ -1,0 +1,20 @@
+name: deploy-custom-bot
+
+on:
+  push:
+    branches:
+      - deploy
+    paths-ignore:
+      - 'scripts/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Custom Bot Services
+        run: |
+          curl --location --request POST 'http://${{ secrets.AUTO_DEPLOYMENT_SERVICE_HOST }}/github-webhook' \
+            --header 'x-api-key: ${{ secrets.AUTO_DEPLOYMENT_SERVICE_API_KEY }}'
