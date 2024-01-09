@@ -5,8 +5,8 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    name: ESLint
+  build:
+    name: eslint
     runs-on: ubuntu-latest
 
     steps:

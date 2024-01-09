@@ -8,11 +8,11 @@ on:
     branches:
       - deploy
     paths:
-      - 'scripts/**'
+      - scripts/**
 
 jobs:
   build:
-    name: Custom Bot
+    name: update-custom-bot-commands
     runs-on: ubuntu-latest
 
     steps:

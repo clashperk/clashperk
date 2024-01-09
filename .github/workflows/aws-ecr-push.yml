@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'scripts/**'
+      - scripts/**
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build
+    name: aws-ecr-push
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
 
     steps:

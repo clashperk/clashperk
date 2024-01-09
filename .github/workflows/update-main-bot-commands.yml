@@ -9,11 +9,11 @@ on:
     branches:
       - main
     paths:
-      - 'scripts/**'
+      - scripts/**
 
 jobs:
   build:
-    name: Main Bot
+    name: update-main-bot-commands
     runs-on: ubuntu-latest
 
     steps:
