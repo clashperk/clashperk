@@ -476,6 +476,7 @@ export class RoleManager {
 					};
 				})
 				.filter((mem) => mem.highestRole);
+
 			// mapping the highest role with discord role ids
 			const highestRoles = highestClanRoles
 				// mapping the common role id with the highest role id
@@ -486,6 +487,8 @@ export class RoleManager {
 			const reason = ActionType[member.op].replace(/%PLAYER%/, member.name);
 			// flatten all the role ids for each clan
 			const roles = Array.from(new Set(clans.map((clan) => Object.values(clan.roles)).flat())).filter((id) => id);
+			if (familyRoleId) roles.push(familyRoleId);
+
 			const count = await this.addRoles({
 				members: guildMembers,
 				guildId,
