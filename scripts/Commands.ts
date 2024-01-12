@@ -1202,6 +1202,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: 'CWL season',
+						choices: getSeasonIds()
+					},
+					{
 						name: 'user',
 						description: common.options.user.description,
 						description_localizations: translation('common.options.user.description'),
@@ -1701,6 +1708,25 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
+						name: 'category',
+						description: 'Category of the roster.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'CWL',
+								value: 'CWL'
+							},
+							{
+								name: 'WAR',
+								value: 'WAR'
+							},
+							{
+								name: 'TROPHY',
+								value: 'TROPHY'
+							}
+						]
+					},
+					{
 						name: 'import_members',
 						description: 'Whether to import members from the clan.',
 						type: ApplicationCommandOptionType.Boolean
@@ -1798,21 +1824,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'color_code',
 						description: 'Hex color code of the roster embed.',
 						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'category',
-						description: 'Category of the roster.',
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'CWL',
-								value: 'CWL'
-							},
-							{
-								name: 'WAR',
-								value: 'WAR'
-							}
-						]
 					}
 				]
 			},
@@ -1896,6 +1907,25 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: 'Name of the roster.',
 						max_length: 30,
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'category',
+						description: 'Category of the roster.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'CWL',
+								value: 'CWL'
+							},
+							{
+								name: 'WAR',
+								value: 'WAR'
+							},
+							{
+								name: 'TROPHY',
+								value: 'TROPHY'
+							}
+						]
 					},
 					{
 						name: 'clan',
@@ -2001,21 +2031,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'color_code',
 						description: 'Hex color code of the roster embed.',
 						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'category',
-						description: 'Category of the roster.',
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'CWL',
-								value: 'CWL'
-							},
-							{
-								name: 'WAR',
-								value: 'WAR'
-							}
-						]
 					}
 				]
 			},

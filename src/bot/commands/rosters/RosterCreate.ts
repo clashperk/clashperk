@@ -1,7 +1,7 @@
 import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Args, Command } from '../../lib/index.js';
-import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
+import { DEFAULT_TROPHY_ROSTER_LAYOUT, IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
 
 // /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2})$/
 
@@ -94,6 +94,13 @@ export default class RosterCreateCommand extends Command {
 			} else {
 				data.layout = defaultSettings.layout;
 			}
+		}
+
+		if (!args.layout && args.category === 'TROPHY') {
+			data.layout = DEFAULT_TROPHY_ROSTER_LAYOUT;
+		}
+		if (!args.sort_by && args.category === 'TROPHY') {
+			data.sortBy = 'TROPHIES';
 		}
 
 		if (args.roster_role) {

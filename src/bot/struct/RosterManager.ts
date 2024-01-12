@@ -111,8 +111,20 @@ export const rosterLayoutMap = {
 		align: 'left',
 		name: 'War Preference',
 		description: 'The war preference of the player in the clan.'
+	},
+	'TROPHIES': {
+		width: 6,
+		label: 'TROPHY',
+		isEmoji: false,
+		key: 'trophies',
+		align: 'right',
+		name: 'Trophies',
+		description: 'The trophies of the player.'
 	}
 } as const;
+
+export const DEFAULT_ROSTER_LAYOUT = '#/TH_ICON/DISCORD/NAME/CLAN';
+export const DEFAULT_TROPHY_ROSTER_LAYOUT = '#/TH_ICON/TROPHIES/NAME';
 
 export interface IRoster {
 	name: string;
@@ -138,7 +150,7 @@ export interface IRoster {
 	useClanAlias?: boolean;
 	allowUnlinked?: boolean;
 	allowMultiSignup?: boolean;
-	category: 'GENERAL' | 'CWL' | 'WAR';
+	category: 'GENERAL' | 'CWL' | 'WAR' | 'TROPHY';
 	allowCategorySelection?: boolean;
 	lastUpdated: Date;
 	createdAt: Date;
@@ -183,6 +195,7 @@ export interface IRosterMember {
 	role: string | null;
 	townHallLevel: number;
 	heroes: Record<string, number>;
+	trophies: number;
 	clan?: {
 		tag: string;
 		name: string;
@@ -485,6 +498,7 @@ export class RosterManager {
 			username: user?.displayName ?? null,
 			warPreference: player.warPreference ?? null,
 			role: player.role ?? null,
+			trophies: player.trophies,
 			heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
 			townHallLevel: player.townHallLevel,
 			clan: player.clan ? { name: player.clan.name, tag: player.clan.tag } : null,
@@ -736,6 +750,9 @@ export class RosterManager {
 			case 'SIGNUP_TIME':
 				roster.members.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 				break;
+			case 'TROPHIES':
+				roster.members.sort((a, b) => b.trophies - a.trophies);
+				break;
 			default:
 				roster.members.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 				break;
@@ -781,6 +798,7 @@ export class RosterManager {
 
 					const townHallLevel = `${mem.townHallLevel}`.padStart(rosterLayoutMap.TH.width, ' ');
 					const townHallIcon = TOWN_HALLS[mem.townHallLevel];
+					const trophies = `${mem.trophies}`.padStart(rosterLayoutMap.TROPHIES.width, ' ');
 					const heroes = `${this.sum(Object.values(mem.heroes))}`.padEnd(rosterLayoutMap.HERO_LEVEL.width, ' ');
 					const role = (mem.role ? roleNames[mem.role] : ' ').padEnd(rosterLayoutMap.ROLE.width, ' ');
 					const warPreference = `${mem.warPreference?.toUpperCase() ?? ' '}`.padEnd(rosterLayoutMap.PREF.width, ' ');
@@ -794,13 +812,14 @@ export class RosterManager {
 						townHallIcon,
 						heroes,
 						role,
+						trophies,
 						warPreference
 					};
 				})
 			};
 		});
 
-		const layoutId = roster.layout ?? '#/TH_ICON/DISCORD/NAME/CLAN';
+		const layoutId = roster.layout ?? DEFAULT_ROSTER_LAYOUT;
 		const layouts = layoutId
 			.split('/')
 			.filter((k) => k in rosterLayoutMap)
@@ -935,7 +954,7 @@ export class RosterManager {
 			.addFields({
 				name: 'Roster Layout',
 				inline: true,
-				value: `\`${roster.layout ?? '#/TH_ICON/DISCORD/NAME/CLAN'}\``
+				value: `\`${roster.layout ?? DEFAULT_ROSTER_LAYOUT}\``
 			});
 		if (roster.colorCode) embed.setColor(roster.colorCode);
 
@@ -1261,6 +1280,7 @@ export class RosterManager {
 				townHallLevel: player.townHallLevel,
 				warPreference: player.warPreference ?? null,
 				role: player.role ?? null,
+				trophies: player.trophies,
 				heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
 				clan: player.clan ? { tag: player.clan.tag, name: player.clan.name } : null,
 				createdAt: new Date()

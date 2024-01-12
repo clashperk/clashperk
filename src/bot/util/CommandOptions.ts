@@ -74,6 +74,10 @@ export const RosterCommandSortOptions = [
 	{
 		name: 'Signup Time',
 		value: 'SIGNUP_TIME'
+	},
+	{
+		name: 'Trophies',
+		value: 'TROPHIES'
 	}
 ] as const;
 
