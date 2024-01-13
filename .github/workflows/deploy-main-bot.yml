@@ -15,4 +15,4 @@ jobs:
 
     steps:
       - name: Deploy
-        run: echo "Will do this someday!"
+        run: curl --location --request POST '${{ secrets.PORTAINER_WEBHOOK_URL }}'
