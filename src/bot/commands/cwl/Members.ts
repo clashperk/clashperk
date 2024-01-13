@@ -41,11 +41,6 @@ export default class CWLMembersCommand extends Command {
 			heroes: data.heroes.length ? data.heroes.filter((a) => a.village === 'home') : []
 		}));
 
-		/* [[1, 4], [2], [3]].reduce((a, b) => {
-			a.push(...b);
-			return a;
-		}, []);*/
-
 		let members = '';
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
