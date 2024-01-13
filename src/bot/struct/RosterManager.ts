@@ -703,6 +703,7 @@ export class RosterManager {
 			member.townHallLevel = player.townHallLevel;
 			member.warPreference = player.warPreference ?? null;
 			member.role = player.role ?? null;
+			member.trophies = player.trophies;
 			const heroes = player.heroes.filter((hero) => hero.village === 'home');
 			member.heroes = heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {});
 			if (player.clan) member.clan = { name: player.clan.name, tag: player.clan.tag, alias: aliases[player.clan.tag] || null };
