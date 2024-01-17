@@ -102,6 +102,7 @@ export default class ClanEmbedCommand extends Command {
 			const modalCustomIds = {
 				modal: this.client.uuid(action.user.id),
 				description: this.client.uuid(action.user.id),
+				requirements: this.client.uuid(action.user.id),
 				bannerImage: this.client.uuid(action.user.id)
 			};
 
@@ -111,9 +112,20 @@ export default class ClanEmbedCommand extends Command {
 				.setLabel('Description')
 				.setPlaceholder('Enter a custom description. \nOr type "auto" to use the in-game clan description.')
 				.setStyle(TextInputStyle.Paragraph)
-				.setMaxLength(1024)
+				.setMaxLength(1200)
 				.setRequired(false);
 			if (state.description) descriptionInput.setValue(state.description);
+
+			const requirementsInput = new TextInputBuilder()
+				.setCustomId(modalCustomIds.requirements)
+				.setLabel('Requirements Text (Deprecated)')
+				.setPlaceholder('Enter a custom requirement text. \nOr type "auto" to use the in-game settings.')
+				.setStyle(TextInputStyle.Paragraph)
+				.setMaxLength(600)
+				.setRequired(false);
+			if (state.accepts) {
+				requirementsInput.setValue(state.accepts).setMaxLength(Math.max(600, state.accepts.length));
+			}
 
 			const bannerImageInput = new TextInputBuilder()
 				.setCustomId(modalCustomIds.bannerImage)
@@ -126,6 +138,7 @@ export default class ClanEmbedCommand extends Command {
 
 			modal.addComponents(
 				new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput),
+				new ActionRowBuilder<TextInputBuilder>().addComponents(requirementsInput),
 				new ActionRowBuilder<TextInputBuilder>().addComponents(bannerImageInput)
 			);
 
@@ -139,6 +152,9 @@ export default class ClanEmbedCommand extends Command {
 
 				const description = modalSubmit.fields.getTextInputValue(modalCustomIds.description);
 				state.description = description.toLowerCase() === 'auto' ? 'auto' : cleanContent(description, interaction.channel!);
+
+				const requirements = modalSubmit.fields.getTextInputValue(modalCustomIds.requirements);
+				state.accepts = requirements.toLowerCase() === 'auto' ? 'auto' : cleanContent(requirements, interaction.channel!);
 
 				const bannerImage = modalSubmit.fields.getTextInputValue(modalCustomIds.bannerImage);
 				state.bannerImage = URL_REGEX.test(bannerImage) ? bannerImage : '';
@@ -169,8 +185,8 @@ export default class ClanEmbedCommand extends Command {
 				name: data.name,
 				message,
 				embed: {
-					accepts: state.accepts!,
-					bannerImage: state.bannerImage!,
+					accepts: state.accepts,
+					bannerImage: state.bannerImage,
 					description: cleanContent(state.description!, interaction.channel!)
 				},
 				webhook: { id: webhook.id, token: webhook.token }

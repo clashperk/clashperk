@@ -63,10 +63,10 @@ export const clanEmbedMaker = async (
 	clan: APIClan,
 	{
 		description,
-		requirements,
+		accepts,
 		color,
 		bannerImage
-	}: { description?: string; requirements?: string; color?: number; bannerImage?: string; isDryRun?: boolean }
+	}: { description?: string; accepts?: string; color?: number; bannerImage?: string; isDryRun?: boolean }
 ) => {
 	const client = container.resolve(Client);
 	const reduced = clan.memberList.reduce<{ [key: string]: number }>((count, member) => {
@@ -126,11 +126,11 @@ export const clanEmbedMaker = async (
 			name: 'Requirements',
 			value: [
 				`${EMOJIS.TOWN_HALL} ${
-					requirements?.toLowerCase() === 'auto'
+					!accepts || accepts?.toLowerCase() === 'auto'
 						? clan.requiredTownhallLevel
 							? `TH ${clan.requiredTownhallLevel}+`
 							: 'Any'
-						: requirements ?? 'Any'
+						: accepts ?? 'Any'
 				}`,
 				'**Trophies Required**',
 				`${EMOJIS.TROPHY} ${clan.requiredTrophies}`,

@@ -70,7 +70,7 @@ export default class ClanEmbedLog extends BaseLog {
 	private async embed(cache: Cache, data: APIClan) {
 		const embed = await clanEmbedMaker(data, {
 			description: cache.embed.description,
-			requirements: cache.embed.accepts,
+			accepts: cache.embed.accepts,
 			bannerImage: cache.embed.bannerImage,
 			color: cache.color
 		});
