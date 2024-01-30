@@ -3539,6 +3539,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			}
 		]
 	},
+	{
+		name: 'clans',
+		description: 'Show all linked clans.',
+		dm_permission: false
+	},
 
 	// -------- CONTEXT MENU COMMANDS--------
 

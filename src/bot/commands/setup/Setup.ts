@@ -1,14 +1,14 @@
 import {
-	CommandInteraction,
-	EmbedBuilder,
-	ButtonBuilder,
 	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
 	ButtonStyle,
+	CommandInteraction,
 	ComponentType,
-	AttachmentBuilder
+	EmbedBuilder
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Flags, Collections } from '../../util/Constants.js';
+import { Collections, Flags } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
 
 const names: Record<string, string> = {

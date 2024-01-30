@@ -5,7 +5,7 @@ import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, 
 import { ARMY_CAPACITY, RAW_SUPER_TROOPS, RAW_TROOPS } from '../../util/Troops.js';
 
 const [TOTAL_UNITS, TOTAL_SPELLS, TOTAL_SUPER_TROOPS, TOTAL_SIEGE] = [320, 11, 2, 1];
-const ARMY_URL_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=[u|s]([\d+x-])+[s|u]?([\d+x-])+/g;
+const ARMY_URL_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}[\/]?\?action=CopyArmy&army=[u|s]([\d+x-])+[s|u]?([\d+x-])+/g;
 
 export default class ArmyCommand extends Command {
 	public constructor() {
