@@ -524,8 +524,8 @@ export class RosterManager {
 	}
 
 	public async optOut(roster: WithId<IRoster>, ...playerTags: string[]) {
-		const members = roster.members.filter((mem) => playerTags.includes(mem.tag));
-		if (!members.length) return roster;
+		const targetedMembers = roster.members.filter((mem) => playerTags.includes(mem.tag));
+		if (!targetedMembers.length) return roster;
 
 		const { value } = await this.rosters.findOneAndUpdate(
 			{ _id: roster._id },
@@ -534,7 +534,10 @@ export class RosterManager {
 		);
 		if (!value) return null;
 
-		const grouped = members.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
+		const affectedUserIds = targetedMembers.filter((mem) => mem.userId).map((mem) => mem.userId!);
+		const affectedUsers = roster.members.filter((mem) => mem.userId && affectedUserIds.includes(mem.userId));
+
+		const grouped = affectedUsers.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
 			if (!curr.userId) return prev;
 			prev[curr.userId] ??= []; // eslint-disable-line
 			prev[curr.userId].push(curr);
@@ -548,7 +551,8 @@ export class RosterManager {
 			const roleIds: string[] = [];
 			if (value.roleId && members.length <= 1) roleIds.push(value.roleId);
 
-			for (const member of members) {
+			// loop through affected members only
+			for (const member of members.filter((mem) => playerTags.includes(mem.tag))) {
 				if (!member.categoryId) continue;
 
 				const category = categories.find((cat) => cat._id.toHexString() === member.categoryId!.toHexString());
