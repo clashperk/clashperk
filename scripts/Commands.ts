@@ -1723,7 +1723,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'edit',
-				description: 'Delete a clan category.',
+				description: 'Edit a clan category.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
