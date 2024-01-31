@@ -4,7 +4,6 @@ import {
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
-	cleanContent,
 	CommandInteraction,
 	DiscordjsError,
 	DiscordjsErrorCodes,
@@ -151,10 +150,10 @@ export default class ClanEmbedCommand extends Command {
 				});
 
 				const description = modalSubmit.fields.getTextInputValue(modalCustomIds.description);
-				state.description = description.toLowerCase() === 'auto' ? 'auto' : cleanContent(description, interaction.channel!);
+				state.description = description.toLowerCase() === 'auto' ? 'auto' : description.trim();
 
 				const requirements = modalSubmit.fields.getTextInputValue(modalCustomIds.requirements);
-				state.accepts = requirements.toLowerCase() === 'auto' ? 'auto' : cleanContent(requirements, interaction.channel!);
+				state.accepts = requirements.toLowerCase() === 'auto' ? 'auto' : requirements.trim();
 
 				const bannerImage = modalSubmit.fields.getTextInputValue(modalCustomIds.bannerImage);
 				state.bannerImage = URL_REGEX.test(bannerImage) ? bannerImage : '';
@@ -187,7 +186,7 @@ export default class ClanEmbedCommand extends Command {
 				embed: {
 					accepts: state.accepts,
 					bannerImage: state.bannerImage,
-					description: cleanContent(state.description!, interaction.channel!)
+					description: state.description?.trim()
 				},
 				webhook: { id: webhook.id, token: webhook.token }
 			});
