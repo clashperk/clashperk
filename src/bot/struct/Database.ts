@@ -86,6 +86,8 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.CLAN_CATEGORIES).createIndex({ guildId: 1 }),
+
 			db.collection(Collections.CLAN_RANKS).createIndexes([
 				{
 					key: { countryCode: 1, season: 1 },

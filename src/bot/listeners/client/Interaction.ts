@@ -189,6 +189,9 @@ export default class InteractionListener extends Listener {
 			case 'clans': {
 				return this.clansAutocomplete(interaction, focused);
 			}
+			case 'category': {
+				return this.client.autocomplete.clanCategoriesAutoComplete(interaction);
+			}
 			case 'tag': {
 				if (['player', 'units', 'upgrades', 'rushed', 'verify'].includes(interaction.commandName)) {
 					return this.playerTagAutocomplete(interaction, focused);

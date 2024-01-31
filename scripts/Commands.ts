@@ -1488,6 +1488,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
+						name: 'category',
+						description: 'Category of the clan. (select from the menu or type your own)',
+						type: ApplicationCommandOptionType.String,
+						max_length: 36,
+						autocomplete: true
+					},
+					{
 						name: 'channel',
 						description: command.setup.enable.options.channel.description,
 						description_localizations: translation('command.setup.enable.options.channel.description'),
@@ -1675,6 +1682,80 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'alias',
 						description: command.alias.delete.options.name.description,
 						description_localizations: translation('command.alias.delete.options.name.description'),
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			}
+		]
+	},
+	{
+		name: 'category',
+		description: 'Manage clan categories or groups.',
+		dm_permission: false,
+		options: [
+			{
+				name: 'create',
+				description: 'Create a new clan category.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'category_name',
+						max_length: 36,
+						description: 'Name of the clan category.',
+						required: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'category_order',
+						min_value: 1,
+						max_value: 100,
+						description: 'Order of the clan category.',
+						type: ApplicationCommandOptionType.Number
+					}
+				]
+			},
+			{
+				name: 'list',
+				description: 'List all clan categories.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'edit',
+				description: 'Delete a clan category.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'category',
+						description: 'Select a clan category.',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'category_name',
+						max_length: 36,
+						description: 'Name of the clan category.',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'category_order',
+						min_value: 1,
+						max_value: 100,
+						description: 'Order of the clan category.',
+						type: ApplicationCommandOptionType.Number
+					}
+				]
+			},
+			{
+				name: 'delete',
+				description: 'Delete a clan category.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'category',
+						description: 'Select a clan category.',
 						required: true,
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
@@ -2477,6 +2558,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Wars',
 								value: 'wars'
+							},
+							{
+								name: 'Family',
+								value: 'family'
 							}
 						]
 					},

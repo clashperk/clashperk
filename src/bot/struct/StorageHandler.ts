@@ -24,8 +24,18 @@ export interface ClanStore {
 	secureRole: boolean;
 	uniqueId: number;
 	color?: number;
+	categoryId?: ObjectId;
 	roles?: { coLeader?: string; admin?: string; member?: string; leader?: string; everyone?: string };
 }
+
+export interface ClanCategories {
+	guildId: string;
+	name: string;
+	order: number;
+	displayName: string;
+}
+
+export const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
 
 export default class StorageHandler {
 	public collection: Collection<ClanStore>;
@@ -63,6 +73,56 @@ export default class StorageHandler {
 			.toArray();
 	}
 
+	public formatCategoryName(name: string) {
+		return name.toLowerCase().trim().replace(/\s+/g, '_');
+	}
+
+	public async findOrCreateCategory({ guildId, category }: { guildId: string; category?: string }) {
+		if (!category) return null;
+
+		const collection = this.client.db.collection<ClanCategories>(Collections.CLAN_CATEGORIES);
+
+		const formattedName = this.formatCategoryName(category);
+		if (ObjectId.isValid(category)) {
+			const result = await collection.findOne({ guildId, _id: new ObjectId(category) });
+
+			return result?._id ?? null;
+		}
+
+		const lastCategory = await collection.findOne({ guildId }, { sort: { order: -1 } });
+
+		const { value } = await collection.findOneAndUpdate(
+			{ guildId, name: formattedName },
+			{
+				$set: { displayName: category.trim(), guildId, name: formattedName, order: (lastCategory?.order ?? 0) + 1 }
+			},
+			{ upsert: true, returnDocument: 'after' }
+		);
+		return value?._id ?? null;
+	}
+
+	public async getOrCreateDefaultCategories(guildId: string) {
+		const categories = await this.client.db
+			.collection<ClanCategories>(Collections.CLAN_CATEGORIES)
+			.find({ guildId })
+			.sort({ order: 1 })
+			.toArray();
+
+		if (!categories.length) {
+			const payload = defaultCategories.map((name, i) => ({
+				_id: new ObjectId(),
+				guildId,
+				order: i + 1,
+				name: name.toLowerCase(),
+				displayName: name
+			}));
+			await this.client.db.collection<ClanCategories>(Collections.CLAN_CATEGORIES).insertMany(payload);
+			return payload.map((result) => ({ value: result._id.toHexString(), name: result.displayName, order: result.order }));
+		}
+
+		return categories.map((result) => ({ value: result._id.toHexString(), name: result.displayName, order: result.order }));
+	}
+
 	private fixTag(tag: string) {
 		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O/g, '0')}`;
 	}
@@ -83,6 +143,7 @@ export default class StorageHandler {
 					paused: false,
 					active: true,
 					verified: true,
+					categoryId: data.categoryId,
 					...(data.hexCode ? { color: data.hexCode } : {}),
 					patron: this.client.patrons.get(message.guild!.id)
 				},

@@ -17,6 +17,7 @@ export class Autocomplete {
 	}
 
 	public exec(interaction: AutocompleteInteraction<'cached'>, args: Record<string, unknown>) {
+		console.log(args.commandName);
 		const command = this.client.commandHandler.getCommand(args.commandName as string);
 		if (!command) return null;
 		return command.autocomplete(interaction, args);
@@ -42,5 +43,10 @@ export class Autocomplete {
 		const flags = await cursor.limit(24).toArray();
 		const players = flags.filter((flag, index) => flags.findIndex((f) => f.tag === flag.tag) === index);
 		return interaction.respond(players.map((flag) => ({ name: `${flag.name} (${flag.tag})`, value: flag.tag })));
+	}
+
+	public async clanCategoriesAutoComplete(interaction: AutocompleteInteraction<'cached'>) {
+		const categories = await this.client.storage.getOrCreateDefaultCategories(interaction.guildId);
+		return interaction.respond(categories.slice(0, 25));
 	}
 }
