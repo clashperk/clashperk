@@ -48,9 +48,28 @@ export default class StorageHandler {
 		return this.collection.find({ guild: id }, { sort: { name: 1 } }).toArray();
 	}
 
-	public async _find(id: string, collection: Collections) {
-		const result = await this.client.db.collection(collection).find({ guild: id }).toArray();
-		return result;
+	public async getEnabledFeatures(id: string, collection: Collections) {
+		return this.client.db
+			.collection(collection)
+			.aggregate([
+				{ $match: { guild: id } },
+				{ $lookup: { from: Collections.CLAN_STORES, localField: 'clanId', foreignField: '_id', as: 'root' } },
+				{ $unwind: { path: '$root', preserveNullAndEmptyArrays: true } },
+				{ $match: { root: { $exists: true } } }
+			])
+			.toArray();
+	}
+
+	public async cleanUpDeletedLogs(collection: Collections) {
+		const result = await this.client.db
+			.collection(collection)
+			.aggregate([
+				{ $lookup: { from: Collections.CLAN_STORES, localField: 'clanId', foreignField: '_id', as: 'root' } },
+				{ $unwind: { path: '$root', preserveNullAndEmptyArrays: true } },
+				{ $match: { root: { $exists: false } } }
+			])
+			.toArray();
+		await this.client.db.collection(collection).deleteMany({ _id: { $in: result.map((doc) => doc._id) } });
 	}
 
 	public async search(guildId: string, query: string[]): Promise<WithId<ClanStore>[]> {

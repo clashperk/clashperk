@@ -271,7 +271,7 @@ export default class Resolver {
 
 		const memberCount = interaction.guild.memberCount;
 		const [features, clans] = await Promise.all([
-			this.client.storage._find(interaction.guild.id, collection),
+			this.client.storage.getEnabledFeatures(interaction.guild.id, collection),
 			this.client.storage.find(interaction.guild.id)
 		]);
 
