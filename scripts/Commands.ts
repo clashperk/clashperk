@@ -1766,31 +1766,31 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'roster',
-		description: 'Comprehensive roster management system.',
+		description: 'Comprehensive roster management system',
 		dm_permission: false,
 		options: [
 			{
 				name: 'create',
-				description: 'Create a roster for your clan.',
+				description: 'Create a roster',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'clan',
-						description: 'Clan of the roster.',
+						description: 'Clan of the roster',
 						autocomplete: true,
 						required: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'name',
-						description: 'Name of the roster.',
+						description: 'Name of the roster',
 						required: true,
 						max_length: 30,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'category',
-						description: 'Category of the roster.',
+						description: 'Category of the roster',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1809,31 +1809,31 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'import_members',
-						description: 'Whether to import members from the clan.',
+						description: 'Whether to import members from the clan',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
 						name: 'allow_unlinked',
-						description: 'Whether to allow unlinked members.',
+						description: 'Whether to allow unlinked members',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
 						name: 'max_members',
 						min_value: 5,
 						max_value: 65,
-						description: 'Size of the roster.',
+						description: 'Roster size',
 						type: ApplicationCommandOptionType.Integer
 					},
 					{
 						name: 'min_town_hall',
-						description: 'Minimum Town Hall level of the roster.',
+						description: 'Minimum TownHall level',
 						type: ApplicationCommandOptionType.Integer,
 						min_value: 2,
 						max_value: MAX_TOWN_HALL_LEVEL
 					},
 					{
 						name: 'max_town_hall',
-						description: 'Maximum Town Hall level of the roster.',
+						description: 'Maximum TownHall level',
 						type: ApplicationCommandOptionType.Integer,
 						min_value: 2,
 						max_value: MAX_TOWN_HALL_LEVEL
@@ -1841,23 +1841,23 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'min_hero_level',
 						min_value: 0,
-						description: 'Minimum combined Hero level of the roster.',
+						description: 'Minimum combined Hero level',
 						type: ApplicationCommandOptionType.Integer
 					},
 					{
 						name: 'roster_role',
-						description: 'Role of the roster.',
+						description: 'Roster role',
 						type: ApplicationCommandOptionType.Role
 					},
 					{
 						name: 'sort_by',
-						description: 'Sorting order of the roster member list.',
+						description: 'Sorting order of the roster member list',
 						type: ApplicationCommandOptionType.String,
 						choices: [...RosterCommandSortOptions]
 					},
 					{
 						name: 'layout',
-						description: 'Layout of the roster.',
+						description: 'Layout of the roster',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1872,28 +1872,28 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'start_time',
-						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						description: 'Roster start time (YYYY-MM-DD HH:mm, in 24 hours format)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'end_time',
-						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						description: 'Roster end time (YYYY-MM-DD HH:mm, in 24 hours format)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'timezone',
 						autocomplete: true,
-						description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+						description: 'Search timezone by city or country (e.g. London, Singapore, India, Sydney)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'allow_group_selection',
-						description: 'Whether to allow members to select group.',
+						description: 'Whether to allow members to select group',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
 						name: 'allow_multi_signup',
-						description: 'Whether to allow multiple rosters signup.',
+						description: 'Whether to allow multiple rosters signup',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
@@ -1903,40 +1903,40 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'color_code',
-						description: 'Hex color code of the roster embed.',
+						description: 'Hex color code of the roster embed',
 						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
 			{
 				name: 'post',
-				description: 'Post a roster to signup or view members.',
+				description: 'Post a roster to signup or view members',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'roster',
 						autocomplete: true,
 						required: true,
-						description: 'Select a roster to post.',
+						description: 'Select a roster to post',
 						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
 			{
 				name: 'clone',
-				description: 'Clone a roster to create a new one.',
+				description: 'Clone a roster to create a new one',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'roster',
 						autocomplete: true,
 						required: true,
-						description: 'Select a roster to post.',
+						description: 'Select a roster to post',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'name',
-						description: 'Name of the roster.',
+						description: 'Name of the roster',
 						max_length: 30,
 						type: ApplicationCommandOptionType.String
 					}
@@ -1944,28 +1944,28 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'list',
-				description: 'Search rosters or list all rosters and groups.',
+				description: 'Search rosters or list all rosters and groups',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'name',
-						description: 'Search rosters by name.',
+						description: 'Search rosters by name',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'user',
-						description: 'Search rosters by user.',
+						description: 'Search rosters by user',
 						type: ApplicationCommandOptionType.User
 					},
 					{
 						name: 'player_tag',
-						description: 'Search rosters by player.',
+						description: 'Search rosters by player',
 						type: ApplicationCommandOptionType.String,
 						autocomplete: true
 					},
 					{
 						name: 'clan',
-						description: 'Search rosters by clan.',
+						description: 'Search rosters by clan',
 						type: ApplicationCommandOptionType.String,
 						autocomplete: true
 					}
@@ -1973,25 +1973,25 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'edit',
-				description: 'Edit a roster and its settings.',
+				description: 'Edit a roster and its settings',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'roster',
-						description: 'Select a roster to edit.',
+						description: 'Select a roster to edit',
 						required: true,
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'name',
-						description: 'Name of the roster.',
+						description: 'Name of the roster',
 						max_length: 30,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'category',
-						description: 'Category of the roster.',
+						description: 'Category of the roster',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -2010,18 +2010,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'clan',
-						description: 'Clan of the roster.',
+						description: 'Clan of the roster',
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'allow_unlinked',
-						description: 'Whether to allow unlinked members.',
+						description: 'Whether to allow unlinked members',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
 						name: 'max_members',
-						description: 'Size of the roster.',
+						description: 'Roster size',
 						max_value: 65,
 						min_value: 5,
 						type: ApplicationCommandOptionType.Integer
@@ -2030,12 +2030,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'min_town_hall',
 						max_value: MAX_TOWN_HALL_LEVEL,
 						min_value: 2,
-						description: 'Minimum Town Hall level of the roster.',
+						description: 'Minimum Town Hall level',
 						type: ApplicationCommandOptionType.Integer
 					},
 					{
 						name: 'max_town_hall',
-						description: 'Maximum Town Hall level of the roster.',
+						description: 'Maximum Town Hall level',
 						type: ApplicationCommandOptionType.Integer,
 						min_value: 2,
 						max_value: MAX_TOWN_HALL_LEVEL
@@ -2043,17 +2043,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'min_hero_level',
 						min_value: 0,
-						description: 'Minimum combined Hero level of the roster.',
+						description: 'Minimum combined Hero level',
 						type: ApplicationCommandOptionType.Integer
 					},
 					{
 						name: 'roster_role',
-						description: 'Role of the roster.',
+						description: 'Roster role',
 						type: ApplicationCommandOptionType.Role
 					},
 					{
 						name: 'layout',
-						description: 'Layout of the roster.',
+						description: 'Layout of the roster',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -2068,39 +2068,39 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'sort_by',
-						description: 'Sorting order of the roster member list.',
+						description: 'Sorting order of the roster member list',
 						type: ApplicationCommandOptionType.String,
 						choices: [...RosterCommandSortOptions]
 					},
 					{
 						name: 'delete_role',
-						description: 'Whether to delete the role of the roster.',
+						description: 'Whether to delete the roster role',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
 						name: 'start_time',
-						description: 'Start time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						description: 'Roster start time (YYYY-MM-DD HH:mm, in 24 hours format)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'end_time',
-						description: 'End time of the roster (YYYY-MM-DD HH:mm, in 24 hours format)',
+						description: 'Roster end time (YYYY-MM-DD HH:mm, in 24 hours format)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'timezone',
 						autocomplete: true,
-						description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+						description: 'Search timezone by city or country (e.g. London, Singapore, India, Sydney)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'allow_group_selection',
-						description: 'Whether to allow members to select group.',
+						description: 'Whether to allow members to select group',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
 						name: 'allow_multi_signup',
-						description: 'Whether to allow multiple rosters signup.',
+						description: 'Whether to allow multiple rosters signup',
 						type: ApplicationCommandOptionType.Boolean
 					},
 					{
@@ -2110,7 +2110,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'color_code',
-						description: 'Hex color code of the roster embed.',
+						description: 'Hex color code of the roster embed',
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -2131,19 +2131,19 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'manage',
-				description: 'Add or remove users or change their group or roster.',
+				description: 'Add or remove users or change their group or roster',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'roster',
-						description: 'Select a roster to manage.',
+						description: 'Select a roster to manage',
 						required: true,
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'action',
-						description: 'Select an action to perform.',
+						description: 'Select an action to perform',
 						required: true,
 						type: ApplicationCommandOptionType.String,
 						choices: [
@@ -2168,102 +2168,146 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'player_tag',
 						autocomplete: true,
-						description: 'Select a player to manage.',
+						description: 'Select a player to manage',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'clan_tag',
 						autocomplete: true,
-						description: 'Select a clan to add players from.',
+						description: 'Select a clan to add players from',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'user',
-						description: 'Select a user to manage.',
+						description: 'Select a user to manage',
 						type: ApplicationCommandOptionType.User
 					},
 					{
 						name: 'target_group',
 						autocomplete: true,
-						description: 'Group of the user to move to.',
+						description: 'Group of the user to move to',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'target_roster',
 						autocomplete: true,
-						description: 'Roster to move the user to.',
+						description: 'Roster to move the user to',
 						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
 			{
 				name: 'groups',
-				description: 'Manage user groups of the rosters.',
+				description: 'Manage user groups of the rosters',
 				type: ApplicationCommandOptionType.SubcommandGroup,
 				options: [
 					{
 						name: 'create',
-						description: 'Create a user group.',
+						description: 'Create a user group',
 						type: ApplicationCommandOptionType.Subcommand,
 						options: [
 							{
 								name: 'name',
-								description: 'Name of the user group.',
+								description: 'Name of the user group',
 								required: true,
 								max_length: 30,
 								type: ApplicationCommandOptionType.String
 							},
 							{
 								name: 'group_role',
-								description: 'Role of the user group.',
+								description: 'Role of the user group',
 								type: ApplicationCommandOptionType.Role
 							},
 							{
 								name: 'selectable',
-								description: 'Whether to allow members to select this group.',
+								description: 'Whether to allow members to select this group',
 								type: ApplicationCommandOptionType.Boolean
 							}
 						]
 					},
 					{
 						name: 'modify',
-						description: 'Modify or delete a user group.',
+						description: 'Modify or delete a user group',
 						type: ApplicationCommandOptionType.Subcommand,
 						options: [
 							{
 								name: 'group',
 								autocomplete: true,
 								required: true,
-								description: 'Select a group to modify.',
+								description: 'Select a group to modify',
 								type: ApplicationCommandOptionType.String
 							},
 							{
 								name: 'name',
-								description: 'Name of the user group.',
+								description: 'Name of the user group',
 								max_length: 30,
 								type: ApplicationCommandOptionType.String
 							},
 							{
 								name: 'group_role',
-								description: 'Role of the user group.',
+								description: 'Role of the user group',
 								type: ApplicationCommandOptionType.Role
 							},
 							{
 								name: 'selectable',
-								description: 'Whether to allow members to select this group.',
+								description: 'Whether to allow members to select this group',
 								type: ApplicationCommandOptionType.Boolean
 							},
 							{
 								name: 'delete_role',
-								description: 'Whether to delete the role of the group.',
+								description: 'Whether to delete the role of the group',
 								type: ApplicationCommandOptionType.Boolean
 							},
 							{
 								name: 'delete_group',
-								description: 'Whether to delete the user group.',
+								description: 'Whether to delete the user group',
 								type: ApplicationCommandOptionType.Boolean
 							}
 						]
+					}
+				]
+			},
+			{
+				name: 'ping',
+				description: 'Ping members in the roster',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'roster',
+						description: 'Select a roster to manage',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'message',
+						description: 'Message for the members',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'ping_option',
+						description: 'Ping option',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: "Pending (didn't signup, but in the clan)",
+								value: 'pending'
+							},
+							{
+								name: 'Unwanted (opted-in, but not in the clan)',
+								value: 'unwanted'
+							},
+							{
+								name: 'Everyone (all opted-in members)',
+								value: 'everyone'
+							}
+						]
+					},
+					{
+						name: 'group',
+						description: 'Select a user group (ping everyone in this group)',
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			}
@@ -2271,7 +2315,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'autorole',
-		description: 'Enable automatic clan roles and Town Hall roles.',
+		description: 'Enable automatic clan roles and Town Hall roles',
 		dm_permission: false,
 		options: [
 			{
@@ -3628,6 +3672,33 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		name: 'clans',
 		description: 'Show all linked clans.',
 		dm_permission: false
+	},
+	{
+		name: 'layout',
+		description: 'Post a village layout.',
+		dm_permission: false,
+		options: [
+			{
+				name: 'screenshot',
+				description: 'Screenshot of the layout.',
+				required: true,
+				type: ApplicationCommandOptionType.Attachment
+			},
+			{
+				name: 'link',
+				description: 'Shareable link of the layout.',
+				required: true,
+				max_length: 100,
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'title',
+				description: 'Title of the layout.',
+				required: true,
+				max_length: 100,
+				type: ApplicationCommandOptionType.String
+			}
+		]
 	},
 
 	// -------- CONTEXT MENU COMMANDS--------

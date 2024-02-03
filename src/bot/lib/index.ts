@@ -1,6 +1,3 @@
-import EventEmitter from 'node:events';
-import { extname } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import {
 	ApplicationCommandOptionType,
 	AutocompleteInteraction,
@@ -18,6 +15,9 @@ import {
 	PermissionsString,
 	RestEvents
 } from 'discord.js';
+import EventEmitter from 'node:events';
+import { extname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/Client.js';
@@ -149,6 +149,8 @@ export class CommandHandler extends BaseHandler {
 				resolved[key] = option.role ?? null;
 			} else if (option.type === ApplicationCommandOptionType.User) {
 				resolved[key] = option.user ?? null;
+			} else if (option.type === ApplicationCommandOptionType.Attachment) {
+				resolved[key] = option.attachment?.url ?? null;
 			} else {
 				resolved[key] = option.value ?? null;
 			}
@@ -184,6 +186,8 @@ export class CommandHandler extends BaseHandler {
 				resolved[key] = option.role ?? null;
 			} else if (option.type === ApplicationCommandOptionType.User) {
 				resolved[key] = args[name]?.match === 'MEMBER' ? option.member ?? null : option.user ?? null;
+			} else if (option.type === ApplicationCommandOptionType.Attachment) {
+				resolved[key] = option.attachment?.url ?? null;
 			} else {
 				resolved[key] = option.value ?? null;
 			}
