@@ -444,6 +444,8 @@ export default class InteractionListener extends Listener {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
+		const userId = interaction.user.id;
+
 		const now = Date.now();
 		const result = query
 			? await this.client.elastic.msearch({
@@ -452,9 +454,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									},
+									must: { term: { userId } },
 									should: getQuery(query),
 									minimum_should_match: 1
 								}
@@ -464,9 +464,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									},
+									must: { term: { userId } },
 									should: getQuery(query),
 									minimum_should_match: 1
 								}
@@ -491,9 +489,7 @@ export default class InteractionListener extends Listener {
 							sort: [{ order: 'asc' }],
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									}
+									must: { term: { userId } }
 								}
 							}
 						},
@@ -502,9 +498,7 @@ export default class InteractionListener extends Listener {
 							sort: [{ lastSearched: 'desc' }],
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									}
+									must: { term: { userId } }
 								}
 							}
 						}
@@ -517,7 +511,8 @@ export default class InteractionListener extends Listener {
 		const players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
 			.flat()
-			.filter((player, index, self) => player.name && player.tag && self.findIndex((p) => p.tag === player.tag) === index)
+			.filter((player) => player.name && player.tag)
+			.filter((player, index, _players) => _players.findIndex((p) => p.tag === player.tag) === index)
 			.slice(0, 25);
 
 		if (!players.length) {
@@ -538,6 +533,9 @@ export default class InteractionListener extends Listener {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
 
+		const userId = interaction.user.id;
+		const guildId = interaction.guild.id;
+
 		const now = Date.now();
 		const result = query
 			? await this.client.elastic.msearch({
@@ -546,9 +544,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									},
+									must: { term: { userId } },
 									should: getQuery(query),
 									minimum_should_match: 1
 								}
@@ -558,9 +554,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								bool: {
-									must: {
-										term: { guildId: interaction.guild.id }
-									},
+									must: { term: { guildId } },
 									should: getQuery(query),
 									minimum_should_match: 1
 								}
@@ -573,11 +567,7 @@ export default class InteractionListener extends Listener {
 						{ index: ElasticIndex.USER_LINKED_CLANS },
 						{
 							query: {
-								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									}
-								}
+								bool: { must: { term: { userId } } }
 							}
 						},
 						{ index: ElasticIndex.GUILD_LINKED_CLANS },
@@ -585,22 +575,14 @@ export default class InteractionListener extends Listener {
 							size: 25,
 							sort: [{ name: 'asc' }],
 							query: {
-								bool: {
-									must: {
-										term: { guildId: interaction.guild.id }
-									}
-								}
+								bool: { must: { term: { guildId } } }
 							}
 						}
 						// { index: ElasticIndex.RECENT_CLANS },
 						// {
 						// 	sort: [{ lastSearched: 'desc' }],
 						// 	query: {
-						// 		bool: {
-						// 			must: {
-						// 				term: { userId: interaction.user.id }
-						// 			}
-						// 		}
+						// 		bool: { must: { term: { userId } } }
 						// 	}
 						// }
 					]
@@ -613,7 +595,8 @@ export default class InteractionListener extends Listener {
 		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
 			.flat()
-			.filter((clan, index, self) => clan.name && clan.tag && self.findIndex((p) => p.tag === clan.tag) === index);
+			.filter((clan) => clan.name && clan.tag)
+			.filter((clan, index, _clans) => _clans.findIndex((p) => p.tag === clan.tag) === index);
 
 		if (!clans.length) {
 			if (query && this.isValidQuery(query)) {
@@ -721,7 +704,8 @@ export default class InteractionListener extends Listener {
 		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
 			.flat()
-			.filter((clan, index, self) => clan.name && clan.tag && self.findIndex((p) => p.tag === clan.tag) === index)
+			.filter((clan) => clan.name && clan.tag)
+			.filter((clan, index, _clans) => _clans.findIndex((p) => p.tag === clan.tag) === index)
 			.slice(0, 25);
 
 		if (!clans.length) {

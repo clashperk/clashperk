@@ -1,7 +1,9 @@
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, InteractionReplyOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
+import { IRoster } from '../../struct/RosterManager.js';
 import { Settings } from '../../util/Constants.js';
+import { nullsLastSortAlgo } from '../../util/Helper.js';
 
 export default class RosterPingCommand extends Command {
 	public constructor() {
@@ -19,7 +21,7 @@ export default class RosterPingCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { roster: string; ping_option?: 'pending' | 'unwanted' | 'everyone'; group?: string; message?: string }
+		args: { roster: string; ping_option?: 'unregistered' | 'missing' | 'everyone'; group?: string; message?: string }
 	) {
 		if (!(args.ping_option || args.group)) return interaction.editReply('Please provide a ping option or a user-group.');
 		if (!ObjectId.isValid(args.roster)) return interaction.editReply({ content: 'Invalid roster ID.' });
@@ -37,15 +39,16 @@ export default class RosterPingCommand extends Command {
 		// close all rosters that should be closed
 		this.client.rosterManager.closeRosters(interaction.guild.id);
 
-		const msgText = [`**Roster:** ${roster.name} - ${roster.clan.name} (${roster.clan.tag})`].join('\n');
+		const msgText = `\u200e**${roster.name} - ${roster.clan.name} (${roster.clan.tag})** ${args.message ? `\n\n${args.message}` : ''}`;
 
 		if (args.group) {
 			const groupMembers = updated.members.filter((member) => member.categoryId && member.categoryId.toHexString() === args.group);
 			if (!groupMembers.length) return interaction.editReply({ content: 'No members found in this group.' });
 
-			return interaction.editReply({
+			groupMembers.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
+			return this.followUp(interaction, updated, {
 				content: [
-					`${msgText}\n\n${args.message ?? ''}`,
+					msgText,
 					'',
 					groupMembers
 						.map((member) => {
@@ -56,16 +59,17 @@ export default class RosterPingCommand extends Command {
 			});
 		}
 
-		if (args.ping_option === 'pending') {
-			const pendingMembers = clan.memberList.filter((member) => !updated.members.some((m) => m.tag === member.tag));
-			if (!pendingMembers.length) return interaction.editReply({ content: 'No pending members found.' });
+		if (args.ping_option === 'unregistered') {
+			const unregisteredMembers = clan.memberList.filter((member) => !updated.members.some((m) => m.tag === member.tag));
+			if (!unregisteredMembers.length) return interaction.editReply({ content: 'No unregistered members found.' });
 
-			const members = await this.client.rosterManager.getClanMembers(pendingMembers);
-			if (!members.length) return interaction.editReply({ content: 'No pending members found.' });
+			const members = await this.client.rosterManager.getClanMembers(unregisteredMembers, true);
+			if (!members.length) return interaction.editReply({ content: 'No unregistered members found.' });
 
-			return interaction.followUp({
+			members.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
+			return this.followUp(interaction, updated, {
 				content: [
-					`${msgText}\n\n${args.message ?? ''}`,
+					msgText,
 					'',
 					members
 						.map((member) => {
@@ -76,15 +80,16 @@ export default class RosterPingCommand extends Command {
 			});
 		}
 
-		if (args.ping_option === 'unwanted') {
-			const unwantedMembers = updated.members.filter((member) => !member.clan || member.clan.tag !== clan.tag);
-			if (!unwantedMembers.length) return interaction.editReply({ content: 'No unwanted members found.' });
+		if (args.ping_option === 'missing') {
+			const missingMembers = updated.members.filter((member) => !member.clan || member.clan.tag !== clan.tag);
+			if (!missingMembers.length) return interaction.editReply({ content: 'No missing members found.' });
 
-			return interaction.followUp({
+			missingMembers.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
+			return this.followUp(interaction, updated, {
 				content: [
-					`${msgText}\n${args.message ?? ''}`,
+					msgText,
 					'',
-					unwantedMembers
+					missingMembers
 						.map((member) => {
 							return `${member.name} (${member.tag}) ${member.userId ? `<@${member.userId}>` : ''}`;
 						})
@@ -93,9 +98,9 @@ export default class RosterPingCommand extends Command {
 			});
 		}
 
-		return interaction.followUp({
+		return this.followUp(interaction, updated, {
 			content: [
-				`${msgText}\n\n${args.message ?? ''}`,
+				msgText,
 				'',
 				updated.members
 					.map((member) => {
@@ -104,5 +109,14 @@ export default class RosterPingCommand extends Command {
 					.join('\n')
 			].join('\n')
 		});
+	}
+
+	private async followUp(interaction: CommandInteraction<'cached'>, roster: IRoster, payload: InteractionReplyOptions) {
+		const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
+
+		const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
+		await interaction.editReply({ embeds: [embed] });
+
+		return interaction.followUp(payload);
 	}
 }

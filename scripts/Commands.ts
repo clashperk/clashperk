@@ -2290,12 +2290,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
-								name: "Pending (didn't signup, but in the clan)",
-								value: 'pending'
+								name: "Unregistered (didn't signup, but in the clan)",
+								value: 'unregistered'
 							},
 							{
-								name: 'Unwanted (opted-in, but not in the clan)',
-								value: 'unwanted'
+								name: 'Missing (opted-in, but not in the clan)',
+								value: 'missing'
 							},
 							{
 								name: 'Everyone (all opted-in members)',

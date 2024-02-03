@@ -45,6 +45,28 @@ export const clanGamesMaxPoints = (month: number) => {
 	return 4000;
 };
 
+const isNullish = (value: unknown) => typeof value === 'undefined' || value === null;
+
+export const nullsLastSortAlgo = (a: unknown, b: unknown) => {
+	// Compare null values
+	if (isNullish(a) && isNullish(b)) {
+		return 0;
+	} else if (isNullish(a)) {
+		return 1; // Move null values to the end
+	} else if (isNullish(b)) {
+		return -1; // Move null values to the end
+	}
+
+	return 10;
+
+	// Compare non-null values
+	// if (typeof a === 'number' && typeof b === 'number') {
+	// 	return a - b; // Numeric comparison
+	// } else {
+	// 	return String(a).localeCompare(String(b)); // String comparison for non-numeric values
+	// }
+};
+
 export const clanGamesSortingAlgorithm = (a: number, b: number) => {
 	if (a === b) return 0;
 	if (a === 0) return 1;
