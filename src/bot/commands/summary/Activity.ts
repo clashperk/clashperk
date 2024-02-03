@@ -162,7 +162,7 @@ export default class SummaryCommand extends Command {
 						tag: '$tag',
 						name: '$name',
 						lastSeen: '$lastSeen',
-						score: `$seasons.${Season.ID}`
+						score: `$seasons.${season}`
 					}
 				},
 				{
