@@ -108,6 +108,8 @@ export default class CapitalRaidScheduler {
 	}
 
 	private queue(schedule: RaidSchedule) {
+		if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
+
 		this.queued.set(
 			schedule._id.toHexString(),
 			setTimeout(() => {

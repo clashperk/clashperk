@@ -118,6 +118,8 @@ export default class ClanGamesScheduler {
 	}
 
 	private queue(schedule: ClanGamesSchedule) {
+		if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
+
 		this.queued.set(
 			schedule._id.toHexString(),
 			setTimeout(() => {

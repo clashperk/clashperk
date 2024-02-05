@@ -37,8 +37,8 @@ export default class GuildMemberAddListener extends Listener {
 			if (player && player.tag === link.tag) {
 				await this.client.nickHandler.exec(member, player);
 			}
-		} catch (e) {
-			this.client.logger.error(e, { label: 'GuildMemberAddNickname' });
+		} catch (error) {
+			this.client.logger.error(error, { label: 'GuildMemberAddNickname' });
 		}
 
 		for (const data of players.filter((en) => en.clan && clanTags.includes(en.clan.tag))) {

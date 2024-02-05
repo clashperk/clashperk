@@ -1,5 +1,5 @@
 import { BaseInteraction } from 'discord.js';
-import { Collection } from 'mongodb';
+import { Collection, WithId } from 'mongodb';
 import fetch from 'node-fetch';
 import TimeoutSignal from 'timeout-signal';
 import { Collections, Settings } from '../util/Constants.js';
@@ -45,8 +45,8 @@ export default class Patrons {
 
 	public async init() {
 		await this.refresh();
-		await this._autoDelete(true);
-		setInterval(() => this._autoDelete(false), 10 * 60 * 1000).unref();
+		await this.autoSyncSubscription(true);
+		setInterval(() => this.autoSyncSubscription(false), 10 * 60 * 1000).unref();
 	}
 
 	public get(interaction: BaseInteraction | string): boolean {
@@ -82,7 +82,7 @@ export default class Patrons {
 		}
 	}
 
-	private async _autoDelete(debug = false) {
+	public async autoSyncSubscription(debug = false) {
 		const res = await this.fetchAPI();
 		if (!res) return null;
 		if (debug) this.client.logger.info(`Patron Handler Initialized.`, { label: 'PATREON' });
@@ -90,76 +90,111 @@ export default class Patrons {
 		const patrons = await this.collection.find().toArray();
 		for (const patron of patrons) {
 			const pledge = res.data.find((entry) => entry.relationships.user.data.id === patron.id);
+			await this.resyncPatron(patron, pledge);
+		}
+	}
 
-			const rewardId: string | null = pledge?.relationships.currently_entitled_tiers.data[0]?.id ?? null;
-			if (rewardId && patron.rewardId !== rewardId && guildLimits[rewardId]) {
-				await this.collection.updateOne({ _id: patron._id }, { $set: { rewardId } });
-				if (pledge?.attributes.patron_status === 'active_patron') {
-					// eslint-disable-next-line
-					for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
-					// eslint-disable-next-line
-					for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
+	public async resyncPatron(patron: WithId<Patron>, pledge?: Member) {
+		const rewardId: string | null = pledge?.relationships.currently_entitled_tiers.data[0]?.id ?? null;
+		if (rewardId && patron.rewardId !== rewardId && guildLimits[rewardId]) {
+			await this.collection.updateOne({ _id: patron._id }, { $set: { rewardId } });
+			if (pledge?.attributes.patron_status === 'active_patron') {
+				// eslint-disable-next-line
+				for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
+				// eslint-disable-next-line
+				for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
+
+				if (![rewards.gold, rewards.platinum].includes(rewardId)) {
+					// if (patron.applicationId) await this.suspendService(patron.applicationId);
 				}
 			}
+		}
 
-			if (pledge && new Date(pledge.attributes.last_charge_date).getTime() >= patron.lastChargeDate.getTime()) {
-				await this.collection.updateOne(
-					{ _id: patron._id },
-					{
-						$set: {
-							lastChargeDate: new Date(pledge.attributes.last_charge_date)
-						}
+		if (pledge && new Date(pledge.attributes.last_charge_date).getTime() >= patron.lastChargeDate.getTime()) {
+			await this.collection.updateOne(
+				{ _id: patron._id },
+				{
+					$set: {
+						lastChargeDate: new Date(pledge.attributes.last_charge_date)
 					}
-				);
-			}
+				}
+			);
+		}
 
-			if (
-				pledge &&
-				!(
-					pledge.attributes.lifetime_support_cents === patron.lifetimeSupport &&
-					pledge.attributes.currently_entitled_amount_cents === patron.entitledAmount
-				)
-			) {
-				await this.collection.updateOne(
-					{ _id: patron._id },
-					{
-						$set: {
-							entitledAmount: pledge.attributes.currently_entitled_amount_cents,
-							lifetimeSupport: pledge.attributes.lifetime_support_cents
-						}
+		if (
+			pledge &&
+			!(
+				pledge.attributes.lifetime_support_cents === patron.lifetimeSupport &&
+				pledge.attributes.currently_entitled_amount_cents === patron.entitledAmount
+			)
+		) {
+			await this.collection.updateOne(
+				{ _id: patron._id },
+				{
+					$set: {
+						entitledAmount: pledge.attributes.currently_entitled_amount_cents,
+						lifetimeSupport: pledge.attributes.lifetime_support_cents
 					}
-				);
-			}
+				}
+			);
+		}
 
-			if (patron.active && pledge?.attributes.patron_status === 'former_patron') {
-				await this.collection.updateOne({ id: patron.id }, { $set: { cancelled: true, active: false } });
-				this.client.logger.info(`Declined Patron Deleted ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
+		if (patron.active && pledge?.attributes.patron_status === 'former_patron') {
+			await this.collection.updateOne({ id: patron.id }, { $set: { cancelled: true, active: false } });
+			this.client.logger.info(`Declined Patron Deleted ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
 
-				// eslint-disable-next-line
-				for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
-			}
+			// eslint-disable-next-line
+			for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
+			if (patron.applicationId) await this.suspendService(patron.applicationId);
+		}
 
-			if (!patron.active && (patron.declined || patron.cancelled) && pledge?.attributes.patron_status === 'active_patron') {
-				await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true, cancelled: false } });
-				// eslint-disable-next-line
-				for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
-				this.client.logger.info(`Declined Patron Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
-			}
+		if (!patron.active && (patron.declined || patron.cancelled) && pledge?.attributes.patron_status === 'active_patron') {
+			await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true, cancelled: false } });
+			// eslint-disable-next-line
+			for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
+			if (patron.applicationId) await this.resumeService(patron.applicationId);
 
-			if (
-				patron.active &&
-				pledge?.attributes.patron_status === 'declined_patron' &&
-				this.gracePeriodExpired(new Date(pledge.attributes.last_charge_date))
-			) {
-				await this.collection.updateOne({ id: patron.id }, { $set: { declined: true, active: false } });
-				// eslint-disable-next-line
-				for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
-			}
+			this.client.logger.info(`Declined Patron Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
+		}
+
+		if (
+			patron.active &&
+			pledge?.attributes.patron_status === 'declined_patron' &&
+			this.gracePeriodExpired(new Date(pledge.attributes.last_charge_date))
+		) {
+			await this.collection.updateOne({ id: patron.id }, { $set: { declined: true, active: false } });
+			// eslint-disable-next-line
+			for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
+			if (patron.applicationId) await this.suspendService(patron.applicationId);
 		}
 	}
 
 	private gracePeriodExpired(date: Date) {
 		return Date.now() - date.getTime() >= 3 * 24 * 60 * 60 * 1000;
+	}
+
+	private async suspendService(applicationId: string) {
+		if (!process.env.CUSTOM_BOT_SERVICE_TOKEN && !process.env.CUSTOM_BOT_SERVICE) return;
+		const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/suspend`, {
+			method: 'PUT',
+			headers: {
+				'x-api-key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
+			}
+		});
+		this.client.logger.info(`Service suspended ${res.statusText} - ${res.status}`, { label: 'SERVICE' });
+		return res.ok;
+	}
+
+	private async resumeService(applicationId: string) {
+		if (!process.env.CUSTOM_BOT_SERVICE_TOKEN && !process.env.CUSTOM_BOT_SERVICE) return;
+		const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/resume`, {
+			method: 'PUT',
+			headers: {
+				'x-api-key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
+			}
+		});
+		this.client.logger.info(`Service resumed ${res.statusText} - ${res.status}`, { label: 'SERVICE' });
+		return res.ok;
 	}
 
 	private async restoreGuild(guildId: string) {
