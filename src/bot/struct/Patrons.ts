@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import TimeoutSignal from 'timeout-signal';
 import { Collections, Settings } from '../util/Constants.js';
 import { Client } from './Client.js';
+import { ICustomBot } from './CustomBot.js';
 
 export const rewards = {
 	bronze: '3705318',
@@ -181,8 +182,11 @@ export default class Patrons {
 				'x-api-key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
 			}
 		});
+
+		const app = await this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS).findOne({ applicationId });
+		for (const guildId of app?.guildIds ?? []) await this.client.settings.deleteCustomBot(guildId);
+
 		this.client.logger.info(`Service suspended ${res.statusText} - ${res.status}`, { label: 'SERVICE' });
-		return res.ok;
 	}
 
 	private async resumeService(applicationId: string) {
@@ -193,8 +197,11 @@ export default class Patrons {
 				'x-api-key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
 			}
 		});
+
+		const app = await this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS).findOne({ applicationId });
+		for (const guildId of app?.guildIds ?? []) await this.client.settings.setCustomBot(guildId);
+
 		this.client.logger.info(`Service resumed ${res.statusText} - ${res.status}`, { label: 'SERVICE' });
-		return res.ok;
 	}
 
 	private async restoreGuild(guildId: string) {
