@@ -16,5 +16,5 @@ jobs:
     steps:
       - name: Deploy
         run: |
-          curl --location --request POST 'http://${{ secrets.AUTO_DEPLOYMENT_SERVICE_HOST }}/github-webhook' \
+          curl --fail --location --request POST 'http://${{ secrets.AUTO_DEPLOYMENT_SERVICE_HOST }}/github-webhook' \
             --header 'x-api-key: ${{ secrets.AUTO_DEPLOYMENT_SERVICE_API_KEY }}'
