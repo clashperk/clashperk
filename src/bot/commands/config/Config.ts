@@ -24,6 +24,7 @@ export default class ConfigCommand extends Command {
 			roster_manager_role?: Role;
 			account_linked_role?: Role;
 			account_verified_role?: Role;
+			clans_sorting_key?: string;
 		}
 	) {
 		if (
@@ -63,6 +64,10 @@ export default class ConfigCommand extends Command {
 
 		if (args.roster_manager_role) {
 			await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, args.roster_manager_role.id);
+		}
+
+		if (args.clans_sorting_key) {
+			await this.client.settings.set(interaction.guild, Settings.CLANS_SORTING_KEY, args.clans_sorting_key);
 		}
 
 		if (args.account_linked_role) {
@@ -105,6 +110,7 @@ export default class ConfigCommand extends Command {
 		const rosterManagerRole = interaction.guild.roles.cache.get(
 			this.client.settings.get<string>(interaction.guild, Settings.ROSTER_MANAGER_ROLE, null)
 		);
+		const clansSortingKey = this.client.settings.get<string>(interaction.guild, Settings.CLANS_SORTING_KEY, 'name');
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -133,6 +139,11 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Webhook Limit',
 					value: `${this.client.settings.get<string>(interaction.guild, Settings.WEBHOOK_LIMIT, 8)}`,
+					inline: true
+				},
+				{
+					name: 'Clans Sorting',
+					value: `By ${clansSortingKey}`,
 					inline: true
 				},
 				{

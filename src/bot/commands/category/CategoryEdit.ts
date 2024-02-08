@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { ClanCategories } from '../../struct/StorageHandler.js';
@@ -21,8 +21,16 @@ export default class CategoryEditCommand extends Command {
 	) {
 		if (!ObjectId.isValid(args.category)) return interaction.editReply('Invalid categoryId.');
 
-		if (args.category_name && args.category_order) {
-			return interaction.editReply('Failed to update the category (no name or order was provided)');
+		const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setURL(`https://clashperk.com/clans?token=${token}`).setLabel('Reorder').setStyle(ButtonStyle.Link)
+		);
+
+		if (!(args.category_name && args.category_order)) {
+			return interaction.editReply({
+				content: 'No value was provided to update the category. Would you like to reorder categories and clans?',
+				components: [row]
+			});
 		}
 
 		const payload: Partial<ClanCategories> = {};
@@ -57,6 +65,9 @@ export default class CategoryEditCommand extends Command {
 			.collection(Collections.CLAN_CATEGORIES)
 			.updateOne({ _id: new ObjectId(args.category), name: { $ne: payload.name } }, { $set: { ...payload } });
 
-		return interaction.editReply('Category updated.');
+		return interaction.editReply({
+			content: 'Category name was updated. Would you like to reorder categories and clans?',
+			components: [row]
+		});
 	}
 }

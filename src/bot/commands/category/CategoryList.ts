@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
 export default class CategoryListCommand extends Command {
@@ -19,6 +19,11 @@ export default class CategoryListCommand extends Command {
 			.setAuthor({ name: `${interaction.guild.name} Categories`, iconURL: interaction.guild.iconURL()! });
 		embed.setDescription(categories.map((cat) => `1. ${cat.name} (order ${cat.order})`).join('\n'));
 
-		return interaction.editReply({ embeds: [embed] });
+		const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setURL(`https://clashperk.com/clans?token=${token}`).setLabel('Reorder').setStyle(ButtonStyle.Link)
+		);
+
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 }

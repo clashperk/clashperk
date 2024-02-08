@@ -25,6 +25,7 @@ export interface ClanStore {
 	uniqueId: number;
 	color?: number;
 	categoryId?: ObjectId;
+	order?: number;
 	roles?: { coLeader?: string; admin?: string; member?: string; leader?: string; everyone?: string };
 }
 
@@ -44,8 +45,9 @@ export default class StorageHandler {
 		this.collection = client.db.collection(Collections.CLAN_STORES);
 	}
 
-	public async find(id: string) {
-		return this.collection.find({ guild: id }, { sort: { name: 1 } }).toArray();
+	public async find(guildId: string) {
+		const key = this.client.settings.get<string>(guildId, Settings.CLANS_SORTING_KEY, 'name');
+		return this.collection.find({ guild: guildId }, { sort: { [key]: 1 } }).toArray();
 	}
 
 	public async getEnabledFeatures(id: string, collection: Collections) {

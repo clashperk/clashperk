@@ -3660,6 +3660,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Role
 			},
 			{
+				name: 'clans_sorting_key',
+				description: 'Sort clans by name or manually set order.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'By Name',
+						value: 'name'
+					},
+					{
+						name: 'By Order',
+						value: 'order'
+					}
+				]
+			},
+			{
 				name: 'webhook_limit',
 				description: 'The maximum number of webhooks that can be created in a channel.',
 				type: ApplicationCommandOptionType.Integer,
@@ -3673,33 +3688,33 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description: 'Show all linked clans.',
 		dm_permission: false
 	},
-	{
-		name: 'layout',
-		description: 'Post a village layout.',
-		dm_permission: false,
-		options: [
-			{
-				name: 'screenshot',
-				description: 'Screenshot of the layout.',
-				required: true,
-				type: ApplicationCommandOptionType.Attachment
-			},
-			{
-				name: 'link',
-				description: 'Shareable link of the layout.',
-				required: true,
-				max_length: 100,
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'title',
-				description: 'Title of the layout.',
-				required: true,
-				max_length: 100,
-				type: ApplicationCommandOptionType.String
-			}
-		]
-	},
+	// {
+	// 	name: 'layout',
+	// 	description: 'Post a village layout.',
+	// 	dm_permission: false,
+	// 	options: [
+	// 		{
+	// 			name: 'screenshot',
+	// 			description: 'Screenshot of the layout.',
+	// 			required: true,
+	// 			type: ApplicationCommandOptionType.Attachment
+	// 		},
+	// 		{
+	// 			name: 'link',
+	// 			description: 'Shareable link of the layout.',
+	// 			required: true,
+	// 			max_length: 100,
+	// 			type: ApplicationCommandOptionType.String
+	// 		},
+	// 		{
+	// 			name: 'title',
+	// 			description: 'Title of the layout.',
+	// 			required: true,
+	// 			max_length: 100,
+	// 			type: ApplicationCommandOptionType.String
+	// 		}
+	// 	]
+	// },
 
 	// -------- CONTEXT MENU COMMANDS--------
 

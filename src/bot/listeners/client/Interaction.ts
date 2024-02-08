@@ -528,10 +528,13 @@ export default class InteractionListener extends Listener {
 
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '')?.substring(0, 500);
-
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
+
+		if (!query) {
+			return this.client.autocomplete.clanAutoComplete(interaction, true);
+		}
 
 		const userId = interaction.user.id;
 		const guildId = interaction.guild.id;
@@ -626,6 +629,10 @@ export default class InteractionListener extends Listener {
 
 		const userId = interaction.user.id;
 		const guildId = interaction.guild.id;
+
+		if (!query) {
+			return this.client.autocomplete.clanAutoComplete(interaction, false);
+		}
 
 		const now = Date.now();
 		const result = query

@@ -147,7 +147,8 @@ export const enum Settings {
 	EMOJI_SERVERS = 'emojiServers',
 	FAMILY_ROLE = 'familyRole',
 	ACCOUNT_LINKED_ROLE = 'accountLinkedRole',
-	ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole'
+	ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole',
+	CLANS_SORTING_KEY = 'clansSortingKey'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {

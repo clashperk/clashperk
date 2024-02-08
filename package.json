@@ -46,6 +46,7 @@
 		"ms": "^2.1.3",
 		"nanoid": "^4.0.0",
 		"node-fetch": "^3.2.10",
+		"radash": "^11.0.0",
 		"readdirp": "^3.6.0",
 		"redis": "^4.6.10",
 		"reflect-metadata": "^0.1.13",
