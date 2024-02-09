@@ -1,6 +1,7 @@
 import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { ClanStore } from '../../struct/StorageHandler.js';
+import { Util } from '../../util/index.js';
 
 export default class ClansCommand extends Command {
 	public constructor() {
@@ -31,16 +32,23 @@ export default class ClansCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.setFooter({ text: `Total ${clans.length}` });
 
-		embed.setDescription(
-			clanGroups
-				.map(([categoryId, clans]) => {
-					return [
-						`**${categories[categoryId] || 'General'}**`,
-						...clans.map((clan) => `[${escapeMarkdown(clan.name)} (${clan.tag})](${this.client.http.getClanURL(clan.tag)})`)
-					].join('\n');
-				})
-				.join('\n\n')
-		);
+		const chunk = clanGroups
+			.map(([categoryId, clans]) => {
+				return [
+					`**${categories[categoryId] || 'General'}**`,
+					...clans.map(
+						(clan) => `[${escapeMarkdown(clan.name)} (${clan.tag})](https://cl.clashperk.com/${clan.tag.replace('#', '')})`
+					)
+				].join('\n');
+			})
+			.join('\n\n');
+
+		const [description, ...fields] = Util.splitMessage(chunk, { maxLength: 4096 });
+		embed.setDescription(description);
+
+		for (const field of fields) {
+			embed.addFields({ name: '\u200b', value: field });
+		}
 
 		return interaction.reply({ embeds: [embed] });
 	}
