@@ -3688,33 +3688,32 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description: 'Show all linked clans.',
 		dm_permission: false
 	},
-	// {
-	// 	name: 'layout',
-	// 	description: 'Post a village layout.',
-	// 	dm_permission: false,
-	// 	options: [
-	// 		{
-	// 			name: 'screenshot',
-	// 			description: 'Screenshot of the layout.',
-	// 			required: true,
-	// 			type: ApplicationCommandOptionType.Attachment
-	// 		},
-	// 		{
-	// 			name: 'link',
-	// 			description: 'Shareable link of the layout.',
-	// 			required: true,
-	// 			max_length: 100,
-	// 			type: ApplicationCommandOptionType.String
-	// 		},
-	// 		{
-	// 			name: 'title',
-	// 			description: 'Title of the layout.',
-	// 			required: true,
-	// 			max_length: 100,
-	// 			type: ApplicationCommandOptionType.String
-	// 		}
-	// 	]
-	// },
+	{
+		name: 'layout',
+		description: 'Post a village layout.',
+		dm_permission: false,
+		options: [
+			{
+				name: 'screenshot',
+				description: 'Screenshot of the layout.',
+				required: true,
+				type: ApplicationCommandOptionType.Attachment
+			},
+			{
+				name: 'layout_link',
+				description: 'Shareable link of the layout.',
+				required: true,
+				max_length: 100,
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'title',
+				description: 'Title of the layout.',
+				max_length: 2000,
+				type: ApplicationCommandOptionType.String
+			}
+		]
+	},
 
 	// -------- CONTEXT MENU COMMANDS--------
 

@@ -14,6 +14,16 @@ export default class ClansCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
 		const clans = await this.client.storage.find(interaction.guildId);
+		if (!clans.length) {
+			return interaction.reply({
+				content: this.i18n('common.no_clans_linked', {
+					lng: interaction.locale,
+					command: this.client.commands.SETUP_ENABLE
+				}),
+				ephemeral: true
+			});
+		}
+
 		const categories = await this.getCategoriesMap(interaction.guildId);
 		const categoryIds = Object.keys(categories);
 

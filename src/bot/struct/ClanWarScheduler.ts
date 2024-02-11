@@ -88,6 +88,7 @@ export default class ClanWarScheduler {
 
 	private queue(schedule: Schedule) {
 		if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
+		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
 		this.queued.set(
 			schedule._id.toHexString(),
@@ -98,6 +99,8 @@ export default class ClanWarScheduler {
 	}
 
 	private async delete(schedule: Schedule) {
+		if (!this.client.guilds.cache.has(schedule.guild)) return;
+
 		this.clear(schedule._id.toHexString());
 		return this.schedulers.updateOne({ _id: schedule._id }, { $set: { triggered: true } });
 	}

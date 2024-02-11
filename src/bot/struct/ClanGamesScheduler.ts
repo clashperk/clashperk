@@ -119,6 +119,7 @@ export default class ClanGamesScheduler {
 
 	private queue(schedule: ClanGamesSchedule) {
 		if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
+		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
 		this.queued.set(
 			schedule._id.toHexString(),
@@ -129,6 +130,8 @@ export default class ClanGamesScheduler {
 	}
 
 	private async delete(schedule: ClanGamesSchedule) {
+		if (!this.client.guilds.cache.has(schedule.guild)) return;
+
 		this.clear(schedule._id.toHexString());
 		return this.schedulers.updateOne({ _id: schedule._id }, { $set: { triggered: true } });
 	}
