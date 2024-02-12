@@ -26,7 +26,7 @@ export default class CategoryEditCommand extends Command {
 			new ButtonBuilder().setURL(`https://clashperk.com/clans?token=${token}`).setLabel('Reorder').setStyle(ButtonStyle.Link)
 		);
 
-		if (!(args.category_name && args.category_order)) {
+		if (!(args.category_name || args.category_order)) {
 			return interaction.editReply({
 				content: 'No value was provided to update the category. Would you like to reorder categories and clans?',
 				components: [row]
@@ -42,7 +42,7 @@ export default class CategoryEditCommand extends Command {
 
 		const alreadyExists = await this.client.db
 			.collection(Collections.CLAN_CATEGORIES)
-			.findOne({ name: payload.name, _id: { $ne: new ObjectId(args.category) } });
+			.findOne({ guildId: interaction.guild.id, name: payload.name, _id: { $ne: new ObjectId(args.category) } });
 		if (alreadyExists) {
 			return interaction.editReply('A category with this name already exists.');
 		}
@@ -63,10 +63,10 @@ export default class CategoryEditCommand extends Command {
 
 		await this.client.db
 			.collection(Collections.CLAN_CATEGORIES)
-			.updateOne({ _id: new ObjectId(args.category), name: { $ne: payload.name } }, { $set: { ...payload } });
+			.updateOne({ _id: new ObjectId(args.category) }, { $set: { ...payload } });
 
 		return interaction.editReply({
-			content: 'Category name was updated. Would you like to reorder categories and clans?',
+			content: '**Category name was updated.** Would you like to reorder categories and clans?',
 			components: [row]
 		});
 	}

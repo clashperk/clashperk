@@ -46,9 +46,7 @@ export default class ClansCommand extends Command {
 			.map(([categoryId, clans]) => {
 				return [
 					`**${categories[categoryId] || 'General'}**`,
-					...clans.map(
-						(clan) => `[${escapeMarkdown(clan.name)} (${clan.tag})](https://cl.clashperk.com/${clan.tag.replace('#', '')})`
-					)
+					...clans.map((clan) => `[${escapeMarkdown(clan.name)} (${clan.tag})](http://cprk.eu/c/${clan.tag.replace('#', '')})`)
 				].join('\n');
 			})
 			.join('\n\n');
