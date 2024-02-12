@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class LinkDeleteCommand extends Command {
 	public constructor() {
@@ -87,6 +87,13 @@ export default class LinkDeleteCommand extends Command {
 
 	private async getMember(tag: string, interaction: CommandInteraction<'cached'>) {
 		const target = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag });
-		return target ? { id: target.userId } : { id: interaction.user.id };
+		const link = await this.client.http.getLinkedUser(tag);
+
+		// if our db and link db do not match
+		if (target && link && link.userId !== target.userId && [link.userId, target.userId].includes(interaction.user.id)) {
+			return { id: interaction.user.id };
+		}
+
+		return target ? { id: target.userId } : link ? { id: link.userId } : { id: interaction.user.id };
 	}
 }
