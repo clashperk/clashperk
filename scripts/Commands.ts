@@ -1379,6 +1379,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.flag.create.options.tag.description,
 						description_localizations: translation('command.flag.create.options.tag.description'),
 						required: true,
+						max_length: 256,
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},

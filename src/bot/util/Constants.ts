@@ -148,7 +148,8 @@ export const enum Settings {
 	FAMILY_ROLE = 'familyRole',
 	ACCOUNT_LINKED_ROLE = 'accountLinkedRole',
 	ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole',
-	CLANS_SORTING_KEY = 'clansSortingKey'
+	CLANS_SORTING_KEY = 'clansSortingKey',
+	FLAG_LIST_GROUP_BY_PLAYERS = 'flagListGroupByPlayers'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {

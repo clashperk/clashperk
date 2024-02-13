@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { FlagsEntity } from '../../entities/flags.js';
 import { Args, Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 import { handlePagination } from '../../util/Pagination.js';
 
 export default class FlagListCommand extends Command {
@@ -33,11 +33,32 @@ export default class FlagListCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { flag_type: 'strike' | 'ban'; player_tag?: string; group_by_player?: boolean }
+		args: { flag_type: 'strike' | 'ban'; player_tag?: string; group_by_players?: boolean }
 	) {
-		if (args.player_tag) return this.filterByPlayerTag(interaction, args);
-		if (args.group_by_player) return this.groupByPlayerTag(interaction, args);
+		// Delete expired flags.
+		await this.deleteExpiredFlags(interaction.guildId);
 
+		if (args.player_tag) return this.filterByPlayerTag(interaction, args);
+
+		const groupByPlayers = this.client.settings.get<boolean>(
+			interaction.guild.id,
+			Settings.FLAG_LIST_GROUP_BY_PLAYERS,
+			Boolean(args.group_by_players)
+		);
+		if (args.group_by_players) {
+			this.client.settings.set(interaction.guild.id, Settings.FLAG_LIST_GROUP_BY_PLAYERS, true);
+		} else {
+			this.client.settings.delete(interaction.guild.id, Settings.FLAG_LIST_GROUP_BY_PLAYERS);
+		}
+
+		if (groupByPlayers) return this.groupByPlayerTag(interaction, args);
+		return this.flagList(interaction, args);
+	}
+
+	public async flagList(
+		interaction: CommandInteraction<'cached'>,
+		args: { flag_type: 'strike' | 'ban'; player_tag?: string; group_by_players?: boolean }
+	) {
 		const result = await this.client.db
 			.collection<FlagsEntity>(Collections.FLAGS)
 			.aggregate<FlagsEntity>([
@@ -49,13 +70,10 @@ export default class FlagListCommand extends Command {
 					}
 				},
 				{
-					$sort: args.group_by_player ? {} : { _id: -1 }
+					$sort: { _id: -1 }
 				}
 			])
 			.toArray();
-
-		// Delete expired flags.
-		await this.deleteExpiredFlags(interaction.guildId);
 
 		if (!result.length) {
 			return interaction.editReply(`No Flags (${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List)`);
