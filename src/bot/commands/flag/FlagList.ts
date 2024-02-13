@@ -31,8 +31,12 @@ export default class FlagListCommand extends Command {
 		return this.client.autocomplete.flagSearchAutoComplete(interaction, args);
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { flag_type: 'strike' | 'ban'; player_tag?: string }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { flag_type: 'strike' | 'ban'; player_tag?: string; group_by_player?: boolean }
+	) {
 		if (args.player_tag) return this.filterByPlayerTag(interaction, args);
+		if (args.group_by_player) return this.groupByPlayerTag(interaction, args);
 
 		const result = await this.client.db
 			.collection<FlagsEntity>(Collections.FLAGS)
@@ -45,7 +49,7 @@ export default class FlagListCommand extends Command {
 					}
 				},
 				{
-					$sort: { _id: -1 }
+					$sort: args.group_by_player ? {} : { _id: -1 }
 				}
 			])
 			.toArray();
@@ -61,19 +65,18 @@ export default class FlagListCommand extends Command {
 
 		cluster(result, 15).forEach((chunk) => {
 			const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
-			embed.setTitle(`Flags (${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List)`);
-			chunk.forEach((mem) => {
-				const reason = `Reason: ${escapeMarkdown(mem.reason.substring(0, 256))}${mem.reason.length > 256 ? '...' : ''}`;
+			embed.setTitle(`Flags`);
+			chunk.forEach((flag, itemIndex) => {
+				const reason = `Reason: ${escapeMarkdown(flag.reason.substring(0, 256))}${flag.reason.length > 256 ? '...' : ''}`;
 				embed.addFields({
-					name: '\u200b',
+					name: itemIndex === 0 ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})` : '\u200b',
 					value: [
-						`\u200e[${escapeMarkdown(mem.name)} (${mem.tag})](http://cprk.eu/p/${mem.tag.replace('#', '')})`,
-						`Created ${time(mem.createdAt, 'R')}, by ${mem.username}${mem.expiresAt ? `` : ''}`,
-						mem.expiresAt ? `Expires on ${time(mem.expiresAt, 'd')}\n${reason}` : `${reason}`
+						`\u200e[${escapeMarkdown(flag.name)} (${flag.tag})](http://cprk.eu/p/${flag.tag.replace('#', '')})`,
+						`Created ${time(flag.createdAt, 'R')}, by ${flag.username}${flag.expiresAt ? `` : ''}`,
+						flag.expiresAt ? `Expires on ${time(flag.expiresAt, 'd')}\n${reason}` : `${reason}`
 					].join('\n')
 				});
 			});
-			embed.setFooter({ text: `Total ${result.length}` });
 			embeds.push(embed);
 		});
 
@@ -90,9 +93,9 @@ export default class FlagListCommand extends Command {
 				name: string;
 				tag: string;
 				user: string;
-				createdAt: Date;
 				count: number;
 				flagImpact: number;
+				createdAt: Date;
 				flags: { reason: string; userId: string; createdAt: Date; _id: ObjectId }[];
 			}>([
 				{
@@ -138,19 +141,104 @@ export default class FlagListCommand extends Command {
 			.setDescription(
 				[
 					`[${player.name} (${player.tag})](http://cprk.eu/p/${player.tag.replace('#', '')})`,
-					`Flagged by <@${flag.user}> ${args.flag_type === 'strike' ? `\n\n**Flag Weight ${flag.flagImpact}**` : ''}`,
+					`Flagged by <@${flag.user}>`,
 					'',
-					`**Flags (${flag.count})**`,
+					`**Flags (Total ${flag.count})**`,
 					flag.flags
 						.map(
 							({ createdAt, reason, _id }) =>
-								`- ${time(createdAt, 'd')} - \`${_id.toHexString().substr(-5).toUpperCase()}\` \n- ${reason}`
+								`${time(createdAt, 'd')} - \`${_id.toHexString().substr(-5).toUpperCase()}\` \n${reason}`
 						)
 						.join('\n\n')
 				].join('\n')
-			);
+			)
+			.setFooter({ text: `Total ${flag.flagImpact} ${args.flag_type}${flag.flagImpact === 1 ? '' : 's'}` });
 
 		return interaction.editReply({ embeds: [embed] });
+	}
+
+	private async groupByPlayerTag(interaction: CommandInteraction<'cached'>, args: { flag_type: 'ban' | 'strike' }) {
+		const result = await this.client.db
+			.collection<FlagsEntity>(Collections.FLAGS)
+			.aggregate<{
+				name: string;
+				tag: string;
+				user: string;
+				count: number;
+				flagImpact: number;
+				createdAt: Date;
+				flags: { reason: string; userId: string; createdAt: Date; _id: ObjectId }[];
+			}>([
+				{
+					$match: {
+						guild: interaction.guild.id,
+						flagType: args.flag_type
+					}
+				},
+				{
+					$sort: { _id: -1 }
+				},
+				{
+					$group: {
+						_id: '$tag',
+						flags: {
+							$push: {
+								_id: '$_id',
+								reason: '$reason',
+								userId: '$user',
+								flagType: '$flagType',
+								createdAt: '$createdAt'
+							}
+						},
+						name: { $last: '$name' },
+						tag: { $last: '$tag' },
+						user: { $last: '$user' },
+						createdAt: { $last: '$createdAt' },
+						count: { $sum: 1 },
+						flagImpact: { $sum: '$flagImpact' }
+					}
+				},
+				{
+					$sort: {
+						flagImpact: -1
+					}
+				}
+			])
+			.toArray();
+
+		if (!result.length) {
+			return interaction.editReply(`No Flags (${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List)`);
+		}
+
+		const embeds: EmbedBuilder[] = [];
+
+		cluster(result, 15).forEach((chunk) => {
+			const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+			embed.setTitle(`Flags`);
+			chunk.forEach((flag, itemIndex) => {
+				embed.addFields({
+					name: itemIndex === 0 ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})` : '\u200b',
+					value: [
+						`\u200e[${escapeMarkdown(flag.name)} (${flag.tag})](http://cprk.eu/p/${flag.tag.replace('#', '')})`,
+						`**Total ${flag.count} flag${flag.count === 1 ? '' : 's'}, ${flag.flagImpact} ${args.flag_type}${
+							flag.flagImpact === 1 ? '' : 's'
+						}**`,
+						`**Last ${5} Flags (${flag.count})**`,
+						flag.flags
+							.slice(0, 5)
+							.map(({ createdAt, reason, _id }) => {
+								const _reason = reason.substring(0, 100);
+								const id = _id.toHexString().substr(-5).toUpperCase();
+								return `${time(createdAt, 'd')} - \`${id}\` - ${_reason}`;
+							})
+							.join('\n')
+					].join('\n')
+				});
+			});
+			embeds.push(embed);
+		});
+
+		return handlePagination(interaction, embeds);
 	}
 
 	private async deleteExpiredFlags(guildId: string) {

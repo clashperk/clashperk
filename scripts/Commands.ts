@@ -1429,6 +1429,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						]
 					},
 					{
+						name: 'group_by_players',
+						description: 'Group by players',
+						type: ApplicationCommandOptionType.Boolean
+					},
+					{
 						name: 'player_tag',
 						description: 'Show all flags against a player',
 						autocomplete: true,
@@ -1475,6 +1480,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						autocomplete: true
 					}
 				]
+			},
+			{
+				name: 'search',
+				description: 'This command was replaced with /flag list command.',
+				type: ApplicationCommandOptionType.Subcommand
 			}
 		]
 	},
