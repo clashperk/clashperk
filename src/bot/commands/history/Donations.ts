@@ -1,4 +1,4 @@
-import { ButtonInteraction, CommandInteraction, EmbedBuilder, User, embedLength } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
@@ -164,7 +164,6 @@ export default class DonationsHistoryCommand extends Command {
 					].join('\n')
 				});
 			});
-			console.log(embedLength(embed.toJSON()));
 			embeds.push(embed);
 		}
 
