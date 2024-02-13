@@ -27,10 +27,7 @@ export default class ConfigCommand extends Command {
 			clans_sorting_key?: string;
 		}
 	) {
-		if (
-			!this.client.util.isManager(interaction.member) &&
-			(args.color_code || args.events_channel || args.webhook_limit || args.manager_role)
-		) {
+		if (!this.client.util.isManager(interaction.member) && Object.keys(args).some((key) => args[key as keyof typeof args])) {
 			return interaction.reply({
 				content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to change these settings.`,
 				ephemeral: true

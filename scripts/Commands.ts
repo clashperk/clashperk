@@ -1359,10 +1359,27 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
+						name: 'flag_type',
+						description: 'The type of the flag (ban or strike)',
+						required: true,
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Ban',
+								value: 'ban'
+							},
+							{
+								name: 'Strike',
+								value: 'strike'
+							}
+						]
+					},
+					{
 						name: 'player_tag',
 						description: command.flag.create.options.tag.description,
 						description_localizations: translation('command.flag.create.options.tag.description'),
 						required: true,
+						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
@@ -1370,7 +1387,22 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.flag.create.options.reason.description,
 						description_localizations: translation('command.flag.create.options.reason.description'),
 						required: true,
+						max_length: 256,
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'flag_expiry_days',
+						description: 'Flag expiry days (auto deletes the flag)',
+						type: ApplicationCommandOptionType.Integer,
+						max_value: 100 * 365,
+						min_value: 1
+					},
+					{
+						name: 'flag_impact',
+						description: 'Number of flags this should count as',
+						type: ApplicationCommandOptionType.Integer,
+						max_value: 100,
+						min_value: 1
 					}
 				]
 			},
@@ -1378,20 +1410,29 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				name: 'list',
 				description: command.flag.list.description,
 				description_localizations: translation('command.flag.list.description'),
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'search',
-				description: command.flag.search.description,
-				description_localizations: translation('command.flag.search.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'player_tag',
-						description: command.flag.search.options.tag.description,
-						description_localizations: translation('command.flag.search.options.tag.description'),
+						name: 'flag_type',
+						description: 'The type of the flag (ban or strike)',
+						type: ApplicationCommandOptionType.String,
 						required: true,
+						choices: [
+							{
+								name: 'Ban',
+								value: 'ban'
+							},
+							{
+								name: 'Strike',
+								value: 'strike'
+							}
+						]
+					},
+					{
+						name: 'player_tag',
+						description: 'Show all flags against a player',
 						autocomplete: true,
+						max_length: 100,
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -1403,9 +1444,32 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
+						name: 'flag_type',
+						description: 'The type of the flag (ban or strike)',
+						type: ApplicationCommandOptionType.String,
+						required: true,
+						choices: [
+							{
+								name: 'Ban',
+								value: 'ban'
+							},
+							{
+								name: 'Strike',
+								value: 'strike'
+							}
+						]
+					},
+					{
 						name: 'player_tag',
 						description: command.flag.delete.options.tag.description,
 						description_localizations: translation('command.flag.delete.options.tag.description'),
+						type: ApplicationCommandOptionType.String,
+						required: true,
+						autocomplete: true
+					},
+					{
+						name: 'flag_ref',
+						description: 'Flag reference of this player.',
 						type: ApplicationCommandOptionType.String,
 						required: true,
 						autocomplete: true
