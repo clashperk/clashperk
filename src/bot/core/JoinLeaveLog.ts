@@ -2,6 +2,7 @@ import { APIPlayer, APIPlayerItem } from 'clashofclans.js';
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
+import { FlagsEntity } from '../entities/flags.js';
 import { Client } from '../struct/Client.js';
 import { Collections, DeepLinkTypes } from '../util/Constants.js';
 import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
@@ -94,7 +95,12 @@ export default class JoinLeaveLog extends BaseLog {
 		}
 
 		if (member.op === 'JOINED') {
-			const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: cache.guild, tag: member.tag });
+			const flag = await this.client.db.collection<FlagsEntity>(Collections.FLAGS).findOne({
+				guild: cache.guild,
+				tag: member.tag,
+				flagType: 'ban',
+				$or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }]
+			});
 			embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			const heroes = player.heroes.filter((hero) => hero.village === 'home');
 			embed.setDescription(
