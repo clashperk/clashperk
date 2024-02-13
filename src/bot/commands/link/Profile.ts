@@ -7,10 +7,10 @@ import {
 	CommandInteraction,
 	EmbedBuilder,
 	GuildMember,
-	User,
-	embedLength
+	User
 } from 'discord.js';
 import moment from 'moment';
+import { cluster } from 'radash';
 import { Args, Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
@@ -121,7 +121,6 @@ export default class ProfileCommand extends Command {
 
 		const collection: { field: string; values: string[] }[] = [];
 		const playerTags = [...new Set([...players.map((en) => en.tag), ...otherTags])];
-		const hideLink = Boolean(playerTags.length >= 120);
 		const __players = await Promise.all(playerTags.map((tag) => this.client.http.getPlayer(tag)));
 		const playerLinks = __players.filter(({ res }) => res.ok).map(({ body }) => body);
 		const defaultPlayer = playerLinks.at(0);
@@ -146,9 +145,9 @@ export default class ProfileCommand extends Command {
 			const weaponLevel = player.townHallWeaponLevel ? weaponLevels[player.townHallWeaponLevel] : '';
 			const townHall = `${TOWN_HALLS[player.townHallLevel]} ${player.townHallLevel}${weaponLevel}`;
 			collection.push({
-				field: `${townHall} ${DOT} ${hideLink ? '' : '['}${player.name} (${player.tag})${
-					hideLink ? '' : `](${this.profileURL(player.tag)})`
-				} ${signature} ${isDefault ? '**(Default)**' : ''}`,
+				field: `${townHall} ${DOT} [${player.name} (${player.tag})](${this.profileURL(player.tag)}) ${signature} ${
+					isDefault ? '**(Default)**' : ''
+				}`,
 				values: [this.heroes(player), this.clanName(player)].filter((a) => a.length)
 			});
 
@@ -166,33 +165,28 @@ export default class ProfileCommand extends Command {
 			});
 		});
 
-		embed.addFields(
-			collection.slice(0, 25).map((a, i) => ({
-				name: i === 0 ? `**Player Accounts (${playerTags.length})**` : '\u200b',
-				value: [a.field, ...a.values].join('\n')
-			}))
-		);
+		const embeds: EmbedBuilder[] = [];
 
-		const embedLengthExceeded = () => {
-			return embedLength(embed.toJSON()) > 6000;
-		};
-
-		const newEmbed = new EmbedBuilder()
-			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
-
-		const popEmbed = () => {
-			if (embed.data.fields) {
-				const removed = embed.data.fields.pop();
-				if (removed) newEmbed.addFields(removed);
+		cluster(collection, 15).forEach((fields, page) => {
+			if (page === 0) {
+				embed.setFields(
+					fields.map(({ field, values }, itemIndex) => ({
+						name: itemIndex === 0 ? `**Player Accounts (${playerTags.length})**` : '\u200b',
+						value: [field, ...values].join('\n')
+					}))
+				);
+				embeds.push(embed);
+			} else {
+				embeds.push(
+					new EmbedBuilder(embed.toJSON()).setDescription(null).setFields(
+						fields.map(({ field, values }, itemIndex) => ({
+							name: itemIndex === 0 ? `**Player Accounts (${playerTags.length})**` : '\u200b',
+							value: [field, ...values].join('\n')
+						}))
+					)
+				);
 			}
-			if (embedLengthExceeded()) popEmbed();
-		};
-
-		if (newEmbed.data.fields) newEmbed.data.fields.reverse();
-		if (embedLengthExceeded()) popEmbed();
-
-		const embeds = newEmbed.data.fields?.length ? [embed, newEmbed] : [embed];
+		});
 
 		if (embeds.length > 1) {
 			return handlePagination(interaction, embeds, (action) => this.export(action, links, user));
@@ -308,7 +302,7 @@ export default class ProfileCommand extends Command {
 	}
 
 	private profileURL(tag: string) {
-		return `https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(tag)}`;
+		return `http://cprk.eu/p/${tag.replace('#', '')}`;
 	}
 }
 
