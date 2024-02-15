@@ -59,8 +59,8 @@ export default class Patrons {
 		return this.collection.findOne({ userId, active: true });
 	}
 
-	public async attachCustomBot(userId: string, applicationId: string) {
-		return this.collection.updateOne({ userId }, { $set: { applicationId } });
+	public async attachCustomBot(patronId: string, applicationId: string) {
+		return this.collection.updateOne({ id: patronId }, { $set: { applicationId } });
 	}
 
 	public async findGuild(guildId: string) {
@@ -84,6 +84,9 @@ export default class Patrons {
 	}
 
 	public async autoSyncSubscription(debug = false) {
+		if (this.client.isCustom()) return null;
+		if (this.client.shard?.ids[0] !== 0) return null;
+
 		const res = await this.fetchAPI();
 		if (!res) return null;
 		if (debug) this.client.logger.info(`Patron Handler Initialized.`, { label: 'PATREON' });

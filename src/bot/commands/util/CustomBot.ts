@@ -54,7 +54,7 @@ export default class BotPersonalizerCommand extends Command {
 		if (patron?.applicationId && !this.client.isOwner(interaction.user.id)) {
 			return interaction.editReply(
 				[
-					`${EMOJIS.WRONG} You already have a bot deployed!`,
+					`${EMOJIS.WRONG} You have already deployed a custom bot!`,
 					`\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`
 				].join('\n')
 			);
@@ -174,7 +174,7 @@ export default class BotPersonalizerCommand extends Command {
 					token: inputValue,
 					user: interaction.user
 				});
-				await this.client.patrons.attachCustomBot(interaction.user.id, app.id);
+				await this.client.patrons.attachCustomBot(patron.id, app.id);
 
 				const status = await customBot.checkDeploymentStatus(service.id, async (status) => {
 					await modalSubmit.editReply({

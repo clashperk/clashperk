@@ -1,4 +1,4 @@
-import { Result } from '@sapphire/result';
+// import { Result } from '@sapphire/result';
 import {
 	APICapitalRaidSeason,
 	APIClanWar,
@@ -148,7 +148,7 @@ export default class Http extends ClashOfClansClient {
 	}
 
 	public getRaidSeasons(tag: string, limit = 1) {
-		Result.fromAsync(() => super.getCapitalRaidSeasons(tag, { limit }));
+		// Result.fromAsync(() => super.getCapitalRaidSeasons(tag, { limit }));
 		return super.getCapitalRaidSeasons(tag, { limit });
 	}
 
