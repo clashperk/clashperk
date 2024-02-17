@@ -149,7 +149,8 @@ export const enum Settings {
 	ACCOUNT_LINKED_ROLE = 'accountLinkedRole',
 	ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole',
 	CLANS_SORTING_KEY = 'clansSortingKey',
-	FLAG_LIST_GROUP_BY_PLAYERS = 'flagListGroupByPlayers'
+	FLAG_LIST_GROUP_BY_PLAYERS = 'flagListGroupByPlayers',
+	USE_V2_ROLES_MANAGER = 'useV2RolesManager'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {

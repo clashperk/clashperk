@@ -1,7 +1,11 @@
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import moment from 'moment';
+import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
+import { handleMessagePagination } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class AutoTownHallRoleCommand extends Command {
 	public constructor() {
@@ -11,11 +15,13 @@ export default class AutoTownHallRoleCommand extends Command {
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks', 'ManageRoles'],
 			defer: true
-			// ephemeral: true
 		});
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
+		const useV2 = this.client.settings.get<boolean>(interaction.guild, Settings.USE_V2_ROLES_MANAGER, false);
+		if (useV2) return this.v2(interaction);
+
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
 			return interaction.editReply(
@@ -96,5 +102,71 @@ export default class AutoTownHallRoleCommand extends Command {
 			}
 		}
 		return interaction.editReply('Successfully refreshed roles.').catch(() => null);
+	}
+
+	public async v2(interaction: CommandInteraction<'cached'>) {
+		const inProgress = this.client.rolesManager.getChanges(interaction.guildId);
+		if (inProgress) {
+			return interaction.editReply('Role refresh is currently being processed.');
+		}
+
+		const startTime = Date.now();
+
+		const embed = new EmbedBuilder()
+			.setColor(this.client.embed(interaction))
+			.setDescription(`### Refreshing Server Roles ${EMOJIS.LOADING}`)
+			.setFooter({ text: `Progress: -/- (0%)` });
+		const message = await interaction.editReply({ embeds: [embed] });
+
+		const handleChanges = async (closed = false) => {
+			const changes = this.client.rolesManager.getChanges(interaction.guildId);
+			if (!changes) return null;
+
+			if (closed) embed.setDescription('### Roles Refreshed Successfully');
+			const percentage = ((changes.progress / changes.memberCount) * 100).toFixed(2);
+			embed.setFooter({
+				text: [
+					`Time Elapsed: ${moment.duration(Date.now() - startTime).format('h[h] m[m] s[s]', { trim: 'both mid' })}`,
+					`Progress: ${changes.progress}/${changes.memberCount} (${percentage}%)`
+				].join('\n')
+			});
+
+			const roleChanges = changes.changes.filter(({ excluded, included }) => included.length || excluded.length);
+			const embeds: EmbedBuilder[] = [];
+
+			cluster(roleChanges, 15).forEach((changes) => {
+				const roleChangeEmbed = new EmbedBuilder(embed.toJSON());
+				changes.forEach(({ included, excluded, userId, displayName }, itemIndex) => {
+					const values = [`> \u200e${displayName} | <@${userId}>`];
+					if (included.length) values.push(`**+** ${included.map((id) => `<@&${id}>`).join(' ')}`);
+					if (excluded.length) values.push(`**-** ~~${excluded.map((id) => `<@&${id}>`).join(' ')}~~`);
+					roleChangeEmbed.addFields({
+						name: itemIndex === 0 ? `Changes Detected: ${roleChanges.length}\n\u200b` : '\u200b',
+						value: values.join('\n')
+					});
+				});
+				embeds.push(roleChangeEmbed);
+			});
+
+			if (closed) {
+				return handleMessagePagination(interaction.user.id, message, embeds.length ? embeds : [embed]);
+			} else {
+				return message.edit({ embeds: [embeds.length ? embeds.at(-1)! : embed] });
+			}
+		};
+
+		const timeoutId = setInterval(handleChanges, 5000);
+
+		try {
+			const changes = await this.client.rolesManager.updateMany(interaction.guildId, true);
+			if (!changes) {
+				return message.edit({ embeds: [embed.setDescription('No role changes happened!')] });
+			}
+
+			return await handleChanges(true);
+		} finally {
+			clearInterval(timeoutId);
+			this.client.rolesManager.clearChanges(interaction.guildId);
+		}
 	}
 }

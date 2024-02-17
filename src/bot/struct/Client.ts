@@ -26,6 +26,7 @@ import { RosterManager } from './RosterManager.js';
 import SettingsProvider from './SettingsProvider.js';
 import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
+import { RolesManager } from '../core/RolesManager.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -80,6 +81,8 @@ export class Client extends Discord.Client {
 	public nickHandler!: NicknameHandler;
 	public rosterManager!: RosterManager;
 	public autocomplete!: Autocomplete;
+	public cacheOverLimitGuilds = new Set<string>();
+	public rolesManager = new RolesManager(this);
 
 	public constructor() {
 		super({
@@ -111,7 +114,9 @@ export class Client extends Discord.Client {
 				},
 				GuildMemberManager: {
 					maxSize: 2,
-					keepOverLimit: (member) => member.id === this.user!.id
+					keepOverLimit: (member) => {
+						return member.id === this.user?.id || this.cacheOverLimitGuilds.has(member.guild.id);
+					}
 				},
 				AutoModerationRuleManager: 0,
 				DMMessageManager: 0,
@@ -122,6 +127,10 @@ export class Client extends Discord.Client {
 				messages: {
 					interval: 5 * 60,
 					lifetime: 10 * 60
+				},
+				guildMembers: {
+					interval: 5 * 60,
+					filter: () => (member) => member.id !== this.user!.id && !this.cacheOverLimitGuilds.has(member.guild.id)
 				}
 			}
 		});

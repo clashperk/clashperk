@@ -228,16 +228,24 @@ export default class Resolver {
 		return this.client.users.fetch(link.userId).catch(() => null);
 	}
 
-	public async getPlayers(userId: string, limit = 25) {
+	public async getPlayers(userId: string, limit = 25): Promise<(APIPlayer & { verified: boolean })[]> {
 		const [players, others] = await Promise.all([
 			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),
 			this.client.http.getPlayerTags(userId)
 		]);
+
+		const verifiedPlayersMap = players.reduce<Record<string, boolean>>((prev, curr) => {
+			prev[curr.tag] = Boolean(curr.verified);
+			return prev;
+		}, {});
+
 		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
 		const playerTags = Array.from(playerTagSet)
 			.slice(0, limit)
 			.map((tag) => this.client.http.getPlayer(tag));
-		return (await Promise.all(playerTags)).filter(({ res }) => res.ok).map(({ body }) => body);
+
+		const result = (await Promise.all(playerTags)).filter(({ res }) => res.ok).map(({ body }) => body);
+		return result.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
 	}
 
 	public async resolveArgs(args?: string) {

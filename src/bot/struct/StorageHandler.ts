@@ -3,38 +3,15 @@ import { CommandInteraction, ForumChannel, MediaChannel, NewsChannel, TextChanne
 import { Collection, ObjectId, WithId } from 'mongodb';
 import fetch from 'node-fetch';
 import { createHash } from 'node:crypto';
+import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
+import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { Collections, Flags, Settings, UnrankedWarLeagueId } from '../util/Constants.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
 import { Client } from './Client.js';
 
-export interface ClanStore {
-	_id: ObjectId;
-	flag: number;
-	name: string;
-	tag: string;
-	alias?: string;
-	guild: string;
-	patron: boolean;
-	paused: boolean;
-	active: boolean;
-	createdAt: Date;
-	verified: boolean;
-	lastRan?: Date;
-	channels?: string[];
-	secureRole: boolean;
-	uniqueId: number;
-	color?: number;
-	categoryId?: ObjectId;
-	order?: number;
-	roles?: { coLeader?: string; admin?: string; member?: string; leader?: string; everyone?: string };
-}
+export interface ClanStore extends ClanStoresEntity {}
 
-export interface ClanCategories {
-	guildId: string;
-	name: string;
-	order: number;
-	displayName: string;
-}
+export interface ClanCategories extends ClanCategoriesEntity {}
 
 export const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
 
@@ -149,7 +126,8 @@ export default class StorageHandler {
 	}
 
 	public async register(message: CommandInteraction, data: any) {
-		const [_clan, _lastClan] = await Promise.all([
+		const [_total, _clan, _lastClan] = await Promise.all([
+			this.collection.countDocuments({ guild: message.guild!.id }),
 			this.collection.findOne({ tag: data.tag }),
 			this.collection.find().sort({ uniqueId: -1 }).limit(1).next()
 		]);
@@ -164,6 +142,7 @@ export default class StorageHandler {
 					paused: false,
 					active: true,
 					verified: true,
+					order: _total + 1,
 					categoryId: data.categoryId,
 					...(data.hexCode ? { color: data.hexCode } : {}),
 					patron: this.client.patrons.get(message.guild!.id)

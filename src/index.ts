@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
+import Discord, { DiscordjsErrorCodes } from 'discord.js';
 import { fileURLToPath, URL } from 'node:url';
-import Discord from 'discord.js';
 
 class Manager extends Discord.ShardingManager {
 	private retry = 0;
@@ -18,8 +18,10 @@ class Manager extends Discord.ShardingManager {
 			await this.spawn();
 			this.retry = 0;
 		} catch (error: any) {
-			if (error.code === 'ShardingAlreadySpawned') {
+			if (error.code === DiscordjsErrorCodes.ShardingAlreadySpawned) {
 				this.retry = 0;
+			} else if (error.code === DiscordjsErrorCodes.TokenInvalid) {
+				process.exit(1);
 			} else {
 				this.retry++;
 				setTimeout(() => this.init(), this.retry * 5500);
