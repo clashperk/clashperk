@@ -7,7 +7,7 @@ on:
     - cron: '0 8 * * 1'
   push:
     branches:
-      - main
+      - deploy
     paths:
       - scripts/**
 
