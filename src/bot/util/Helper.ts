@@ -10,12 +10,20 @@ import {
 	StringSelectMenuBuilder
 } from 'discord.js';
 import { AnyBulkWriteOperation } from 'mongodb';
+import { title } from 'radash';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Util } from './index.js';
+
+export const makeAbbr = (text: string) => {
+	return title(text)
+		.split(/\s+/)
+		.map((word) => word[0].toUpperCase())
+		.join('');
+};
 
 export const padStart = (str: string | number, length: number) => {
 	return `${str}`.padStart(length, ' ');

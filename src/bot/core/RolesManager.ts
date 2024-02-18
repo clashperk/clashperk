@@ -4,6 +4,7 @@ import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { Client } from '../struct/Client.js';
 import { PlayerLinks } from '../types/index.js';
 import { Collections, Settings } from '../util/Constants.js';
+import { makeAbbr } from '../util/Helper.js';
 
 export const roles: { [key: string]: number } = {
 	member: 1,
@@ -25,6 +26,7 @@ export class RolesManager {
 		const familyOnlyTownHallRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
 		const familyRoleId = this.client.settings.get<string>(guildId, Settings.FAMILY_ROLE, null);
 		const verifiedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_VERIFIED_ROLE, null);
+		const guestRoleId = this.client.settings.get<string>(guildId, Settings.GUEST_ROLE, null);
 
 		const clanRoles = clans.reduce<GuildRolesDto['clanRoles']>((prev, curr) => {
 			const roles = curr.roles ?? {};
@@ -37,17 +39,21 @@ export class RolesManager {
 			return prev;
 		}, {});
 
+		const clanTags = clans.map((clan) => clan.tag);
+		const warClanTags = clans.filter((clan) => clan.warRole).map((clan) => clan.tag);
+
 		return {
 			guildId,
-			clanRoles,
-			clanTags: clans.map((clan) => clan.tag),
+			clanTags,
+			warClanTags,
+			familyOnlyLeagueRoles,
+			familyOnlyTownHallRoles,
 			familyRoleId,
 			verifiedRoleId,
+			guestRoleId,
 			leagueRoles,
 			townHallRoles,
-			warClanTags: clans.filter((clan) => clan.warRole).map((clan) => clan.tag),
-			familyOnlyLeagueRoles,
-			familyOnlyTownHallRoles
+			clanRoles
 		};
 	}
 
@@ -64,6 +70,7 @@ export class RolesManager {
 			.filter((id) => id);
 
 		const targetedRoles: string[] = [
+			rolesMap.guestRoleId,
 			rolesMap.familyRoleId,
 			rolesMap.verifiedRoleId,
 			...warRoles,
@@ -87,6 +94,8 @@ export class RolesManager {
 		let rolesToInclude: string[] = [];
 
 		const playerClanTags = players.filter((player) => player.clanTag).map((player) => player.clanTag!);
+		const inFamily = rolesMap.clanTags.some((clanTag) => playerClanTags.includes(clanTag));
+
 		for (const player of players) {
 			for (const clanTag in rolesMap.clanRoles) {
 				const targetClan = rolesMap.clanRoles[clanTag];
@@ -103,9 +112,6 @@ export class RolesManager {
 				}
 			}
 
-			const inFamily = rolesMap.clanTags.some((clanTag) => playerClanTags.includes(clanTag));
-			if (inFamily) rolesToInclude.push(rolesMap.familyRoleId);
-
 			if (!rolesMap.familyOnlyTownHallRoles || (inFamily && rolesMap.familyOnlyTownHallRoles)) {
 				rolesToInclude.push(rolesMap.townHallRoles[player.townHallLevel]);
 			}
@@ -115,6 +121,9 @@ export class RolesManager {
 
 			if (player.isVerified) rolesToInclude.push(rolesMap.verifiedRoleId);
 		}
+
+		if (inFamily) rolesToInclude.push(rolesMap.familyRoleId);
+		else rolesToInclude.push(rolesMap.guestRoleId);
 
 		rolesToInclude = rolesToInclude.filter((id) => id);
 		const rolesToExclude = targetedRoles.filter((id) => !rolesToInclude.includes(id));
@@ -140,7 +149,7 @@ export class RolesManager {
 					displayName: member.user.displayName,
 					username: member.user.username,
 					townHallLevel: player.townHallLevel,
-					alias: rolesMap.clanRoles[player.clan.tag]?.alias ?? null,
+					alias: rolesMap.clanRoles[player.clan.tag]?.alias || makeAbbr(player.clan.name),
 					clan: player.clan.name,
 					role: player.role
 				},
@@ -415,6 +424,7 @@ interface GuildRolesDto {
 			alias: string | null;
 		};
 	};
+	guestRoleId: string;
 	familyRoleId: string;
 	verifiedRoleId: string;
 	clanTags: string[];
@@ -433,5 +443,11 @@ interface AddRoleInput {
 interface RolesManagerQueue {
 	memberCount: number;
 	progress: number;
-	changes: { included: string[]; excluded: string[]; nickname: string | null; userId: string; displayName: string }[];
+	changes: {
+		included: string[];
+		excluded: string[];
+		nickname: string | null;
+		userId: string;
+		displayName: string;
+	}[];
 }

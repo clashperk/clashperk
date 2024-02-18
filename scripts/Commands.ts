@@ -2648,6 +2648,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'family_role',
 						description: 'Family role.',
 						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'guest_role',
+						description: 'Guest role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'verified_role',
+						description: 'Verified role.',
+						type: ApplicationCommandOptionType.Role
 					}
 				]
 			},
@@ -2681,6 +2691,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Family',
 								value: 'family'
+							},
+							{
+								name: 'Guest',
+								value: 'guest'
+							},
+							{
+								name: 'Verified',
+								value: 'verified'
 							}
 						]
 					},

@@ -24,7 +24,9 @@ export default class AutoRoleCommand extends Command {
 				'clan-roles': this.handler.modules.get('setup-clan-roles')!,
 				'leagues': this.handler.modules.get('setup-league-roles')!,
 				'wars': this.handler.modules.get('setup-war-roles')!,
-				'family': this.handler.modules.get('setup-family-roles')!
+				'family': this.handler.modules.get('setup-family-roles')!,
+				'verified': this.handler.modules.get('setup-family-roles')!,
+				'guest': this.handler.modules.get('setup-family-roles')!
 			}[args.type];
 			if (!command) throw Error('Command not found.');
 			return this.handler.continue(interaction, command);

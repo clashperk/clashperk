@@ -149,6 +149,7 @@ export const enum Settings {
 	FAMILY_ROLE = 'familyRole',
 	ACCOUNT_LINKED_ROLE = 'accountLinkedRole',
 	ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole',
+	GUEST_ROLE = 'guestRole',
 	CLANS_SORTING_KEY = 'clansSortingKey',
 	FLAG_LIST_GROUP_BY_PLAYERS = 'flagListGroupByPlayers',
 	USE_V2_ROLES_MANAGER = 'useV2RolesManager'

@@ -31,8 +31,8 @@ export default class AutoFamilyRoleCommand extends Command {
 		args: {
 			command: string;
 			family_role?: Role;
-			account_linked_role?: Role;
-			account_verified_role?: Role;
+			guest_role?: Role;
+			verified_role?: Role;
 		}
 	) {
 		if (args.command === 'disable') return this.disable(interaction);
@@ -44,7 +44,7 @@ export default class AutoFamilyRoleCommand extends Command {
 			);
 		}
 
-		const roles = [args.account_linked_role, args.account_linked_role, args.family_role];
+		const roles = [args.guest_role, args.guest_role, args.family_role];
 
 		const selected = roles.filter((role) => role) as Role[];
 		if (!selected.length) {
@@ -63,12 +63,12 @@ export default class AutoFamilyRoleCommand extends Command {
 			await this.client.settings.set(interaction.guild, Settings.FAMILY_ROLE, args.family_role.id);
 		}
 
-		if (args.account_linked_role) {
-			await this.client.settings.set(interaction.guild, Settings.ACCOUNT_LINKED_ROLE, args.account_linked_role.id);
+		if (args.guest_role) {
+			await this.client.settings.set(interaction.guild, Settings.GUEST_ROLE, args.guest_role.id);
 		}
 
-		if (args.account_verified_role) {
-			await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.account_verified_role.id);
+		if (args.verified_role) {
+			await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.verified_role.id);
 		}
 
 		this.updateLinksAndRoles(clans);
