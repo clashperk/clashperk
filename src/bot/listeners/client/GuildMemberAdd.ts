@@ -1,7 +1,7 @@
 import { GuildMember } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
 import { Listener } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
 export default class GuildMemberAddListener extends Listener {
 	public constructor() {
@@ -14,6 +14,10 @@ export default class GuildMemberAddListener extends Listener {
 
 	public async exec(member: GuildMember) {
 		if (this.client.settings.hasCustomBot(member.guild) && !this.client.isCustom()) return;
+
+		if (this.client.settings.get(member.guild, Settings.USE_V2_ROLES_MANAGER, false)) {
+			return this.client.rolesManager.updateOne(member.id, member.guild.id, false);
+		}
 
 		const clans = await this.client.db
 			.collection<{ tag: string }>(Collections.CLAN_STORES)

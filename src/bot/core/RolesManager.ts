@@ -31,12 +31,14 @@ export class RolesManager {
 			prev[curr.tag] ??= {
 				roles,
 				warRoleId: curr.warRole,
+				alias: curr.alias ?? null,
 				verifiedOnly: Boolean(curr.secureRole)
 			} as GuildRolesDto['clanRoles'][string];
 			return prev;
 		}, {});
 
 		return {
+			guildId,
 			clanRoles,
 			clanTags: clans.map((clan) => clan.tag),
 			familyRoleId,
@@ -124,6 +126,44 @@ export class RolesManager {
 		};
 	}
 
+	public getPlayerNickname(player: APIPlayer, member: GuildMember, rolesMap: GuildRolesDto) {
+		// const isNickNamingEnabled = this.client.settings.get<boolean>(rolesMap.guildId, Settings.AUTO_NICKNAME, false);
+		// if (!isNickNamingEnabled) return null;
+
+		const familyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.FAMILY_NICKNAME_FORMAT);
+		const nonFamilyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT);
+
+		if (familyFormat && player.clan && rolesMap.clanTags.includes(player.clan.tag)) {
+			return this.client.nickHandler.getName(
+				{
+					name: player.name,
+					displayName: member.user.displayName,
+					username: member.user.username,
+					townHallLevel: player.townHallLevel,
+					alias: rolesMap.clanRoles[player.clan.tag]?.alias ?? null,
+					clan: player.clan.name,
+					role: player.role
+				},
+				familyFormat
+			);
+		} else if (nonFamilyFormat) {
+			return this.client.nickHandler.getName(
+				{
+					name: player.name,
+					displayName: member.user.displayName,
+					username: member.user.username,
+					townHallLevel: player.townHallLevel,
+					alias: null,
+					clan: null,
+					role: null
+				},
+				nonFamilyFormat
+			);
+		}
+
+		return null;
+	}
+
 	public async updateMany(guildId: string, isDryRun = false): Promise<RolesManagerQueue | null> {
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
@@ -138,8 +178,7 @@ export class RolesManager {
 
 		const { targetedRoles } = this.getTargetedRoles(rolesMap);
 		const targetedMembers = guildMembers.filter((m) => m.roles.cache.hasAny(...targetedRoles) || linkedUserIds.includes(m.id));
-
-		// console.log({ linkedUserIds: linkedUserIds.length, targetedRoles, targetedMembers: targetedMembers.size });
+		if (!targetedMembers.size) return null;
 
 		this.queues[guildId] ??= { progress: 0, memberCount: targetedMembers.size, changes: [] };
 		for (const member of targetedMembers.values()) {
@@ -152,11 +191,23 @@ export class RolesManager {
 				isDryRun
 			});
 
+			const defaultPlayer = players.at(0) ?? null;
+			const nickname = defaultPlayer
+				? await this.updateNickname({
+						member,
+						isDryRun,
+						player: defaultPlayer,
+						nickname: this.getPlayerNickname(defaultPlayer, member, rolesMap)
+				  })
+				: null;
+
 			const queue = this.queues[guildId];
 			if (!queue) break;
 
 			if (result) {
-				queue.changes.push({ ...result, userId: member.id, displayName: member.user.displayName });
+				queue.changes.push({ ...result, userId: member.id, displayName: member.user.displayName, nickname });
+			} else if (nickname && !result) {
+				queue.changes.push({ included: [], excluded: [], userId: member.id, displayName: member.user.displayName, nickname });
 			}
 			queue.progress += 1;
 		}
@@ -182,6 +233,7 @@ export class RolesManager {
 		const players = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.find({ userId: { $in: userIds } })
+			.sort({ order: 1 })
 			.toArray();
 
 		return players.reduce<Record<string, PlayerLinks[]>>((prev, curr) => {
@@ -192,13 +244,17 @@ export class RolesManager {
 	}
 
 	public async updateOne(userId: string, guildId: string, isDryRun = false) {
+		if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, false)) return null;
+
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
 
 		const member = await guild.members.fetch(userId).catch(() => null);
 		if (!member) return null;
 
-		const players = await this.client.resolver.getPlayers(userId, 25);
+		const linkedPlayers = await this.getLinkedPlayers([userId]);
+		const players = await this.getPlayers(linkedPlayers[userId] ?? []);
+
 		const rolesMap = await this.getGuildRolesMap(guildId);
 		const playersInWarMap = await this.getWarRolesMap(rolesMap.warClanTags);
 
@@ -229,9 +285,12 @@ export class RolesManager {
 		const playerList = players.map(
 			(player) =>
 				({
+					name: player.name,
+					tag: player.tag,
 					townHallLevel: player.townHallLevel,
 					leagueId: player.league?.id ?? UnrankedLeagueData.id,
 					clanRole: player.role ?? null,
+					clanName: player.clan?.name ?? null,
 					clanTag: player.clan?.tag ?? null,
 					isVerified: player.verified,
 					warClanTag: playersInWarMap[player.tag]
@@ -245,6 +304,16 @@ export class RolesManager {
 			rolesToExclude: playerRolesMap.rolesToExclude,
 			rolesToInclude: playerRolesMap.rolesToInclude
 		});
+
+		const defaultPlayer = players.at(0) ?? null;
+		if (defaultPlayer) {
+			await this.updateNickname({
+				member,
+				isDryRun,
+				player: defaultPlayer,
+				nickname: this.getPlayerNickname(defaultPlayer, member, rolesMap)
+			});
+		}
 
 		return result;
 	}
@@ -290,18 +359,47 @@ export class RolesManager {
 			.map((player) => player.clanRole!);
 		return highestRoles.sort((a, b) => roles[b] - roles[a]).at(0) ?? null;
 	}
+
+	private async updateNickname({
+		member,
+		player,
+		nickname,
+		isDryRun = false
+	}: {
+		member: GuildMember;
+		player: APIPlayer;
+		nickname: string | null;
+		isDryRun?: boolean;
+	}) {
+		if (!nickname) return null;
+
+		if (member.id === member.guild.ownerId) return null;
+		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames)) return null;
+		if (member.guild.members.me.roles.highest.position <= member.roles.highest.position) return null;
+
+		if (member.nickname === nickname) return null;
+		if (isDryRun) return nickname;
+
+		await member.setNickname(nickname.substring(0, 31), `For ${player.name} (${player.tag})`);
+
+		return nickname;
+	}
 }
 
 interface PlayerRolesInput {
+	name: string;
+	tag: string;
 	townHallLevel: number;
 	leagueId: number;
 	isVerified: boolean;
 	clanRole: string | null;
 	clanTag: string | null;
+	clanName: string | null;
 	warClanTag: string | null;
 }
 
 interface GuildRolesDto {
+	guildId: string;
 	townHallRoles: { [townHallLevel: string]: string };
 	leagueRoles: { [leagueId: string]: string };
 	clanRoles: {
@@ -309,6 +407,7 @@ interface GuildRolesDto {
 			roles: { [clanRole: string]: string };
 			verifiedOnly: boolean;
 			warRoleId: string;
+			alias: string | null;
 		};
 	};
 	familyRoleId: string;
@@ -329,5 +428,5 @@ interface AddRoleInput {
 interface RolesManagerQueue {
 	memberCount: number;
 	progress: number;
-	changes: { included: string[]; excluded: string[]; userId: string; displayName: string }[];
+	changes: { included: string[]; excluded: string[]; nickname: string | null; userId: string; displayName: string }[];
 }

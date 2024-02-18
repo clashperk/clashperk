@@ -230,7 +230,7 @@ export default class Resolver {
 
 	public async getPlayers(userId: string, limit = 25): Promise<(APIPlayer & { verified: boolean })[]> {
 		const [players, others] = await Promise.all([
-			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),
+			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).sort({ order: 1 }).toArray(),
 			this.client.http.getPlayerTags(userId)
 		]);
 

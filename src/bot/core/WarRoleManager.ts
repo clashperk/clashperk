@@ -2,7 +2,7 @@ import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, PermissionFlagsBits } from 'discord.js';
 import Client from '../struct/Client.js';
 import { PlayerLinks } from '../types/index.js';
-import { Collections } from '../util/Constants.js';
+import { Collections, Settings } from '../util/Constants.js';
 import { Util } from '../util/index.js';
 
 interface Feed extends APIClanWar {
@@ -64,6 +64,8 @@ export class WarRoleManager {
 			const guild = this.client.guilds.cache.get(clan.guild);
 			if (!guild) continue;
 
+			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, false)) continue;
+
 			const role = guild.roles.cache.get(clan.warRole);
 			if (!role) continue;
 
@@ -110,6 +112,8 @@ export class WarRoleManager {
 		for (const clan of clans) {
 			const guild = this.client.guilds.cache.get(clan.guild);
 			if (!guild) continue;
+
+			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, false)) continue;
 
 			const role = guild.roles.cache.get(clan.warRole);
 			if (!role) continue;

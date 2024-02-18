@@ -138,7 +138,8 @@ export const enum Settings {
 	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
 	CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths',
 	CLAN_GAMES_REMINDER_TIMESTAMP = 'clanGamesReminderTimestamp',
-	NICKNAME_EXPRESSION = 'nicknameExpression',
+	FAMILY_NICKNAME_FORMAT = 'familyNicknameFormat',
+	NON_FAMILY_NICKNAME_FORMAT = 'nonFamilyNicknameFormat',
 	AUTO_NICKNAME = 'autoNickname',
 	ROSTER_DEFAULT_SETTINGS = 'rosterDefaultSettings',
 	HAS_CUSTOM_BOT = 'hasCustomBot',
@@ -184,7 +185,7 @@ export const URLS = {
 	SUPPORT_SERVER: 'https://discord.gg/ppuppun'
 };
 
-export const attackCounts: Record<string, string> = {
+export const SUPER_SCRIPTS: Record<string, string> = {
 	0: '⁰',
 	1: '¹',
 	2: '²',
@@ -195,6 +196,10 @@ export const attackCounts: Record<string, string> = {
 	7: '⁷',
 	8: '⁸',
 	9: '⁹'
+} as const;
+
+export const attackCounts: Record<string, string> = {
+	...SUPER_SCRIPTS
 };
 
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;

@@ -2712,7 +2712,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'refresh',
 				description: 'Refresh automatic clan roles.',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'is_dry_run',
+						description: 'Whether to make a dry run.',
+						type: ApplicationCommandOptionType.Boolean
+					}
+				]
 			}
 		]
 	},
@@ -3597,49 +3604,38 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'nickname',
-		description: command.nickname.description,
+		description: 'Server nickname management system.',
 		dm_permission: false,
-		description_localizations: translation('command.nickname.description'),
 		options: [
 			{
-				name: 'user',
-				description: command.nickname.options.user.description,
-				description_localizations: translation('command.nickname.options.user.description'),
-				type: ApplicationCommandOptionType.User,
-				required: true
-			},
-			{
-				name: 'format',
-				description: 'Set nickname to a custom format (e.g. {CLAN} | {ALIAS} | {TH} | {ROLE} | {NAME})',
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'enable_auto',
-				description: 'Enable automatic nickname updates.',
-				type: ApplicationCommandOptionType.String,
-				choices: [
+				name: 'config',
+				description: 'Configure server nickname settings.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'Yes',
-						value: 'true'
+						name: 'family_nickname_format',
+						description: 'Set family nickname format (e.g. {CLAN} | {ALIAS} | {TH} | {ROLE} | {NAME})',
+						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'No',
-						value: 'false'
-					}
-				]
-			},
-			{
-				name: 'update_existing_members',
-				description: 'Update nickname for existing members.',
-				type: ApplicationCommandOptionType.String,
-				choices: [
-					{
-						name: 'Yes',
-						value: 'true'
+						name: 'non_family_nickname_format',
+						description: 'Set non-family nickname format (e.g. {NAME} | {TH})',
+						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'No',
-						value: 'false'
+						name: 'enable_auto',
+						description: 'Whether to update nicknames automatically.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
 			}

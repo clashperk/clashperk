@@ -3,9 +3,9 @@ import moment from 'moment';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { handleMessagePagination } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
 
 export default class AutoTownHallRoleCommand extends Command {
 	public constructor() {
@@ -18,9 +18,9 @@ export default class AutoTownHallRoleCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { is_dry_run?: boolean }) {
 		const useV2 = this.client.settings.get<boolean>(interaction.guild, Settings.USE_V2_ROLES_MANAGER, false);
-		if (useV2) return this.v2(interaction);
+		if (useV2) return this.v2(interaction, args);
 
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
@@ -104,7 +104,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		return interaction.editReply('Successfully refreshed roles.').catch(() => null);
 	}
 
-	public async v2(interaction: CommandInteraction<'cached'>) {
+	public async v2(interaction: CommandInteraction<'cached'>, args: { is_dry_run?: boolean }) {
 		const inProgress = this.client.rolesManager.getChanges(interaction.guildId);
 		if (inProgress) {
 			return interaction.editReply('Role refresh is currently being processed.');
@@ -131,15 +131,19 @@ export default class AutoTownHallRoleCommand extends Command {
 				].join('\n')
 			});
 
-			const roleChanges = changes.changes.filter(({ excluded, included }) => included.length || excluded.length);
+			const roleChanges = changes.changes.filter(
+				({ excluded, included, nickname }) => included.length || excluded.length || nickname
+			);
 			const embeds: EmbedBuilder[] = [];
 
 			cluster(roleChanges, 15).forEach((changes) => {
 				const roleChangeEmbed = new EmbedBuilder(embed.toJSON());
-				changes.forEach(({ included, excluded, userId, displayName }, itemIndex) => {
+				changes.forEach(({ included, excluded, nickname, userId, displayName }, itemIndex) => {
 					const values = [`> \u200e${displayName} | <@${userId}>`];
 					if (included.length) values.push(`**+** ${included.map((id) => `<@&${id}>`).join(' ')}`);
 					if (excluded.length) values.push(`**-** ~~${excluded.map((id) => `<@&${id}>`).join(' ')}~~`);
+					if (nickname) values.push(`**+** \`${nickname}\``);
+
 					roleChangeEmbed.addFields({
 						name: itemIndex === 0 ? `Changes Detected: ${roleChanges.length}\n\u200b` : '\u200b',
 						value: values.join('\n')
@@ -158,7 +162,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		const timeoutId = setInterval(handleChanges, 5000);
 
 		try {
-			const changes = await this.client.rolesManager.updateMany(interaction.guildId, true);
+			const changes = await this.client.rolesManager.updateMany(interaction.guildId, Boolean(args.is_dry_run));
 			if (!changes) {
 				return message.edit({ embeds: [embed.setDescription('No role changes happened!')] });
 			}

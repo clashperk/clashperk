@@ -7,7 +7,7 @@ import { Util } from '../../util/index.js';
 
 export default class NickNameCommand extends Command {
 	public constructor() {
-		super('nickname', {
+		super('nickname-assign', {
 			category: 'setup',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'ManageNicknames'],
@@ -59,11 +59,11 @@ export default class NickNameCommand extends Command {
 			);
 		}
 
-		let format = this.client.settings.get<string>(interaction.guildId, Settings.NICKNAME_EXPRESSION, '{NAME}');
+		let format = this.client.settings.get<string>(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, '{NAME}');
 		if (format && args.format && format !== args.format) format = args.format;
 
 		if (/{NAME}/gi.test(format)) {
-			this.client.settings.set(interaction.guildId, Settings.NICKNAME_EXPRESSION, format);
+			this.client.settings.set(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, format);
 		} else {
 			return interaction.editReply(`Invalid nickname format \`${format}\`, a nickname format must include \`{NAME}\``);
 		}
