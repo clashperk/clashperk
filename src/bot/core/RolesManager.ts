@@ -210,6 +210,7 @@ export class RolesManager {
 				queue.changes.push({ included: [], excluded: [], userId: member.id, displayName: member.user.displayName, nickname });
 			}
 			queue.progress += 1;
+			if ((result?.excluded.length || result?.included.length) && !isDryRun) await this.delay(1000);
 		}
 
 		return this.queues[guildId] ?? null;
@@ -221,6 +222,10 @@ export class RolesManager {
 
 	public clearChanges(guildId: string) {
 		delete this.queues[guildId];
+	}
+
+	private delay(ms: number) {
+		return new Promise((res) => setTimeout(res, ms));
 	}
 
 	private async getPlayers(playerLinks: PlayerLinks[]) {
