@@ -30,7 +30,7 @@ export default class NicknameConfigCommand extends Command {
 			non_family_nickname_format?: string;
 		}
 	) {
-		let familyFormat = this.client.settings.get<string>(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, '{NAME}');
+		let familyFormat = this.client.settings.get<string>(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, '');
 		if (args.family_nickname_format && familyFormat !== args.family_nickname_format) familyFormat = args.family_nickname_format;
 
 		let nonFamilyFormat = this.client.settings.get<string>(interaction.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT, '');

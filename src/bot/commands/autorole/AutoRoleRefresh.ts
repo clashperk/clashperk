@@ -163,8 +163,8 @@ export default class AutoTownHallRoleCommand extends Command {
 
 		try {
 			const changes = await this.client.rolesManager.updateMany(interaction.guildId, Boolean(args.is_dry_run));
-			if (!changes) {
-				return message.edit({ embeds: [embed.setDescription('No role changes happened!')] });
+			if (!changes?.changes?.length) {
+				return message.edit({ embeds: [embed.setDescription('No role changes happened!')], components: [] });
 			}
 
 			return await handleChanges(true);

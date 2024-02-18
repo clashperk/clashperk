@@ -127,8 +127,8 @@ export class RolesManager {
 	}
 
 	public getPlayerNickname(player: APIPlayer, member: GuildMember, rolesMap: GuildRolesDto) {
-		// const isNickNamingEnabled = this.client.settings.get<boolean>(rolesMap.guildId, Settings.AUTO_NICKNAME, false);
-		// if (!isNickNamingEnabled) return null;
+		const isNickNamingEnabled = this.client.settings.get<boolean>(rolesMap.guildId, Settings.AUTO_NICKNAME, false);
+		if (!isNickNamingEnabled) return null;
 
 		const familyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.FAMILY_NICKNAME_FORMAT);
 		const nonFamilyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT);
