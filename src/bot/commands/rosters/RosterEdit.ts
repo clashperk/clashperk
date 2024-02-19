@@ -169,14 +169,14 @@ export default class RosterEditCommand extends Command {
 		const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
 		embed.setDescription(
 			[
-				`- ${this.client.getCommand('/roster post')} to signup.`,
-				`- ${this.client.getCommand('/roster manage')} to manage the roster.`,
-				`- ${this.client.getCommand('/roster edit')} to change the roster settings.`,
-				`- ${this.client.getCommand('/roster delete')} to delete the roster.`,
-				`- ${this.client.getCommand('/roster list')} to list all rosters or search for a roster.`,
-				`- ${this.client.getCommand('/roster clone')} to clone a roster.`,
-				`- ${this.client.getCommand('/roster groups create')} to create a user group.`,
-				`- ${this.client.getCommand('/roster groups modify')} to edit/delete a user group.`
+				`- ${this.client.commands.get('/roster post')} to signup.`,
+				`- ${this.client.commands.get('/roster manage')} to manage the roster.`,
+				`- ${this.client.commands.get('/roster edit')} to change the roster settings.`,
+				`- ${this.client.commands.get('/roster delete')} to delete the roster.`,
+				`- ${this.client.commands.get('/roster list')} to list all rosters or search for a roster.`,
+				`- ${this.client.commands.get('/roster clone')} to clone a roster.`,
+				`- ${this.client.commands.get('/roster groups create')} to create a user group.`,
+				`- ${this.client.commands.get('/roster groups modify')} to edit/delete a user group.`
 			].join('\n')
 		);
 
@@ -184,7 +184,7 @@ export default class RosterEditCommand extends Command {
 			embeds: args.components_only ? [] : [embed],
 			components: [menuRow],
 			content: args.components_only
-				? `**Change Roster Layout** \n- More settings can be edited using ${this.client.getCommand('/roster edit')} command.`
+				? `**Change Roster Layout** \n- More settings can be edited using ${this.client.commands.get('/roster edit')} command.`
 				: null
 		});
 

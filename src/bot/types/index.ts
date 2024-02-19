@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 
 export const achievements = {
 	'Most Valuable Clanmate': 'capitalGoldContributions',
@@ -86,18 +87,7 @@ export interface UserInfoModel {
 	timezone?: UserTimezone;
 }
 
-export interface PlayerLinks {
-	_id?: ObjectId;
-	userId: string;
-	username: string;
-	displayName: string;
-	discriminator: string;
-	tag: string;
-	name: string;
-	order: number;
-	verified: boolean;
-	createdAt: Date;
-}
+export interface PlayerLinks extends PlayerLinksEntity {}
 
 export interface TroopJSON {
 	[key: string]: {

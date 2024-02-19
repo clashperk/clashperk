@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, CommandInteraction } from 'discord.js';
 import { Filter, ObjectId } from 'mongodb';
-import { FlagsEntity } from '../../entities/flags.js';
+import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 

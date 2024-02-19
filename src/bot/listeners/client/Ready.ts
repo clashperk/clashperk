@@ -53,7 +53,7 @@ export default class ReadyListener extends Listener {
 					}
 				];
 			});
-		commands.flat().map((cmd) => this.client.commandsMap.commands.set(cmd.name, cmd.formatted));
+		commands.flat().map((cmd) => this.client.commands.set(cmd.name, cmd.formatted));
 
 		if (this.client.isCustom()) await this.onReady();
 	}

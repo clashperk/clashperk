@@ -1,10 +1,10 @@
 import { AttachmentBuilder, CommandInteraction } from 'discord.js';
-import fetch from 'node-fetch';
 import moment from 'moment';
+import fetch from 'node-fetch';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
-import { UserInfoModel } from '../../types/index.js';
 import Google from '../../struct/Google.js';
+import { UserInfoModel } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class ClanActivityCommand extends Command {
 	public constructor() {
@@ -84,7 +84,7 @@ export default class ClanActivityCommand extends Command {
 			name: 'chart.png'
 		});
 
-		const timeZoneCommand = this.client.getCommand('/timezone');
+		const timeZoneCommand = this.client.commands.get('/timezone');
 		await interaction.editReply({
 			content: timezone.name === 'UTC' ? `Set your timezone with the ${timeZoneCommand} command.` : null,
 			files: [rawFile]

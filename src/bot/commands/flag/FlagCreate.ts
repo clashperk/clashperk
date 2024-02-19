@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, cleanContent, CommandInteraction, EmbedBuilder, time } from 'discord.js';
 import moment from 'moment';
-import { FlagsEntity } from '../../entities/flags.js';
+import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 

@@ -301,7 +301,7 @@ export class RosterManager {
 		}
 
 		if (!user && !roster.allowUnlinked) {
-			const linkCommand = this.client.commandsMap.get().LINK_CREATE;
+			const linkCommand = this.client.commands.LINK_CREATE;
 			return {
 				success: false,
 				message: isOwner

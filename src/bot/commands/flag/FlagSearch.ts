@@ -11,7 +11,7 @@ export default class FlagSearchCommand extends Command {
 	}
 
 	public exec(interaction: CommandInteraction<'cached'>) {
-		const command = this.client.commandsMap.commands.get('/flag list');
+		const command = this.client.commands.get('/flag list');
 		return interaction.reply({
 			content: `This command has been deleted and replaced with ${command} command.`,
 			ephemeral: true

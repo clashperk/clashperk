@@ -33,7 +33,7 @@ export default class ClanGamesCommand extends Command {
 		args: { tag?: string; player_tag?: string; max: boolean; filter: boolean; season?: string; user?: User }
 	) {
 		if ((args.user || args.player_tag) && !interaction.isButton()) {
-			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
+			return interaction.editReply(`This command option has been replaced with the ${this.client.commands.get('/history')} command.`);
 		}
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);

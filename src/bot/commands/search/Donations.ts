@@ -45,7 +45,7 @@ export default class DonationsCommand extends Command {
 		}
 	) {
 		if ((args.user || args.player_tag) && !interaction.isButton()) {
-			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
+			return interaction.editReply(`This command option has been replaced with the ${this.client.commands.get('/history')} command.`);
 		}
 
 		const { sort_by: sortBy, order_by: orderBy } = args;

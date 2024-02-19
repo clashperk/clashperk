@@ -2,7 +2,7 @@ import { AutocompleteInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { unique } from 'radash';
-import { FlagsEntity } from '../entities/flags.js';
+import { FlagsEntity } from '../entities/flags.entity.js';
 import { PlayerModel, UserInfoModel } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
 import Client from './Client.js';

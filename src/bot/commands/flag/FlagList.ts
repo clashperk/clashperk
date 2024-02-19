@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
-import { FlagsEntity } from '../../entities/flags.js';
+import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
 import { handlePagination } from '../../util/Pagination.js';

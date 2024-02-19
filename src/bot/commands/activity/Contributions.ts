@@ -19,7 +19,7 @@ export default class CapitalContributionsCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; player_tag?: string; user?: User }) {
 		if (args.user || args.player_tag) {
-			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
+			return interaction.editReply(`This command option has been replaced with the ${this.client.commands.get('/history')} command.`);
 		}
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);

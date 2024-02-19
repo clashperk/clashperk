@@ -17,7 +17,7 @@ export default class SummaryCompoCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>) {
 		if (interaction.isCommand()) {
 			return interaction.editReply({
-				content: `This command has been deleted. Use ${this.client.getCommand('/summary clans')} command instead.`
+				content: `This command has been deleted. Use ${this.client.commands.get('/summary clans')} command instead.`
 			});
 		}
 	}

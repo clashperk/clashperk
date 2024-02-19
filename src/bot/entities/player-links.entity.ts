@@ -1,7 +1,4 @@
-import { ObjectId } from 'mongodb';
-
-export interface PlayerLinks {
-	_id?: ObjectId;
+export interface PlayerLinksEntity {
 	userId: string;
 	username: string;
 	displayName: string;

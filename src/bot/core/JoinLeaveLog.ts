@@ -2,7 +2,7 @@ import { APIPlayer, APIPlayerItem } from 'clashofclans.js';
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import { FlagsEntity } from '../entities/flags.js';
+import { FlagsEntity } from '../entities/flags.entity.js';
 import { Client } from '../struct/Client.js';
 import { Collections, DeepLinkTypes } from '../util/Constants.js';
 import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';

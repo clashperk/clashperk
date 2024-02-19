@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 import { URL, fileURLToPath } from 'node:url';
 import { container } from 'tsyringe';
 import RPCHandler from '../core/RPCHandler.js';
+import { RolesManager } from '../core/RolesManager.js';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/index.js';
 import { ClientUtil } from '../util/ClientUtil.js';
 import { Settings } from '../util/Constants.js';
@@ -26,7 +27,6 @@ import { RosterManager } from './RosterManager.js';
 import SettingsProvider from './SettingsProvider.js';
 import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
-import { RolesManager } from '../core/RolesManager.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -54,7 +54,6 @@ export class Client extends Discord.Client {
 	public i18n = i18n;
 	public guildEvents!: GuildEventsHandler;
 	public inMaintenance = Boolean(false);
-
 	public redis = new RedisService(this);
 
 	public elastic = new ElasticClient({
@@ -77,12 +76,12 @@ export class Client extends Discord.Client {
 	public components = new Map<string, string[]>();
 	public resolver!: Resolver;
 	public ownerId: string;
-	public commandsMap!: CommandsMap;
 	public nickHandler!: NicknameHandler;
 	public rosterManager!: RosterManager;
 	public autocomplete!: Autocomplete;
 	public cacheOverLimitGuilds = new Set<string>();
 	public rolesManager = new RolesManager(this);
+	public commands!: CommandsMap;
 
 	public constructor() {
 		super({
@@ -167,14 +166,6 @@ export class Client extends Discord.Client {
 		return uniqueId;
 	}
 
-	public getCommand(name: string) {
-		return this.commandsMap.commands.get(name) ?? `${name}`;
-	}
-
-	public get commands() {
-		return this.commandsMap.get();
-	}
-
 	private run() {
 		this.patrons.init();
 		this.rpcHandler.init();
@@ -214,7 +205,7 @@ export class Client extends Discord.Client {
 		this.raidScheduler = new CapitalRaidScheduler(this);
 		this.cgScheduler = new ClanGamesScheduler(this);
 		this.nickHandler = new NicknameHandler(this);
-		this.commandsMap = new CommandsMap(this);
+		this.commands = new CommandsMap(this);
 		this.guildEvents = new GuildEventsHandler(this);
 		this.rosterManager = new RosterManager(this);
 		this.autocomplete = new Autocomplete(this);

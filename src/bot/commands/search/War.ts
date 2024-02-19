@@ -568,7 +568,7 @@ export default class WarCommand extends Command {
 					})
 					.join('\n'),
 				'',
-				`Use ${this.client.getCommand('/caller assign')} command to assign a caller to a base.`
+				`Use ${this.client.commands.get('/caller assign')} command to assign a caller to a base.`
 			].join('\n')
 		);
 		return embed;

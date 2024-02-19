@@ -69,7 +69,7 @@ export default class CapitalRaidsCommand extends Command {
 		args: { tag?: string; week?: string; card?: boolean; user?: User; player_tag?: string }
 	) {
 		if (args.user || args.player_tag) {
-			return interaction.editReply(`This command option has been replaced with the ${this.client.getCommand('/history')} command.`);
+			return interaction.editReply(`This command option has been replaced with the ${this.client.commands.get('/history')} command.`);
 		}
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);

@@ -10,11 +10,11 @@ import {
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
+import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/CommandOptions.js';
+import { BOT_MANAGER_HYPERLINK, Settings } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
-import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/CommandOptions.js';
-import { BOT_MANAGER_HYPERLINK, Settings } from '../../util/Constants.js';
 
 export default class RosterEditCommand extends Command {
 	public constructor() {
@@ -285,7 +285,9 @@ export default class RosterEditCommand extends Command {
 
 			return action.update({
 				components: [layoutMenuRow, sortMenuRow],
-				content: `**Change Roster Layout** \n- More settings can be edited using ${this.client.getCommand('/roster edit')} command.`
+				content: `**Change Roster Layout** \n- More settings can be edited using ${this.client.commands.get(
+					'/roster edit'
+				)} command.`
 			});
 		};
 
