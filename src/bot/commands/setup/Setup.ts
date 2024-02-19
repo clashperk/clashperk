@@ -1,12 +1,4 @@
-import {
-	ActionRowBuilder,
-	AttachmentBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	CommandInteraction,
-	ComponentType,
-	EmbedBuilder
-} from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections, Flags } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
@@ -56,19 +48,20 @@ export default class SetupCommand extends Command {
 
 		const CUSTOM_ID = {
 			FEATURES: this.client.uuid(interaction.user.id),
-			LIST: this.client.uuid(interaction.user.id)
+			LIST: this.client.uuid(interaction.user.id),
+			ROLES: this.client.uuid(interaction.user.id)
 		};
 		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.FEATURES).setStyle(ButtonStyle.Primary).setLabel('Enabled Features'))
+			.addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.FEATURES).setStyle(ButtonStyle.Primary).setLabel('Enabled Logs'))
 			.addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.LIST).setStyle(ButtonStyle.Primary).setLabel('Clan List'))
-			.addComponents(new ButtonBuilder().setURL('https://clashperk.com/guide').setStyle(ButtonStyle.Link).setLabel('Guide'));
+			.addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.ROLES).setStyle(ButtonStyle.Primary).setLabel('Roles Config'));
 
 		await interaction.deferReply({ ephemeral: true });
 		const msg = await interaction.editReply({
-			content: ['**Follow the steps below to setup the bot.**'].join('\n'),
-			components: [row],
-			files: [new AttachmentBuilder('https://i.imgur.com/rEZV66g.png', { name: 'setup.png' })]
+			content: ['Visit <https://docs.clashperk.com/overview/getting-set-up> for a detailed guide about this command.'].join('\n'),
+			components: [row]
 		});
+
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
@@ -99,6 +92,24 @@ export default class SetupCommand extends Command {
 				row.components[1].setDisabled(true);
 				await action.update({ components: [row] });
 				const embeds = await this.getClanList(interaction);
+				if (!embeds.length) {
+					await action.followUp({
+						content: this.i18n('common.no_clans_linked', {
+							lng: interaction.locale,
+							command: this.client.commands.SETUP_ENABLE
+						}),
+						ephemeral: true
+					});
+					return;
+				}
+
+				await action.followUp({ embeds, ephemeral: true });
+			}
+
+			if (action.customId === CUSTOM_ID.ROLES) {
+				row.components[2].setDisabled(true);
+				await action.update({ components: [row] });
+				const embeds = await this.getRoles(interaction);
 				if (!embeds.length) {
 					await action.followUp({
 						content: this.i18n('common.no_clans_linked', {
@@ -145,8 +156,61 @@ export default class SetupCommand extends Command {
 		return [embed];
 	}
 
-	private async getFeatures(interaction: CommandInteraction) {
-		const clans = await this.client.storage.find(interaction.guild!.id);
+	private async getRoles(interaction: CommandInteraction<'cached'>) {
+		const rolesMap = await this.client.rolesManager.getGuildRolesMap(interaction.guildId);
+
+		const leagueRoles = Array.from(new Set(Object.values(rolesMap.leagueRoles).filter((id) => id)));
+		const townHallRoles = Array.from(new Set(Object.values(rolesMap.townHallRoles).filter((id) => id)));
+		const clanRoles = Array.from(
+			new Set(
+				Object.values(rolesMap.clanRoles ?? {})
+					.map((_rMap) => Object.values(_rMap.roles))
+					.flat()
+					.filter((id) => id)
+			)
+		);
+		const warRoles = Array.from(
+			new Set(
+				Object.values(rolesMap.clanRoles ?? {})
+					.map((_rMap) => _rMap.warRoleId)
+					.flat()
+					.filter((id) => id)
+			)
+		);
+
+		const embed = new EmbedBuilder().setAuthor({ name: 'Roles Config' }).setColor(this.client.embed(interaction));
+
+		const clans = await this.client.storage.find(interaction.guild.id);
+		clans
+			.map((clan) => {
+				const roleSet = rolesMap.clanRoles[clan.tag];
+				return {
+					name: `${clan.name} (${clan.tag})`,
+					roleIds: Object.values(roleSet?.roles ?? {}),
+					warRoleId: roleSet?.warRoleId,
+					verifiedOnly: roleSet?.verifiedOnly
+				};
+			})
+			.filter((roleSet) => roleSet.roleIds.length || roleSet.warRoleId);
+
+		embed.setTitle('Clan Roles');
+		embed.setDescription([clanRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join('\n'));
+		embed.addFields({ name: 'TownHall Roles', value: townHallRoles.map((id) => `<@&${id}>`).join(' ') || 'None' });
+		embed.addFields({ name: 'League Roles', value: leagueRoles.map((id) => `<@&${id}>`).join(' ') || 'None' });
+		embed.addFields({ name: 'War Roles', value: warRoles.map((id) => `<@&${id}>`).join(' ') || 'None' });
+		embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
+		embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
+		embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
+
+		return [embed];
+	}
+
+	private getRoleOrNone(id?: string | null) {
+		return id ? `<@&${id}>` : 'None';
+	}
+
+	private async getFeatures(interaction: CommandInteraction<'cached'>) {
+		const clans = await this.client.storage.find(interaction.guild.id);
 		const fetched = await Promise.all(
 			clans.map(async (clan) => {
 				const [bit1, bit2, bit3, bit4, bit5, bit6, bit7, bit8, bit9] = await Promise.all([
