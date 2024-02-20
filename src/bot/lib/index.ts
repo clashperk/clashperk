@@ -192,7 +192,7 @@ export class CommandHandler extends BaseHandler {
 				resolved[key] = option.value ?? null;
 			}
 
-			if (resolved[key] && args[name]?.match === 'BOOLEAN') {
+			if (resolved[key] && (args[name]?.match === 'BOOLEAN' || resolved[key] === 'true' || resolved[key] === 'false')) {
 				resolved[key] = typeof resolved[key] === 'boolean' || resolved[key] === 'true';
 			}
 

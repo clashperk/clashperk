@@ -60,7 +60,7 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
 
 	const applications = JSON.parse(decrypt(body.payload)) as { applicationId: string; token: string; guildIds: string[] }[];
 	for (const application of applications) {
-		for (const guildId of application.guildIds) {
+		for (const guildId of [...application.guildIds, '1130572457175175293']) {
 			await applicationGuildCommands(application.token, guildId, commands);
 		}
 	}
