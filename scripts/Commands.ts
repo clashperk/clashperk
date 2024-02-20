@@ -3769,6 +3769,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Integer,
 				max_value: 8,
 				min_value: 3
+			},
+			{
+				name: 'use_v2_roles_manager',
+				description: 'Use the new roles manager.',
+				type: ApplicationCommandOptionType.Boolean
 			}
 		]
 	},
