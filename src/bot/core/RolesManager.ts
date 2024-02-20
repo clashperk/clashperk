@@ -337,10 +337,10 @@ export class RolesManager {
 		if (!rolesToExclude.length && !rolesToInclude.length) return null;
 		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) return null;
 
-		const excluded = rolesToExclude.filter((id) => this.checkRole(member.guild, id)).filter((id) => member.roles.cache.has(id));
-		if (excluded.length && !isDryRun) await member.roles.remove(excluded);
+		const excluded = rolesToExclude.filter((id) => this.checkRole(member.guild, id) && member.roles.cache.has(id));
+		if (excluded.length && !isDryRun) member = await member.roles.remove(excluded);
 
-		const included = rolesToInclude.filter((id) => this.checkRole(member.guild, id)).filter((id) => !member.roles.cache.has(id));
+		const included = rolesToInclude.filter((id) => this.checkRole(member.guild, id) && !member.roles.cache.has(id));
 		if (included.length && !isDryRun) await member.roles.add(included);
 
 		return { included, excluded };
@@ -397,6 +397,12 @@ export class RolesManager {
 		await member.setNickname(nickname.substring(0, 31), `For ${player.name} (${player.tag})`);
 
 		return nickname;
+	}
+
+	public getRoleChanges(queue: RolesManagerQueue | null) {
+		const roleChanges =
+			queue?.changes.filter(({ excluded, included, nickname }) => included.length || excluded.length || nickname) ?? [];
+		return roleChanges;
 	}
 }
 

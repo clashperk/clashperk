@@ -115,7 +115,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setDescription(`### Refreshing Server Roles ${EMOJIS.LOADING}`)
-			.setFooter({ text: `Progress: -/- (0%)` });
+			.setFooter({ text: `Progress: -/- (0%)${args.is_dry_run ? ' [DryRun]' : ''}` });
 		const message = await interaction.editReply({ embeds: [embed] });
 
 		const handleChanges = async (closed = false) => {
@@ -127,13 +127,11 @@ export default class AutoTownHallRoleCommand extends Command {
 			embed.setFooter({
 				text: [
 					`Time Elapsed: ${moment.duration(Date.now() - startTime).format('h[h] m[m] s[s]', { trim: 'both mid' })}`,
-					`Progress: ${changes.progress}/${changes.memberCount} (${percentage}%)`
+					`Progress: ${changes.progress}/${changes.memberCount} (${percentage}%)${args.is_dry_run ? ' [DryRun]' : ''}`
 				].join('\n')
 			});
 
-			const roleChanges = changes.changes.filter(
-				({ excluded, included, nickname }) => included.length || excluded.length || nickname
-			);
+			const roleChanges = this.client.rolesManager.getRoleChanges(changes);
 			const embeds: EmbedBuilder[] = [];
 
 			cluster(roleChanges, 15).forEach((changes) => {
@@ -163,8 +161,10 @@ export default class AutoTownHallRoleCommand extends Command {
 
 		try {
 			const changes = await this.client.rolesManager.updateMany(interaction.guildId, Boolean(args.is_dry_run));
-			if (!changes?.changes?.length) {
-				return message.edit({ embeds: [embed.setDescription('No role changes happened!')], components: [] });
+
+			const roleChanges = this.client.rolesManager.getRoleChanges(changes);
+			if (!roleChanges?.length) {
+				return message.edit({ embeds: [embed.setDescription('### No role changes detected!')], components: [] });
 			}
 
 			return await handleChanges(true);
