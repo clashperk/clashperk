@@ -219,7 +219,7 @@ export class RolesManager {
 				queue.changes.push({ included: [], excluded: [], userId: member.id, displayName: member.user.displayName, nickname });
 			}
 			queue.progress += 1;
-			if ((result?.excluded.length || result?.included.length) && !isDryRun) await this.delay(1000);
+			if ((result?.excluded.length || result?.included.length || nickname) && !isDryRun) await this.delay(1000);
 		}
 
 		return this.queues[guildId] ?? null;
@@ -280,7 +280,17 @@ export class RolesManager {
 			isDryRun
 		});
 
-		return result;
+		const defaultPlayer = players.at(0) ?? null;
+		const nickname = defaultPlayer
+			? await this.updateNickname({
+					member,
+					isDryRun,
+					player: defaultPlayer,
+					nickname: this.getPlayerNickname(defaultPlayer, member, rolesMap)
+			  })
+			: null;
+
+		return { included: result?.included ?? [], excluded: result?.excluded ?? [], nickname };
 	}
 
 	private async preRoleUpdateAction({
@@ -318,16 +328,6 @@ export class RolesManager {
 			rolesToExclude: playerRolesMap.rolesToExclude,
 			rolesToInclude: playerRolesMap.rolesToInclude
 		});
-
-		const defaultPlayer = players.at(0) ?? null;
-		if (defaultPlayer) {
-			await this.updateNickname({
-				member,
-				isDryRun,
-				player: defaultPlayer,
-				nickname: this.getPlayerNickname(defaultPlayer, member, rolesMap)
-			});
-		}
 
 		return result;
 	}
