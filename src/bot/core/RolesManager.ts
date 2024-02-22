@@ -1,5 +1,5 @@
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
-import { Guild, GuildMember, PermissionFlagsBits } from 'discord.js';
+import { Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits } from 'discord.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { Client } from '../struct/Client.js';
 import { PlayerLinks } from '../types/index.js';
@@ -13,11 +13,18 @@ export const roles: { [key: string]: number } = {
 	leader: 4
 };
 
+const NickActions = {
+	DECLINED: 'declined',
+	UNSET: 'unset',
+	NO_ACTION: 'no-action',
+	SET_NAME: 'set-name'
+} as const;
+
 export const UNICODE_EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 
 export class RolesManager {
 	public constructor(private readonly client: Client) {}
-	private queues: Record<string, RolesManagerQueue> = {};
+	private changeLogs: Record<string, RolesManagerChangeLog> = {};
 
 	public async getGuildRolesMap(guildId: string): Promise<GuildRolesDto> {
 		const clans = await this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).find({ guild: guildId }).toArray();
@@ -137,45 +144,46 @@ export class RolesManager {
 		};
 	}
 
-	public getPlayerNickname(player: APIPlayer, member: GuildMember, rolesMap: GuildRolesDto) {
+	public preNicknameUpdate(players: APIPlayer[], member: GuildMember, rolesMap: GuildRolesDto) {
+		if (member.id === member.guild.ownerId) return { action: NickActions.DECLINED };
+		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames)) return { action: NickActions.DECLINED };
+		if (member.guild.members.me.roles.highest.position <= member.roles.highest.position) return { action: NickActions.DECLINED };
+
+		const player = players.at(0);
+		if (!player) return { action: NickActions.UNSET };
+
 		const isNickNamingEnabled = this.client.settings.get<boolean>(rolesMap.guildId, Settings.AUTO_NICKNAME, false);
-		if (!isNickNamingEnabled) return null;
+		if (!isNickNamingEnabled) return { action: NickActions.NO_ACTION };
 
 		const familyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.FAMILY_NICKNAME_FORMAT);
 		const nonFamilyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT);
 
-		if (familyFormat && player.clan && rolesMap.clanTags.includes(player.clan.tag)) {
-			return this.client.nickHandler.getName(
-				{
-					name: player.name,
-					displayName: member.user.displayName,
-					username: member.user.username,
-					townHallLevel: player.townHallLevel,
-					alias: rolesMap.clanRoles[player.clan.tag]?.alias || makeAbbr(player.clan.name),
-					clan: player.clan.name,
-					role: player.role
-				},
-				familyFormat
-			);
-		} else if (nonFamilyFormat) {
-			return this.client.nickHandler.getName(
-				{
-					name: player.name,
-					displayName: member.user.displayName,
-					username: member.user.username,
-					townHallLevel: player.townHallLevel,
-					alias: null,
-					clan: null,
-					role: null
-				},
-				nonFamilyFormat
-			);
-		}
+		const inFamily = player.clan && rolesMap.clanTags.includes(player.clan.tag);
+		const clanAlias = player.clan ? rolesMap.clanRoles[player.clan.tag]?.alias || makeAbbr(player.clan.name) : null;
 
-		return null;
+		const format = inFamily ? familyFormat : nonFamilyFormat;
+		if (!format) return { action: NickActions.UNSET };
+
+		const nickname = this.client.nickHandler.getName(
+			{
+				name: player.name,
+				displayName: member.user.displayName,
+				username: member.user.username,
+				townHallLevel: player.townHallLevel,
+				alias: clanAlias ?? null,
+				clan: player.clan?.name ?? null,
+				role: player.role ?? null
+			},
+			format
+		);
+
+		if (!nickname) return { action: NickActions.UNSET };
+		if (member.nickname === nickname) return { action: NickActions.NO_ACTION };
+
+		return { action: NickActions.SET_NAME, nickname };
 	}
 
-	public async updateMany(guildId: string, isDryRun = false): Promise<RolesManagerQueue | null> {
+	public async updateMany(guildId: string, isDryRun = false): Promise<RolesManagerChangeLog | null> {
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
 
@@ -193,48 +201,73 @@ export class RolesManager {
 		);
 		if (!targetedMembers.size) return null;
 
-		this.queues[guildId] ??= { progress: 0, memberCount: targetedMembers.size, changes: [] };
+		this.changeLogs[guildId] ??= { progress: 0, memberCount: targetedMembers.size, changes: [] };
 		for (const member of targetedMembers.values()) {
 			const players = await this.getPlayers(linkedPlayers[member.id] ?? []);
-			const result = await this.preRoleUpdateAction({
+			const roleUpdate = await this.preRoleUpdateAction({
 				member,
 				rolesMap,
 				players,
 				playersInWarMap,
-				isDryRun
+				isDryRun: true
 			});
+			const nickUpdate = this.preNicknameUpdate(players, member, rolesMap);
 
-			const defaultPlayer = players.at(0) ?? null;
-			const nickname = defaultPlayer
-				? await this.updateNickname({
-						member,
-						isDryRun,
-						player: defaultPlayer,
-						nickname: this.getPlayerNickname(defaultPlayer, member, rolesMap)
-				  })
-				: null;
+			const changeLog: RolesManagerChangeLog['changes'][number] = {
+				...roleUpdate,
+				nickname: null,
+				_updated: false,
+				userId: member.id,
+				displayName: member.user.displayName
+			};
+			const memberUpdate: GuildMemberEditOptions = {};
 
-			const queue = this.queues[guildId];
+			if (roleUpdate.excluded.length || roleUpdate.included.length) {
+				const existingRoleIds = member.roles.cache.map((role) => role.id);
+				const roleIdsToSet = [...existingRoleIds, ...roleUpdate.included].filter((id) => !roleUpdate.excluded.includes(id));
+
+				changeLog._updated = true;
+				memberUpdate.roles = roleIdsToSet;
+			}
+
+			if (nickUpdate.action === NickActions.SET_NAME) {
+				changeLog._updated = true;
+				memberUpdate.nick = nickUpdate.nickname;
+				changeLog.nickname = `**+** \`${nickUpdate.nickname}\``;
+			}
+
+			if (nickUpdate.action === NickActions.UNSET && member.nickname) {
+				changeLog._updated = true;
+				memberUpdate.nick = null;
+				changeLog.nickname = `**-** ~~\`${member.nickname}\`~~`;
+			}
+
+			if (changeLog._updated) {
+				const _oldNick = member.nickname; // TODO: Preserve Emojis in the Nickname
+				const editedMember = await member.edit(memberUpdate);
+				if (nickUpdate.action === NickActions.SET_NAME && _oldNick && _oldNick === editedMember.nickname) {
+					changeLog.nickname = null;
+				}
+			}
+
+			const queue = this.changeLogs[guildId];
+			queue.changes.push(changeLog);
+			queue.progress += 1;
+
 			if (!queue) break;
 
-			if (result) {
-				queue.changes.push({ ...result, userId: member.id, displayName: member.user.displayName, nickname });
-			} else if (nickname && !result) {
-				queue.changes.push({ included: [], excluded: [], userId: member.id, displayName: member.user.displayName, nickname });
-			}
-			queue.progress += 1;
-			if ((result?.excluded.length || result?.included.length || nickname) && !isDryRun) await this.delay(1000);
+			if ((roleUpdate.excluded.length || roleUpdate.included.length || nickUpdate.nickname) && !isDryRun) await this.delay(1000);
 		}
 
-		return this.queues[guildId] ?? null;
+		return this.changeLogs[guildId] ?? null;
 	}
 
-	public getChanges(guildId: string): RolesManagerQueue | null {
-		return this.queues[guildId] ?? null;
+	public getChanges(guildId: string): RolesManagerChangeLog | null {
+		return this.changeLogs[guildId] ?? null;
 	}
 
 	public clearChanges(guildId: string) {
-		delete this.queues[guildId];
+		delete this.changeLogs[guildId];
 	}
 
 	private delay(ms: number) {
@@ -276,7 +309,7 @@ export class RolesManager {
 		const rolesMap = await this.getGuildRolesMap(guildId);
 		const playersInWarMap = await this.getWarRolesMap(rolesMap.warClanTags);
 
-		const result = await this.preRoleUpdateAction({
+		const roleUpdate = await this.preRoleUpdateAction({
 			member,
 			rolesMap,
 			players,
@@ -284,17 +317,31 @@ export class RolesManager {
 			isDryRun
 		});
 
-		const defaultPlayer = players.at(0) ?? null;
-		const nickname = defaultPlayer
-			? await this.updateNickname({
-					member,
-					isDryRun,
-					player: defaultPlayer,
-					nickname: this.getPlayerNickname(defaultPlayer, member, rolesMap)
-			  })
-			: null;
+		const nickUpdate = this.preNicknameUpdate(players, member, rolesMap);
 
-		return { included: result?.included ?? [], excluded: result?.excluded ?? [], nickname };
+		const memberUpdate: GuildMemberEditOptions & { _updated?: boolean } = {};
+
+		if (roleUpdate.excluded.length || roleUpdate.excluded.length) {
+			const existingRoleIds = member.roles.cache.map((role) => role.id);
+			const roleIdsToSet = [...existingRoleIds, ...roleUpdate.included].filter((id) => !roleUpdate.excluded.includes(id));
+
+			memberUpdate._updated = true;
+			memberUpdate.roles = roleIdsToSet;
+		}
+
+		if (nickUpdate.action === NickActions.SET_NAME) {
+			memberUpdate._updated = true;
+			memberUpdate.nick = nickUpdate.nickname;
+		}
+
+		if (nickUpdate.action === NickActions.UNSET && member.nickname) {
+			memberUpdate.nick = null;
+			memberUpdate._updated = true;
+		}
+
+		if (memberUpdate._updated) await member.edit(memberUpdate);
+
+		return memberUpdate._updated;
 	}
 
 	private async preRoleUpdateAction({
@@ -326,26 +373,21 @@ export class RolesManager {
 		);
 
 		const playerRolesMap = this.getPlayerRoles(playerList, rolesMap);
-		const result = await this.updateRoles({
+		return this.checkRoles({
 			member,
 			isDryRun,
 			rolesToExclude: playerRolesMap.rolesToExclude,
 			rolesToInclude: playerRolesMap.rolesToInclude
 		});
-
-		return result;
 	}
 
-	private async updateRoles({ member, rolesToExclude, rolesToInclude, isDryRun = false }: AddRoleInput) {
-		if (member.user.bot) return null;
-		if (!rolesToExclude.length && !rolesToInclude.length) return null;
-		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) return null;
+	private checkRoles({ member, rolesToExclude, rolesToInclude }: AddRoleInput) {
+		if (member.user.bot) return { included: [], excluded: [] };
+		if (!rolesToExclude.length && !rolesToInclude.length) return { included: [], excluded: [] };
+		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) return { included: [], excluded: [] };
 
 		const excluded = rolesToExclude.filter((id) => this.checkRole(member.guild, id) && member.roles.cache.has(id));
-		if (excluded.length && !isDryRun) member = await member.roles.remove(excluded);
-
 		const included = rolesToInclude.filter((id) => this.checkRole(member.guild, id) && !member.roles.cache.has(id));
-		if (included.length && !isDryRun) await member.roles.add(included);
 
 		return { included, excluded };
 	}
@@ -378,32 +420,7 @@ export class RolesManager {
 		return highestRoles.sort((a, b) => roles[b] - roles[a]).at(0) ?? null;
 	}
 
-	private async updateNickname({
-		member,
-		player,
-		nickname,
-		isDryRun = false
-	}: {
-		member: GuildMember;
-		player: APIPlayer;
-		nickname: string | null;
-		isDryRun?: boolean;
-	}) {
-		if (!nickname) return null;
-
-		if (member.id === member.guild.ownerId) return null;
-		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames)) return null;
-		if (member.guild.members.me.roles.highest.position <= member.roles.highest.position) return null;
-
-		if (member.nickname === nickname) return null;
-		if (isDryRun) return nickname;
-
-		const newMember = await member.setNickname(nickname.substring(0, 31).trim(), `For ${player.name} (${player.tag})`);
-		if (newMember.nickname === member.nickname) return null;
-		return newMember.nickname;
-	}
-
-	public getRoleChanges(queue: RolesManagerQueue | null) {
+	public getRoleChanges(queue: RolesManagerChangeLog | null) {
 		const roleChanges =
 			queue?.changes.filter(({ excluded, included, nickname }) => included.length || excluded.length || nickname) ?? [];
 		return roleChanges;
@@ -450,14 +467,16 @@ interface AddRoleInput {
 	isDryRun?: boolean;
 }
 
-interface RolesManagerQueue {
+interface RolesManagerChangeLog {
 	memberCount: number;
 	progress: number;
 	changes: {
+		userId: string;
+		displayName: string;
 		included: string[];
 		excluded: string[];
 		nickname: string | null;
-		userId: string;
-		displayName: string;
+		/** Inter property to use within the RolesManager only. */
+		_updated: boolean;
 	}[];
 }

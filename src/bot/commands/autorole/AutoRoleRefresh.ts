@@ -140,7 +140,7 @@ export default class AutoTownHallRoleCommand extends Command {
 					const values = [`> \u200e${displayName} | <@${userId}>`];
 					if (included.length) values.push(`**+** ${included.map((id) => `<@&${id}>`).join(' ')}`);
 					if (excluded.length) values.push(`**-** ~~${excluded.map((id) => `<@&${id}>`).join(' ')}~~`);
-					if (nickname) values.push(`**+** \`${nickname}\``);
+					if (nickname) values.push(nickname);
 
 					roleChangeEmbed.addFields({
 						name: itemIndex === 0 ? `Changes Detected: ${roleChanges.length}\n\u200b` : '\u200b',

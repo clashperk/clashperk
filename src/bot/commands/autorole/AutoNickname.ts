@@ -37,7 +37,7 @@ export default class NicknameConfigCommand extends Command {
 		if (args.non_family_nickname_format && nonFamilyFormat !== args.non_family_nickname_format)
 			nonFamilyFormat = args.non_family_nickname_format;
 
-		if (args.family_nickname_format) {
+		if (args.family_nickname_format && !/^none$/i.test(args.family_nickname_format)) {
 			if (/{NAME}/gi.test(familyFormat)) {
 				this.client.settings.set(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, familyFormat);
 			} else {
@@ -47,7 +47,11 @@ export default class NicknameConfigCommand extends Command {
 			}
 		}
 
-		if (args.non_family_nickname_format) {
+		if (args.family_nickname_format && /^none$/i.test(args.family_nickname_format)) {
+			this.client.settings.set(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, '');
+		}
+
+		if (args.non_family_nickname_format && !/^none$/i.test(args.non_family_nickname_format)) {
 			if (/{CLAN}|{CLAN_NAME}|{ALIAS}|{CLAN_ALIAS}|{ROLE}|{CLAN_ROLE}/gi.test(nonFamilyFormat)) {
 				return interaction.editReply(
 					`Invalid **non-family nickname** format \`${nonFamilyFormat}\`, it must **not** include \`{CLAN}\` \`{CLAN_NAME}\` \`{ALIAS}\` \`{CLAN_ALIAS}\` \`{ROLE}\` \`{CLAN_ROLE}\``
@@ -59,6 +63,10 @@ export default class NicknameConfigCommand extends Command {
 			} else {
 				this.client.settings.set(interaction.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT, nonFamilyFormat);
 			}
+		}
+
+		if (args.non_family_nickname_format && /^none$/i.test(args.non_family_nickname_format)) {
+			this.client.settings.set(interaction.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT, '');
 		}
 
 		if (typeof args.enable_auto === 'boolean') {
