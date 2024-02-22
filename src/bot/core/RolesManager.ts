@@ -159,7 +159,7 @@ export class RolesManager {
 		const nonFamilyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT);
 
 		const inFamily = player.clan && rolesMap.clanTags.includes(player.clan.tag);
-		const clanAlias = player.clan ? rolesMap.clanRoles[player.clan.tag]?.alias || makeAbbr(player.clan.name) : null;
+		const clanAlias = player.clan && inFamily ? rolesMap.clanRoles[player.clan.tag]?.alias || makeAbbr(player.clan.name) : null;
 
 		const format = inFamily ? familyFormat : nonFamilyFormat;
 		if (!format) return { action: NickActions.UNSET };
@@ -171,8 +171,8 @@ export class RolesManager {
 				username: member.user.username,
 				townHallLevel: player.townHallLevel,
 				alias: clanAlias ?? null,
-				clan: player.clan?.name ?? null,
-				role: player.role ?? null
+				clan: player.clan && inFamily ? player.clan.name : null,
+				role: player.role && inFamily ? player.role : null
 			},
 			format
 		);
