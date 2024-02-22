@@ -39,7 +39,7 @@ export default class LinkDeleteCommand extends Command {
 		if (!playerTag) return null;
 
 		const member = await this.getMember(playerTag, interaction);
-		if (interaction.user.id !== member.id) {
+		if (interaction.user.id !== member.id && !this.client.isOwner(interaction.user.id)) {
 			const players = await this.client.db
 				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 				.find({ userId: interaction.user.id, verified: true })

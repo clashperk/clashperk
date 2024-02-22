@@ -13,6 +13,8 @@ export const roles: { [key: string]: number } = {
 	leader: 4
 };
 
+export const UNICODE_EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+
 export class RolesManager {
 	public constructor(private readonly client: Client) {}
 	private queues: Record<string, RolesManagerQueue> = {};
@@ -186,7 +188,9 @@ export class RolesManager {
 		const linkedUserIds = Object.keys(linkedPlayers);
 
 		const { targetedRoles } = this.getTargetedRoles(rolesMap);
-		const targetedMembers = guildMembers.filter((m) => m.roles.cache.hasAny(...targetedRoles) || linkedUserIds.includes(m.id));
+		const targetedMembers = guildMembers.filter(
+			(m) => !m.user.bot && (m.roles.cache.hasAny(...targetedRoles) || linkedUserIds.includes(m.id))
+		);
 		if (!targetedMembers.size) return null;
 
 		this.queues[guildId] ??= { progress: 0, memberCount: targetedMembers.size, changes: [] };
@@ -264,7 +268,7 @@ export class RolesManager {
 		if (!guild) return null;
 
 		const member = await guild.members.fetch(userId).catch(() => null);
-		if (!member) return null;
+		if (!member || member.user.bot) return null;
 
 		const linkedPlayers = await this.getLinkedPlayers([userId]);
 		const players = await this.getPlayers(linkedPlayers[userId] ?? []);
@@ -394,9 +398,9 @@ export class RolesManager {
 		if (member.nickname === nickname) return null;
 		if (isDryRun) return nickname;
 
-		await member.setNickname(nickname.substring(0, 31), `For ${player.name} (${player.tag})`);
-
-		return nickname;
+		const newMember = await member.setNickname(nickname.substring(0, 31).trim(), `For ${player.name} (${player.tag})`);
+		if (newMember.nickname === member.nickname) return null;
+		return newMember.nickname;
 	}
 
 	public getRoleChanges(queue: RolesManagerQueue | null) {
