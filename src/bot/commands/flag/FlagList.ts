@@ -11,10 +11,7 @@ export default class FlagListCommand extends Command {
 		super('flag-list', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['ManageGuild'],
-			description: {
-				content: ['Shows the list of all flagged players.']
-			},
+			description: { content: ['Shows the list of all flagged players.'] },
 			defer: true
 		});
 	}
@@ -45,10 +42,8 @@ export default class FlagListCommand extends Command {
 			Settings.FLAG_LIST_GROUP_BY_PLAYERS,
 			Boolean(args.group_by_players)
 		);
-		if (args.group_by_players) {
-			this.client.settings.set(interaction.guild.id, Settings.FLAG_LIST_GROUP_BY_PLAYERS, true);
-		} else {
-			this.client.settings.delete(interaction.guild.id, Settings.FLAG_LIST_GROUP_BY_PLAYERS);
+		if (typeof args.group_by_players === 'boolean') {
+			this.client.settings.set(interaction.guild.id, Settings.FLAG_LIST_GROUP_BY_PLAYERS, args.group_by_players);
 		}
 
 		if (groupByPlayers) return this.groupByPlayerTag(interaction, args);
