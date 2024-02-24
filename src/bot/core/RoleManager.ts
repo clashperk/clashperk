@@ -177,7 +177,7 @@ export class RoleManager {
 			if (!this.client.guilds.cache.has(guild)) continue;
 
 			if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
-			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, false)) continue;
+			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, true)) continue;
 
 			const clan = clans.find((c) => c.tag === tag)!;
 			await this.run(guild, clans, clan, roleChanges);
@@ -231,7 +231,7 @@ export class RoleManager {
 			if (!this.client.guilds.cache.has(guild)) continue;
 
 			if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
-			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, false)) continue;
+			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, true)) continue;
 
 			if (members.length) await this.processNickname(guild, members);
 		}
@@ -339,7 +339,7 @@ export class RoleManager {
 			if (!this.client.guilds.cache.has(guild)) continue;
 
 			if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
-			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, false)) continue;
+			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, true)) continue;
 
 			await this.runTownHallRoles(
 				guild,
@@ -389,7 +389,7 @@ export class RoleManager {
 			if (!this.client.guilds.cache.has(guild)) continue;
 
 			if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
-			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, false)) continue;
+			if (this.client.settings.get(guild, Settings.USE_V2_ROLES_MANAGER, true)) continue;
 
 			await this.runLeagueRoles(
 				guild,

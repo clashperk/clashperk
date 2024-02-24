@@ -37,7 +37,7 @@ export class RolesManager {
 		const guildIds = await this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).distinct('guild', { tag: clanTag });
 
 		for (const guildId of guildIds) {
-			if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, false)) continue;
+			if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, true)) continue;
 			const opKey = `${guildId}-${pollingInput.state ? 'WAR' : 'FEED'}`;
 			if (!this.client.guilds.cache.has(guildId)) continue;
 			if (this.queues.has(opKey)) continue;
@@ -294,7 +294,7 @@ export class RolesManager {
 	}
 
 	public async updateOne(userId: string, guildId: string) {
-		if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, false)) return null;
+		if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, true)) return null;
 
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;

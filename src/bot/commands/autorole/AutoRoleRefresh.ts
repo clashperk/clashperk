@@ -19,7 +19,7 @@ export default class AutoTownHallRoleCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { is_dry_run?: boolean }) {
-		const useV2 = this.client.settings.get<boolean>(interaction.guild, Settings.USE_V2_ROLES_MANAGER, false);
+		const useV2 = this.client.settings.get<boolean>(interaction.guild, Settings.USE_V2_ROLES_MANAGER, true);
 		if (useV2) return this.v2(interaction, args);
 
 		const clans = await this.client.storage.find(interaction.guildId);
