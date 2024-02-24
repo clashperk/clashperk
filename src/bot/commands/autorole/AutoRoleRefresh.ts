@@ -162,7 +162,8 @@ export default class AutoTownHallRoleCommand extends Command {
 		try {
 			const changes = await this.client.rolesManager.updateMany(interaction.guildId, {
 				isDryRun: Boolean(args.is_dry_run),
-				logging: true
+				logging: true,
+				reason: `manually updated by ${interaction.user.displayName}`
 			});
 
 			const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);

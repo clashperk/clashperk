@@ -44,7 +44,7 @@ export class RolesManager {
 			this.queues.add(opKey);
 
 			try {
-				await this.updateMany(guildId, { isDryRun: false, logging: false, pollingInput });
+				await this.updateMany(guildId, { isDryRun: false, logging: false, pollingInput, reason: 'automatically updated' });
 			} finally {
 				this.clearChangeLogs(guildId);
 				this.scheduleQueueDeletion(opKey);
@@ -210,7 +210,12 @@ export class RolesManager {
 
 	public async updateMany(
 		guildId: string,
-		{ isDryRun = false, pollingInput, logging }: { isDryRun: boolean; logging: boolean; pollingInput?: RolesManagerPollingInput }
+		{
+			isDryRun = false,
+			pollingInput,
+			logging,
+			reason
+		}: { isDryRun: boolean; logging: boolean; pollingInput?: RolesManagerPollingInput; reason?: string }
 	): Promise<RolesManagerChangeLog | null> {
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
@@ -250,7 +255,7 @@ export class RolesManager {
 				userId: member.id,
 				displayName: member.user.displayName
 			};
-			const editOptions: GuildMemberEditOptions & { _updated?: boolean } = {};
+			const editOptions: GuildMemberEditOptions & { _updated?: boolean } = { reason };
 
 			if (roleUpdate.excluded.length || roleUpdate.included.length) {
 				const existingRoleIds = member.roles.cache.map((role) => role.id);
@@ -317,7 +322,7 @@ export class RolesManager {
 
 		const nickUpdate = this.preNicknameUpdate(players, member, rolesMap);
 
-		const editOptions: GuildMemberEditOptions & { _updated?: boolean } = {};
+		const editOptions: GuildMemberEditOptions & { _updated?: boolean } = { reason: 'account linked or updated' };
 
 		if (roleUpdate.excluded.length || roleUpdate.excluded.length) {
 			const existingRoleIds = member.roles.cache.map((role) => role.id);
