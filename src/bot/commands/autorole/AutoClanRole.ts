@@ -1,7 +1,7 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
 export interface IArgs {
 	command?: 'refresh' | 'disable' | null;
@@ -49,6 +49,11 @@ export default class AutoClanRoleCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
 		if (args.command === 'disable') return this.disable(interaction, args);
+
+		const verifiedOnly = this.client.settings.get(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES);
+		if (typeof verifiedOnly !== 'boolean' || typeof args.verify === 'boolean') {
+			await this.client.settings.set(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, Boolean(args.verify));
+		}
 
 		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
 		const clans =

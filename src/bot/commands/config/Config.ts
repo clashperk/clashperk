@@ -25,6 +25,7 @@ export default class ConfigCommand extends Command {
 			account_linked_role?: Role;
 			account_verified_role?: Role;
 			clans_sorting_key?: string;
+			verified_only_clan_roles?: boolean;
 		}
 	) {
 		if (!this.client.util.isManager(interaction.member) && Object.keys(args).some((key) => args[key as keyof typeof args])) {
@@ -75,6 +76,10 @@ export default class ConfigCommand extends Command {
 			await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.account_verified_role.id);
 		}
 
+		if (typeof args.verified_only_clan_roles === 'boolean') {
+			await this.client.settings.set(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, args.verified_only_clan_roles);
+		}
+
 		if (args.events_channel) {
 			if (['reset', 'none'].includes(args.events_channel)) {
 				await this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
@@ -108,6 +113,7 @@ export default class ConfigCommand extends Command {
 			this.client.settings.get<string>(interaction.guild, Settings.ROSTER_MANAGER_ROLE, null)
 		);
 		const clansSortingKey = this.client.settings.get<string>(interaction.guild, Settings.CLANS_SORTING_KEY, 'name');
+		const verifiedOnlyClanRoles = this.client.settings.get<string>(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -115,43 +121,39 @@ export default class ConfigCommand extends Command {
 			.addFields([
 				{
 					name: 'Prefix',
-					value: '/',
-					inline: true
+					value: '/'
 				},
 				{
 					name: 'Patron',
-					value: this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No',
-					inline: true
+					value: this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No'
 				},
 				{
 					name: 'Manager Role',
-					value: `${managerRole?.toString() ?? 'None'}`,
-					inline: true
+					value: `${managerRole?.toString() ?? 'None'}`
 				},
 				{
 					name: 'Roster Manager Role',
-					value: `${rosterManagerRole?.toString() ?? 'None'}`,
-					inline: true
+					value: `${rosterManagerRole?.toString() ?? 'None'}`
 				},
 				{
 					name: 'Webhook Limit',
-					value: `${this.client.settings.get<string>(interaction.guild, Settings.WEBHOOK_LIMIT, 8)}`,
-					inline: true
+					value: `${this.client.settings.get<string>(interaction.guild, Settings.WEBHOOK_LIMIT, 8)}`
 				},
 				{
 					name: 'Clans Sorting',
-					value: `By ${clansSortingKey}`,
-					inline: true
+					value: `By ${clansSortingKey}`
+				},
+				{
+					name: 'Verified-Only Clan Roles',
+					value: `${verifiedOnlyClanRoles ? 'Yes' : 'No'}`
 				},
 				{
 					name: this.i18n('common.color_code', { lng: interaction.locale }),
-					value: color ? `#${color.toString(16).toUpperCase()}` : 'None',
-					inline: true
+					value: color ? `#${color.toString(16).toUpperCase()}` : 'None'
 				},
 				{
 					name: this.i18n('command.config.events_channel', { lng: interaction.locale }),
-					value: channel?.toString() ?? 'None',
-					inline: true
+					value: channel?.toString() ?? 'None'
 				}
 			]);
 

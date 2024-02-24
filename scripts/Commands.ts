@@ -2536,8 +2536,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'allow_external_accounts',
-						description: 'Whether to give roles for the accounts that are not in the family clans.',
+						name: 'allow_non_family_accounts',
+						description: 'Whether to give roles to the members that are not in the family clans.',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -2603,8 +2603,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'allow_external_accounts',
-						description: 'Whether to give roles for the accounts that are not in the family clans.',
+						name: 'allow_non_family_accounts',
+						description: 'Whether to give roles to the members that are not in the family clans.',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{

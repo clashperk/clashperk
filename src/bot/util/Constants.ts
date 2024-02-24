@@ -136,6 +136,7 @@ export const enum Settings {
 	WEBHOOK_LIMIT = 'webhookLimit',
 	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
 	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
+	VERIFIED_ONLY_CLAN_ROLES = 'verifiedOnlyClanRoles',
 	CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths',
 	CLAN_GAMES_REMINDER_TIMESTAMP = 'clanGamesReminderTimestamp',
 	FAMILY_NICKNAME_FORMAT = 'familyNicknameFormat',

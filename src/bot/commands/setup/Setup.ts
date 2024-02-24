@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections, Flags } from '../../util/Constants.js';
+import { Collections, Flags, Settings } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
 
 const names: Record<string, string> = {
@@ -159,6 +159,13 @@ export default class SetupCommand extends Command {
 	private async getRoles(interaction: CommandInteraction<'cached'>) {
 		const rolesMap = await this.client.rolesManager.getGuildRolesMap(interaction.guildId);
 
+		const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
+		const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(
+			interaction.guildId,
+			Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE,
+			false
+		);
+
 		const leagueRoles = Array.from(new Set(Object.values(rolesMap.leagueRoles).filter((id) => id)));
 		const townHallRoles = Array.from(new Set(Object.values(rolesMap.townHallRoles).filter((id) => id)));
 		const clanRoles = Array.from(
@@ -181,7 +188,7 @@ export default class SetupCommand extends Command {
 		const embed = new EmbedBuilder().setAuthor({ name: 'Roles Config' }).setColor(this.client.embed(interaction));
 
 		const clans = await this.client.storage.find(interaction.guild.id);
-		clans
+		const verifiedOnlyClans = clans
 			.map((clan) => {
 				const roleSet = rolesMap.clanRoles[clan.tag];
 				return {
@@ -191,12 +198,33 @@ export default class SetupCommand extends Command {
 					verifiedOnly: roleSet?.verifiedOnly
 				};
 			})
-			.filter((roleSet) => roleSet.roleIds.length || roleSet.warRoleId);
+			.filter((roleSet) => roleSet.roleIds.length || roleSet.warRoleId || roleSet.verifiedOnly);
+
+		const verifiedOnly = this.client.settings.get(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES);
+		if (typeof verifiedOnly !== 'boolean') {
+			await this.client.settings.set(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, verifiedOnlyClans.length > 0);
+		}
+
+		const requiresVerification = verifiedOnly ?? verifiedOnlyClans.length > 0;
 
 		embed.setTitle('Clan Roles');
-		embed.setDescription([clanRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join('\n'));
-		embed.addFields({ name: 'TownHall Roles', value: townHallRoles.map((id) => `<@&${id}>`).join(' ') || 'None' });
-		embed.addFields({ name: 'League Roles', value: leagueRoles.map((id) => `<@&${id}>`).join(' ') || 'None' });
+		embed.setDescription(
+			[requiresVerification ? '*Requires Verification\n' : '', clanRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join('\n')
+		);
+		embed.addFields({
+			name: 'TownHall Roles',
+			value: [
+				townHallRoles.map((id) => `<@&${id}>`).join(' ') || 'None',
+				townHallRoles.length && !allowNonFamilyTownHallRoles ? ' (Family Only)' : ''
+			].join(' ')
+		});
+		embed.addFields({
+			name: 'League Roles',
+			value: [
+				leagueRoles.map((id) => `<@&${id}>`).join(' ') || 'None',
+				leagueRoles.length && !allowNonFamilyLeagueRoles ? ' (Family Only)' : ''
+			].join(' ')
+		});
 		embed.addFields({ name: 'War Roles', value: warRoles.map((id) => `<@&${id}>`).join(' ') || 'None' });
 		embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
 		embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });

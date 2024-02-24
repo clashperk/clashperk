@@ -66,8 +66,8 @@ export class RolesManager {
 
 		const townHallRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.TOWN_HALL_ROLES, {});
 		const leagueRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.LEAGUE_ROLES, {});
-		const familyOnlyLeagueRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, false);
-		const familyOnlyTownHallRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
+		const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, false);
+		const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
 		const familyRoleId = this.client.settings.get<string>(guildId, Settings.FAMILY_ROLE, null);
 		const verifiedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_VERIFIED_ROLE, null);
 		const guestRoleId = this.client.settings.get<string>(guildId, Settings.GUEST_ROLE, null);
@@ -83,6 +83,15 @@ export class RolesManager {
 			return prev;
 		}, {});
 
+		const verifiedOnly = this.client.settings.get(guildId, Settings.VERIFIED_ONLY_CLAN_ROLES);
+		if (typeof verifiedOnly !== 'boolean') {
+			await this.client.settings.set(
+				guildId,
+				Settings.VERIFIED_ONLY_CLAN_ROLES,
+				clans.some((clan) => clan.secureRole)
+			);
+		}
+
 		const clanTags = clans.map((clan) => clan.tag);
 		const warClanTags = clans.filter((clan) => clan.warRole).map((clan) => clan.tag);
 
@@ -90,8 +99,8 @@ export class RolesManager {
 			guildId,
 			clanTags,
 			warClanTags,
-			familyOnlyLeagueRoles,
-			familyOnlyTownHallRoles,
+			allowNonFamilyLeagueRoles,
+			allowNonFamilyTownHallRoles,
 			familyRoleId,
 			verifiedRoleId,
 			guestRoleId,
@@ -156,10 +165,10 @@ export class RolesManager {
 				}
 			}
 
-			if (!rolesMap.familyOnlyTownHallRoles || (inFamily && rolesMap.familyOnlyTownHallRoles)) {
+			if (rolesMap.allowNonFamilyTownHallRoles || (inFamily && !rolesMap.allowNonFamilyTownHallRoles)) {
 				rolesToInclude.push(rolesMap.townHallRoles[player.townHallLevel]);
 			}
-			if (!rolesMap.familyOnlyLeagueRoles || (inFamily && rolesMap.familyOnlyLeagueRoles)) {
+			if (rolesMap.allowNonFamilyLeagueRoles || (inFamily && !rolesMap.allowNonFamilyLeagueRoles)) {
 				rolesToInclude.push(rolesMap.leagueRoles[player.leagueId]);
 			}
 
@@ -562,8 +571,8 @@ interface GuildRolesDto {
 	verifiedRoleId: string;
 	clanTags: string[];
 	warClanTags: string[];
-	familyOnlyTownHallRoles: boolean;
-	familyOnlyLeagueRoles: boolean;
+	allowNonFamilyTownHallRoles: boolean;
+	allowNonFamilyLeagueRoles: boolean;
 }
 
 interface AddRoleInput {

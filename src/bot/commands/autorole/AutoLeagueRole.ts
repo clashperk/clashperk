@@ -28,7 +28,7 @@ export default class AutoLeagueRoleCommand extends Command {
 
 	public args(): Args {
 		return {
-			allow_external_accounts: {
+			allow_non_family_accounts: {
 				id: 'allowExternal',
 				match: 'BOOLEAN'
 			}
@@ -89,9 +89,7 @@ export default class AutoLeagueRoleCommand extends Command {
 					)
 					.join('\n'),
 				'',
-				args.allowExternal
-					? '[External Accounts Allowed] - Users will get roles based on each accounts that are linked (at least one account must be a part of the family).'
-					: '[No External Accounts Allowed] - Users will get roles based on the accounts that are a part of the family clans.'
+				args.allowExternal ? '' : '(Family Only) Roles will be given to family members only.'
 			].join('\n')
 		});
 	}
