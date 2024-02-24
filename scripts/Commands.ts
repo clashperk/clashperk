@@ -2736,11 +2736,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'is_dry_run',
 						description: 'Whether to make a dry run.',
 						type: ApplicationCommandOptionType.Boolean
-					},
-					{
-						name: 'user_or_role',
-						description: 'Refresh roles for a user or all users in a role.',
-						type: ApplicationCommandOptionType.Mentionable
 					}
 				]
 			}
@@ -3774,11 +3769,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Integer,
 				max_value: 8,
 				min_value: 3
-			},
-			{
-				name: 'use_v2_roles_manager',
-				description: 'Use the new roles manager.',
-				type: ApplicationCommandOptionType.Boolean
 			}
 		]
 	},

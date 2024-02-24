@@ -25,7 +25,6 @@ export default class ConfigCommand extends Command {
 			account_linked_role?: Role;
 			account_verified_role?: Role;
 			clans_sorting_key?: string;
-			use_v2_roles_manager?: boolean;
 		}
 	) {
 		if (!this.client.util.isManager(interaction.member) && Object.keys(args).some((key) => args[key as keyof typeof args])) {
@@ -76,10 +75,6 @@ export default class ConfigCommand extends Command {
 			await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.account_verified_role.id);
 		}
 
-		if (typeof args.use_v2_roles_manager === 'boolean') {
-			await this.client.settings.set(interaction.guild, Settings.USE_V2_ROLES_MANAGER, args.use_v2_roles_manager);
-		}
-
 		if (args.events_channel) {
 			if (['reset', 'none'].includes(args.events_channel)) {
 				await this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
@@ -113,7 +108,6 @@ export default class ConfigCommand extends Command {
 			this.client.settings.get<string>(interaction.guild, Settings.ROSTER_MANAGER_ROLE, null)
 		);
 		const clansSortingKey = this.client.settings.get<string>(interaction.guild, Settings.CLANS_SORTING_KEY, 'name');
-		const useV2RolesManager = this.client.settings.get<boolean>(interaction.guild, Settings.USE_V2_ROLES_MANAGER, false);
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -147,11 +141,6 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Clans Sorting',
 					value: `By ${clansSortingKey}`,
-					inline: true
-				},
-				{
-					name: 'Roles Manager (v2)',
-					value: `${useV2RolesManager ? 'Yes' : 'No'}`,
 					inline: true
 				},
 				{

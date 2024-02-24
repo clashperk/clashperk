@@ -43,6 +43,7 @@ export class WarRoleManager {
 			.filter((clan) => this.client.guilds.cache.has(clan.guild) && clan.warRole)
 			.filter((clan) => {
 				if (this.client.settings.hasCustomBot(clan.guild) && !this.client.isCustom()) return false;
+				if (this.client.settings.get(clan.guild, Settings.USE_V2_ROLES_MANAGER, false)) return false;
 				return true;
 			});
 		if (!clans.length) return null;
