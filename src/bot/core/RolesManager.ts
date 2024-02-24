@@ -3,7 +3,7 @@ import { Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits } from 
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/Client.js';
-import { Collections, Settings } from '../util/Constants.js';
+import { Collections, PLAYER_LEAGUE_MAPS, Settings } from '../util/Constants.js';
 import { makeAbbr } from '../util/Helper.js';
 
 export const roles: { [key: string]: number } = {
@@ -169,7 +169,7 @@ export class RolesManager {
 				rolesToInclude.push(rolesMap.townHallRoles[player.townHallLevel]);
 			}
 			if (rolesMap.allowNonFamilyLeagueRoles || (inFamily && !rolesMap.allowNonFamilyLeagueRoles)) {
-				rolesToInclude.push(rolesMap.leagueRoles[player.leagueId]);
+				rolesToInclude.push(rolesMap.leagueRoles[PLAYER_LEAGUE_MAPS[player.leagueId]]);
 			}
 
 			if (player.isVerified) rolesToInclude.push(rolesMap.verifiedRoleId);

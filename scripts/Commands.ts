@@ -2730,14 +2730,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'refresh',
 				description: 'Refresh automatic clan roles.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'is_dry_run',
-						description: 'Whether to make a dry run.',
-						type: ApplicationCommandOptionType.Boolean
-					}
-				]
+				type: ApplicationCommandOptionType.Subcommand
 			}
 		]
 	},
