@@ -2736,6 +2736,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'is_dry_run',
 						description: 'Whether to make a dry run.',
 						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'user_or_role',
+						description: 'Refresh roles for a user or all users in a role.',
+						type: ApplicationCommandOptionType.Mentionable
 					}
 				]
 			}

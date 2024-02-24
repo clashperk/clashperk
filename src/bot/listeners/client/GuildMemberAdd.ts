@@ -16,7 +16,7 @@ export default class GuildMemberAddListener extends Listener {
 		if (this.client.settings.hasCustomBot(member.guild) && !this.client.isCustom()) return;
 
 		if (this.client.settings.get(member.guild, Settings.USE_V2_ROLES_MANAGER, false)) {
-			return this.client.rolesManager.updateOne(member.id, member.guild.id, false);
+			return this.client.rolesManager.updateOne(member.id, member.guild.id);
 		}
 
 		const clans = await this.client.db

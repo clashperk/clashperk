@@ -18,7 +18,8 @@ export default class NicknameConfigCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks', 'ManageNicknames'],
-			defer: true
+			defer: true,
+			ephemeral: true
 		});
 	}
 

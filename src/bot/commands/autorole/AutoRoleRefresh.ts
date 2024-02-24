@@ -89,14 +89,14 @@ export default class AutoTownHallRoleCommand extends Command {
 				await this.client.rpcHandler.warRoleManager.exec(clan.tag, {
 					...war,
 					clan: {
-						...war.clan,
-						_members: war.clan.members.map((mem) => mem.tag)
+						...war.clan
 					},
 					id: 1,
 					uid: '0x',
 					result: '0x',
 					warTag: war.warTag,
-					round: war.round!
+					round: war.round!,
+					members: war.clan.members.map((mem) => ({ tag: mem.tag, op: 'WAR' }))
 				});
 				await Util.delay(1000 * 5);
 			}
@@ -105,7 +105,7 @@ export default class AutoTownHallRoleCommand extends Command {
 	}
 
 	public async v2(interaction: CommandInteraction<'cached'>, args: { is_dry_run?: boolean }) {
-		const inProgress = this.client.rolesManager.getChanges(interaction.guildId);
+		const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
 		if (inProgress) {
 			return interaction.editReply('Role refresh is currently being processed.');
 		}
@@ -119,7 +119,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		const message = await interaction.editReply({ embeds: [embed] });
 
 		const handleChanges = async (closed = false) => {
-			const changes = this.client.rolesManager.getChanges(interaction.guildId);
+			const changes = this.client.rolesManager.getChangeLogs(interaction.guildId);
 			if (!changes) return null;
 
 			if (closed) embed.setDescription('### Roles Refreshed Successfully');
@@ -131,7 +131,7 @@ export default class AutoTownHallRoleCommand extends Command {
 				].join('\n')
 			});
 
-			const roleChanges = this.client.rolesManager.getRoleChanges(changes);
+			const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);
 			const embeds: EmbedBuilder[] = [];
 
 			cluster(roleChanges, 15).forEach((changes) => {
@@ -160,9 +160,12 @@ export default class AutoTownHallRoleCommand extends Command {
 		const timeoutId = setInterval(handleChanges, 5000);
 
 		try {
-			const changes = await this.client.rolesManager.updateMany(interaction.guildId, Boolean(args.is_dry_run));
+			const changes = await this.client.rolesManager.updateMany(interaction.guildId, {
+				isDryRun: Boolean(args.is_dry_run),
+				logging: true
+			});
 
-			const roleChanges = this.client.rolesManager.getRoleChanges(changes);
+			const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);
 			if (!roleChanges?.length) {
 				return message.edit({ embeds: [embed.setDescription('### No role changes detected!')], components: [] });
 			}
@@ -170,7 +173,7 @@ export default class AutoTownHallRoleCommand extends Command {
 			return await handleChanges(true);
 		} finally {
 			clearInterval(timeoutId);
-			this.client.rolesManager.clearChanges(interaction.guildId);
+			this.client.rolesManager.clearChangeLogs(interaction.guildId);
 		}
 	}
 }

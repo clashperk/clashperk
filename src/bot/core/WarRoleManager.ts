@@ -12,8 +12,8 @@ interface Feed extends APIClanWar {
 	id: number;
 	warTag?: string;
 	attacksPerMember?: number;
-	clan: APIWarClan & { changedRosters?: { added: string[]; removed: string[] }; _members: string[] };
 	opponent: APIWarClan;
+	members: { tag: string; op: string }[];
 }
 
 export class WarRoleManager {
@@ -57,7 +57,7 @@ export class WarRoleManager {
 	private async handleRegularWar(clans: { guild: string; warRole: string }[], data: Feed) {
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: data.clan._members.map((tag) => tag) } })
+			.find({ tag: { $in: data.members.map((mem) => mem.tag) } })
 			.toArray();
 
 		for (const clan of clans) {
@@ -102,11 +102,9 @@ export class WarRoleManager {
 	}
 
 	private async handleCWLWar(clans: { guild: string; warRole: string }[], data: Feed) {
-		const removed = data.clan.changedRosters?.removed ?? [];
-
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: [...data.clan._members.map((tag) => tag), ...removed] } })
+			.find({ tag: { $in: [...data.members.map((mem) => mem.tag)] } })
 			.toArray();
 
 		for (const clan of clans) {
@@ -137,7 +135,11 @@ export class WarRoleManager {
 				}
 
 				if (['preparation'].includes(data.state)) {
-					const _removed = removed.includes(link.tag);
+					const _removed = data.members
+						.filter((mem) => mem.op === 'WAR_REMOVED')
+						.map((mem) => mem.tag)
+						.includes(link.tag);
+
 					const _others = links.filter(({ userId, tag }) => userId === link.userId && tag !== link.tag);
 					const removable = _removed && !_others.length;
 

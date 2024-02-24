@@ -66,6 +66,7 @@ export default class RPCHandler {
 							this.roleManager.exec(data.tag, data),
 							this.roleManager.execNickname(data.tag, data)
 						]);
+						this.client.rolesManager.exec(data.tag, data);
 						break;
 					case Flags.CLAN_EMBED_LOG:
 						await this.clanEmbedLog.exec(data.tag, data);
@@ -89,6 +90,7 @@ export default class RPCHandler {
 					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);
 						await this.warRoleManager.exec(data.clan.tag, data);
+						this.client.rolesManager.exec(data.tag, data);
 						break;
 					default:
 						break;

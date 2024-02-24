@@ -164,7 +164,7 @@ export default class LinkCreateCommand extends Command {
 		// Update Role
 
 		if (this.client.settings.get(interaction.guildId, Settings.USE_V2_ROLES_MANAGER, false)) {
-			this.client.rolesManager.updateOne(member.id, interaction.guildId, false);
+			this.client.rolesManager.updateOne(member.id, interaction.guildId);
 		} else {
 			if (!accounts.length || def) await this.client.nickHandler.exec(member, player);
 		}

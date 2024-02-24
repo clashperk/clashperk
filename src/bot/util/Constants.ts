@@ -141,6 +141,7 @@ export const enum Settings {
 	FAMILY_NICKNAME_FORMAT = 'familyNicknameFormat',
 	NON_FAMILY_NICKNAME_FORMAT = 'nonFamilyNicknameFormat',
 	AUTO_NICKNAME = 'autoNickname',
+	AUTO_ROLE = 'autoRole',
 	ROSTER_DEFAULT_SETTINGS = 'rosterDefaultSettings',
 	HAS_CUSTOM_BOT = 'hasCustomBot',
 	GUILD_LOG_WEBHOOK_URL = 'guildLogWebhookURL',

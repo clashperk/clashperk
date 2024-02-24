@@ -83,7 +83,7 @@ export default class LinkAddCommand extends Command {
 		// Fix Conflicts
 		await this.resetLinkAPI(member.id, player.tag);
 		// Update Role
-		this.client.rolesManager.updateOne(member.id, interaction.guildId, false);
+		this.client.rolesManager.updateOne(member.id, interaction.guildId);
 		if (!accounts.length || def) await this.client.nickHandler.exec(member, player);
 
 		return interaction.editReply(
@@ -189,7 +189,7 @@ export default class LinkAddCommand extends Command {
 		// Rest Link API
 		this.resetLinkAPI(interaction.user.id, data.tag);
 		// Update Roles
-		this.client.rolesManager.updateOne(interaction.user.id, interaction.guildId, false);
+		this.client.rolesManager.updateOne(interaction.user.id, interaction.guildId);
 		return interaction.editReply(
 			this.i18n('command.verify.success', { lng: interaction.locale, info: `${data.name} (${data.tag}) ${EMOJIS.VERIFIED}` })
 		);
