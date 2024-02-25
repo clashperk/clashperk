@@ -1,10 +1,12 @@
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
 import { CommandInteraction, ForumChannel, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
+import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import fetch from 'node-fetch';
 import { createHash } from 'node:crypto';
 import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
+import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 import { Collections, Flags, Settings, UnrankedWarLeagueId } from '../util/Constants.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
 import { Client } from './Client.js';
@@ -729,18 +731,19 @@ export default class StorageHandler {
 		return webhook;
 	}
 
-	public async getWarTags(tag: string, season?: string | null): Promise<ClanWarLeagueGroupData | null> {
+	public async getWarTags(tag: string, season?: string | null): Promise<ClanWarLeagueGroupsEntity | null> {
 		const data = await this.client.db
 			.collection(Collections.CWL_GROUPS)
 			.findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });
 		if (!data || data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
-		if (season) return data as unknown as ClanWarLeagueGroupData;
+		if (season) return data as unknown as ClanWarLeagueGroupsEntity;
 
-		if (
-			new Date().getMonth() === new Date(data.season as string).getMonth() ||
-			(new Date(data.season as string).getMonth() === new Date().getMonth() - 1 && new Date().getDate() <= 8)
-		)
-			return data as unknown as ClanWarLeagueGroupData;
+		const seasonFormat = 'YYYY-MM';
+		const isInSameSeason = moment().format(seasonFormat) === moment(data.season as string).format(seasonFormat);
+		const isInPreviousSeason =
+			moment(data.season as string).format(seasonFormat) === moment().subtract(1, 'month').format(seasonFormat);
+
+		if (isInSameSeason || (isInPreviousSeason && moment().day() <= 8)) return data as unknown as ClanWarLeagueGroupsEntity;
 
 		return null;
 	}
@@ -836,8 +839,4 @@ export default class StorageHandler {
 	private get seasonID() {
 		return new Date().toISOString().substring(0, 7);
 	}
-}
-
-interface ClanWarLeagueGroupData extends APIClanWarLeagueGroup {
-	leagues?: Record<string, number>;
 }
