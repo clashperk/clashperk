@@ -41,13 +41,15 @@ export default {
 					]
 				},
 				options: {
-					responsive: false,
+					responsive: true,
 					legend: {
 						position: 'top',
 						display: true,
 						labels: {
 							fontSize: 10,
-							padding: 4
+							padding: 4,
+							borderWidth: 0,
+							boxWidth: 10
 						}
 					},
 					title: {

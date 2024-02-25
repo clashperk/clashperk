@@ -6,6 +6,7 @@ import { ClanGamesModel } from '../types/index.js';
 import { Collections, Settings } from '../util/Constants.js';
 import { ORANGE_NUMBERS } from '../util/Emojis.js';
 import { ClanGames, Util } from '../util/index.js';
+import { ReminderDeleteReasons } from './CapitalRaidScheduler.js';
 import { Client } from './Client.js';
 
 // fetch links from our db
@@ -129,11 +130,11 @@ export default class ClanGamesScheduler {
 		);
 	}
 
-	private async delete(schedule: ClanGamesSchedule) {
+	private async delete(schedule: ClanGamesSchedule, reason: string) {
 		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
 		this.clear(schedule._id.toHexString());
-		return this.schedulers.updateOne({ _id: schedule._id }, { $set: { triggered: true } });
+		return this.schedulers.updateOne({ _id: schedule._id }, { $set: { triggered: true, reason } });
 	}
 
 	private clear(id: string) {
@@ -262,17 +263,18 @@ export default class ClanGamesScheduler {
 		const id = schedule._id.toHexString();
 		try {
 			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
-			if (!reminder) return await this.delete(schedule);
-			if (!this.client.channels.cache.has(reminder.channel)) return await this.delete(schedule);
+			if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_NOT_FOUND);
+			if (!this.client.channels.cache.has(reminder.channel))
+				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
 
 			const { endTime } = this.timings();
-			if (endTime < Date.now()) return await this.delete(schedule);
+			if (endTime < Date.now()) return await this.delete(schedule, ReminderDeleteReasons.TOO_LATE);
 
 			const guild = this.client.guilds.cache.get(reminder.guild);
-			if (!guild) return await this.delete(schedule);
+			if (!guild) return await this.delete(schedule, ReminderDeleteReasons.GUILD_NOT_FOUND);
 
 			const text = await this.getReminderText(reminder, schedule);
-			if (!text) return await this.delete(schedule);
+			if (!text) return await this.delete(schedule, ReminderDeleteReasons.NO_RECIPIENT);
 
 			const channel = this.client.util.hasPermissions(reminder.channel, [
 				'SendMessages',
@@ -287,13 +289,15 @@ export default class ClanGamesScheduler {
 				for (const content of Util.splitMessage(text)) {
 					if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content });
 				}
+			} else {
+				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
 			}
 		} catch (error) {
 			this.client.logger.error(error, { label: 'REMINDER' });
 			return this.clear(id);
 		}
 
-		return this.delete(schedule);
+		return this.delete(schedule, ReminderDeleteReasons.REMINDER_SENT_SUCCESSFULLY);
 	}
 
 	private async deliver({

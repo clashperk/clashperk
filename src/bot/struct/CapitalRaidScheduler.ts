@@ -6,6 +6,19 @@ import { Collections, MAX_TOWN_HALL_LEVEL } from '../util/Constants.js';
 import { Util } from '../util/index.js';
 import { Client } from './Client.js';
 
+export const ReminderDeleteReasons = {
+	REMINDER_NOT_FOUND: 'reminder_not_found',
+	CHANNEL_NOT_FOUND: 'channel_not_found',
+	TOO_LATE: 'too_late',
+	CHANNEL_MISSING_PERMISSIONS: 'channel_missing_permissions',
+	REMINDER_SENT_SUCCESSFULLY: 'reminder_sent_successfully',
+	NO_RECIPIENT: 'no_recipient',
+	GUILD_NOT_FOUND: 'guild_not_found',
+	INVALID_WAR_TYPE: 'invalid_war_type',
+	NOT_IN_WAR: 'not_in_war',
+	WAR_ENDED: 'war_ended'
+} as const;
+
 export default class CapitalRaidScheduler {
 	protected schedulers!: Collection<RaidSchedule>;
 	protected reminders!: Collection<RaidReminder>;
@@ -119,11 +132,11 @@ export default class CapitalRaidScheduler {
 		);
 	}
 
-	private async delete(schedule: RaidSchedule) {
+	private async delete(schedule: RaidSchedule, reason: string) {
 		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
 		this.clear(schedule._id.toHexString());
-		return this.schedulers.updateOne({ _id: schedule._id }, { $set: { triggered: true } });
+		return this.schedulers.updateOne({ _id: schedule._id }, { $set: { triggered: true, reason } });
 	}
 
 	private clear(id: string) {
@@ -269,12 +282,13 @@ export default class CapitalRaidScheduler {
 		const id = schedule._id.toHexString();
 		try {
 			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
-			if (!reminder) return await this.delete(schedule);
-			if (!this.client.channels.cache.has(reminder.channel)) return await this.delete(schedule);
+			if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
+			if (!this.client.channels.cache.has(reminder.channel))
+				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
 
 			const data = await this.getLastRaidSeason(schedule.tag);
 			if (!data) return this.clear(id);
-			if (this.toDate(data.endTime).getTime() < Date.now()) return await this.delete(schedule);
+			if (this.toDate(data.endTime).getTime() < Date.now()) return await this.delete(schedule, ReminderDeleteReasons.TOO_LATE);
 
 			if (this.wasInMaintenance(schedule, data)) {
 				this.client.logger.info(
@@ -290,10 +304,10 @@ export default class CapitalRaidScheduler {
 			}
 
 			const guild = this.client.guilds.cache.get(reminder.guild);
-			if (!guild) return await this.delete(schedule);
+			if (!guild) return await this.delete(schedule, ReminderDeleteReasons.GUILD_NOT_FOUND);
 
 			const text = await this.getReminderText(reminder, schedule, data);
-			if (!text) return await this.delete(schedule);
+			if (!text) return await this.delete(schedule, ReminderDeleteReasons.NO_RECIPIENT);
 
 			const channel = this.client.util.hasPermissions(reminder.channel, [
 				'SendMessages',
@@ -308,13 +322,15 @@ export default class CapitalRaidScheduler {
 				for (const content of Util.splitMessage(text)) {
 					if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content });
 				}
+			} else {
+				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
 			}
 		} catch (error) {
 			this.client.logger.error(error, { label: 'REMINDER' });
 			return this.clear(id);
 		}
 
-		return this.delete(schedule);
+		return this.delete(schedule, ReminderDeleteReasons.REMINDER_SENT_SUCCESSFULLY);
 	}
 
 	private async deliver({
