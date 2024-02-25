@@ -37,23 +37,25 @@ export default class ExportMissed extends Command {
 			);
 		}
 
-		let num = Number(args.limit ?? 25);
-		num = Math.min(100, num);
+		let limit = Number(args.limit ?? 25);
+		limit = Math.min(100, limit);
 		const chunks = [];
 		const missed: { [key: string]: { name: string; tag: string; count: number; missed: Date[] } } = {};
 
-		const query = args.season ? { season: args.season } : {};
+		const query = args.season ? { season: { $gte: new Date(args.season) } } : {};
 		for (const { tag } of clans) {
-			const wars = await this.client.db
+			const cursor = this.client.db
 				.collection(Collections.CLAN_WARS)
-				.find({
-					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
-					state: 'warEnded',
-					...query
-				})
-				.sort({ _id: -1 })
-				.limit(num)
-				.toArray();
+				.find(
+					{
+						$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
+						state: 'warEnded',
+						...query
+					},
+					args.season ? {} : { limit }
+				)
+				.sort({ _id: -1 });
+			const wars = await cursor.toArray();
 
 			for (const war of wars) {
 				const clan = war.clan.tag === tag ? war.clan : war.opponent;
@@ -154,6 +156,6 @@ export default class ExportMissed extends Command {
 		];
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Missed Attacks]`, sheets);
-		return interaction.editReply({ content: `**Missed Attacks (Last ${num})**`, components: getExportComponents(spreadsheet) });
+		return interaction.editReply({ content: `**Missed Attacks (Last ${limit})**`, components: getExportComponents(spreadsheet) });
 	}
 }

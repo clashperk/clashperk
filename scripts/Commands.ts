@@ -31,6 +31,8 @@ export function getSeasonIds() {
 		});
 }
 
+const SEASON_SINCE_CHOICES = getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }));
+
 export function getWeekIds() {
 	const weekIds: { name: string; value: string }[] = [];
 	const friday = moment().endOf('month').day('Friday').startOf('day');
@@ -620,7 +622,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.stats.options.season.description,
 						description_localizations: translation('command.stats.options.season.description'),
 						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
+						choices: SEASON_SINCE_CHOICES
 					},
 					{
 						name: 'days',
@@ -754,7 +756,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.stats.options.season.description,
 						description_localizations: translation('command.stats.options.season.description'),
 						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
+						choices: SEASON_SINCE_CHOICES
 					},
 					{
 						name: 'attempt',
@@ -3245,7 +3247,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: false,
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
-						choices: getSeasonIds()
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: SEASON_SINCE_CHOICES
 					}
 				]
 			},
@@ -3469,7 +3472,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.export.options.season.description,
 						description_localizations: translation('command.export.options.season.description'),
 						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds()
+						choices: SEASON_SINCE_CHOICES
 					},
 					{
 						name: 'clans',

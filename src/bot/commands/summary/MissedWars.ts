@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { Season, Util } from '../../util/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class SummaryMissedWarsCommand extends Command {
 	public constructor() {
@@ -39,7 +39,7 @@ export default class SummaryMissedWarsCommand extends Command {
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: 'warEnded',
-					season
+					preparationStartTime: { $gte: new Date(season) }
 				})
 				.sort({ _id: -1 })
 				.toArray();
