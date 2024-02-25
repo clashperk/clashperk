@@ -268,6 +268,10 @@ export class Util {
 		return { startTime: prevDay.toDate().getTime(), endTime: nextDay.toDate().getTime() };
 	}
 
+	public static substring(text: string, maxLength = 2000) {
+		return text.length > maxLength ? this.splitMessage(text, { maxLength }).at(0)! : text;
+	}
+
 	public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
 		if (text.length <= maxLength) return [text];
 		let splitText = [text];
