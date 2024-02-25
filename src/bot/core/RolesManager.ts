@@ -324,7 +324,7 @@ export class RolesManager {
 
 		const editOptions: GuildMemberEditOptions & { _updated?: boolean } = { reason: 'account linked or updated' };
 
-		if (roleUpdate.excluded.length || roleUpdate.excluded.length) {
+		if (roleUpdate.excluded.length || roleUpdate.included.length) {
 			const existingRoleIds = member.roles.cache.map((role) => role.id);
 			const roleIdsToSet = [...existingRoleIds, ...roleUpdate.included].filter((id) => !roleUpdate.excluded.includes(id));
 
