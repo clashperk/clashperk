@@ -23,6 +23,7 @@ export default class FlagCreateCommand extends Command {
 		args: { reason?: string; player_tag?: string; flag_type: 'ban' | 'strike'; flag_expiry_days?: number; flag_impact?: number }
 	) {
 		const tags = (await this.client.resolver.resolveArgs(args.player_tag)).filter((tag) => this.client.http.isValidTag(tag));
+		if (!tags.length) return interaction.editReply('No players were found against this query.');
 
 		if (!args.reason) return interaction.editReply('You must provide a reason to flag.');
 		if (args.reason.length > 900) return interaction.editReply('Reason must be 1024 or fewer in length.');
@@ -46,9 +47,11 @@ export default class FlagCreateCommand extends Command {
 		}
 
 		const players = await this.client.http._getPlayers(tags.map((tag) => ({ tag })));
+		if (!players.length) return interaction.editReply('No players were found against this query.');
+
 		const newFlags: FlagsEntity[] = [];
 
-		for (const data of players) {
+		for (const player of players) {
 			newFlags.push({
 				guild: interaction.guild.id,
 				user: interaction.user.id,
@@ -56,8 +59,8 @@ export default class FlagCreateCommand extends Command {
 				username: interaction.user.username,
 				displayName: interaction.user.displayName,
 				discriminator: interaction.user.discriminator,
-				tag: data.tag,
-				name: data.name,
+				tag: player.tag,
+				name: player.name,
 				flagImpact: args.flag_impact ?? 1,
 				reason: cleanContent(args.reason, interaction.channel!),
 				expiresAt: args.flag_expiry_days ? moment().add(args.flag_expiry_days, 'days').toDate() : null,

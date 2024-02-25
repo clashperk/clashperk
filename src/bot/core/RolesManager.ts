@@ -488,7 +488,7 @@ export class RolesManager {
 		if (!nickname) return { action: NickActions.UNSET };
 		if (member.nickname === nickname) return { action: NickActions.NO_ACTION };
 
-		return { action: NickActions.SET_NAME, nickname };
+		return { action: NickActions.SET_NAME, nickname: nickname.substring(0, 32) };
 	}
 
 	private checkRoles({ member, rolesToExclude, rolesToInclude }: AddRoleInput) {
