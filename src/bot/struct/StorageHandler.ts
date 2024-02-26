@@ -850,7 +850,7 @@ export default class StorageHandler {
 				if (!player?.name) continue;
 
 				const user = await this.client.users.fetch(userId).catch(() => null);
-				if (!user) continue;
+				if (!user || user.bot) continue;
 
 				try {
 					await collection.insertOne({

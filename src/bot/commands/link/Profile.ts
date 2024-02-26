@@ -11,6 +11,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
+import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
@@ -113,7 +114,15 @@ export default class ProfileCommand extends Command {
 			embed.setDescription([embed.data.description, '\u200b'].join('\n'));
 		}
 
-		const otherTags = await this.client.http.getPlayerTags(user.id);
+		const [otherTags, otherLinks] = await Promise.all([
+			this.client.http.getPlayerTags(user.id),
+			this.client.http.getDiscordLinks(players)
+		]);
+
+		const dirtyUserIds = new Set([user.id, ...otherLinks.map((link) => link.userId)]);
+		const hasDiscrepancy = dirtyUserIds.size > 1;
+		if (hasDiscrepancy) this.client.logger.info(`UserIds: ${Array.from(dirtyUserIds).join(',')}`, { label: 'LinkDiscrepancy' });
+
 		if (!players.length && !otherTags.length) {
 			embed.setDescription([embed.data.description, 'No accounts are linked. Why not add some?'].join('\n'));
 			return interaction.editReply({ embeds: [embed] });
@@ -132,6 +141,13 @@ export default class ProfileCommand extends Command {
 			}
 		});
 
+		if (user.bot) {
+			this.deleteBotAccount(
+				user,
+				playerLinks.map((player) => player.tag)
+			);
+		}
+
 		playerLinks.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
 		playerLinks.sort((a, b) => this.heroSum(b) - this.heroSum(a));
 		playerLinks.sort((a, b) => b.townHallLevel - a.townHallLevel);
@@ -145,7 +161,7 @@ export default class ProfileCommand extends Command {
 			const weaponLevel = player.townHallWeaponLevel ? weaponLevels[player.townHallWeaponLevel] : '';
 			const townHall = `${TOWN_HALLS[player.townHallLevel]} ${player.townHallLevel}${weaponLevel}`;
 			collection.push({
-				field: `${townHall} ${DOT} [${player.name} (${player.tag})](${this.profileURL(player.tag)}) ${signature} ${
+				field: `${townHall} ${DOT} [${player.name} (${player.tag})](${this.playerShortUrl(player.tag)}) ${signature} ${
 					isDefault ? '**(Default)**' : ''
 				}`,
 				values: [this.heroes(player), this.clanName(player)].filter((a) => a.length)
@@ -298,10 +314,20 @@ export default class ProfileCommand extends Command {
 
 	private deleteBanned(userId: string, tag: string) {
 		this.client.http.unlinkPlayerTag(tag);
-		return this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).deleteOne({ userId, tag });
+		return this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS).deleteOne({ userId, tag });
 	}
 
-	private profileURL(tag: string) {
+	private async deleteBotAccount(user: User, playerTags: string[]) {
+		if (!user.bot) return null;
+
+		for (const tag of playerTags) {
+			await this.client.http.unlinkPlayerTag(tag);
+		}
+
+		return this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS).deleteOne({ userId: user.id });
+	}
+
+	private playerShortUrl(tag: string) {
 		return `http://cprk.eu/p/${tag.replace('#', '')}`;
 	}
 }
