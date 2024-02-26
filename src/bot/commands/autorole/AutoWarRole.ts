@@ -1,7 +1,6 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
-import { PlayerLinks } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class AutoClanRoleCommand extends Command {
 	public constructor() {
@@ -52,7 +51,9 @@ export default class AutoClanRoleCommand extends Command {
 			}
 		);
 
-		this.updateLinksAndRoles([{ tag: clan.tag }]);
+		this.client.storage.updateLinks(interaction.guildId);
+		// TODO: Refresh Roles
+
 		return interaction.editReply('Clan war role successfully enabled.');
 	}
 
@@ -62,43 +63,6 @@ export default class AutoClanRoleCommand extends Command {
 
 	private isHigherRole(role: Role, guild: Guild) {
 		return role.position > guild.members.me!.roles.highest.position;
-	}
-
-	private async updateLinksAndRoles(clans: { tag: string }[]) {
-		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
-		for (const clan of clans) {
-			const { body: data, res } = await this.client.http.getClan(clan.tag);
-			if (!res.ok) continue;
-
-			const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
-			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
-
-			for (const { userId, tag } of unknowns) {
-				if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
-				const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
-
-				const player =
-					data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.getPlayer(tag).then(({ body }) => body));
-				if (!player?.name) continue;
-
-				const user = await this.client.users.fetch(userId).catch(() => null);
-				if (!user) continue;
-
-				try {
-					await collection.insertOne({
-						userId: user.id,
-						username: user.username,
-						displayName: user.displayName,
-						discriminator: user.discriminator,
-						tag,
-						name: player.name,
-						verified: false,
-						order: lastAccount?.order ? lastAccount.order + 1 : 0,
-						createdAt: new Date()
-					});
-				} catch {}
-			}
-		}
 	}
 
 	private async disable(interaction: CommandInteraction<'cached'>, args: { clans?: string; clear?: boolean }) {

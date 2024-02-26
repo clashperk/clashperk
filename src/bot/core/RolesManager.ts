@@ -3,7 +3,7 @@ import { Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits } from 
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/Client.js';
-import { Collections, PLAYER_LEAGUE_MAPS, Settings } from '../util/Constants.js';
+import { Collections, PLAYER_LEAGUE_MAPS, SUPER_SCRIPTS, Settings } from '../util/Constants.js';
 import { makeAbbr } from '../util/Helper.js';
 
 export const roles: { [key: string]: number } = {
@@ -11,6 +11,13 @@ export const roles: { [key: string]: number } = {
 	admin: 2,
 	coLeader: 3,
 	leader: 4
+};
+
+const nicknameRoles: Record<string, string> = {
+	leader: 'Lead',
+	coLeader: 'Co-Lead',
+	admin: 'Eld',
+	member: 'Mem'
 };
 
 const NickActions = {
@@ -472,7 +479,7 @@ export class RolesManager {
 		const format = inFamily ? familyFormat : nonFamilyFormat;
 		if (!format) return { action: NickActions.UNSET };
 
-		const nickname = this.client.nickHandler.getName(
+		const nickname = this.getFormattedNickname(
 			{
 				name: player.name,
 				displayName: member.user.displayName,
@@ -512,6 +519,42 @@ export class RolesManager {
 			.filter((player) => player.clanTag && player.clanTag === clanTag && player.clanRole)
 			.map((player) => player.clanRole!);
 		return highestRoles.sort((a, b) => roles[b] - roles[a]).at(0) ?? null;
+	}
+
+	private getFormattedNickname(
+		player: {
+			name: string;
+			townHallLevel: number;
+			role?: string | null;
+			clan?: string | null;
+			alias?: string | null;
+			displayName: string;
+			username: string;
+		},
+		format: string
+	) {
+		return format
+			.replace(/{NAME}|{PLAYER_NAME}/gi, player.name)
+			.replace(/{TH}|{TOWN_HALL}/gi, player.townHallLevel.toString())
+			.replace(/{TH_SMALL}|{TOWN_HALL_SMALL}/gi, this.getTownHallSuperScript(player.townHallLevel))
+			.replace(/{ROLE}|{CLAN_ROLE}/gi, player.role ? nicknameRoles[player.role] : '')
+			.replace(/{ALIAS}|{CLAN_ALIAS}/gi, player.alias ?? '')
+			.replace(/{CLAN}|{CLAN_NAME}/gi, player.clan ?? '')
+			.replace(/{DISCORD}|{DISCORD_NAME}/gi, player.displayName)
+			.replace(/{USERNAME}|{DISCORD_USERNAME}/gi, player.username)
+			.trim();
+	}
+
+	private getTownHallSuperScript(num: number) {
+		if (num >= 0 && num <= 9) {
+			return SUPER_SCRIPTS[num];
+		}
+
+		return num
+			.toString()
+			.split('')
+			.map((num) => SUPER_SCRIPTS[num])
+			.join('');
 	}
 
 	public async canUseRolesManager(guildId: string, forceUpdate = false) {

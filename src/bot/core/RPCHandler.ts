@@ -13,8 +13,6 @@ import JoinLeaveLog from './JoinLeaveLog.js';
 import LastSeenLog from './LastSeenLog.js';
 import LegendLog from './LegendLog.js';
 import MaintenanceHandler from './Maintenance.js';
-import { RoleManager } from './RoleManager.js';
-import { WarRoleManager } from './WarRoleManager.js';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -29,9 +27,6 @@ export default class RPCHandler {
 	private readonly legendLog = new LegendLog(this.client);
 	private readonly capitalLog = new CapitalLog(this.client);
 	private readonly joinLeaveLog = new JoinLeaveLog(this.client);
-
-	public warRoleManager = new WarRoleManager(this.client);
-	public roleManager = new RoleManager(this.client);
 
 	public constructor(private readonly client: Client) {
 		this.api = new MaintenanceHandler(this.client);

@@ -19,7 +19,6 @@ import { CommandsMap } from './CommandsMap.js';
 import { Database } from './Database.js';
 import { GuildEventsHandler } from './GuildEventsHandler.js';
 import Http from './Http.js';
-import { NicknameHandler } from './NicknameHandler.js';
 import Patrons from './Patrons.js';
 import RedisService from './RedisService.js';
 import Resolver from './Resolver.js';
@@ -76,7 +75,6 @@ export class Client extends Discord.Client {
 	public components = new Map<string, string[]>();
 	public resolver!: Resolver;
 	public ownerId: string;
-	public nickHandler!: NicknameHandler;
 	public rosterManager!: RosterManager;
 	public autocomplete!: Autocomplete;
 	public cacheOverLimitGuilds = new Set<string>();
@@ -173,7 +171,6 @@ export class Client extends Discord.Client {
 		this.raidScheduler.init();
 		this.warScheduler.init();
 		this.guildEvents.init();
-		this.rpcHandler.roleManager.init();
 		this.rosterManager.init();
 	}
 
@@ -204,7 +201,6 @@ export class Client extends Discord.Client {
 		this.warScheduler = new ClanWarScheduler(this);
 		this.raidScheduler = new CapitalRaidScheduler(this);
 		this.cgScheduler = new ClanGamesScheduler(this);
-		this.nickHandler = new NicknameHandler(this);
 		this.commands = new CommandsMap(this);
 		this.guildEvents = new GuildEventsHandler(this);
 		this.rosterManager = new RosterManager(this);

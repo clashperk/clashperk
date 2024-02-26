@@ -43,16 +43,17 @@ export default class VerifyPlayerCommand extends Command {
 			{ tag: data.tag },
 			{
 				$set: {
+					tag: data.tag,
+					name: data.name,
 					userId: interaction.user.id,
 					username: interaction.user.username,
 					displayName: interaction.user.displayName,
 					discriminator: interaction.user.discriminator,
-					name: data.name,
-					tag: data.tag,
 					verified: true,
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
+					source: 'bot',
 					order: lastAccount ? lastAccount.order + 1 : 0,
 					createdAt: new Date()
 				}

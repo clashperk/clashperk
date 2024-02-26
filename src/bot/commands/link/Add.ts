@@ -74,6 +74,7 @@ export default class LinkAddCommand extends Command {
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
+					source: 'bot',
 					createdAt: new Date()
 				}
 			},
@@ -84,7 +85,6 @@ export default class LinkAddCommand extends Command {
 		await this.resetLinkAPI(member.id, player.tag);
 		// Update Role
 		this.client.rolesManager.updateOne(member.id, interaction.guildId);
-		if (!accounts.length || def) await this.client.nickHandler.exec(member, player);
 
 		return interaction.editReply(
 			this.i18n('command.link.create.success', {

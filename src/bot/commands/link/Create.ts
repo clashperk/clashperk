@@ -153,6 +153,7 @@ export default class LinkCreateCommand extends Command {
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
+					source: 'bot',
 					createdAt: new Date()
 				}
 			},
@@ -165,19 +166,18 @@ export default class LinkCreateCommand extends Command {
 
 		if (this.client.settings.get(interaction.guildId, Settings.USE_V2_ROLES_MANAGER, true)) {
 			this.client.rolesManager.updateOne(member.id, interaction.guildId);
-		} else {
-			if (!accounts.length || def) await this.client.nickHandler.exec(member, player);
 		}
 
-		await interaction.editReply(
+		this.client.storage.updateLinks(interaction.guildId);
+		// TODO: Refresh Roles
+
+		return interaction.editReply(
 			this.i18n('command.link.create.success', {
 				lng: interaction.locale,
 				user: `**${member.user.displayName}**`,
 				target: `**${player.name} (${player.tag})**`
 			})
 		);
-
-		return this.updateLinksAndRoles(interaction.guild.id);
 
 		// if (this.client.util.isManager(interaction.member)) {
 		// 	const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
@@ -190,46 +190,9 @@ export default class LinkCreateCommand extends Command {
 		// 		ephemeral: true
 		// 	});
 
-		// 	return this.updateLinksAndRoles(interaction.guild.id);
+		// this.client.storage.updateLinks(interaction.guildId);
+		// TODO: Refresh Roles
 		// }
-	}
-
-	private async updateLinksAndRoles(guildId: string) {
-		const clans = await this.client.storage.find(guildId);
-		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
-		for (const clan of clans) {
-			const { body: data, res } = await this.client.http.getClan(clan.tag);
-			if (!res.ok) continue;
-
-			const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
-			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
-
-			for (const { userId, tag } of unknowns) {
-				if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
-				const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
-
-				const player =
-					data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.getPlayer(tag).then(({ body }) => body));
-				if (!player?.name) continue;
-
-				const user = await this.client.users.fetch(userId).catch(() => null);
-				if (!user) continue;
-
-				try {
-					await collection.insertOne({
-						userId: user.id,
-						username: user.username,
-						displayName: user.displayName,
-						discriminator: user.discriminator,
-						tag,
-						name: player.name,
-						verified: false,
-						order: lastAccount?.order ? lastAccount.order + 1 : 0,
-						createdAt: new Date()
-					});
-				} catch {}
-			}
-		}
 	}
 
 	private async getPlayer(tag: string, userId: string) {

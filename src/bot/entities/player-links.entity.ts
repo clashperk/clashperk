@@ -7,5 +7,6 @@ export interface PlayerLinksEntity {
 	name: string;
 	order: number;
 	verified: boolean;
+	source: 'bot' | 'web' | 'api';
 	createdAt: Date;
 }

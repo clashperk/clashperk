@@ -1,22 +1,21 @@
+import { APIClan, APIClanMember } from 'clashofclans.js';
 import {
-	Collection,
-	GuildMember,
-	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
-	EmbedBuilder,
-	ButtonStyle,
-	User,
 	ButtonInteraction,
-	StringSelectMenuBuilder
+	ButtonStyle,
+	Collection,
+	CommandInteraction,
+	EmbedBuilder,
+	GuildMember,
+	StringSelectMenuBuilder,
+	User
 } from 'discord.js';
-import { APIClan, APIClanMember } from 'clashofclans.js';
-import { BOT_MANAGER_HYPERLINK, Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
-import { PlayerLinks } from '../../types/index.js';
 import { MembersCommandOptions } from '../../util/CommandOptions.js';
+import { BOT_MANAGER_HYPERLINK } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -52,12 +51,15 @@ export default class LinkListCommand extends Command {
 					.setLabel('Open in Browser')
 					.setStyle(ButtonStyle.Link)
 			);
-			await interaction.followUp({
+
+			this.client.storage.updateLinks(interaction.guildId);
+			// TODO: Refresh Roles
+
+			return interaction.followUp({
 				content: [`**Click the button below to manage Discord links on our Dashboard.**`].join('\n'),
 				ephemeral: true,
 				components: [linkRow]
 			});
-			return this.updateLinksAndRoles(interaction.guildId);
 		}
 
 		const users = await this.client.resolver.getLinkedUsersMap(clan.memberList);
@@ -188,43 +190,5 @@ export default class LinkListCommand extends Command {
 	private localeSort(a: { name: string }, b: { name: string }) {
 		// return a.name.localeCompare(b.name);
 		return a.name.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.name.replace(/[^\x00-\xF7]+/g, ''));
-	}
-
-	private async updateLinksAndRoles(guildId: string) {
-		const clans = await this.client.storage.find(guildId);
-		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
-		for (const clan of clans) {
-			const { body: data, res } = await this.client.http.getClan(clan.tag);
-			if (!res.ok) continue;
-
-			const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
-			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
-
-			for (const { userId, tag } of unknowns) {
-				if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
-				const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
-
-				const player =
-					data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.getPlayer(tag).then(({ body }) => body));
-				if (!player?.name) continue;
-
-				const user = await this.client.users.fetch(userId).catch(() => null);
-				if (!user) continue;
-
-				try {
-					await collection.insertOne({
-						userId: user.id,
-						username: user.username,
-						displayName: user.displayName,
-						discriminator: user.discriminator,
-						tag,
-						name: player.name,
-						verified: false,
-						order: lastAccount?.order ? lastAccount.order + 1 : 0,
-						createdAt: new Date()
-					});
-				} catch {}
-			}
-		}
 	}
 }
