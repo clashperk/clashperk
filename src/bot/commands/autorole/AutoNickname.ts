@@ -80,16 +80,24 @@ export default class NicknameConfigCommand extends Command {
 		embed.addFields({ name: 'Non-Family Nickname Format', value: `\`${nonFamilyFormat || 'None'}\`` });
 		embed.addFields({ name: 'Auto Mode', value: `\`${enabledAuto ? 'Yes' : 'No'}\`` });
 		embed.addFields({
-			name: 'Available Formats',
+			name: '\u200b',
 			value: [
-				`\`{NAME}\` / \`{PLAYER_NAME}\``,
-				`\`{TH}\` / \`{TOWN_HALL}\``,
-				`\`{TH_SMALL}\` / \`{TOWN_HALL_SMALL}\``,
-				`\`{ROLE}\` / \`{CLAN_ROLE}\``,
-				`\`{ALIAS}\` / \`{CLAN_ALIAS}\``,
-				`\`{CLAN}\` / \`{CLAN_NAME}\``,
-				`\`{DISCORD}\` / \`{DISCORD_NAME}\``,
-				`\`{USERNAME}\` / \`{DISCORD_USERNAME}\``
+				'**Available Variables**',
+				`\`{NAME}\` or \`{PLAYER_NAME}\``,
+				`\`{TH}\` or \`{TOWN_HALL}\``,
+				`\`{TH_SMALL}\` or \`{TOWN_HALL_SMALL}\``,
+				`\`{ROLE}\` or \`{CLAN_ROLE}\``,
+				`\`{ALIAS}\` or \`{CLAN_ALIAS}\``,
+				`\`{CLAN}\` or \`{CLAN_NAME}\``,
+				`\`{DISCORD}\` or \`{DISCORD_NAME}\``,
+				`\`{USERNAME}\` or \`{DISCORD_USERNAME}\``,
+				'',
+				'**Example Formats**',
+				`\`{NAME} | {TH} | {ROLE}\``,
+				`\`{ROLE} | {TH} | {NAME}\``,
+				`\`{NAME} | {TH} | {ALIAS}\``,
+				'',
+				`Run ${this.client.commands.AUTOROLE_REFRESH} to refresh nicknames.`
 			].join('\n')
 		});
 

@@ -34,4 +34,8 @@ export class CommandsMap {
 	public get HISTORY() {
 		return this.get('/history');
 	}
+
+	public get AUTOROLE_REFRESH() {
+		return this.get('/autorole refresh');
+	}
 }
