@@ -95,7 +95,8 @@ export const DARK_SPELLS: Record<string, string> = {
 	'Earthquake Spell': '<:Earthquake:696302170957414460>',
 	'Haste Spell': '<:Haste:696302178763276348>',
 	'Skeleton Spell': '<:Skeleton:696302204348530698>',
-	'Bat Spell': '<:Bat:696303291176583198>'
+	'Bat Spell': '<:Bat:696303291176583198>',
+	'Overgrowth Spell': '<:Overgrowth:1212040817896726631>'
 };
 
 export const SUPER_TROOPS: Record<string, string> = {
