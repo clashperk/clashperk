@@ -176,6 +176,7 @@ export default class LinkAddCommand extends Command {
 					name: data.name,
 					tag: data.tag,
 					verified: true,
+					source: 'bot',
 					updatedAt: new Date()
 				},
 				$setOnInsert: {

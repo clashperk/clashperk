@@ -7,10 +7,10 @@ import { createHash } from 'node:crypto';
 import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
+import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Collections, Flags, Settings, UnrankedWarLeagueId } from '../util/Constants.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
 import { Client } from './Client.js';
-import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 
 export interface ClanStore extends ClanStoresEntity {}
 
@@ -861,7 +861,7 @@ export default class StorageHandler {
 						tag,
 						name: player.name,
 						verified: false,
-						order: lastAccount?.order ? lastAccount.order + 1 : 0,
+						order: (lastAccount?.order ?? 0) + 1,
 						source: 'api',
 						createdAt: new Date()
 					});

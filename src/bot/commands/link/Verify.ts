@@ -50,10 +50,10 @@ export default class VerifyPlayerCommand extends Command {
 					displayName: interaction.user.displayName,
 					discriminator: interaction.user.discriminator,
 					verified: true,
+					source: 'bot',
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
-					source: 'bot',
 					order: lastAccount ? lastAccount.order + 1 : 0,
 					createdAt: new Date()
 				}
