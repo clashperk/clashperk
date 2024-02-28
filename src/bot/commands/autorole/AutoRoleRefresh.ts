@@ -22,8 +22,11 @@ export default class AutoTownHallRoleCommand extends Command {
 			return interaction.editReply('Role refresh is currently being processed.');
 		}
 
-		const startTime = Date.now();
+		if (this.client.rpcHandler.isInMaintenance) {
+			return interaction.editReply('Command is blocked due to ongoing maintenance break.');
+		}
 
+		const startTime = Date.now();
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setDescription(`### Refreshing Server Roles ${EMOJIS.LOADING}`)

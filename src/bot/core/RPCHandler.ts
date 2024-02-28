@@ -28,6 +28,10 @@ export default class RPCHandler {
 	private readonly capitalLog = new CapitalLog(this.client);
 	private readonly joinLeaveLog = new JoinLeaveLog(this.client);
 
+	public get isInMaintenance() {
+		return this.api.isMaintenance;
+	}
+
 	public constructor(private readonly client: Client) {
 		this.api = new MaintenanceHandler(this.client);
 		this.api.init();

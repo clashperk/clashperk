@@ -3760,6 +3760,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'verified_only_clan_roles',
+				description: 'Whether to grant clans roles to verified players only.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
+			},
+			{
 				name: 'webhook_limit',
 				description: 'The maximum number of webhooks that can be created in a channel.',
 				type: ApplicationCommandOptionType.Integer,

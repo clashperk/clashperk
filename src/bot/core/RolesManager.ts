@@ -90,14 +90,15 @@ export class RolesManager {
 			return prev;
 		}, {});
 
-		const verifiedOnly = this.client.settings.get(guildId, Settings.VERIFIED_ONLY_CLAN_ROLES);
-		if (typeof verifiedOnly !== 'boolean') {
+		if (this.client.settings.get(guildId, Settings.VERIFIED_ONLY_CLAN_ROLES) !== 'boolean') {
 			await this.client.settings.set(
 				guildId,
 				Settings.VERIFIED_ONLY_CLAN_ROLES,
 				clans.some((clan) => clan.secureRole)
 			);
 		}
+
+		const verifiedOnlyClanRoles = this.client.settings.get<boolean>(guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 
 		const clanTags = clans.map((clan) => clan.tag);
 		const warClanTags = clans.filter((clan) => clan.warRole).map((clan) => clan.tag);
@@ -113,7 +114,8 @@ export class RolesManager {
 			guestRoleId,
 			leagueRoles,
 			townHallRoles,
-			clanRoles
+			clanRoles,
+			verifiedOnlyClanRoles
 		};
 	}
 
@@ -163,7 +165,7 @@ export class RolesManager {
 					rolesToInclude.push(targetClan.warRoleId);
 				}
 
-				if (targetClan.verifiedOnly && !player.isVerified) continue;
+				if (rolesMap.verifiedOnlyClanRoles && !player.isVerified) continue;
 
 				const targetClanRolesMap = targetClan.roles ?? {};
 				const highestRole = this.getHighestRole(players, clanTag);
@@ -621,6 +623,7 @@ interface GuildRolesDto {
 	warClanTags: string[];
 	allowNonFamilyTownHallRoles: boolean;
 	allowNonFamilyLeagueRoles: boolean;
+	verifiedOnlyClanRoles: boolean;
 }
 
 interface AddRoleInput {
