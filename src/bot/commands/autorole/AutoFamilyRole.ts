@@ -44,7 +44,7 @@ export default class AutoFamilyRoleCommand extends Command {
 			);
 		}
 
-		const roles = [args.guest_role, args.guest_role, args.family_role];
+		const roles = [args.verified_role, args.guest_role, args.family_role];
 
 		const selected = roles.filter((role) => role) as Role[];
 		if (!selected.length) {
