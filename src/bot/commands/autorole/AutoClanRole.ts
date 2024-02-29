@@ -71,43 +71,34 @@ export default class AutoClanRoleCommand extends Command {
 		}
 
 		const { member, elder, coLead, leader, commonRole } = args;
+		const roles = [member, elder, coLead, leader, commonRole];
+		const selected = roles.filter((role) => role) as Role[];
 
-		if (!(member && elder && coLead && leader)) {
-			return interaction.editReply(this.i18n('command.autorole.no_roles', { lng: interaction.locale }));
+		if (!selected.length) {
+			return interaction.followUp({ content: 'You must select at least one role.', ephemeral: true });
 		}
 
-		if ([member, elder, coLead, leader].some((role) => this.isSystemRole(role, interaction.guild))) {
+		if (selected.some((role) => this.isSystemRole(role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
 		}
 
-		if ([member, elder, coLead, leader].some((role) => this.isHigherRole(role, interaction.guild))) {
+		if (selected.some((role) => this.isHigherRole(role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
 		}
 
-		if (commonRole) {
-			if (this.isSystemRole(commonRole, interaction.guild)) {
-				return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
-			}
-			if (this.isHigherRole(commonRole, interaction.guild)) {
-				return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
-			}
-		}
+		const rolesSettings: Record<string, string> = {};
 
-		await this.client.db.collection(Collections.CLAN_STORES).updateMany(
-			{ tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id },
-			{
-				$set: {
-					roles: {
-						member: member.id,
-						admin: elder.id,
-						coLeader: coLead.id,
-						leader: leader.id,
-						everyone: commonRole?.id ?? null
-					},
-					secureRole: args.verify
-				}
-			}
-		);
+		if (member) rolesSettings['roles.member'] = member.id;
+		if (elder) rolesSettings['roles.admin'] = elder.id;
+		if (coLead) rolesSettings['roles.coLeader'] = coLead.id;
+		if (leader) rolesSettings['roles.leader'] = leader.id;
+		if (commonRole) rolesSettings['roles.everyone'] = commonRole.id;
+
+		if (Object.keys(rolesSettings).length) {
+			await this.client.db
+				.collection(Collections.CLAN_STORES)
+				.updateMany({ tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id }, { $set: { ...rolesSettings } });
+		}
 
 		this.client.storage.updateLinks(interaction.guildId);
 		// TODO: Refresh Roles
@@ -126,7 +117,7 @@ export default class AutoClanRoleCommand extends Command {
 	}
 
 	private isHigherRole(role: Role, guild: Guild) {
-		return role.position > guild.members.me!.roles.highest.position;
+		return guild.members.me && role.position > guild.members.me.roles.highest.position;
 	}
 
 	private async disable(interaction: CommandInteraction<'cached'>, args: IArgs) {

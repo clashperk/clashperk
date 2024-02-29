@@ -1,5 +1,5 @@
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
-import { Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits } from 'discord.js';
+import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits } from 'discord.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/Client.js';
@@ -30,6 +30,8 @@ const NickActions = {
 const OpTypes = ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT', 'LEAGUE_CHANGE', 'TOWN_HALL_UPGRADE', 'NAME_CHANGE', 'WAR', 'WAR_REMOVED'];
 
 export const UNICODE_EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+
+const EMPTY_GUILD_MEMBER_COLLECTION = new Collection<string, GuildMember>();
 
 export class RolesManager {
 	private queues = new Set<string>();
@@ -198,7 +200,7 @@ export class RolesManager {
 	}
 
 	private async getTargetedGuildMembers(guild: Guild, pollingInput?: RolesManagerPollingInput) {
-		const guildMembers = await guild.members.fetch({ time: 300e3 });
+		const guildMembers = await guild.members.fetch().catch(() => EMPTY_GUILD_MEMBER_COLLECTION);
 		if (!pollingInput) {
 			const linkedPlayers = await this.getLinkedPlayersByUserId(guildMembers.map((m) => m.id));
 			const linkedUserIds = Object.keys(linkedPlayers);

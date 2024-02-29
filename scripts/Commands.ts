@@ -2401,40 +2401,40 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'member',
-						required: true,
-						description: command.autorole.clan_roles.options.member.description,
-						description_localizations: translation('command.autorole.clan_roles.options.member.description'),
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'elder',
-						required: true,
-						description: command.autorole.clan_roles.options.elder.description,
-						description_localizations: translation('command.autorole.clan_roles.options.elder.description'),
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'co_lead',
-						required: true,
-						description: command.autorole.clan_roles.options.co_lead.description,
-						description_localizations: translation('command.autorole.clan_roles.options.co_lead.description'),
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'leader',
-						required: true,
-						description: command.autorole.clan_roles.options.leader.description,
-						description_localizations: translation('command.autorole.clan_roles.options.leader.description'),
-						type: ApplicationCommandOptionType.Role
-					},
-					{
 						name: 'clans',
 						required: true,
 						autocomplete: true,
 						description: command.autorole.clan_roles.options.clans.description,
 						description_localizations: translation('command.autorole.clan_roles.options.clans.description'),
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'leader',
+						required: false,
+						description: command.autorole.clan_roles.options.leader.description,
+						description_localizations: translation('command.autorole.clan_roles.options.leader.description'),
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'co_lead',
+						required: false,
+						description: command.autorole.clan_roles.options.co_lead.description,
+						description_localizations: translation('command.autorole.clan_roles.options.co_lead.description'),
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'elder',
+						required: false,
+						description: command.autorole.clan_roles.options.elder.description,
+						description_localizations: translation('command.autorole.clan_roles.options.elder.description'),
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'member',
+						required: false,
+						description: command.autorole.clan_roles.options.member.description,
+						description_localizations: translation('command.autorole.clan_roles.options.member.description'),
+						type: ApplicationCommandOptionType.Role
 					},
 					{
 						name: 'common_role',
