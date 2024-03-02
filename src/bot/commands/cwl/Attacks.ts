@@ -227,7 +227,6 @@ export default class CWLAttacksCommand extends Command {
 
 				embed.setFooter({ text: `Round #${++i}` });
 				chunks.push({ state: data.state, round: i, embed });
-				break;
 			}
 		}
 

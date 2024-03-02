@@ -128,7 +128,6 @@ export default class CWLStarsCommand extends Command {
 						}
 					}
 				}
-				break;
 			}
 		}
 

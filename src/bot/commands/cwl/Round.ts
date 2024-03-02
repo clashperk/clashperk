@@ -169,7 +169,6 @@ export default class CWLRoundCommand extends Command {
 				embed.setFooter({ text: `Round #${++index}` });
 
 				chunks.push({ state: data.state, embed, round: index });
-				break;
 			}
 		}
 
