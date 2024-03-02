@@ -1,6 +1,8 @@
-import { APIClan, APIClanWarLeagueGroup } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
+import moment from 'moment';
 import { Command } from '../../lib/index.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -16,28 +18,52 @@ export default class CWLStarsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; season?: string }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
-		const { body, res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+		const [{ body, res }, group] = await Promise.all([
+			this.client.http.getClanWarLeagueGroup(clan.tag),
+			this.client.storage.getWarTags(clan.tag, args.season)
+		]);
 		if (res.status === 504 || body.state === 'notInWar') {
 			return interaction.editReply(
 				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
 
-		if (!res.ok) {
-			const group = await this.client.storage.getWarTags(clan.tag);
-			if (group) return this.rounds(interaction, { body: group, clan, args });
-
+		if (!res.ok && !group) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
 		}
 
-		this.client.storage.pushWarTags(clan.tag, body);
-		return this.rounds(interaction, { body, clan, args });
+		const entityLike = args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
+		const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
+
+		if ((!res.ok && !group) || !entityLike) {
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
+		}
+
+		const aggregated = await this.client.http.aggregateClanWarLeague(
+			clan.tag,
+			{ ...entityLike, leagues: group?.leagues ?? {} },
+			isApiData
+		);
+
+		if (!aggregated) {
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
+		}
+
+		return this.rounds(interaction, {
+			body: aggregated,
+			clan,
+			args
+		});
 	}
 
 	private async rounds(
@@ -47,7 +73,7 @@ export default class CWLStarsCommand extends Command {
 			clan,
 			args
 		}: {
-			body: APIClanWarLeagueGroup;
+			body: ClanWarLeagueGroupAggregated;
 			clan: APIClan;
 			args: {
 				tag?: string;
@@ -57,7 +83,6 @@ export default class CWLStarsCommand extends Command {
 		}
 	) {
 		const clanTag = clan.tag;
-		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 
 		const members: {
 			[key: string]: {
@@ -72,41 +97,36 @@ export default class CWLStarsCommand extends Command {
 			};
 		} = {};
 
-		for (const { warTags } of rounds) {
-			for (const warTag of warTags) {
-				const { body: data, res } = await this.client.http.getClanWarLeagueRound(warTag);
-				if (!res.ok || data.state === 'notInWar') continue;
+		for (const data of body.rounds) {
+			if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
+				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+				if (['inWar', 'warEnded'].includes(data.state)) {
+					for (const m of clan.members) {
+						// eslint-disable-next-line
+						members[m.tag] ??= {
+							name: m.name,
+							tag: m.tag,
+							of: 0,
+							attacks: 0,
+							stars: 0,
+							dest: 0,
+							lost: 0,
+							townhallLevel: m.townhallLevel
+						};
+						const member = members[m.tag];
+						member.of += 1;
 
-				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
-					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-					if (['inWar', 'warEnded'].includes(data.state)) {
-						for (const m of clan.members) {
-							// eslint-disable-next-line
-							members[m.tag] ??= {
-								name: m.name,
-								tag: m.tag,
-								of: 0,
-								attacks: 0,
-								stars: 0,
-								dest: 0,
-								lost: 0,
-								townhallLevel: m.townhallLevel
-							};
-							const member = members[m.tag];
-							member.of += 1;
-
-							if (m.attacks) {
-								member.attacks += 1;
-								member.stars += m.attacks[0].stars;
-								member.dest += m.attacks[0].destructionPercentage;
-							}
-							if (m.bestOpponentAttack) {
-								member.lost += m.bestOpponentAttack.stars;
-							}
+						if (m.attacks) {
+							member.attacks += 1;
+							member.stars += m.attacks[0].stars;
+							member.dest += m.attacks[0].destructionPercentage;
+						}
+						if (m.bestOpponentAttack) {
+							member.lost += m.bestOpponentAttack.stars;
 						}
 					}
-					break;
 				}
+				break;
 			}
 		}
 
@@ -160,6 +180,8 @@ export default class CWLStarsCommand extends Command {
 				].join('\n')
 			);
 		}
+
+		embed.setFooter({ text: `Clan War League ${moment(body.season).format('MMM YYYY')}` });
 
 		const payload = {
 			cmd: this.id,

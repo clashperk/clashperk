@@ -10,6 +10,7 @@ import {
 import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
 import { request } from 'undici';
+import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 
 export default class Http extends ClashOfClansClient {
 	private bearerToken!: string;
@@ -193,10 +194,49 @@ export default class Http extends ClashOfClansClient {
 	}
 
 	public async getCWLRoundWithWarTag(warTag: string) {
+		const body = await this._getCWLRoundWithWarTag(warTag);
+		if (!body.ok || body.state === 'notInWar') return null;
+		return body;
+	}
+
+	private async _getCWLRoundWithWarTag(warTag: string) {
 		const { body, res } = await this.getClanWarLeagueRound(warTag);
-		if (!res.ok) return null;
-		if (body.state === 'notInWar') return null;
 		return { warTag, ...body, ...res };
+	}
+
+	public async aggregateClanWarLeague(clanTag: string, group: ClanWarLeagueGroupsEntity, isApiData: boolean) {
+		const warTags = group.rounds
+			.filter((r) => !r.warTags.includes('#0'))
+			.map((round) => round.warTags)
+			.flat();
+
+		const seasonFormat = 'YYYY-MM';
+		if (moment().format(seasonFormat) !== moment(group.season).format(seasonFormat) && !isApiData) {
+			return this.getDataFromArchive(clanTag, group.season, group);
+		}
+
+		const rounds: (APIClanWar & { warTag: string; ok: boolean })[] = (
+			await Promise.all(warTags.map((warTag) => this._getCWLRoundWithWarTag(warTag)))
+		).filter((res) => res.ok && res.state !== 'notInWar');
+
+		return {
+			season: group.season,
+			clans: group.clans,
+			rounds,
+			leagues: group.leagues ?? {}
+		} satisfies ClanWarLeagueGroupAggregated;
+	}
+
+	private async getDataFromArchive(clanTag: string, season: string, group?: ClanWarLeagueGroupsEntity) {
+		const res = await fetch(
+			`https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clanTag)}/cwl/seasons/${season}`
+		);
+		if (!res.ok) return null;
+
+		const data = (await res.json()) as unknown as ClanWarLeagueGroupAggregated;
+		data['leagues'] = group?.leagues ?? {};
+
+		return data;
 	}
 
 	public async autoLogin() {
@@ -295,4 +335,11 @@ export default class Http extends ClashOfClansClient {
 			.filter((en) => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag) && /^\d{17,19}/.test(en.discordId))
 			.map((en) => ({ tag: this.fixTag(en.playerTag), user: en.discordId, userId: en.discordId, verified: false }));
 	}
+}
+
+export interface ClanWarLeagueGroupAggregated {
+	season: string;
+	clans: { name: string; tag: string }[];
+	rounds: (APIClanWar & { warTag: string })[];
+	leagues: Record<string, number>;
 }

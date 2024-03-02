@@ -1120,6 +1120,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: 'CWL season',
+						choices: getSeasonIds()
+					},
+					{
 						name: 'user',
 						description: common.options.user.description,
 						description_localizations: translation('common.options.user.description'),
@@ -1162,6 +1169,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: 'CWL season',
+						choices: getSeasonIds()
+					},
+					{
 						name: 'user',
 						description: common.options.user.description,
 						description_localizations: translation('common.options.user.description'),
@@ -1181,6 +1195,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description_localizations: translation('common.options.tag.description'),
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: 'CWL season',
+						choices: getSeasonIds()
 					},
 					{
 						name: 'user',
