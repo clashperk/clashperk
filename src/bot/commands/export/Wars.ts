@@ -93,7 +93,7 @@ export default class WarExport extends Command {
 						member.trueStars += Math.max(0, atk.stars - prev.stars);
 					}
 
-					if (m.attacks) {
+					if (m.attacks?.length) {
 						member.attacks += m.attacks.length;
 						member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
 						member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);

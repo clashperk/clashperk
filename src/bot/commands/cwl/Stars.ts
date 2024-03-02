@@ -53,6 +53,8 @@ export default class CWLStarsCommand extends Command {
 			isApiData
 		);
 
+		console.log(aggregated);
+
 		if (!aggregated) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
@@ -116,7 +118,7 @@ export default class CWLStarsCommand extends Command {
 						const member = members[m.tag];
 						member.of += 1;
 
-						if (m.attacks) {
+						if (m.attacks?.length) {
 							member.attacks += 1;
 							member.stars += m.attacks[0].stars;
 							member.dest += m.attacks[0].destructionPercentage;

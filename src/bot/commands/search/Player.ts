@@ -17,8 +17,8 @@ import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/Emojis.js';
-import { Season } from '../../util/index.js';
 import { getMenuFromMessage } from '../../util/Helper.js';
+import { Season } from '../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -291,7 +291,7 @@ export default class PlayerCommand extends Command {
 				if (m.tag !== tag) continue;
 				member.of += data.attacksPerMember ?? 2;
 
-				if (m.attacks) {
+				if (m.attacks?.length) {
 					member.attacks += m.attacks.length;
 					member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
 					member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);
