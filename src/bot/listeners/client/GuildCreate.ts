@@ -77,7 +77,7 @@ export default class GuildCreateListener extends Listener {
 				embeds: [embed],
 				username: this.client.user!.displayName,
 				avatarURL: this.client.user!.displayAvatarURL({ extension: 'png' }),
-				content: `**Total ${guilds} | Growth ${await this.growth()}**`
+				content: `**Total ${guilds.toLocaleString()} | Growth ${await this.growth()}**`
 			});
 		}
 	}

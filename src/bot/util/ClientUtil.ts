@@ -31,12 +31,12 @@ export class ClientUtil {
 
 		if (!guilds) return null;
 
-		return this.client.user!.setPresence({
+		return this.client.user?.setPresence({
 			status: 'online',
 			activities: [
 				{
 					type: ActivityType.Custom,
-					name: `Watching ${guilds} servers`
+					name: `Watching ${guilds.toLocaleString()} servers`
 				}
 			]
 		});
@@ -45,7 +45,7 @@ export class ClientUtil {
 	public setMaintenanceBreak(cleared = false) {
 		if (cleared) return this.client.user!.setPresence({ status: 'online', activities: [] });
 
-		return this.client.user!.setPresence({
+		return this.client.user?.setPresence({
 			status: 'online',
 			activities: [
 				{

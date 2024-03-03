@@ -1,5 +1,7 @@
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { BaseInteraction, CommandInteraction, Guild, User } from 'discord.js';
+import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
+import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { Collections, ElasticIndex, Settings, status } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
@@ -7,11 +9,9 @@ import Client from './Client.js';
 import { ElasticIndexer } from './Indexer.js';
 
 export default class Resolver {
-	private readonly client: Client;
 	private readonly indexer: ElasticIndexer;
 
-	public constructor(client: Client) {
-		this.client = client;
+	public constructor(private readonly client: Client) {
 		this.indexer = new ElasticIndexer(client);
 	}
 
@@ -25,20 +25,9 @@ export default class Resolver {
 		}
 
 		const { user } = parsed;
-		const otherTags: string[] = [];
-		const link = await this.client.db
-			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.findOne({ userId: user.id }, { sort: { order: 1 } });
-		if (link && (link.username !== user.username || link.discriminator !== user.discriminator || link.displayName !== user.displayName))
-			this.updateUserData(interaction.guild, user.id);
+		const linkedPlayerTag = await this.getLinkedPlayerTag(user.id);
+		if (linkedPlayerTag) return this.getPlayer(interaction, linkedPlayerTag, user);
 
-		if (!link) {
-			otherTags.push(...(await this.client.http.getPlayerTags(user.id)));
-		}
-
-		const tags = [...(link ? [link.tag] : []), ...otherTags];
-
-		if (tags.length) return this.getPlayer(interaction, tags[0], user);
 		if (interaction.user.id === user.id) {
 			return this.fail(
 				interaction,
@@ -75,11 +64,11 @@ export default class Resolver {
 		}
 
 		if (parsed.matched) {
-			const data = await this.getLinkedUserClan(parsed.user.id);
-			if (data) return this.getClan(interaction, data.tag);
+			const linkedClanTag = await this.getLinkedUserClan(parsed.user.id, false);
+			if (linkedClanTag) return this.getClan(interaction, linkedClanTag);
 		} else {
-			const data = await this.getLinkedClan(interaction, parsed.user.id);
-			if (data) return this.getClan(interaction, data.tag);
+			const linkedClanTag = await this.getLinkedClanTag(interaction, parsed.user.id);
+			if (linkedClanTag) return this.getClan(interaction, linkedClanTag);
 		}
 
 		if (interaction.user.id === parsed.user.id) {
@@ -101,9 +90,8 @@ export default class Resolver {
 
 	public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(APIPlayer & { user?: User }) | null> {
 		const { body, res } = await this.client.http.getPlayer(tag);
-		if (res.ok) {
-			this.indexer.index({ name: body.name, tag: body.tag, userId: interaction.user.id }, ElasticIndex.RECENT_PLAYERS);
-		}
+		if (res.ok) this.updateLastSearchedPlayer(interaction.user, body);
+
 		if (res.ok) return { ...body, user };
 
 		return this.fail(interaction, `**${status(res.status, interaction.locale)}**`);
@@ -111,9 +99,8 @@ export default class Resolver {
 
 	public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<APIClan | null> {
 		const { body, res } = await this.client.http.getClan(tag);
-		if (res.ok) {
-			this.indexer.index({ name: body.name, tag: body.tag, userId: interaction.user.id }, ElasticIndex.RECENT_CLANS);
-		}
+		if (res.ok) this.updateLastSearchedClan(interaction.user, body);
+
 		if (res.ok) return body;
 
 		if (checkAlias && res.status === 404 && !tag.startsWith('#')) {
@@ -122,6 +109,38 @@ export default class Resolver {
 		}
 
 		return this.fail(interaction, `**${status(res.status, interaction.locale)}**`);
+	}
+
+	private async updateLastSearchedPlayer(user: User, player: APIPlayer) {
+		await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+			{ userId: user.id },
+			{
+				$set: {
+					lastSearchedPlayerTag: player.tag,
+					discriminator: user.discriminator,
+					displayName: user.displayName,
+					username: user.username
+				}
+			},
+			{ upsert: true }
+		);
+		return this.indexer.index({ name: player.name, tag: player.tag, userId: user.id }, ElasticIndex.RECENT_PLAYERS);
+	}
+
+	private async updateLastSearchedClan(user: User, clan: APIClan) {
+		await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+			{ userId: user.id },
+			{
+				$set: {
+					lastSearchedClanTag: clan.tag,
+					discriminator: user.discriminator,
+					displayName: user.displayName,
+					username: user.username
+				}
+			},
+			{ upsert: true }
+		);
+		return this.indexer.index({ name: clan.name, tag: clan.tag, userId: user.id }, ElasticIndex.RECENT_CLANS);
 	}
 
 	private async fail(interaction: BaseInteraction, content: string) {
@@ -151,17 +170,37 @@ export default class Resolver {
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O/g, '0') ?? ''}`;
 	}
 
-	private async getLinkedClan(interaction: BaseInteraction<'cached'>, userId: string) {
-		return (
-			(await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channel!.id })) ??
-			(await this.getLinkedUserClan(userId)) ??
-			null
-		);
+	private async getLinkedClanTag(interaction: BaseInteraction<'cached'>, userId: string) {
+		const [guildLinkedClan, userLinkedClanTag] = await Promise.all([
+			this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).findOne({ channels: interaction.channelId! }),
+			this.getLinkedUserClan(userId, true)
+		]);
+
+		return guildLinkedClan?.tag ?? userLinkedClanTag;
 	}
 
-	private async getLinkedUserClan(userId: string) {
+	private async getLinkedPlayerTag(userId: string) {
+		const [linkedPlayer, lastSearchedPlayerTag] = await Promise.all([
+			this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS).findOne({ userId }, { sort: { order: 1 } }),
+			this.getLastSearchedPlayerTag(userId)
+		]);
+
+		if (!linkedPlayer) {
+			const externalLinks = await this.client.http.getPlayerTags(userId);
+			return externalLinks.at(0) ?? lastSearchedPlayerTag;
+		}
+
+		return linkedPlayer?.tag ?? lastSearchedPlayerTag;
+	}
+
+	private async getLinkedUserClan(userId: string, withLastSearchedClan = false) {
 		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId });
-		return user?.clan ?? null;
+		return user?.clan?.tag ?? (withLastSearchedClan ? user?.lastSearchedClanTag : null) ?? null;
+	}
+
+	private async getLastSearchedPlayerTag(userId: string) {
+		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId });
+		return user?.lastSearchedPlayerTag ?? null;
 	}
 
 	public async updateUserData(guild: Guild, userId: string) {

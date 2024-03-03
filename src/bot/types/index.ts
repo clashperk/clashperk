@@ -84,6 +84,8 @@ export interface UserInfoModel {
 		tag: string;
 		name?: string;
 	};
+	lastSearchedClanTag?: string;
+	lastSearchedPlayerTag?: string;
 	timezone?: UserTimezone;
 }
 
