@@ -736,8 +736,10 @@ export default class StorageHandler {
 		const data = await this.client.db
 			.collection(Collections.CWL_GROUPS)
 			.findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });
-		if (!data || data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
+		if (!data) return null;
+
 		if (season) return data as unknown as ClanWarLeagueGroupsEntity;
+		// if (data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
 
 		const seasonFormat = 'YYYY-MM';
 		const isInSameSeason = moment().format(seasonFormat) === moment(data.season as string).format(seasonFormat);
