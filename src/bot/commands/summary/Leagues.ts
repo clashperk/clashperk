@@ -79,7 +79,7 @@ export default class SummaryLeaguesCommand extends Command {
 		);
 
 		const embed = new EmbedBuilder();
-		embed.setColor(this.client.embed(guild.id)).setDescription(`${EMOJIS.CWL} **APIClan War League Groups**`);
+		embed.setColor(this.client.embed(guild.id)).setDescription(`${EMOJIS.CWL} **Clan War League Groups**`);
 		leagueGroup
 			.sort(([a], [b]) => Number(b) - Number(a))
 			.map(([leagueId, clans], i) => {
