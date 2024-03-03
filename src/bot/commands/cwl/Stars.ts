@@ -53,8 +53,6 @@ export default class CWLStarsCommand extends Command {
 			isApiData
 		);
 
-		console.log(aggregated);
-
 		if (!aggregated) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
