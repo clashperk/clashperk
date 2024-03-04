@@ -13,6 +13,7 @@ import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../../lib/index.js';
 import { Reminder, Schedule } from '../../../struct/ClanWarScheduler.js';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
+import { hexToNanoId } from '../../../util/Helper.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -40,23 +41,24 @@ export default class ReminderDeleteCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { id, clear }: { id?: string; clear: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { id?: string; clear: boolean }) {
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).find({ guild: interaction.guild.id }).toArray();
 		if (!reminders.length)
 			return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
 
-		if (clear) {
+		if (args.clear) {
 			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteMany({ guild: interaction.guild.id });
 			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ guild: interaction.guildId });
 			return interaction.editReply(this.i18n('command.reminders.delete.cleared', { lng: interaction.locale }));
 		}
 
-		if (id) {
-			const reminderId = reminders[Number(id) - 1]?._id as ObjectId | null;
-			if (!reminderId) return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id }));
+		if (args.id) {
+			const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id?.toUpperCase())?._id;
+			if (!reminderId)
+				return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: reminderId });
 			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId });
-			return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id }));
+			return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id }));
 		}
 
 		if (reminders.length > 25)

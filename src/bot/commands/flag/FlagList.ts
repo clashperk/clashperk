@@ -5,6 +5,7 @@ import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
 import { handlePagination } from '../../util/Pagination.js';
+import { hexToNanoId } from '../../util/Helper.js';
 
 export default class FlagListCommand extends Command {
 	public constructor() {
@@ -241,8 +242,7 @@ export default class FlagListCommand extends Command {
 							.slice(0, 5)
 							.map(({ createdAt, reason, _id }) => {
 								const _reason = reason.substring(0, 100);
-								const id = _id.toHexString().substr(-5).toUpperCase();
-								return `${time(createdAt, 'd')} - \`${id}\` - ${_reason}`;
+								return `${time(createdAt, 'd')} - \`${hexToNanoId(_id)}\` - ${_reason}`;
 							})
 							.join('\n')
 					].join('\n')

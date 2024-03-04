@@ -3,6 +3,7 @@ import { Filter, ObjectId } from 'mongodb';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
+import { hexToNanoId } from '../../util/Helper.js';
 
 export default class FlagDeleteCommand extends Command {
 	public constructor() {
@@ -36,9 +37,9 @@ export default class FlagDeleteCommand extends Command {
 
 			const refIds = flags
 				.map((flag) => ({
-					name: `${flag._id.toHexString().substr(-5).toUpperCase()} - ${flag.reason}`.substring(0, 100),
+					name: `${hexToNanoId(flag._id)} - ${flag.reason}`.substring(0, 100),
 					value: flag._id.toHexString(),
-					refId: flag._id.toHexString().substr(-5).toUpperCase()
+					refId: hexToNanoId(flag._id)
 				}))
 				.filter(({ refId }) => (args.flag_ref ? refId === args.flag_ref.toUpperCase() : true))
 				.slice(0, 24);

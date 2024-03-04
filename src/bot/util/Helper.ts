@@ -9,7 +9,7 @@ import {
 	Guild,
 	StringSelectMenuBuilder
 } from 'discord.js';
-import { AnyBulkWriteOperation } from 'mongodb';
+import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title } from 'radash';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
@@ -17,6 +17,10 @@ import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Util } from './index.js';
+
+export const hexToNanoId = (hex: ObjectId) => {
+	return hex.toHexString().substr(-5).toUpperCase();
+};
 
 export const makeAbbr = (text: string) => {
 	return title(text)
@@ -54,6 +58,13 @@ export const clanGamesMaxPoints = (month: number) => {
 };
 
 const isNullish = (value: unknown) => typeof value === 'undefined' || value === null;
+
+export const sumHeroes = (player: APIPlayer) => {
+	return player.heroes.reduce((prev, curr) => {
+		if (curr.village === 'builderBase') return prev;
+		return curr.level + prev;
+	}, 0);
+};
 
 export const nullsLastSortAlgo = (a: unknown, b: unknown) => {
 	// Compare null values

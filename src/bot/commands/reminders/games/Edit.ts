@@ -1,20 +1,20 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	CommandInteraction,
 	ComponentType,
-	StringSelectMenuBuilder,
-	TextInputStyle,
-	TextInputBuilder,
 	ModalBuilder,
+	StringSelectMenuBuilder,
+	TextInputBuilder,
+	TextInputStyle,
 	escapeMarkdown
 } from 'discord.js';
-import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../../util/Constants.js';
 import { Command } from '../../../lib/index.js';
 import { ClanGamesReminder } from '../../../struct/ClanGamesScheduler.js';
+import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../../util/Constants.js';
+import { hexToNanoId } from '../../../util/Helper.js';
 
 export default class ReminderEditCommand extends Command {
 	public constructor() {
@@ -35,7 +35,7 @@ export default class ReminderEditCommand extends Command {
 		if (!reminders.length)
 			return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
 
-		const reminderId = reminders[Number(args.id) - 1]?._id as ObjectId | null;
+		const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id.toUpperCase())?._id;
 		if (!reminderId) {
 			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}

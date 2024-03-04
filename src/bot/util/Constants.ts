@@ -142,6 +142,7 @@ export const enum Settings {
 	FAMILY_NICKNAME_FORMAT = 'familyNicknameFormat',
 	NON_FAMILY_NICKNAME_FORMAT = 'nonFamilyNicknameFormat',
 	AUTO_NICKNAME = 'autoNickname',
+	NICKNAMING_ACCOUNT_PREFERENCE = 'nicknamingAccountPreference',
 	AUTO_ROLE = 'autoRole',
 	ROSTER_DEFAULT_SETTINGS = 'rosterDefaultSettings',
 	HAS_CUSTOM_BOT = 'hasCustomBot',

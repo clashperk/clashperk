@@ -17,7 +17,7 @@ import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../str
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections, DOT } from '../../util/Constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/Emojis.js';
-import { getExportComponents } from '../../util/Helper.js';
+import { getExportComponents, sumHeroes } from '../../util/Helper.js';
 import { createInteractionCollector, handlePagination } from '../../util/Pagination.js';
 
 const roles: Record<string, string> = {
@@ -149,7 +149,7 @@ export default class ProfileCommand extends Command {
 		}
 
 		playerLinks.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
-		playerLinks.sort((a, b) => this.heroSum(b) - this.heroSum(a));
+		playerLinks.sort((a, b) => sumHeroes(b) - sumHeroes(a));
 		playerLinks.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
 		const links: LinkData[] = [];
@@ -280,13 +280,6 @@ export default class ProfileCommand extends Command {
 			content: `**Linked Accounts [${user.displayName} (${user.id})]**`,
 			components: getExportComponents(spreadsheet)
 		});
-	}
-
-	private heroSum(player: APIPlayer) {
-		return player.heroes.reduce((prev, curr) => {
-			if (curr.village === 'builderBase') return prev;
-			return curr.level + prev;
-		}, 0);
 	}
 
 	private isLinked(players: PlayerLinks[], tag: string) {

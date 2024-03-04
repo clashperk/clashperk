@@ -1,4 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { title } from 'radash';
+import { NicknamingAccountPreference } from '../../core/RolesManager.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
 
@@ -26,9 +28,10 @@ export default class NicknameConfigCommand extends Command {
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
 		args: {
-			enable_auto?: boolean;
+			change_nicknames?: boolean;
 			family_nickname_format?: string;
 			non_family_nickname_format?: string;
+			account_preference_for_naming?: NicknamingAccountPreference;
 		}
 	) {
 		let familyFormat = this.client.settings.get<string>(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, '');
@@ -39,11 +42,11 @@ export default class NicknameConfigCommand extends Command {
 			nonFamilyFormat = args.non_family_nickname_format;
 
 		if (args.family_nickname_format && !/^none$/i.test(args.family_nickname_format)) {
-			if (/{NAME}/gi.test(familyFormat)) {
+			if (/{NAME}|{PLAYER_NAME}|{DISCORD_NAME}|{DISCORD_USERNAME}|{USERNAME}|{DISCORD}/gi.test(familyFormat)) {
 				this.client.settings.set(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, familyFormat);
 			} else {
 				return interaction.editReply(
-					`Invalid **family nickname** format \`${familyFormat}\`, it must include \`{NAME}\` or \`{PLAYER_NAME}\``
+					`Invalid **family nickname** format \`${familyFormat}\`, it must include \`{PLAYER_NAME}\` or \`{DISCORD_NAME}\` or \`{DISCORD_USERNAME}\``
 				);
 			}
 		}
@@ -70,15 +73,26 @@ export default class NicknameConfigCommand extends Command {
 			this.client.settings.set(interaction.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT, '');
 		}
 
-		if (typeof args.enable_auto === 'boolean') {
-			await this.client.settings.set(interaction.guildId, Settings.AUTO_NICKNAME, Boolean(args.enable_auto));
+		if (typeof args.change_nicknames === 'boolean') {
+			await this.client.settings.set(interaction.guildId, Settings.AUTO_NICKNAME, Boolean(args.change_nicknames));
 		}
 		const enabledAuto = this.client.settings.get<boolean>(interaction.guildId, Settings.AUTO_NICKNAME, false);
+
+		if (args.account_preference_for_naming) {
+			await this.client.settings.set(interaction.guildId, Settings.NICKNAMING_ACCOUNT_PREFERENCE, args.account_preference_for_naming);
+		}
+
+		const accountPreference = this.client.settings.get<NicknamingAccountPreference>(
+			interaction.guildId,
+			Settings.NICKNAMING_ACCOUNT_PREFERENCE,
+			NicknamingAccountPreference.DEFAULT_ACCOUNT
+		);
 
 		const embed = new EmbedBuilder().setAuthor({ name: 'Server Nickname Settings' }).setColor(this.client.embed(interaction));
 		embed.addFields({ name: 'Family Nickname Format', value: `\`${familyFormat || 'None'}\`` });
 		embed.addFields({ name: 'Non-Family Nickname Format', value: `\`${nonFamilyFormat || 'None'}\`` });
-		embed.addFields({ name: 'Auto Mode', value: `\`${enabledAuto ? 'Yes' : 'No'}\`` });
+		embed.addFields({ name: 'Change Nicknames', value: `\`${enabledAuto ? 'Yes' : 'No'}\`` });
+		embed.addFields({ name: 'Account Preference', value: `\`${title(accountPreference)}\`` });
 		embed.addFields({
 			name: '\u200b',
 			value: [

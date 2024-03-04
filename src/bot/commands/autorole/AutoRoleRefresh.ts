@@ -4,6 +4,7 @@ import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { handleMessagePagination } from '../../util/Pagination.js';
+import { User } from '@sentry/node';
 
 export default class AutoTownHallRoleCommand extends Command {
 	public constructor() {
@@ -16,7 +17,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { is_dry_run?: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { is_test_run?: boolean; user?: User }) {
 		const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
 		if (inProgress) {
 			return interaction.editReply('Role refresh is currently being processed.');
@@ -30,7 +31,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setDescription(`### Refreshing Server Roles ${EMOJIS.LOADING}`)
-			.setFooter({ text: `Progress: -/- (0%)${args.is_dry_run ? ' [DryRun]' : ''}` });
+			.setFooter({ text: `Progress: -/- (0%)${args.is_test_run ? ' [TestRun]' : ''}` });
 		const message = await interaction.editReply({ embeds: [embed] });
 
 		const handleChanges = async (closed = false) => {
@@ -42,7 +43,7 @@ export default class AutoTownHallRoleCommand extends Command {
 			embed.setFooter({
 				text: [
 					`Time Elapsed: ${moment.duration(Date.now() - startTime).format('h[h] m[m] s[s]', { trim: 'both mid' })}`,
-					`Progress: ${changes.progress}/${changes.memberCount} (${percentage}%)${args.is_dry_run ? ' [DryRun]' : ''}`
+					`Progress: ${changes.progress}/${changes.memberCount} (${percentage}%)${args.is_test_run ? ' [TestRun]' : ''}`
 				].join('\n')
 			});
 
@@ -76,7 +77,8 @@ export default class AutoTownHallRoleCommand extends Command {
 
 		try {
 			const changes = await this.client.rolesManager.updateMany(interaction.guildId, {
-				isDryRun: Boolean(args.is_dry_run),
+				isDryRun: Boolean(args.is_test_run),
+				userId: args.user?.id ?? null,
 				logging: true,
 				reason: `manually updated by ${interaction.user.displayName}`
 			});

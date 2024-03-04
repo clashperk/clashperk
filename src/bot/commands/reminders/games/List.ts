@@ -4,6 +4,7 @@ import { Collections } from '../../../util/Constants.js';
 import { Command } from '../../../lib/index.js';
 import { Util } from '../../../util/index.js';
 import { ClanGamesReminder } from '../../../struct/ClanGamesScheduler.js';
+import { hexToNanoId } from '../../../util/Helper.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -23,23 +24,23 @@ export default class ReminderListCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction) {
+	public async exec(interaction: CommandInteraction<'cached'>) {
 		const reminders = await this.client.db
 			.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
-			.find({ guild: interaction.guild!.id })
+			.find({ guild: interaction.guildId })
 			.toArray();
 		if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.list.no_reminders', { lng: interaction.locale }));
-		const clans = await this.client.storage.find(interaction.guild!.id);
+		const clans = await this.client.storage.find(interaction.guildId);
 
 		const startTime = moment().startOf('month').add(21, 'days').add(8, 'hour');
 		const endTime = startTime.clone().add(6, 'days');
 
 		const label = (duration: number) => moment.duration(duration).format('d[d] H[h], m[m], s[s]', { trim: 'both mid' });
-		const chunks = reminders.map((reminder, index) => {
+		const chunks = reminders.map((reminder) => {
 			const clanNames = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => `${clan.name} (${clan.tag})`);
 			const timestamp = moment(endTime).subtract(reminder.duration, 'milliseconds').toDate();
 			return [
-				`**🔔 Reminder (ID: ${index + 1})**`,
+				`**🔔 Reminder (ID: ${hexToNanoId(reminder._id)})**`,
 				`${label(reminder.duration)} remaining - ${time(timestamp, 'R')}`,
 				'**Channel**',
 				`<#${reminder.channel}>`,

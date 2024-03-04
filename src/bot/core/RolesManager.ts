@@ -4,7 +4,7 @@ import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/Client.js';
 import { Collections, PLAYER_LEAGUE_MAPS, SUPER_SCRIPTS, Settings } from '../util/Constants.js';
-import { makeAbbr } from '../util/Helper.js';
+import { makeAbbr, sumHeroes } from '../util/Helper.js';
 
 export const roles: { [key: string]: number } = {
 	member: 1,
@@ -26,6 +26,11 @@ const NickActions = {
 	NO_ACTION: 'no-action',
 	SET_NAME: 'set-name'
 } as const;
+
+export enum NicknamingAccountPreference {
+	DEFAULT_ACCOUNT = 'default-account',
+	BEST_ACCOUNT = 'best-account'
+}
 
 const OpTypes = ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT', 'LEAGUE_CHANGE', 'TOWN_HALL_UPGRADE', 'NAME_CHANGE', 'WAR', 'WAR_REMOVED'];
 
@@ -219,14 +224,27 @@ export class RolesManager {
 		};
 	}
 
+	private async getTargetedGuildMembersForSingleMember(guild: Guild, userId: string) {
+		const guildMember = await guild.members.fetch(userId).catch(() => null);
+		const guildMembers = guildMember
+			? EMPTY_GUILD_MEMBER_COLLECTION.clone().set(guildMember.id, guildMember)
+			: EMPTY_GUILD_MEMBER_COLLECTION;
+
+		const linkedPlayers = await this.getLinkedPlayersByUserId(guildMembers.map((m) => m.id));
+		const linkedUserIds = Object.keys(linkedPlayers);
+
+		return { linkedPlayers, linkedUserIds, guildMembers };
+	}
+
 	public async updateMany(
 		guildId: string,
 		{
 			isDryRun = false,
 			pollingInput,
 			logging,
+			userId,
 			reason
-		}: { isDryRun: boolean; logging: boolean; pollingInput?: RolesManagerPollingInput; reason?: string }
+		}: { isDryRun: boolean; logging: boolean; userId?: string | null; pollingInput?: RolesManagerPollingInput; reason?: string }
 	): Promise<RolesManagerChangeLog | null> {
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
@@ -235,7 +253,9 @@ export class RolesManager {
 		const { targetedRoles, warRoles } = this.getTargetedRoles(rolesMap);
 		const playersInWarMap = warRoles.length ? await this.getWarRolesMap(rolesMap.warClanTags) : {};
 
-		const { guildMembers, linkedPlayers, linkedUserIds } = await this.getTargetedGuildMembers(guild, pollingInput);
+		const { guildMembers, linkedPlayers, linkedUserIds } = userId
+			? await this.getTargetedGuildMembersForSingleMember(guild, userId)
+			: await this.getTargetedGuildMembers(guild, pollingInput);
 
 		const targetedMembers = guildMembers.filter(
 			(m) => !m.user.bot && (m.roles.cache.hasAny(...targetedRoles) || linkedUserIds.includes(m.id))
@@ -463,12 +483,31 @@ export class RolesManager {
 		});
 	}
 
+	private getPreferredPlayer(players: APIPlayer[], rolesMap: GuildRolesDto) {
+		const accountPreference = this.client.settings.get<NicknamingAccountPreference>(
+			rolesMap.guildId,
+			Settings.NICKNAMING_ACCOUNT_PREFERENCE,
+			NicknamingAccountPreference.DEFAULT_ACCOUNT
+		);
+
+		if (accountPreference === NicknamingAccountPreference.DEFAULT_ACCOUNT) return players.at(0);
+
+		const inFamilyPlayers = players.filter((player) => player.clan && rolesMap.clanTags.includes(player.clan.tag));
+		inFamilyPlayers.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
+		inFamilyPlayers.sort((a, b) => sumHeroes(b) - sumHeroes(a));
+		inFamilyPlayers.sort((a, b) => b.townHallLevel - a.townHallLevel);
+
+		return inFamilyPlayers.at(0) ?? players.at(0);
+	}
+
 	public preNicknameUpdate(players: APIPlayer[], member: GuildMember, rolesMap: GuildRolesDto) {
 		if (member.id === member.guild.ownerId) return { action: NickActions.DECLINED };
 		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames)) return { action: NickActions.DECLINED };
 		if (member.guild.members.me.roles.highest.position <= member.roles.highest.position) return { action: NickActions.DECLINED };
 
-		const player = players.at(0);
+		if (!players.length) return { action: NickActions.UNSET };
+		const player = this.getPreferredPlayer(players, rolesMap);
+
 		if (!player) return { action: NickActions.UNSET };
 
 		const isNickNamingEnabled = this.client.settings.get<boolean>(rolesMap.guildId, Settings.AUTO_NICKNAME, false);

@@ -1453,16 +1453,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						]
 					},
 					{
-						name: 'group_by_players',
-						description: 'Group by players',
-						type: ApplicationCommandOptionType.Boolean
-					},
-					{
 						name: 'player_tag',
 						description: 'Show all flags against a player',
 						autocomplete: true,
 						max_length: 100,
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'group_by_players',
+						description: 'Group by players',
+						type: ApplicationCommandOptionType.Boolean
 					}
 				]
 			},
@@ -1504,11 +1504,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						autocomplete: true
 					}
 				]
-			},
-			{
-				name: 'search',
-				description: 'This command was replaced with /flag list command.',
-				type: ApplicationCommandOptionType.Subcommand
 			}
 		]
 	},
@@ -2753,7 +2748,19 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'refresh',
 				description: 'Refresh automatic clan roles.',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'user',
+						description: 'Refresh an individual user.',
+						type: ApplicationCommandOptionType.User
+					},
+					{
+						name: 'is_test_run',
+						description: 'Whether to run as a test.',
+						type: ApplicationCommandOptionType.Boolean
+					}
+				]
 			}
 		]
 	},
@@ -3658,7 +3665,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'enable_auto',
+						name: 'change_nicknames',
 						description: 'Whether to update nicknames automatically.',
 						type: ApplicationCommandOptionType.String,
 						choices: [
@@ -3669,6 +3676,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'No',
 								value: 'false'
+							}
+						]
+					},
+					{
+						name: 'account_preference_for_naming',
+						description: 'Whether to use the default account or the best account in the family.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Use Default Account',
+								value: 'default-account'
+							},
+							{
+								name: 'Use The Best Account',
+								value: 'best-account'
 							}
 						]
 					}

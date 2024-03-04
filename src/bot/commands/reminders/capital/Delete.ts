@@ -14,6 +14,7 @@ import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../../lib/index.js';
 import { RaidReminder, RaidSchedule } from '../../../struct/CapitalRaidScheduler.js';
 import { Collections } from '../../../util/Constants.js';
+import { hexToNanoId } from '../../../util/Helper.js';
 import { Util } from '../../../util/index.js';
 
 const roles: Record<string, string> = {
@@ -42,7 +43,7 @@ export default class CapitalReminderDeleteCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { id, clear }: { id?: string; clear: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { id?: string; clear: boolean }) {
 		const reminders = await this.client.db
 			.collection<RaidReminder>(Collections.RAID_REMINDERS)
 			.find({ guild: interaction.guild.id })
@@ -50,18 +51,19 @@ export default class CapitalReminderDeleteCommand extends Command {
 		if (!reminders.length)
 			return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
 
-		if (clear) {
+		if (args.clear) {
 			await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).deleteMany({ guild: interaction.guild.id });
 			await this.client.db.collection<RaidSchedule>(Collections.RAID_SCHEDULERS).deleteMany({ guild: interaction.guildId });
 			return interaction.editReply(this.i18n('command.reminders.delete.cleared', { lng: interaction.locale }));
 		}
 
-		if (id) {
-			const reminderId = reminders[Number(id) - 1]?._id as ObjectId | null;
-			if (!reminderId) return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id }));
+		if (args.id) {
+			const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id?.toUpperCase())?._id;
+			if (!reminderId)
+				return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 			await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).deleteOne({ _id: reminderId });
 			await this.client.db.collection<RaidSchedule>(Collections.RAID_SCHEDULERS).deleteMany({ reminderId });
-			return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id }));
+			return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id }));
 		}
 
 		if (reminders.length > 25)
