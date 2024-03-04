@@ -29,7 +29,8 @@ const NickActions = {
 
 export enum NicknamingAccountPreference {
 	DEFAULT_ACCOUNT = 'default-account',
-	BEST_ACCOUNT = 'best-account'
+	BEST_ACCOUNT = 'best-account',
+	DEFAULT_OR_BEST_ACCOUNT = 'default-or-best-account'
 }
 
 const OpTypes = ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT', 'LEAGUE_CHANGE', 'TOWN_HALL_UPGRADE', 'NAME_CHANGE', 'WAR', 'WAR_REMOVED'];
@@ -487,10 +488,15 @@ export class RolesManager {
 		const accountPreference = this.client.settings.get<NicknamingAccountPreference>(
 			rolesMap.guildId,
 			Settings.NICKNAMING_ACCOUNT_PREFERENCE,
-			NicknamingAccountPreference.DEFAULT_ACCOUNT
+			NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT
 		);
 
 		if (accountPreference === NicknamingAccountPreference.DEFAULT_ACCOUNT) return players.at(0);
+
+		if (accountPreference === NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT) {
+			const player = players.at(0);
+			if (player && player.clan && rolesMap.clanTags.includes(player.clan.tag)) return player;
+		}
 
 		const inFamilyPlayers = players.filter((player) => player.clan && rolesMap.clanTags.includes(player.clan.tag));
 		inFamilyPlayers.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));

@@ -3685,12 +3685,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
-								name: 'Use Default Account',
+								name: 'Default Account',
 								value: 'default-account'
 							},
 							{
-								name: 'Use The Best Account',
+								name: 'Best Account',
 								value: 'best-account'
+							},
+							{
+								name: 'Default or Best Account',
+								value: 'default-or-best-account'
 							}
 						]
 					}

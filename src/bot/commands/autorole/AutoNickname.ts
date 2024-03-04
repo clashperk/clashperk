@@ -85,7 +85,7 @@ export default class NicknameConfigCommand extends Command {
 		const accountPreference = this.client.settings.get<NicknamingAccountPreference>(
 			interaction.guildId,
 			Settings.NICKNAMING_ACCOUNT_PREFERENCE,
-			NicknamingAccountPreference.DEFAULT_ACCOUNT
+			NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT
 		);
 
 		const embed = new EmbedBuilder().setAuthor({ name: 'Server Nickname Settings' }).setColor(this.client.embed(interaction));
