@@ -2883,6 +2883,20 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'clan-games'
 							}
 						]
+					},
+					{
+						name: 'clans',
+						autocomplete: true,
+						description: command.reminders.create.options.clans.description,
+						description_localizations: translation('command.reminders.create.options.clans.description'),
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'channel',
+						description: command.reminders.create.options.channel.description,
+						description_localizations: translation('command.reminders.create.options.channel.description'),
+						type: ApplicationCommandOptionType.Channel,
+						channel_types: ChannelTypes
 					}
 				]
 			},

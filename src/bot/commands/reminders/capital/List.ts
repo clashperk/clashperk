@@ -1,10 +1,11 @@
-import { CommandInteraction, escapeMarkdown, time } from 'discord.js';
+import { AnyThreadChannel, CommandInteraction, TextChannel, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
+import { Filter } from 'mongodb';
 import { Command } from '../../../lib/index.js';
 import { RaidReminder } from '../../../struct/CapitalRaidScheduler.js';
 import { Collections } from '../../../util/Constants.js';
-import { Util } from '../../../util/index.js';
 import { hexToNanoId } from '../../../util/Helper.js';
+import { Util } from '../../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -24,11 +25,22 @@ export default class ReminderListCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { channel?: TextChannel | AnyThreadChannel; clans?: string }) {
+		const filter: Filter<RaidReminder> = {
+			guild: interaction.guildId
+		};
+		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
+		if (args.channel) filter.channel = args.channel.id;
+		if (tags.length) filter.clans = { $in: tags };
+
 		const reminders = await this.client.db
 			.collection<RaidReminder>(Collections.RAID_REMINDERS)
 			.find({ guild: interaction.guildId })
 			.toArray();
+		if (!reminders.length && (args.channel || tags.length)) {
+			return interaction.editReply('No reminders were found for the specified channel or clans.');
+		}
+
 		if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.list.no_reminders', { lng: interaction.locale }));
 		const clans = await this.client.storage.find(interaction.guildId);
 
