@@ -249,8 +249,7 @@ export default class ReminderNowCommand extends Command {
 		for (const tag of reminder.clans) {
 			const currentWars = await this.client.http.getCurrentWars(tag);
 			for (const data of currentWars) {
-				// if (!data.ok) continue;
-				if (['notInWar', 'warEnded'].includes(data.state)) continue;
+				if (['notInWar', 'warEnded', 'preparation'].includes(data.state)) continue;
 
 				const warType = data.warTag ? 'cwl' : data.isFriendly ? 'friendly' : 'normal';
 				if (!reminder.warTypes.includes(warType)) continue;
