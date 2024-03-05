@@ -198,14 +198,12 @@ export default class SetupCommand extends Command {
 					verifiedOnly: roleSet?.verifiedOnly
 				};
 			})
-			.filter((roleSet) => roleSet.roleIds.length || roleSet.warRoleId || roleSet.verifiedOnly);
+			.filter((roleSet) => roleSet.roleIds.length && roleSet.verifiedOnly);
 
-		const verifiedOnly = this.client.settings.get(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES);
-		if (typeof verifiedOnly !== 'boolean') {
+		if (typeof this.client.settings.get(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES) !== 'boolean') {
 			await this.client.settings.set(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, verifiedOnlyClans.length > 0);
 		}
-
-		const requiresVerification = verifiedOnly ?? verifiedOnlyClans.length > 0;
+		const requiresVerification = this.client.settings.get<boolean>(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 
 		embed.setTitle('Clan Roles');
 		embed.setDescription(

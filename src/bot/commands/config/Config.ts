@@ -28,6 +28,7 @@ export default class ConfigCommand extends Command {
 			verified_only_clan_roles?: boolean;
 		}
 	) {
+		console.log(typeof args.verified_only_clan_roles);
 		if (!this.client.util.isManager(interaction.member) && Object.keys(args).some((key) => args[key as keyof typeof args])) {
 			return interaction.reply({
 				content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to change these settings.`,

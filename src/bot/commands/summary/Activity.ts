@@ -70,13 +70,13 @@ export default class SummaryCommand extends Command {
 		return this.clearId(interaction);
 	}
 
-	private async getActivity(tag: string): Promise<{ avg_total: number; avg_online: number } | null> {
+	private async getActivity(clanTag: string): Promise<{ avg_total: number; avg_online: number } | null> {
 		return this.client.db
 			.collection(Collections.LAST_SEEN)
 			.aggregate<{ avg_total: number; avg_online: number }>([
 				{
 					$match: {
-						'clan.tag': tag
+						'clan.tag': clanTag
 					}
 				},
 				{

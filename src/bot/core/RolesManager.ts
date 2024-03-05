@@ -98,7 +98,7 @@ export class RolesManager {
 			return prev;
 		}, {});
 
-		if (this.client.settings.get(guildId, Settings.VERIFIED_ONLY_CLAN_ROLES) !== 'boolean') {
+		if (typeof this.client.settings.get(guildId, Settings.VERIFIED_ONLY_CLAN_ROLES) !== 'boolean') {
 			await this.client.settings.set(
 				guildId,
 				Settings.VERIFIED_ONLY_CLAN_ROLES,

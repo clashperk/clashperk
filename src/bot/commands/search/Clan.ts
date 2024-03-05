@@ -188,8 +188,7 @@ export default class ClanCommand extends Command {
 			.aggregate<{ avg_total: number; avg_online: number }>([
 				{
 					$match: {
-						'clan.tag': clan.tag,
-						'tag': { $in: clan.memberList.map((m) => m.tag) }
+						'clan.tag': clan.tag
 					}
 				},
 				{
@@ -203,6 +202,13 @@ export default class ClanCommand extends Command {
 				{
 					$unwind: {
 						path: '$entries'
+					}
+				},
+				{
+					$match: {
+						'entries.entry': {
+							$gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+						}
 					}
 				},
 				{
