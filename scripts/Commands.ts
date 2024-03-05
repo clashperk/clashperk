@@ -1064,18 +1064,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'clans',
 				autocomplete: true,
-				description: 'View the war history of a clan.',
+				description: 'Select clans for the history.',
 				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'player_tag',
 				autocomplete: true,
-				description: 'View the CWL history of a player.',
+				description: 'Select a player for the history.',
 				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'user',
-				description: 'View the war history of a player.',
+				description: 'Select a user for the history.',
 				type: ApplicationCommandOptionType.User
 			}
 		]
