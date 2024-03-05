@@ -49,45 +49,49 @@ export default class AutoLeagueRoleCommand extends Command {
 			);
 		}
 
-		const roles = PLAYER_LEAGUE_NAMES.map((league) => ({
-			role: args[league],
-			league: league
-		}));
+		const rolesMap: Record<string, Role> = {};
+		for (const key in args) {
+			if (!PLAYER_LEAGUE_NAMES.includes(key)) continue;
+			rolesMap[key] = args[key]!;
+		}
+		const selected = Object.entries(rolesMap).map(([league, role]) => ({ league, role }));
 
-		const selected = roles.filter((r) => r.role);
+		if (typeof args.allowExternal === 'boolean') {
+			await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, Boolean(args.allowExternal));
+			if (!selected.length) {
+				return interaction.editReply('League roles settings updated.');
+			}
+		}
+
 		if (!selected.length) {
 			return interaction.followUp({ content: 'You must select at least one role.', ephemeral: true });
 		}
 
-		if (selected.some((r) => this.isSystemRole(r.role!, interaction.guild))) {
+		if (selected.some((r) => this.isSystemRole(r.role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
 		}
 
-		if (selected.some((r) => this.isHigherRole(r.role!, interaction.guild))) {
+		if (selected.some((r) => this.isHigherRole(r.role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
 		}
 
-		await this.client.settings.set(
-			interaction.guildId,
-			Settings.LEAGUE_ROLES,
-			selected.reduce<Record<string, string>>((prev, curr) => {
-				prev[curr.league] = curr.role!.id;
-				return prev;
-			}, {})
-		);
-		await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, Boolean(args.allowExternal));
+		const rolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.LEAGUE_ROLES, {});
+		Object.assign(rolesConfig, Object.fromEntries(selected.map((s) => [s.league, s.role.id])));
+		await this.client.settings.set(interaction.guildId, Settings.LEAGUE_ROLES, rolesConfig);
 
 		this.client.storage.updateLinks(interaction.guildId);
 		// TODO: Refresh Roles
+
+		const roles = PLAYER_LEAGUE_NAMES.map((league) => ({
+			league,
+			role: rolesConfig[league]
+		}));
 
 		return interaction.editReply({
 			allowedMentions: { parse: [] },
 			content: [
 				roles
-					.map(
-						(role) =>
-							`${role.league.replace(/\b(\w)/g, (char) => char.toUpperCase())} ${role.role ? `<@&${role.role.id}>` : ''}`
-					)
+					.map(({ league, role }) => `${league.replace(/\b(\w)/g, (char) => char.toUpperCase())} ${role ? `<@&${role}>` : ''}`)
 					.join('\n'),
 				'',
 				args.allowExternal ? '' : '(Family Only) Roles will be given to family members only.'
@@ -106,6 +110,6 @@ export default class AutoLeagueRoleCommand extends Command {
 	private async disable(interaction: CommandInteraction<'cached'>) {
 		this.client.settings.delete(interaction.guildId, Settings.LEAGUE_ROLES);
 		this.client.settings.delete(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE);
-		return interaction.editReply('Successfully disabled automatic league roles.');
+		return interaction.editReply('Successfully disabled league roles.');
 	}
 }

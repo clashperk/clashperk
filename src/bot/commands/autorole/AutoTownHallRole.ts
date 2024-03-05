@@ -37,7 +37,7 @@ export default class AutoTownHallRoleCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { [key: `th_${string}`]: Role | null; command: string; allowExternal: boolean }
+		args: { command: string; allowExternal: boolean } & Record<string, Role | null>
 	) {
 		if (args.command === 'disable') return this.disable(interaction);
 
@@ -48,40 +48,54 @@ export default class AutoTownHallRoleCommand extends Command {
 			);
 		}
 
-		const roles = Array(MAX_TOWN_HALL_LEVEL - 2)
+		const TOWN_HALL_LEVELS = Array(MAX_TOWN_HALL_LEVEL - 2)
 			.fill(0)
-			.map((_, i) => ({ role: args[`th_${i + 3}`], hall: i + 3 }));
+			.map((_, i) => i + 3);
+		const TOWN_HALL_KEYS = TOWN_HALL_LEVELS.map((level) => `th_${level}`);
 
-		const selected = roles.filter((r) => r.role);
+		const rolesMap: Record<string, Role> = {};
+		for (const key in args) {
+			if (!TOWN_HALL_KEYS.includes(key)) continue;
+			rolesMap[key.replace(/^th_/, '')] = args[key]!;
+		}
+
+		const selected = Object.entries(rolesMap).map(([hall, role]) => ({ hall, role }));
+
+		if (typeof args.allowExternal === 'boolean') {
+			await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, Boolean(args.allowExternal));
+			if (!selected.length) {
+				return interaction.editReply('Town Hall roles settings updated.');
+			}
+		}
+
 		if (!selected.length) {
 			return interaction.followUp({ content: 'You must select at least one role.', ephemeral: true });
 		}
 
-		if (selected.some((r) => this.isSystemRole(r.role!, interaction.guild))) {
+		if (selected.some((r) => this.isSystemRole(r.role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
 		}
 
-		if (selected.some((r) => this.isHigherRole(r.role!, interaction.guild))) {
+		if (selected.some((r) => this.isHigherRole(r.role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
 		}
 
-		await this.client.settings.set(
-			interaction.guildId,
-			Settings.TOWN_HALL_ROLES,
-			selected.reduce<Record<string, string>>((prev, curr) => {
-				prev[curr.hall] = curr.role!.id;
-				return prev;
-			}, {})
-		);
-		await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, Boolean(args.allowExternal));
+		const rolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.TOWN_HALL_ROLES, {});
+		Object.assign(rolesConfig, Object.fromEntries(selected.map((s) => [s.hall, s.role.id])));
+		await this.client.settings.set(interaction.guildId, Settings.TOWN_HALL_ROLES, rolesConfig);
 
 		this.client.storage.updateLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
+		const roles = TOWN_HALL_LEVELS.map((hall) => ({
+			hall,
+			role: rolesConfig[hall]
+		}));
+
 		return interaction.editReply({
 			allowedMentions: { parse: [] },
 			content: [
-				roles.map((role) => `${ORANGE_NUMBERS[role.hall]} ${role.role ? `<@&${role.role.id}>` : ''}`).join('\n'),
+				roles.map(({ role, hall }) => `${ORANGE_NUMBERS[hall]} ${role ? `<@&${role}>` : ''}`).join('\n'),
 				'',
 				args.allowExternal ? '' : '(Family Only) Roles will be given to family members only.'
 			].join('\n')
@@ -99,6 +113,6 @@ export default class AutoTownHallRoleCommand extends Command {
 	private async disable(interaction: CommandInteraction<'cached'>) {
 		this.client.settings.delete(interaction.guildId, Settings.TOWN_HALL_ROLES);
 		this.client.settings.delete(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS);
-		return interaction.editReply('Successfully disabled automatic Town Hall roles.');
+		return interaction.editReply('Successfully disabled Town Hall roles.');
 	}
 }

@@ -49,11 +49,6 @@ export default class AutoClanRoleCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
 		if (args.command === 'disable') return this.disable(interaction, args);
 
-		const verifiedOnly = this.client.settings.get(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES);
-		if (typeof verifiedOnly !== 'boolean' || typeof args.verify === 'boolean') {
-			await this.client.settings.set(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, Boolean(args.verify));
-		}
-
 		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
 		const clans =
 			args.clans === '*'
@@ -73,6 +68,13 @@ export default class AutoClanRoleCommand extends Command {
 		const { member, elder, coLead, leader, commonRole } = args;
 		const roles = [member, elder, coLead, leader, commonRole];
 		const selected = roles.filter((role) => role) as Role[];
+
+		if (typeof args.verify === 'boolean') {
+			await this.client.settings.set(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, Boolean(args.verify));
+			if (!selected.length) {
+				return interaction.editReply('Clan roles settings updated.');
+			}
+		}
 
 		if (!selected.length) {
 			return interaction.followUp({ content: 'You must select at least one role.', ephemeral: true });
