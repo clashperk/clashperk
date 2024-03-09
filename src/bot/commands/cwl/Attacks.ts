@@ -53,16 +53,11 @@ export default class CWLAttacksCommand extends Command {
 			);
 		}
 
-		if (!res.ok && !group) {
-			return interaction.editReply(
-				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
-			);
-		}
-
+		const isIncorrectSeason = !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
 		const entityLike = args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
 		const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
 
-		if ((!res.ok && !group) || !entityLike) {
+		if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
@@ -125,7 +120,7 @@ export default class CWLAttacksCommand extends Command {
 						.forEach((member, index) => {
 							if (member.attacks?.length) {
 								attackers.push({
-									name: member.name,
+									name: member.name || member.tag,
 									mapPosition: index + 1,
 									stars: member.attacks.at(0)!.stars,
 									destruction: member.attacks.at(0)!.destructionPercentage
@@ -133,7 +128,7 @@ export default class CWLAttacksCommand extends Command {
 								starTypes.push(member.attacks.at(0)!.stars);
 							} else {
 								slackers.push({
-									name: member.name,
+									name: member.name || member.tag,
 									mapPosition: index + 1,
 									townHallLevel: member.townhallLevel
 								});
@@ -219,7 +214,7 @@ export default class CWLAttacksCommand extends Command {
 					for (const mem of clan.members) {
 						if (mem.attacks?.length) continue;
 						missed[mem.tag] = {
-							name: mem.name, // eslint-disable-next-line
+							name: mem.name || mem.tag, // eslint-disable-next-line
 							count: Number((missed[mem.tag] || { count: 0 }).count) + 1
 						};
 					}

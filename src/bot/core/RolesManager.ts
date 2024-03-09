@@ -53,6 +53,8 @@ export class RolesManager {
 
 		for (const guildId of guildIds) {
 			if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, true)) continue;
+			if (this.client.settings.hasCustomBot(guildId) && !this.client.isCustom()) continue;
+
 			const opKey = `${guildId}-${pollingInput.state ? 'WAR' : 'FEED'}`;
 			if (!this.client.guilds.cache.has(guildId)) continue;
 			if (this.queues.has(opKey)) continue;
@@ -61,7 +63,6 @@ export class RolesManager {
 			try {
 				await this.updateMany(guildId, { isDryRun: false, logging: false, pollingInput, reason: 'automatically updated' });
 			} finally {
-				this.clearChangeLogs(guildId);
 				this.scheduleQueueDeletion(opKey);
 			}
 		}

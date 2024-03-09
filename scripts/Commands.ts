@@ -3644,16 +3644,24 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				required: true
 			},
 			{
-				name: 'name',
+				name: 'army_name',
 				description: command.army.options.name.description,
 				description_localizations: translation('command.army.options.name.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
-				name: 'clan_castle',
-				description: 'Optional clan castle troops.',
+				name: 'equipment',
+				description: 'Hero equipment (type anything)',
 				type: ApplicationCommandOptionType.String,
+				max_length: 600,
+				required: false
+			},
+			{
+				name: 'clan_castle',
+				description: 'Clan castle (type anything)',
+				type: ApplicationCommandOptionType.String,
+				max_length: 600,
 				required: false
 			}
 		]

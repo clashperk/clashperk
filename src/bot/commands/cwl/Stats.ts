@@ -34,10 +34,11 @@ export default class CWLStatsCommand extends Command {
 			);
 		}
 
+		const isIncorrectSeason = !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
 		const entityLike = args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
 		const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
 
-		if ((!res.ok && !group) || !entityLike) {
+		if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);

@@ -31,12 +31,19 @@ export default class ArmyCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction, args: { link?: string; message?: string; name?: string; clan_castle?: string }) {
+	public async exec(
+		interaction: CommandInteraction,
+		args: { link?: string; message?: string; army_name?: string; clan_castle?: string; equipment?: string }
+	) {
 		const payload = this.embed(interaction.guild!, interaction.locale, args);
 		return interaction.editReply(payload);
 	}
 
-	public embed(guild: Guild, locale: string, args: { link?: string; message?: string; name?: string; clan_castle?: string }) {
+	public embed(
+		guild: Guild,
+		locale: string,
+		args: { link?: string; message?: string; army_name?: string; clan_castle?: string; equipment?: string }
+	) {
 		const url = this.getURL(args.link ?? args.message!);
 		const army = url?.searchParams.get('army');
 		if (!army) return { embeds: [], content: this.i18n('command.army.no_link', { lng: locale }) };
@@ -193,7 +200,7 @@ export default class ArmyCommand extends Command {
 			.setColor(this.client.embed(guild.id))
 			.setDescription(
 				[
-					`**${args.name ?? 'Shared Army Composition'} [TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'}]**`,
+					`**${args.army_name ?? 'Shared Army Composition'} [TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'}]**`,
 					'',
 					`${EMOJIS.TROOPS} **${totalTroop}** ${EMOJIS.SPELLS} **${totalSpell}**`
 				].join('\n')
@@ -242,6 +249,15 @@ export default class ArmyCommand extends Command {
 						'**Siege Machines**',
 						siegeMachines.map((en) => `\u200e\`${this.padding(en.total)}\` ${SIEGE_MACHINES[en.name]}  ${en.name}`).join('\n')
 					].join('\n')
+				}
+			]);
+		}
+
+		if (args.equipment) {
+			embed.addFields([
+				{
+					name: '\u200b',
+					value: ['**Hero Equipment**', `${EMOJIS.EQUIPMENT} ${args.equipment}`].join('\n')
 				}
 			]);
 		}

@@ -32,16 +32,11 @@ export default class CWLStarsCommand extends Command {
 			);
 		}
 
-		if (!res.ok && !group) {
-			return interaction.editReply(
-				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
-			);
-		}
-
+		const isIncorrectSeason = !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
 		const entityLike = args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
 		const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
 
-		if ((!res.ok && !group) || !entityLike) {
+		if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
 			return interaction.editReply(
 				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
 			);
@@ -83,7 +78,6 @@ export default class CWLStarsCommand extends Command {
 		}
 	) {
 		const clanTag = clan.tag;
-
 		const members: {
 			[key: string]: {
 				name: string;
@@ -104,7 +98,7 @@ export default class CWLStarsCommand extends Command {
 					for (const m of clan.members) {
 						// eslint-disable-next-line
 						members[m.tag] ??= {
-							name: m.name,
+							name: m.name || m.tag,
 							tag: m.tag,
 							of: 0,
 							attacks: 0,
