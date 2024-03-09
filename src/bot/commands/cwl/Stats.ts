@@ -348,7 +348,7 @@ export default class CWLStatsCommand extends Command {
 				season: body.season,
 				medals: medals,
 				leagueName: WarLeagueMap[leagueId],
-				rounds: `${activeRounds}/${body.rounds.length}`
+				rounds: `${activeRounds}/${body.clans.length - 1}`
 			})
 		}).then((res) => res.arrayBuffer());
 
