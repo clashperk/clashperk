@@ -27,7 +27,7 @@ export default class AutoClanRoleCommand extends Command {
 		}
 
 		if ([args.role].some((role) => this.isSystemRole(role, interaction.guild))) {
-			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
+			return interaction.editReply(`${this.i18n('command.autorole.no_system_roles', { lng: interaction.locale })} (${args.role.id})`);
 		}
 
 		if ([args.role].some((role) => this.isHigherRole(role, interaction.guild))) {

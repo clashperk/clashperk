@@ -52,7 +52,12 @@ export default class AutoFamilyRoleCommand extends Command {
 		}
 
 		if (selected.some((role) => this.isSystemRole(role, interaction.guild))) {
-			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
+			const systemRoles = selected.filter((role) => this.isSystemRole(role, interaction.guild));
+			return interaction.editReply(
+				`${this.i18n('command.autorole.no_system_roles', { lng: interaction.locale })} (${systemRoles
+					.map(({ id }) => `<@&${id}>`)
+					.join(', ')})`
+			);
 		}
 
 		if (selected.some((role) => this.isHigherRole(role, interaction.guild))) {

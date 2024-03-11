@@ -68,7 +68,12 @@ export default class AutoLeagueRoleCommand extends Command {
 		}
 
 		if (selected.some((r) => this.isSystemRole(r.role, interaction.guild))) {
-			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
+			const systemRoles = selected.filter(({ role }) => this.isSystemRole(role, interaction.guild));
+			return interaction.editReply(
+				`${this.i18n('command.autorole.no_system_roles', { lng: interaction.locale })} (${systemRoles
+					.map((r) => `<@&${r.role.id}>`)
+					.join(', ')})`
+			);
 		}
 
 		if (selected.some((r) => this.isHigherRole(r.role, interaction.guild))) {
