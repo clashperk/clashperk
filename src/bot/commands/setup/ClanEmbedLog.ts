@@ -11,12 +11,15 @@ import {
 	messageLink,
 	ModalBuilder,
 	PermissionsString,
+	StringSelectMenuBuilder,
+	StringSelectMenuInteraction,
 	TextChannel,
 	TextInputBuilder,
 	TextInputStyle,
 	WebhookClient
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
+import { ClanEmbedFieldOptions, ClanEmbedFieldValues } from '../../util/CommandOptions.js';
 import { Collections, Flags, missingPermissions, URL_REGEX } from '../../util/Constants.js';
 import { clanEmbedMaker } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
@@ -71,20 +74,30 @@ export default class ClanEmbedCommand extends Command {
 		const customIds = {
 			customize: this.client.uuid(interaction.user.id),
 			confirm: this.client.uuid(interaction.user.id),
-			resend: this.client.uuid(interaction.user.id)
+			resend: this.client.uuid(interaction.user.id),
+			fields: this.client.uuid(interaction.user.id)
 		};
 
-		const state: Partial<{ description: string; bannerImage: string; accepts: string }> = {
+		const state: Partial<{ description: string; bannerImage: string; accepts: string; fields: ClanEmbedFieldValues[] }> = {
 			description: existing?.embed?.description ?? 'auto',
 			bannerImage: existing?.embed?.bannerImage ?? null,
-			accepts: existing?.embed?.accepts ?? 'auto'
+			accepts: existing?.embed?.accepts ?? 'auto',
+			fields: existing?.fields ?? ['*']
 		};
 
 		let embed = await clanEmbedMaker(data, { color, ...state });
 
 		const customizeButton = new ButtonBuilder().setLabel('Customize').setStyle(ButtonStyle.Primary).setCustomId(customIds.customize);
 		const confirmButton = new ButtonBuilder().setLabel('Confirm').setStyle(ButtonStyle.Success).setCustomId(customIds.confirm);
+
+		const menu = new StringSelectMenuBuilder()
+			.setOptions(ClanEmbedFieldOptions.map(({ label, value }) => ({ label, value, default: state.fields?.includes(value) })))
+			.setCustomId(customIds.fields)
+			.setMaxValues(ClanEmbedFieldOptions.length)
+			.setPlaceholder(`Select the Fields`);
+
 		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(customizeButton, confirmButton);
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
 		if (existing) {
 			const resendButton = new ButtonBuilder().setLabel('Resend').setStyle(ButtonStyle.Secondary).setCustomId(customIds.resend);
@@ -95,7 +108,23 @@ export default class ClanEmbedCommand extends Command {
 			buttonRow.addComponents(resendButton, linkButton);
 		}
 
-		const message = await interaction.editReply({ embeds: [embed], components: [buttonRow] });
+		const message = await interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
+
+		const onFieldsCustomization = async (action: StringSelectMenuInteraction<'cached'>) => {
+			await action.deferUpdate();
+
+			state.fields = action.values as ClanEmbedFieldValues[];
+			menu.setOptions(ClanEmbedFieldOptions.map(({ label, value }) => ({ label, value, default: state.fields?.includes(value) })));
+			menuRow.setComponents(menu);
+
+			embed = await clanEmbedMaker(data, {
+				color,
+				isDryRun: true,
+				...state
+			});
+
+			return action.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
+		};
 
 		const onCustomization = async (action: ButtonInteraction<'cached'>) => {
 			const modalCustomIds = {
@@ -166,7 +195,7 @@ export default class ClanEmbedCommand extends Command {
 					...state
 				});
 
-				await modalSubmit.editReply({ embeds: [embed], components: [buttonRow] });
+				await modalSubmit.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
 			} catch (error) {
 				if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
 					throw error;
@@ -186,7 +215,8 @@ export default class ClanEmbedCommand extends Command {
 				embed: {
 					accepts: state.accepts,
 					bannerImage: state.bannerImage,
-					description: state.description?.trim()
+					description: state.description?.trim(),
+					fields: state.fields
 				},
 				webhook: { id: webhook.id, token: webhook.token }
 			});
@@ -247,6 +277,11 @@ export default class ClanEmbedCommand extends Command {
 				}
 				if (action.customId === customIds.resend) {
 					return onResend(action);
+				}
+			},
+			onSelect(action) {
+				if (action.customId === customIds.fields) {
+					return onFieldsCustomization(action);
 				}
 			}
 		});

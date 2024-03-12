@@ -14,6 +14,7 @@ import { title } from 'radash';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
+import { ClanEmbedFields } from './CommandOptions.js';
 import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Util } from './index.js';
@@ -106,9 +107,19 @@ export const clanEmbedMaker = async (
 		description,
 		accepts,
 		color,
-		bannerImage
-	}: { description?: string; accepts?: string; color?: number; bannerImage?: string; isDryRun?: boolean }
+		bannerImage,
+		fields
+	}: {
+		description?: string;
+		accepts?: string;
+		color?: number;
+		bannerImage?: string;
+		isDryRun?: boolean;
+		fields?: string[];
+	}
 ) => {
+	if (!fields || fields?.includes('*')) fields = Object.values(ClanEmbedFields);
+
 	const client = container.resolve(Client);
 	const reduced = clan.memberList.reduce<{ [key: string]: number }>((count, member) => {
 		const townHall = member.townHallLevel;
@@ -120,11 +131,6 @@ export const clanEmbedMaker = async (
 		.map(([level, total]) => ({ level: Number(level), total }))
 		.sort((a, b) => b.level - a.level);
 
-	const location = clan.location
-		? clan.location.isCountry
-			? `:flag_${clan.location.countryCode!.toLowerCase()}: ${clan.location.name}`
-			: `🌐 ${clan.location.name}`
-		: `${EMOJIS.WRONG} None`;
 	const capitalHall = clan.clanCapital.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
 
 	const embed = new EmbedBuilder()
@@ -143,12 +149,12 @@ export const clanEmbedMaker = async (
 	if (bannerImage) embed.setImage(bannerImage);
 
 	const leaders = clan.memberList.filter((m) => m.role === 'leader');
-	const users = await client.db
-		.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-		.find({ tag: { $in: leaders.map(({ tag }) => tag) } })
-		.toArray();
+	if (leaders.length && fields?.includes(ClanEmbedFields.CLAN_LEADER)) {
+		const users = await client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ tag: { $in: leaders.map(({ tag }) => tag) } })
+			.toArray();
 
-	if (leaders.length) {
 		embed.addFields([
 			{
 				name: 'Clan Leader',
@@ -162,48 +168,76 @@ export const clanEmbedMaker = async (
 		]);
 	}
 
-	embed.addFields([
-		{
+	if (fields?.includes(ClanEmbedFields.REQUIREMENTS)) {
+		embed.addFields({
 			name: 'Requirements',
-			value: [
-				`${EMOJIS.TOWN_HALL} ${
-					!accepts || accepts?.toLowerCase() === 'auto'
-						? clan.requiredTownhallLevel
-							? `TH ${clan.requiredTownhallLevel}+`
-							: 'Any'
-						: accepts ?? 'Any'
-				}`,
-				'**Trophies Required**',
-				`${EMOJIS.TROPHY} ${clan.requiredTrophies}`,
-				`**Location** \n${location}`
-			].join('\n')
-		}
-	]);
+			value: `${EMOJIS.TOWN_HALL} ${
+				!accepts || accepts?.toLowerCase() === 'auto'
+					? clan.requiredTownhallLevel
+						? `TH ${clan.requiredTownhallLevel}+`
+						: 'Any'
+					: accepts ?? 'Any'
+			}`
+		});
+	}
 
-	embed.addFields([
-		{
+	if (fields?.includes(ClanEmbedFields.TROPHIES_REQUIRED)) {
+		embed.addFields({
+			name: 'Trophies Required',
+			value: `${EMOJIS.TROPHY} ${clan.requiredTrophies}`
+		});
+	}
+
+	if (fields?.includes(ClanEmbedFields.LOCATION) && clan.location) {
+		const location = clan.location
+			? clan.location.isCountry
+				? `:flag_${clan.location.countryCode!.toLowerCase()}: ${clan.location.name}`
+				: `🌐 ${clan.location.name}`
+			: `${EMOJIS.WRONG} None`;
+
+		embed.addFields({
+			name: 'Location',
+			value: `${location}`
+		});
+	}
+
+	if (fields?.includes(ClanEmbedFields.WAR_PERFORMANCE)) {
+		embed.addFields({
 			name: 'War Performance',
-			value: [
-				`${EMOJIS.OK} ${clan.warWins} Won ${
-					clan.isWarLogPublic ? `${EMOJIS.WRONG} ${clan.warLosses!} Lost ${EMOJIS.EMPTY} ${clan.warTies!} Tied` : ''
-				}`,
-				'**War Frequency & Streak**',
-				`${
-					clan.warFrequency.toLowerCase() === 'morethanonceperweek'
-						? '🎟️ More Than Once Per Week'
-						: `🎟️ ${clan.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
-				} ${'🏅'} ${clan.warWinStreak}`,
-				'**War League**',
-				`${CWL_LEAGUES[clan.warLeague?.name ?? 'Unranked']} ${clan.warLeague?.name ?? 'Unranked'}`,
-				'**Clan Capital**',
-				`${CAPITAL_LEAGUES[clan.capitalLeague?.id ?? UnrankedCapitalLeagueId]} ${clan.capitalLeague?.name ?? 'Unranked'} ${
-					EMOJIS.CAPITAL_TROPHY
-				} ${clan.clanCapitalPoints || 0}`
-			].join('\n')
-		}
-	]);
+			value: `${EMOJIS.OK} ${clan.warWins} Won${
+				clan.isWarLogPublic ? ` ${EMOJIS.WRONG} ${clan.warLosses!} Lost ${EMOJIS.EMPTY} ${clan.warTies!} Tied` : ''
+			} ${clan.warWinStreak > 0 ? `🏅 ${clan.warWinStreak} Win Streak` : ''}`
+		});
+	}
 
-	if (townHalls.length) {
+	if (!['unknown', 'never'].includes(clan.warFrequency) && fields?.includes(ClanEmbedFields.WAR_FREQUENCY)) {
+		embed.addFields({
+			name: 'War Frequency',
+			value: `${
+				clan.warFrequency.toLowerCase() === 'morethanonceperweek'
+					? '🎟️ More Than Once Per Week'
+					: `🎟️ ${clan.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
+			}`
+		});
+	}
+
+	if (fields?.includes(ClanEmbedFields.CLAN_WAR_LEAGUE)) {
+		embed.addFields({
+			name: 'Clan War League',
+			value: `${CWL_LEAGUES[clan.warLeague?.name ?? 'Unranked']} ${clan.warLeague?.name ?? 'Unranked'}`
+		});
+	}
+
+	if (fields?.includes(ClanEmbedFields.CLAN_CAPITAL_LEAGUE)) {
+		embed.addFields({
+			name: 'Clan Capital League',
+			value: `${CAPITAL_LEAGUES[clan.capitalLeague?.id ?? UnrankedCapitalLeagueId]} ${clan.capitalLeague?.name ?? 'Unranked'} ${
+				EMOJIS.CAPITAL_TROPHY
+			} ${clan.clanCapitalPoints || 0}`
+		});
+	}
+
+	if (townHalls.length && fields?.includes(ClanEmbedFields.TOWN_HALLS)) {
 		embed.addFields([
 			{
 				name: 'Town Halls',

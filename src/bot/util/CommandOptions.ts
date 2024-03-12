@@ -98,3 +98,56 @@ export const WarCommandOptions = {
 } as const;
 
 export type WarCommandOptionValues = (typeof WarCommandOptions)[keyof typeof WarCommandOptions];
+
+export const ClanEmbedFields = {
+	CLAN_LEADER: 'clanLeader',
+	REQUIREMENTS: 'requirements',
+	TROPHIES_REQUIRED: 'trophiesRequired',
+	LOCATION: 'location',
+	WAR_PERFORMANCE: 'warPerformance',
+	WAR_FREQUENCY: 'warFrequency',
+	CLAN_WAR_LEAGUE: 'clanWarLeague',
+	CLAN_CAPITAL_LEAGUE: 'clanCapitalLeague',
+	TOWN_HALLS: 'townHalls'
+} as const;
+
+export const ClanEmbedFieldOptions = [
+	{
+		value: ClanEmbedFields.CLAN_LEADER,
+		label: 'Clan Leader'
+	},
+	{
+		value: ClanEmbedFields.REQUIREMENTS,
+		label: 'Requirements'
+	},
+	{
+		value: ClanEmbedFields.TROPHIES_REQUIRED,
+		label: 'Trophies Required'
+	},
+	{
+		value: ClanEmbedFields.LOCATION,
+		label: 'Location'
+	},
+	{
+		value: ClanEmbedFields.WAR_PERFORMANCE,
+		label: 'War Performance'
+	},
+	{
+		value: ClanEmbedFields.WAR_FREQUENCY,
+		label: 'War Frequency'
+	},
+	{
+		value: ClanEmbedFields.CLAN_WAR_LEAGUE,
+		label: 'Clan War League'
+	},
+	{
+		value: ClanEmbedFields.CLAN_CAPITAL_LEAGUE,
+		label: 'Clan Capital League'
+	},
+	{
+		value: ClanEmbedFields.TOWN_HALLS,
+		label: 'Town Halls'
+	}
+] as const;
+
+export type ClanEmbedFieldValues = (typeof ClanEmbedFields)[keyof typeof ClanEmbedFields];

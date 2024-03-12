@@ -128,7 +128,7 @@ export default class StorageHandler {
 		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O/g, '0')}`;
 	}
 
-	public async register(message: CommandInteraction, data: any) {
+	public async register(message: CommandInteraction<'cached'>, data: any) {
 		const [_total, _clan, _lastClan] = await Promise.all([
 			this.collection.countDocuments({ guild: message.guild!.id }),
 			this.collection.findOne({ tag: data.tag }),
@@ -141,18 +141,18 @@ export default class StorageHandler {
 				$set: {
 					name: data.name,
 					tag: data.tag,
-					guild: message.guild!.id,
+					guild: message.guildId,
 					paused: false,
 					active: true,
 					verified: true,
-					order: _total + 1,
-					categoryId: data.categoryId,
+					order: _clan?.order ?? _total + 1,
 					...(data.hexCode ? { color: data.hexCode } : {}),
-					patron: this.client.patrons.get(message.guild!.id)
+					...(data.categoryId ? { categoryId: data.categoryId } : {}),
+					patron: this.client.patrons.get(message.guildId)
 				},
 				$setOnInsert: {
-					createdAt: new Date(),
-					uniqueId: _clan?.uniqueId ?? (_lastClan?.uniqueId ?? 1000) + 1
+					uniqueId: _clan?.uniqueId ?? (_lastClan?.uniqueId ?? 1000) + 1,
+					createdAt: new Date()
 				},
 				$bit: {
 					flag: { or: Number(data.op) }

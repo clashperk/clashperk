@@ -71,6 +71,7 @@ export default class ClanEmbedLog extends BaseLog {
 		const embed = await clanEmbedMaker(data, {
 			description: cache.embed.description,
 			accepts: cache.embed.accepts,
+			fields: cache.embed.fields,
 			bannerImage: cache.embed.bannerImage,
 			color: cache.color
 		});
