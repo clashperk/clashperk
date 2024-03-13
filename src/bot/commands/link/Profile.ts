@@ -242,10 +242,21 @@ export default class ProfileCommand extends Command {
 		});
 	}
 
-	private async getUserByTag(interaction: CommandInteraction<'cached'>, tag: string) {
-		const link = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: this.client.http.fixTag(tag) });
-		if (!link) return interaction.user;
-		return this.client.users.fetch(link.userId).catch(() => interaction.user);
+	private async getUserByTag(interaction: CommandInteraction<'cached'>, playerTag: string) {
+		playerTag = this.client.http.fixTag(playerTag);
+		const [link, externalLink] = await Promise.all([
+			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: playerTag }),
+			this.client.http.getLinkedUser(playerTag)
+		]);
+
+		const userId = link?.userId ?? externalLink?.userId;
+		if (!userId) return interaction.user;
+
+		return this.fetchUser(userId).catch(() => interaction.user);
+	}
+
+	private async fetchUser(userId: string) {
+		return this.client.users.fetch(userId);
 	}
 
 	private async export(interaction: ButtonInteraction<'cached'>, players: LinkData[], user: User) {

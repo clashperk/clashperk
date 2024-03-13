@@ -40,14 +40,15 @@ export const UNICODE_EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 const EMPTY_GUILD_MEMBER_COLLECTION = new Collection<string, GuildMember>();
 
 export class RolesManager {
-	private queues = new Set<string>();
+	private queues = new Map<string, string[]>();
 	private changeLogs: Record<string, RolesManagerChangeLog> = {};
 
 	public constructor(private readonly client: Client) {}
 
 	async exec(clanTag: string, pollingInput: RolesManagerPollingInput) {
 		if (pollingInput.state && pollingInput.state === 'inWar') return;
-		if (!(pollingInput?.members ?? []).filter((mem) => OpTypes.includes(mem.op)).length) return;
+		const memberTags = (pollingInput?.members ?? []).filter((mem) => OpTypes.includes(mem.op)).map((mem) => mem.tag);
+		if (!memberTags.length) return;
 
 		const guildIds = await this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).distinct('guild', { tag: clanTag });
 
@@ -55,26 +56,38 @@ export class RolesManager {
 			if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, true)) continue;
 			if (this.client.settings.hasCustomBot(guildId) && !this.client.isCustom()) continue;
 
-			const opKey = `${guildId}-${pollingInput.state ? 'WAR' : 'FEED'}`;
 			if (!this.client.guilds.cache.has(guildId)) continue;
-			if (this.queues.has(opKey)) continue;
-			this.queues.add(opKey);
 
-			try {
-				await this.updateMany(guildId, { isDryRun: false, logging: false, pollingInput, reason: 'automatically updated' });
-			} finally {
-				this.scheduleQueueDeletion(opKey);
+			if (this.queues.has(guildId)) {
+				this.queues.set(guildId, [...(this.queues.get(guildId) ?? []), ...memberTags]);
+				continue; // a queue is already being processed
 			}
+
+			this.queues.set(guildId, []);
+
+			await this.trigger({ memberTags, guildId });
 		}
 	}
 
-	private scheduleQueueDeletion(opKey: string) {
-		setTimeout(
-			() => {
-				this.queues.delete(opKey);
-			},
-			10 * 60 * 1000
-		);
+	private async trigger({ guildId, memberTags }: { guildId: string; memberTags: string[] }) {
+		try {
+			await this.updateMany(guildId, { isDryRun: false, logging: false, memberTags, reason: 'automatically updated' });
+		} finally {
+			await this.postTriggerAction(guildId);
+		}
+	}
+
+	private async postTriggerAction(guildId: string) {
+		const queuedMemberTags = this.queues.get(guildId);
+		if (queuedMemberTags && queuedMemberTags.length) {
+			this.queues.set(guildId, []);
+
+			await this.delay(1000);
+			this.trigger({ guildId, memberTags: queuedMemberTags });
+			this.client.logger.debug(`Completing remaining ${queuedMemberTags.length} queues`, { label: RolesManager.name });
+		} else {
+			this.queues.delete(guildId);
+		}
 	}
 
 	public async getGuildRolesMap(guildId: string): Promise<GuildRolesDto> {
@@ -206,17 +219,16 @@ export class RolesManager {
 		};
 	}
 
-	private async getTargetedGuildMembers(guild: Guild, pollingInput?: RolesManagerPollingInput) {
+	private async getTargetedGuildMembers(guild: Guild, memberTags?: string[]) {
 		const guildMembers = await guild.members.fetch().catch(() => EMPTY_GUILD_MEMBER_COLLECTION);
-		if (!pollingInput) {
+		if (!memberTags) {
 			const linkedPlayers = await this.getLinkedPlayersByUserId(guildMembers.map((m) => m.id));
 			const linkedUserIds = Object.keys(linkedPlayers);
 
 			return { linkedPlayers, linkedUserIds, guildMembers };
 		}
 
-		const playerTags = (pollingInput?.members ?? []).map((mem) => mem.tag);
-		const linkedPlayers = await this.getLinkedPlayersByPlayerTag(playerTags);
+		const linkedPlayers = await this.getLinkedPlayersByPlayerTag(memberTags);
 		const linkedUserIds = Object.keys(linkedPlayers);
 
 		return {
@@ -242,11 +254,11 @@ export class RolesManager {
 		guildId: string,
 		{
 			isDryRun = false,
-			pollingInput,
+			memberTags,
 			logging,
 			userId,
 			reason
-		}: { isDryRun: boolean; logging: boolean; userId?: string | null; pollingInput?: RolesManagerPollingInput; reason?: string }
+		}: { isDryRun: boolean; logging: boolean; userId?: string | null; memberTags?: string[]; reason?: string }
 	): Promise<RolesManagerChangeLog | null> {
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
@@ -257,7 +269,7 @@ export class RolesManager {
 
 		const { guildMembers, linkedPlayers, linkedUserIds } = userId
 			? await this.getTargetedGuildMembersForSingleMember(guild, userId)
-			: await this.getTargetedGuildMembers(guild, pollingInput);
+			: await this.getTargetedGuildMembers(guild, memberTags);
 
 		const targetedMembers = guildMembers.filter(
 			(m) => !m.user.bot && (m.roles.cache.hasAny(...targetedRoles) || linkedUserIds.includes(m.id))
