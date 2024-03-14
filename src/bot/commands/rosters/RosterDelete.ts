@@ -1,6 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
+import { Settings } from '../../util/Constants.js';
 
 export default class RosterDeleteCommand extends Command {
 	public constructor() {
@@ -8,6 +9,7 @@ export default class RosterDeleteCommand extends Command {
 			category: 'roster',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
+			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			description: {
 				content: ['Delete a roster.']
 			},

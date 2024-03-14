@@ -296,7 +296,7 @@ export default class RosterEditCommand extends Command {
 			customIds,
 			message,
 			onClick: (action) => {
-				if (!this.client.util.isManager(action.member)) {
+				if (!this.client.util.isManager(action.member, Settings.ROSTER_MANAGER_ROLE)) {
 					return action.reply({
 						ephemeral: true,
 						content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to perform this action.`
@@ -307,19 +307,7 @@ export default class RosterEditCommand extends Command {
 			},
 			onSelect: async (action: StringSelectMenuInteraction<'cached'>) => {
 				const value = action.values.at(0)!;
-
-				const roleKey = (
-					[
-						RosterManageActions.ADD_USER,
-						RosterManageActions.DEL_USER,
-						RosterManageActions.CHANGE_CATEGORY,
-						RosterManageActions.CHANGE_ROSTER
-					] as string[]
-				).includes(value)
-					? Settings.ROSTER_MANAGER_ROLE
-					: Settings.MANAGER_ROLE;
-
-				if (!this.client.util.isManager(action.member, roleKey) && !['export'].includes(value)) {
+				if (!this.client.util.isManager(action.member, Settings.ROSTER_MANAGER_ROLE) && !['export'].includes(value)) {
 					return action.reply({
 						ephemeral: true,
 						content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to perform this action.`

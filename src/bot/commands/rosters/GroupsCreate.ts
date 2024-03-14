@@ -1,5 +1,6 @@
 import { CommandInteraction, Role } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { Settings } from '../../util/Constants.js';
 
 interface RosterGroupCreateProps {
 	command: 'create';
@@ -17,6 +18,7 @@ export default class RosterGroupsCreateCommand extends Command {
 				content: ['Manage user groups of the rosters.']
 			},
 			userPermissions: ['ManageGuild'],
+			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			defer: true,
 			ephemeral: true
 		});

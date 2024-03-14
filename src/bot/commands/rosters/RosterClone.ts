@@ -2,6 +2,7 @@ import { CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { IRoster } from '../../struct/RosterManager.js';
+import { Settings } from '../../util/Constants.js';
 
 export default class RosterCloneCommand extends Command {
 	public constructor() {
@@ -9,6 +10,7 @@ export default class RosterCloneCommand extends Command {
 			category: 'roster',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
+			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			description: {
 				content: ['Clone a roster from another roster.']
 			},

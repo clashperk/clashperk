@@ -2,6 +2,7 @@ import { CommandInteraction, Role } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { IRosterCategory } from '../../struct/RosterManager.js';
+import { Settings } from '../../util/Constants.js';
 
 interface RosterGroupModifyProps {
 	command: 'modify';
@@ -22,6 +23,7 @@ export default class RosterGroupsModifyCommand extends Command {
 				content: ['Manage user groups of the rosters.']
 			},
 			userPermissions: ['ManageGuild'],
+			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			defer: true,
 			ephemeral: true
 		});

@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
 import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
+import { Settings } from '../../util/Constants.js';
 
 export default class RosterEditCommand extends Command {
 	public constructor() {
@@ -11,6 +12,7 @@ export default class RosterEditCommand extends Command {
 			category: 'roster',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
+			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			description: {
 				content: ['Create, delete, edit or view rosters.']
 			},

@@ -2,6 +2,7 @@ import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Args, Command } from '../../lib/index.js';
 import { DEFAULT_TROPHY_ROSTER_LAYOUT, IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
+import { Settings } from '../../util/Constants.js';
 
 // /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2})$/
 
@@ -11,6 +12,7 @@ export default class RosterCreateCommand extends Command {
 			category: 'roster',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
+			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			description: {
 				content: ['Create, delete, edit or view rosters.']
 			},
