@@ -72,13 +72,14 @@ export default class SetupUtilsCommand extends Command {
 
 		const state = this.client.settings.get<EmbedState>(interaction.guild, Settings.LINK_EMBEDS, {
 			title: `Welcome to ${interaction.guild.name}`,
-			description: 'Click the button below to link your player account.',
-			token_field: 'optional'
+			description: 'Click the button below to link your account.',
+			token_field: 'optional',
+			thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
 		});
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
-			new ButtonBuilder().setCustomId(customIds.done).setLabel('Finalize').setStyle(ButtonStyle.Success)
+			new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
 		);
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
@@ -126,11 +127,10 @@ export default class SetupUtilsCommand extends Command {
 		await interaction.followUp({
 			ephemeral: true,
 			content: [
-				'**Customization**',
-				'',
+				'### Customization Guide',
 				'- You can customize the embed by clicking the button below.',
 				'- Optionally, you can personalize the webhook name and avatar in the channel settings.',
-				'- Once you are done, click the `Finalize` button to send the link button to the channel.'
+				'- Once you are done, click the `Post Embed` button to send the Link button to the channel.'
 			].join('\n'),
 			components: [menuRow, row]
 		});
