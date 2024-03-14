@@ -2425,35 +2425,35 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'leader',
+						name: 'leader_role',
 						required: false,
 						description: command.autorole.clan_roles.options.leader.description,
 						description_localizations: translation('command.autorole.clan_roles.options.leader.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'co_lead',
+						name: 'co_leader_role',
 						required: false,
 						description: command.autorole.clan_roles.options.co_lead.description,
 						description_localizations: translation('command.autorole.clan_roles.options.co_lead.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'elder',
+						name: 'elder_role',
 						required: false,
 						description: command.autorole.clan_roles.options.elder.description,
 						description_localizations: translation('command.autorole.clan_roles.options.elder.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'member',
+						name: 'member_role',
 						required: false,
 						description: command.autorole.clan_roles.options.member.description,
 						description_localizations: translation('command.autorole.clan_roles.options.member.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'common_role',
+						name: 'everyone_role',
 						required: false,
 						description: command.autorole.clan_roles.options.common_role.description,
 						description_localizations: translation('command.autorole.clan_roles.options.common_role.description'),

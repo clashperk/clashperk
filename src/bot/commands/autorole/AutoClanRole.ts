@@ -1,18 +1,6 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Command } from '../../lib/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
-
-export interface IArgs {
-	command?: 'refresh' | 'disable' | null;
-	clans?: string;
-	member?: Role;
-	elder?: Role;
-	coLead?: Role;
-	leader?: Role;
-	commonRole?: Role;
-	verify: boolean;
-	clear?: boolean;
-}
 
 export default class AutoClanRoleCommand extends Command {
 	public constructor() {
@@ -26,27 +14,21 @@ export default class AutoClanRoleCommand extends Command {
 		});
 	}
 
-	public args(): Args {
-		return {
-			co_lead: {
-				id: 'coLead',
-				match: 'ROLE'
-			},
-			common_role: {
-				id: 'commonRole',
-				match: 'ROLE'
-			},
-			only_verified: {
-				id: 'verify',
-				match: 'BOOLEAN'
-			},
-			clear: {
-				match: 'BOOLEAN'
-			}
-		};
-	}
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: {
+			clans?: string;
+			member_role?: Role;
+			elder_role?: Role;
+			co_leader_role?: Role;
+			leader_role?: Role;
+			everyone_role?: Role;
+			only_verified: boolean;
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
+			command?: 'refresh' | 'disable' | null;
+			clear?: boolean;
+		}
+	) {
 		if (args.command === 'disable') return this.disable(interaction, args);
 
 		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
@@ -65,12 +47,12 @@ export default class AutoClanRoleCommand extends Command {
 			);
 		}
 
-		const { member, elder, coLead, leader, commonRole } = args;
-		const roles = [member, elder, coLead, leader, commonRole];
+		const { everyone_role, member_role, elder_role, co_leader_role, leader_role } = args;
+		const roles = [everyone_role, member_role, elder_role, co_leader_role, leader_role];
 		const selected = roles.filter((role) => role) as Role[];
 
-		if (typeof args.verify === 'boolean') {
-			await this.client.settings.set(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, Boolean(args.verify));
+		if (typeof args.only_verified === 'boolean') {
+			await this.client.settings.set(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, Boolean(args.only_verified));
 			if (!selected.length) {
 				return interaction.editReply('Clan roles settings updated.');
 			}
@@ -95,11 +77,11 @@ export default class AutoClanRoleCommand extends Command {
 
 		const rolesSettings: Record<string, string> = {};
 
-		if (member) rolesSettings['roles.member'] = member.id;
-		if (elder) rolesSettings['roles.admin'] = elder.id;
-		if (coLead) rolesSettings['roles.coLeader'] = coLead.id;
-		if (leader) rolesSettings['roles.leader'] = leader.id;
-		if (commonRole) rolesSettings['roles.everyone'] = commonRole.id;
+		if (member_role) rolesSettings['roles.member'] = member_role.id;
+		if (elder_role) rolesSettings['roles.admin'] = elder_role.id;
+		if (co_leader_role) rolesSettings['roles.coLeader'] = co_leader_role.id;
+		if (leader_role) rolesSettings['roles.leader'] = leader_role.id;
+		if (everyone_role) rolesSettings['roles.everyone'] = everyone_role.id;
 
 		if (Object.keys(rolesSettings).length) {
 			await this.client.db
@@ -127,7 +109,7 @@ export default class AutoClanRoleCommand extends Command {
 		return guild.members.me && role.position > guild.members.me.roles.highest.position;
 	}
 
-	private async disable(interaction: CommandInteraction<'cached'>, args: IArgs) {
+	private async disable(interaction: CommandInteraction<'cached'>, args: { clear?: boolean; clans?: string }) {
 		if (args.clear) {
 			const { matchedCount } = await this.client.db
 				.collection(Collections.CLAN_STORES)
