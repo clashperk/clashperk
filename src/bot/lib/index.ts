@@ -260,6 +260,8 @@ export class CommandHandler extends BaseHandler {
 	public async exec(interaction: CommandInteraction | MessageComponentInteraction, command: Command, args: Record<string, unknown> = {}) {
 		if (await this.postInhibitor(interaction, command)) return;
 		try {
+			await command.pre(interaction, args);
+
 			if (command.defer && !interaction.deferred && !interaction.replied) {
 				await interaction.deferReply({ ephemeral: command.ephemeral });
 			}
@@ -490,6 +492,11 @@ export class Command implements CommandOptions {
 	public condition(interaction: BaseInteraction): { embeds: EmbedBuilder[] } | null;
 	public condition(): { embeds: EmbedBuilder[] } | null {
 		return null;
+	}
+
+	public pre(interaction: BaseInteraction, args: Record<string, unknown>): Promise<unknown>;
+	public pre(): Promise<unknown> {
+		return Promise.resolve();
 	}
 
 	public args(interaction?: BaseInteraction): Args;

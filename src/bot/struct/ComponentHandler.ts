@@ -40,7 +40,13 @@ export default class ComponentHandler {
 		if (!command) return false;
 
 		const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
-		if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) await interaction.deferUpdate();
+		if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) {
+			if (parsed.ephemeral) {
+				await interaction.deferReply({ ephemeral: !!parsed.ephemeral });
+			} else {
+				await interaction.deferUpdate();
+			}
+		}
 
 		const selected = interaction.isStringSelectMenu() ? this.parseStringSelectMenu(interaction, parsed) : {};
 		await this.client.commandHandler.exec(interaction, command, { ...parsed, ...selected });

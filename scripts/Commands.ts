@@ -1628,6 +1628,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'link-button'
 							},
 							{
+								name: 'Role Refresh Button',
+								value: 'role-refresh-button'
+							},
+							{
 								name: 'Events Schedular',
 								value: 'events-schedular'
 							}

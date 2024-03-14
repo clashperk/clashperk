@@ -16,8 +16,9 @@ import {
 	TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Collections, Settings, URL_REGEX } from '../../util/Constants.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/GuildEventsHandler.js';
+import { Collections, Settings, URL_REGEX } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class SetupUtilsCommand extends Command {
 	public constructor() {
@@ -29,6 +30,11 @@ export default class SetupUtilsCommand extends Command {
 			defer: true,
 			ephemeral: true
 		});
+	}
+
+	async pre(_: CommandInteraction, args: { option: string }) {
+		if (args.option === 'role-refresh-button') this.defer = false;
+		else this.defer = true;
 	}
 
 	public args(interaction: CommandInteraction<'cached'>): Args {
@@ -49,6 +55,7 @@ export default class SetupUtilsCommand extends Command {
 		args: { channel: TextChannel | AnyThreadChannel; color: number; option: string; disable?: boolean; max_duration?: number }
 	) {
 		if (args.option === 'events-schedular') return this.handleEvents(interaction, args);
+		if (args.option === 'role-refresh-button') return this.selfRefresh(interaction);
 
 		const customIds = {
 			embed: this.client.uuid(),
@@ -249,6 +256,21 @@ export default class SetupUtilsCommand extends Command {
 			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
+	}
+
+	public async selfRefresh(interaction: CommandInteraction<'cached'>) {
+		const embed = new EmbedBuilder();
+		embed.setColor(this.client.embed(interaction));
+		embed.setTitle(`Welcome to ${interaction.guild.name}`);
+		embed.setDescription('Click the button below to refresh your roles and nickname.');
+		embed.setThumbnail(interaction.guild.iconURL({ forceStatic: false }));
+
+		const customId = this.createId({ cmd: 'autorole-refresh', defer: true, ephemeral: true, user_id: interaction.user.id });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setLabel('Refresh Roles').setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Primary)
+		);
+
+		return interaction.reply({ embeds: [embed], components: [row] });
 	}
 
 	public async handleEvents(

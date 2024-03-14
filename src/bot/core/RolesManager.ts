@@ -41,7 +41,7 @@ const EMPTY_GUILD_MEMBER_COLLECTION = new Collection<string, GuildMember>();
 
 export class RolesManager {
 	private queues = new Map<string, string[]>();
-	private changeLogs: Record<string, RolesManagerChangeLog> = {};
+	private changeLogs: Record<string, RolesChangeLog> = {};
 
 	public constructor(private readonly client: Client) {}
 
@@ -259,7 +259,7 @@ export class RolesManager {
 			userId,
 			reason
 		}: { isDryRun: boolean; logging: boolean; userId?: string | null; memberTags?: string[]; reason?: string }
-	): Promise<RolesManagerChangeLog | null> {
+	): Promise<RolesChangeLog | null> {
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
 
@@ -294,7 +294,7 @@ export class RolesManager {
 			});
 			const nickUpdate = this.preNicknameUpdate(players, member, rolesMap);
 
-			const changeLog: RolesManagerChangeLog['changes'][number] = {
+			const changeLog: RolesChangeLog['changes'][number] = {
 				...roleUpdate,
 				nickname: null,
 				userId: member.id,
@@ -632,13 +632,13 @@ export class RolesManager {
 		return isNickNamingEnabled || isRoleManagementEnabled;
 	}
 
-	public getFilteredChangeLogs(queue: RolesManagerChangeLog | null) {
+	public getFilteredChangeLogs(queue: RolesChangeLog | null) {
 		const roleChanges =
 			queue?.changes.filter(({ excluded, included, nickname }) => included.length || excluded.length || nickname) ?? [];
 		return roleChanges;
 	}
 
-	public getChangeLogs(guildId: string): RolesManagerChangeLog | null {
+	public getChangeLogs(guildId: string): RolesChangeLog | null {
 		return this.changeLogs[guildId] ?? null;
 	}
 
@@ -691,7 +691,7 @@ interface AddRoleInput {
 	rolesToInclude: string[];
 }
 
-interface RolesManagerChangeLog {
+interface RolesChangeLog {
 	memberCount: number;
 	progress: number;
 	changes: {

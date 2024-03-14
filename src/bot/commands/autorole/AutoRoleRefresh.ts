@@ -1,10 +1,10 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { User } from '@sentry/node';
+import { ButtonInteraction, CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { handleMessagePagination } from '../../util/Pagination.js';
-import { User } from '@sentry/node';
 
 export default class AutoTownHallRoleCommand extends Command {
 	public constructor() {
@@ -17,7 +17,10 @@ export default class AutoTownHallRoleCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { is_test_run?: boolean; user?: User }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		args: { is_test_run?: boolean; user?: User; user_id?: string }
+	) {
 		const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
 		if (inProgress) {
 			return interaction.editReply('Role refresh is currently being processed.');
@@ -25,6 +28,12 @@ export default class AutoTownHallRoleCommand extends Command {
 
 		if (this.client.rpcHandler.isInMaintenance) {
 			return interaction.editReply('Command is blocked due to ongoing maintenance break.');
+		}
+
+		if (interaction.isButton() && args.user_id) {
+			const updated = await this.client.rolesManager.updateOne(args.user_id, interaction.guildId);
+			if (updated) return interaction.editReply('Roles and nickname updated successfully.');
+			return interaction.editReply('No changes detected!');
 		}
 
 		const startTime = Date.now();
