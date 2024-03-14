@@ -331,7 +331,7 @@ export class RolesManager {
 			}
 
 			const logEntry = this.changeLogs[guildId];
-			if (logEntry) {
+			if (logEntry && logging) {
 				logEntry.changes.push(changeLog);
 				logEntry.progress += 1;
 			}
@@ -524,13 +524,12 @@ export class RolesManager {
 		if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames)) return { action: NickActions.DECLINED };
 		if (member.guild.members.me.roles.highest.position <= member.roles.highest.position) return { action: NickActions.DECLINED };
 
-		if (!players.length) return { action: NickActions.UNSET };
-		const player = this.getPreferredPlayer(players, rolesMap);
-
-		if (!player) return { action: NickActions.UNSET };
-
 		const isNickNamingEnabled = this.client.settings.get<boolean>(rolesMap.guildId, Settings.AUTO_NICKNAME, false);
 		if (!isNickNamingEnabled) return { action: NickActions.NO_ACTION };
+
+		if (!players.length) return { action: NickActions.UNSET };
+		const player = this.getPreferredPlayer(players, rolesMap);
+		if (!player) return { action: NickActions.UNSET };
 
 		const familyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.FAMILY_NICKNAME_FORMAT);
 		const nonFamilyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT);
