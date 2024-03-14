@@ -834,6 +834,8 @@ export default class StorageHandler {
 	}
 
 	public async updateLinks(guildId: string) {
+		const conflicts = [];
+
 		const clans = await this.find(guildId);
 		const collection = this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS);
 		for (const clan of clans) {
@@ -867,8 +869,16 @@ export default class StorageHandler {
 						source: 'api',
 						createdAt: new Date()
 					});
-				} catch {}
+				} catch {
+					conflicts.push({ userId: user.id, playerTag: tag });
+				}
 			}
+		}
+		if (conflicts.length) {
+			this.client.logger.debug(
+				conflicts.map(({ playerTag }) => playerTag),
+				{ label: 'AccountConflicts' }
+			);
 		}
 	}
 
