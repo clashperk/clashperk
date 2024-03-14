@@ -1,6 +1,7 @@
-import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { ClanStore } from '../../struct/StorageHandler.js';
+import { Settings } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
 
 export default class ClansCommand extends Command {
@@ -8,19 +9,16 @@ export default class ClansCommand extends Command {
 		super('clans', {
 			category: 'setup',
 			channel: 'guild',
-			clientPermissions: ['EmbedLinks']
+			clientPermissions: ['EmbedLinks'],
+			defer: true
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { category_filter?: 'include' | 'exclude' }) {
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
-			return interaction.reply({
-				content: this.i18n('common.no_clans_linked', {
-					lng: interaction.locale,
-					command: this.client.commands.SETUP_ENABLE
-				}),
-				ephemeral: true
+			return interaction.editReply({
+				content: this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
 			});
 		}
 
@@ -42,7 +40,20 @@ export default class ClansCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.setFooter({ text: `Total ${clans.length}` });
 
+		const clanCategoryExclusionList = this.client.settings
+			.get<string[]>(interaction.guildId, Settings.CLAN_CATEGORY_EXCLUSION, [])
+			.filter((id) => categories[id]);
+
+		if (!args.category_filter && clanCategoryExclusionList.length) args.category_filter = 'exclude';
+
 		const chunk = clanGroups
+			.filter(([categoryId]) => {
+				if (!args.category_filter || !clanCategoryExclusionList.length) return true;
+				if (args.category_filter === 'include') {
+					return clanCategoryExclusionList.includes(categoryId);
+				}
+				return !clanCategoryExclusionList.includes(categoryId);
+			})
 			.map(([categoryId, clans]) => {
 				return [
 					`**${categories[categoryId] || 'General'}**`,
@@ -58,7 +69,23 @@ export default class ClansCommand extends Command {
 			embed.addFields({ name: '\u200b', value: field });
 		}
 
-		return interaction.reply({ embeds: [embed] });
+		const payload = {
+			cmd: this.id,
+			category_filter: args.category_filter === 'exclude' ? 'include' : 'exclude'
+		};
+		const customId = this.createId({ ...payload });
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setCustomId(customId)
+				.setLabel(args.category_filter === 'exclude' ? 'Secondary' : 'Primary')
+				.setStyle(args.category_filter === 'exclude' ? ButtonStyle.Secondary : ButtonStyle.Primary)
+		);
+
+		return interaction.editReply({
+			embeds: [embed],
+			components: args.category_filter && clanCategoryExclusionList.length ? [row] : []
+		});
 	}
 
 	private async getCategoriesMap(guildId: string) {
