@@ -3667,6 +3667,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.String,
 				max_length: 600,
 				required: false
+			},
+			{
+				name: 'tips',
+				description: 'Some tips (type anything)',
+				type: ApplicationCommandOptionType.String,
+				max_length: 600,
+				required: false
 			}
 		]
 	},
