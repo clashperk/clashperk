@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { ClanStore } from '../../struct/StorageHandler.js';
 import { Settings } from '../../util/Constants.js';
@@ -22,6 +22,7 @@ export default class ClansCommand extends Command {
 			});
 		}
 
+		const clansMap = await this.getClansMap(clans.map((clan) => clan.tag));
 		const categories = await this.getCategoriesMap(interaction.guildId);
 		const categoryIds = Object.keys(categories);
 
@@ -57,7 +58,10 @@ export default class ClansCommand extends Command {
 			.map(([categoryId, clans]) => {
 				return [
 					`**${categories[categoryId] || 'General'}**`,
-					...clans.map((clan) => `[${escapeMarkdown(clan.name)} (${clan.tag})](http://cprk.eu/c/${clan.tag.replace('#', '')})`)
+					...clans.map((clan) => {
+						const mem = clansMap[clan.tag] || 0;
+						return `[\u200e${clan.name} [${clan.tag}] - ${mem}](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+					})
 				].join('\n');
 			})
 			.join('\n\n');
@@ -91,5 +95,10 @@ export default class ClansCommand extends Command {
 	private async getCategoriesMap(guildId: string) {
 		const categories = await this.client.storage.getOrCreateDefaultCategories(guildId);
 		return Object.fromEntries(categories.map((cat) => [cat.value, cat.name]));
+	}
+
+	private async getClansMap(clanTags: string[]) {
+		const clans = await this.client.redis.getClans(clanTags);
+		return Object.fromEntries(clans.map((clan) => [clan.tag, clan.members]));
 	}
 }

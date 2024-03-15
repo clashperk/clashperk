@@ -17,9 +17,14 @@ export default class AutoTownHallRoleCommand extends Command {
 		});
 	}
 
+	public async pre(interaction: ButtonInteraction | CommandInteraction) {
+		if (interaction.isButton()) this.ephemeral = true;
+		else this.ephemeral = false;
+	}
+
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { is_test_run?: boolean; user?: User; user_id?: string }
+		args: { is_test_run?: boolean; user?: User }
 	) {
 		const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
 		if (inProgress) {
@@ -28,12 +33,6 @@ export default class AutoTownHallRoleCommand extends Command {
 
 		if (this.client.rpcHandler.isInMaintenance) {
 			return interaction.editReply('Command is blocked due to ongoing maintenance break.');
-		}
-
-		if (interaction.isButton() && args.user_id) {
-			const updated = await this.client.rolesManager.updateOne(args.user_id, interaction.guildId);
-			if (updated) return interaction.editReply('Roles and nickname updated successfully.');
-			return interaction.editReply('No changes detected!');
 		}
 
 		const startTime = Date.now();
@@ -59,7 +58,7 @@ export default class AutoTownHallRoleCommand extends Command {
 			const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);
 			const embeds: EmbedBuilder[] = [];
 
-			cluster(roleChanges, 15).forEach((changes) => {
+			cluster(roleChanges, 20).forEach((changes) => {
 				const roleChangeEmbed = new EmbedBuilder(embed.toJSON());
 				changes.forEach(({ included, excluded, nickname, userId, displayName }, itemIndex) => {
 					const values = [`> \u200e${displayName} | <@${userId}>`];
@@ -75,8 +74,14 @@ export default class AutoTownHallRoleCommand extends Command {
 				embeds.push(roleChangeEmbed);
 			});
 
+			if (interaction.isButton()) {
+				return interaction.editReply({ embeds: [embeds.length ? embeds.at(-1)! : embed] });
+			}
+
 			if (closed) {
-				return handleMessagePagination(interaction.user.id, message, embeds.length ? embeds : [embed]);
+				return handleMessagePagination(interaction.user.id, message, embeds.length ? embeds : [embed], (action) => {
+					this.onExport(action, embeds);
+				});
 			} else {
 				return message.edit({ embeds: [embeds.length ? embeds.at(-1)! : embed] });
 			}
@@ -87,14 +92,20 @@ export default class AutoTownHallRoleCommand extends Command {
 		try {
 			const changes = await this.client.rolesManager.updateMany(interaction.guildId, {
 				isDryRun: Boolean(args.is_test_run),
-				userId: args.user?.id ?? null,
+				userId: interaction.isButton() ? interaction.user.id : args.user?.id ?? null,
 				logging: true,
 				reason: `manually updated by ${interaction.user.displayName}`
 			});
 
 			const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);
 			if (!roleChanges?.length) {
-				return message.edit({ embeds: [embed.setDescription('### No role changes detected!')], components: [] });
+				embed.setDescription('### No role changes detected!');
+
+				if (interaction.isButton()) {
+					return interaction.editReply({ embeds: [embed] });
+				} else {
+					return message.edit({ embeds: [embed], components: [] });
+				}
 			}
 
 			return await handleChanges(true);
@@ -102,5 +113,10 @@ export default class AutoTownHallRoleCommand extends Command {
 			clearInterval(timeoutId);
 			this.client.rolesManager.clearChangeLogs(interaction.guildId);
 		}
+	}
+
+	private async onExport(interaction: ButtonInteraction<'cached'>, [embed, ...embeds]: EmbedBuilder[]) {
+		await interaction.editReply({ embeds: [embed], components: [] });
+		for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
 	}
 }

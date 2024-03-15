@@ -265,7 +265,7 @@ export default class SetupUtilsCommand extends Command {
 		embed.setDescription('Click the button below to refresh your roles and nickname.');
 		embed.setThumbnail(interaction.guild.iconURL({ forceStatic: false }));
 
-		const customId = this.createId({ cmd: 'autorole-refresh', defer: true, ephemeral: true, user_id: interaction.user.id });
+		const customId = this.createId({ cmd: 'autorole-refresh', defer: true, ephemeral: true });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setLabel('Refresh Roles').setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Primary)
 		);

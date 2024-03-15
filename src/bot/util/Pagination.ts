@@ -148,8 +148,8 @@ export const handleMessagePagination = async (
 		row.addComponents(indexButton);
 	}
 
-	const exportButton = new ButtonBuilder().setCustomId(customIds.export).setEmoji(EMOJIS.EXPORT).setStyle(ButtonStyle.Secondary);
-	if (typeof onExport === 'function') row.addComponents(exportButton);
+	const exportButton = new ButtonBuilder().setCustomId(customIds.export).setEmoji('🖨️').setStyle(ButtonStyle.Secondary);
+	if (typeof onExport === 'function' && embeds.length > 1) row.addComponents(exportButton);
 
 	let index = 0;
 	const payload: InteractionEditReplyOptions = {
@@ -181,9 +181,11 @@ export const handleMessagePagination = async (
 
 		if (action.customId === customIds.export && action.isButton()) {
 			exportButton.setDisabled(true);
-			await message.edit({ components: [row] });
+			// await message.edit({ components: [] });
 
-			await action.deferReply();
+			// await action.deferReply();
+			await action.deferUpdate();
+
 			await onExport?.(action);
 		}
 	});
