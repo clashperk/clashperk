@@ -198,7 +198,7 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.AUTO_BOARDS).createIndexes([
 				{
-					key: { guild: 1, boardType: 1 },
+					key: { guildId: 1, boardType: 1 },
 					unique: true
 				}
 			]),
