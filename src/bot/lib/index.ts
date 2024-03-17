@@ -479,11 +479,6 @@ export class Command implements CommandOptions {
 		this.handler = container.resolve(CommandHandler);
 	}
 
-	public permissionOverwrites(interaction: BaseInteraction): boolean;
-	public permissionOverwrites(): boolean {
-		return false;
-	}
-
 	public autocomplete(interaction: AutocompleteInteraction, args: Record<string, unknown>): Promise<unknown> | unknown;
 	public autocomplete(): Promise<unknown> | unknown {
 		return null;

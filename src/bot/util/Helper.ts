@@ -15,7 +15,7 @@ import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { ClanEmbedFields } from './CommandOptions.js';
-import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';
+import { Collections, LEGEND_LEAGUE_ID, Settings, UnrankedCapitalLeagueId } from './Constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Util } from './index.js';
 
@@ -586,6 +586,64 @@ export const welcomeEmbedMaker = () => {
 		.setImage('https://i.imgur.com/jcWPjDf.png');
 
 	return embed;
+};
+
+export const getLegendLeaderboardEmbedMaker = async ({
+	clanTags,
+	guild,
+	sort_by
+}: {
+	guild: Guild;
+	clanTags?: string[];
+	sort_by?: string;
+}) => {
+	const client = container.resolve(Client);
+	clanTags ??= (await client.storage.find(guild.id)).map((clan) => clan.tag);
+
+	const cachedClans = await client.redis.getClans(clanTags);
+	const memberTags = cachedClans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
+	const players = await client.redis.getPlayers(memberTags);
+
+	const legends = players.filter((player) => player.trophies >= 5000 || player.league?.id === LEGEND_LEAGUE_ID);
+
+	if (sort_by === 'town_hall_asc') {
+		legends.sort((a, b) => b.trophies - a.trophies);
+		legends.sort((a, b) => a.townHallLevel - b.townHallLevel);
+	} else if (sort_by === 'town_hall_desc') {
+		legends.sort((a, b) => b.trophies - a.trophies);
+		legends.sort((a, b) => b.townHallLevel - a.townHallLevel);
+	} else {
+		legends.sort((a, b) => b.trophies - a.trophies);
+	}
+
+	function pad(num: string | number, padding = 2) {
+		return String(num).padStart(padding, ' ');
+	}
+
+	const embed = new EmbedBuilder()
+		.setColor(client.embed(guild.id))
+		.setAuthor({ name: `${guild.name} Legend Leaderboard`, iconURL: guild.iconURL()! });
+
+	if (legends.length) {
+		embed.setDescription(
+			[
+				'```',
+				`\u200e #  TH TROPHY WON  NAME`,
+				...legends.slice(0, 99).map((player, n) => {
+					const trophies = pad(player.trophies, 4);
+					const attacks = pad(player.attackWins, 3);
+					const name = Util.escapeBackTick(player.name);
+					const townHall = pad(player.townHallLevel, 2);
+					return `\u200e${pad(n + 1)}  ${townHall}  ${trophies}  ${attacks}  ${name}`;
+				}),
+				'```'
+			].join('\n')
+		);
+		embed.setFooter({ text: 'Synced' });
+		embed.setTimestamp();
+	}
+
+	return { embed, legends };
 };
 
 export const getMenuFromMessage = (interaction: ButtonInteraction<'cached'>, selected: string, customId: string) => {

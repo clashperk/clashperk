@@ -196,6 +196,13 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.AUTO_BOARDS).createIndexes([
+				{
+					key: { guild: 1, boardType: 1 },
+					unique: true
+				}
+			]),
+
 			db.collection(Collections.JOIN_LEAVE_LOGS).createIndexes([
 				{
 					key: { clanId: 1 }

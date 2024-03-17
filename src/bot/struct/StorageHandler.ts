@@ -1,5 +1,5 @@
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
-import { CommandInteraction, ForumChannel, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
+import { CommandInteraction, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import fetch from 'node-fetch';
@@ -831,6 +831,26 @@ export default class StorageHandler {
 		}
 
 		return { clans, leagues };
+	}
+
+	public async makeAutoBoard({ channelId, guild, boardType }: { guild: Guild; boardType: string; channelId: string }) {
+		const { value } = await this.client.db.collection(Collections.AUTO_BOARDS).findOneAndUpdate(
+			{ guildId: guild.id, boardType },
+			{
+				$set: {
+					name: guild.name,
+					channelId: channelId,
+					color: this.client.embed(guild.id),
+					updatedAt: new Date()
+				},
+				$setOnInsert: {
+					createdAt: new Date()
+				}
+			},
+			{ returnDocument: 'after', upsert: true }
+		);
+
+		return this.client.rpcHandler.addAutoBoard(value!._id.toHexString());
 	}
 
 	public async updateLinks(guildId: string) {

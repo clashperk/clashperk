@@ -14,12 +14,12 @@ import {
 import { Args, Command } from '../../lib/index.js';
 import {
 	ClanFeedLogTypes,
-	Flags,
+	Collections,
 	DeepLinkTypes,
-	missingPermissions,
-	WarFeedLogTypes,
 	DonationLogFrequencyTypes,
-	Collections
+	Flags,
+	WarFeedLogTypes,
+	missingPermissions
 } from '../../util/Constants.js';
 
 const FEATURES: Record<string, string> = {

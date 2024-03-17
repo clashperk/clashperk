@@ -1,19 +1,9 @@
 import { APIPlayer } from 'clashofclans.js';
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonInteraction,
-	ButtonStyle,
-	CommandInteraction,
-	EmbedBuilder,
-	StringSelectMenuBuilder
-} from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, StringSelectMenuBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
-import { getExportComponents } from '../../util/Helper.js';
-import { Util } from '../../util/index.js';
+import { getExportComponents, getLegendLeaderboardEmbedMaker } from '../../util/Helper.js';
 
 export default class LegendLeaderboardCommand extends Command {
 	public constructor() {
@@ -27,7 +17,14 @@ export default class LegendLeaderboardCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { clans?: string; season?: string; sort_by?: string; export?: boolean; export_disabled?: boolean }
+		args: {
+			clans?: string;
+			season?: string;
+			sort_by?: string;
+			export?: boolean;
+			export_disabled?: boolean;
+			enable_auto_updating?: boolean;
+		}
 	) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
@@ -44,47 +41,19 @@ export default class LegendLeaderboardCommand extends Command {
 			);
 		}
 
-		const cachedClans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
-		const memberTags = cachedClans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
-		const players = await this.client.redis.getPlayers(memberTags);
+		const { embed, legends } = await getLegendLeaderboardEmbedMaker({
+			guild: interaction.guild,
+			sort_by: args.sort_by,
+			clanTags: clans.map((clan) => clan.tag)
+		});
 
-		const legends = players.filter((player) => player.trophies >= 5000 || player.league?.id === LEGEND_LEAGUE_ID);
-
-		if (args.sort_by === 'town_hall_asc') {
-			legends.sort((a, b) => b.trophies - a.trophies);
-			legends.sort((a, b) => a.townHallLevel - b.townHallLevel);
-		} else if (args.sort_by === 'town_hall_desc') {
-			legends.sort((a, b) => b.trophies - a.trophies);
-			legends.sort((a, b) => b.townHallLevel - a.townHallLevel);
-		} else {
-			legends.sort((a, b) => b.trophies - a.trophies);
+		if (!legends.length) {
+			embed.setDescription('No players are in the Legend League');
 		}
 
-		const embed = new EmbedBuilder()
-			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: 'Legend Leaderboard', iconURL: interaction.guild.iconURL()! })
-			.setTimestamp();
-		embed.setDescription(
-			[
-				'```',
-				`\u200e #  TH TROPHY  WON  NAME`,
-				...legends.slice(0, 99).map((player, n) => {
-					const trophies = this.pad(player.trophies, 4);
-					const attacks = this.pad(player.attackWins, 3);
-					const name = Util.escapeBackTick(player.name);
-					const townHall = this.pad(player.townHallLevel, 2);
-					return `\u200e${this.pad(n + 1)}  ${townHall}  ${trophies}  ${attacks}  ${name}`;
-				}),
-				'```'
-			].join('\n')
-		);
-
-		if (args.sort_by === 'group_by_town_hall') {
-			legends.reduce<Record<string, APIPlayer[]>>((prev, curr) => {
-				prev[curr.townHallLevel] ??= []; // eslint-disable-line
-				prev[curr.townHallLevel].push(curr);
-				return prev;
-			}, {});
+		if (legends.length && args.enable_auto_updating && this.client.util.isManager(interaction.member)) {
+			await this.client.storage.makeAutoBoard({ channelId: interaction.channel!.id, boardType: this.id, guild: interaction.guild });
+			return interaction.editReply('Successfully enabled auto updating Legend Leaderboard.');
 		}
 
 		const payload = {
@@ -94,6 +63,7 @@ export default class LegendLeaderboardCommand extends Command {
 			sort_by: args.sort_by,
 			export_disabled: args.export_disabled
 		};
+
 		const customIds = {
 			refresh: this.createId({ ...payload, export_disabled: false }),
 			sortBy: this.createId({ ...payload, string_key: 'sort_by' }),
@@ -145,10 +115,6 @@ export default class LegendLeaderboardCommand extends Command {
 		return this.clearId(interaction);
 	}
 
-	private pad(num: string | number, padding = 2) {
-		return String(num).padStart(padding, ' ');
-	}
-
 	private async export(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
 		players: APIPlayer[],
@@ -178,7 +144,7 @@ export default class LegendLeaderboardCommand extends Command {
 			}
 		];
 
-		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Legend Leaderboard]`, sheets);
+		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Legend Ranking]`, sheets);
 		return interaction.followUp({
 			content: `**Legend Leaderboard** (${clans.map((clan) => clan.name).join(', ')})`,
 			components: getExportComponents(spreadsheet)

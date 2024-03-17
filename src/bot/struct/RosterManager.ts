@@ -273,7 +273,7 @@ export class RosterManager {
 		return this.rosters.findOne({ _id: rosterId });
 	}
 
-	public async attemptSignup({
+	private async attemptSignup({
 		roster,
 		player,
 		user,
@@ -478,7 +478,7 @@ export class RosterManager {
 		return { success: true, message: 'Success!', roster: value };
 	}
 
-	public async signupUser({
+	private async signupUser({
 		roster,
 		player,
 		user,

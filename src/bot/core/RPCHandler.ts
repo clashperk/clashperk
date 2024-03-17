@@ -3,6 +3,7 @@ import { inspect } from 'node:util';
 import { Client } from '../struct/Client.js';
 import Queue from '../struct/Queue.js';
 import { Collections, Flags } from '../util/Constants.js';
+import AutoBoardLog from './AutoBoardLog.js';
 import CapitalLog from './CapitalLog.js';
 import ClanEmbedLog from './ClanEmbedLog.js';
 import ClanFeedLog from './ClanFeedLog.js';
@@ -16,17 +17,18 @@ import MaintenanceHandler from './Maintenance.js';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
-	private readonly queue = new Queue();
-	private readonly api: MaintenanceHandler;
-	private readonly clanWarLog = new ClanWarLog(this.client);
-	private readonly donationLog = new DonationLog(this.client);
-	private readonly clanEmbedLog = new ClanEmbedLog(this.client);
-	private readonly clanGamesLog = new ClanGamesLog(this.client);
-	private readonly lastSeenLog = new LastSeenLog(this.client);
-	private readonly clanFeedLog = new ClanFeedLog(this.client);
-	private readonly legendLog = new LegendLog(this.client);
-	private readonly capitalLog = new CapitalLog(this.client);
-	private readonly joinLeaveLog = new JoinLeaveLog(this.client);
+	private queue = new Queue();
+	private api: MaintenanceHandler;
+	private clanWarLog = new ClanWarLog(this.client);
+	private donationLog = new DonationLog(this.client);
+	private clanEmbedLog = new ClanEmbedLog(this.client);
+	private clanGamesLog = new ClanGamesLog(this.client);
+	private lastSeenLog = new LastSeenLog(this.client);
+	private autoBoard = new AutoBoardLog(this.client);
+	private clanFeedLog = new ClanFeedLog(this.client);
+	private legendLog = new LegendLog(this.client);
+	private capitalLog = new CapitalLog(this.client);
+	private joinLeaveLog = new JoinLeaveLog(this.client);
 
 	public get isInMaintenance() {
 		return this.api.isMaintenance;
@@ -120,6 +122,7 @@ export default class RPCHandler {
 		await this.legendLog.init();
 		await this.joinLeaveLog.init();
 		await this.capitalLog.init();
+		await this.autoBoard.init();
 
 		await this.broadcast();
 		return this.client.publisher.publish('INIT', '{}');
@@ -198,6 +201,14 @@ export default class RPCHandler {
 		}
 	}
 
+	public async addAutoBoard(id: string) {
+		return this.autoBoard.add(id);
+	}
+
+	public async delAutoBoard(id: string) {
+		return this.autoBoard.del(id);
+	}
+
 	public async delete(id: string, data: { tag: string; op: number; guild: string }) {
 		const clans = await this.client.db
 			.collection(Collections.CLAN_STORES)
@@ -246,6 +257,7 @@ export default class RPCHandler {
 		this.lastSeenLog.cached.clear();
 		this.legendLog.cached.clear();
 		this.capitalLog.cached.clear();
+		this.autoBoard.cached.clear();
 
 		await this.client.subscriber.unsubscribe('channel');
 		return this.client.publisher.publish('FLUSH', '{}');

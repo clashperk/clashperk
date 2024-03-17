@@ -3082,6 +3082,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.Number,
 						max_value: 100,
 						min_value: 3
+					},
+					{
+						name: 'enable_auto_updating',
+						description: 'Enable auto updating (every 30-60 mins)',
+						type: ApplicationCommandOptionType.Boolean
 					}
 				]
 			}

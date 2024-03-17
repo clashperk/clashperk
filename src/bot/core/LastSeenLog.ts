@@ -132,7 +132,7 @@ export default class LastSeenLog extends BaseLog {
 			const logs = await this.client.db
 				.collection(Collections.LAST_SEEN_LOGS)
 				.aggregate<LastSeenLogModel & { _id: ObjectId }>([
-					{ $match: { updatedAt: { $lte: new Date(Date.now() - 30 * 60 * 1e3) } } },
+					{ $match: { updatedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
 					{
 						$lookup: {
 							from: Collections.CLAN_STORES,
