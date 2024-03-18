@@ -305,10 +305,10 @@ export class CommandHandler extends BaseHandler {
 			return true;
 		}
 
-		if (command.channel === 'dm' && interaction.guild) {
-			this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.DM);
-			return true;
-		}
+		// if (command.channel === 'dm' && interaction.guild) {
+		// 	this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.DM);
+		// 	return true;
+		// }
 
 		return this.runPermissionChecks(interaction, command);
 	}
