@@ -120,7 +120,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	public exec(interaction: Interaction) {
-		if (interaction.inCachedGuild()) this.autocomplete(interaction);
+		this.autocomplete(interaction);
 		this.contextInteraction(interaction);
 		this.componentInteraction(interaction);
 	}
@@ -144,16 +144,16 @@ export default class InteractionListener extends Listener {
 		return times.map((value) => ({ value, name: value }));
 	}
 
-	public async autocomplete(interaction: Interaction<'cached'>) {
+	public async autocomplete(interaction: Interaction) {
 		if (!interaction.isAutocomplete()) return;
 		const focused = interaction.options.getFocused(true).name;
 		mixpanel.track('Autocomplete', {
 			distinct_id: interaction.user.id,
-			guild_id: interaction.guild.id,
+			guild_id: interaction.guildId ?? '0',
 			user_id: interaction.user.id,
 			username: interaction.user.username,
 			display_name: interaction.user.displayName,
-			guild_name: interaction.guild.name,
+			guild_name: interaction.guild?.name ?? 'DM',
 			command_id: interaction.commandName,
 			sub_command_id: interaction.options.getSubcommand(false),
 			autocomplete_field_name: focused,
@@ -168,7 +168,7 @@ export default class InteractionListener extends Listener {
 					displayName: interaction.user.displayName,
 					username: interaction.user.username
 				},
-				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
+				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : interaction.guildId,
 				channel: interaction.channel
 					? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
 					: interaction.channelId,
@@ -181,6 +181,11 @@ export default class InteractionListener extends Listener {
 				args: this.client.commandHandler.rawArgs(interaction)
 			}
 		});
+
+		if (['player', 'units', 'upgrades', 'rushed'].includes(interaction.commandName) && ['player_tag', 'tag'].includes(focused)) {
+			return this.playerTagAutocomplete(interaction, focused);
+		}
+		if (!interaction.inCachedGuild()) return null;
 
 		switch (focused) {
 			case 'duration': {
@@ -196,6 +201,7 @@ export default class InteractionListener extends Listener {
 				if (['player', 'units', 'upgrades', 'rushed', 'verify'].includes(interaction.commandName)) {
 					return this.playerTagAutocomplete(interaction, focused);
 				}
+
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 			case 'player_tag': {
@@ -441,10 +447,10 @@ export default class InteractionListener extends Listener {
 		return interaction.respond(this.getTimes(times, matchedDur, cmd));
 	}
 
-	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+	private async playerTagAutocomplete(interaction: AutocompleteInteraction, focused: string) {
 		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '').substring(0, 500);
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
-			label: `${interaction.guild.name}/${interaction.user.displayName}`
+			label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
 		});
 
 		const userId = interaction.user.id;
@@ -508,7 +514,7 @@ export default class InteractionListener extends Listener {
 					]
 			  });
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
-			label: `${interaction.guild.name}/${interaction.user.displayName}`
+			label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
 		});
 
 		const players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])

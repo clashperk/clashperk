@@ -31,7 +31,7 @@ export default class UpgradesCommand extends Command {
 	public constructor() {
 		super('upgrades', {
 			category: 'search',
-			channel: 'guild',
+			channel: 'dm',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Remaining upgrades of troops, spells and heroes.'
@@ -49,12 +49,12 @@ export default class UpgradesCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { tag?: string; user?: User }) {
+	public async exec(interaction: CommandInteraction | ButtonInteraction<'cached'>, args: { tag?: string; user?: User }) {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		const embed = this.embed(data).setColor(this.client.embed(interaction));
-		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.isMessageComponent() || !interaction.inCachedGuild()) await interaction.editReply({ embeds: [embed] });
 
 		const payload = {
 			cmd: this.id,

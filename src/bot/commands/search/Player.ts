@@ -6,7 +6,6 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	EmbedBuilder,
-	Guild,
 	Message,
 	StringSelectMenuBuilder,
 	User,
@@ -39,7 +38,7 @@ export default class PlayerCommand extends Command {
 	public constructor() {
 		super('player', {
 			category: 'search',
-			channel: 'guild',
+			channel: 'dm',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Player summary and some basic details.'
@@ -60,7 +59,7 @@ export default class PlayerCommand extends Command {
 	public async run(message: Message, { tag }: { tag: string }) {
 		const { body, res } = await this.client.http.getPlayer(tag);
 		if (!res.ok) return null;
-		const embed = (await this.embed(message.guild!, body)).setColor(this.client.embed(message));
+		const embed = (await this.embed(body)).setColor(this.client.embed(message));
 		return message.channel.send({
 			embeds: [embed],
 			allowedMentions: { repliedUser: false },
@@ -68,12 +67,12 @@ export default class PlayerCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { tag?: string; user?: User }) {
+	public async exec(interaction: CommandInteraction | ButtonInteraction<'cached'>, args: { tag?: string; user?: User }) {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
-		const embed = (await this.embed(interaction.guild, data)).setColor(this.client.embed(interaction));
-		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
+		const embed = (await this.embed(data)).setColor(this.client.embed(interaction));
+		if (!interaction.isMessageComponent() || !interaction.inCachedGuild()) await interaction.editReply({ embeds: [embed] });
 
 		const payload = {
 			cmd: this.id,
@@ -135,7 +134,7 @@ export default class PlayerCommand extends Command {
 		});
 	}
 
-	private async embed(guild: Guild, data: APIPlayer) {
+	private async embed(data: APIPlayer) {
 		const aggregated = await this.client.db
 			.collection(Collections.LAST_SEEN)
 			.aggregate([
@@ -233,7 +232,7 @@ export default class PlayerCommand extends Command {
 			{ name: '**Heroes**', value: [`${heroes.length ? heroes.join(' ') : `${EMOJIS.WRONG} None`}`, '\u200b\u2002'].join('\n') }
 		]);
 
-		const user = await this.getLinkedUser(guild, data.tag);
+		const user = await this.getLinkedUser(data.tag);
 		if (user) {
 			embed.addFields([{ name: '**Discord**', value: user.mention ?? `${EMOJIS.OK} Connected` }]);
 		} else {
@@ -318,12 +317,11 @@ export default class PlayerCommand extends Command {
 			: `${ms(timestamp, { long: true })} ago`;
 	}
 
-	private async getLinkedUser(guild: Guild, tag: string) {
+	private async getLinkedUser(tag: string) {
 		const data = await Promise.any([this.getLinkedFromDb(tag), this.client.http.getLinkedUser(tag)]);
 		if (!data) return null;
 
-		const user = await guild.members.fetch(data.userId).catch(() => null);
-		return { mention: user?.toString() ?? null, userId: data.userId };
+		return { mention: `<@${data.userId}>`, userId: data.userId };
 	}
 
 	private async getLinkedFromDb(tag: string) {

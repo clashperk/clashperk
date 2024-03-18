@@ -15,7 +15,7 @@ export default class Resolver {
 		this.indexer = new ElasticIndexer(client);
 	}
 
-	public async resolvePlayer(interaction: BaseInteraction<'cached'>, args?: string): Promise<(APIPlayer & { user?: User }) | null> {
+	public async resolvePlayer(interaction: BaseInteraction, args?: string): Promise<(APIPlayer & { user?: User }) | null> {
 		args = (args?.replace(/[\u200e|\u200f|\u200b|\u2002|\)|\()]+/g, '') ?? '').trim();
 		const parsed = await this.parseArgument(interaction, args);
 
@@ -152,7 +152,7 @@ export default class Resolver {
 		return null;
 	}
 
-	private async parseArgument(interaction: BaseInteraction<'cached'>, args: string) {
+	private async parseArgument(interaction: BaseInteraction, args: string) {
 		if (!args) return { user: interaction.user, matched: false, isTag: false };
 
 		const id = /<@!?(\d{17,19})>/.exec(args)?.[1] ?? /^\d{17,19}/.exec(args)?.[0];

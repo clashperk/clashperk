@@ -121,7 +121,11 @@ export default class LinkCreateCommand extends Command {
 
 		if (doc && doc.userId !== member.id) {
 			return interaction.editReply(
-				this.i18n('command.link.create.already_linked', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
+				this.i18n('command.link.create.already_linked', {
+					lng: interaction.locale,
+					player: `**${player.name} (${player.tag})**`,
+					command: this.client.commands.VERIFY
+				})
 			);
 		}
 

@@ -72,7 +72,7 @@ export default class CapitalRaidsHistoryCommand extends Command {
 							$in: [...playerTags]
 						},
 						'createdAt': {
-							$gte: moment().startOf('month').subtract(3, 'month').toDate()
+							$gte: moment().startOf('month').subtract(2, 'month').toDate()
 						}
 					}
 				},
@@ -132,25 +132,24 @@ export default class CapitalRaidsHistoryCommand extends Command {
 		result.sort((a, b) => b.raids.length - a.raids.length);
 
 		const embeds: EmbedBuilder[] = [];
-		for (const chunk of Util.chunk(result, 15)) {
+		for (const chunk of Util.chunk(result, 10)) {
 			const embed = new EmbedBuilder();
 			embed.setColor(this.client.embed(interaction));
-			embed.setTitle('Capital Raid History (last 3 months)');
+			embed.setTitle('Capital Raid History (last 2 months)');
 
 			chunk.forEach((member) => {
 				embed.addFields({
 					name: `${member.name} (${member.tag})`,
 					value: [
 						'```',
-						'\u200e # LOOTED HITS  WEEKEND',
+						'#  LOOT HIT   WEEK CLAN',
 						member.raids
-							.slice(0, 14)
+							.slice(0, 9)
 							.map((raid, i) => {
-								const looted = this.padding(raid.capitalResourcesLooted);
-								const attacks = `${raid.attacks}/${raid.attackLimit + raid.bonusAttackLimit}`.padStart(4, ' ');
-								return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${moment(raid.weekId)
-									.format('D MMM')
-									.padStart(6, ' ')}`;
+								const looted = raid.capitalResourcesLooted.toString().padStart(3, ' ');
+								const attacks = `${raid.attacks}/${raid.attackLimit + raid.bonusAttackLimit}`;
+								const week = moment(raid.weekId).format('D/MMM').padStart(6, ' ');
+								return `${i + 1} ${looted} ${attacks} ${week} \u200e${raid.clan.name}`;
 							})
 							.join('\n'),
 						'```'

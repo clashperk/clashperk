@@ -36,7 +36,7 @@ export default class CommandStartedListener extends Listener {
 			user_id: interaction.user.id,
 			username: interaction.user.username,
 			display_name: interaction.user.displayName,
-			guild_id: interaction.guild?.id ?? '0',
+			guild_id: interaction.guildId ?? '0',
 			guild_name: interaction.guild?.name ?? 'DM',
 			interaction_type: InteractionType[interaction.type],
 			sub_command_id: args.command ?? args.option ?? null,
@@ -63,7 +63,7 @@ export default class CommandStartedListener extends Listener {
 					displayName: interaction.user.displayName,
 					username: interaction.user.username
 				},
-				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
+				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : interaction.guildId,
 				channel: interaction.channel
 					? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
 					: interaction.channelId,

@@ -54,6 +54,11 @@ const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[]
 	ChannelType.GuildMedia
 ];
 
+const IntegrationTypesContexts = {
+	integration_types: [0, 1],
+	contexts: [0, 1, 2]
+};
+
 export const translation = (text: TranslationKey): Record<string, string> => {
 	return Object.keys(fallbackLng).reduce<Record<string, string>>((record, lang) => {
 		const locale = i18next.t(text, { lng: lang, escapeValue: false });
@@ -84,7 +89,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.User,
 				required: false
 			}
-		]
+		],
+		...IntegrationTypesContexts
 	},
 	{
 		name: 'units',
@@ -107,7 +113,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.User,
 				required: false
 			}
-		]
+		],
+		...IntegrationTypesContexts
 	},
 	{
 		name: 'upgrades',
@@ -130,7 +137,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.User,
 				required: false
 			}
-		]
+		],
+		...IntegrationTypesContexts
 	},
 	{
 		name: 'rushed',
@@ -160,7 +168,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.String,
 				autocomplete: true
 			}
-		]
+		],
+		...IntegrationTypesContexts
 	},
 	{
 		name: 'profile',
@@ -3788,7 +3797,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		name: 'invite',
 		description: command.invite.description,
 		dm_permission: true,
-		description_localizations: translation('command.invite.description')
+		description_localizations: translation('command.invite.description'),
+		...IntegrationTypesContexts
 	},
 	{
 		name: 'debug',
@@ -3917,6 +3927,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
 		name: 'bot-personalizer',
+		dm_permission: false,
 		description: 'Build your own Discord bot!'
 	}
 ];

@@ -20,7 +20,7 @@ export default class RushedCommand extends Command {
 	public constructor() {
 		super('rushed', {
 			category: 'search',
-			channel: 'guild',
+			channel: 'dm',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: [
@@ -43,10 +43,10 @@ export default class RushedCommand extends Command {
 	}
 
 	public async exec(
-		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		interaction: CommandInteraction | ButtonInteraction<'cached'>,
 		args: { clan_tag?: string; tag?: string; user?: User }
 	) {
-		if (args.clan_tag) {
+		if (args.clan_tag && interaction.inCachedGuild()) {
 			const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
 			if (!clan) return null;
 			return this.clan(interaction, clan);
@@ -56,7 +56,7 @@ export default class RushedCommand extends Command {
 		if (!data) return null;
 
 		const embed = this.embed(data, interaction.locale).setColor(this.client.embed(interaction));
-		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.isMessageComponent() || !interaction.inCachedGuild()) await interaction.editReply({ embeds: [embed] });
 
 		const payload = {
 			cmd: this.id,

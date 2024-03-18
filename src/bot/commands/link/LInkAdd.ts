@@ -1,18 +1,18 @@
+import { APIPlayer } from 'clashofclans.js';
 import {
+	ActionRowBuilder,
+	ButtonInteraction,
+	DiscordjsError,
+	DiscordjsErrorCodes,
 	GuildMember,
 	ModalBuilder,
-	TextInputStyle,
-	ButtonInteraction,
 	ModalSubmitInteraction,
 	TextInputBuilder,
-	ActionRowBuilder,
-	DiscordjsError,
-	DiscordjsErrorCodes
+	TextInputStyle
 } from 'discord.js';
-import { APIPlayer } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 
 export default class LinkAddCommand extends Command {
@@ -42,7 +42,11 @@ export default class LinkAddCommand extends Command {
 
 		if (doc && doc.userId !== member.id) {
 			return interaction.editReply(
-				this.i18n('command.link.create.already_linked', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
+				this.i18n('command.link.create.already_linked', {
+					lng: interaction.locale,
+					player: `**${player.name} (${player.tag})**`,
+					command: this.client.commands.VERIFY
+				})
 			);
 		}
 

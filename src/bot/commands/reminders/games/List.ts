@@ -33,10 +33,7 @@ export default class ReminderListCommand extends Command {
 		if (args.channel) filter.channel = args.channel.id;
 		if (tags.length) filter.clans = { $in: tags };
 
-		const reminders = await this.client.db
-			.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
-			.find({ guild: interaction.guildId })
-			.toArray();
+		const reminders = await this.client.db.collection<ClanGamesReminder>(Collections.CG_REMINDERS).find(filter).toArray();
 		if (!reminders.length && (args.channel || tags.length)) {
 			return interaction.editReply('No reminders were found for the specified channel or clans.');
 		}

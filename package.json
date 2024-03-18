@@ -51,7 +51,8 @@
 		"redis": "^4.6.10",
 		"reflect-metadata": "^0.1.13",
 		"timeout-signal": "^1.1.0",
-		"tsyringe": "^4.6.0"
+		"tsyringe": "^4.6.0",
+		"undici": "^6.9.0"
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.1",

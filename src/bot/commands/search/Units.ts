@@ -19,7 +19,7 @@ export default class UnitsCommand extends Command {
 	public constructor() {
 		super('units', {
 			category: 'search',
-			channel: 'guild',
+			channel: 'dm',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Levels of troops, spells and heroes.'
@@ -38,7 +38,7 @@ export default class UnitsCommand extends Command {
 	}
 
 	public async exec(
-		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		interaction: CommandInteraction | ButtonInteraction<'cached'>,
 		args: { tag?: string; user?: User; max_level?: boolean }
 	) {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
@@ -47,7 +47,7 @@ export default class UnitsCommand extends Command {
 		const embed = this.embed(data, Boolean(args.max_level))
 			.setColor(this.client.embed(interaction))
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
-		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.isMessageComponent() || !interaction.inCachedGuild()) await interaction.editReply({ embeds: [embed] });
 
 		const payload = {
 			cmd: this.id,

@@ -7,11 +7,12 @@ export default class InviteCommand extends Command {
 		super('invite', {
 			category: 'config',
 			description: { content: 'Get support server and bot invite link.' },
-			defer: false
+			defer: false,
+			channel: 'dm'
 		});
 	}
 
-	public exec(interaction: CommandInteraction<'cached'>) {
+	public exec(interaction: CommandInteraction<'raw'>) {
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: this.client.user!.displayName, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
 			.setDescription(
