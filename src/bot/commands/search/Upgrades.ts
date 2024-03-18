@@ -54,7 +54,8 @@ export default class UpgradesCommand extends Command {
 		if (!data) return;
 
 		const embed = this.embed(data).setColor(this.client.embed(interaction));
-		if (!interaction.isMessageComponent() || !interaction.inCachedGuild()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.inCachedGuild()) return;
 
 		const payload = {
 			cmd: this.id,

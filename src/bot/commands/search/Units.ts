@@ -47,7 +47,8 @@ export default class UnitsCommand extends Command {
 		const embed = this.embed(data, Boolean(args.max_level))
 			.setColor(this.client.embed(interaction))
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
-		if (!interaction.isMessageComponent() || !interaction.inCachedGuild()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.inCachedGuild()) return;
 
 		const payload = {
 			cmd: this.id,

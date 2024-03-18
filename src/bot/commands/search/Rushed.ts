@@ -56,7 +56,8 @@ export default class RushedCommand extends Command {
 		if (!data) return null;
 
 		const embed = this.embed(data, interaction.locale).setColor(this.client.embed(interaction));
-		if (!interaction.isMessageComponent() || !interaction.inCachedGuild()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.isMessageComponent()) await interaction.editReply({ embeds: [embed] });
+		if (!interaction.inCachedGuild()) return;
 
 		const payload = {
 			cmd: this.id,
