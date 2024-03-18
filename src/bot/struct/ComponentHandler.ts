@@ -39,6 +39,9 @@ export default class ComponentHandler {
 		const command = this.client.commandHandler.modules.get(parsed.cmd);
 		if (!command) return false;
 
+		if (!interaction.inCachedGuild() && command.channel !== 'dm') return true;
+		if (interaction.inCachedGuild() && !interaction.channel) return true;
+
 		const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
 		if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) {
 			if (parsed.ephemeral) {

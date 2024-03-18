@@ -3768,7 +3768,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('command.help.options.name.description'),
 				type: ApplicationCommandOptionType.String
 			}
-		]
+		],
+		...IntegrationTypesContexts
 	},
 	{
 		name: 'redeem',

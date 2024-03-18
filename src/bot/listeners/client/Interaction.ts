@@ -783,12 +783,13 @@ export default class InteractionListener extends Listener {
 	}
 
 	private inhibitor(interaction: Interaction) {
-		// TODO: Add more checks
-		if (!interaction.inCachedGuild()) return true;
-		if (!interaction.channel) return true;
+		// TODO: ADD MORE CHECKS
+
+		// if (!interaction.inCachedGuild()) return true;
+		// if (!interaction.channel) return true;
 
 		const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
-		if (guilds.includes(interaction.guildId)) return true;
+		if (interaction.guildId && guilds.includes(interaction.guildId)) return true;
 
 		const users = this.client.settings.get<string[]>('global', Settings.USER_BLACKLIST, []);
 		return users.includes(interaction.user.id);

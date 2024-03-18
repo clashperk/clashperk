@@ -6,9 +6,9 @@ import {
 	EmbedBuilder,
 	StringSelectMenuBuilder
 } from 'discord.js';
+import { command as commandMap } from '../../../../locales/en.js';
 import { Command } from '../../lib/index.js';
 import { URLS } from '../../util/Constants.js';
-import { command as commandMap } from '../../../../locales/en.js';
 
 const getTranslation = (key: string): string | null => {
 	const keys = key.split('.');
@@ -78,6 +78,7 @@ export default class HelpCommand extends Command {
 	public constructor() {
 		super('help', {
 			category: 'none',
+			channel: 'dm',
 			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'Get all commands or info about a command'
@@ -86,7 +87,7 @@ export default class HelpCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { command?: string; category?: string; selected?: string }) {
+	public async exec(interaction: CommandInteraction, args: { command?: string; category?: string; selected?: string }) {
 		const command = this.handler.modules.get(args.command!);
 		if (!command) return this.commandMenu(interaction, args);
 
@@ -147,10 +148,12 @@ export default class HelpCommand extends Command {
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	public async commandMenu(interaction: CommandInteraction<'cached'>, args: { category?: string }) {
-		const applicationCommands = this.client.isCustom()
-			? (await this.client.application?.commands.fetch({ guildId: interaction.guildId }))!
-			: (await this.client.application?.commands.fetch())!;
+	public async commandMenu(interaction: CommandInteraction, args: { category?: string }) {
+		const applicationCommands =
+			this.client.isCustom() && interaction.inCachedGuild()
+				? (await this.client.application?.commands.fetch({ guildId: interaction.guildId }))!
+				: (await this.client.application?.commands.fetch())!;
+
 		const commands = applicationCommands
 			.filter((command) => command.type === ApplicationCommandType.ChatInput)
 			.map((command) => {
