@@ -48,7 +48,7 @@
 		"node-fetch": "^3.2.10",
 		"radash": "^11.0.0",
 		"readdirp": "^3.6.0",
-		"redis": "^4.6.10",
+		"redis": "^4.6.13",
 		"reflect-metadata": "^0.1.13",
 		"timeout-signal": "^1.1.0",
 		"tsyringe": "^4.6.0",

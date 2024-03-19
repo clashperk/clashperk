@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import { EmbedBuilder, CommandInteraction, ActionRowBuilder, escapeMarkdown, time, ButtonBuilder, ButtonStyle, User } from 'discord.js';
-import { APIClan, APIPlayer } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import fetch from 'node-fetch';
-import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
-import { attackCounts, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
-import { Season, Util } from '../../util/index.js';
 import { LegendAttacks } from '../../types/index.js';
+import { Collections, LEGEND_LEAGUE_ID, attackCounts } from '../../util/Constants.js';
+import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
+import { Season, Util } from '../../util/index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function randomlySelectItems(array: { timestamp: Date; trophies: null | number }[], itemCount: number) {
@@ -161,7 +161,7 @@ export default class LegendDaysCommand extends Command {
 	private async embed(interaction: CommandInteraction<'cached'>, data: APIPlayer, _day?: number) {
 		const seasonId = Season.ID;
 		const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
-		const clan = data.clan ? ((await this.client.redis.connection.json.get(`C${data.clan.tag}`)) as APIClan | null) : null;
+		const clan = data.clan ? await this.client.redis.getClan(data.clan.tag) : null;
 
 		const { startTime, endTime, day } = this.getDay(_day);
 		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);

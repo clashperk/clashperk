@@ -1,7 +1,7 @@
 import { TextChannel } from 'discord.js';
 import moment from 'moment';
-import { EMOJIS } from '../util/Emojis.js';
 import { Client } from '../struct/Client.js';
+import { EMOJIS } from '../util/Emojis.js';
 import { i18n } from '../util/i18n.js';
 
 const SUPPORT_SERVER_GENERAL_CHANNEL_ID = '609074828707758150';
@@ -44,7 +44,7 @@ export default class MaintenanceHandler {
 	}
 
 	private sendMessages(dur = 0) {
-		this.client.logger.info(this.getMessage(), { label: 'API_STATUS' });
+		this.client.logger.info(this.getMessage(), { label: MaintenanceHandler.name });
 		this.deliverMessages(dur);
 		this.sendSupportServerMessage(dur);
 	}
@@ -57,25 +57,32 @@ export default class MaintenanceHandler {
 			if (this.client.settings.hasCustomBot(setting.guildId) && !this.client.isCustom()) continue;
 
 			const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
-			if (channel?.isTextBased() && channel.permissionsFor(this.client.user!)?.has(['SendMessages', 'ViewChannel'])) {
+			if (
+				channel?.isTextBased() &&
+				channel.permissionsFor(this.client.user!)?.has(['SendMessages', 'ViewChannel', 'UseExternalEmojis'])
+			) {
 				const message = i18n(this.isMaintenance ? 'common.maintenance_start' : 'common.maintenance_end', {
 					lng: channel.guild.preferredLocale,
-					duration: `(~${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })})`
+					duration: `(${this.dur(dur)})`
 				});
-				await channel.send(`**${EMOJIS.MAINTENANCE} ${message}**`);
+				await channel.send(`**${EMOJIS.COC_LOGO} ${message}**`);
 			}
 		}
 	}
 
 	private async sendSupportServerMessage(dur = 0) {
 		const channel = this.client.channels.cache.get(SUPPORT_SERVER_GENERAL_CHANNEL_ID);
-		if (channel) await (channel as TextChannel).send(`**${EMOJIS.MAINTENANCE} ${this.getMessage(dur)}**`);
+		if (channel) await (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
 	}
 
 	private getMessage(dur = 0) {
 		if (this.isMaintenance) {
 			return `Maintenance break has started!`;
 		}
-		return `Maintenance break has finished! (~${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })})`;
+		return `Maintenance break has finished! (${this.dur(dur)})`;
+	}
+
+	private dur(ms: number) {
+		return moment.duration(ms).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' });
 	}
 }

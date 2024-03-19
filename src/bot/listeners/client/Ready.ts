@@ -19,6 +19,8 @@ export default class ReadyListener extends Listener {
 			{ label: 'READY' }
 		);
 
+		await this.client.redis.connection.json.mGet([`C#8QU8J9LP`, `C#2PP`], '$');
+
 		const applicationCommands = await this.client.application?.commands.fetch();
 		const commands = applicationCommands!
 			.filter((command) => command.type === ApplicationCommandType.ChatInput)

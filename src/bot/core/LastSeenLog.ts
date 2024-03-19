@@ -1,4 +1,3 @@
-import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
@@ -87,7 +86,7 @@ export default class LastSeenLog extends BaseLog {
 	}
 
 	private async embed(cache: Cache) {
-		const clan = (await this.client.redis.connection.json.get(`C${cache.tag}`)) as unknown as APIClan | null;
+		const clan = await this.client.redis.getClan(cache.tag);
 		if (!clan) return null;
 
 		const embed = await lastSeenEmbedMaker(clan, { color: cache.color, scoreView: false });
