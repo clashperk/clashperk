@@ -1,6 +1,6 @@
 import { APIClan, APIPlayer } from 'clashofclans.js';
-import * as Redis from 'redis';
 import { nanoid } from 'nanoid';
+import * as Redis from 'redis';
 import Client from './Client.js';
 
 export declare type RedisJSON = null | boolean | number | string | Date;
@@ -21,23 +21,18 @@ class RedisService {
 	}
 
 	public async getClan(clanTag: string) {
-		const [raw1, raw2] = await this.connection.json.mGet([`C${clanTag}`, `CLAN:${clanTag}`], '$');
-		if (!raw1 && !raw2) return null;
-		return (raw1 ?? raw2) as unknown as APIClan;
+		const raw = await this.connection.json.mGet([`C${clanTag}`, `CLAN:${clanTag}`], '$');
+		return raw.flat().filter((_) => _)[0] as unknown as APIClan;
 	}
 
 	public async getPlayers(playerTags: string[]) {
-		const raw = await this.connection.json.mGet(
-			playerTags.map((tag) => `P${tag}`),
-			'$'
-		);
+		const raw = await this.connection.json.mGet(playerTags.map((tag) => [`P${tag}`, `PLAYER:${tag}`]).flat(), '$');
 		return raw.flat().filter((_) => _) as unknown as APIPlayer[];
 	}
 
 	public async getPlayer(playerTag: string) {
-		const raw = await this.connection.json.get(`$P${playerTag}`);
-		if (!raw) return null;
-		return raw as unknown as APIPlayer;
+		const raw = await this.connection.json.mGet([`P${playerTag}`, `PLAYER:${playerTag}`], '$');
+		return raw.flat().filter((_) => _)[0] as unknown as APIPlayer;
 	}
 
 	public createCustomId(payload: Record<string, unknown>) {
