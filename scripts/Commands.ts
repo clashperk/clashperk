@@ -1812,14 +1812,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: 'Name of the clan category.',
 						required: true,
 						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'category_order',
-						min_value: 1,
-						max_value: 100,
-						description: 'Order of the clan category.',
-						type: ApplicationCommandOptionType.Number
 					}
+					// {
+					// 	name: 'category_order',
+					// 	min_value: 1,
+					// 	max_value: 100,
+					// 	description: 'Order of the clan category.',
+					// 	type: ApplicationCommandOptionType.Number
+					// }
 				]
 			},
 			{
@@ -1844,14 +1844,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						max_length: 36,
 						description: 'Name of the clan category.',
 						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'category_order',
-						min_value: 1,
-						max_value: 100,
-						description: 'Order of the clan category.',
-						type: ApplicationCommandOptionType.Number
 					}
+					// {
+					// 	name: 'category_order',
+					// 	min_value: 1,
+					// 	max_value: 100,
+					// 	description: 'Order of the clan category.',
+					// 	type: ApplicationCommandOptionType.Number
+					// }
 				]
 			},
 			{
