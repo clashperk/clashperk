@@ -54,7 +54,7 @@ export default class SummaryWarsCommand extends Command {
 					].join('\n')
 				});
 			}
-			await interaction.followUp({ embeds: [embed] });
+			await interaction.followUp({ embeds: [embed], ephemeral: this.muted });
 		}
 	}
 

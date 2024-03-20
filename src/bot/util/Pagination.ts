@@ -93,7 +93,7 @@ export const handlePagination = async (
 			exportButton.setDisabled(true);
 			await interaction.editReply({ components: [row] });
 
-			await action.deferReply();
+			await action.deferReply({ ephemeral: client.commandHandler.isMessagingDisabled(action) });
 			await onExport?.(action);
 		}
 	});
@@ -183,7 +183,8 @@ export const handleMessagePagination = async (
 			exportButton.setDisabled(true);
 			// await message.edit({ components: [] });
 
-			// await action.deferReply();
+			// await action.deferReply({ ephemeral: client.commandHandler.isMessagingDisabled(action) });
+
 			await action.deferUpdate();
 
 			await onExport?.(action);

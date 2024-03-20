@@ -11,6 +11,7 @@ export default class RosterPingCommand extends Command {
 			category: 'roster',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
+			clientPermissions: ['EmbedLinks', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel'],
 			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			description: {
 				content: ['Ping members that relates to the roster.']
@@ -117,6 +118,6 @@ export default class RosterPingCommand extends Command {
 		const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
 		await interaction.editReply({ embeds: [embed] });
 
-		return interaction.followUp(payload);
+		return interaction.followUp({ ...payload, ephemeral: this.muted });
 	}
 }

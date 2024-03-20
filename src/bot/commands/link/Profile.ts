@@ -236,7 +236,7 @@ export default class ProfileCommand extends Command {
 			customIds,
 			message,
 			onClick: async (action) => {
-				await action.deferReply();
+				await action.deferReply({ ephemeral: true });
 				return this.export(action, links, user);
 			}
 		});

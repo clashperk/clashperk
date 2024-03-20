@@ -9,7 +9,9 @@ export default class CWLCommand extends Command {
 			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: ['CWL season overview and summary.']
-			}
+			},
+			root: true,
+			defer: false
 		});
 	}
 

@@ -273,7 +273,7 @@ export default class HelpCommand extends Command {
 			return interaction.editReply({ embeds, components: [row] });
 		}
 
-		for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
+		for (const embed of embeds) await interaction.followUp({ embeds: [embed], ephemeral: this.muted });
 	}
 
 	private execCommandList(interaction: CommandInteraction<'cached'>) {

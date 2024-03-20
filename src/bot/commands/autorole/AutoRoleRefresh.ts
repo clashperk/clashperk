@@ -12,7 +12,7 @@ export default class AutoTownHallRoleCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			clientPermissions: ['EmbedLinks', 'ManageRoles'],
+			clientPermissions: ['EmbedLinks', 'ManageRoles', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
@@ -117,6 +117,6 @@ export default class AutoTownHallRoleCommand extends Command {
 
 	private async onExport(interaction: ButtonInteraction<'cached'>, [embed, ...embeds]: EmbedBuilder[]) {
 		await interaction.editReply({ embeds: [embed], components: [] });
-		for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
+		for (const embed of embeds) await interaction.followUp({ embeds: [embed], ephemeral: this.muted });
 	}
 }

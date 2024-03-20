@@ -6,7 +6,9 @@ export default class HistoryCommand extends Command {
 		super('history', {
 			category: 'summary',
 			channel: 'guild',
-			clientPermissions: ['EmbedLinks']
+			clientPermissions: ['EmbedLinks'],
+			root: true,
+			defer: false
 		});
 	}
 

@@ -9,7 +9,8 @@ export default class GuildBanCommand extends Command {
 				content: "You can't use this anyway, so why explain?"
 			},
 			category: 'owner',
-			ownerOnly: true
+			ownerOnly: true,
+			defer: false
 		});
 	}
 

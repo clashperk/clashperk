@@ -108,10 +108,10 @@ export default class SummaryClansCommand extends Command {
 		];
 
 		if (embeds.reduce((prev, acc) => embedLength(acc.toJSON()) + prev, 0) > 6000) {
-			for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
+			for (const embed of embeds) await interaction.followUp({ embeds: [embed], ephemeral: this.muted });
 		}
 
-		return interaction.followUp({ embeds });
+		return interaction.followUp({ embeds, ephemeral: this.muted });
 	}
 
 	private async getJoinLeave(clans: APIClan[]) {

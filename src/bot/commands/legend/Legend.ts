@@ -9,7 +9,9 @@ export default class LegendCommand extends Command {
 			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: ['Legend season overview and summary.']
-			}
+			},
+			root: true,
+			defer: false
 		});
 	}
 

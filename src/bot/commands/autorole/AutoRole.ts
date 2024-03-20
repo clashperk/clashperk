@@ -8,7 +8,9 @@ export default class AutoRoleCommand extends Command {
 			channel: 'guild',
 			description: {
 				content: ['Auto-assign roles to members based upon their role or town hall levels in the clan.']
-			}
+			},
+			defer: false,
+			root: true
 		});
 	}
 

@@ -7,8 +7,8 @@ export default class InviteCommand extends Command {
 		super('invite', {
 			category: 'config',
 			description: { content: 'Get support server and bot invite link.' },
-			defer: false,
-			channel: 'dm'
+			channel: 'dm',
+			defer: false
 		});
 	}
 

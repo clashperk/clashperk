@@ -14,7 +14,9 @@ export default class FlagCommand extends Command {
 					'',
 					"To receive notification you must setup **Clan Feed** with a mentionable role. Flags are per server basis. It doesn't travel among Discord servers and not accessible from other servers."
 				]
-			}
+			},
+			root: true,
+			defer: false
 		});
 	}
 

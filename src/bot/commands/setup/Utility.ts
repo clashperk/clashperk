@@ -26,7 +26,7 @@ export default class SetupUtilsCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			clientPermissions: ['EmbedLinks', 'ManageWebhooks'],
+			clientPermissions: ['EmbedLinks', 'ManageWebhooks', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel'],
 			defer: true,
 			ephemeral: true
 		});

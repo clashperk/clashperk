@@ -10,7 +10,9 @@ export default class SummaryCommand extends Command {
 			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: ['Summary commands of clan families.']
-			}
+			},
+			root: true,
+			defer: false
 		});
 	}
 

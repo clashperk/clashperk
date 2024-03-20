@@ -106,7 +106,7 @@ export default class DebugCommand extends Command {
 			].join('\n')
 		);
 
-		for (const chunk of chunks) await interaction.followUp({ content: chunk, allowedMentions: { roles: [] } });
+		for (const chunk of chunks) await interaction.followUp({ content: chunk, allowedMentions: { roles: [] }, ephemeral: this.muted });
 	}
 
 	private fixTime(num: number) {

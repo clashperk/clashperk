@@ -7,8 +7,8 @@ export default class PingCommand extends Command {
 			category: 'none',
 			description: {
 				content: 'Pings me!'
-			}
-			// ownerOnly: true
+			},
+			defer: false
 		});
 	}
 

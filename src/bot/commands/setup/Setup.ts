@@ -32,7 +32,9 @@ export default class SetupCommand extends Command {
 			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'Enable features or assign clans to channels.'
-			}
+			},
+			root: true,
+			defer: false
 		});
 	}
 

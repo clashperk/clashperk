@@ -8,7 +8,8 @@ export default class ErrorCommand extends Command {
 			description: {
 				content: "You can't use this anyway, so why explain?"
 			},
-			clientPermissions: ['EmbedLinks', 'AttachFiles']
+			clientPermissions: ['EmbedLinks', 'AttachFiles'],
+			defer: false
 		});
 	}
 

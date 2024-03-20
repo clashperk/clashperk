@@ -131,6 +131,7 @@ export default class LegendLeaderboardCommand extends Command {
 
 		const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Legend Ranking]`, sheets);
 		return interaction.followUp({
+			ephemeral: this.muted,
 			content: `**Legend Leaderboard** (${clans.map((clan) => clan.name).join(', ')})`,
 			components: getExportComponents(spreadsheet)
 		});

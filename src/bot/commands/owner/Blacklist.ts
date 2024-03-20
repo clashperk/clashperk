@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
-import { Settings } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
+import { Settings } from '../../util/Constants.js';
 
 export default class BlacklistCommand extends Command {
 	public constructor() {
@@ -9,7 +9,8 @@ export default class BlacklistCommand extends Command {
 				content: "You can't use this anyway, so why explain?"
 			},
 			category: 'owner',
-			ownerOnly: true
+			ownerOnly: true,
+			defer: false
 		});
 	}
 

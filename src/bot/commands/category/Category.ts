@@ -8,7 +8,9 @@ export default class CategoryCommand extends Command {
 			channel: 'guild',
 			description: {
 				content: ['Create or manage clan aliases or categories.']
-			}
+			},
+			defer: false,
+			root: true
 		});
 	}
 

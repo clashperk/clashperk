@@ -777,7 +777,10 @@ export default class InteractionListener extends Listener {
 		if (this.client.components.has(interaction.customId)) return;
 		if (await this.componentHandler.exec(interaction)) return;
 
-		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.displayName}]`, { label: 'COMPONENT_EXPIRED' });
+		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.displayName}] -> ${interaction.customId}`, {
+			label: 'COMPONENT_EXPIRED'
+		});
+
 		await interaction.update({ components: [] });
 		return interaction.followUp({ content: this.i18n('common.component.expired', { lng: interaction.locale }), ephemeral: true });
 	}

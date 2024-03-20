@@ -10,7 +10,8 @@ export default class ConfigCommand extends Command {
 			channel: 'guild',
 			description: {
 				content: ['Manage server configuration.']
-			}
+			},
+			defer: false
 		});
 	}
 
@@ -28,7 +29,6 @@ export default class ConfigCommand extends Command {
 			verified_only_clan_roles?: boolean;
 		}
 	) {
-		console.log(typeof args.verified_only_clan_roles);
 		if (!this.client.util.isManager(interaction.member) && Object.keys(args).some((key) => args[key as keyof typeof args])) {
 			return interaction.reply({
 				content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to change these settings.`,
@@ -162,7 +162,7 @@ export default class ConfigCommand extends Command {
 			embed.setFooter({ text: `Service ID: ${process.env.RAILWAY_SERVICE_ID!}` });
 		}
 
-		return interaction.reply({ embeds: [embed] });
+		return interaction.reply({ embeds: [embed], ephemeral: this.muted });
 	}
 
 	private getColor(hex: string) {

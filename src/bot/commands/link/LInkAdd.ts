@@ -19,7 +19,8 @@ export default class LinkAddCommand extends Command {
 	public constructor() {
 		super('link-add', {
 			category: 'none',
-			channel: 'guild'
+			channel: 'guild',
+			defer: false
 		});
 	}
 

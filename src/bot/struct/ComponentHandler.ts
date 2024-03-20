@@ -45,7 +45,9 @@ export default class ComponentHandler {
 		const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
 		if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) {
 			if (parsed.ephemeral) {
-				await interaction.deferReply({ ephemeral: !!parsed.ephemeral });
+				await interaction.deferReply({
+					ephemeral: this.client.commandHandler.isMessagingDisabled(interaction) || !!parsed.ephemeral
+				});
 			} else {
 				await interaction.deferUpdate();
 			}

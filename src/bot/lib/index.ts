@@ -12,6 +12,7 @@ import {
 	Interaction,
 	Message,
 	MessageComponentInteraction,
+	PermissionFlagsBits,
 	PermissionsString,
 	RestEvents
 } from 'discord.js';
@@ -21,10 +22,10 @@ import { pathToFileURL } from 'node:url';
 import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/Client.js';
+import { CreateCustomIdProps } from '../struct/RedisService.js';
 import { Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util.js';
-import { CreateCustomIdProps } from '../struct/RedisService.js';
 
 type ArgsMatchType =
 	| 'SUB_COMMAND'
@@ -262,9 +263,10 @@ export class CommandHandler extends BaseHandler {
 		if (await this.postInhibitor(interaction, command)) return;
 		try {
 			await command.pre(interaction, args);
+			await command.permissionCheck(interaction);
 
 			if (command.defer && !interaction.deferred && !interaction.replied) {
-				await interaction.deferReply({ ephemeral: command.ephemeral });
+				await interaction.deferReply({ ephemeral: this.isMessagingDisabled(interaction) || command.ephemeral });
 			}
 			this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
 			await command.exec(interaction, args);
@@ -273,6 +275,17 @@ export class CommandHandler extends BaseHandler {
 		} finally {
 			this.emit(CommandHandlerEvents.COMMAND_ENDED, interaction, command, args);
 		}
+	}
+
+	public isMessagingDisabled(interaction: CommandInteraction | MessageComponentInteraction) {
+		if (!interaction.inCachedGuild()) return true;
+		if (!interaction.channel) return false;
+
+		if (interaction.channel.isThread()) {
+			return !interaction.appPermissions.has([PermissionFlagsBits.SendMessagesInThreads]);
+		}
+
+		return !interaction.appPermissions.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]);
 	}
 
 	public async postInhibitor(interaction: CommandInteraction | MessageComponentInteraction, command: Command) {
@@ -410,7 +423,8 @@ export interface CommandOptions {
 	ownerOnly?: boolean;
 	ephemeral?: boolean;
 	channel?: 'dm' | 'guild';
-	defer?: boolean;
+	defer: boolean;
+	root?: boolean;
 	userPermissions?: PermissionsString[];
 	clientPermissions?: PermissionsString[];
 	roleKey?: string;
@@ -431,12 +445,14 @@ export class Command implements CommandOptions {
 	public client: Client;
 	public category: string;
 	public ephemeral?: boolean;
+	public root?: boolean;
 	public ownerOnly?: boolean;
 	public channel?: 'dm' | 'guild';
-	public defer?: boolean;
+	public defer: boolean;
 	public userPermissions?: PermissionsString[];
 	public clientPermissions?: PermissionsString[];
 	public roleKey?: string;
+	public muted?: boolean;
 	public description?: {
 		content: string | string[];
 		usage?: string;
@@ -456,6 +472,7 @@ export class Command implements CommandOptions {
 			defer,
 			aliases,
 			ephemeral,
+			root,
 			userPermissions,
 			clientPermissions,
 			description,
@@ -468,6 +485,7 @@ export class Command implements CommandOptions {
 		this.id = id;
 		this.aliases = aliases;
 		this.defer = defer;
+		this.root = root;
 		this.ephemeral = ephemeral;
 		this.userPermissions = userPermissions;
 		this.clientPermissions = clientPermissions;
@@ -488,6 +506,10 @@ export class Command implements CommandOptions {
 	public condition(interaction: BaseInteraction): { embeds: EmbedBuilder[] } | null;
 	public condition(): { embeds: EmbedBuilder[] } | null {
 		return null;
+	}
+
+	public async permissionCheck(interaction: CommandInteraction | MessageComponentInteraction) {
+		this.muted = this.handler.isMessagingDisabled(interaction);
 	}
 
 	public pre(interaction: BaseInteraction, args: Record<string, unknown>): Promise<unknown>;

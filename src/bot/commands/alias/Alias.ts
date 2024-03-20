@@ -8,7 +8,9 @@ export default class AliasCommand extends Command {
 			channel: 'guild',
 			description: {
 				content: ['Create, Remove or View clan aliases.']
-			}
+			},
+			defer: false,
+			root: true
 		});
 	}
 
