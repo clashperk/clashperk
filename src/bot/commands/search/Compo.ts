@@ -57,7 +57,6 @@ export default class CompoCommand extends Command {
 			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh).setStyle(ButtonStyle.Secondary)
 		);
 
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 }

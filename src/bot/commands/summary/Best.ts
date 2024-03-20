@@ -672,8 +672,7 @@ export default class SummaryBestCommand extends Command {
 		);
 
 		const isSameSeason = seasonId === Season.ID;
-		await interaction.editReply({ embeds: [embed], components: isSameSeason ? [row, menuRow] : [menuRow] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: isSameSeason ? [row, menuRow] : [menuRow] });
 	}
 
 	private _formatTime(diff: number) {

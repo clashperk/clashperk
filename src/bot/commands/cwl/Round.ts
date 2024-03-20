@@ -203,8 +203,7 @@ export default class CWLRoundCommand extends Command {
 		const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(customIds.rounds).setPlaceholder('Select a round!');
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
-		await interaction.editReply({ embeds: [round.embed], components: [buttonRow, menuRow] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [round.embed], components: [buttonRow, menuRow] });
 	}
 
 	private count(members: APIClanWarMember[]) {

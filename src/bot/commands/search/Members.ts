@@ -276,8 +276,7 @@ export default class MembersCommand extends Command {
 			);
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-		await interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
 	}
 
 	private heroes(items: APIPlayerItem[]) {

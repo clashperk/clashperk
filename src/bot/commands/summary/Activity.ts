@@ -66,8 +66,7 @@ export default class SummaryCommand extends Command {
 				.setCustomId(customIds.asc_order)
 		);
 
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private async getActivity(clanTag: string): Promise<{ avg_total: number; avg_online: number } | null> {

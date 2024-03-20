@@ -115,7 +115,6 @@ export default class SummaryAttacksCommand extends Command {
 				.setCustomId(customIds.toggle)
 		);
 
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 }

@@ -256,8 +256,7 @@ export default class DonationsCommand extends Command {
 				])
 		);
 
-		await interaction.editReply({ embeds: [embed], components: [row, sortingRow, orderingRow] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row, sortingRow, orderingRow] });
 	}
 
 	private padEnd(name: string) {

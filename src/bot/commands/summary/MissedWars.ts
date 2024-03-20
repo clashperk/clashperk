@@ -90,8 +90,7 @@ export default class SummaryMissedWarsCommand extends Command {
 				.setEmoji('🔃')
 				.setLabel(args.is_reversed ? 'High to Low' : 'Low to High')
 		);
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private getEmbed(members: { name: string; tag: string; wars: number; missed: number }[], season: string) {

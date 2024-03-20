@@ -135,8 +135,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
 			);
 		}
 
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private async queryFromDB(weekId: string, clans: { tag: string; name: string }[]) {

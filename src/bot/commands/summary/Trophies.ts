@@ -1,9 +1,9 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Season, Util } from '../../util/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
-import { Collections } from '../../util/Constants.js';
 import { PlayerSeasonModel } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class SummaryTrophiesCommand extends Command {
 	public constructor() {
@@ -174,8 +174,7 @@ export default class SummaryTrophiesCommand extends Command {
 				.setCustomId(customIds.village)
 		);
 
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private pad(num: string | number, padding = 2) {

@@ -122,8 +122,7 @@ export default class CWLLineupCommand extends Command {
 			.setDisabled(chunks.length === 1);
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-		await interaction.editReply({ embeds, components: [buttonRow, menuRow] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds, components: [buttonRow, menuRow] });
 	}
 
 	private async rosters(clanMembers: APIClanWarMember[], opponentMembers: APIClanWarMember[]) {

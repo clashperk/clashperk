@@ -169,8 +169,7 @@ export default class SummaryCapitalContributionCommand extends Command {
 				.setCustomId(customIds.toggle)
 		);
 
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private padding(num: number) {

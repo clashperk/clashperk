@@ -213,8 +213,7 @@ export default class CWLStarsCommand extends Command {
 			);
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-		await interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
 	}
 
 	private pad(num: number, depth = 2) {

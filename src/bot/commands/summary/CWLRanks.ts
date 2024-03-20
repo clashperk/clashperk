@@ -125,8 +125,7 @@ export default class SummaryCWLRanks extends Command {
 			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Secondary)
 		);
 
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private async rounds(body: APIClanWarLeagueGroup, clanTag: string, season?: string | null) {

@@ -361,8 +361,7 @@ export default class StatsCommand extends Command {
 			.setEmoji(args.view === 'starsAvg' ? EMOJIS.FIRE : EMOJIS.STAR);
 
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(refreshButton, toggleButton);
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private percentage(num: number) {

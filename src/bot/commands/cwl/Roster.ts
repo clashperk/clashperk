@@ -228,8 +228,7 @@ export default class CWLRosterCommand extends Command {
 				.setStyle(ButtonStyle.Secondary)
 				.setLabel(args.detailed ? 'Summarized Roster' : 'Detailed Roster')
 		);
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private getNextRoster(clan: APIWarClan, townHalls: number[]) {

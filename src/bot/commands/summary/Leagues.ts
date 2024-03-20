@@ -56,8 +56,7 @@ export default class SummaryLeaguesCommand extends Command {
 				.setStyle(ButtonStyle.Primary)
 				.setCustomId(customIds.toggle)
 		);
-		await interaction.editReply({ embeds: [embed], components: [row] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private getWarLeagueId(clan: APIClan) {

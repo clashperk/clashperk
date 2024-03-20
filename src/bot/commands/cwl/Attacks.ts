@@ -281,8 +281,7 @@ export default class CWLAttacksCommand extends Command {
 		const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(customIds.rounds).setPlaceholder('Select a round!');
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
-		await interaction.editReply({ embeds: [embed], components: args.missed ? [buttonRow] : [buttonRow, menuRow] });
-		return this.clearId(interaction);
+		return interaction.editReply({ embeds: [embed], components: args.missed ? [buttonRow] : [buttonRow, menuRow] });
 	}
 
 	private padEnd(name: string) {

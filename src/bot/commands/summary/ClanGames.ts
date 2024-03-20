@@ -120,8 +120,6 @@ export default class SummaryClanGamesCommand extends Command {
 		} else {
 			await interaction.editReply({ embeds: [embed], components: [...components, row] });
 		}
-
-		return this.clearId(interaction);
 	}
 
 	private async export(interaction: ButtonInteraction<'cached'>, members: ClanGamesMember[]) {

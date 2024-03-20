@@ -18,8 +18,8 @@ export default class ComponentHandler {
 	}
 
 	private async parseCommandId(customId: string): Promise<ParsedCommandId | null> {
-		if (/^{.*}$/g.test(customId)) return JSON.parse(customId);
-		if (customId.startsWith('CMD-')) {
+		if (/^{.*}$/.test(customId)) return JSON.parse(customId);
+		if (/^CMD/.test(customId)) {
 			return this.getCustomId<ParsedCommandId>(customId);
 		}
 		return null;

@@ -111,8 +111,6 @@ export default class LegendLeaderboardCommand extends Command {
 		} else {
 			await interaction.editReply({ embeds: [embed], components: [row, sortingRow] });
 		}
-
-		return this.clearId(interaction);
 	}
 
 	private async export(

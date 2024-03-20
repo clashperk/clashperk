@@ -513,14 +513,6 @@ export class Command implements CommandOptions {
 	public createId(payload: Record<string, unknown>) {
 		return this.client.redis.createCustomId(payload);
 	}
-
-	public clearId(interaction: BaseInteraction) {
-		if (interaction.isMessageComponent()) {
-			const customId = interaction.customId;
-			return this.client.redis.expireCustomId(customId);
-		}
-		return null;
-	}
 }
 
 export interface ListenerOptions {

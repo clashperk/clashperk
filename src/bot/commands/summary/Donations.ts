@@ -153,11 +153,10 @@ export default class DonationSummaryCommand extends Command {
 				])
 		);
 
-		await interaction.editReply({
+		return interaction.editReply({
 			embeds: splitted ? [args.clans_only ? topClansEmbed : topPlayersEmbed] : [topClansEmbed, topPlayersEmbed],
 			components: [buttonRow, sortingRow, orderingRow]
 		});
-		return this.clearId(interaction);
 	}
 
 	private donation(num: number, space: number) {
