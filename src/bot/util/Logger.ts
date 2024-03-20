@@ -1,6 +1,6 @@
-import util from 'node:util';
-import moment from 'moment';
 import chalk from 'chalk';
+import moment from 'moment';
+import util from 'node:util';
 import { Client } from '../struct/Client.js';
 
 const COLORS: Record<string, string> = {

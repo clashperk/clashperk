@@ -11,11 +11,12 @@ import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
 import { request } from 'undici';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
+import Client from './Client.js';
 
 export default class Http extends ClashOfClansClient {
 	private bearerToken!: string;
 
-	public constructor() {
+	public constructor(client: Client) {
 		const keys = process.env.CLASH_TOKENS?.split(',') ?? [];
 
 		super({
@@ -32,7 +33,16 @@ export default class Http extends ClashOfClansClient {
 			connections: 50,
 			pipelining: 10,
 			keys: [...keys],
-			baseURL: process.env.BASE_URL
+			baseURL: process.env.BASE_URL,
+			onError: ({ path, status, body }) => {
+				if (
+					(status !== 200 || !body) &&
+					!(!(body as Record<string, string>)?.message && status === 403) &&
+					!(path.includes('war') && status === 404)
+				) {
+					client.logger.debug(`${status} ${path}`, { label: 'HTTP' });
+				}
+			}
 		});
 	}
 

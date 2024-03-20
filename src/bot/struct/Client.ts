@@ -1,5 +1,5 @@
 import { Client as ElasticClient } from '@elastic/elasticsearch';
-import Discord, { BaseInteraction, GatewayIntentBits, Message, Options, Snowflake } from 'discord.js';
+import Discord, { BaseInteraction, GatewayIntentBits, Message, Options } from 'discord.js';
 import { Db } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { URL, fileURLToPath } from 'node:url';
@@ -44,7 +44,7 @@ export class Client extends Discord.Client {
 	public db!: Db;
 	public util: ClientUtil;
 	public settings!: SettingsProvider;
-	public http = new Http();
+	public http: Http;
 	public stats!: StatsHandler;
 	public storage!: StorageHandler;
 	public warScheduler!: ClanWarScheduler;
@@ -137,6 +137,8 @@ export class Client extends Discord.Client {
 
 		this.logger = new Logger(this);
 		this.util = new ClientUtil(this);
+		this.http = new Http(this);
+
 		this.ownerId = process.env.OWNER!;
 		container.register(Client, { useValue: this });
 	}
@@ -154,11 +156,11 @@ export class Client extends Discord.Client {
 		return this.user!.id === '526971716711350273';
 	}
 
-	public embed(guild: Message | Snowflake | BaseInteraction) {
+	public embed(guild: Message | string | BaseInteraction) {
 		return this.settings.get<number>(typeof guild === 'string' ? guild : guild.guild!, Settings.COLOR, null);
 	}
 
-	public uuid(...userIds: Snowflake[]) {
+	public uuid(...userIds: string[]) {
 		const uniqueId = nanoid();
 		this.components.set(uniqueId, userIds);
 		return uniqueId;
