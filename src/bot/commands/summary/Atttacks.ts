@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { Season } from '../../util/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { Season } from '../../util/index.js';
 
 export default class SummaryAttacksCommand extends Command {
 	public constructor() {
@@ -16,20 +16,8 @@ export default class SummaryAttacksCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string; clans_only?: boolean }) {
 		const season = args.season ?? Season.ID;
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const allClans = await this.client.http._getClans(clans);
 		const members: { name: string; tag: string; attackWins: number; clan: { name: string; tag: string } }[] = [];
@@ -96,9 +84,8 @@ export default class SummaryAttacksCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			uuid: interaction.id,
 			season: args.season,
-			clans: tags.join(','),
+			clans: resolvedArgs,
 			clans_only: args.clans_only
 		};
 

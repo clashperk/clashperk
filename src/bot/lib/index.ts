@@ -24,6 +24,7 @@ import { Client } from '../struct/Client.js';
 import { Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util.js';
+import { CreateCustomIdProps } from '../struct/RedisService.js';
 
 type ArgsMatchType =
 	| 'SUB_COMMAND'
@@ -510,7 +511,7 @@ export class Command implements CommandOptions {
 		return null;
 	}
 
-	public createId(payload: Record<string, unknown>) {
+	public createId(payload: CreateCustomIdProps & Record<string, unknown>) {
 		return this.client.redis.createCustomId(payload);
 	}
 }

@@ -20,20 +20,8 @@ export default class ClanActivityCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number; timezone?: string }) {
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guild.id, tags)
-			: await this.client.storage.find(interaction.guild.id);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const result = await this.aggregate(
 			clans.map((clan) => clan.tag),

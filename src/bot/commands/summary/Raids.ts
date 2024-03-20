@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { Util } from '../../util/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 export default class SummaryCapitalRaidsCommand extends Command {
 	public constructor() {
@@ -22,20 +22,8 @@ export default class SummaryCapitalRaidsCommand extends Command {
 		let { week } = args;
 		if (!week) week = weekId;
 
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const { clansGroup, membersGroup } = await this.queryFromDB(week, clans);
 
@@ -105,8 +93,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			uuid: interaction.id,
-			clans: tags.join(','),
+			clans: resolvedArgs,
 			week: args.week,
 			clans_only: args.clans_only,
 			avg_loot: args.avg_loot

@@ -86,20 +86,8 @@ export default class SummaryBestCommand extends Command {
 		args: { season?: string; limit?: number; clans?: string; order?: 'asc' | 'desc'; selected?: string[] }
 	) {
 		const seasonId = args.season ?? Season.ID;
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
 		const members = _clans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
@@ -625,10 +613,9 @@ export default class SummaryBestCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			uuid: interaction.id,
 			season: args.season,
 			order: args.order,
-			clans: tags.join(','),
+			clans: resolvedArgs,
 			limit: args.limit,
 			selected: args.selected
 		};

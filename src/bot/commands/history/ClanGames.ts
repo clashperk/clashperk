@@ -1,11 +1,11 @@
 import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
+import { Collections } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
-import { Util } from '../../util/index.js';
 import { handlePagination } from '../../util/Pagination.js';
+import { Util } from '../../util/index.js';
 
 export default class ClanGamesHistoryCommand extends Command {
 	public constructor() {
@@ -38,20 +38,8 @@ export default class ClanGamesHistoryCommand extends Command {
 			return handlePagination(interaction, embeds, (action) => this.export(action, result));
 		}
 
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
 		const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));

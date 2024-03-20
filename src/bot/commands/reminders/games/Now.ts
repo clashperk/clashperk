@@ -26,21 +26,8 @@ export default class ClanGamesNowCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
 		if (!args.message) return interaction.editReply(this.i18n('command.reminders.now.no_message', { lng: interaction.locale }));
 
-		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
-		const clans =
-			args.clans === '*'
-				? await this.client.storage.find(interaction.guildId)
-				: await this.client.storage.search(interaction.guildId, tags);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+		if (!clans) return;
 
 		const customIds = {
 			roles: this.client.uuid(interaction.user.id),

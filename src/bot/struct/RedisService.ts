@@ -35,23 +35,17 @@ class RedisService {
 		return raw.flat().filter((_) => _)[0] as unknown as APIPlayer;
 	}
 
-	public createCustomId(payload: Record<string, unknown>) {
-		const { uuid, ...rest } = payload;
-
-		const softId = JSON.stringify(rest);
+	public createCustomId(payload: CreateCustomIdProps & Record<string, unknown>) {
+		const softId = JSON.stringify(payload);
 		if (softId.length <= 100) return softId;
 
 		const customId = `CMD:${nanoid()}`;
+
 		const query = this.connection.multi();
-		query.json.set(customId, '$', { ...payload, uuid } as unknown as RedisJSON);
-		query.expire(customId, 60 * 60 * 24 * 100);
-
-		if (uuid) {
-			query.sAdd(`SID:${uuid as string}`, customId);
-			query.expire(`SID:${uuid as string}`, 60 * 60 * 24 * 100);
-		}
-
+		query.json.set(customId, '$', payload as unknown as RedisJSON);
+		query.expire(customId, 60 * 60 * 24 * 100); // 100 DAYS
 		query.exec();
+
 		return customId;
 	}
 
@@ -65,19 +59,16 @@ class RedisService {
 	}
 
 	public async expireCustomId(customId: string) {
-		const record = await this.getCustomId<{ uuid?: string } | null>(customId);
-		if (!record) return null;
-
-		const query = this.connection.multi();
-		if (record.uuid) {
-			const customIds = await this.connection.sMembers(`SID:${record.uuid}`);
-			if (customIds.length) for (const id of customIds) query.expire(id, 60);
-			query.expire(`SID:${record.uuid}`, 60);
-		}
-
-		query.expire(customId, 60);
-		return query.exec();
+		return this.connection.expire(customId, 60, 'XX');
 	}
 }
 
 export default RedisService;
+
+export interface CreateCustomIdProps {
+	cmd: string;
+	ephemeral?: boolean;
+	defer?: boolean;
+	array_key?: string;
+	string_key?: string;
+}

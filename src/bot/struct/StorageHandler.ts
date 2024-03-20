@@ -1,5 +1,5 @@
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
-import { CommandInteraction, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import fetch from 'node-fetch';
@@ -9,6 +9,7 @@ import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Collections, Flags, Settings, UnrankedWarLeagueId } from '../util/Constants.js';
+import { i18n } from '../util/i18n.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
 import { Client } from './Client.js';
 
@@ -72,6 +73,41 @@ export default class StorageHandler {
 				{ collation: { locale: 'en', strength: 2 }, sort: { name: 1 } }
 			)
 			.toArray();
+	}
+
+	public async handleSearch(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		{ args, required }: { args?: string; required?: boolean }
+	) {
+		const tags = args === '*' ? [] : await this.client.resolver.resolveArgs(args);
+
+		if (!args && required) {
+			await interaction.editReply(
+				i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
+			return { clans: null };
+		}
+
+		const clans =
+			args === '*' || !args
+				? await this.client.storage.find(interaction.guildId)
+				: await this.client.storage.search(interaction.guildId, tags);
+
+		if (!clans.length && tags.length) {
+			await interaction.editReply(
+				i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
+			return { clans: null };
+		}
+
+		if (!clans.length) {
+			await interaction.editReply(
+				i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
+			return { clans: null };
+		}
+
+		return { clans, resolvedArgs: args === '*' ? '*' : tags.join(',') };
 	}
 
 	public formatCategoryName(name: string) {

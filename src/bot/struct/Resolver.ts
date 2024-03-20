@@ -288,10 +288,10 @@ export default class Resolver {
 	}
 
 	public async resolveArgs(args?: string) {
-		if (!args) return [];
+		if (!args || args === '*') return [];
 
 		const pattern = /^#?[0289CGJLOPQRUVY]{3,}$/i;
-		if (args.startsWith('AC-')) {
+		if (/^ARGS/.test(args)) {
 			const tags = await this.client.redis.connection.get(args);
 			if (tags) return tags.split(/\W+/).map((tag) => (pattern.test(tag) ? this.client.http.fixTag(tag) : tag));
 		}

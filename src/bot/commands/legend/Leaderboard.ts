@@ -26,20 +26,8 @@ export default class LegendLeaderboardCommand extends Command {
 			enable_auto_updating?: boolean;
 		}
 	) {
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const { embed, legends } = await getLegendLeaderboardEmbedMaker({
 			guild: interaction.guild,
@@ -58,8 +46,7 @@ export default class LegendLeaderboardCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			uuid: interaction.id,
-			clans: tags.join(','),
+			clans: resolvedArgs,
 			sort_by: args.sort_by,
 			export_disabled: args.export_disabled
 		};

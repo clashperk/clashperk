@@ -610,8 +610,9 @@ export default class InteractionListener extends Listener {
 			.filter((clan) => clan.name && clan.tag)
 			.filter((clan, index, _clans) => _clans.findIndex((p) => p.tag === clan.tag) === index);
 
+		const isValidQuery = this.isValidQuery(query);
 		if (!clans.length) {
-			if (query && this.isValidQuery(query)) {
+			if (query && isValidQuery) {
 				const value = await this.getQuery(query);
 				return interaction.respond([{ value, name: query.substring(0, 100) }]);
 			}
@@ -621,9 +622,8 @@ export default class InteractionListener extends Listener {
 		const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` }));
 		if (response.length > 1) {
 			const clanTags = clans.map((clan) => clan.tag).join(',');
-			const value = await this.getQuery(clanTags);
 			response.unshift({
-				value,
+				value: isValidQuery ? await this.getQuery(clanTags) : '*',
 				name: `All of these (${clans.length})`
 			});
 		}
@@ -741,7 +741,7 @@ export default class InteractionListener extends Listener {
 	private async getQuery(query: string) {
 		query = query.trim();
 		if (query.length > 100) {
-			const key = `AC-${nanoid()}`;
+			const key = `ARGS:${nanoid()}`;
 			await this.client.redis.connection.set(key, query, { EX: 60 * 60 });
 			return key;
 		}

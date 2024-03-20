@@ -333,7 +333,6 @@ export default class StatsCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			uuid: interaction.id,
 			command: args.command,
 			tag: args.tag,
 			compare: args.compare,

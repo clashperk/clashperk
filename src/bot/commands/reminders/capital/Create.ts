@@ -50,21 +50,8 @@ export default class ReminderCreateCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		args: { duration: string; message: string; channel: TextChannel | AnyThreadChannel; clans?: string }
 	) {
-		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
-		const clans =
-			args.clans === '*'
-				? await this.client.storage.find(interaction.guildId)
-				: await this.client.storage.search(interaction.guildId, tags);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+		if (!clans) return;
 
 		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.permissions);
 		if (permission.missing) {

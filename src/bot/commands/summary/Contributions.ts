@@ -2,8 +2,8 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { Season, Util } from '../../util/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class SummaryCapitalContributionCommand extends Command {
 	public constructor() {
@@ -22,20 +22,8 @@ export default class SummaryCapitalContributionCommand extends Command {
 		const season = args.season ?? Season.ID;
 		const week = args.week;
 
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const startWeek = moment(week).utc(true).add(7, 'h').utc().toDate();
 		const endWeek = moment(week).utc(true).add(7, 'd').add(7, 'h').toDate();
@@ -149,10 +137,9 @@ export default class SummaryCapitalContributionCommand extends Command {
 
 		const payload = {
 			cmd: this.id,
-			uuid: interaction.id,
 			season: args.season,
 			week: args.week,
-			clans: tags.join(','),
+			clans: resolvedArgs,
 			clans_only: args.clans_only
 		};
 

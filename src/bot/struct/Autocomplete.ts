@@ -95,17 +95,16 @@ export class Autocomplete {
 		if (!choices.length) return interaction.respond([{ name: 'Enter a clan tag.', value: '0' }]);
 
 		if (isMulti) {
-			const value = await this.generateShortKey(choices.map((choice) => choice.value).join(','));
-			choices.unshift({ value, name: `All of these (${clans.length})` });
+			choices.unshift({ value: '*', name: `All of these (${clans.length})` });
 		}
 
 		return interaction.respond(choices.slice(0, 25));
 	}
 
-	private async generateShortKey(query: string) {
+	public async generateArgs(query: string) {
 		query = query.trim();
 		if (query.length > 100) {
-			const key = `AC-${nanoid()}`;
+			const key = `ARGS:${nanoid()}`;
 			await this.client.redis.connection.set(key, query, { EX: 60 * 60 });
 			return key;
 		}

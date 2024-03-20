@@ -1,8 +1,8 @@
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
-import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {
@@ -22,20 +22,8 @@ export default class SummaryWarsCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const result = (await Promise.all(clans.map((clan) => this.getWAR(clan.tag)))).flat();
 		const wars = result.filter((res) => res.state !== 'notInWar');

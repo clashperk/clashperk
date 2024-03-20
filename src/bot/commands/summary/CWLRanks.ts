@@ -1,7 +1,7 @@
 import { APIClanWar, APIClanWarLeagueGroup } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections, promotionMap, UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
+import { Collections, UnrankedWarLeagueId, WarLeagueMap, promotionMap } from '../../util/Constants.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
 
@@ -26,20 +26,8 @@ export default class SummaryCWLRanks extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
 		const season = args.season === Season.ID ? null : args.season;
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
-
-		if (!clans.length && tags.length)
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+		if (!clans) return;
 
 		const __clans = await this.client.http._getClans(clans);
 
@@ -120,7 +108,7 @@ export default class SummaryCWLRanks extends Command {
 			return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.ID }));
 		}
 
-		const customId = this.createId({ cmd: this.id, clans: args.clans, season: args.season });
+		const customId = this.createId({ cmd: this.id, clans: resolvedArgs, season: args.season });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Secondary)
 		);

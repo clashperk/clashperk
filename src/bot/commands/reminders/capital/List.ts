@@ -29,7 +29,7 @@ export default class ReminderListCommand extends Command {
 		const filter: Filter<RaidReminder> = {
 			guild: interaction.guildId
 		};
-		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
+		const tags = await this.client.resolver.resolveArgs(args.clans);
 		if (args.channel) filter.channel = args.channel.id;
 		if (tags.length) filter.clans = { $in: tags };
 
