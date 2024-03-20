@@ -278,10 +278,10 @@ export class CommandHandler extends BaseHandler {
 	}
 
 	public isMessagingDisabled(interaction: CommandInteraction | MessageComponentInteraction) {
+		if (!interaction.inGuild()) return false;
 		if (!interaction.inCachedGuild()) return true;
-		if (!interaction.channel) return false;
 
-		if (interaction.channel.isThread()) {
+		if (interaction.channel?.isThread()) {
 			return !interaction.appPermissions.has([PermissionFlagsBits.SendMessagesInThreads]);
 		}
 
