@@ -399,6 +399,8 @@ export const EMOJIS = {
 	HEROES: '<:Heroes:838837719866146826>',
 	ONLINE: '<:Online:876358512010227722>',
 	REFRESH: '🔁',
+	NEXT: '➡️',
+	PREVIOUS: '⬅️',
 	SETTINGS: '⚙️',
 	EXPORT: '📥',
 	MAINTENANCE: '🛠️',

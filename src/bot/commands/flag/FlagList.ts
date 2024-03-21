@@ -1,11 +1,20 @@
-import { AutocompleteInteraction, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
+import {
+	ActionRowBuilder,
+	AutocompleteInteraction,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	escapeMarkdown,
+	time
+} from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { hexToNanoId } from '../../util/Helper.js';
-import { handlePagination } from '../../util/Pagination.js';
 
 export default class FlagListCommand extends Command {
 	public constructor() {
@@ -30,18 +39,17 @@ export default class FlagListCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { flag_type: 'strike' | 'ban'; player_tag?: string; group_by_players?: boolean }
+		args: { flag_type: 'strike' | 'ban'; player_tag?: string; group_by_players?: boolean; page?: number }
 	) {
 		// Delete expired flags.
-		await this.deleteExpiredFlags(interaction.guildId);
+		this.deleteExpiredFlags(interaction.guildId);
 
 		if (args.player_tag) return this.filterByPlayerTag(interaction, args);
 
-		const groupByPlayers = this.client.settings.get<boolean>(
-			interaction.guild.id,
-			Settings.FLAG_LIST_GROUP_BY_PLAYERS,
-			Boolean(args.group_by_players)
-		);
+		const groupByPlayers =
+			args.group_by_players ??
+			this.client.settings.get<boolean>(interaction.guild.id, Settings.FLAG_LIST_GROUP_BY_PLAYERS, Boolean(args.group_by_players));
+
 		if (typeof args.group_by_players === 'boolean') {
 			this.client.settings.set(interaction.guild.id, Settings.FLAG_LIST_GROUP_BY_PLAYERS, args.group_by_players);
 		}
@@ -52,7 +60,7 @@ export default class FlagListCommand extends Command {
 
 	public async flagList(
 		interaction: CommandInteraction<'cached'>,
-		args: { flag_type: 'strike' | 'ban'; player_tag?: string; group_by_players?: boolean }
+		args: { flag_type: 'strike' | 'ban'; player_tag?: string; group_by_players?: boolean; page?: number }
 	) {
 		const result = await this.client.db
 			.collection<FlagsEntity>(Collections.FLAGS)
@@ -93,7 +101,7 @@ export default class FlagListCommand extends Command {
 			embeds.push(embed);
 		});
 
-		return handlePagination(interaction, embeds);
+		return this.dynamicPagination(interaction, embeds, args);
 	}
 
 	private async filterByPlayerTag(interaction: CommandInteraction<'cached'>, args: { player_tag?: string; flag_type: 'ban' | 'strike' }) {
@@ -250,12 +258,68 @@ export default class FlagListCommand extends Command {
 			embeds.push(embed);
 		});
 
-		return handlePagination(interaction, embeds);
+		return this.dynamicPagination(interaction, embeds, args);
 	}
 
 	private async deleteExpiredFlags(guildId: string) {
 		await this.client.db
 			.collection<FlagsEntity>(Collections.FLAGS)
 			.deleteMany({ guild: guildId, $and: [{ expiresAt: { $lt: new Date() } }] });
+	}
+
+	private dynamicPagination(
+		interaction: CommandInteraction<'cached'>,
+		embeds: EmbedBuilder[],
+		args: { flag_type: 'ban' | 'strike'; page?: number; group_by_players?: boolean }
+	) {
+		let pageIndex = args.page ?? 0;
+		if (pageIndex < 0) pageIndex = embeds.length - 1;
+		if (pageIndex >= embeds.length) pageIndex = 0;
+
+		const payload = { cmd: this.id, flag_type: args.flag_type, group_by_players: args.group_by_players };
+		const customIds = {
+			refresh: this.createId({ ...payload }),
+			group: this.createId({ ...payload, group_by_players: !args.group_by_players }),
+			next: this.createId({ ...payload, page: pageIndex + 1 }),
+			prev: this.createId({ ...payload, page: pageIndex - 1 }),
+			page: this.client.uuid()
+		};
+
+		const pagingRow = new ActionRowBuilder<ButtonBuilder>();
+
+		const prevButton = new ButtonBuilder()
+			.setCustomId(customIds.prev)
+			.setEmoji(EMOJIS.PREVIOUS)
+			.setStyle(ButtonStyle.Secondary)
+			.setDisabled(embeds.length <= 1);
+
+		const nextButton = new ButtonBuilder()
+			.setCustomId(customIds.next)
+			.setEmoji(EMOJIS.NEXT)
+			.setStyle(ButtonStyle.Secondary)
+			.setDisabled(embeds.length <= 1);
+
+		const pageButton = new ButtonBuilder()
+			.setCustomId(customIds.next)
+			.setLabel(`${pageIndex + 1}/${embeds.length}`)
+			.setStyle(ButtonStyle.Secondary)
+			.setDisabled(true)
+			.setCustomId('disabled');
+
+		if (embeds.length > 1) {
+			pagingRow.addComponents(prevButton);
+			pagingRow.addComponents(nextButton);
+			pagingRow.addComponents(pageButton);
+		}
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId(customIds.group)
+				.setLabel(args.group_by_players ? 'List Flags' : 'Group Flags')
+				.setStyle(ButtonStyle.Secondary)
+		);
+
+		return interaction.editReply({ embeds: [embeds[pageIndex]], components: [row, pagingRow] });
 	}
 }

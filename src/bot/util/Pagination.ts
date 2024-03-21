@@ -29,7 +29,8 @@ export const handlePagination = async (
 	const customIds = {
 		next: client.uuid(interaction.user.id),
 		prev: client.uuid(interaction.user.id),
-		export: client.uuid(interaction.user.id)
+		export: client.uuid(interaction.user.id),
+		page: client.uuid(interaction.user.id)
 	};
 
 	const prevButton = new ButtonBuilder()
@@ -46,7 +47,7 @@ export const handlePagination = async (
 
 	const row = new ActionRowBuilder<ButtonBuilder>();
 	const indexButton = new ButtonBuilder()
-		.setCustomId(customIds.next)
+		.setCustomId(customIds.page)
 		.setLabel(`${1}/${embeds.length}`)
 		.setStyle(ButtonStyle.Secondary)
 		.setDisabled(true)
@@ -119,7 +120,8 @@ export const handleMessagePagination = async (
 	const customIds = {
 		next: client.uuid(interactionUserId),
 		prev: client.uuid(interactionUserId),
-		export: client.uuid(interactionUserId)
+		export: client.uuid(interactionUserId),
+		page: client.uuid(interactionUserId)
 	};
 
 	const prevButton = new ButtonBuilder()
@@ -136,7 +138,7 @@ export const handleMessagePagination = async (
 
 	const row = new ActionRowBuilder<ButtonBuilder>();
 	const indexButton = new ButtonBuilder()
-		.setCustomId(customIds.next)
+		.setCustomId(customIds.page)
 		.setLabel(`${1}/${embeds.length}`)
 		.setStyle(ButtonStyle.Secondary)
 		.setDisabled(true)
