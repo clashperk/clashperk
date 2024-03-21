@@ -13,9 +13,6 @@ export default class CWLStatsCommand extends Command {
 		super('cwl-stats', {
 			category: 'cwl',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Ranking and statistics for each round.'
-			},
 			defer: true
 		});
 	}

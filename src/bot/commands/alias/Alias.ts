@@ -6,11 +6,7 @@ export default class AliasCommand extends Command {
 		super('alias', {
 			category: 'setup',
 			channel: 'guild',
-			description: {
-				content: ['Create, Remove or View clan aliases.']
-			},
-			defer: false,
-			root: true
+			defer: false
 		});
 	}
 

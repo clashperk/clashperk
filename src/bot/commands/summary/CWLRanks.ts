@@ -17,9 +17,6 @@ export default class SummaryCWLRanks extends Command {
 		super('summary-cwl-ranks', {
 			category: 'none',
 			clientPermissions: ['AttachFiles', 'EmbedLinks'],
-			description: {
-				content: 'Export war stats to excel for all clans.'
-			},
 			defer: true
 		});
 	}

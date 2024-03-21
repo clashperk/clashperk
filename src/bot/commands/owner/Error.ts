@@ -5,9 +5,6 @@ export default class ErrorCommand extends Command {
 	public constructor() {
 		super('error', {
 			category: 'owner',
-			description: {
-				content: "You can't use this anyway, so why explain?"
-			},
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			defer: false
 		});

@@ -11,9 +11,6 @@ export default class RosterCloneCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			roleKey: Settings.ROSTER_MANAGER_ROLE,
-			description: {
-				content: ['Clone a roster from another roster.']
-			},
 			defer: true,
 			ephemeral: true
 		});

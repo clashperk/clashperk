@@ -10,9 +10,6 @@ export default class EvalCommand extends Command {
 		super('eval', {
 			category: 'owner',
 			ownerOnly: true,
-			description: {
-				content: "You can't use this anyway, so why explain?"
-			},
 			defer: true,
 			ephemeral: true
 		});

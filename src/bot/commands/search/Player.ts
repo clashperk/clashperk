@@ -40,9 +40,6 @@ export default class PlayerCommand extends Command {
 			category: 'search',
 			channel: 'dm',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Player summary and some basic details.'
-			},
 			defer: true
 		});
 	}

@@ -21,9 +21,6 @@ export default class UnitsCommand extends Command {
 			category: 'search',
 			channel: 'dm',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Levels of troops, spells and heroes.'
-			},
 			defer: true
 		});
 	}

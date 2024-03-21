@@ -12,9 +12,6 @@ export default class ArmyCommand extends Command {
 		super('army', {
 			category: 'search',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Parse army composition from a shared link.'
-			},
 			defer: true
 		});
 	}

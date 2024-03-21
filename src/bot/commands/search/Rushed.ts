@@ -22,13 +22,6 @@ export default class RushedCommand extends Command {
 			category: 'search',
 			channel: 'dm',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: [
-					'Rushed troops, spells, and heroes.',
-					'',
-					'• `rushed clan <clanTag>` - list of rushed and non-rushed clan members.'
-				]
-			},
 			defer: true
 		});
 	}

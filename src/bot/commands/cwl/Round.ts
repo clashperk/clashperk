@@ -13,9 +13,6 @@ export default class CWLRoundCommand extends Command {
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Shows info about the current round.'
-			},
 			defer: true
 		});
 	}

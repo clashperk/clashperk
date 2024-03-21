@@ -12,9 +12,6 @@ export default class TimezoneCommand extends Command {
 			category: 'profile',
 			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
-			description: {
-				content: 'Sets your timezone offset.'
-			},
 			defer: true,
 			ephemeral: true
 		});

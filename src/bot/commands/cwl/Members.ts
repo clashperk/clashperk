@@ -8,9 +8,6 @@ export default class CWLMembersCommand extends Command {
 		super('cwl-members', {
 			category: 'cwl',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Shows the full list of CWL participants.'
-			},
 			defer: true
 		});
 	}

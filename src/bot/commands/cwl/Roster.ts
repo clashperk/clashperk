@@ -11,9 +11,6 @@ export default class CWLRosterCommand extends Command {
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'CWL Roster and Town Hall distribution.'
-			},
 			defer: true
 		});
 	}

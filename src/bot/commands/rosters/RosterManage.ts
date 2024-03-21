@@ -30,9 +30,6 @@ export default class RosterManageCommand extends Command {
 		super('roster-manage', {
 			category: 'roster',
 			channel: 'guild',
-			description: {
-				content: ['Manage roster members.']
-			},
 			userPermissions: ['ManageGuild'],
 			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			defer: true,

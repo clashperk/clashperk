@@ -26,9 +26,6 @@ export default class ClanCommand extends Command {
 		super('clan', {
 			category: 'search',
 			channel: 'guild',
-			description: {
-				content: 'Shows some basic info about your clan.'
-			},
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});

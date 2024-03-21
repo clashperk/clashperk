@@ -12,9 +12,6 @@ export default class ClanActivityCommand extends Command {
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
-			description: {
-				content: ['Graph of hourly active clan members.']
-			},
 			defer: true
 		});
 	}

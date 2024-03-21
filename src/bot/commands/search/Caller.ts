@@ -11,9 +11,6 @@ export default class TargetCommand extends Command {
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: 'Shows attacks and defense of all members.'
-			},
 			defer: true
 		});
 	}

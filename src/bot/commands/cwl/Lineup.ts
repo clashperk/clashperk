@@ -15,9 +15,6 @@ export default class CWLLineupCommand extends Command {
 		super('cwl-lineup', {
 			category: 'cwl',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Lineup of the current/previous round.'
-			},
 			defer: true
 		});
 	}

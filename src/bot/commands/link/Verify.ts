@@ -10,9 +10,6 @@ export default class VerifyPlayerCommand extends Command {
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: 'Verify and Link a Player using API Token.'
-			},
 			defer: true,
 			ephemeral: true
 		});

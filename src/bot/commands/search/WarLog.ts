@@ -10,9 +10,6 @@ export default class WarLogCommand extends Command {
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
-			description: {
-				content: 'Shows last 10 clan war logs with war Id.'
-			},
 			defer: true
 		});
 	}

@@ -6,10 +6,6 @@ export default class ReminderCommand extends Command {
 		super('reminders', {
 			category: 'reminders',
 			channel: 'guild',
-			description: {
-				content: ['Create, delete or view war attack or capital raid reminders.']
-			},
-			root: true,
 			defer: false
 		});
 	}

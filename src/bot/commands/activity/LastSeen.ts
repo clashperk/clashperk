@@ -10,9 +10,6 @@ export default class LastSeenCommand extends Command {
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: ['Approximate last seen of all clan members.', '', '**[How does it work?](https://clashperk.com/faq)**']
-			},
 			defer: true
 		});
 	}

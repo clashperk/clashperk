@@ -13,9 +13,6 @@ export default class ExportCWL extends Command {
 		super('export-cwl', {
 			category: 'none',
 			clientPermissions: ['AttachFiles', 'EmbedLinks'],
-			description: {
-				content: 'Export war stats to excel for all clans.'
-			},
 			defer: true
 		});
 	}

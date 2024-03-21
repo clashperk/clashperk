@@ -5,9 +5,6 @@ import { Settings } from '../../util/Constants.js';
 export default class GuildBanCommand extends Command {
 	public constructor() {
 		super('guild-ban', {
-			description: {
-				content: "You can't use this anyway, so why explain?"
-			},
 			category: 'owner',
 			ownerOnly: true,
 			defer: false

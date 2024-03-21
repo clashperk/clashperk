@@ -8,9 +8,6 @@ export default class RosterListCommand extends Command {
 		super('roster-list', {
 			category: 'roster',
 			channel: 'guild',
-			description: {
-				content: ['List rosters and groups.']
-			},
 			defer: true,
 			ephemeral: true
 		});

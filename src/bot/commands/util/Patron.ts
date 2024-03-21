@@ -8,9 +8,6 @@ export default class PatronCommand extends Command {
 		super('patron', {
 			category: 'none',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: "Get info about the bot's patreon."
-			},
 			defer: true
 		});
 	}

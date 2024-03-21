@@ -7,9 +7,6 @@ export default class ClanSearchCommand extends Command {
 			aliases: ['search'],
 			category: 'search',
 			channel: 'guild',
-			description: {
-				content: 'Search in-game clans by name.'
-			},
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});

@@ -5,9 +5,6 @@ export default class PingCommand extends Command {
 	public constructor() {
 		super('ping', {
 			category: 'none',
-			description: {
-				content: 'Pings me!'
-			},
 			defer: false
 		});
 	}

@@ -12,13 +12,6 @@ export default class DonationsCommand extends Command {
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: [
-					'Clan members with donations for current / last season.',
-					'',
-					'• **Season ID must be under 6 months old and must follow `YYYY-MM` format.**'
-				]
-			},
 			defer: true
 		});
 	}

@@ -8,9 +8,6 @@ export default class ConfigCommand extends Command {
 			category: 'config',
 			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
-			description: {
-				content: ['Manage server configuration.']
-			},
 			defer: false
 		});
 	}

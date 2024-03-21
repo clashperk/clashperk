@@ -14,9 +14,6 @@ export default class RosterGroupsCreateCommand extends Command {
 		super('roster-groups-create', {
 			category: 'roster',
 			channel: 'guild',
-			description: {
-				content: ['Manage user groups of the rosters.']
-			},
 			userPermissions: ['ManageGuild'],
 			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			defer: true,

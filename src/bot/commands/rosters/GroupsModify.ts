@@ -19,9 +19,6 @@ export default class RosterGroupsModifyCommand extends Command {
 		super('roster-groups-modify', {
 			category: 'roster',
 			channel: 'guild',
-			description: {
-				content: ['Manage user groups of the rosters.']
-			},
 			userPermissions: ['ManageGuild'],
 			roleKey: Settings.ROSTER_MANAGER_ROLE,
 			defer: true,

@@ -9,13 +9,6 @@ export default class LinkDeleteCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: [
-					'Unlinks a clan or player account.',
-					'',
-					'You must be a __Verified__ Co/Leader of the clan to unlink players on behalf of someone.'
-				]
-			},
 			defer: true
 		});
 	}

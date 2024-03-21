@@ -424,19 +424,9 @@ export interface CommandOptions {
 	ephemeral?: boolean;
 	channel?: 'dm' | 'guild';
 	defer: boolean;
-	root?: boolean;
 	userPermissions?: PermissionsString[];
 	clientPermissions?: PermissionsString[];
 	roleKey?: string;
-	description?: {
-		content: string | string[];
-		usage?: string;
-		examples?: string[];
-		image?: {
-			text: string;
-			url: string;
-		};
-	};
 }
 
 export class Command implements CommandOptions {
@@ -445,7 +435,6 @@ export class Command implements CommandOptions {
 	public client: Client;
 	public category: string;
 	public ephemeral?: boolean;
-	public root?: boolean;
 	public ownerOnly?: boolean;
 	public channel?: 'dm' | 'guild';
 	public defer: boolean;
@@ -453,44 +442,21 @@ export class Command implements CommandOptions {
 	public clientPermissions?: PermissionsString[];
 	public roleKey?: string;
 	public muted?: boolean;
-	public description?: {
-		content: string | string[];
-		usage?: string;
-		examples?: string[];
-		image?: {
-			text: string;
-			url: string;
-		};
-	};
 
 	public handler: CommandHandler;
 	public i18n = i18n;
 
 	public constructor(
 		id: string,
-		{
-			defer,
-			aliases,
-			ephemeral,
-			root,
-			userPermissions,
-			clientPermissions,
-			description,
-			channel,
-			ownerOnly,
-			category,
-			roleKey
-		}: CommandOptions
+		{ defer, aliases, ephemeral, userPermissions, clientPermissions, channel, ownerOnly, category, roleKey }: CommandOptions
 	) {
 		this.id = id;
 		this.aliases = aliases;
 		this.defer = defer;
-		this.root = root;
 		this.ephemeral = ephemeral;
 		this.userPermissions = userPermissions;
 		this.clientPermissions = clientPermissions;
 		this.roleKey = roleKey;
-		this.description = description;
 		this.channel = channel;
 		this.ownerOnly = ownerOnly;
 		this.category = category ?? 'default';

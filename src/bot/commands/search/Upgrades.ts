@@ -33,9 +33,6 @@ export default class UpgradesCommand extends Command {
 			category: 'search',
 			channel: 'dm',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Remaining upgrades of troops, spells and heroes.'
-			},
 			defer: true
 		});
 	}

@@ -6,7 +6,6 @@ export default class InviteCommand extends Command {
 	public constructor() {
 		super('invite', {
 			category: 'config',
-			description: { content: 'Get support server and bot invite link.' },
 			channel: 'dm',
 			defer: false
 		});

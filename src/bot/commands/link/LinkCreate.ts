@@ -10,9 +10,6 @@ export default class LinkCreateCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: ['Links a Player or Clan to a Discord account.']
-			},
 			defer: true
 		});
 	}

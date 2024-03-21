@@ -42,9 +42,6 @@ export default class ProfileCommand extends Command {
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
-			description: {
-				content: 'Shows info about linked accounts.'
-			},
 			defer: true
 		});
 	}

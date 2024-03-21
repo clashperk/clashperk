@@ -7,10 +7,6 @@ export default class ExportCommand extends Command {
 			category: 'export',
 			channel: 'guild',
 			clientPermissions: ['AttachFiles', 'EmbedLinks'],
-			description: {
-				content: ['Export war or season stats to excel for all clans.']
-			},
-			root: true,
 			defer: false
 		});
 	}

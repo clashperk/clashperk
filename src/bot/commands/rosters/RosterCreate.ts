@@ -13,9 +13,6 @@ export default class RosterCreateCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			roleKey: Settings.ROSTER_MANAGER_ROLE,
-			description: {
-				content: ['Create, delete, edit or view rosters.']
-			},
 			defer: true,
 			ephemeral: true
 		});

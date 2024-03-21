@@ -44,9 +44,6 @@ export default class MembersCommand extends Command {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
-			description: {
-				content: 'Clan members with Town Halls and Heroes.'
-			},
 			defer: true
 		});
 	}

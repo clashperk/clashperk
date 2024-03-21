@@ -6,11 +6,7 @@ export default class CapitalCommand extends Command {
 		super('capital', {
 			category: 'search',
 			channel: 'guild',
-			description: {
-				content: ['Shows clan capital contribution and raids.']
-			},
-			defer: false,
-			root: true
+			defer: false
 		});
 	}
 

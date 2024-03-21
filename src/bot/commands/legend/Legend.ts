@@ -7,10 +7,6 @@ export default class LegendCommand extends Command {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: ['Legend season overview and summary.']
-			},
-			root: true,
 			defer: false
 		});
 	}

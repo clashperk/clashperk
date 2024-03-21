@@ -10,9 +10,6 @@ export default class RosterDeleteCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			roleKey: Settings.ROSTER_MANAGER_ROLE,
-			description: {
-				content: ['Delete a roster.']
-			},
 			defer: true,
 			ephemeral: true
 		});

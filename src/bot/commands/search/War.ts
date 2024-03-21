@@ -34,9 +34,6 @@ export default class WarCommand extends Command {
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
-			description: {
-				content: ['Current or previous clan war details.', '', 'Get War ID from `warlog` command.']
-			},
 			defer: true
 		});
 	}

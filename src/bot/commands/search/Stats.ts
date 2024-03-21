@@ -24,9 +24,6 @@ export default class StatsCommand extends Command {
 		super('stats', {
 			category: 'search',
 			channel: 'guild',
-			description: {
-				content: 'War attack success and defense failure rates.'
-			},
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});

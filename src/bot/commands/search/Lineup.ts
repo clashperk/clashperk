@@ -16,9 +16,6 @@ export default class LineupCommand extends Command {
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
-			description: {
-				content: ['Shows current war lineup details.']
-			},
 			defer: true
 		});
 	}

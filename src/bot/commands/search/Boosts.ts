@@ -12,9 +12,6 @@ export default class BoostsCommand extends Command {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Clan members with active super troops.'
-			},
 			defer: true
 		});
 	}

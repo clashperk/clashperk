@@ -4,15 +4,14 @@ import { cluster } from 'radash';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
-import { handlePagination } from '../../util/Pagination.js';
 import { hexToNanoId } from '../../util/Helper.js';
+import { handlePagination } from '../../util/Pagination.js';
 
 export default class FlagListCommand extends Command {
 	public constructor() {
 		super('flag-list', {
 			category: 'none',
 			channel: 'guild',
-			description: { content: ['Shows the list of all flagged players.'] },
 			defer: true
 		});
 	}

@@ -8,10 +8,6 @@ export default class SummaryCommand extends Command {
 			category: 'summary',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: ['Summary commands of clan families.']
-			},
-			root: true,
 			defer: false
 		});
 	}

@@ -7,9 +7,6 @@ export default class RosterPostCommand extends Command {
 		super('roster-post', {
 			category: 'roster',
 			channel: 'guild',
-			description: {
-				content: ['Create, delete, edit or view rosters.']
-			},
 			defer: true
 		});
 	}

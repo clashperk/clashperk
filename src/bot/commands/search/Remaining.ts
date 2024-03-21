@@ -13,13 +13,6 @@ export default class RemainingCommand extends Command {
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
-			description: {
-				content: [
-					'Remaining or Missed Clan War Attacks or Clan Games Points or Capital Raid Attacks.',
-					'',
-					'Get the War ID from `/warlog` command.'
-				]
-			},
 			defer: true
 		});
 	}

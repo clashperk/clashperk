@@ -11,9 +11,6 @@ export default class ClanAttacksCommand extends Command {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: 'Shows attacks and defense of all members.'
-			},
 			defer: true
 		});
 	}

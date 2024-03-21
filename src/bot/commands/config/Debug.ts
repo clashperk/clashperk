@@ -9,9 +9,6 @@ export default class DebugCommand extends Command {
 		super('debug', {
 			category: 'config',
 			channel: 'guild',
-			description: {
-				content: 'Shows some basic debug information.'
-			},
 			defer: true
 		});
 	}

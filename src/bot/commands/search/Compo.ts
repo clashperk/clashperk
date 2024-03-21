@@ -8,9 +8,6 @@ export default class CompoCommand extends Command {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Calculates TH compositions of a clan.'
-			},
 			defer: true
 		});
 	}

@@ -16,9 +16,6 @@ export default class StatusCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: 'Shows some statistics of the bot.'
-			},
 			ownerOnly: true,
 			defer: true,
 			ephemeral: true

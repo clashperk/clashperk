@@ -9,9 +9,6 @@ export default class RosterSignupCommand extends Command {
 		super('roster-signup', {
 			category: 'roster',
 			channel: 'guild',
-			description: {
-				content: ['Create, delete, edit or view rosters.']
-			},
 			defer: true,
 			ephemeral: true
 		});

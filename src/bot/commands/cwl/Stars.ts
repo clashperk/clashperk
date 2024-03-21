@@ -11,9 +11,6 @@ export default class CWLStarsCommand extends Command {
 		super('cwl-stars', {
 			category: 'cwl',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			description: {
-				content: 'Shows total CWL stars and attacks.'
-			},
 			defer: true
 		});
 	}

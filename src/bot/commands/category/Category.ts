@@ -6,11 +6,7 @@ export default class CategoryCommand extends Command {
 		super('category', {
 			category: 'setup',
 			channel: 'guild',
-			description: {
-				content: ['Create or manage clan aliases or categories.']
-			},
-			defer: false,
-			root: true
+			defer: false
 		});
 	}
 

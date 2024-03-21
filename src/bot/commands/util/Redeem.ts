@@ -19,9 +19,6 @@ export default class RedeemCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			description: {
-				content: 'Redeem/Manage Patreon subscription.'
-			},
 			defer: true,
 			ephemeral: true
 		});

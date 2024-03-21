@@ -8,9 +8,6 @@ export default class UsageCommand extends Command {
 	public constructor() {
 		super('usage', {
 			category: 'owner',
-			description: {
-				content: "You can't use this anyway, so why explain?"
-			},
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			defer: true,
 			ownerOnly: true,

@@ -23,9 +23,6 @@ export default class BotPersonalizerCommand extends Command {
 	public constructor() {
 		super('bot-personalizer', {
 			category: 'owner',
-			description: {
-				content: "You can't use this anyway, so why explain?"
-			},
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			defer: true,
 			ephemeral: false

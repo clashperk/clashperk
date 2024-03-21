@@ -5,9 +5,6 @@ import { Settings } from '../../util/Constants.js';
 export default class BlacklistCommand extends Command {
 	public constructor() {
 		super('blacklist', {
-			description: {
-				content: "You can't use this anyway, so why explain?"
-			},
 			category: 'owner',
 			ownerOnly: true,
 			defer: false
