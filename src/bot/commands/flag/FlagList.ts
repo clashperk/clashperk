@@ -306,7 +306,7 @@ export default class FlagListCommand extends Command {
 			.setDisabled(true)
 			.setCustomId('disabled');
 
-		if (embeds.length > 1) {
+		if (embeds.length > 0) {
 			pagingRow.addComponents(prevButton);
 			pagingRow.addComponents(nextButton);
 			pagingRow.addComponents(pageButton);
