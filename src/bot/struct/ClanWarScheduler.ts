@@ -201,7 +201,8 @@ export default class ClanWarScheduler {
 							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits =
 								data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
-							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
+							const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
+							return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
 						})
 						.join('\n')
 				)

@@ -251,7 +251,8 @@ export default class ClanGamesScheduler {
 						.map((mem, i) => {
 							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits = ` (${mem.points}/${reminder.minPoints === 0 ? ClanGames.MAX_POINT : reminder.minPoints})`;
-							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]} ${ping} ${escapeMarkdown(mem.name)}${hits}`;
+							const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
+							return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]} ${ping} ${escapeMarkdown(mem.name)}${hits}`;
 						})
 						.join('\n')
 				)

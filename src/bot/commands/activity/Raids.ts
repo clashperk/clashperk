@@ -64,15 +64,8 @@ export default class CapitalRaidsCommand extends Command {
 		};
 	}
 
-	public async exec(
-		interaction: CommandInteraction<'cached'>,
-		args: { tag?: string; week?: string; card?: boolean; user?: User; player_tag?: string }
-	) {
-		if (args.user || args.player_tag) {
-			return interaction.editReply(`This command option has been replaced with the ${this.client.commands.get('/history')} command.`);
-		}
-
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; card?: boolean; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const currentWeekId = this.raidWeek().weekId;

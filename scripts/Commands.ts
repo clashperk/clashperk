@@ -349,7 +349,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				name: 'timezone',
 				required: false,
 				autocomplete: true,
-				description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+				description: command.timezone.options.location.description,
+				description_localizations: translation('command.timezone.options.location.description'),
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -370,16 +371,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'user',
-				description: 'Clan games history of a linked user.',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
 				type: ApplicationCommandOptionType.User,
 				required: false
-			},
-			{
-				name: 'player_tag',
-				description: 'Clan games history of a player.',
-				type: ApplicationCommandOptionType.String,
-				required: false,
-				autocomplete: true
 			},
 			{
 				name: 'season',
@@ -413,16 +408,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'user',
-						description: 'Capital raid history of a linked user.',
+						description: common.options.user.description,
+						description_localizations: translation('common.options.user.description'),
 						type: ApplicationCommandOptionType.User,
 						required: false
-					},
-					{
-						name: 'player_tag',
-						description: 'Capital raid history of a player.',
-						type: ApplicationCommandOptionType.String,
-						required: false,
-						autocomplete: true
 					},
 					{
 						name: 'week',
@@ -450,16 +439,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'user',
-						description: 'Capital raid history of a linked user.',
+						description: common.options.user.description,
+						description_localizations: translation('common.options.user.description'),
 						type: ApplicationCommandOptionType.User,
 						required: false
-					},
-					{
-						name: 'player_tag',
-						description: 'Capital contribution history of a player.',
-						type: ApplicationCommandOptionType.String,
-						required: false,
-						autocomplete: true
 					},
 					{
 						name: 'week',
@@ -3671,6 +3654,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'equipment',
 				description: 'Hero equipment (type anything)',
+				type: ApplicationCommandOptionType.String,
+				max_length: 600,
+				required: false
+			},
+			{
+				name: 'pets',
+				description: 'Hero pets (type anything)',
 				type: ApplicationCommandOptionType.String,
 				max_length: 600,
 				required: false

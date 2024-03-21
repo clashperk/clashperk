@@ -17,12 +17,8 @@ export default class CapitalContributionsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; player_tag?: string; user?: User }) {
-		if (args.user || args.player_tag) {
-			return interaction.editReply(`This command option has been replaced with the ${this.client.commands.get('/history')} command.`);
-		}
-
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const currentWeekId = this.raidWeek().weekId;

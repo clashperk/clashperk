@@ -270,7 +270,8 @@ export default class CapitalRaidScheduler {
 						.map((mem, i) => {
 							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
 							const hits = ` (${mem.attacks}/${mem.attackLimit})`;
-							return `\u200e${ping} ${escapeMarkdown(mem.name)}${hits}`;
+							const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
+							return `${prefix}${ping} ${escapeMarkdown(mem.name)}${hits}`;
 						})
 						.join('\n')
 				)

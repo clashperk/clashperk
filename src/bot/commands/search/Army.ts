@@ -28,10 +28,7 @@ export default class ArmyCommand extends Command {
 		});
 	}
 
-	public async exec(
-		interaction: CommandInteraction,
-		args: { link?: string; message?: string; army_name?: string; clan_castle?: string; equipment?: string; tips?: string }
-	) {
+	public async exec(interaction: CommandInteraction, args: { link: string }) {
 		const payload = this.embed(interaction.guild!, interaction.locale, args);
 		return interaction.editReply(payload);
 	}
@@ -39,7 +36,7 @@ export default class ArmyCommand extends Command {
 	public embed(
 		guild: Guild,
 		locale: string,
-		args: { link?: string; message?: string; army_name?: string; clan_castle?: string; equipment?: string; tips?: string }
+		args: { link: string; message?: string; army_name?: string; clan_castle?: string; equipment?: string; pets?: string; tips?: string }
 	) {
 		const url = this.getURL(args.link ?? args.message!);
 		const army = url?.searchParams.get('army');
@@ -255,6 +252,15 @@ export default class ArmyCommand extends Command {
 				{
 					name: '\u200b',
 					value: ['**Hero Equipment**', `${EMOJIS.EQUIPMENT} ${args.equipment}`].join('\n')
+				}
+			]);
+		}
+
+		if (args.pets) {
+			embed.addFields([
+				{
+					name: '\u200b',
+					value: ['**Pets**', `${EMOJIS.PET} ${args.pets}`].join('\n')
 				}
 			]);
 		}
