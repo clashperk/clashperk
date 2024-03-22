@@ -1,4 +1,5 @@
 import { captureException } from '@sentry/node';
+import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
 import { Client } from '../struct/Client.js';
 import Queue from '../struct/Queue.js';
@@ -10,10 +11,28 @@ import ClanFeedLog from './ClanFeedLog.js';
 import ClanGamesLog from './ClanGamesLog.js';
 import ClanWarLog from './ClanWarLog.js';
 import DonationLog from './DonationLog.js';
+import FlagAlertLog from './FlagAlertLog.js';
 import JoinLeaveLog from './JoinLeaveLog.js';
 import LastSeenLog from './LastSeenLog.js';
 import LegendLog from './LegendLog.js';
 import MaintenanceHandler from './Maintenance.js';
+
+interface Cached {
+	_id: string;
+	guild: string;
+	tag: string;
+}
+
+interface AggregatedResult {
+	_id: string;
+	clans: [
+		{
+			_id: string;
+			tag: string;
+			guild: string;
+		}
+	];
+}
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -29,6 +48,8 @@ export default class RPCHandler {
 	private legendLog = new LegendLog(this.client);
 	private capitalLog = new CapitalLog(this.client);
 	private joinLeaveLog = new JoinLeaveLog(this.client);
+	public flagAlertLog = new FlagAlertLog(this, this.client);
+	public cached = new Collection<string, Cached[]>();
 
 	public get isInMaintenance() {
 		return this.api.isMaintenance;
@@ -63,9 +84,8 @@ export default class RPCHandler {
 					case Flags.CLAN_FEED_LOG:
 						await Promise.all([
 							this.clanFeedLog.exec(data.tag, data),
-							this.joinLeaveLog.exec(data.tag, data)
-							// this.roleManager.exec(data.tag, data),
-							// this.roleManager.execNickname(data.tag, data)
+							this.joinLeaveLog.exec(data.tag, data),
+							this.flagAlertLog.exec(data.tag, data)
 						]);
 						this.client.rolesManager.exec(data.tag, data);
 						break;
@@ -79,18 +99,13 @@ export default class RPCHandler {
 						await this.clanFeedLog.exec(data.tag, data);
 						break;
 					case Flags.TOWN_HALL_LOG:
-						await Promise.all([
-							this.clanFeedLog.exec(data.tag, data)
-							// this.roleManager.execTownHall(data.tag, data.members),
-							// this.roleManager.execNickname(data.tag, data)
-						]);
+						await this.clanFeedLog.exec(data.tag, data);
 						break;
 					case Flags.PLAYER_FEED_LOG:
 						await this.clanFeedLog.exec(data.tag, data);
 						break;
 					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);
-						// await this.warRoleManager.exec(data.clan.tag, data);
 						this.client.rolesManager.exec(data.tag, data);
 						break;
 					default:
@@ -110,8 +125,39 @@ export default class RPCHandler {
 		);
 	}
 
+	private async _loadClans(tag?: string) {
+		const result = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.aggregate<AggregatedResult>([
+				{
+					$match: {
+						guild: { $in: this.client.guilds.cache.map((guild) => guild.id) },
+						paused: false,
+						...(tag ? { tag } : {})
+					}
+				},
+				{
+					$group: {
+						_id: '$tag',
+						clans: {
+							$push: {
+								_id: { $toString: '$_id' },
+								tag: '$tag',
+								guild: '$guild'
+							}
+						}
+					}
+				}
+			])
+			.toArray();
+
+		for (const { _id, clans } of result) this.cached.set(_id, clans);
+	}
+
 	public async init() {
 		if (this.api.isMaintenance) return;
+
+		await this._loadClans();
 
 		await this.clanEmbedLog.init();
 		await this.donationLog.init();
@@ -123,6 +169,7 @@ export default class RPCHandler {
 		await this.joinLeaveLog.init();
 		await this.capitalLog.init();
 		await this.autoBoard.init();
+		await this.flagAlertLog.init();
 
 		await this.broadcast();
 		return this.client.publisher.publish('INIT', '{}');
@@ -130,7 +177,8 @@ export default class RPCHandler {
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
 		if (!this.client.guilds.cache.has(data.guild)) return;
-		const result = await this.client.db
+
+		const [result] = await this.client.db
 			.collection(Collections.CLAN_STORES)
 			.aggregate<{ tag: string; patron: boolean; flags: number[]; lastRan?: string; uniqueId: number }>([
 				{
@@ -169,7 +217,7 @@ export default class RPCHandler {
 					$unset: '_id'
 				}
 			])
-			.next();
+			.toArray();
 
 		const OP = {
 			[Flags.DONATION_LOG]: this.donationLog,
@@ -197,16 +245,12 @@ export default class RPCHandler {
 				flag: this.bitWiseOR(result.flags),
 				lastRan: result.lastRan
 			};
+
+			await this._loadClans(data.tag);
 			await this.client.publisher.publish('ADD', JSON.stringify({ ...clan, op: data.op }));
+		} else {
+			this.cached.delete(data.tag);
 		}
-	}
-
-	public async addAutoBoard(id: string) {
-		return this.autoBoard.add(id);
-	}
-
-	public async delAutoBoard(id: string) {
-		return this.autoBoard.del(id);
 	}
 
 	public async delete(id: string, data: { tag: string; op: number; guild: string }) {
@@ -241,7 +285,20 @@ export default class RPCHandler {
 			Object.values(OP).map((Op) => Op.delete(id));
 		}
 
-		if (!clans.length) await this.client.publisher.publish('REMOVE', JSON.stringify(data));
+		if (!clans.length) {
+			this.cached.delete(data.tag);
+			await this.client.publisher.publish('REMOVE', JSON.stringify(data));
+		} else {
+			await this._loadClans(data.tag);
+		}
+	}
+
+	public async addAutoBoard(id: string) {
+		return this.autoBoard.add(id);
+	}
+
+	public async delAutoBoard(id: string) {
+		return this.autoBoard.del(id);
 	}
 
 	private bitWiseOR(flags: number[]) {
@@ -258,6 +315,7 @@ export default class RPCHandler {
 		this.legendLog.cached.clear();
 		this.capitalLog.cached.clear();
 		this.autoBoard.cached.clear();
+		this.flagAlertLog.cached.clear();
 
 		await this.client.subscriber.unsubscribe('channel');
 		return this.client.publisher.publish('FLUSH', '{}');

@@ -875,7 +875,7 @@ export default class StorageHandler {
 			{
 				$set: {
 					name: guild.name,
-					channelId: channelId,
+					channelId,
 					color: this.client.embed(guild.id),
 					updatedAt: new Date()
 				},

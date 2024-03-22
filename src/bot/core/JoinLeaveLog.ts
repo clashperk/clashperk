@@ -4,7 +4,7 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { FlagsEntity } from '../entities/flags.entity.js';
 import { Client } from '../struct/Client.js';
-import { Collections, DeepLinkTypes } from '../util/Constants.js';
+import { Collections, DeepLinkTypes, Settings } from '../util/Constants.js';
 import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
 import { unitsFlatten } from '../util/Helper.js';
 import { RAW_TROOPS_FILTERED } from '../util/Troops.js';
@@ -95,12 +95,6 @@ export default class JoinLeaveLog extends BaseLog {
 		}
 
 		if (member.op === 'JOINED') {
-			const flag = await this.client.db.collection<FlagsEntity>(Collections.FLAGS).findOne({
-				guild: cache.guild,
-				tag: member.tag,
-				flagType: 'ban',
-				$or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }]
-			});
 			embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			const heroes = player.heroes.filter((hero) => hero.village === 'home');
 			embed.setDescription(
@@ -113,22 +107,30 @@ export default class JoinLeaveLog extends BaseLog {
 				].join(' ')
 			);
 
-			if (flag) {
-				const guild = this.client.guilds.cache.get(cache.guild)!;
-				const user = await this.client.users.fetch(flag.user, { cache: false }).catch(() => null);
-				if (cache.role && guild.roles.cache.has(cache.role)) {
-					const role = guild.roles.cache.get(cache.role)!;
-					content = `${role.toString()}`;
+			if (!this.client.settings.get(cache.guild, Settings.HAS_FLAG_ALERT_LOG, false)) {
+				const flag = await this.client.db.collection<FlagsEntity>(Collections.FLAGS).findOne({
+					guild: cache.guild,
+					tag: member.tag,
+					flagType: 'ban',
+					$or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }]
+				});
+				if (flag) {
+					const guild = this.client.guilds.cache.get(cache.guild)!;
+					const user = await this.client.users.fetch(flag.user, { cache: false }).catch(() => null);
+					if (cache.role && guild.roles.cache.has(cache.role)) {
+						const role = guild.roles.cache.get(cache.role)!;
+						content = `${role.toString()}`;
+					}
+					embed.setDescription(
+						[
+							embed.data.description,
+							'',
+							'**Flag**',
+							`${flag.reason as string}`,
+							`\`${user ? user.displayName : 'Unknown'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
+						].join('\n')
+					);
 				}
-				embed.setDescription(
-					[
-						embed.data.description,
-						'',
-						'**Flag**',
-						`${flag.reason as string}`,
-						`\`${user ? user.displayName : 'Unknown'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
-					].join('\n')
-				);
 			}
 		}
 		embed.setTimestamp();

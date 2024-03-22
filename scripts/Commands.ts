@@ -1626,6 +1626,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Events Schedular',
 								value: 'events-schedular'
+							},
+							{
+								name: 'Flag Alert Log',
+								value: 'flag-alert-log'
 							}
 						]
 					},

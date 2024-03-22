@@ -3,6 +3,8 @@ import {
 	AnyThreadChannel,
 	ButtonBuilder,
 	ButtonStyle,
+	ChannelSelectMenuBuilder,
+	ChannelType,
 	CommandInteraction,
 	ComponentType,
 	DiscordjsError,
@@ -10,6 +12,7 @@ import {
 	EmbedBuilder,
 	ModalBuilder,
 	PermissionFlagsBits,
+	RoleSelectMenuBuilder,
 	StringSelectMenuBuilder,
 	TextChannel,
 	TextInputBuilder,
@@ -19,6 +22,7 @@ import { Args, Command } from '../../lib/index.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/GuildEventsHandler.js';
 import { Collections, Settings, URL_REGEX } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class SetupUtilsCommand extends Command {
 	public constructor() {
@@ -56,6 +60,7 @@ export default class SetupUtilsCommand extends Command {
 	) {
 		if (args.option === 'events-schedular') return this.handleEvents(interaction, args);
 		if (args.option === 'role-refresh-button') return this.selfRefresh(interaction);
+		if (args.option === 'flag-alert-log') return this.flagAlertLog(interaction, args);
 
 		const customIds = {
 			embed: this.client.uuid(),
@@ -255,6 +260,107 @@ export default class SetupUtilsCommand extends Command {
 		collector.on('end', async (_, reason) => {
 			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		});
+	}
+
+	public async flagAlertLog(interaction: CommandInteraction<'cached'>, args: { disable?: boolean }) {
+		const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[] = [
+			ChannelType.GuildText,
+			ChannelType.GuildAnnouncement,
+			ChannelType.AnnouncementThread,
+			ChannelType.PublicThread,
+			ChannelType.PrivateThread,
+			ChannelType.GuildMedia
+		];
+
+		if (args.disable) {
+			await this.client.db.collection(Collections.FLAG_ALERT_LOGS).deleteOne({ guildId: interaction.guildId });
+			this.client.rpcHandler.flagAlertLog.del(interaction.guildId);
+
+			return interaction.editReply('Successfully disabled.');
+		}
+
+		const flagLog = await this.client.db.collection(Collections.FLAG_ALERT_LOGS).findOne({ guildId: interaction.guildId });
+
+		const state: { channelId: string | null; roleId: string | null } = {
+			channelId: flagLog?.channelId ?? null,
+			roleId: flagLog?.roleId ?? null
+		};
+
+		const customIds = {
+			channel: this.client.uuid(),
+			role: this.client.uuid(),
+			confirm: this.client.uuid()
+		};
+
+		const channelMenu = new ChannelSelectMenuBuilder()
+			.addChannelTypes(ChannelTypes)
+			.setCustomId(customIds.channel)
+			.setPlaceholder('Select flag notification channel');
+		if (state.channelId) channelMenu.setDefaultChannels(state.channelId);
+
+		const roleMenu = new RoleSelectMenuBuilder().setCustomId(customIds.role).setPlaceholder('Select flag notification role');
+		if (state.roleId) roleMenu.setDefaultRoles(state.roleId);
+
+		const confirmButton = new ButtonBuilder()
+			.setStyle(ButtonStyle.Primary)
+			.setLabel('Confirm')
+			.setCustomId(customIds.confirm)
+			.setDisabled(!state.channelId);
+
+		const channelRow = new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu);
+		const roleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleMenu);
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton);
+
+		const message = await interaction.editReply({ content: 'Setting up Flag alert log!', components: [channelRow, roleRow, row] });
+
+		const onMutation = async () => {
+			if (!state.channelId) return;
+
+			await this.client.db.collection(Collections.FLAG_ALERT_LOGS).updateOne(
+				{ guildId: interaction.guild.id },
+				{
+					$set: {
+						channelId: state.channelId,
+						roleId: state.roleId,
+						updatedAt: new Date()
+					},
+					...(flagLog && flagLog.channelId !== state.channelId ? { $unset: { webhook: '' } } : {}),
+					$setOnInsert: {
+						createdAt: new Date()
+					}
+				},
+				{ upsert: true }
+			);
+
+			return this.client.rpcHandler.flagAlertLog.add(interaction.guildId);
+		};
+
+		createInteractionCollector({
+			customIds,
+			interaction,
+			message,
+			onRoleSelect: async (action) => {
+				state.roleId = action.roles.at(0)?.id ?? null;
+				if (state.roleId) roleMenu.setDefaultRoles(state.roleId);
+
+				await action.update({ components: [channelRow, roleRow, row] });
+			},
+			onChannelSelect: async (action) => {
+				state.channelId = action.channels.at(0)!.id;
+				if (state.channelId) channelMenu.setDefaultChannels(state.channelId);
+				confirmButton.setDisabled(false);
+
+				await action.update({ components: [channelRow, roleRow, row] });
+			},
+			onClick: async (action) => {
+				roleMenu.setDisabled(true);
+				channelMenu.setDisabled(true);
+
+				await onMutation();
+				this.client.settings.set(interaction.guildId, Settings.HAS_FLAG_ALERT_LOG, true);
+				await action.update({ components: [channelRow, roleRow], content: 'Flag alert log enabled.' });
+			}
 		});
 	}
 

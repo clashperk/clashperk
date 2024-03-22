@@ -33,6 +33,8 @@ export const enum Collections {
 	CLAN_WAR_LOGS = 'ClanWarLogs',
 	LEGEND_LOGS = 'LegendLogs',
 	CAPITAL_LOGS = 'CapitalLogs',
+	FLAG_ALERT_LOGS = 'FlagAlertLogs',
+
 	AUTO_BOARDS = 'AutoBoardLogs',
 
 	LEGEND_ATTACKS = 'LegendAttacks',
@@ -157,7 +159,8 @@ export const enum Settings {
 	CLANS_SORTING_KEY = 'clansSortingKey',
 	FLAG_LIST_GROUP_BY_PLAYERS = 'flagListGroupByPlayers',
 	USE_V2_ROLES_MANAGER = 'useV2RolesManager',
-	CLAN_CATEGORY_EXCLUSION = 'clanCategoryExclusion'
+	CLAN_CATEGORY_EXCLUSION = 'clanCategoryExclusion',
+	HAS_FLAG_ALERT_LOG = 'hasFlagAlertLog'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
