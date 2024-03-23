@@ -330,6 +330,8 @@ export default class Http extends ClashOfClansClient {
 	}
 
 	public async getDiscordLinks(players: { tag: string }[]) {
+		if (!players.length) return [];
+
 		const res = await request('https://cocdiscord.link/batch', {
 			method: 'POST',
 			headers: {

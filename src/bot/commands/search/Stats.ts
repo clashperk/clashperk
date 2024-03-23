@@ -75,12 +75,8 @@ export default class StatsCommand extends Command {
 
 	private async getDataSource(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; user?: User | null; user_id?: string }
+		args: { tag?: string; user?: User | null }
 	) {
-		if (args.user_id && !args.user) {
-			args.user = await this.client.users.fetch(args.user_id).catch(() => null);
-		}
-
 		if (args.user) {
 			const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
 			return { name: args.user.displayName, tag: args.user.id, iconURL: args.user.displayAvatarURL(), playerTags };
@@ -103,7 +99,6 @@ export default class StatsCommand extends Command {
 			season: string;
 			attempt?: string;
 			user?: User;
-			user_id?: string;
 			days?: number;
 			wars?: number;
 			clan_only?: boolean;

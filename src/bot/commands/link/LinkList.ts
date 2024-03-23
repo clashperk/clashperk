@@ -91,9 +91,10 @@ export default class LinkListCommand extends Command {
 		};
 		const customIds = {
 			refresh: this.createId(payload),
-			tag: this.createId({ ...payload, show_tags: !args.show_tags }),
+			toggleTag: this.createId({ ...payload, show_tags: !args.show_tags }),
 			manage: this.createId({ ...payload, links: true }),
-			option: this.createId({ ...payload, cmd: 'members', string_key: 'option' })
+			option: this.createId({ ...payload, cmd: 'members', string_key: 'option' }),
+			tag: this.createId({ ...payload, string_key: 'tag' })
 		};
 
 		const embed = this.getEmbed(guildMembers, clan, args.show_tags!, onDiscord, notLinked, notInDiscord);
@@ -103,7 +104,7 @@ export default class LinkListCommand extends Command {
 				new ButtonBuilder()
 					.setStyle(ButtonStyle.Secondary)
 					.setEmoji(args.show_tags ? EMOJIS.DISCORD : EMOJIS.HASH)
-					.setCustomId(customIds.tag)
+					.setCustomId(customIds.toggleTag)
 			)
 			.addComponents(
 				new ButtonBuilder().setStyle(ButtonStyle.Primary).setEmoji('🔗').setLabel('Manage').setCustomId(customIds.manage)
@@ -120,9 +121,25 @@ export default class LinkListCommand extends Command {
 					default: option.id === MembersCommandOptions.discord.id
 				}))
 			);
-
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
-		return interaction.editReply({ embeds: [embed], components: args.with_options ? [row, menuRow] : [row] });
+
+		const clans = await this.client.storage.find(interaction.guildId);
+		const clanMenu = new StringSelectMenuBuilder()
+			.setPlaceholder('Select an clan!')
+			.setCustomId(customIds.tag)
+			.addOptions(
+				clans.slice(0, 25).map((clan) => ({
+					label: `${clan.name} (${clan.tag})`,
+					value: clan.tag,
+					default: args.tag === clan.tag
+				}))
+			);
+		const clanRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(clanMenu);
+
+		const components = args.with_options ? [row, menuRow] : [row];
+		if (clans.length && clans.length <= 25) components.push(clanRow);
+
+		return interaction.editReply({ embeds: [embed], components });
 	}
 
 	private getEmbed(
@@ -135,7 +152,7 @@ export default class LinkListCommand extends Command {
 	) {
 		const chunks = Util.splitMessage(
 			[
-				`${EMOJIS.DISCORD} **Players on Discord: ${onDiscord.length}**`,
+				`**Players in the Server: ${onDiscord.length}**`,
 				onDiscord
 					.map((mem) => {
 						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
@@ -146,10 +163,10 @@ export default class LinkListCommand extends Command {
 					})
 					.sort((a, b) => this.localeSort(a, b))
 					.map(({ name, user, verified }) => {
-						return `${verified ? '**✓**' : '✘'} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
+						return `${verified ? EMOJIS.VERIFIED : EMOJIS.OK} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
 					})
 					.join('\n'),
-				notInDiscord.length ? `\n${EMOJIS.WRONG} **Players not on Discord: ${notInDiscord.length}**` : '',
+				notInDiscord.length ? `\n**Players not in the Server: ${notInDiscord.length}**` : '',
 				notInDiscord
 					.map((mem) => {
 						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
@@ -158,13 +175,16 @@ export default class LinkListCommand extends Command {
 					})
 					.sort((a, b) => this.localeSort(a, b))
 					.map(({ name, user, verified }) => {
-						return `${verified ? '**✓**' : '✘'} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
+						return `${verified ? EMOJIS.VERIFIED : EMOJIS.OK} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
 					})
 					.join('\n'),
-				notLinked.length ? `\n${EMOJIS.WRONG} **Players not Linked: ${notLinked.length}**` : '',
+				notLinked.length ? `\n**Players not Linked: ${notLinked.length}**` : '',
 				notLinked
 					.sort((a, b) => this.localeSort(a, b))
-					.map((mem) => `✘ \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(12, ' ')} \u200f\``)
+					.map(
+						(mem) =>
+							`${EMOJIS.WRONG} \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(12, ' ')} \u200f\``
+					)
 					.join('\n')
 			]
 				.filter((text) => text)

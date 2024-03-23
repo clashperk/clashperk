@@ -200,8 +200,9 @@ export default class ClanLogCommand extends Command {
 				.setCustomId(customIds.role)
 				.setMaxValues(1)
 				.setMinValues(1)
-				.setPlaceholder(flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role (optional)' : 'Town-Hall upgrade alert role (optional)')
+				.setPlaceholder('Town-Hall upgrade alert role (optional)')
 		);
+
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const logMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
@@ -232,6 +233,7 @@ export default class ClanLogCommand extends Command {
 					}
 				])
 		);
+
 		const warMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
 				.setCustomId(customIds.warLogs)
@@ -315,7 +317,7 @@ export default class ClanLogCommand extends Command {
 				break;
 		}
 
-		if (![Flags.CLAN_FEED_LOG, Flags.JOIN_LEAVE_LOG, Flags.DONATION_LOG].includes(flag)) {
+		if (![Flags.CLAN_FEED_LOG, Flags.DONATION_LOG].includes(flag)) {
 			return interaction.editReply({ embeds: [embed], components: [] });
 		}
 

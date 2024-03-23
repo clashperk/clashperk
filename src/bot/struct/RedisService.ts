@@ -2,6 +2,7 @@ import { APIClan, APIPlayer } from 'clashofclans.js';
 import { nanoid } from 'nanoid';
 import * as Redis from 'redis';
 import Client from './Client.js';
+import { CustomIdProps } from './ComponentHandler.js';
 
 export declare type RedisJSON = null | boolean | number | string | Date;
 
@@ -41,7 +42,7 @@ class RedisService {
 		return raw as unknown as APIPlayer | null;
 	}
 
-	public createCustomId(payload: CreateCustomIdProps & Record<string, unknown>) {
+	public createCustomId(payload: CustomIdProps) {
 		const softId = JSON.stringify(payload);
 		if (softId.length <= 100) return softId;
 
@@ -70,11 +71,3 @@ class RedisService {
 }
 
 export default RedisService;
-
-export interface CreateCustomIdProps {
-	cmd: string;
-	ephemeral?: boolean;
-	defer?: boolean;
-	array_key?: string;
-	string_key?: string;
-}

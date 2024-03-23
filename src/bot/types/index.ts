@@ -60,7 +60,7 @@ export interface PlayerSeasonModel extends AchievementsMap {
 			};
 			createdTimestamp: number;
 			updatedTimestamp: number;
-		} | null
+		}
 	>;
 	__clans: string[];
 	updatedAt: Date;

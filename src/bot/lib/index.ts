@@ -22,7 +22,7 @@ import { pathToFileURL } from 'node:url';
 import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/Client.js';
-import { CreateCustomIdProps } from '../struct/RedisService.js';
+import { CustomIdProps } from '../struct/ComponentHandler.js';
 import { Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util.js';
@@ -499,7 +499,7 @@ export class Command implements CommandOptions {
 		return null;
 	}
 
-	public createId(payload: CreateCustomIdProps & Record<string, unknown>) {
+	public createId(payload: CustomIdProps) {
 		return this.client.redis.createCustomId(payload);
 	}
 }

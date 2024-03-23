@@ -1,5 +1,6 @@
 import { APIClan, APIClanMember } from 'clashofclans.js';
-import { Collection, CommandInteraction, GuildMember } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
+import { sum, unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks, PlayerSeasonModel, achievements } from '../../types/index.js';
@@ -23,6 +24,7 @@ export default class ExportSeason extends Command {
 
 		const season = args.season ?? Season.ID;
 
+		const familyClanTags = clans.map((clan) => clan.tag);
 		const _clans = await this.client.http._getClans(clans);
 		const allMembers = _clans.reduce<(APIClanMember & { clanTag: string })[]>((previous, current) => {
 			previous.push(...current.memberList.map((mem) => ({ ...mem, clanTag: current.tag })));
@@ -30,7 +32,6 @@ export default class ExportSeason extends Command {
 		}, []);
 
 		const memberTags: { tag: string; userId: string }[] = [];
-		let guildMembers = new Collection<string, GuildMember>();
 		memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
 		const dbMembers = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
@@ -42,10 +43,9 @@ export default class ExportSeason extends Command {
 			if (memberTags.find((mem) => mem.tag === member.tag)) continue;
 			memberTags.push({ tag: member.tag, userId: member.userId });
 		}
-		const fetchedMembers = await Promise.all(
-			this.chunks(memberTags).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.userId) }))
-		);
-		guildMembers = guildMembers.concat(...fetchedMembers);
+
+		const userIds = unique(memberTags, (m) => m.userId).map((user) => user.userId);
+		const guildMembers = await interaction.guild.members.fetch({ user: userIds });
 
 		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 		for (const mem of members) {
@@ -77,7 +77,7 @@ export default class ExportSeason extends Command {
 					{ name: 'Name', width: 160, align: 'LEFT' },
 					{ name: 'Tag', width: 120, align: 'LEFT' },
 					{ name: 'Discord', width: 160, align: 'LEFT' },
-					{ name: 'Clan', width: 160, align: 'LEFT' },
+					{ name: 'Current Clan', width: 160, align: 'LEFT' },
 					{ name: 'Town Hall', width: 100, align: 'RIGHT' },
 					{ name: 'Total Donated', width: 100, align: 'RIGHT' },
 					{ name: 'Total Received', width: 100, align: 'RIGHT' },
@@ -102,8 +102,8 @@ export default class ExportSeason extends Command {
 					m.userTag,
 					m.clans?.[m.clanTag]?.name,
 					m.townHallLevel,
-					m.clans?.[m.clanTag]?.donations.total ?? 0,
-					m.clans?.[m.clanTag]?.donationsReceived.total ?? 0,
+					sum(Object.values(m.clans ?? {}), (clan) => (familyClanTags.includes(clan.tag) ? clan.donations.total : 0)),
+					sum(Object.values(m.clans ?? {}), (clan) => (familyClanTags.includes(clan.tag) ? clan.donationsReceived.total : 0)),
 					m.attackWins,
 					m.versusBattleWins.current - m.versusBattleWins.initial,
 					m.trophies.current - m.trophies.initial,

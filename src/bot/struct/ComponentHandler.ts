@@ -1,10 +1,13 @@
 import { ButtonInteraction, StringSelectMenuInteraction } from 'discord.js';
 import { Client } from './Client.js';
 
-interface ParsedCommandId {
-	tag: string;
+export interface CustomIdProps {
 	cmd: string;
-	[key: string]: string | number;
+	ephemeral?: boolean;
+	defer?: boolean;
+	array_key?: string;
+	string_key?: string;
+	[key: string]: unknown;
 }
 
 const deferredDisallowed = ['link-add'];
@@ -17,15 +20,15 @@ export default class ComponentHandler {
 		return data as unknown as T;
 	}
 
-	private async parseCommandId(customId: string): Promise<ParsedCommandId | null> {
+	private async parseCommandId(customId: string): Promise<CustomIdProps | null> {
 		if (/^{.*}$/.test(customId)) return JSON.parse(customId);
 		if (/^CMD/.test(customId)) {
-			return this.getCustomId<ParsedCommandId>(customId);
+			return this.getCustomId<CustomIdProps>(customId);
 		}
 		return null;
 	}
 
-	public parseStringSelectMenu(interaction: StringSelectMenuInteraction, parsed: ParsedCommandId) {
+	public parseStringSelectMenu(interaction: StringSelectMenuInteraction, parsed: CustomIdProps) {
 		const values = interaction.values;
 		if (parsed.array_key) return { [parsed.array_key]: values };
 		if (parsed.string_key) return { [parsed.string_key]: values.at(0) };
@@ -51,6 +54,10 @@ export default class ComponentHandler {
 			} else {
 				await interaction.deferUpdate();
 			}
+		}
+
+		if (parsed.user_id) {
+			parsed.user = await this.client.users.fetch(parsed.user_id as string).catch(() => null);
 		}
 
 		const selected = interaction.isStringSelectMenu() ? this.parseStringSelectMenu(interaction, parsed) : {};
