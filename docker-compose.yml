@@ -10,7 +10,7 @@ services:
     #   dockerfile: .github/Dockerfile
     env_file:
       - .env
-    mem_limit: 5gb
+    mem_limit: 6gb
     networks:
       - default_net
 
