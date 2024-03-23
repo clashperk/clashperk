@@ -30,7 +30,15 @@ export default class SetupUtilsCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			clientPermissions: ['EmbedLinks', 'ManageWebhooks', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel'],
+			clientPermissions: [
+				'EmbedLinks',
+				'UseExternalEmojis',
+				'ManageWebhooks',
+				'SendMessagesInThreads',
+				'SendMessages',
+				'ReadMessageHistory',
+				'ViewChannel'
+			],
 			defer: true,
 			ephemeral: true
 		});
@@ -283,7 +291,7 @@ export default class SetupUtilsCommand extends Command {
 		const flagLog = await this.client.db.collection(Collections.FLAG_ALERT_LOGS).findOne({ guildId: interaction.guildId });
 
 		const state: { channelId: string | null; roleId: string | null } = {
-			channelId: flagLog?.channelId ?? null,
+			channelId: flagLog?.channelId ?? interaction.channelId,
 			roleId: flagLog?.roleId ?? null
 		};
 
@@ -312,7 +320,7 @@ export default class SetupUtilsCommand extends Command {
 		const roleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleMenu);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton);
 
-		const message = await interaction.editReply({ content: 'Setting up Flag alert log!', components: [channelRow, roleRow, row] });
+		const message = await interaction.editReply({ content: '### Setting up Flag Alert Log', components: [channelRow, roleRow, row] });
 
 		const onMutation = async () => {
 			if (!state.channelId) return;
@@ -357,9 +365,33 @@ export default class SetupUtilsCommand extends Command {
 				roleMenu.setDisabled(true);
 				channelMenu.setDisabled(true);
 
+				const embed = new EmbedBuilder()
+					.setTitle('Flag Alert Log')
+					.setColor(this.client.embed(interaction))
+					.setDescription(
+						['### Channel', `<#${state.channelId!}>`, '### Role', `${state.roleId ? `<@&${state.roleId}>` : 'None'}`].join('\n')
+					);
+
+				const role = state.roleId && interaction.guild.roles.cache.get(state.roleId);
+				const channel = state.channelId && interaction.guild.channels.cache.get(state.channelId);
+
+				if (
+					role &&
+					!role.mentionable &&
+					channel &&
+					!channel.permissionsFor(interaction.guild.members.me!).has(PermissionFlagsBits.MentionEveryone)
+				) {
+					embed.setFooter({
+						text: [
+							`If the role is not mentionable, the push notification won't work!`,
+							'Either make the role mentionable or grant the bot Mention Everyone permission.'
+						].join('\n')
+					});
+				}
+
 				await onMutation();
 				this.client.settings.set(interaction.guildId, Settings.HAS_FLAG_ALERT_LOG, true);
-				await action.update({ components: [channelRow, roleRow], content: 'Flag alert log enabled.' });
+				await action.update({ embeds: [embed], components: [], content: null });
 			}
 		});
 	}

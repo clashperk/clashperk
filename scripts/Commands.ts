@@ -3167,6 +3167,20 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'cwl-status',
+				description: 'Shows a summary of CWL spin status.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases.'
+					}
+				]
+			},
+			{
 				name: 'leagues',
 				description: 'Shows a summary of clan leagues.',
 				type: ApplicationCommandOptionType.Subcommand,

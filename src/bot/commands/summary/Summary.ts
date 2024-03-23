@@ -28,6 +28,7 @@ export default class SummaryCommand extends Command {
 			'war-results': this.handler.modules.get('summary-war-results')!,
 			'best': this.handler.modules.get('summary-best')!,
 			'cwl-ranks': this.handler.modules.get('summary-cwl-ranks')!,
+			'cwl-status': this.handler.modules.get('summary-cwl-status')!,
 			'leagues': this.handler.modules.get('summary-leagues')!
 		};
 		const command = commandMap[args.command] || commandMap[args.option]; // eslint-disable-line
