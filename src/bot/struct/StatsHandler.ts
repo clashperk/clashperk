@@ -1,5 +1,5 @@
-import https from 'node:https';
 import { BaseInteraction, Guild } from 'discord.js';
+import https from 'node:https';
 import { Collections } from '../util/Constants.js';
 import { Client } from './Client.js';
 
@@ -33,6 +33,7 @@ export default class StatsHandler {
 			server_count: guilds.toString(),
 			shard_count: (this.client.shard?.count ?? 1).toString()
 		}).toString();
+
 		https
 			.request(
 				`https://top.gg/api/bots/${this.client.user!.id}/stats`,
@@ -47,7 +48,7 @@ export default class StatsHandler {
 				(res) => {
 					res.on('data', (d) => {
 						if (res.statusCode !== 200) {
-							this.client.logger.error(d.toString(), { label: 'https://top.gg' });
+							this.client.logger.error({ message: d.toString(), form }, { label: 'https://top.gg' });
 						}
 					});
 				}

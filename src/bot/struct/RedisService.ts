@@ -16,23 +16,29 @@ class RedisService {
 	}
 
 	public async getClans(clanTags: string[]) {
-		const raw = await this.connection.json.mGet(clanTags.map((tag) => [`C${tag}`, `CLAN:${tag}`]).flat(), '$');
+		const raw = await this.connection.json.mGet(
+			clanTags.map((tag) => `CLAN:${tag}`),
+			'$'
+		);
 		return raw.flat().filter((_) => _) as unknown as APIClan[];
 	}
 
 	public async getClan(clanTag: string) {
-		const raw = await this.connection.json.mGet([`C${clanTag}`, `CLAN:${clanTag}`], '$');
-		return raw.flat().filter((_) => _)[0] as unknown as APIClan;
+		const raw = await this.connection.json.get(`CLAN:${clanTag}`);
+		return raw as unknown as APIClan | null;
 	}
 
 	public async getPlayers(playerTags: string[]) {
-		const raw = await this.connection.json.mGet(playerTags.map((tag) => [`P${tag}`, `PLAYER:${tag}`]).flat(), '$');
+		const raw = await this.connection.json.mGet(
+			playerTags.map((tag) => `PLAYER:${tag}`),
+			'$'
+		);
 		return raw.flat().filter((_) => _) as unknown as APIPlayer[];
 	}
 
 	public async getPlayer(playerTag: string) {
-		const raw = await this.connection.json.mGet([`P${playerTag}`, `PLAYER:${playerTag}`], '$');
-		return raw.flat().filter((_) => _)[0] as unknown as APIPlayer;
+		const raw = await this.connection.json.get(`PLAYER:${playerTag}`);
+		return raw as unknown as APIPlayer | null;
 	}
 
 	public createCustomId(payload: CreateCustomIdProps & Record<string, unknown>) {
