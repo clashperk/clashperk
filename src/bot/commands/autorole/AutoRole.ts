@@ -10,23 +10,19 @@ export default class AutoRoleCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { command: string; type: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { command: string }) {
 		if (args.command === 'refresh') {
 			const command = this.handler.modules.get('autorole-refresh')!;
 			return this.handler.continue(interaction, command);
 		}
 
-		if (['disable'].includes(args.command)) {
-			const command = {
-				'town-hall': this.handler.modules.get('setup-town-hall-roles')!,
-				'clan-roles': this.handler.modules.get('setup-clan-roles')!,
-				'leagues': this.handler.modules.get('setup-league-roles')!,
-				'wars': this.handler.modules.get('setup-war-roles')!,
-				'family': this.handler.modules.get('setup-family-roles')!,
-				'verified': this.handler.modules.get('setup-family-roles')!,
-				'guest': this.handler.modules.get('setup-family-roles')!
-			}[args.type];
-			if (!command) throw Error('Command not found.');
+		if (args.command === 'list') {
+			const command = this.handler.modules.get('autorole-list')!;
+			return this.handler.continue(interaction, command);
+		}
+
+		if (args.command === 'disable') {
+			const command = this.handler.modules.get('autorole-disable')!;
 			return this.handler.continue(interaction, command);
 		}
 

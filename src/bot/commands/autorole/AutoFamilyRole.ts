@@ -29,15 +29,11 @@ export default class AutoFamilyRoleCommand extends Command {
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
 		args: {
-			command: string;
 			family_role?: Role;
 			guest_role?: Role;
 			verified_role?: Role;
-			type?: string;
 		}
 	) {
-		if (args.command === 'disable') return this.disable(interaction, args.type);
-
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
 			return interaction.editReply(
@@ -89,18 +85,5 @@ export default class AutoFamilyRoleCommand extends Command {
 
 	private isHigherRole(role: Role, guild: Guild) {
 		return role.position > guild.members.me!.roles.highest.position;
-	}
-
-	private async disable(interaction: CommandInteraction<'cached'>, type?: string) {
-		if (type === 'family') {
-			this.client.settings.delete(interaction.guildId, Settings.FAMILY_ROLE);
-		}
-		if (type === 'guest') {
-			this.client.settings.delete(interaction.guildId, Settings.GUEST_ROLE);
-		}
-		if (type === 'verified') {
-			this.client.settings.delete(interaction.guildId, Settings.ACCOUNT_VERIFIED_ROLE);
-		}
-		return interaction.editReply(`Successfully disabled ${type} role.`);
 	}
 }

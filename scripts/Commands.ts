@@ -2680,6 +2680,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'list',
+				description: 'List all auto roles and settings.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
 				name: 'disable',
 				description: 'Disable automatic clan roles.',
 				type: ApplicationCommandOptionType.Subcommand,

@@ -25,13 +25,8 @@ export default class AutoClanRoleCommand extends Command {
 			leader_role?: Role;
 			everyone_role?: Role;
 			only_verified: boolean;
-
-			command?: 'refresh' | 'disable' | null;
-			clear?: boolean;
 		}
 	) {
-		if (args.command === 'disable') return this.disable(interaction, args);
-
 		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
 		if (!clans) return;
 
@@ -95,49 +90,5 @@ export default class AutoClanRoleCommand extends Command {
 
 	private isHigherRole(role: Role, guild: Guild) {
 		return guild.members.me && role.position > guild.members.me.roles.highest.position;
-	}
-
-	private async disable(interaction: CommandInteraction<'cached'>, args: { clear?: boolean; clans?: string }) {
-		if (args.clear) {
-			const { matchedCount } = await this.client.db
-				.collection(Collections.CLAN_STORES)
-				.updateMany({ guild: interaction.guild.id }, { $unset: { roles: '', secureRole: '' } });
-			return interaction.editReply(
-				this.i18n('command.autorole.disable.success_with_count', {
-					lng: interaction.locale,
-					count: matchedCount.toString(),
-					clans: ''
-				})
-			);
-		}
-
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length ? await this.client.storage.search(interaction.guildId, tags) : [];
-
-		if (!tags.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.LINK_CREATE })
-			);
-		}
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
-
-		await this.client.db
-			.collection(Collections.CLAN_STORES)
-			.updateMany(
-				{ guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } },
-				{ $unset: { roles: '', secureRole: '' } }
-			);
-
-		return interaction.editReply(
-			this.i18n('command.autorole.disable.success_with_count', {
-				lng: interaction.locale,
-				count: clans.length.toString(),
-				clans: clans.map((clan) => clan.name).join(', ')
-			})
-		);
 	}
 }

@@ -36,12 +36,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		};
 	}
 
-	public async exec(
-		interaction: CommandInteraction<'cached'>,
-		args: { command: string; allowExternal: boolean } & Record<string, Role | null>
-	) {
-		if (args.command === 'disable') return this.disable(interaction);
-
+	public async exec(interaction: CommandInteraction<'cached'>, args: { allowExternal: boolean } & Record<string, Role | null>) {
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
 			return interaction.editReply(
@@ -114,11 +109,5 @@ export default class AutoTownHallRoleCommand extends Command {
 
 	private isHigherRole(role: Role, guild: Guild) {
 		return role.position > guild.members.me!.roles.highest.position;
-	}
-
-	private async disable(interaction: CommandInteraction<'cached'>) {
-		this.client.settings.delete(interaction.guildId, Settings.TOWN_HALL_ROLES);
-		this.client.settings.delete(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS);
-		return interaction.editReply('Successfully disabled Town Hall roles.');
 	}
 }
