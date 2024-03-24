@@ -5,7 +5,7 @@ import { Command } from '../../lib/index.js';
 export default class AliasDeleteCommand extends Command {
 	public constructor() {
 		super('alias-delete', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			ephemeral: true,

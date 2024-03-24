@@ -5,7 +5,7 @@ import { Command } from '../../lib/index.js';
 export default class AliasCreateCommand extends Command {
 	public constructor() {
 		super('alias-create', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			defer: true,

@@ -6,7 +6,7 @@ import { Util } from '../../util/index.js';
 export default class AliasListCommand extends Command {
 	public constructor() {
 		super('alias-list', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			defer: true,
 			ephemeral: true

@@ -7,7 +7,7 @@ import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
-export default class CapitalContributionsCommand extends Command {
+export default class CapitalContributionCommand extends Command {
 	public constructor() {
 		super('capital-contribution', {
 			category: 'none',
