@@ -184,7 +184,9 @@ export const clanEmbedMaker = async (
 	if (fields?.includes(ClanEmbedFields.TROPHIES_REQUIRED)) {
 		embed.addFields({
 			name: 'Trophies Required',
-			value: `${EMOJIS.TROPHY} ${clan.requiredTrophies}`
+			value: `${EMOJIS.TROPHY} ${clan.requiredTrophies}${
+				clan.requiredBuilderBaseTrophies ? ` ${EMOJIS.BB_TROPHY} ${clan.requiredBuilderBaseTrophies}` : ''
+			}`
 		});
 	}
 
