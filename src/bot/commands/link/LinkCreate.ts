@@ -2,7 +2,7 @@ import { APIClan, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections, Settings } from '../../util/Constants.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class LinkCreateCommand extends Command {
 	public constructor() {
@@ -165,9 +165,7 @@ export default class LinkCreateCommand extends Command {
 		await this.resetLinkAPI(member.id, player.tag);
 		// Update Role
 
-		if (this.client.settings.get(interaction.guildId, Settings.USE_V2_ROLES_MANAGER, true)) {
-			this.client.rolesManager.updateOne(member.id, interaction.guildId);
-		}
+		this.client.rolesManager.updateOne(member.id, interaction.guildId);
 
 		this.client.storage.updateLinks(interaction.guildId);
 		// TODO: Refresh Roles

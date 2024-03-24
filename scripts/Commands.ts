@@ -3869,8 +3869,23 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'auto_update_roles',
+				description: '[AutoRole] Whether to update roles automatically (defaults to Yes)',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
+			},
+			{
 				name: 'verified_only_clan_roles',
-				description: 'Whether to grant clans roles to verified players only.',
+				description: '[AutoRole] Whether to grant clans roles to verified players only (Defaults to No)',
 				type: ApplicationCommandOptionType.String,
 				choices: [
 					{

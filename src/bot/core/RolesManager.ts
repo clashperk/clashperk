@@ -53,7 +53,7 @@ export class RolesManager {
 		const guildIds = await this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).distinct('guild', { tag: clanTag });
 
 		for (const guildId of guildIds) {
-			if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, true)) continue;
+			if (!this.client.settings.get(guildId, Settings.USE_AUTO_ROLE, true)) continue;
 			if (this.client.settings.hasCustomBot(guildId) && !this.client.isCustom()) continue;
 
 			if (!this.client.guilds.cache.has(guildId)) continue;
@@ -344,8 +344,6 @@ export class RolesManager {
 	}
 
 	public async updateOne(userId: string, guildId: string) {
-		if (!this.client.settings.get(guildId, Settings.USE_V2_ROLES_MANAGER, true)) return null;
-
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
 
@@ -616,20 +614,6 @@ export class RolesManager {
 			.split('')
 			.map((num) => SUPER_SCRIPTS[num])
 			.join('');
-	}
-
-	public async canUseRolesManager(guildId: string, forceUpdate = false) {
-		const isNickNamingEnabled = this.client.settings.get<boolean>(guildId, Settings.AUTO_NICKNAME, false);
-		const isRoleManagementEnabled = this.client.settings.get<boolean>(guildId, Settings.AUTO_ROLE);
-
-		if (typeof isRoleManagementEnabled !== 'boolean' || forceUpdate) {
-			const { targetedRoles } = this.getTargetedRoles(await this.getGuildRolesMap(guildId));
-			await this.client.settings.set(guildId, Settings.AUTO_ROLE, targetedRoles.length > 0);
-
-			return isNickNamingEnabled || targetedRoles.length > 0;
-		}
-
-		return isNickNamingEnabled || isRoleManagementEnabled;
 	}
 
 	public getFilteredChangeLogs(queue: RolesChangeLog | null) {

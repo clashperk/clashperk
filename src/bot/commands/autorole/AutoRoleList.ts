@@ -94,6 +94,9 @@ export default class AutoRoleListCommand extends Command {
 			embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
 		}
 
+		const useAutoRole = this.client.settings.get<boolean>(interaction.guild, Settings.USE_AUTO_ROLE, true);
+		if (!useAutoRole) embed.setFooter({ text: '*Auto updating is disabled! Use /config to enable it.' });
+
 		const customId = this.createId({ cmd: this.id, expand: !args.expand });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()

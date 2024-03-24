@@ -117,6 +117,7 @@ export default class HelpCommand extends Command {
 		commandCategories.sort((a, b) => fields.indexOf(a.category) - fields.indexOf(b.category));
 
 		if (!args.expand) args.category ??= categories.search;
+		if (!args.expand && args.category && !fields.includes(args.category)) args.category ??= categories.search;
 
 		const embeds: EmbedBuilder[] = [];
 		for (const { category, commandGroups } of commandCategories) {

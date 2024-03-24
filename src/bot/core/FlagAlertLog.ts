@@ -22,11 +22,11 @@ import RPCHandler from './RPCHandler.js';
 
 export default class FlagAlertLog {
 	public cached: Collection<string, Cache> = new Collection();
+	private client: Client;
 
-	public constructor(
-		private handler: RPCHandler,
-		private client: Client
-	) {}
+	public constructor(private handler: RPCHandler) {
+		this.client = handler.client;
+	}
 
 	public get collection() {
 		return this.client.db.collection(Collections.FLAG_ALERT_LOGS);

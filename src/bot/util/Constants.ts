@@ -145,8 +145,8 @@ export const enum Settings {
 	FAMILY_NICKNAME_FORMAT = 'familyNicknameFormat',
 	NON_FAMILY_NICKNAME_FORMAT = 'nonFamilyNicknameFormat',
 	AUTO_NICKNAME = 'autoNickname',
+	USE_AUTO_ROLE = 'useAutoRole',
 	NICKNAMING_ACCOUNT_PREFERENCE = 'nicknamingAccountPreference',
-	AUTO_ROLE = 'autoRole',
 	ROSTER_DEFAULT_SETTINGS = 'rosterDefaultSettings',
 	HAS_CUSTOM_BOT = 'hasCustomBot',
 	GUILD_LOG_WEBHOOK_URL = 'guildLogWebhookURL',
@@ -158,7 +158,6 @@ export const enum Settings {
 	GUEST_ROLE = 'guestRole',
 	CLANS_SORTING_KEY = 'clansSortingKey',
 	FLAG_LIST_GROUP_BY_PLAYERS = 'flagListGroupByPlayers',
-	USE_V2_ROLES_MANAGER = 'useV2RolesManager',
 	CLAN_CATEGORY_EXCLUSION = 'clanCategoryExclusion',
 	HAS_FLAG_ALERT_LOG = 'hasFlagAlertLog'
 }

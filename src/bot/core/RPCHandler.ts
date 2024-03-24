@@ -35,6 +35,8 @@ interface AggregatedResult {
 }
 
 export default class RPCHandler {
+	public cached = new Collection<string, Cached[]>();
+
 	private paused = Boolean(false);
 	private queue = new Queue();
 	private api: MaintenanceHandler;
@@ -48,14 +50,14 @@ export default class RPCHandler {
 	private legendLog = new LegendLog(this.client);
 	private capitalLog = new CapitalLog(this.client);
 	private joinLeaveLog = new JoinLeaveLog(this.client);
-	public flagAlertLog = new FlagAlertLog(this, this.client);
-	public cached = new Collection<string, Cached[]>();
+
+	public flagAlertLog = new FlagAlertLog(this);
 
 	public get isInMaintenance() {
 		return this.api.isMaintenance;
 	}
 
-	public constructor(private readonly client: Client) {
+	public constructor(public readonly client: Client) {
 		this.api = new MaintenanceHandler(this.client);
 		this.api.init();
 		this.paused = Boolean(false);

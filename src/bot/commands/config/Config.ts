@@ -24,6 +24,7 @@ export default class ConfigCommand extends Command {
 			account_linked_role?: Role;
 			account_verified_role?: Role;
 			clans_sorting_key?: string;
+			auto_update_roles?: boolean;
 			verified_only_clan_roles?: boolean;
 		}
 	) {
@@ -72,6 +73,10 @@ export default class ConfigCommand extends Command {
 			await this.client.settings.set(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, args.verified_only_clan_roles);
 		}
 
+		if (typeof args.auto_update_roles === 'boolean') {
+			await this.client.settings.set(interaction.guild, Settings.USE_AUTO_ROLE, args.auto_update_roles);
+		}
+
 		if (args.events_channel) {
 			if (['reset', 'none'].includes(args.events_channel)) {
 				await this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
@@ -106,6 +111,7 @@ export default class ConfigCommand extends Command {
 		);
 		const clansSortingKey = this.client.settings.get<string>(interaction.guild, Settings.CLANS_SORTING_KEY, 'name');
 		const verifiedOnlyClanRoles = this.client.settings.get<string>(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
+		const useAutoRole = this.client.settings.get<string>(interaction.guild, Settings.USE_AUTO_ROLE, true);
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -138,6 +144,10 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Verified-Only Clan Roles',
 					value: `${verifiedOnlyClanRoles ? 'Yes' : 'No'}`
+				},
+				{
+					name: 'Auto Update Roles',
+					value: `${useAutoRole ? 'Yes' : 'No'}`
 				},
 				{
 					name: this.i18n('common.color_code', { lng: interaction.locale }),
