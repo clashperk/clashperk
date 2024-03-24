@@ -16,6 +16,7 @@ export interface IArgs {
 export default class AutoFamilyRoleCommand extends Command {
 	public constructor() {
 		super('setup-family-roles', {
+			aliases: ['autorole-family'],
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],

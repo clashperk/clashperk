@@ -6,7 +6,8 @@ export default class SetupEnableCommand extends Command {
 		super('setup-enable', {
 			category: 'none',
 			channel: 'guild',
-			defer: false
+			defer: false,
+			userPermissions: ['ManageGuild']
 		});
 	}
 

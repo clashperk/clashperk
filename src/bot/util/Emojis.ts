@@ -403,6 +403,7 @@ export const EMOJIS = {
 	PREVIOUS: '⬅️',
 	SETTINGS: '⚙️',
 	EXPORT: '📥',
+	PRINT: '🖨️',
 	MAINTENANCE: '🛠️',
 	LEGEND_LEAGUE: '<:legend:696301773513818162>',
 	WAR: '<:WAR:1131676276994879529>',

@@ -25,6 +25,7 @@ const roles: Record<string, string> = {
 export default class ReminderDeleteCommand extends Command {
 	public constructor() {
 		super('reminder-delete', {
+			aliases: ['reminders-delete'],
 			category: 'reminder',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],

@@ -2,12 +2,15 @@ import {
 	ActionRowBuilder,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	ButtonBuilder,
+	ButtonStyle,
 	CommandInteraction,
 	EmbedBuilder,
 	StringSelectMenuBuilder
 } from 'discord.js';
 import { command as commandMap } from '../../../../locales/en.js';
 import { Command } from '../../lib/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 const getTranslation = (key: string): string | null => {
 	const keys = key.split('.');
@@ -49,6 +52,7 @@ interface CommandInfo {
 	rootName: string;
 	description: string;
 	category: string;
+	isRestricted?: number;
 	translation_key: string;
 	description_long: string | null;
 }
@@ -63,7 +67,10 @@ export default class HelpCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { command?: string; category?: string; selected?: string }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { command?: string; category?: string; selected?: string; expand?: boolean }
+	) {
 		const commands = await this.getCommands(interaction);
 
 		const command = commands.find((command) => command.rootName === args.command || command.name === args.command);
@@ -72,13 +79,21 @@ export default class HelpCommand extends Command {
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setDescription(
-				[`## </${command.name}:${command.id}>`, '\u200b', `${command.description_long ?? command.description}`].join('\n')
+				[
+					`## </${command.name}:${command.id}> ${command.isRestricted ? EMOJIS.OWNER : ''}`,
+					'\u200b',
+					`${command.description_long ?? command.description}`
+				].join('\n')
 			);
 
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	public async commandMenu(interaction: CommandInteraction<'cached'>, commands: CommandInfo[], args: { category?: string }) {
+	public async commandMenu(
+		interaction: CommandInteraction<'cached'>,
+		commands: CommandInfo[],
+		args: { category?: string; expand?: boolean }
+	) {
 		const grouped = commands.reduce<Record<string, CommandInfo[]>>((acc, cur) => {
 			if (cur.category in categories) {
 				acc[categories[cur.category]] ??= []; // eslint-disable-line
@@ -101,8 +116,9 @@ export default class HelpCommand extends Command {
 		const fields = Object.values(categories);
 		commandCategories.sort((a, b) => fields.indexOf(a.category) - fields.indexOf(b.category));
 
+		if (!args.expand) args.category ??= categories.search;
+
 		const embeds: EmbedBuilder[] = [];
-		args.category ??= categories.search;
 		for (const { category, commandGroups } of commandCategories) {
 			if (args.category && args.category !== category) continue;
 
@@ -116,7 +132,8 @@ export default class HelpCommand extends Command {
 						.map((commands) => {
 							const _commands = commands.map((command) => {
 								const description = command.description_long ?? command.description;
-								return `### </${command.name}:${command.id}>\n${description}`;
+								const icon = ` ${command.isRestricted ? EMOJIS.OWNER : ''}`;
+								return `### </${command.name}:${command.id}>${icon}\n${description}`;
 							});
 							return _commands.join('\n');
 						})
@@ -126,10 +143,15 @@ export default class HelpCommand extends Command {
 			embeds.push(embed);
 		}
 
-		const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+		const customIds = {
+			category: this.createId({ cmd: this.id, category: args.category, string_key: 'category' }),
+			expand: this.createId({ cmd: this.id, expand: true })
+		};
+
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
 				.setPlaceholder('Select a command category')
-				.setCustomId(JSON.stringify({ cmd: this.id, category: args.category, string_key: 'category' }))
+				.setCustomId(customIds.category)
 				.addOptions(
 					Array.from(new Set(Object.values(categories))).map((key) => ({
 						label: key,
@@ -138,11 +160,19 @@ export default class HelpCommand extends Command {
 					}))
 				)
 		);
+		const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.expand).setEmoji(EMOJIS.PRINT)
+		);
 
 		if (embeds.length === 1) {
-			return interaction.editReply({ embeds, components: [row] });
+			return interaction.editReply({ embeds, components: [btnRow, menuRow] });
 		}
 
+		return this.onExport(interaction, embeds);
+	}
+
+	private async onExport(interaction: CommandInteraction<'cached'>, [embed, ...embeds]: EmbedBuilder[]) {
+		await interaction.editReply({ embeds: [embed], components: [] });
 		for (const embed of embeds) await interaction.followUp({ embeds: [embed], ephemeral: this.muted });
 	}
 
@@ -165,40 +195,48 @@ export default class HelpCommand extends Command {
 								const translation_key = `${command.name} ${option.name} ${subOption.name}.description_long`
 									.replace(/ /g, '.')
 									.replace(/-/g, '_');
-								const cmd = this.client.commandHandler.getCommand(command.name);
+								const _root = this.client.commandHandler.getCommand(command.name);
+								const _cmd = this.client.commandHandler.getCommand(`${command.name}-${option.name}-${subOption.name}`);
+
 								return {
 									id: command.id,
 									name: `${command.name} ${option.name} ${subOption.name}`,
 									rootName: command.name,
 									description: subOption.description,
-									category: cmd?.category ?? 'search',
+									category: _root?.category ?? _cmd?.category ?? 'search',
+									isRestricted: _cmd?.userPermissions?.length,
 									translation_key: `command.${translation_key}`,
 									description_long: getTranslation(translation_key)
 								};
 							});
 						}
 						const translation_key = `${command.name} ${option.name}.description_long`.replace(/ /g, '.').replace(/-/g, '_');
-						const cmd = this.client.commandHandler.getCommand(command.name);
+						const _root = this.client.commandHandler.getCommand(command.name);
+						const _cmd = this.client.commandHandler.getCommand(`${command.name}-${option.name}`);
+
 						return {
 							id: command.id,
 							name: `${command.name} ${option.name}`,
 							rootName: command.name,
 							description: option.description,
-							category: cmd?.category ?? 'search',
+							category: _root?.category ?? _cmd?.category ?? 'search',
+							isRestricted: _cmd?.userPermissions?.length,
 							translation_key: `command.${translation_key}`,
 							description_long: getTranslation(translation_key)
 						};
 					});
 				if (subCommandGroups.length) return [...subCommandGroups];
 
-				const cmd = this.client.commandHandler.getCommand(command.name);
+				const _root = this.client.commandHandler.getCommand(command.name);
+
 				const translation_key = `${command.name.replace(/ /g, '_').replace(/-/g, '_')}.description_long`;
 				return [
 					{
 						id: command.id,
 						name: command.name,
 						rootName: command.name,
-						category: cmd?.category ?? 'search',
+						category: _root?.category ?? 'search',
+						isRestricted: _root?.userPermissions?.length,
 						description: command.description,
 						translation_key: `command.${translation_key}`,
 						description_long: getTranslation(translation_key)

@@ -1,11 +1,12 @@
 import { CommandInteraction, EmbedBuilder, HexColorString, PermissionFlagsBits, Role, resolveColor } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { BOT_MANAGER_HYPERLINK, Settings } from '../../util/Constants.js';
+import { Settings } from '../../util/Constants.js';
 
 export default class ConfigCommand extends Command {
 	public constructor() {
 		super('config', {
 			category: 'config',
+			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
 			defer: false
@@ -26,13 +27,6 @@ export default class ConfigCommand extends Command {
 			verified_only_clan_roles?: boolean;
 		}
 	) {
-		if (!this.client.util.isManager(interaction.member) && Object.keys(args).some((key) => args[key as keyof typeof args])) {
-			return interaction.reply({
-				content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to change these settings.`,
-				ephemeral: true
-			});
-		}
-
 		if (args.color_code) {
 			if (['reset', 'none'].includes(args.color_code)) {
 				await this.client.settings.delete(interaction.guild, Settings.COLOR);

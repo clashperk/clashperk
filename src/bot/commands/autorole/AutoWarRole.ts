@@ -5,6 +5,7 @@ import { Collections } from '../../util/Constants.js';
 export default class AutoClanRoleCommand extends Command {
 	public constructor() {
 		super('setup-war-roles', {
+			aliases: ['autorole-wars'],
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],

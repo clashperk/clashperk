@@ -15,6 +15,7 @@ import { Util } from '../../../util/index.js';
 export default class ReminderNowCommand extends Command {
 	public constructor() {
 		super('reminder-now', {
+			aliases: ['reminders-now'],
 			category: 'reminder',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],

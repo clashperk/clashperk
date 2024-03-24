@@ -19,6 +19,7 @@ import { hexToNanoId } from '../../../util/Helper.js';
 export default class ReminderEditCommand extends Command {
 	public constructor() {
 		super('reminder-edit', {
+			aliases: ['reminders-edit'],
 			category: 'reminder',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],

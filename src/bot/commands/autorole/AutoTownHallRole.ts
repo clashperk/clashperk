@@ -17,6 +17,7 @@ export interface IArgs {
 export default class AutoTownHallRoleCommand extends Command {
 	public constructor() {
 		super('setup-town-hall-roles', {
+			aliases: ['autorole-town-hall'],
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],

@@ -16,6 +16,7 @@ export interface IArgs {
 export default class AutoLeagueRoleCommand extends Command {
 	public constructor() {
 		super('setup-league-roles', {
+			aliases: ['autorole-leagues'],
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],

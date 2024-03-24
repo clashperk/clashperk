@@ -20,6 +20,7 @@ import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../../u
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
 		super('reminder-create', {
+			aliases: ['reminders-create'],
 			category: 'reminder',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
