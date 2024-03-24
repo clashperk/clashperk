@@ -14,13 +14,13 @@ export default class AutoRoleDisableCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { type: string; clans?: string; clear?: boolean }) {
 		const action = {
-			'town-hall': this.disableTownHallRoles,
-			'clan-roles': this.disableClanRoles,
-			'leagues': this.disableLeagueRoles,
-			'wars': this.disableWarRoles,
-			'family': this.disableFamilyRoles,
-			'guest': this.disableFamilyRoles,
-			'verified': this.disableFamilyRoles
+			'town-hall': this.disableTownHallRoles.bind(this),
+			'clan-roles': this.disableClanRoles.bind(this),
+			'leagues': this.disableLeagueRoles.bind(this),
+			'wars': this.disableWarRoles.bind(this),
+			'family': this.disableFamilyRoles.bind(this),
+			'guest': this.disableFamilyRoles.bind(this),
+			'verified': this.disableFamilyRoles.bind(this)
 		}[args.type];
 
 		if (typeof action !== 'function') throw new Error('Invalid action was specified');
