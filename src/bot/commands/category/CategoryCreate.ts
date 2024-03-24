@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { ClanCategories } from '../../struct/StorageHandler.js';
@@ -7,7 +7,7 @@ import { Collections } from '../../util/Constants.js';
 export default class CategoryCreateCommand extends Command {
 	public constructor() {
 		super('category-create', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			defer: true,
@@ -44,6 +44,11 @@ export default class CategoryCreateCommand extends Command {
 			}
 		}
 
-		return interaction.editReply('Category created.');
+		const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setURL(`https://clashperk.com/clans?token=${token}`).setLabel('Reorder').setStyle(ButtonStyle.Link)
+		);
+
+		return interaction.editReply({ content: 'Category created.', components: [row] });
 	}
 }

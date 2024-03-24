@@ -22,6 +22,20 @@ export const DOWN_RIGHT_ARROW = '↘';
 
 export const DOT = '•';
 
+export enum CommandCategories {
+	SEARCH = 'search',
+	CONFIG = 'config',
+	SETUP = 'setup',
+	WAR = 'war',
+	CWL = 'cwl',
+	ROSTER = 'roster',
+	UTIL = 'util',
+	ACTIVITY = 'activity',
+	SUMMARY = 'summary',
+	EXPORT = 'export',
+	HISTORY = 'history'
+}
+
 export const enum Collections {
 	CLAN_STORES = 'ClanStores',
 	DONATION_LOGS = 'DonationLogs',

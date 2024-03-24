@@ -5,7 +5,7 @@ import { EMOJIS } from '../../util/Emojis.js';
 export default class GameEvents extends Command {
 	public constructor() {
 		super('events', {
-			category: 'config',
+			category: 'search',
 			defer: true
 		});
 	}

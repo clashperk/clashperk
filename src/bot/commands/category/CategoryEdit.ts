@@ -7,7 +7,7 @@ import { Collections } from '../../util/Constants.js';
 export default class CategoryEditCommand extends Command {
 	public constructor() {
 		super('category-edit', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			ephemeral: true,

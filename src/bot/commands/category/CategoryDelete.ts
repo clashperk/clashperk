@@ -6,7 +6,7 @@ import { Collections } from '../../util/Constants.js';
 export default class CategoryDeleteCommand extends Command {
 	public constructor() {
 		super('category-delete', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			ephemeral: true,

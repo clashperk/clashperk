@@ -4,10 +4,11 @@ import { Command } from '../../lib/index.js';
 export default class CategoryListCommand extends Command {
 	public constructor() {
 		super('category-list', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			defer: true,
-			ephemeral: true
+			ephemeral: true,
+			userPermissions: ['ManageGuild']
 		});
 	}
 
@@ -17,7 +18,7 @@ export default class CategoryListCommand extends Command {
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild.name} Categories`, iconURL: interaction.guild.iconURL()! });
-		embed.setDescription(categories.map((cat) => `1. ${cat.name} (order ${cat.order})`).join('\n'));
+		embed.setDescription(categories.map((cat) => `1. ${cat.name}`).join('\n'));
 
 		const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
