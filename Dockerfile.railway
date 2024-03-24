@@ -31,4 +31,7 @@ ENV GIT_SHA=$RAILWAY_GIT_COMMIT_SHA
 ENV SERVICE_ID=$RAILWAY_SERVICE_ID
 ENV SERVICE_NAME=$RAILWAY_SERVICE_NAME
 
+ENV PORT=8080
+EXPOSE 8080
+
 CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/src/index.js"]

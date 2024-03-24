@@ -54,6 +54,6 @@ export default class Logger {
 	}
 
 	private get shard() {
-		return this.client?.shard?.ids ? ` [SHARD${this.client.shard.ids[0]!.toString().padStart(2)}]` : '';
+		return this.client?.shard?.ids ? ` [SHARD${this.client.shard.ids[0]!.toString().padStart(2)}]` : ` [SHARD X]`;
 	}
 }

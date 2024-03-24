@@ -4,13 +4,15 @@ services:
   clashperk_bot:
     image: 432159388664.dkr.ecr.us-east-1.amazonaws.com/clashperk-bot:latest
     restart: always
-    # container_name: clashperk_bot
+    container_name: clashperk_bot
     # build:
     #   context: .
     #   dockerfile: .github/Dockerfile
     env_file:
       - .env
     mem_limit: 6gb
+    ports:
+      - "8070:8080"
     networks:
       - default_net
 

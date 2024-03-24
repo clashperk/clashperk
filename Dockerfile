@@ -22,4 +22,7 @@ COPY --from=deps /app/dist ./dist
 ARG GIT_SHA
 ENV GIT_SHA=$GIT_SHA
 
+ENV PORT=8080
+EXPOSE 8080
+
 CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/src/index.js"]

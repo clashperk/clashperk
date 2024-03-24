@@ -11,6 +11,8 @@ services:
       - .env.dev
     mem_limit: 3gb
     container_name: clashperk_dev
+    ports:
+      - "8070:8080"
     networks:
       - default_net
 
