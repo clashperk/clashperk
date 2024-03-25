@@ -916,7 +916,11 @@ export default class StorageHandler {
 				const user = await this.client.users.fetch(userId).catch(() => null);
 				if (!user || user.bot) continue;
 
+				const dirtyLink = links.find((link) => link.tag === tag && link.userId !== userId && link.source === 'api');
+
 				try {
+					if (dirtyLink) await collection.deleteOne({ tag: dirtyLink.tag });
+
 					await collection.insertOne({
 						userId: user.id,
 						username: user.username,
