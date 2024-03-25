@@ -16,13 +16,8 @@ export const MembersCommandOptions = {
 	},
 	tags: {
 		id: 'tags',
-		label: 'Player Tags',
-		description: 'Player tags of the clan members.'
-	},
-	roles: {
-		id: 'roles',
-		label: 'Clan Roles',
-		description: 'Roles of the clan members.'
+		label: 'Player Tags and Roles',
+		description: 'Player Tags and Roles of the clan members.'
 	},
 	trophies: {
 		id: 'trophies',
@@ -43,6 +38,11 @@ export const MembersCommandOptions = {
 		id: 'attacks',
 		label: 'Attacks & Defenses',
 		description: 'Attacks and defenses of the clan members.'
+	},
+	clan: {
+		id: 'clan',
+		label: 'Clan Overview',
+		description: 'Clan summary and overview.'
 	}
 } as const;
 

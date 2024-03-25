@@ -8,11 +8,14 @@ import {
 	escapeMarkdown,
 	Guild,
 	Message,
+	StringSelectMenuBuilder,
 	User
 } from 'discord.js';
+import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
+import { MembersCommandOptions } from '../../util/CommandOptions.js';
 import { Collections } from '../../util/Constants.js';
-import { CLAN_LABELS, CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
+import { CLAN_LABELS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Season } from '../../util/index.js';
 
 const clanTypes: Record<string, string> = {
@@ -42,11 +45,20 @@ export default class ClanCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; with_options?: boolean }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const embed = await this.embed(interaction.guild, clan);
+
+		const payload = {
+			cmd: this.id,
+			tag: clan.tag,
+			with_options: args.with_options
+		};
+		const customIds = {
+			option: this.createId({ ...payload, cmd: 'members', string_key: 'option' })
+		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
@@ -56,7 +68,21 @@ export default class ClanCommand extends Command {
 					.setCustomId(JSON.stringify({ cmd: 'clan', tag: clan.tag }))
 			)
 			.addComponents(new ButtonBuilder().setLabel('Clan Badge').setStyle(ButtonStyle.Link).setURL(clan.badgeUrls.large));
-		return interaction.editReply({ embeds: [embed], components: [row] });
+
+		const menu = new StringSelectMenuBuilder()
+			.setPlaceholder('Select an option!')
+			.setCustomId(customIds.option)
+			.addOptions(
+				Object.values(MembersCommandOptions).map((option) => ({
+					label: option.label,
+					value: option.id,
+					description: option.description,
+					default: option.id === MembersCommandOptions.clan.id
+				}))
+			);
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
+
+		return interaction.editReply({ embeds: [embed], components: [row, menuRow] });
 	}
 
 	private async embed(guild: Guild, clan: APIClan) {
@@ -160,6 +186,27 @@ export default class ClanCommand extends Command {
 				].join('\n')
 			}
 		]);
+
+		if (clan.members > 0) {
+			const reduced = clan.memberList.reduce<{ [key: string]: number }>((count, member) => {
+				const townHall = member.townHallLevel;
+				count[townHall] = (count[townHall] || 0) + 1;
+				return count;
+			}, {});
+
+			const townHalls = Object.entries(reduced)
+				.map((arr) => ({ level: Number(arr[0]), total: Number(arr[1]) }))
+				.sort((a, b) => b.level - a.level);
+
+			embed.addFields({
+				name: `**Town Halls**`,
+				value: cluster(townHalls, 3)
+					.map((townHalls) => {
+						return townHalls.map((th) => `${TOWN_HALLS[th.level]}${ORANGE_NUMBERS[th.total]}\u200b`).join(' ');
+					})
+					.join('\n')
+			});
+		}
 
 		return embed;
 	}

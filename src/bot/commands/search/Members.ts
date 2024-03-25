@@ -48,8 +48,8 @@ export default class MembersCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; option: string; user?: User }) {
-		const command = this.handler.modules.get(args.option);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; option?: string }) {
+		const command = args.option && this.handler.modules.get(args.option);
 		if (command) return this.handler.exec(interaction, command, { tag: args.tag, with_options: true });
 
 		const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
@@ -96,29 +96,20 @@ export default class MembersCommand extends Command {
 				].join('\n')
 			);
 
+		// TAGS AND ROLES
 		if (args.option === options.tags.id) {
+			members.sort((a, b) => b.role.id - a.role.id);
 			embed.setDescription(
 				[
 					'```',
-					`\u200e${'TAG'.padStart(10, ' ')}  ${'NAME'}`,
-					members.map((mem) => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
+					`${'ROLE'}  ${'TAG'.padEnd(10, ' ')}  ${'NAME'}`,
+					members.map((mem) => `${mem.role.name.padEnd(4, ' ')}  ${mem.tag.padEnd(10, ' ')}  \u200e${mem.name}`).join('\n'),
 					'```'
 				].join('\n')
 			);
 		}
 
-		if (args.option === options.roles.id) {
-			const _members = [...members].sort((a, b) => b.role.id - a.role.id);
-			embed.setDescription(
-				[
-					'```',
-					`\u200e ${'ROLE'.padEnd(4, ' ')}  ${'NAME'}`,
-					_members.map((mem) => `\u200e ${mem.role.name.padEnd(4, ' ')}  ${mem.name}`).join('\n'),
-					'```'
-				].join('\n')
-			);
-		}
-
+		// WAR_PREF
 		if (args.option === options.warPref.id) {
 			const members = await this.getWarPref(data, fetched);
 			const optedIn = members.filter((m) => m.warPreference === 'in');
@@ -159,6 +150,7 @@ export default class MembersCommand extends Command {
 			);
 		}
 
+		// JOIN_DATE
 		if (args.option === options.joinDate.id) {
 			const members = await this.joinLeave(data, fetched);
 			members.sort((a, b) => {
@@ -184,6 +176,7 @@ export default class MembersCommand extends Command {
 			embed.setFooter({ text: `Last Joining and Leave/Join count` });
 		}
 
+		// PROGRESS
 		if (args.option === options.progress.id) {
 			const members = await this.progress(data, fetched);
 
@@ -231,6 +224,7 @@ export default class MembersCommand extends Command {
 			});
 		}
 
+		// TROPHIES
 		if (args.option === options.trophies.id) {
 			embed.setDescription(
 				[

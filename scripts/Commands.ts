@@ -493,14 +493,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description_localizations: translation('command.members.description'),
 		options: [
 			{
-				name: 'option',
-				description: command.members.options.option.description,
-				description_localizations: translation('command.members.options.option.description'),
-				type: ApplicationCommandOptionType.String,
-				required: true,
-				choices: [...Object.values(MembersCommandOptions).map((choice) => ({ name: choice.label, value: choice.id }))]
-			},
-			{
 				name: 'tag',
 				description: common.options.tag.description,
 				description_localizations: translation('common.options.tag.description'),
@@ -514,6 +506,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('common.options.user.description'),
 				type: ApplicationCommandOptionType.User,
 				required: false
+			},
+			{
+				name: 'option',
+				description: command.members.options.option.description,
+				description_localizations: translation('command.members.options.option.description'),
+				type: ApplicationCommandOptionType.String,
+				choices: [...Object.values(MembersCommandOptions).map((choice) => ({ name: choice.label, value: choice.id }))]
 			}
 		]
 	},

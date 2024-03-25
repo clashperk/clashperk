@@ -1,4 +1,6 @@
+import { APIClanMember } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
+import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { MembersCommandOptions } from '../../util/CommandOptions.js';
 import { Collections } from '../../util/Constants.js';
@@ -21,22 +23,13 @@ export default class ClanAttacksCommand extends Command {
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
-
 		if (clan.members < 1) {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 		}
 
-		args.season ??= Season.ID;
+		const fetched = await this.getPlayers(clan.memberList, args.season);
+		const seasonId = args.season ?? Season.ID;
 
-		const fetched = await this.client.db
-			.collection(Collections.PLAYER_SEASONS)
-			.find<{ name: string; tag: string; attackWins: number; defenseWins: number }>({
-				season: args.season,
-				tag: { $in: clan.memberList.map((m) => m.tag) }
-			})
-			.toArray();
-
-		// const fetched = await this.client.http._getPlayers(clan.memberList);
 		const members = fetched.map((player) => ({
 			name: player.name,
 			tag: player.tag,
@@ -67,7 +60,9 @@ export default class ClanAttacksCommand extends Command {
 						.join('\n'),
 					'```'
 				].join('\n')
-			);
+			)
+			.setFooter({ text: `Season ${moment(seasonId).format('MMM YYYY')} \nSynced` })
+			.setTimestamp();
 
 		const payload = {
 			cmd: this.id,
@@ -102,6 +97,26 @@ export default class ClanAttacksCommand extends Command {
 			);
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-		return interaction.editReply({ embeds: [embed], components: args.with_options ? [buttonRow, menuRow] : [buttonRow] });
+		return interaction.editReply({
+			embeds: [embed],
+			components: args.with_options || !args.season ? [buttonRow, menuRow] : [buttonRow]
+		});
+	}
+
+	private async getPlayers(memberList: APIClanMember[], seasonId?: string) {
+		const fetched = await this.client.db
+			.collection(Collections.PLAYER_SEASONS)
+			.find<{ name: string; tag: string; attackWins: number; defenseWins: number }>({
+				season: seasonId ?? Season.ID,
+				tag: { $in: memberList.map((m) => m.tag) }
+			})
+			.toArray();
+
+		if (!fetched.length && !seasonId) {
+			const players = await this.client.http._getPlayers(memberList);
+			return players;
+		}
+
+		return fetched;
 	}
 }
