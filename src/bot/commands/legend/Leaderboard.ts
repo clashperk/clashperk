@@ -1,5 +1,13 @@
 import { APIPlayer } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, StringSelectMenuBuilder } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	MessageType,
+	StringSelectMenuBuilder
+} from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -28,6 +36,12 @@ export default class LegendLeaderboardCommand extends Command {
 	) {
 		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
 		if (!clans) return;
+
+		if (interaction.isButton() && interaction.message.type === MessageType.Default) {
+			const seasonEndTime = this.client.http.util.getSeasonEnd(new Date()).getTime();
+			const messageSentSeasonTime = this.client.http.util.getSeasonEnd(interaction.message.createdAt).getTime();
+			if (seasonEndTime !== messageSentSeasonTime) return interaction.editReply({ components: [] });
+		}
 
 		const { embed, legends } = await getLegendLeaderboardEmbedMaker({
 			guild: interaction.guild,

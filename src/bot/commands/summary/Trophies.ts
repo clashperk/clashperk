@@ -25,12 +25,17 @@ export default class SummaryTrophiesCommand extends Command {
 		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
 		if (!clans) return;
 
-		const allClans = await this.client.http._getClans(clans);
-		const members = allClans
+		const __clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
+		const members = __clans
 			.map((clan) => clan.memberList.map((mem) => ({ clan: clan.name, name: mem.name, tag: mem.tag, trophies: mem.trophies })))
 			.flat();
+
+		if (!members.length) {
+			return interaction.editReply({ content: 'No players found in your clans. Try again later!' });
+		}
+
 		const grouped = Object.values(
-			allClans.reduce<Record<string, ClansGroup>>((acc, clan) => {
+			__clans.reduce<Record<string, ClansGroup>>((acc, clan) => {
 				acc[clan.tag] = {
 					name: clan.name,
 					tag: clan.tag,
