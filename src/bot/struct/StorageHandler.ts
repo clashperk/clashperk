@@ -879,6 +879,10 @@ export default class StorageHandler {
 					color: this.client.embed(guild.id),
 					updatedAt: new Date()
 				},
+				$unset: {
+					webhook: '',
+					messageId: ''
+				},
 				$setOnInsert: {
 					createdAt: new Date()
 				}
