@@ -1,8 +1,8 @@
-import { EmbedBuilder, CommandInteraction, User, time } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, User, time } from 'discord.js';
 import moment from 'moment';
+import { Command } from '../../lib/index.js';
 import { Collections, WarType } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
-import { Command } from '../../lib/index.js';
 
 export default class WarLogCommand extends Command {
 	public constructor() {
@@ -52,15 +52,18 @@ export default class WarLogCommand extends Command {
 			return interaction.editReply('**504 Request Timeout!**');
 		}
 
-		for (const item of body.items) {
-			const extra = this.getWarInfo(wars, item);
+		const __wars = body.items.map((warLog) => {
+			const war = this.getWarInfo(wars, warLog);
+			return { ...warLog, id: war?.id, attacks: war?.attacks };
+		});
+
+		for (const item of __wars) {
 			const { clan, opponent } = item;
-			// const time = Util.duration(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 			const _time = time(new Date(moment(item.endTime).toDate()), 'R');
 			embed.addFields([
 				{
 					name: `\u200b\n\u200e${this.result(item.result)} ${opponent.name ?? 'Clan War League'} ${
-						extra ? `\u200e(#${extra.id as string})` : ''
+						item.id ? `\u200e(#${item.id})` : ''
 					}`,
 					value: [
 						`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${
@@ -70,7 +73,7 @@ export default class WarLogCommand extends Command {
 						}`,
 						`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${
 							EMOJIS.SWORD
-						} ${clan.attacks!}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${_time}`
+						} ${clan.attacks!}${item.id ? ` / ${item.attacks}` : ''} ${EMOJIS.CLOCK} ${_time}`
 					].join('\n')
 				}
 			]);
@@ -79,7 +82,7 @@ export default class WarLogCommand extends Command {
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private getWarInfo(wars: any[], war: any) {
+	private getWarInfo(wars: any[], war: any): { id: string; attacks: number } | null {
 		const data = wars.find(
 			(en) =>
 				war.opponent?.tag && [en.clan.tag, en.opponent.tag].includes(war.opponent.tag) && this.compareDate(war.endTime, en.endTime)

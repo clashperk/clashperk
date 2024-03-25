@@ -9,6 +9,7 @@ import {
 	Guild,
 	StringSelectMenuBuilder
 } from 'discord.js';
+import moment from 'moment';
 import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title } from 'radash';
 import { container } from 'tsyringe';
@@ -16,8 +17,8 @@ import Client from '../struct/Client.js';
 import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { ClanEmbedFields } from './CommandOptions.js';
 import { Collections, LEGEND_LEAGUE_ID, Settings, UnrankedCapitalLeagueId } from './Constants.js';
-import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
-import { Util } from './index.js';
+import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
+import { Season, Util } from './index.js';
 
 export const hexToNanoId = (hex: ObjectId) => {
 	return hex.toHexString().substr(-5).toUpperCase();
@@ -602,8 +603,8 @@ export const getLegendLeaderboardEmbedMaker = async ({
 	const client = container.resolve(Client);
 	clanTags ??= (await client.storage.find(guild.id)).map((clan) => clan.tag);
 
-	const cachedClans = await client.redis.getClans(clanTags);
-	const memberTags = cachedClans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
+	const __clans = await client.redis.getClans(clanTags);
+	const memberTags = __clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
 	const players = await client.redis.getPlayers(memberTags);
 
 	const legends = players.filter((player) => player.trophies >= 5000 || player.league?.id === LEGEND_LEAGUE_ID);
@@ -622,9 +623,11 @@ export const getLegendLeaderboardEmbedMaker = async ({
 		return String(num).padStart(padding, ' ');
 	}
 
-	const embed = new EmbedBuilder()
-		.setColor(client.embed(guild.id))
-		.setAuthor({ name: `${guild.name} Legend Leaderboard`, iconURL: guild.iconURL()! });
+	const embed = new EmbedBuilder();
+	embed.setColor(client.embed(guild.id));
+	embed.setAuthor({ name: `${guild.name} Legend Leaderboard (${moment(Season.ID).format('MMM YYYY')})`, iconURL: guild.iconURL()! });
+	embed.setFooter({ text: 'Synced' });
+	embed.setTimestamp();
 
 	if (legends.length) {
 		embed.setDescription(
@@ -641,8 +644,18 @@ export const getLegendLeaderboardEmbedMaker = async ({
 				'```'
 			].join('\n')
 		);
-		embed.setFooter({ text: 'Synced' });
-		embed.setTimestamp();
+	}
+
+	if (!sort_by || sort_by === 'trophies_only') {
+		embed.setDescription(
+			legends
+				.slice(0, 50)
+				.map((player, idx) => {
+					const name = Util.escapeBackTick(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
+					return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
+				})
+				.join('\n')
+		);
 	}
 
 	return { embed, legends };
