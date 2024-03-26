@@ -1,11 +1,21 @@
 import { GuildMember, GuildTextBasedChannel, PermissionsBitField, PermissionsString, User } from 'discord.js';
 import i18next from 'i18next';
 
-export const status = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
+// export const status = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
+
+export const getHttpStatusText = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
 
 export const shouldCreateSpanForRequest = (url: string) => {
 	return !['discord.com', 'api.clashofclans.com', 'api.mixpanel.com'].includes(new URL(url).hostname);
 };
+
+export const ESCAPE_CHAR_REGEX = /[\u200e|\u200f|\u200b|\u2002]+/g;
+
+export const TAG_REGEX = /^#?[0289CGJLOPQRUVY]+$/i;
+
+export const DISCORD_ID_REGEX = /^\d{17,19}/;
+
+export const DISCORD_MENTION_REGEX = /<@!?(\d{17,19})>/;
 
 export const RTL_LANGUAGE_SAMPLE = 'مرحبا بالعالم';
 

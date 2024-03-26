@@ -1,7 +1,6 @@
 import { APIPlayer } from 'clashofclans.js';
 import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Client } from '../struct/Client.js';
 import { ClanFeedLogModel } from '../types/index.js';
 import { ClanFeedLogTypes, Collections, DeepLinkTypes } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
@@ -9,6 +8,7 @@ import { unitsFlatten } from '../util/Helper.js';
 import { Season, Util } from '../util/index.js';
 import { RAW_TROOPS_FILTERED } from '../util/Troops.js';
 import BaseLog from './BaseLog.js';
+import RPCHandler from './RPCHandler.js';
 
 const OP: { [key: string]: number } = {
 	NAME_CHANGE: 0xdf9666,
@@ -35,8 +35,9 @@ export default class ClanFeedLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 	private readonly queued = new Set<string>();
 
-	public constructor(client: Client) {
-		super(client);
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
 	}
 
 	public override get permissions(): PermissionsString[] {

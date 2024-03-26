@@ -20,14 +20,17 @@ import { Collections } from '../util/Constants.js';
 import { EMOJIS } from '../util/Emojis.js';
 import { getLegendLeaderboardEmbedMaker } from '../util/Helper.js';
 import { Util } from '../util/index.js';
+import RPCHandler from './RPCHandler.js';
 
 export default class AutoBoardLog {
 	public cached: Collection<string, Cache> = new Collection();
 	private readonly queued = new Set<string>();
 	public refreshRate: number;
 	private timeout!: NodeJS.Timeout | null;
+	private client: Client;
 
-	public constructor(private client: Client) {
+	public constructor(private handler: RPCHandler) {
+		this.client = handler.client;
 		this.refreshRate = 15 * 60 * 1000;
 	}
 

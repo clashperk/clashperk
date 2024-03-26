@@ -1,12 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Client } from '../struct/Client.js';
 import { LastSeenLogModel } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
 import { EMOJIS } from '../util/Emojis.js';
 import { lastSeenEmbedMaker } from '../util/Helper.js';
 import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
+import RPCHandler from './RPCHandler.js';
 
 export default class LastSeenLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
@@ -14,8 +14,9 @@ export default class LastSeenLog extends BaseLog {
 	public refreshRate: number;
 	private timeout!: NodeJS.Timeout | null;
 
-	public constructor(client: Client) {
-		super(client);
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
 		this.refreshRate = 15 * 60 * 1000;
 	}
 

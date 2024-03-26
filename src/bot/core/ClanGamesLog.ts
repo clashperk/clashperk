@@ -1,3 +1,4 @@
+import { APIClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -8,21 +9,21 @@ import {
 	SnowflakeUtil,
 	WebhookClient
 } from 'discord.js';
-import { APIClan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
-import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
-import { ClanGames } from '../util/index.js';
 import { EMOJIS } from '../util/Emojis.js';
 import { clanGamesEmbedMaker } from '../util/Helper.js';
+import { ClanGames } from '../util/index.js';
 import BaseLog from './BaseLog.js';
+import RPCHandler from './RPCHandler.js';
 
 export default class ClanGamesLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 	public intervalId!: NodeJS.Timeout;
 
-	public constructor(client: Client) {
-		super(client);
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
 	}
 
 	public override get collection() {

@@ -40,17 +40,17 @@ export default class RPCHandler {
 	private paused = Boolean(false);
 	private queue = new Queue();
 	private api: MaintenanceHandler;
-	private clanWarLog = new ClanWarLog(this.client);
-	private donationLog = new DonationLog(this.client);
-	private clanEmbedLog = new ClanEmbedLog(this.client);
-	private clanGamesLog = new ClanGamesLog(this.client);
-	private lastSeenLog = new LastSeenLog(this.client);
-	private autoBoard = new AutoBoardLog(this.client);
-	private clanFeedLog = new ClanFeedLog(this.client);
-	private legendLog = new LegendLog(this.client);
-	private capitalLog = new CapitalLog(this.client);
-	private joinLeaveLog = new JoinLeaveLog(this.client);
 
+	private clanWarLog = new ClanWarLog(this);
+	private donationLog = new DonationLog(this);
+	private clanEmbedLog = new ClanEmbedLog(this);
+	private clanGamesLog = new ClanGamesLog(this);
+	private lastSeenLog = new LastSeenLog(this);
+	private autoBoard = new AutoBoardLog(this);
+	private clanFeedLog = new ClanFeedLog(this);
+	private legendLog = new LegendLog(this);
+	private capitalLog = new CapitalLog(this);
+	private joinLeaveLog = new JoinLeaveLog(this);
 	public flagAlertLog = new FlagAlertLog(this);
 
 	public get isInMaintenance() {

@@ -1,19 +1,11 @@
 {
 	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
+		"module": "ESNext",
+		"moduleResolution": "Node",
 		"resolveJsonModule": true,
 		"outDir": "dist",
-		"lib": [
-			"ESNext"
-		]
+		"lib": ["ESNext"]
 	},
-	"include": [
-		"src",
-		"test",
-		"scripts",
-		"locales",
-		"locales/**/*.json"
-	]
+	"include": ["src", "scripts", "locales", "locales/**/*.json"]
 }

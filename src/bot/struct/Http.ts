@@ -11,6 +11,7 @@ import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
 import { request } from 'undici';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
+import { DISCORD_ID_REGEX, TAG_REGEX } from '../util/Constants.js';
 import Client from './Client.js';
 
 export default class Http extends ClashOfClansClient {
@@ -311,7 +312,7 @@ export default class Http extends ClashOfClansClient {
 		const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 
 		if (!Array.isArray(data)) return [];
-		return data.filter((en) => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag)).map((en) => this.fixTag(en.playerTag));
+		return data.filter((en) => TAG_REGEX.test(en.playerTag)).map((en) => this.fixTag(en.playerTag));
 	}
 
 	public async getLinkedUser(tag: string) {
@@ -344,7 +345,7 @@ export default class Http extends ClashOfClansClient {
 		const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 		if (!Array.isArray(data)) return [];
 		return data
-			.filter((en) => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag) && /^\d{17,19}/.test(en.discordId))
+			.filter((en) => TAG_REGEX.test(en.playerTag) && DISCORD_ID_REGEX.test(en.discordId))
 			.map((en) => ({ tag: this.fixTag(en.playerTag), user: en.discordId, userId: en.discordId, verified: false }));
 	}
 }

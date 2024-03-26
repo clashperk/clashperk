@@ -1,22 +1,22 @@
+import { APIClanWar, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import {
-	EmbedBuilder,
-	Collection,
-	PermissionsString,
-	escapeMarkdown,
-	WebhookClient,
+	APIMessage,
 	ActionRowBuilder,
 	ButtonBuilder,
-	APIMessage,
-	ButtonStyle
+	ButtonStyle,
+	Collection,
+	EmbedBuilder,
+	PermissionsString,
+	WebhookClient,
+	escapeMarkdown
 } from 'discord.js';
-import { APIClanWar, APIClanWarMember, APIWarClan } from 'clashofclans.js';
-import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { TOWN_HALLS, EMOJIS, WAR_STARS, BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/Emojis.js';
+import { ObjectId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
-import { Client } from '../struct/Client.js';
+import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
+import RPCHandler from './RPCHandler.js';
 
 const states: { [key: string]: number } = {
 	preparation: 16745216,
@@ -32,8 +32,9 @@ const results: { [key: string]: number } = {
 export default class ClanWarLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 
-	public constructor(client: Client) {
-		super(client);
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
 	}
 
 	public override get collection() {

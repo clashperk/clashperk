@@ -3,7 +3,16 @@ import { BaseInteraction, CommandInteraction, Guild, User } from 'discord.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
-import { Collections, ElasticIndex, Settings, status } from '../util/Constants.js';
+import {
+	Collections,
+	DISCORD_ID_REGEX,
+	DISCORD_MENTION_REGEX,
+	ESCAPE_CHAR_REGEX,
+	ElasticIndex,
+	Settings,
+	TAG_REGEX,
+	getHttpStatusText
+} from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
 import { ElasticIndexer } from './Indexer.js';
@@ -16,12 +25,12 @@ export default class Resolver {
 	}
 
 	public async resolvePlayer(interaction: BaseInteraction, args?: string): Promise<(APIPlayer & { user?: User }) | null> {
-		args = (args?.replace(/[\u200e|\u200f|\u200b|\u2002|\)|\()]+/g, '') ?? '').trim();
+		args = (args?.replace(ESCAPE_CHAR_REGEX, '') ?? '').trim();
 		const parsed = await this.parseArgument(interaction, args);
 
 		if (parsed.isTag) return this.getPlayer(interaction, args);
 		if (!parsed.user) {
-			return this.fail(interaction, `**${status(404, interaction.locale)}**`);
+			return this.fail(interaction, `**${getHttpStatusText(404, interaction.locale)}**`);
 		}
 
 		const { user } = parsed;
@@ -52,7 +61,7 @@ export default class Resolver {
 	}
 
 	public async resolveClan(interaction: BaseInteraction<'cached'>, args?: string): Promise<APIClan | null> {
-		args = (args?.replace(/[\u200e|\u200f|\u200b|\u2002|\)|\()]+/g, '') ?? '').trim();
+		args = (args?.replace(ESCAPE_CHAR_REGEX, '') ?? '').trim();
 		const parsed = await this.parseArgument(interaction, args);
 
 		const clan = await this.clanAlias(interaction.guild.id, args.trim());
@@ -60,7 +69,7 @@ export default class Resolver {
 
 		if (!parsed.user) {
 			if (clan) return this.getClan(interaction, clan.tag);
-			return this.fail(interaction, `**${status(404, interaction.locale)}**`);
+			return this.fail(interaction, `**${getHttpStatusText(404, interaction.locale)}**`);
 		}
 
 		if (parsed.matched) {
@@ -94,7 +103,7 @@ export default class Resolver {
 
 		if (res.ok) return { ...body, user };
 
-		return this.fail(interaction, `**${status(res.status, interaction.locale)}**`);
+		return this.fail(interaction, `**${getHttpStatusText(res.status, interaction.locale)}**`);
 	}
 
 	public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<APIClan | null> {
@@ -108,7 +117,7 @@ export default class Resolver {
 			if (clan) return this.getClan(interaction, clan.tag);
 		}
 
-		return this.fail(interaction, `**${status(res.status, interaction.locale)}**`);
+		return this.fail(interaction, `**${getHttpStatusText(res.status, interaction.locale)}**`);
 	}
 
 	private async updateLastSearchedPlayer(user: User, player: APIPlayer) {
@@ -155,19 +164,14 @@ export default class Resolver {
 	private async parseArgument(interaction: BaseInteraction, args: string) {
 		if (!args) return { user: interaction.user, matched: false, isTag: false };
 
-		const id = /<@!?(\d{17,19})>/.exec(args)?.[1] ?? /^\d{17,19}/.exec(args)?.[0];
+		const id = DISCORD_MENTION_REGEX.exec(args)?.[1] ?? DISCORD_ID_REGEX.exec(args)?.[0];
 		if (id) {
 			const user = this.client.users.cache.get(id) ?? (await this.client.users.fetch(id).catch(() => null));
 			if (user) return { user, matched: true, isTag: false };
 			return { user: null, matched: true, isTag: false };
 		}
 
-		return { user: null, matched: false, isTag: /^#?[0289CGJLOPQRUVY]+$/gi.test(args) };
-	}
-
-	private parseTag(tag?: string) {
-		const matched = tag?.match(/^#?[0289CGJLOPQRUVY]+$/gi)?.[0];
-		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O/g, '0') ?? ''}`;
+		return { user: null, matched: false, isTag: TAG_REGEX.test(args) };
 	}
 
 	private async getLinkedClanTag(interaction: BaseInteraction<'cached'>, userId: string) {
@@ -290,13 +294,12 @@ export default class Resolver {
 	public async resolveArgs(args?: string) {
 		if (!args || args === '*') return [];
 
-		const pattern = /^#?[0289CGJLOPQRUVY]{3,}$/i;
 		if (/^ARGS/.test(args)) {
 			const tags = await this.client.redis.connection.get(args);
-			if (tags) return tags.split(/\W+/).map((tag) => (pattern.test(tag) ? this.client.http.fixTag(tag) : tag));
+			if (tags) return tags.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.http.fixTag(tag) : tag));
 		}
 
-		return args.split(/\W+/).map((tag) => (pattern.test(tag) ? this.client.http.fixTag(tag) : tag));
+		return args.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.http.fixTag(tag) : tag));
 	}
 
 	public async enforceSecurity(

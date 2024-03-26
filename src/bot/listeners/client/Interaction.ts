@@ -735,7 +735,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private isValidQuery(query: string) {
-		return query.trim();
+		return query.replace(/[\u200e|\u200f|\u200b|\u2002]+/g, '').trim();
 	}
 
 	private async getQuery(query: string) {

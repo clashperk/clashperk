@@ -1,10 +1,10 @@
 import { APIClan } from 'clashofclans.js';
 import { Collection, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
 import { clanEmbedMaker } from '../util/Helper.js';
 import BaseLog from './BaseLog.js';
+import RPCHandler from './RPCHandler.js';
 
 export interface Cache {
 	clanId: ObjectId;
@@ -33,8 +33,9 @@ export default class ClanEmbedLog extends BaseLog {
 		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'ViewChannel'];
 	}
 
-	public constructor(client: Client) {
-		super(client);
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
 	}
 
 	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {

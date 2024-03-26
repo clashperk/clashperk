@@ -2,11 +2,11 @@ import { APIClan } from 'clashofclans.js';
 import { AttachmentBuilder, Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import { Client } from '../struct/Client.js';
 import { CapitalLogModel, ClanCapitalGoldModel, ClanCapitalRaidAttackData } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
+import RPCHandler from './RPCHandler.js';
 
 export default class CapitalLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
@@ -14,8 +14,9 @@ export default class CapitalLog extends BaseLog {
 	private readonly queued = new Set<string>();
 	private timeout!: NodeJS.Timeout | null;
 
-	public constructor(client: Client) {
-		super(client, false);
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
 		this.refreshRate = 30 * 60 * 1000;
 	}
 

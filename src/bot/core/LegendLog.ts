@@ -1,10 +1,10 @@
 import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Client } from '../struct/Client.js';
 import { LegendAttacks, LegendLogModel } from '../types/index.js';
 import { attackCounts, Collections } from '../util/Constants.js';
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
+import RPCHandler from './RPCHandler.js';
 
 export default class LegendLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
@@ -12,8 +12,9 @@ export default class LegendLog extends BaseLog {
 	private readonly queued = new Set<string>();
 	private timeout!: NodeJS.Timeout | null;
 
-	public constructor(client: Client) {
-		super(client, false);
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
 		this.refreshRate = 15 * 60 * 1000;
 	}
 

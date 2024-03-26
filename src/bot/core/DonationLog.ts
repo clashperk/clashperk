@@ -1,11 +1,11 @@
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import Client from '../struct/Client.js';
 import { Collections, DonationLogFrequencyTypes } from '../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS, HOME_BASE_LEAGUES, RED_NUMBERS } from '../util/Emojis.js';
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
+import RPCHandler from './RPCHandler.js';
 
 export default class DonationLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
@@ -17,8 +17,9 @@ export default class DonationLog extends BaseLog {
 		monthly?: NodeJS.Timeout;
 	};
 
-	public constructor(client: Client) {
-		super(client);
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
 		this.refreshRate = 10 * 60 * 1000;
 		this.timeouts = {};
 	}

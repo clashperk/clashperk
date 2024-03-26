@@ -21,7 +21,7 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { IRoster, IRosterCategory, PlayerWithLink } from '../../struct/RosterManager.js';
 import { PlayerModel } from '../../types/index.js';
-import { Collections, Settings } from '../../util/Constants.js';
+import { Collections, Settings, TAG_REGEX } from '../../util/Constants.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
 
@@ -1312,10 +1312,9 @@ export default class RosterManageCommand extends Command {
 				});
 				const inputValue = modalSubmit.fields.getTextInputValue(customIds.tags);
 
-				const pattern = /^#?[0289CGJLOPQRUVY]{3,}$/i;
 				const playerTags = inputValue
 					.split(/\W+/)
-					.filter((tag) => pattern.test(tag))
+					.filter((tag) => TAG_REGEX.test(tag))
 					.map((tag) => this.client.http.fixTag(tag));
 
 				if (!playerTags.length) {
