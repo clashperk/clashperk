@@ -17,6 +17,8 @@ export const DISCORD_ID_REGEX = /^\d{17,19}/;
 
 export const DISCORD_MENTION_REGEX = /<@!?(\d{17,19})>/;
 
+export const UNICODE_EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+
 export const RTL_LANGUAGE_SAMPLE = 'مرحبا بالعالم';
 
 export const UP_ARROW = '↑';
@@ -152,6 +154,7 @@ export const enum Settings {
 	COLOR = 'color',
 	MANAGER_ROLE = 'managerRole',
 	ROSTER_MANAGER_ROLE = 'rosterManagerRole',
+	FLAGS_MANAGER_ROLE = 'flagsManagerRole',
 	CLAN_LIMIT = 'clanLimit',
 	USER_BLACKLIST = 'blacklist',
 	GUILD_BLACKLIST = 'guildBans',

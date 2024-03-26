@@ -12,7 +12,7 @@ import Google from '../../struct/Google.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
 import { IRoster, IRosterCategory } from '../../struct/RosterManager.js';
 import { UserInfoModel, UserTimezone } from '../../types/index.js';
-import { Collections, ElasticIndex, Settings } from '../../util/Constants.js';
+import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex, Settings } from '../../util/Constants.js';
 
 const ranges: Record<string, number> = {
 	'clan-wars': ms('46h'),
@@ -735,7 +735,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private isValidQuery(query: string) {
-		return query.replace(/[\u200e|\u200f|\u200b|\u2002]+/g, '').trim();
+		return query.replace(ESCAPE_CHAR_REGEX, '').trim();
 	}
 
 	private async getQuery(query: string) {

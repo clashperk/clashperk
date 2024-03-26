@@ -35,8 +35,6 @@ export enum NicknamingAccountPreference {
 
 const OpTypes = ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT', 'LEAGUE_CHANGE', 'TOWN_HALL_UPGRADE', 'NAME_CHANGE', 'WAR', 'WAR_REMOVED'];
 
-export const UNICODE_EMOJI_REGEX = /\p{Extended_Pictographic}/u;
-
 const EMPTY_GUILD_MEMBER_COLLECTION = new Collection<string, GuildMember>();
 
 export class RolesManager {
