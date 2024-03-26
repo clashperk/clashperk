@@ -2,7 +2,7 @@ import { AutocompleteInteraction, CommandInteraction } from 'discord.js';
 import { Filter, ObjectId } from 'mongodb';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 import { hexToNanoId } from '../../util/Helper.js';
 
 export default class FlagDeleteCommand extends Command {
@@ -11,7 +11,8 @@ export default class FlagDeleteCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			defer: true
+			defer: true,
+			roleKey: Settings.FLAGS_MANAGER_ROLE
 		});
 	}
 

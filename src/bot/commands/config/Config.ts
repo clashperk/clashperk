@@ -21,6 +21,7 @@ export default class ConfigCommand extends Command {
 			webhook_limit?: number;
 			manager_role?: Role;
 			roster_manager_role?: Role;
+			flags_manager_role?: Role;
 			account_linked_role?: Role;
 			account_verified_role?: Role;
 			clans_sorting_key?: string;
@@ -55,6 +56,10 @@ export default class ConfigCommand extends Command {
 
 		if (args.roster_manager_role) {
 			await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, args.roster_manager_role.id);
+		}
+
+		if (args.flags_manager_role) {
+			await this.client.settings.set(interaction.guild, Settings.FLAGS_MANAGER_ROLE, args.flags_manager_role.id);
 		}
 
 		if (args.clans_sorting_key) {
@@ -106,6 +111,9 @@ export default class ConfigCommand extends Command {
 		const managerRole = interaction.guild.roles.cache.get(
 			this.client.settings.get<string>(interaction.guild, Settings.MANAGER_ROLE, null)
 		);
+		const flagsManagerRole = interaction.guild.roles.cache.get(
+			this.client.settings.get<string>(interaction.guild, Settings.FLAGS_MANAGER_ROLE, null)
+		);
 		const rosterManagerRole = interaction.guild.roles.cache.get(
 			this.client.settings.get<string>(interaction.guild, Settings.ROSTER_MANAGER_ROLE, null)
 		);
@@ -132,6 +140,10 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Roster Manager Role',
 					value: `${rosterManagerRole?.toString() ?? 'None'}`
+				},
+				{
+					name: 'Flags Manager Role',
+					value: `${flagsManagerRole?.toString() ?? 'None'}`
 				},
 				{
 					name: 'Webhook Limit',

@@ -2,7 +2,7 @@ import { AutocompleteInteraction, cleanContent, CommandInteraction, EmbedBuilder
 import moment from 'moment';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
 export default class FlagCreateCommand extends Command {
 	public constructor() {
@@ -10,7 +10,8 @@ export default class FlagCreateCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			defer: true
+			defer: true,
+			roleKey: Settings.FLAGS_MANAGER_ROLE
 		});
 	}
 

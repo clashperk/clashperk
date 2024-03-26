@@ -3826,21 +3826,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description_localizations: translation('command.config.description'),
 		options: [
 			{
-				name: 'color_code',
-				name_localizations: {
-					'en-GB': 'colour_code'
-				},
-				description: command.config.options.color_code.description,
-				description_localizations: translation('command.config.options.color_code.description'),
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'events_channel',
-				description: command.config.options.events_channel.description,
-				description_localizations: translation('command.config.options.events_channel.description'),
-				type: ApplicationCommandOptionType.String
-			},
-			{
 				name: 'manager_role',
 				description: command.config.options.manager_role.description,
 				description_localizations: translation('command.config.options.manager_role.description'),
@@ -3853,19 +3838,25 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Role
 			},
 			{
-				name: 'clans_sorting_key',
-				description: 'Sort clans by name or manually set order.',
-				type: ApplicationCommandOptionType.String,
-				choices: [
-					{
-						name: 'By Name',
-						value: 'name'
-					},
-					{
-						name: 'By Order',
-						value: 'order'
-					}
-				]
+				name: 'flags_manager_role',
+				description: command.config.options.flags_manager_role.description,
+				description_localizations: translation('command.config.options.flags_manager_role.description'),
+				type: ApplicationCommandOptionType.Role
+			},
+			{
+				name: 'events_channel',
+				description: command.config.options.events_channel.description,
+				description_localizations: translation('command.config.options.events_channel.description'),
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'color_code',
+				name_localizations: {
+					'en-GB': 'colour_code'
+				},
+				description: command.config.options.color_code.description,
+				description_localizations: translation('command.config.options.color_code.description'),
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'auto_update_roles',
@@ -3894,6 +3885,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'No',
 						value: 'false'
+					}
+				]
+			},
+			{
+				name: 'clans_sorting_key',
+				description: 'Sort clans by name or manually set order.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'By Name',
+						value: 'name'
+					},
+					{
+						name: 'By Order',
+						value: 'order'
 					}
 				]
 			},
