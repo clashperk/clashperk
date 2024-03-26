@@ -646,7 +646,7 @@ export const getLegendLeaderboardEmbedMaker = async ({
 		);
 	}
 
-	if (!sort_by || sort_by === 'trophies_only') {
+	if ((!sort_by || sort_by === 'trophies_only') && legends.length) {
 		embed.setDescription(
 			legends
 				.slice(0, 50)
