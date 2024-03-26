@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
-import { HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/Emojis.js';
+import { HERO_EQUIPMENTS, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { RAW_TROOPS_FILTERED } from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
@@ -34,6 +34,7 @@ const roleNames: Record<string, string> = {
 const HERO_LIST = Object.keys(HOME_HEROES);
 const PET_LIST = Object.keys(HERO_PETS);
 const TROOP_LIST = Object.keys(HOME_TROOPS);
+const EQUIPMENT_LIST = Object.keys(HERO_EQUIPMENTS);
 
 export default class ExportClanMembersCommand extends Command {
 	public constructor() {
@@ -72,6 +73,10 @@ export default class ExportClanMembersCommand extends Command {
 				name: string;
 				level: number;
 			}[];
+			equipment: {
+				name: string;
+				level: number;
+			}[];
 			troops: {
 				name: string;
 				level: number;
@@ -94,6 +99,14 @@ export default class ExportClanMembersCommand extends Command {
 						return prev;
 					}, {});
 
+				const equipmentMap = [...player.heroEquipment]
+					.filter((tr) => tr.village === 'home')
+					.filter((tr) => EQUIPMENT_LIST.includes(tr.name))
+					.reduce<Record<string, number | null>>((prev, curr) => {
+						prev[curr.name] = curr.level;
+						return prev;
+					}, {});
+
 				const payload = {
 					name: player.name,
 					tag: player.tag,
@@ -107,6 +120,7 @@ export default class ExportClanMembersCommand extends Command {
 					heroes: HERO_LIST.map((name) => ({ name, level: troopsMap[name] ?? 0 })),
 					pets: PET_LIST.map((name) => ({ name, level: troopsMap[name] ?? 0 })),
 					troops: TROOP_LIST.map((name) => ({ name, level: troopsMap[name] ?? 0 })),
+					equipment: EQUIPMENT_LIST.map((name) => ({ name, level: equipmentMap[name] ?? 0 })),
 					rushed: Number(this.rushedPercentage(player)),
 					heroRem: Number(this.heroUpgrades(player)),
 					labRem: Number(this.labUpgrades(player))
@@ -196,6 +210,16 @@ export default class ExportClanMembersCommand extends Command {
 					...TROOP_LIST.map((name) => ({ name, width: 100, align: 'RIGHT' }))
 				],
 				rows: members.map((m) => [m.name, m.tag, m.townHallLevel, m.rushed, ...m.troops.map((h) => h.level)])
+			},
+			{
+				title: 'Equipment',
+				columns: [
+					{ name: 'NAME', width: 160, align: 'LEFT' },
+					{ name: 'TAG', width: 120, align: 'LEFT' },
+					{ name: 'Town-Hall', width: 100, align: 'RIGHT' },
+					...EQUIPMENT_LIST.map((name) => ({ name, width: 100, align: 'RIGHT' }))
+				],
+				rows: members.map((m) => [m.name, m.tag, m.townHallLevel, ...m.equipment.map((h) => h.level)])
 			}
 		];
 
