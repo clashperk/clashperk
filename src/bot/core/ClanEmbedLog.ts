@@ -25,17 +25,17 @@ interface Feed {
 export default class ClanEmbedLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
 
+	public constructor(private handler: RPCHandler) {
+		super(handler.client);
+		this.client = handler.client;
+	}
+
 	public override get collection() {
 		return this.client.db.collection(Collections.CLAN_EMBED_LOGS);
 	}
 
 	public override get permissions(): PermissionsString[] {
 		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'ViewChannel'];
-	}
-
-	public constructor(private handler: RPCHandler) {
-		super(handler.client);
-		this.client = handler.client;
 	}
 
 	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
