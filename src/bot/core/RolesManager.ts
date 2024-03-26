@@ -1,5 +1,6 @@
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits } from 'discord.js';
+import { parallel } from 'radash';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/Client.js';
@@ -406,7 +407,12 @@ export class RolesManager {
 
 	private async getPlayers(playerLinks: PlayerLinksEntity[]) {
 		const verifiedPlayersMap = Object.fromEntries(playerLinks.map((player) => [player.tag, player.verified]));
-		const players = await this.client.http._getPlayers(playerLinks.map(({ tag }) => ({ tag })));
+		const fetched = await parallel(25, playerLinks, async (link) => {
+			const { body, res } = await this.client.http.getPlayer(link.tag);
+			if (!res.ok || !body) return null;
+			return body;
+		});
+		const players = fetched.filter((_) => _) as APIPlayer[];
 		return players.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
 	}
 

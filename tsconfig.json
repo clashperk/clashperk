@@ -7,5 +7,5 @@
 		"outDir": "dist",
 		"lib": ["ESNext"]
 	},
-	"include": ["src", "scripts", "locales", "locales/**/*.json"]
+	"include": ["src", "test", "scripts", "locales", "locales/**/*.json"]
 }
