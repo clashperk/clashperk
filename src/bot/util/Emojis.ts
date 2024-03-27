@@ -84,7 +84,7 @@ export const ELIXIR_SPELLS: Record<string, string> = {
 	'Healing Spell': '<:Healing:696302035913670737>',
 	'Rage Spell': '<:Rage:696302044343959572>',
 	'Jump Spell': '<:Jump:696302055681425438>',
-	'Freeze Spell': '<:Freeze:696302064992780299>',
+	'Freeze Spell': '<:Freeze:1222627172141891835>',
 	'Clone Spell': '<:Clone:696302107950710795>',
 	'Invisibility Spell': '<:Invisible:787186410032463882>',
 	'Recall Spell': '<:Recall:1029115194552623227>'
