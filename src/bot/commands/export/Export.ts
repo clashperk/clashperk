@@ -20,7 +20,8 @@ export default class ExportCommand extends Command {
 			'members': this.handler.modules.get('export-members')!,
 			'last-wars': this.handler.modules.get('export-last-wars')!,
 			'cwl': this.handler.modules.get('export-cwl')!,
-			'capital': this.handler.modules.get('export-capital')!
+			'capital': this.handler.modules.get('export-capital')!,
+			'attack-log': this.handler.modules.get('export-attack-log')!
 		}[args.command];
 
 		if (!command) throw Error('Command not found.');

@@ -3430,7 +3430,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'war_type',
-						description: 'Regular or friendly wars (default: regular)',
+						description: 'Regular or friendly wars (defaults to Regular)',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -3452,6 +3452,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'limit',
+						min_value: 1,
+						max_value: 100,
 						description: command.export.options.wars.description,
 						description_localizations: translation('command.export.options.wars.description'),
 						type: ApplicationCommandOptionType.Integer
@@ -3479,6 +3481,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'wars',
+						min_value: 1,
+						max_value: 100,
 						description: command.export.options.wars.description,
 						description_localizations: translation('command.export.options.wars.description'),
 						type: ApplicationCommandOptionType.Integer
@@ -3528,6 +3532,43 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'attack-log',
+				description: 'Export war attack history.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'war_type',
+						description: 'CWL or Regular wars (default to Regular and CWL)',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Regular',
+								value: 'regular'
+							},
+							{
+								name: 'CWL',
+								value: 'cwl'
+							}
+						]
+					},
+					{
+						name: 'limit',
+						min_value: 1,
+						max_value: 100,
+						description: command.export.options.wars.description,
+						description_localizations: translation('command.export.options.wars.description'),
+						type: ApplicationCommandOptionType.Integer
+					}
+				]
+			},
+			{
 				name: 'missed',
 				description: 'Export missed attack history.',
 				type: ApplicationCommandOptionType.Subcommand,
@@ -3548,6 +3589,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'limit',
+						min_value: 1,
+						max_value: 100,
 						description: command.export.options.wars.description,
 						description_localizations: translation('command.export.options.wars.description'),
 						type: ApplicationCommandOptionType.Integer

@@ -11,7 +11,7 @@ export enum WarType {
 	CWL
 }
 
-export default class WarExport extends Command {
+export default class ExportWarsCommand extends Command {
 	public constructor() {
 		super('export-wars', {
 			category: 'export',
@@ -33,7 +33,7 @@ export default class WarExport extends Command {
 		const query = args.season ? { season: args.season } : {};
 		const chunks = [];
 		for (const { tag, name } of clans) {
-			const wars = await this.client.db
+			const cursor = this.client.db
 				.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
@@ -42,11 +42,10 @@ export default class WarExport extends Command {
 					...query
 				})
 				.sort({ _id: -1 })
-				.limit(num)
-				.toArray();
+				.limit(num);
 
 			const members: { [key: string]: any } = {};
-			for (const war of wars) {
+			for await (const war of cursor) {
 				const clan: APIWarClan = war.clan.tag === tag ? war.clan : war.opponent;
 				const attacks = clan.members
 					.filter((m) => m.attacks?.length)
