@@ -85,7 +85,7 @@ export const enum Collections {
 	SETTINGS = 'Settings',
 	LAST_SEEN = 'LastSeen',
 	CLAN_WARS = 'ClanWars',
-	CLAN_GAMES = 'ClanGamesConfig',
+	CLAN_GAMES = 'ClanGames',
 	CWL_GROUPS = 'CWLGroups',
 
 	PLAYER_RANKS = 'PlayerRanks',

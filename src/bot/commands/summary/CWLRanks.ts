@@ -91,7 +91,7 @@ export default class SummaryCWLRanks extends Command {
 				return `\u200e${label}`;
 			});
 
-			const emptySpace = Util.extraSpace(leagueGroups.length, i);
+			const emptySpace = i === leagueGroups.length - 1 ? '' : '\n\u200b';
 			const chunks = Util.splitMessage(`${__clans.join('\n')}${emptySpace}`, { maxLength: 1024 });
 			chunks.forEach((chunk, i) => {
 				embed.addFields({

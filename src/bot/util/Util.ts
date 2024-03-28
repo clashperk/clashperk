@@ -1,4 +1,3 @@
-import { parseEmoji } from 'discord.js';
 import moment from 'moment';
 import 'moment-duration-format';
 import { Season } from './Season.js';
@@ -12,22 +11,6 @@ const DURATION = {
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Util {
-	public static tagToId(tag: string) {
-		const id = tag
-			.slice(1)
-			.split('')
-			.reduce((sum, char) => sum * 14n + BigInt('0289PYLQGRJCUV'.indexOf(char)), 0n);
-		return id;
-	}
-
-	public static getEmojiURL(emoji: string) {
-		return `https://cdn.discordapp.com/emojis/${parseEmoji(emoji)!.id!}.webp?size=96&quality=lossless`;
-	}
-
-	public static extraSpace(len: number, index: number) {
-		return index === len - 1 ? '' : '\n\u200b';
-	}
-
 	// Convert a JavaScript Date object to a Sheets serial date value
 	public static dateToSerialDate(jsDate: Date) {
 		const baseDate = new Date('1899-12-30').getTime();
@@ -40,19 +23,6 @@ export class Util {
 		const baseDate = new Date('1899-12-30');
 		const diffMs = (serialDate - 1) * 24 * 60 * 60 * 1000;
 		return new Date(baseDate.getTime() + diffMs);
-	}
-
-	public static _formatNumber(num = 0, fraction = 2) {
-		// Nine Zeroes for Billions
-		return Math.abs(num) >= 1.0e9
-			? `${(Math.abs(num) / 1.0e9).toFixed(fraction)}B`
-			: // Six Zeroes for Millions
-			Math.abs(num) >= 1.0e6
-			? `${(Math.abs(num) / 1.0e6).toFixed(fraction)}M`
-			: // Three Zeroes for Thousands
-			Math.abs(num) >= 1.0e3
-			? `${(Math.abs(num) / 1.0e3).toFixed(fraction)}K`
-			: Math.abs(num).toFixed(0);
 	}
 
 	public static formatNumber(num = 0, fraction = 2) {
@@ -206,10 +176,6 @@ export class Util {
 		return { startTime: prevDay.toDate().getTime(), endTime: nextDay.toDate().getTime() };
 	}
 
-	public static slice(text: string, maxLength = 2000) {
-		return text.length > maxLength ? this.splitMessage(text, { maxLength }).at(0)! : text;
-	}
-
 	public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
 		if (text.length <= maxLength) return [text];
 		let splitText = [text];
@@ -236,18 +202,6 @@ export class Util {
 			msg += (msg && msg !== prepend ? char : '') + chunk;
 		}
 		return messages.concat(msg).filter((m) => m);
-	}
-
-	public static idToTag(id: string | bigint) {
-		id = BigInt(id);
-		let tag = '';
-		while (id !== 0n) {
-			const i = Number(id % 14n);
-			tag = `${'0289PYLQGRJCUV'[i]}${tag}`; // eslint-disable-line
-			id /= 14n;
-		}
-
-		return `#${tag}`;
 	}
 
 	public static escapeBackTick(name: string) {
@@ -333,36 +287,6 @@ export class Util {
 
 	public static delay(ms: number) {
 		return new Promise((resolve) => setTimeout(resolve, ms));
-	}
-
-	public static paginate<T>(pages: T[], page = 1, pageLength = 1) {
-		const maxPage = Math.ceil(pages.length / pageLength);
-		if (page < 1) page = 1;
-		if (page > maxPage) page = maxPage;
-		const startIndex = (page - 1) * pageLength;
-		const sliced = pages.length > pageLength ? pages.slice(startIndex, startIndex + pageLength) : pages;
-
-		return {
-			pages: sliced,
-			page,
-			maxPage,
-			pageLength,
-			next() {
-				page += 1;
-				if (page < 1) page = this.maxPage;
-				if (page > this.maxPage) page = 1;
-				return { page: page, ended: page === this.maxPage, started: page === 1 };
-			},
-			previous() {
-				page -= 1;
-				if (page < 1) page = this.maxPage;
-				if (page > this.maxPage) page = 1;
-				return { page: page, started: page === 1, ended: page === this.maxPage };
-			},
-			first() {
-				return this.pages[0];
-			}
-		};
 	}
 
 	public static duration(ms: number) {

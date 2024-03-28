@@ -1409,7 +1409,11 @@ export default class RosterManageCommand extends Command {
 					'**Failed to add a few players!**',
 					...result.filter((res) => !res.success).map((res) => res.message)
 				].join('\n');
-				return action.editReply({ content: Util.slice(content), embeds: [], components: [] });
+				return action.editReply({
+					content: content.length > 2000 ? Util.splitMessage(content)[0] : content,
+					embeds: [],
+					components: []
+				});
 			}
 			return action.editReply({ content: 'Players added successfully.', components: [] });
 		};
