@@ -56,9 +56,10 @@ export default class LinkDeleteCommand extends Command {
 
 			const { body: clan } = await this.client.http.getClan(data.clan.tag);
 			const authorIsInClan = clan.memberList.find((mem) => ['leader', 'coLeader'].includes(mem.role) && playerTags.includes(mem.tag));
+			const isTrustedGuild = await this.isTrustedGuild(interaction, clan.tag);
 
 			// The user should be a co/leader of the same clan;
-			if (!authorIsInClan && !this.isTrustedGuild(interaction, clan.tag)) {
+			if (!authorIsInClan && !isTrustedGuild) {
 				return interaction.editReply(
 					this.i18n('command.link.delete.no_access', { lng: interaction.locale, command: this.client.commands.VERIFY })
 				);
