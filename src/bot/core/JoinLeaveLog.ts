@@ -3,7 +3,7 @@ import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMess
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { FlagsEntity } from '../entities/flags.entity.js';
-import { Collections, DeepLinkTypes, Settings } from '../util/Constants.js';
+import { Collections, ColorCodes, DeepLinkTypes, Settings } from '../util/Constants.js';
 import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
 import { unitsFlatten } from '../util/Helper.js';
 import { RAW_TROOPS_FILTERED } from '../util/Troops.js';
@@ -12,8 +12,8 @@ import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';
 
 const OP: { [key: string]: number } = {
-	JOINED: 0x38d863, // GREEN
-	LEFT: 0xeb3508 // RED
+	JOINED: ColorCodes.GREEN,
+	LEFT: ColorCodes.RED
 };
 
 export default class JoinLeaveLog extends BaseLog {

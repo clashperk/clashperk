@@ -109,7 +109,7 @@ export default class ClanLogCommand extends Command {
 		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.permissions);
 		if (permission.missing) {
 			return interaction.editReply(
-				this.i18n('command.setup.enable.missing_access', {
+				this.i18n('common.missing_access', {
 					lng: interaction.locale,
 					channel: args.channel.toString(), // eslint-disable-line
 					permission: permission.missingPerms

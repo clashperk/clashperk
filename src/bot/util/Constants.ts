@@ -1,13 +1,18 @@
 import { GuildMember, GuildTextBasedChannel, PermissionsBitField, PermissionsString, User } from 'discord.js';
 import i18next from 'i18next';
 
-// export const status = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
+export const ColorCodes = {
+	GREEN: 0x38d863,
+	DARK_GREEN: 0x6dbc1e,
+	RED: 0xeb3508,
+	DARK_RED: 0xd74c1d,
+	PEACH: 0xdf9666,
+	CYAN: 0x00dbf3,
+	YELLOW: 0xeffd5f,
+	PURPLE: 0x5865f2
+};
 
 export const getHttpStatusText = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
-
-export const shouldCreateSpanForRequest = (url: string) => {
-	return !['discord.com', 'api.clashofclans.com', 'api.mixpanel.com'].includes(new URL(url).hostname);
-};
 
 export const ESCAPE_CHAR_REGEX = /[\u200e|\u200f|\u200b|\u2002]+/g;
 
@@ -60,6 +65,7 @@ export const enum Collections {
 	LEGEND_LOGS = 'LegendLogs',
 	CAPITAL_LOGS = 'CapitalLogs',
 	FLAG_ALERT_LOGS = 'FlagAlertLogs',
+	CLAN_LOGS = 'ClanLogs',
 
 	AUTO_BOARDS = 'AutoBoardLogs',
 
@@ -152,9 +158,11 @@ export const enum Settings {
 	BOT_ADMIN_ROLE = 'botAdminRole',
 	PREFIX = 'prefix',
 	COLOR = 'color',
+	IS_TRUSTED_GUILD = 'isTrustedGuild',
 	MANAGER_ROLE = 'managerRole',
 	ROSTER_MANAGER_ROLE = 'rosterManagerRole',
 	FLAGS_MANAGER_ROLE = 'flagsManagerRole',
+	LINKS_MANAGER_ROLE = 'linksManagerRole',
 	CLAN_LIMIT = 'clanLimit',
 	USER_BLACKLIST = 'blacklist',
 	GUILD_BLACKLIST = 'guildBans',

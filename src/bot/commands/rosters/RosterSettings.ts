@@ -11,7 +11,7 @@ import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
 import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/CommandOptions.js';
-import { BOT_MANAGER_HYPERLINK, Settings } from '../../util/Constants.js';
+import { Settings } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
@@ -296,7 +296,7 @@ export default class RosterEditCommand extends Command {
 				if (!this.client.util.isManager(action.member, Settings.ROSTER_MANAGER_ROLE)) {
 					return action.reply({
 						ephemeral: true,
-						content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to perform this action.`
+						content: this.i18n('common.missing_manager_role', { lng: action.locale })
 					});
 				}
 
@@ -307,7 +307,7 @@ export default class RosterEditCommand extends Command {
 				if (!this.client.util.isManager(action.member, Settings.ROSTER_MANAGER_ROLE) && !['export'].includes(value)) {
 					return action.reply({
 						ephemeral: true,
-						content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to perform this action.`
+						content: this.i18n('common.missing_manager_role', { lng: action.locale })
 					});
 				}
 

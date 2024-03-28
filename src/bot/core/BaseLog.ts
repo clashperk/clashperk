@@ -5,7 +5,6 @@ import {
 	MediaChannel,
 	NewsChannel,
 	PermissionsString,
-	SnowflakeUtil,
 	TextChannel,
 	WebhookClient,
 	WebhookMessageCreateOptions
@@ -86,7 +85,7 @@ export default class BaseLog {
 	public updateWebhook(cache: Cache, webhook: WebhookClient, channel: string) {
 		return this.collection.updateOne(
 			{ clanId: new ObjectId(cache.clanId) },
-			{ $set: { channel: channel, webhook: { id: webhook.id, token: webhook.token } } }
+			{ $set: { channel, webhook: { id: webhook.id, token: webhook.token } } }
 		);
 	}
 
@@ -145,17 +144,6 @@ export default class BaseLog {
 			}
 			throw error;
 		}
-	}
-
-	private async deleteMessage(cache: Cache) {
-		try {
-			if (cache.message) {
-				const deconstructed = SnowflakeUtil.deconstruct(cache.message);
-				if (Number(deconstructed.timestamp) < new Date('2022-09-05').getTime()) {
-					await (this.client.channels.cache.get(cache.channel) as TextChannel).messages.delete(cache.message);
-				}
-			}
-		} catch {}
 	}
 
 	public async webhook(cache: Cache, channel: TextChannel | NewsChannel | ForumChannel | MediaChannel): Promise<WebhookClient | null> {

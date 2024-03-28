@@ -2,7 +2,7 @@ import { APIPlayer } from 'clashofclans.js';
 import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { ClanFeedLogModel } from '../types/index.js';
-import { ClanFeedLogTypes, Collections, DeepLinkTypes } from '../util/Constants.js';
+import { ClanFeedLogTypes, Collections, ColorCodes, DeepLinkTypes } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { unitsFlatten } from '../util/Helper.js';
 import { Season, Util } from '../util/index.js';
@@ -11,17 +11,17 @@ import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';
 
 const OP: { [key: string]: number } = {
-	NAME_CHANGE: 0xdf9666,
-	TOWN_HALL_UPGRADE: 0x00dbf3,
-	DONATION_RESET: 0xeffd5f,
-	WAR_PREF_CHANGE: 0x00dbf3
+	NAME_CHANGE: ColorCodes.PEACH,
+	TOWN_HALL_UPGRADE: ColorCodes.CYAN,
+	DONATION_RESET: ColorCodes.YELLOW,
+	WAR_PREF_CHANGE: ColorCodes.CYAN
 };
 
 const clanTypeEvents = {
-	CAPITAL_HALL_LEVEL_UP: 0x00dbf3,
-	CAPITAL_LEAGUE_CHANGE: 0x00dbf3,
-	WAR_LEAGUE_CHANGE: 0x00dbf3,
-	CLAN_LEVEL_UP: 0x00dbf3
+	CAPITAL_HALL_LEVEL_UP: ColorCodes.CYAN,
+	CAPITAL_LEAGUE_CHANGE: ColorCodes.CYAN,
+	WAR_LEAGUE_CHANGE: ColorCodes.CYAN,
+	CLAN_LEVEL_UP: ColorCodes.CYAN
 } satisfies Record<string, number>;
 
 const logTypes: Record<string, string> = {
@@ -151,11 +151,11 @@ export default class ClanFeedLog extends BaseLog {
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
 			if (player.warPreference === 'in') {
 				embed.setDescription(`**Opted in** for clan wars.`);
-				embed.setColor('#6dbc1e');
+				embed.setColor(ColorCodes.DARK_GREEN);
 			}
 			if (player.warPreference === 'out') {
 				embed.setDescription(`**Opted out** of clan wars.`);
-				embed.setColor('#d74c1d');
+				embed.setColor(ColorCodes.DARK_RED);
 			}
 		}
 		embed.setTimestamp();
