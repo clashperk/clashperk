@@ -13,7 +13,7 @@ import { ObjectId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
 import { EMOJIS } from '../util/Emojis.js';
 import { clanGamesEmbedMaker } from '../util/Helper.js';
-import { ClanGames } from '../util/index.js';
+import { ClanGamesConfig } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';
 
@@ -35,7 +35,7 @@ export default class ClanGamesLog extends BaseLog {
 	}
 
 	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
-		if (cache.message && new Date().getDate() === ClanGames.STARTING_DATE) {
+		if (cache.message && new Date().getDate() === ClanGamesConfig.STARTING_DATE) {
 			const lastMonthIndex = new Date(Number(SnowflakeUtil.deconstruct(cache.message).timestamp)).getMonth();
 			if (lastMonthIndex < new Date().getMonth()) delete cache.message;
 		}
@@ -106,7 +106,7 @@ export default class ClanGamesLog extends BaseLog {
 	}
 
 	public async init() {
-		if (ClanGames.Started) {
+		if (ClanGamesConfig.Started) {
 			this._flush();
 			return this._init();
 		}
@@ -114,7 +114,7 @@ export default class ClanGamesLog extends BaseLog {
 		clearInterval(this.intervalId);
 		this.intervalId = setInterval(
 			async () => {
-				if (ClanGames.Started) {
+				if (ClanGamesConfig.Started) {
 					this._flush();
 					await this._init();
 					clearInterval(this.intervalId);
@@ -139,7 +139,7 @@ export default class ClanGamesLog extends BaseLog {
 	}
 
 	public async add(id: string) {
-		if (!ClanGames.Started) return null;
+		if (!ClanGamesConfig.Started) return null;
 		const data = await this.collection.findOne({ clanId: new ObjectId(id) });
 
 		if (!data) return null;
@@ -155,7 +155,7 @@ export default class ClanGamesLog extends BaseLog {
 	}
 
 	private async flush(intervalId: NodeJS.Timeout) {
-		if (ClanGames.Started) return null;
+		if (ClanGamesConfig.Started) return null;
 		await this.init();
 		clearInterval(intervalId);
 		return this.cached.clear();

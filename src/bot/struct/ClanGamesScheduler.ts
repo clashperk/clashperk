@@ -5,7 +5,7 @@ import { Collection, ObjectId, WithId } from 'mongodb';
 import { ClanGamesModel } from '../types/index.js';
 import { Collections, Settings } from '../util/Constants.js';
 import { ORANGE_NUMBERS } from '../util/Emojis.js';
-import { ClanGames, Util } from '../util/index.js';
+import { ClanGamesConfig, Util } from '../util/index.js';
 import { ReminderDeleteReasons } from './CapitalRaidScheduler.js';
 import { Client } from './Client.js';
 
@@ -194,7 +194,7 @@ export default class ClanGamesScheduler {
 
 		const members = clanMembers
 			.filter((mem) => {
-				return mem.points < (reminder.minPoints === 0 ? ClanGames.MAX_POINT : reminder.minPoints);
+				return mem.points < (reminder.minPoints === 0 ? ClanGamesConfig.MAX_POINT : reminder.minPoints);
 			})
 			.filter((m) => (reminder.allMembers ? m.points >= 0 : m.points >= 1))
 			.filter((mem) => (maxParticipants >= 50 ? mem.points >= 1 : true))
@@ -250,7 +250,7 @@ export default class ClanGamesScheduler {
 					members
 						.map((mem, i) => {
 							const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
-							const hits = ` (${mem.points}/${reminder.minPoints === 0 ? ClanGames.MAX_POINT : reminder.minPoints})`;
+							const hits = ` (${mem.points}/${reminder.minPoints === 0 ? ClanGamesConfig.MAX_POINT : reminder.minPoints})`;
 							const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
 							return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]} ${ping} ${escapeMarkdown(mem.name)}${hits}`;
 						})
