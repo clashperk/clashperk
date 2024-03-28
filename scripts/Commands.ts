@@ -3887,6 +3887,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Role
 			},
 			{
+				name: 'links_manager_role',
+				description: command.config.options.links_manager_role.description,
+				description_localizations: translation('command.config.options.links_manager_role.description'),
+				type: ApplicationCommandOptionType.Role
+			},
+			{
 				name: 'events_channel',
 				description: command.config.options.events_channel.description,
 				description_localizations: translation('command.config.options.events_channel.description'),

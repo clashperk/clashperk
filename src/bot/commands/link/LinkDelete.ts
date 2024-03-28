@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
 export default class LinkDeleteCommand extends Command {
 	public constructor() {
@@ -39,6 +39,7 @@ export default class LinkDeleteCommand extends Command {
 				.toArray();
 			const playerTags = players.map((player) => player.tag);
 
+			// The user should have at least a verified account;
 			if (!players.length) {
 				return interaction.editReply(
 					this.i18n('command.link.delete.no_access', { lng: interaction.locale, command: this.client.commands.VERIFY })
@@ -46,6 +47,7 @@ export default class LinkDeleteCommand extends Command {
 			}
 
 			const { body: data } = await this.client.http.getPlayer(playerTag);
+			// The player should be in the clan;
 			if (!data.clan) {
 				return interaction.editReply(
 					this.i18n('command.link.delete.no_access', { lng: interaction.locale, command: this.client.commands.VERIFY })
@@ -53,7 +55,10 @@ export default class LinkDeleteCommand extends Command {
 			}
 
 			const { body: clan } = await this.client.http.getClan(data.clan.tag);
-			if (!clan.memberList.find((mem) => ['leader', 'coLeader'].includes(mem.role) && playerTags.includes(mem.tag))) {
+			const authorIsInClan = clan.memberList.find((mem) => ['leader', 'coLeader'].includes(mem.role) && playerTags.includes(mem.tag));
+
+			// The user should be a co/leader of the same clan;
+			if (!authorIsInClan && !this.isTrustedGuild(interaction, clan.tag)) {
 				return interaction.editReply(
 					this.i18n('command.link.delete.no_access', { lng: interaction.locale, command: this.client.commands.VERIFY })
 				);
@@ -94,5 +99,18 @@ export default class LinkDeleteCommand extends Command {
 		}
 
 		return target ? { id: target.userId } : link ? { id: link.userId } : { id: interaction.user.id };
+	}
+
+	private async isTrustedGuild(interaction: CommandInteraction<'cached'>, clanTag: string) {
+		const isTrusted = this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+		if (!isTrusted) return false;
+
+		const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
+		if (!isManager) return false;
+
+		const clans = await this.client.storage.search(interaction.guildId, [clanTag]);
+		if (!clans.length) return false;
+
+		return true;
 	}
 }

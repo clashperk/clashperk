@@ -2,7 +2,7 @@ import { APIClan, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
 export default class LinkCreateCommand extends Command {
 	public constructor() {
@@ -12,6 +12,14 @@ export default class LinkCreateCommand extends Command {
 			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
+	}
+
+	public async pre(interaction: CommandInteraction<'cached'>) {
+		if (this.client.settings.get(interaction.guild, Settings.LINKS_MANAGER_ROLE)) {
+			this.userPermissions = ['ManageGuild'];
+		} else {
+			this.userPermissions = [];
+		}
 	}
 
 	public args(): Args {
@@ -56,6 +64,15 @@ export default class LinkCreateCommand extends Command {
 				} (${member.user.id})`,
 				{ label: 'LINK' }
 			);
+		}
+
+		// Server disallowed linking users;
+		if (
+			this.client.settings.get(interaction.guild, Settings.LINKS_MANAGER_ROLE) &&
+			member.id !== interaction.id &&
+			!this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE)
+		) {
+			return interaction.editReply(this.i18n('common.missing_manager_role', { lng: interaction.locale }));
 		}
 
 		if (args.player_tag) {

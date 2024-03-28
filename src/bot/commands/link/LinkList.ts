@@ -13,9 +13,9 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { MembersCommandOptions } from '../../util/CommandOptions.js';
-import { BOT_MANAGER_HYPERLINK } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
+import { Settings } from '@app/constants';
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -37,9 +37,9 @@ export default class LinkListCommand extends Command {
 		if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 
 		if (args.links) {
-			if (!this.client.util.isManager(interaction.member)) {
+			if (!this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE)) {
 				return interaction.followUp({
-					content: `You are missing the **Manage Server** permission or the ${BOT_MANAGER_HYPERLINK} role to use this component.`,
+					content: this.i18n('common.missing_manager_role', { lng: interaction.locale }),
 					ephemeral: true
 				});
 			}
@@ -53,7 +53,6 @@ export default class LinkListCommand extends Command {
 			);
 
 			this.client.storage.updateLinks(interaction.guildId);
-			// TODO: Refresh Roles
 
 			return interaction.followUp({
 				content: [`**Click the button below to manage Discord links on our Dashboard.**`].join('\n'),

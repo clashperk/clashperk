@@ -1,3 +1,4 @@
+import { Settings } from '@app/constants';
 import { User } from '@sentry/node';
 import { ButtonInteraction, CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
@@ -13,7 +14,8 @@ export default class AutoTownHallRoleCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks', 'ManageRoles', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel', 'UseExternalEmojis'],
-			defer: true
+			defer: true,
+			roleKey: Settings.LINKS_MANAGER_ROLE
 		});
 	}
 
@@ -35,11 +37,16 @@ export default class AutoTownHallRoleCommand extends Command {
 			return interaction.editReply('Command is blocked due to ongoing maintenance break.');
 		}
 
-		const startTime = Date.now();
+		const refreshCounter = {
+			startTime: Date.now(),
+			attempts: 0
+		};
+
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setDescription(`### Refreshing Server Roles ${EMOJIS.LOADING}`)
-			.setFooter({ text: `Progress: -/- (0%)${args.is_test_run ? ' [TestRun]' : ''}` });
+			.setDescription(`### Refreshing Server Roles ${EMOJIS.LOADING}`);
+		embed.setFooter({ text: `Progress: (0%)${args.is_test_run ? ' [TestRun]' : ''}` });
+
 		const message = await interaction.editReply({ embeds: [embed] });
 
 		const handleChanges = async (closed = false) => {
@@ -50,10 +57,13 @@ export default class AutoTownHallRoleCommand extends Command {
 			const percentage = ((changes.progress / changes.memberCount) * 100).toFixed(2);
 			embed.setFooter({
 				text: [
-					`Time Elapsed: ${moment.duration(Date.now() - startTime).format('h[h] m[m] s[s]', { trim: 'both mid' })}`,
+					`Time Elapsed: ${moment
+						.duration(Date.now() - refreshCounter.startTime)
+						.format('h[h] m[m] s[s]', { trim: 'both mid' })}`,
 					`Progress: ${changes.progress}/${changes.memberCount} (${percentage}%)${args.is_test_run ? ' [TestRun]' : ''}`
 				].join('\n')
 			});
+			refreshCounter.attempts += 1;
 
 			const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);
 			const embeds: EmbedBuilder[] = [];
@@ -100,6 +110,7 @@ export default class AutoTownHallRoleCommand extends Command {
 			const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);
 			if (!roleChanges?.length) {
 				embed.setDescription('### No role changes detected!');
+				if (!refreshCounter.attempts) embed.setFooter(null);
 
 				if (interaction.isButton()) {
 					return interaction.editReply({ embeds: [embed] });

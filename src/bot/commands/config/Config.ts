@@ -22,6 +22,7 @@ export default class ConfigCommand extends Command {
 			manager_role?: Role;
 			roster_manager_role?: Role;
 			flags_manager_role?: Role;
+			links_manager_role?: Role;
 			account_linked_role?: Role;
 			account_verified_role?: Role;
 			clans_sorting_key?: string;
@@ -44,7 +45,7 @@ export default class ConfigCommand extends Command {
 		if (args.manager_role || args.roster_manager_role) {
 			if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
 				return interaction.reply({
-					content: 'You are missing the **Manage Server** permission to change this setting.',
+					content: this.i18n('common.missing_manager_role', { lng: interaction.locale }),
 					ephemeral: true
 				});
 			}
@@ -60,6 +61,10 @@ export default class ConfigCommand extends Command {
 
 		if (args.flags_manager_role) {
 			await this.client.settings.set(interaction.guild, Settings.FLAGS_MANAGER_ROLE, args.flags_manager_role.id);
+		}
+
+		if (args.links_manager_role) {
+			await this.client.settings.set(interaction.guild, Settings.LINKS_MANAGER_ROLE, args.links_manager_role.id);
 		}
 
 		if (args.clans_sorting_key) {
@@ -117,6 +122,9 @@ export default class ConfigCommand extends Command {
 		const rosterManagerRole = interaction.guild.roles.cache.get(
 			this.client.settings.get<string>(interaction.guild, Settings.ROSTER_MANAGER_ROLE, null)
 		);
+		const linksManagerRole = interaction.guild.roles.cache.get(
+			this.client.settings.get<string>(interaction.guild, Settings.LINKS_MANAGER_ROLE, null)
+		);
 		const clansSortingKey = this.client.settings.get<string>(interaction.guild, Settings.CLANS_SORTING_KEY, 'name');
 		const verifiedOnlyClanRoles = this.client.settings.get<string>(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 		const useAutoRole = this.client.settings.get<string>(interaction.guild, Settings.USE_AUTO_ROLE, true);
@@ -144,6 +152,10 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Flags Manager Role',
 					value: `${flagsManagerRole?.toString() ?? 'None'}`
+				},
+				{
+					name: 'Links Manager Role',
+					value: `${linksManagerRole?.toString() ?? 'None'}`
 				},
 				{
 					name: 'Webhook Limit',
