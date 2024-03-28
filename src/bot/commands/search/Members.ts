@@ -168,7 +168,7 @@ export default class MembersCommand extends Command {
 						const hall = m.townHallLevel.toString().padStart(2, ' ');
 						const inCount = m.in.toString().padStart(3, ' ');
 						const outCount = m.out.toString().padStart(3, ' ');
-						const name = Util.escapeBackTick(m.name).substring(0, 13).padEnd(13, ' ');
+						const name = Util.escapeBackTick(m.name).slice(0, 13).padEnd(13, ' ');
 						return `\u200e\`${hall} ${inCount} ${outCount} ${name}\u200f\`\u200e ${inTime}`;
 					})
 				].join('\n')

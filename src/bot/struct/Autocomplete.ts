@@ -69,7 +69,7 @@ export class Autocomplete {
 		const players = await cursor.limit(24).toArray();
 
 		if (!players.length && args.player_tag) {
-			const text = args.player_tag.substring(0, 100).trim();
+			const text = args.player_tag.slice(0, 100).trim();
 			return interaction.respond([{ name: text, value: text }]);
 		}
 		if (!players.length) return interaction.respond([{ name: 'No players found.', value: '0' }]);

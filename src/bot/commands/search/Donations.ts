@@ -144,7 +144,7 @@ export default class DonationsCommand extends Command {
 						members
 							.map((mem, count) => {
 								const ratio = mem.ratio.toFixed(2).padStart(5, ' ');
-								const name = this.padEnd(mem.name.substring(0, 15));
+								const name = this.padEnd(mem.name.slice(0, 15));
 								const rank = (count + 1).toString().padStart(2, ' ');
 								return `${rank} ${this.donation(mem.difference, ds)} ${ratio}  \u200e${name}`;
 							})
@@ -160,7 +160,7 @@ export default class DonationsCommand extends Command {
 						members
 							.map((mem, count) => {
 								const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
-								const name = this.padEnd(mem.name.substring(0, 15));
+								const name = this.padEnd(mem.name.slice(0, 15));
 								const thOrIndex = (isTh ? mem.townHall : count + 1).toString().padStart(2, ' ');
 								return `${thOrIndex} ${donation}  \u200e${name}`;
 							})

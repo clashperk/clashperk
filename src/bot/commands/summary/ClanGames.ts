@@ -225,7 +225,7 @@ export default class SummaryClanGamesCommand extends Command {
 	private get latestSeason() {
 		const now = new Date();
 		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
-		return now.toISOString().substring(0, 7);
+		return now.toISOString().slice(0, 7);
 	}
 
 	private query(clanTags: string[], seasonId: string) {

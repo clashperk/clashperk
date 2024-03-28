@@ -12,14 +12,14 @@
 	"private": true,
 	"scripts": {
 		"prebuild": "rimraf dist",
-		"build": "tsc",
+		"build": "tsc && tsc-alias",
 		"postbuild": "node -r dotenv/config dist/locales/export.js",
 		"start": "npm run build && node -r dotenv/config --enable-source-maps dist/src/index.js",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
 		"dev": "node -r dotenv/config --enable-source-maps dist/src/index.js",
 		"crowdin": "tsx -r dotenv/config locales/crowdin.ts",
-		"deploy": "tsx -r dotenv/config scripts/index.ts",
+		"deploy": "tsx -r dotenv/config scripts/Deploy.ts",
 		"patrons": "tsx -r dotenv/config scripts/Patrons.ts",
 		"pull": "git submodule init && git submodule update --remote",
 		"build:sentry": "sentry-cli sourcemaps inject --org suvajit --project clashperk_bot ./dist && sentry-cli sourcemaps upload --org suvajit --project clashperk_bot ./dist --release=$(git rev-parse HEAD)"
@@ -69,6 +69,7 @@
 		"eslint-plugin-prettier": "^5.0.0",
 		"prettier": "^3.0.3",
 		"rimraf": "^3.0.2",
+		"tsc-alias": "^1.8.8",
 		"tsx": "^4.7.1",
 		"typescript": "^5.2.2"
 	},

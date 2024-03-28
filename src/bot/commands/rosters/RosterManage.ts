@@ -76,7 +76,7 @@ export default class RosterManageCommand extends Command {
 			return interaction.respond(
 				rosters.map((roster) => ({
 					value: roster._id.toHexString(),
-					name: `${roster.clan.name} - ${roster.name}`.substring(0, 100)
+					name: `${roster.clan.name} - ${roster.name}`.slice(0, 100)
 				}))
 			);
 		}
@@ -108,7 +108,7 @@ export default class RosterManageCommand extends Command {
 			return interaction.respond(
 				categories.map((category) => ({
 					value: category._id.toHexString(),
-					name: `${category.displayName}`.substring(0, 100)
+					name: `${category.displayName}`.slice(0, 100)
 				}))
 			);
 		}
@@ -1409,7 +1409,7 @@ export default class RosterManageCommand extends Command {
 					'**Failed to add a few players!**',
 					...result.filter((res) => !res.success).map((res) => res.message)
 				].join('\n');
-				return action.editReply({ content: Util.substring(content), embeds: [], components: [] });
+				return action.editReply({ content: Util.slice(content), embeds: [], components: [] });
 			}
 			return action.editReply({ content: 'Players added successfully.', components: [] });
 		};

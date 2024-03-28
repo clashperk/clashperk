@@ -157,7 +157,7 @@ export default class InteractionListener extends Listener {
 			command_id: interaction.commandName,
 			sub_command_id: interaction.options.getSubcommand(false),
 			autocomplete_field_name: focused,
-			autocomplete_query: interaction.options.getString(focused)?.substring(0, 10) ?? null
+			autocomplete_query: interaction.options.getString(focused)?.slice(0, 10) ?? null
 		});
 
 		addBreadcrumb({
@@ -177,7 +177,7 @@ export default class InteractionListener extends Listener {
 					id: interaction.id,
 					type: InteractionType[interaction.type]
 				},
-				[focused]: interaction.options.getString(focused)?.substring(0, 100),
+				[focused]: interaction.options.getString(focused)?.slice(0, 100),
 				args: this.client.commandHandler.rawArgs(interaction)
 			}
 		});
@@ -362,7 +362,7 @@ export default class InteractionListener extends Listener {
 		if (!rosters.length) return interaction.respond([{ value: '0', name: 'No rosters found.' }]);
 
 		return interaction.respond(
-			rosters.map((roster) => ({ value: roster._id.toHexString(), name: `${roster.clan.name} - ${roster.name}`.substring(0, 100) }))
+			rosters.map((roster) => ({ value: roster._id.toHexString(), name: `${roster.clan.name} - ${roster.name}`.slice(0, 100) }))
 		);
 	}
 
@@ -393,7 +393,7 @@ export default class InteractionListener extends Listener {
 
 		if (!categories.length) return interaction.respond([{ value: '0', name: 'No categories found.' }]);
 		return interaction.respond(
-			categories.map((category) => ({ value: category._id.toHexString(), name: `${category.displayName}`.substring(0, 100) }))
+			categories.map((category) => ({ value: category._id.toHexString(), name: `${category.displayName}`.slice(0, 100) }))
 		);
 	}
 
@@ -448,7 +448,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction, focused: string) {
-		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '').substring(0, 500);
+		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '').slice(0, 500);
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
 		});
@@ -527,7 +527,7 @@ export default class InteractionListener extends Listener {
 		if (!players.length) {
 			if (query && this.isValidQuery(query)) {
 				const value = await this.getQuery(query);
-				return interaction.respond([{ value, name: query.substring(0, 100) }]);
+				return interaction.respond([{ value, name: query.slice(0, 100) }]);
 			}
 			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
 		}
@@ -536,7 +536,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '')?.substring(0, 500);
+		const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '')?.slice(0, 500);
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
@@ -614,7 +614,7 @@ export default class InteractionListener extends Listener {
 		if (!clans.length) {
 			if (query && isValidQuery) {
 				const value = await this.getQuery(query);
-				return interaction.respond([{ value, name: query.substring(0, 100) }]);
+				return interaction.respond([{ value, name: query.slice(0, 100) }]);
 			}
 			return interaction.respond([{ value: '0', name: 'Enter clan tags or names!' }]);
 		}
@@ -631,7 +631,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused)?.trim()?.substring(0, 500);
+		const query = interaction.options.getString(focused)?.trim()?.slice(0, 500);
 		this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
 			label: `${interaction.guild.name}/${interaction.user.displayName}`
 		});
@@ -727,7 +727,7 @@ export default class InteractionListener extends Listener {
 		if (!clans.length) {
 			if (query && this.isValidQuery(query)) {
 				const value = await this.getQuery(query);
-				if (value) return interaction.respond([{ value, name: query.substring(0, 100) }]);
+				if (value) return interaction.respond([{ value, name: query.slice(0, 100) }]);
 			}
 			return interaction.respond([{ value: '0', name: 'Enter a clan tag!' }]);
 		}

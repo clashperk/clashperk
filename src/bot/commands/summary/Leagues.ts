@@ -83,7 +83,7 @@ export default class SummaryLeaguesCommand extends Command {
 		const { isRaidWeek, weekDate, weekId } = this.raidWeek();
 		if (isRaidWeek) {
 			weekDate.setUTCDate(weekDate.getUTCDate() - 7);
-			return weekDate.toISOString().substring(0, 10);
+			return weekDate.toISOString().slice(0, 10);
 		}
 		return weekId;
 	}
@@ -97,7 +97,7 @@ export default class SummaryLeaguesCommand extends Command {
 		if (weekDay < 5 || (weekDay <= 5 && hours < 7)) today.setDate(today.getUTCDate() - 7);
 		today.setUTCDate(today.getUTCDate() + 5);
 		today.setUTCMinutes(0, 0, 0);
-		return { weekDate: today, weekId: today.toISOString().substring(0, 10), isRaidWeek };
+		return { weekDate: today, weekId: today.toISOString().slice(0, 10), isRaidWeek };
 	}
 
 	private async getCapitalLeagueGroups(guild: Guild, clans: APIClan[]) {

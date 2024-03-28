@@ -30,6 +30,7 @@ export default class LegendLeaderboardCommand extends Command {
 			season?: string;
 			sort_by?: string;
 			export?: boolean;
+			limit?: number;
 			export_disabled?: boolean;
 			enable_auto_updating?: boolean;
 		}
@@ -46,6 +47,7 @@ export default class LegendLeaderboardCommand extends Command {
 		const { embed, legends } = await getLegendLeaderboardEmbedMaker({
 			guild: interaction.guild,
 			sort_by: args.sort_by,
+			limit: args.limit,
 			clanTags: clans.map((clan) => clan.tag)
 		});
 
@@ -62,6 +64,7 @@ export default class LegendLeaderboardCommand extends Command {
 			cmd: this.id,
 			clans: resolvedArgs,
 			sort_by: args.sort_by,
+			limit: args.limit,
 			export_disabled: args.export_disabled
 		};
 

@@ -165,7 +165,7 @@ export class CustomBot {
 	}
 
 	public async createService(botToken: string, app: Application) {
-		const serviceName = `[${app.id.slice(-5)}] ${app.name}`.substring(0, 32);
+		const serviceName = `[${app.id.slice(-5)}] ${app.name}`.slice(0, 32);
 		const query = /* GraphQL */ `
 			mutation ServiceCreate {
 				serviceCreate(

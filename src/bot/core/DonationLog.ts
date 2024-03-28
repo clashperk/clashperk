@@ -102,7 +102,7 @@ export default class DonationLog extends BaseLog {
 								return `\u200e${HOME_BASE_LEAGUES[m.league]!} ${BLUE_NUMBERS[m.donated]!} ${m.name}`;
 							})
 							.join('\n')
-							.substring(0, 1024)
+							.slice(0, 1024)
 					].join('\n')
 				}
 			]);
@@ -135,7 +135,7 @@ export default class DonationLog extends BaseLog {
 								return `\u200e${HOME_BASE_LEAGUES[m.league]!} ${RED_NUMBERS[m.received]!} ${m.name}`;
 							})
 							.join('\n')
-							.substring(0, 1024)
+							.slice(0, 1024)
 					].join('\n')
 				}
 			]);

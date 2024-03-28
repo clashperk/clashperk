@@ -211,7 +211,7 @@ export default class AutoBoardLog {
 		const guild = this.client.guilds.cache.get(cache.guildId);
 		if (!guild) return null;
 
-		const { embed } = await getLegendLeaderboardEmbedMaker({ guild });
+		const { embed } = await getLegendLeaderboardEmbedMaker({ guild, limit: cache.limit });
 		return embed;
 	}
 
@@ -221,6 +221,7 @@ export default class AutoBoardLog {
 				_id: data._id.toHexString(),
 				guildId: data.guildId,
 				color: data.color,
+				limit: data.limit,
 				channelId: data.channelId,
 				messageId: data.messageId,
 				updatedAt: data.updatedAt,
@@ -239,6 +240,7 @@ export default class AutoBoardLog {
 			_id: data._id.toHexString(),
 			guildId: data.guildId,
 			color: data.color,
+			limit: data.limit,
 			channelId: data.channelId,
 			messageId: data.messageId,
 			updatedAt: data.updatedAt,
@@ -295,6 +297,7 @@ interface Cache {
 	messageId?: Snowflake;
 	threadId?: string;
 	color?: number;
+	limit?: number;
 	webhook: WebhookClient | null;
 	updatedAt: Date;
 	deleted?: boolean;

@@ -62,7 +62,7 @@ export default class ReminderListCommand extends Command {
 				'**Clans**',
 				clanNames.length ? `${escapeMarkdown(clanNames.join(', '))}` : 'Any',
 				'**Message**',
-				`${escapeMarkdown(reminder.message.substring(0, 300))}`
+				`${escapeMarkdown(reminder.message.slice(0, 300))}`
 			].join('\n');
 		});
 

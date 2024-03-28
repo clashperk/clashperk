@@ -21,7 +21,7 @@ import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOW
 import { Season, Util } from './index.js';
 
 export const hexToNanoId = (hex: ObjectId) => {
-	return hex.toHexString().substr(-5).toUpperCase();
+	return hex.toHexString().slice(-5).toUpperCase();
 };
 
 export const makeAbbr = (text: string) => {
@@ -99,7 +99,7 @@ export const clanGamesSortingAlgorithm = (a: number, b: number) => {
 export const clanGamesLatestSeasonId = () => {
 	const currentDate = new Date();
 	if (currentDate.getDate() < 20) currentDate.setMonth(currentDate.getMonth() - 1);
-	return currentDate.toISOString().substring(0, 7);
+	return currentDate.toISOString().slice(0, 7);
 };
 
 export const clanEmbedMaker = async (
@@ -466,7 +466,7 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
 					const member = clan.memberList.find((m) => m.tag === mem.tag)!;
 					const user = showTag
 						? member.tag.padStart(12, ' ')
-						: guildMembers.get(mem.userId)!.displayName.substring(0, 12).padStart(12, ' ');
+						: guildMembers.get(mem.userId)!.displayName.slice(0, 12).padStart(12, ' ');
 					return { name, user, verified: mem.verified };
 				})
 				.sort((a, b) => localeSort(a.name, b.name))
@@ -594,11 +594,13 @@ export const welcomeEmbedMaker = () => {
 export const getLegendLeaderboardEmbedMaker = async ({
 	clanTags,
 	guild,
-	sort_by
+	sort_by,
+	limit
 }: {
 	guild: Guild;
 	clanTags?: string[];
 	sort_by?: string;
+	limit?: number;
 }) => {
 	const client = container.resolve(Client);
 	clanTags ??= (await client.storage.find(guild.id)).map((clan) => clan.tag);
@@ -607,7 +609,7 @@ export const getLegendLeaderboardEmbedMaker = async ({
 	const memberTags = __clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
 	const players = await client.redis.getPlayers(memberTags);
 
-	const legends = players.filter((player) => player.trophies >= 5000 || player.league?.id === LEGEND_LEAGUE_ID);
+	let legends = players.filter((player) => player.trophies >= 5000 || player.league?.id === LEGEND_LEAGUE_ID);
 
 	if (sort_by === 'town_hall_asc') {
 		legends.sort((a, b) => b.trophies - a.trophies);
@@ -619,9 +621,7 @@ export const getLegendLeaderboardEmbedMaker = async ({
 		legends.sort((a, b) => b.trophies - a.trophies);
 	}
 
-	function pad(num: string | number, padding = 2) {
-		return String(num).padStart(padding, ' ');
-	}
+	if (limit) legends = legends.slice(0, limit);
 
 	const embed = new EmbedBuilder();
 	embed.setColor(client.embed(guild.id));
@@ -635,11 +635,11 @@ export const getLegendLeaderboardEmbedMaker = async ({
 				'```',
 				`\u200e #  TH TROPHY WON  NAME`,
 				...legends.slice(0, 99).map((player, n) => {
-					const trophies = pad(player.trophies, 4);
-					const attacks = pad(player.attackWins, 3);
+					const trophies = player.trophies;
+					const attacks = padStart(player.attackWins, 3);
 					const name = Util.escapeBackTick(player.name);
-					const townHall = pad(player.townHallLevel, 2);
-					return `\u200e${pad(n + 1)}  ${townHall}  ${trophies}  ${attacks}  ${name}`;
+					const townHall = padStart(player.townHallLevel, 2);
+					return `\u200e${padStart(n + 1, 2)}  ${townHall}  ${trophies}  ${attacks}  ${name}`;
 				}),
 				'```'
 			].join('\n')

@@ -9,7 +9,7 @@ export default class StatsHandler {
 	public constructor(private readonly client: Client) {}
 
 	private get key() {
-		return new Date(Date.now() + 198e5).toISOString().substring(0, 10);
+		return new Date(Date.now() + 198e5).toISOString().slice(0, 10);
 	}
 
 	public async post() {

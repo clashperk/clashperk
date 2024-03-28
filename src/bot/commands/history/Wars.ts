@@ -69,7 +69,7 @@ export default class WarHistoryCommand extends Command {
 				const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
 
 				const _warsMap = userGroups.reduce<Record<string, IWar[]>>((acc, war) => {
-					const seasonId = war.endTime.toISOString().substring(0, 7);
+					const seasonId = war.endTime.toISOString().slice(0, 7);
 					acc[seasonId] ??= []; // eslint-disable-line
 					acc[seasonId].push(war);
 					return acc;

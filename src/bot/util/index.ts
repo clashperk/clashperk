@@ -47,11 +47,11 @@ export class Season {
 	}
 
 	public static get previousID() {
-		return new Date().toISOString().substring(0, 7);
+		return new Date().toISOString().slice(0, 7);
 	}
 
 	public static get ID() {
-		return this.getTimestamp.toISOString().substring(0, 7);
+		return this.getTimestamp.toISOString().slice(0, 7);
 	}
 
 	public static get getTimestamp() {
@@ -68,7 +68,7 @@ export class Season {
 	}
 
 	public static generateID(date: Date | string) {
-		return new Date(date).toISOString().substring(0, 7);
+		return new Date(date).toISOString().slice(0, 7);
 	}
 }
 
@@ -76,7 +76,7 @@ export class Season {
 export class Util {
 	public static tagToId(tag: string) {
 		const id = tag
-			.substring(1)
+			.slice(1)
 			.split('')
 			.reduce((sum, char) => sum * 14n + BigInt('0289PYLQGRJCUV'.indexOf(char)), 0n);
 		return id;
@@ -176,7 +176,7 @@ export class Util {
 	public static clanGamesSeasonId() {
 		const now = new Date();
 		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
-		return now.toISOString().substring(0, 7);
+		return now.toISOString().slice(0, 7);
 	}
 
 	public static getClanGamesMaxPoints(season?: string) {
@@ -268,7 +268,7 @@ export class Util {
 		return { startTime: prevDay.toDate().getTime(), endTime: nextDay.toDate().getTime() };
 	}
 
-	public static substring(text: string, maxLength = 2000) {
+	public static slice(text: string, maxLength = 2000) {
 		return text.length > maxLength ? this.splitMessage(text, { maxLength }).at(0)! : text;
 	}
 
@@ -370,7 +370,7 @@ export class Util {
 	}
 
 	public static getCWLSeasonId() {
-		return new Date().toISOString().substring(0, 7);
+		return new Date().toISOString().slice(0, 7);
 	}
 
 	public static getRelativeTime(ms: number) {
@@ -501,6 +501,6 @@ export class ClanGames {
 	}
 
 	public static get seasonID() {
-		return new Date().toISOString().substring(0, 7);
+		return new Date().toISOString().slice(0, 7);
 	}
 }

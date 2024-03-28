@@ -68,7 +68,7 @@ export default class ClanGamesLog extends BaseLog {
 
 	private get seasonId() {
 		const now = new Date();
-		return now.toISOString().substring(0, 7);
+		return now.toISOString().slice(0, 7);
 	}
 
 	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {

@@ -88,7 +88,7 @@ export default class FlagListCommand extends Command {
 			const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
 			embed.setTitle(`Flags`);
 			chunk.forEach((flag, itemIndex) => {
-				const reason = `Reason: ${escapeMarkdown(flag.reason.substring(0, 256))}${flag.reason.length > 256 ? '...' : ''}`;
+				const reason = `Reason: ${escapeMarkdown(flag.reason.slice(0, 256))}${flag.reason.length > 256 ? '...' : ''}`;
 				embed.addFields({
 					name: itemIndex === 0 ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})` : '\u200b',
 					value: [
@@ -168,7 +168,7 @@ export default class FlagListCommand extends Command {
 					flag.flags
 						.map(
 							({ createdAt, reason, _id }) =>
-								`${time(createdAt, 'd')} - \`${_id.toHexString().substr(-5).toUpperCase()}\` \n${reason}`
+								`${time(createdAt, 'd')} - \`${_id.toHexString().slice(-5).toUpperCase()}\` \n${reason}`
 						)
 						.join('\n\n')
 				].join('\n')
@@ -248,7 +248,7 @@ export default class FlagListCommand extends Command {
 						flag.flags
 							.slice(0, 5)
 							.map(({ createdAt, reason, _id }) => {
-								const _reason = reason.substring(0, 100);
+								const _reason = reason.slice(0, 100);
 								return `${time(createdAt, 'd')} - \`${hexToNanoId(_id)}\` - ${_reason}`;
 							})
 							.join('\n')

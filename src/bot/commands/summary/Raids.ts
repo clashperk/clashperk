@@ -219,6 +219,6 @@ export default class SummaryCapitalRaidsCommand extends Command {
 		if (weekDay < 5 || (weekDay <= 5 && hours < 7)) today.setDate(today.getUTCDate() - 7);
 		today.setUTCDate(today.getUTCDate() + 5);
 		today.setUTCMinutes(0, 0, 0);
-		return { weekDate: today, weekId: today.toISOString().substring(0, 10), isRaidWeek };
+		return { weekDate: today, weekId: today.toISOString().slice(0, 10), isRaidWeek };
 	}
 }

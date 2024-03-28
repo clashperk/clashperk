@@ -145,7 +145,7 @@ export default class ClanGamesScheduler {
 
 	private getSeasonId() {
 		const now = new Date();
-		return now.toISOString().substring(0, 7);
+		return now.toISOString().slice(0, 7);
 	}
 
 	private async query(clan: APIClan) {

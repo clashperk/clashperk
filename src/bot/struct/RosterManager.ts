@@ -1095,7 +1095,7 @@ export class RosterManager {
 	}
 
 	private snipe(str: string | number, len = 12) {
-		return `\u200e${Util.escapeBackTick(`${str}`).substring(0, len).padEnd(len, ' ')}`;
+		return `\u200e${Util.escapeBackTick(`${str}`).slice(0, len).padEnd(len, ' ')}`;
 	}
 
 	private sum(arr: number[]) {

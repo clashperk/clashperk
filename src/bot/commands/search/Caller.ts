@@ -92,7 +92,7 @@ export default class TargetCommand extends Command {
 	}
 
 	private createWarId(data: APIClanWar) {
-		const ISO = this.toDate(data.preparationStartTime).toISOString().substring(0, 16);
+		const ISO = this.toDate(data.preparationStartTime).toISOString().slice(0, 16);
 		return `${ISO}-${[data.clan.tag, data.opponent.tag].sort((a, b) => a.localeCompare(b)).join('-')}`;
 	}
 }

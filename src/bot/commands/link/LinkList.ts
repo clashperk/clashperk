@@ -158,7 +158,7 @@ export default class LinkListCommand extends Command {
 						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
 						const user = showTag
 							? member.tag.padStart(12, ' ')
-							: guildMembers.get(mem.userId)!.displayName.substring(0, 12).padStart(12, ' ');
+							: guildMembers.get(mem.userId)!.displayName.slice(0, 12).padStart(12, ' ');
 						return { name: this.parseName(member.name), user, verified: mem.verified };
 					})
 					.sort((a, b) => this.localeSort(a, b))

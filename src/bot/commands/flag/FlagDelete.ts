@@ -38,7 +38,7 @@ export default class FlagDeleteCommand extends Command {
 
 			const refIds = flags
 				.map((flag) => ({
-					name: `${hexToNanoId(flag._id)} - ${flag.reason}`.substring(0, 100),
+					name: `${hexToNanoId(flag._id)} - ${flag.reason}`.slice(0, 100),
 					value: flag._id.toHexString(),
 					refId: hexToNanoId(flag._id)
 				}))
@@ -80,7 +80,7 @@ export default class FlagDeleteCommand extends Command {
 			filter._id = new ObjectId(args.flag_ref);
 		}
 
-		const refId = filter._id ? filter._id.toHexString?.().toUpperCase().substr(-5) : null;
+		const refId = filter._id ? filter._id.toHexString?.().toUpperCase().slice(-5) : null;
 
 		await collection.deleteMany(filter);
 		return interaction.editReply(

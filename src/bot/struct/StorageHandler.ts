@@ -953,6 +953,6 @@ export default class StorageHandler {
 	}
 
 	private get seasonID() {
-		return new Date().toISOString().substring(0, 7);
+		return new Date().toISOString().slice(0, 7);
 	}
 }

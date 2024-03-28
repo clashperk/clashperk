@@ -90,7 +90,7 @@ export default class ReminderDeleteCommand extends Command {
 							.map((rem) => ({
 								label: `${label(rem.duration)} remaining`,
 								value: rem._id.toHexString(),
-								description: `${rem.message.substring(0, 100)}`,
+								description: `${rem.message.slice(0, 100)}`,
 								default: state.selected === rem._id.toHexString()
 							}))
 					)
@@ -144,9 +144,9 @@ export default class ReminderDeleteCommand extends Command {
 			const clanNames = clans
 				.filter((clan) => reminder.clans.includes(clan.tag))
 				.map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`));
-			if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').substring(0, 1024) }]);
-			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').substring(0, 1024) }]);
-			embed.addFields([{ name: 'Message', value: reminder.message.substring(0, 1024) }]);
+			if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) }]);
+			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').slice(0, 1024) }]);
+			embed.addFields([{ name: 'Message', value: reminder.message.slice(0, 1024) }]);
 			return embed;
 		};
 

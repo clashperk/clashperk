@@ -45,7 +45,13 @@
 		"skipLibCheck": true,
 
 		// Interop Constraints
-		"allowSyntheticDefaultImports": true
+		"allowSyntheticDefaultImports": true,
+
+		"paths": {
+			"@app/constants": ["./src/bot/util/Constants.ts"],
+			"@lib/constants": ["./src/bot/lib/util.ts"],
+			"@lib/core": ["./src/bot/lib/index.ts"]
+		}
 	},
 	"include": ["src", "test", "scripts", "locales", "locales/**/*.json"]
 }
