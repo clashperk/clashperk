@@ -1,5 +1,4 @@
 import { BaseInteraction, Guild } from 'discord.js';
-import https from 'node:https';
 import { Collections } from '../util/Constants.js';
 import { Client } from './Client.js';
 
@@ -29,31 +28,21 @@ export default class StatsHandler {
 		await collection.updateOne({ name: 'PLAYERS' }, { $set: { count: players } });
 		await collection.updateOne({ name: 'CLANS' }, { $set: { count: clans } });
 
-		const form = new URLSearchParams({
-			server_count: guilds.toString(),
-			shard_count: (this.client.shard?.count ?? 1).toString()
-		}).toString();
+		const res = await fetch(`https://top.gg/api/bots/${this.client.user!.id}/stats`, {
+			headers: {
+				Authorization: process.env.DBL!
+			},
+			method: 'POST',
+			body: JSON.stringify({
+				server_count: guilds,
+				shard_count: this.client.shard?.count ?? 1
+			})
+		});
 
-		https
-			.request(
-				`https://top.gg/api/bots/${this.client.user!.id}/stats`,
-				{
-					method: 'POST',
-					headers: {
-						'Authorization': process.env.DBL!,
-						'Content-Length': form.length,
-						'Content-Type': 'application/x-www-form-urlencoded'
-					}
-				},
-				(res) => {
-					res.on('data', (d) => {
-						if (res.statusCode !== 200) {
-							this.client.logger.error({ message: d.toString(), form }, { label: 'https://top.gg' });
-						}
-					});
-				}
-			)
-			.end(form);
+		const body = await res.json();
+		if (!res.ok) {
+			this.client.logger.error(body, { label: 'TOP.GG' });
+		}
 	}
 
 	public message(id: string) {
