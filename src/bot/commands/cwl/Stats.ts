@@ -240,14 +240,7 @@ export default class CWLStatsCommand extends Command {
 			})
 			.join('\n\n');
 
-		// const _clans = (body.state as unknown as string) === 'ended' ? [] : await this.client.http._getClans(body.clans);
-		// const leaguesMap = _clans.reduce<Record<string, number>>((prev, clan) => {
-		// 	prev[clan.tag] = clan.warLeague?.id ?? UnrankedWarLeagueId;
-		// 	return prev;
-		// }, {});
-
-		const leagueId = body?.leagues?.[clan.tag]; // ?? leaguesMap[clan.tag];
-
+		const leagueId = body.leagues?.[clan.tag];
 		const ranks = Object.values(ranking)
 			.sort(this.rankingSort)
 			.map((clan, i) => ({ ...clan, leagueId, rank: i + 1 }))

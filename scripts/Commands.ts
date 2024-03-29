@@ -3162,6 +3162,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						choices: getSeasonIds()
+					},
+					{
 						name: 'clans',
 						required: false,
 						autocomplete: true,
@@ -3311,8 +3318,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'season',
 						required: false,
 						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
+						description: command.summary.options.season_since.description,
+						description_localizations: translation('command.summary.options.season_since.description'),
 						choices: SEASON_SINCE_CHOICES
 					}
 				]

@@ -1,7 +1,8 @@
-import { APIClanWar, APIClanWarLeagueGroup } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections, UnrankedWarLeagueId, WarLeagueMap, promotionMap } from '../../util/Constants.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
+import { WarLeagueMap, promotionMap } from '../../util/Constants.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
 
@@ -22,7 +23,7 @@ export default class SummaryCWLRanks extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
-		const season = args.season === Season.ID ? null : args.season;
+		const season = args.season ?? Util.getCWLSeasonId();
 		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
 		if (!clans) return;
 
@@ -30,51 +31,44 @@ export default class SummaryCWLRanks extends Command {
 
 		const chunks = [];
 		for (const clan of __clans) {
-			const result = season ? null : await this.client.http.getClanWarLeagueGroup(clan.tag);
-			if (season || !result?.res.ok || ['notInWar', 'ended'].includes(result.body.state)) {
-				const data = await this.client.storage.getWarTags(clan.tag, season);
-				if (data && data.season !== Season.ID) continue;
+			const [lastLeagueGroup, leagueGroup] = await Promise.all([
+				this.client.http.getClanWarLeagueGroup(clan.tag),
+				this.client.storage.getWarTags(clan.tag, season)
+			]);
+			if (!leagueGroup?.leagues?.[clan.tag] || leagueGroup.season !== season) continue;
 
-				if (!data) continue;
-				if (!data.leagues?.[clan.tag]) continue;
+			const isApiData = !(
+				!lastLeagueGroup.res.ok ||
+				lastLeagueGroup.body.state === 'notInWar' ||
+				lastLeagueGroup.body.season !== season
+			);
 
-				if (args.season && data.season !== args.season) continue;
-				const ranking = await this.rounds(data, clan.tag, season);
-				if (!ranking) continue;
+			const aggregated = await this.client.http.aggregateClanWarLeague(clan.tag, leagueGroup, isApiData);
+			if (!aggregated) continue;
 
-				chunks.push({
-					warLeagueId: data.leagues[clan.tag],
-					...ranking,
-					status: 'ended'
-				});
-				continue;
-			}
-
-			if (args.season && result.body.season !== args.season) continue;
-			if (result.body.season !== Season.ID) continue;
-
-			const ranking = await this.rounds(result.body, clan.tag);
+			const ranking = await this.rounds({ body: aggregated, clan });
 			if (!ranking) continue;
 
 			chunks.push({
-				warLeagueId: clan.warLeague?.id ?? UnrankedWarLeagueId,
+				warLeagueId: leagueGroup.leagues[clan.tag],
 				...ranking,
-				status: result.body.state
+				status: lastLeagueGroup.body.state
 			});
 		}
 
 		const leagueGroups = Object.entries(
 			chunks.reduce<Record<string, { rank: number; name: string; tag: string; stars: number; status: string }[]>>((acc, cur) => {
-				acc[cur.warLeagueId] ??= []; // eslint-disable-line
+				acc[cur.warLeagueId] ??= [];
 				acc[cur.warLeagueId].push({ ...cur.clan, rank: cur.rank, stars: cur.clan.stars, status: cur.status });
 				return acc;
 			}, {})
 		);
 
 		const embed = new EmbedBuilder();
-		embed.setColor(this.client.embed(interaction)).setDescription(`${EMOJIS.CWL} **Clan War League Ranking**`);
+		embed.setColor(this.client.embed(interaction));
+		embed.setDescription(`${EMOJIS.CWL} **Clan War League Ranking (${season})**`);
 		leagueGroups.sort(([a], [b]) => Number(b) - Number(a));
-		leagueGroups.forEach(([leagueId, clans], i) => {
+		leagueGroups.forEach(([leagueId, clans], idx) => {
 			clans.sort((a, b) => b.stars - a.stars);
 			clans.sort((a, b) => a.rank - b.rank);
 
@@ -91,7 +85,7 @@ export default class SummaryCWLRanks extends Command {
 				return `\u200e${label}`;
 			});
 
-			const emptySpace = i === leagueGroups.length - 1 ? '' : '\n\u200b';
+			const emptySpace = idx === leagueGroups.length - 1 ? '' : '\n\u200b';
 			const chunks = Util.splitMessage(`${__clans.join('\n')}${emptySpace}`, { maxLength: 1024 });
 			chunks.forEach((chunk, i) => {
 				embed.addFields({
@@ -113,8 +107,7 @@ export default class SummaryCWLRanks extends Command {
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private async rounds(body: APIClanWarLeagueGroup, clanTag: string, season?: string | null) {
-		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
+	private async rounds({ body, clan }: { body: ClanWarLeagueGroupAggregated; clan: APIClan }) {
 		const ranking: {
 			[key: string]: {
 				name: string;
@@ -125,19 +118,7 @@ export default class SummaryCWLRanks extends Command {
 			};
 		} = {};
 
-		const warTags = rounds.flatMap((r) => r.warTags);
-		const wars = season
-			? await this.client.db
-					.collection<APIClanWar>(Collections.CLAN_WARS)
-					.find({ warTag: { $in: warTags } })
-					.toArray()
-			: (await Promise.all(warTags.map((warTag) => this.client.http.getClanWarLeagueRound(warTag))))
-					.filter(({ res }) => res.ok)
-					.map(({ body }) => body);
-		for (const data of wars) {
-			if (data.state === 'notInWar' && !season) continue;
-
-			// eslint-disable-next-line
+		for (const data of body.rounds) {
 			ranking[data.clan.tag] ??= {
 				name: data.clan.name,
 				tag: data.clan.tag,
@@ -154,7 +135,6 @@ export default class SummaryCWLRanks extends Command {
 			clan.attacks += data.clan.attacks;
 			clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
-			// eslint-disable-next-line
 			ranking[data.opponent.tag] ??= {
 				name: data.opponent.name,
 				tag: data.opponent.tag,
@@ -174,7 +154,7 @@ export default class SummaryCWLRanks extends Command {
 
 		const _ranking = Object.values(ranking).sort(this.rankingSort);
 		if (!_ranking.length) return null;
-		const index = _ranking.findIndex((r) => r.tag === clanTag);
+		const index = _ranking.findIndex((r) => r.tag === clan.tag);
 		const rank = index + 1;
 		return { rank, clan: _ranking[index] };
 	}
