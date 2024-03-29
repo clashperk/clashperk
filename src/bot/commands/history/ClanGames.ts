@@ -2,8 +2,8 @@ import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'disco
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { Collections } from '../../util/Constants.js';
-import { getExportComponents } from '../../util/Helper.js';
+import { Collections, Settings } from '../../util/Constants.js';
+import { getExportComponents, padStart } from '../../util/Helper.js';
 import { handlePagination } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
 
@@ -114,6 +114,8 @@ export default class ClanGamesHistoryCommand extends Command {
 
 		result.sort((a, b) => b.seasons.length - a.seasons.length);
 
+		const displayClanTag = this.client.settings.get<boolean>(interaction.guild, Settings.DISPLAY_CLAN_TAG, false);
+
 		const embeds: EmbedBuilder[] = [];
 		for (const chunk of Util.chunk(result, 15)) {
 			const embed = new EmbedBuilder();
@@ -125,13 +127,14 @@ export default class ClanGamesHistoryCommand extends Command {
 				embed.addFields({
 					name: `${player.name} (${player.tag})`,
 					value: [
-						`\`\`\`\n\u200e # POINTS  SEASON`,
+						`\`\`\`\n\u200e # POINTS  SEASON  CLAN`,
 						player.seasons
 							.slice(0, 12)
 							.map((m, n) => {
-								return `\u200e${(n + 1).toString().padStart(2, ' ')} ${m.points.toString().padStart(6, ' ')}  ${moment(
-									m.season
-								).format('MMM YY')}`;
+								const season = moment(m.season).format('MMM YY');
+								return `\u200e${padStart(n + 1, 2)} ${padStart(m.points, 6)}  ${season}  ${
+									displayClanTag ? m.clan.tag : m.clan.name
+								}`;
 							})
 							.join('\n'),
 						`\`\`\`Total: ${total} (Avg: ${(total / player.seasons.length).toFixed(2)})`
