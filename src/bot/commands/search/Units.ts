@@ -170,7 +170,7 @@ export default class UnitsCommand extends Command {
 							.map((chunks) =>
 								chunks
 									.map((unit) => {
-										const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+										const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name] || unit.name;
 										const level = this.padStart(unit.level);
 										const maxLevel = showMaxLevel ? this.padEnd(unit.maxLevel) : this.padEnd(unit.hallMaxLevel);
 										return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
@@ -213,7 +213,7 @@ export default class UnitsCommand extends Command {
 							.map((chunks) =>
 								chunks
 									.map((unit) => {
-										const unitIcon = SUPER_TROOPS[unit.name];
+										const unitIcon = SUPER_TROOPS[unit.name] || unit.name;
 										const level = this.padStart(unit.level);
 										const maxLevel = showMaxLevel ? this.padEnd(unit.maxLevel) : this.padEnd(unit.hallMaxLevel);
 										return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;

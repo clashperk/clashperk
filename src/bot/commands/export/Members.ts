@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
-import { HERO_EQUIPMENTS, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/Emojis.js';
+import { HERO_EQUIPMENT, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { RAW_TROOPS_FILTERED } from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
@@ -34,7 +34,7 @@ const roleNames: Record<string, string> = {
 const HERO_LIST = Object.keys(HOME_HEROES);
 const PET_LIST = Object.keys(HERO_PETS);
 const TROOP_LIST = Object.keys(HOME_TROOPS);
-const EQUIPMENT_LIST = Object.keys(HERO_EQUIPMENTS);
+const EQUIPMENT_LIST = Object.keys(HERO_EQUIPMENT);
 
 export default class ExportClanMembersCommand extends Command {
 	public constructor() {
