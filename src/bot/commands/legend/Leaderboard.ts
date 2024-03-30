@@ -56,7 +56,12 @@ export default class LegendLeaderboardCommand extends Command {
 		}
 
 		if (legends.length && args.enable_auto_updating && this.client.util.isManager(interaction.member)) {
-			await this.client.storage.makeAutoBoard({ channelId: interaction.channel!.id, boardType: this.id, guild: interaction.guild });
+			await this.client.storage.makeAutoBoard({
+				channelId: interaction.channel!.id,
+				boardType: this.id,
+				guild: interaction.guild,
+				props: { limit: args.limit }
+			});
 			return interaction.editReply('Successfully enabled auto updating Legend Leaderboard.');
 		}
 
