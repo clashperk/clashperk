@@ -869,7 +869,17 @@ export default class StorageHandler {
 		return { clans, leagues };
 	}
 
-	public async makeAutoBoard({ channelId, guild, boardType }: { guild: Guild; boardType: string; channelId: string }) {
+	public async makeAutoBoard({
+		channelId,
+		guild,
+		boardType,
+		props = {}
+	}: {
+		guild: Guild;
+		boardType: string;
+		channelId: string;
+		props?: Partial<Record<string, number | string>>;
+	}) {
 		const { value } = await this.client.db.collection(Collections.AUTO_BOARDS).findOneAndUpdate(
 			{ guildId: guild.id, boardType },
 			{
@@ -877,7 +887,8 @@ export default class StorageHandler {
 					name: guild.name,
 					channelId,
 					color: this.client.embed(guild.id),
-					updatedAt: new Date()
+					updatedAt: new Date(),
+					...props
 				},
 				$unset: {
 					webhook: '',

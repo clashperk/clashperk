@@ -519,7 +519,7 @@ export class RosterManager {
 		if (roster.roleId) roleIds.push(roster.roleId);
 		if (category?.roleId) roleIds.push(category.roleId);
 
-		if (roleIds.length) this.addRole(value.guildId, roleIds, user.id);
+		if (roleIds.length) await this.addRole(value.guildId, roleIds, user.id);
 		return value;
 	}
 
@@ -564,7 +564,7 @@ export class RosterManager {
 				if (category.roleId && categorizedMembers.length <= 1) roleIds.push(category.roleId);
 			}
 
-			if (roleIds.length) this.removeRole(value.guildId, roleIds, userId);
+			if (roleIds.length) await this.removeRole(value.guildId, roleIds, userId);
 		}
 
 		return value;
