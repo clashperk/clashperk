@@ -663,7 +663,7 @@ export class RosterManager {
 			{ returnDocument: 'after' }
 		);
 
-		if (value) this.updateBulkRoles(value, rolesMap, false);
+		if (value) this.updateBulkRoles({ roster: value, rolesMap, addRoles: false });
 		return value;
 	}
 
@@ -720,7 +720,7 @@ export class RosterManager {
 			{ returnDocument: 'after' }
 		);
 
-		if (value) this.updateBulkRoles(value, rolesMap, true);
+		if (value) this.updateBulkRoles({ roster: value, rolesMap, addRoles: true });
 		return value;
 	}
 
@@ -1013,7 +1013,15 @@ export class RosterManager {
 		return row;
 	}
 
-	private async updateBulkRoles(roster: WithId<IRoster>, rolesMap: Record<string, string[]>, addRoles: boolean) {
+	private async updateBulkRoles({
+		rolesMap,
+		roster,
+		addRoles
+	}: {
+		roster: WithId<IRoster>;
+		rolesMap: Record<string, string[]>;
+		addRoles: boolean;
+	}) {
 		const rosterId = roster._id.toHexString();
 		if (this.queued.has(rosterId)) return;
 		this.queued.add(rosterId);
@@ -1022,24 +1030,33 @@ export class RosterManager {
 			const guild = this.client.guilds.cache.get(roster.guildId);
 			if (!guild) return null;
 
-			const entries = Object.entries(rolesMap).filter(([_, roles]) => roles.length);
-			const members = await guild.members.fetch({ user: entries.map(([userId]) => userId) }).catch(() => null);
+			const members = await guild.members.fetch().catch(() => null);
 			if (!members) return null;
 
-			for (const [userId, rolesIds] of entries) {
-				const member = members.get(userId);
-				if (!member) continue;
+			for (const member of members.values()) {
+				const _roles = (rolesMap[member.id] ?? []).filter((id) => this.hasPermission(guild, id));
 
-				const _roles = rolesIds.filter((id) => this.hasPermission(guild, id));
-				if (!_roles.length) continue;
+				const included: string[] = [];
+				const excluded: string[] = [];
+				const existingRoleIds: string[] = member.roles.cache.map((role) => role.id);
 
 				if (addRoles) {
 					const roles = _roles.filter((id) => !member.roles.cache.has(id));
-					if (roles.length) await member.roles.add(roles);
+					if (roles.length) included.push(...roles);
 				} else {
 					const roles = _roles.filter((id) => member.roles.cache.has(id));
-					if (roles.length) await member.roles.remove(roles);
+					if (roles.length) excluded.push(...roles);
 				}
+
+				if (!(member.id in rolesMap) && roster.roleId) {
+					const roles = [roster.roleId].filter((id) => this.hasPermission(guild, id) && member.roles.cache.has(id));
+					if (roles.length) excluded.push(...roles);
+				}
+
+				if (!excluded.length && !included.length) continue;
+
+				const roleIdsToSet = [...existingRoleIds, ...included].filter((id) => !excluded.includes(id));
+				await member.edit({ roles: roleIdsToSet });
 
 				await Util.delay(2000);
 			}
