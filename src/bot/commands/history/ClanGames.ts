@@ -117,7 +117,7 @@ export default class ClanGamesHistoryCommand extends Command {
 		const displayClanTag = this.client.settings.get<boolean>(interaction.guild, Settings.DISPLAY_CLAN_TAG, false);
 
 		const embeds: EmbedBuilder[] = [];
-		for (const chunk of Util.chunk(result, 15)) {
+		for (const chunk of Util.chunk(result, 10)) {
 			const embed = new EmbedBuilder();
 			embed.setColor(this.client.embed(interaction));
 			embed.setTitle('Clan Games History (last 12 months)');
