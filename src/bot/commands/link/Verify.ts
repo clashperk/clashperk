@@ -61,7 +61,7 @@ export default class VerifyPlayerCommand extends Command {
 		// Rest Link API
 		this.resetLinkAPI(interaction.user.id, data.tag);
 		// Update Roles
-		this.client.rolesManager.updateOne(interaction.user.id, interaction.guildId);
+		this.client.rolesManager.updateOne(interaction.user, interaction.guildId);
 
 		return interaction.editReply(
 			this.i18n('command.verify.success', { lng: interaction.locale, info: `${data.name} (${data.tag}) ${EMOJIS.VERIFIED}` })

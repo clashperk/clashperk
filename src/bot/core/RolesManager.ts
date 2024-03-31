@@ -1,5 +1,5 @@
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
-import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits } from 'discord.js';
+import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits, Role, User } from 'discord.js';
 import { parallel } from 'radash';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
@@ -37,6 +37,8 @@ export enum NicknamingAccountPreference {
 const OpTypes = ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT', 'LEAGUE_CHANGE', 'TOWN_HALL_UPGRADE', 'NAME_CHANGE', 'WAR', 'WAR_REMOVED'];
 
 const EMPTY_GUILD_MEMBER_COLLECTION = new Collection<string, GuildMember>();
+
+export type Mentionable = { target: User; isUser: true } | { target: Role; isUser: false };
 
 export class RolesManager {
 	private queues = new Map<string, string[]>();
@@ -237,11 +239,17 @@ export class RolesManager {
 		};
 	}
 
-	private async getTargetedGuildMembersForSingleMember(guild: Guild, userId: string) {
-		const guildMember = await guild.members.fetch(userId).catch(() => null);
-		const guildMembers = guildMember
-			? EMPTY_GUILD_MEMBER_COLLECTION.clone().set(guildMember.id, guildMember)
-			: EMPTY_GUILD_MEMBER_COLLECTION;
+	private async getTargetedGuildMembersForUserOrRole(guild: Guild, userOrRole: User | Role) {
+		let guildMembers = EMPTY_GUILD_MEMBER_COLLECTION;
+		if (userOrRole instanceof Role) {
+			const members = await guild.members.fetch().catch(() => EMPTY_GUILD_MEMBER_COLLECTION);
+			guildMembers = members.filter((member) => member.roles.cache.has(userOrRole.id));
+		} else {
+			const guildMember = await guild.members.fetch(userOrRole.id).catch(() => null);
+			guildMembers = guildMember
+				? EMPTY_GUILD_MEMBER_COLLECTION.clone().set(guildMember.id, guildMember)
+				: EMPTY_GUILD_MEMBER_COLLECTION;
+		}
 
 		const linkedPlayers = await this.getLinkedPlayersByUserId(guildMembers.map((m) => m.id));
 		const linkedUserIds = Object.keys(linkedPlayers);
@@ -254,10 +262,10 @@ export class RolesManager {
 		{
 			isDryRun = false,
 			memberTags,
+			userOrRole,
 			logging,
-			userId,
 			reason
-		}: { isDryRun: boolean; logging: boolean; userId?: string | null; memberTags?: string[]; reason?: string }
+		}: { isDryRun: boolean; logging: boolean; userOrRole?: Role | User | null; memberTags?: string[]; reason?: string }
 	): Promise<RolesChangeLog | null> {
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
@@ -266,8 +274,8 @@ export class RolesManager {
 		const { targetedRoles, warRoles } = this.getTargetedRoles(rolesMap);
 		const playersInWarMap = warRoles.length ? await this.getWarRolesMap(rolesMap.warClanTags) : {};
 
-		const { guildMembers, linkedPlayers, linkedUserIds } = userId
-			? await this.getTargetedGuildMembersForSingleMember(guild, userId)
+		const { guildMembers, linkedPlayers, linkedUserIds } = userOrRole
+			? await this.getTargetedGuildMembersForUserOrRole(guild, userOrRole)
 			: await this.getTargetedGuildMembers(guild, memberTags);
 
 		const targetedMembers = guildMembers.filter(
@@ -342,51 +350,13 @@ export class RolesManager {
 		return this.changeLogs[guildId] ?? null;
 	}
 
-	public async updateOne(userId: string, guildId: string) {
-		const guild = this.client.guilds.cache.get(guildId);
-		if (!guild) return null;
-
-		const member = await guild.members.fetch(userId).catch(() => null);
-		if (!member || member.user.bot) return null;
-
-		const linkedPlayers = await this.getLinkedPlayersByUserId([userId]);
-		const players = await this.getPlayers(linkedPlayers[userId] ?? []);
-
-		const rolesMap = await this.getGuildRolesMap(guildId);
-		const playersInWarMap = await this.getWarRolesMap(rolesMap.warClanTags);
-
-		const roleUpdate = await this.preRoleUpdateAction({
-			member,
-			rolesMap,
-			players,
-			playersInWarMap
+	public async updateOne(user: User, guildId: string) {
+		return this.updateMany(guildId, {
+			logging: false,
+			isDryRun: false,
+			userOrRole: user,
+			reason: 'account linked or updated'
 		});
-
-		const nickUpdate = this.preNicknameUpdate(players, member, rolesMap);
-
-		const editOptions: GuildMemberEditOptions & { _updated?: boolean } = { reason: 'account linked or updated' };
-
-		if (roleUpdate.excluded.length || roleUpdate.included.length) {
-			const existingRoleIds = member.roles.cache.map((role) => role.id);
-			const roleIdsToSet = [...existingRoleIds, ...roleUpdate.included].filter((id) => !roleUpdate.excluded.includes(id));
-
-			editOptions._updated = true;
-			editOptions.roles = roleIdsToSet;
-		}
-
-		if (nickUpdate.action === NickActions.SET_NAME) {
-			editOptions._updated = true;
-			editOptions.nick = nickUpdate.nickname;
-		}
-
-		if (nickUpdate.action === NickActions.UNSET && member.nickname) {
-			editOptions.nick = null;
-			editOptions._updated = true;
-		}
-
-		if (editOptions._updated) await member.edit(editOptions);
-
-		return editOptions._updated;
 	}
 
 	private async getWarRolesMap(clanTags: string[]) {

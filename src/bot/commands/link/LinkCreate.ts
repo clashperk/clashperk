@@ -182,7 +182,7 @@ export default class LinkCreateCommand extends Command {
 		await this.resetLinkAPI(member.id, player.tag);
 		// Update Role
 
-		this.client.rolesManager.updateOne(member.id, interaction.guildId);
+		this.client.rolesManager.updateOne(member.user, interaction.guildId);
 
 		this.client.storage.updateLinks(interaction.guildId);
 		// TODO: Refresh Roles

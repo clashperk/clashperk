@@ -1,6 +1,5 @@
 import { Settings } from '@app/constants';
-import { User } from '@sentry/node';
-import { ButtonInteraction, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, EmbedBuilder, Role, User } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
@@ -26,7 +25,7 @@ export default class AutoTownHallRoleCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { is_test_run?: boolean; user?: User }
+		args: { is_test_run?: boolean; user_or_role?: User | Role }
 	) {
 		const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
 		if (inProgress) {
@@ -102,7 +101,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		try {
 			const changes = await this.client.rolesManager.updateMany(interaction.guildId, {
 				isDryRun: Boolean(args.is_test_run),
-				userId: interaction.isButton() ? interaction.user.id : args.user?.id ?? null,
+				userOrRole: interaction.isButton() ? interaction.user : args.user_or_role ?? null,
 				logging: true,
 				reason: `manually updated by ${interaction.user.displayName}`
 			});

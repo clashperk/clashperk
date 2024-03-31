@@ -2755,9 +2755,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'user',
-						description: 'Refresh an individual user.',
-						type: ApplicationCommandOptionType.User
+						name: 'user_or_role',
+						description: 'Refresh an individual user or a role.',
+						type: ApplicationCommandOptionType.Mentionable
 					},
 					{
 						name: 'is_test_run',

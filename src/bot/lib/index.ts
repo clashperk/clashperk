@@ -151,6 +151,8 @@ export class CommandHandler extends BaseHandler {
 				resolved[key] = option.role ?? null;
 			} else if (option.type === ApplicationCommandOptionType.User) {
 				resolved[key] = option.user ?? null;
+			} else if (option.type === ApplicationCommandOptionType.Mentionable) {
+				resolved[key] = option.user ?? option.role ?? null;
 			} else if (option.type === ApplicationCommandOptionType.Attachment) {
 				resolved[key] = option.attachment?.url ?? null;
 			} else {
@@ -186,6 +188,8 @@ export class CommandHandler extends BaseHandler {
 				resolved[key] = (option.channel as GuildBasedChannel | null)?.isTextBased() ? option.channel : null;
 			} else if (option.type === ApplicationCommandOptionType.Role) {
 				resolved[key] = option.role ?? null;
+			} else if (option.type === ApplicationCommandOptionType.Mentionable) {
+				resolved[key] = option.user ?? option.role ?? null;
 			} else if (option.type === ApplicationCommandOptionType.User) {
 				resolved[key] = args[name]?.match === 'MEMBER' ? option.member ?? null : option.user ?? null;
 			} else if (option.type === ApplicationCommandOptionType.Attachment) {
