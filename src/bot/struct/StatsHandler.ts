@@ -30,7 +30,8 @@ export default class StatsHandler {
 
 		const res = await fetch(`https://top.gg/api/bots/${this.client.user!.id}/stats`, {
 			headers: {
-				Authorization: process.env.DBL!
+				'Authorization': process.env.DBL!,
+				'Content-Type': 'application/json'
 			},
 			method: 'POST',
 			body: JSON.stringify({
