@@ -23,7 +23,8 @@ export default class ReminderEditCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			defer: true
+			defer: true,
+			ephemeral: true
 		});
 	}
 

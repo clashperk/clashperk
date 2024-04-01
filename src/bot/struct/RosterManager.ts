@@ -13,6 +13,7 @@ import {
 } from 'discord.js';
 import moment from 'moment-timezone';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
+import { unique } from 'radash';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/CommandOptions.js';
 import { Collections, MAX_TOWN_HALL_LEVEL, Settings, WarType } from '../util/Constants.js';
@@ -1056,7 +1057,7 @@ export class RosterManager {
 				if (!excluded.length && !included.length) continue;
 
 				const roleIdsToSet = [...existingRoleIds, ...included].filter((id) => !excluded.includes(id));
-				await member.edit({ roles: roleIdsToSet });
+				await member.edit({ roles: unique(roleIdsToSet, (id) => id) });
 
 				await Util.delay(2000);
 			}

@@ -24,7 +24,8 @@ export default class ReminderCreateCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
-			defer: true
+			defer: true,
+			ephemeral: true
 		});
 	}
 

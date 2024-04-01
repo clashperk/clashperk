@@ -30,7 +30,8 @@ export default class CapitalReminderDeleteCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks'],
-			defer: true
+			defer: true,
+			ephemeral: true
 		});
 	}
 
