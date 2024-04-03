@@ -19,6 +19,7 @@ export default class AutoRoleDisableCommand extends Command {
 			'leagues': this.disableLeagueRoles.bind(this),
 			'wars': this.disableWarRoles.bind(this),
 			'family': this.disableFamilyRoles.bind(this),
+			'family-leaders': this.disableFamilyRoles.bind(this),
 			'guest': this.disableFamilyRoles.bind(this),
 			'verified': this.disableFamilyRoles.bind(this)
 		}[args.type];
@@ -78,6 +79,9 @@ export default class AutoRoleDisableCommand extends Command {
 		}
 		if (args.type === 'guest') {
 			this.client.settings.delete(interaction.guildId, Settings.GUEST_ROLE);
+		}
+		if (args.type === 'family-leaders') {
+			this.client.settings.delete(interaction.guildId, Settings.FAMILY_LEADERS_ROLE);
 		}
 		if (args.type === 'verified') {
 			this.client.settings.delete(interaction.guildId, Settings.ACCOUNT_VERIFIED_ROLE);

@@ -29,6 +29,7 @@ export default class AutoFamilyRoleCommand extends Command {
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
 		args: {
+			family_leaders_role?: Role;
 			family_role?: Role;
 			guest_role?: Role;
 			verified_role?: Role;
@@ -41,7 +42,7 @@ export default class AutoFamilyRoleCommand extends Command {
 			);
 		}
 
-		const roles = [args.verified_role, args.guest_role, args.family_role];
+		const roles = [args.verified_role, args.guest_role, args.family_role, args.family_leaders_role];
 
 		const selected = roles.filter((role) => role) as Role[];
 		if (!selected.length) {
@@ -63,6 +64,10 @@ export default class AutoFamilyRoleCommand extends Command {
 
 		if (args.family_role) {
 			await this.client.settings.set(interaction.guild, Settings.FAMILY_ROLE, args.family_role.id);
+		}
+
+		if (args.family_leaders_role) {
+			await this.client.settings.set(interaction.guild, Settings.FAMILY_LEADERS_ROLE, args.family_leaders_role.id);
 		}
 
 		if (args.guest_role) {

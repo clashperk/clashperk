@@ -24,6 +24,7 @@ import { PlayerModel } from '../../types/index.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/Constants.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
+import { unique } from 'radash';
 
 export default class RosterManageCommand extends Command {
 	public constructor() {
@@ -1315,7 +1316,8 @@ export default class RosterManageCommand extends Command {
 				const playerTags = inputValue
 					.split(/\W+/)
 					.filter((tag) => TAG_REGEX.test(tag))
-					.map((tag) => this.client.http.fixTag(tag));
+					.map((tag) => this.client.http.fixTag(tag))
+					.slice(0, 65); // TODO: Fix
 
 				if (!playerTags.length) {
 					return await modalSubmit.reply({ content: 'No valid player tags detected.' });
@@ -1324,7 +1326,7 @@ export default class RosterManageCommand extends Command {
 				await modalSubmit.deferUpdate();
 
 				selected.players = await this.client.rosterManager.getClanMemberLinks(
-					playerTags.map((tag) => ({ tag })),
+					unique(playerTags).map((tag) => ({ tag })),
 					true
 				);
 				selected.playerTags = selected.players.map((player) => player.tag);
@@ -1409,6 +1411,7 @@ export default class RosterManageCommand extends Command {
 					'**Failed to add a few players!**',
 					...result.filter((res) => !res.success).map((res) => res.message)
 				].join('\n');
+				// TODO: Fix
 				return action.editReply({
 					content: content.length > 2000 ? Util.splitMessage(content)[0] : content,
 					embeds: [],

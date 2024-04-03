@@ -4,6 +4,7 @@ import { Command } from '../../lib/index.js';
 import { IRoster } from '../../struct/RosterManager.js';
 import { Settings } from '../../util/Constants.js';
 import { nullsLastSortAlgo } from '../../util/Helper.js';
+import { Util } from '../../util/Util.js';
 
 export default class RosterPingCommand extends Command {
 	public constructor() {
@@ -115,6 +116,8 @@ export default class RosterPingCommand extends Command {
 		const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
 		await interaction.editReply({ embeds: [embed] });
 
-		return interaction.followUp({ ...payload, ephemeral: this.muted });
+		for (const content of Util.splitMessage(payload.content!, { maxLength: 2048 })) {
+			return interaction.followUp({ ...payload, content, ephemeral: this.muted });
+		}
 	}
 }

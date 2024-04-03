@@ -2662,6 +2662,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
+						name: 'family_leaders_role',
+						description: 'Family leaders role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
 						name: 'family_role',
 						description: 'Family role.',
 						type: ApplicationCommandOptionType.Role
@@ -2699,27 +2704,31 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'clan-roles'
 							},
 							{
-								name: 'Town Hall',
+								name: 'Town Hall Roles',
 								value: 'town-hall'
 							},
 							{
-								name: 'Leagues',
+								name: 'Leagues Roles',
 								value: 'leagues'
 							},
 							{
-								name: 'Wars',
+								name: 'Wars Role',
 								value: 'wars'
 							},
 							{
-								name: 'Family',
+								name: 'Family Leaders Role',
+								value: 'family-leaders'
+							},
+							{
+								name: 'Family Role',
 								value: 'family'
 							},
 							{
-								name: 'Guest',
+								name: 'Guest Role',
 								value: 'guest'
 							},
 							{
-								name: 'Verified',
+								name: 'Verified Role',
 								value: 'verified'
 							}
 						]
