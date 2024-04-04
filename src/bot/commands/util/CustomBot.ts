@@ -22,7 +22,7 @@ import { createInteractionCollector } from '../../util/Pagination.js';
 export default class BotPersonalizerCommand extends Command {
 	public constructor() {
 		super('bot-personalizer', {
-			category: 'owner',
+			category: 'setup',
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			defer: true,
 			ephemeral: false

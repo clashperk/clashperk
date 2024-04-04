@@ -117,6 +117,13 @@ export default class HelpCommand extends Command {
 		const fields = Object.values(categoryMap);
 		commandCategories.sort((a, b) => fields.indexOf(a.category) - fields.indexOf(b.category));
 
+		// const _a = commands.map((cmd) => cmd.name);
+		// const _b = commandCategories
+		// 	.map((cmd) => cmd.commandGroups)
+		// 	.flat(5)
+		// 	.map((cmd) => cmd.name);
+		// console.log(diff(_a, _b));
+
 		if (!args.category || (args.category && !fields.includes(args.category))) args.category = categoryMap.search;
 
 		const embeds: EmbedBuilder[] = [];

@@ -7,7 +7,8 @@ import {
 	ComponentType,
 	EmbedBuilder,
 	Guild,
-	StringSelectMenuBuilder
+	StringSelectMenuBuilder,
+	escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
 import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
@@ -591,7 +592,7 @@ export const welcomeEmbedMaker = () => {
 	return embed;
 };
 
-export const getLegendLeaderboardEmbedMaker = async ({
+export const getLegendRankingEmbedMaker = async ({
 	clanTags,
 	guild,
 	sort_by,
@@ -651,12 +652,59 @@ export const getLegendLeaderboardEmbedMaker = async ({
 			legends
 				.slice(0, 50)
 				.map((player, idx) => {
-					const name = Util.escapeBackTick(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
+					const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
 					return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
 				})
 				.join('\n')
 		);
 	}
+
+	return { embed, legends };
+};
+
+// TODO: Merge it with the getLegendRankingEmbedMaker
+export const getBbLegendRankingEmbedMaker = async ({
+	clanTags,
+	guild,
+	limit
+}: {
+	guild: Guild;
+	clanTags?: string[];
+	sort_by?: string;
+	limit?: number;
+}) => {
+	const client = container.resolve(Client);
+	clanTags ??= (await client.storage.find(guild.id)).map((clan) => clan.tag);
+
+	const __clans = await client.redis.getClans(clanTags);
+	const memberTags = __clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
+	const players = await client.redis.getPlayers(memberTags);
+
+	let legends = players
+		// @ts-expect-error lol
+		.filter((player) => player.versusTrophies)
+		// @ts-expect-error lol
+		.map((player) => ({ ...player, trophies: player.versusTrophies ?? 0 }));
+
+	if (limit) legends = legends.slice(0, limit);
+
+	const embed = new EmbedBuilder();
+	embed.setColor(client.embed(guild.id));
+	embed.setAuthor({
+		name: `${guild.name} Builder Base Leaderboard (${moment(Season.ID).format('MMM YYYY')})`,
+		iconURL: guild.iconURL()!
+	});
+	embed.setFooter({ text: 'Synced' });
+	embed.setTimestamp();
+	embed.setDescription(
+		legends
+			.slice(0, 50)
+			.map((player, idx) => {
+				const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
+				return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
+			})
+			.join('\n')
+	);
 
 	return { embed, legends };
 };

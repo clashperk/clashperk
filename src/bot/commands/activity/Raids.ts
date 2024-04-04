@@ -20,7 +20,7 @@ import { Season, Util } from '../../util/index.js';
 export default class CapitalRaidsCommand extends Command {
 	public constructor() {
 		super('capital-raids', {
-			category: 'none',
+			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			defer: true

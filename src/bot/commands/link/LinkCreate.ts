@@ -7,7 +7,7 @@ import { Collections, Settings } from '../../util/Constants.js';
 export default class LinkCreateCommand extends Command {
 	public constructor() {
 		super('link-create', {
-			category: 'none',
+			category: 'link',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			defer: true

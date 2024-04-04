@@ -21,7 +21,7 @@ import { Settings } from '@app/constants';
 export default class LinkListCommand extends Command {
 	public constructor() {
 		super('link-list', {
-			category: 'none',
+			category: 'link',
 			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
 			defer: true

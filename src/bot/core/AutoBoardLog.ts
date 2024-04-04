@@ -18,7 +18,7 @@ import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
 import { EMOJIS } from '../util/Emojis.js';
-import { getLegendLeaderboardEmbedMaker } from '../util/Helper.js';
+import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/Helper.js';
 import { Util } from '../util/index.js';
 import RPCHandler from './RPCHandler.js';
 
@@ -84,15 +84,13 @@ export default class AutoBoardLog {
 		return this.updateMessageId(cache, msg);
 	}
 
-	private _components() {
-		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Secondary)
-				.setCustomId(JSON.stringify({ cmd: 'legend-leaderboard' }))
-				.setEmoji(EMOJIS.REFRESH)
-		);
+	private _components(cache: Cache) {
+		const btn = new ButtonBuilder()
+			.setStyle(ButtonStyle.Secondary)
+			.setCustomId(JSON.stringify({ cmd: 'legend-leaderboard', is_bb: cache.boardType === 'bb-legend-leaderboard' }))
+			.setEmoji(EMOJIS.REFRESH);
 
-		return row;
+		return new ActionRowBuilder<ButtonBuilder>().addComponents(btn);
 	}
 
 	public updateWebhook(cache: Cache, webhook: WebhookClient, channelId: string) {
@@ -167,7 +165,7 @@ export default class AutoBoardLog {
 			return await this._send(cache, webhook, {
 				embeds: [embed],
 				threadId: cache.threadId,
-				components: [this._components()]
+				components: [this._components(cache)]
 			});
 		} catch (error: any) {
 			this.client.logger.error(`${error as string} {${cache._id.toString()}}`, { label: 'AutoBoardLog' });
@@ -199,7 +197,7 @@ export default class AutoBoardLog {
 			return await this._edit(cache, webhook, {
 				embeds: [embed],
 				threadId: cache.threadId,
-				components: [this._components()]
+				components: [this._components(cache)]
 			});
 		} catch (error: any) {
 			this.client.logger.error(`${error as string} {${cache.guildId.toString()}}`, { label: 'AutoBoardLog' });
@@ -211,7 +209,16 @@ export default class AutoBoardLog {
 		const guild = this.client.guilds.cache.get(cache.guildId);
 		if (!guild) return null;
 
-		const { embed } = await getLegendLeaderboardEmbedMaker({ guild, limit: cache.limit });
+		if (cache.boardType === 'bb-legend-leaderboard') {
+			const { embed, legends } = await getBbLegendRankingEmbedMaker({ guild, limit: cache.limit });
+			if (!legends.length) return null;
+
+			return embed;
+		}
+
+		const { embed, legends } = await getLegendRankingEmbedMaker({ guild, limit: cache.limit });
+		if (!legends.length) return null;
+
 		return embed;
 	}
 
@@ -220,6 +227,7 @@ export default class AutoBoardLog {
 			this.cached.set(data._id.toHexString(), {
 				_id: data._id.toHexString(),
 				guildId: data.guildId,
+				boardType: data.boardType,
 				color: data.color,
 				limit: data.limit,
 				channelId: data.channelId,
@@ -239,6 +247,7 @@ export default class AutoBoardLog {
 		this.cached.set(data._id.toHexString(), {
 			_id: data._id.toHexString(),
 			guildId: data.guildId,
+			boardType: data.boardType,
 			color: data.color,
 			limit: data.limit,
 			channelId: data.channelId,
@@ -293,6 +302,7 @@ export default class AutoBoardLog {
 interface Cache {
 	_id: string;
 	guildId: Snowflake;
+	boardType: string;
 	channelId: Snowflake;
 	messageId?: Snowflake;
 	threadId?: string;

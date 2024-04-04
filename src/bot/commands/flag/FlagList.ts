@@ -19,7 +19,7 @@ import { hexToNanoId } from '../../util/Helper.js';
 export default class FlagListCommand extends Command {
 	public constructor() {
 		super('flag-list', {
-			category: 'none',
+			category: 'flag',
 			channel: 'guild',
 			defer: true
 		});

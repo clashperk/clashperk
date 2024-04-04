@@ -10,7 +10,7 @@ import { Util } from '../../util/index.js';
 export default class CapitalContributionCommand extends Command {
 	public constructor() {
 		super('capital-contribution', {
-			category: 'none',
+			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			defer: true

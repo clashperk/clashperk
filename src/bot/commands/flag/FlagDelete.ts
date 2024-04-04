@@ -8,7 +8,7 @@ import { hexToNanoId } from '../../util/Helper.js';
 export default class FlagDeleteCommand extends Command {
 	public constructor() {
 		super('flag-delete', {
-			category: 'none',
+			category: 'flag',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			defer: true,

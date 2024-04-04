@@ -3095,7 +3095,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'enable_auto_updating',
 						description: 'Enable auto updating (every 30-60 mins)',
-						type: ApplicationCommandOptionType.Boolean
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Legend Trophies',
+								value: 'legend-leaderboard'
+							},
+							{
+								name: 'Builder Trophies (Experimental)',
+								value: 'bb-legend-leaderboard'
+							}
+						]
 					}
 				]
 			}

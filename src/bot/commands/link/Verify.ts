@@ -7,7 +7,7 @@ import { EMOJIS } from '../../util/Emojis.js';
 export default class VerifyPlayerCommand extends Command {
 	public constructor() {
 		super('verify', {
-			category: 'profile',
+			category: 'link',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			defer: true,

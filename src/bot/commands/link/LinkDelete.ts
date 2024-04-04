@@ -6,7 +6,7 @@ import { Collections, Settings } from '../../util/Constants.js';
 export default class LinkDeleteCommand extends Command {
 	public constructor() {
 		super('link-delete', {
-			category: 'none',
+			category: 'link',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			defer: true

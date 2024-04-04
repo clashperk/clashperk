@@ -7,7 +7,7 @@ import { Collections, Settings } from '../../util/Constants.js';
 export default class FlagCreateCommand extends Command {
 	public constructor() {
 		super('flag-create', {
-			category: 'none',
+			category: 'flag',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			defer: true,

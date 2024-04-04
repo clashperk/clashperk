@@ -11,7 +11,7 @@ import {
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { EMOJIS } from '../../util/Emojis.js';
-import { getExportComponents, getLegendLeaderboardEmbedMaker } from '../../util/Helper.js';
+import { getBbLegendRankingEmbedMaker, getExportComponents, getLegendRankingEmbedMaker } from '../../util/Helper.js';
 
 export default class LegendLeaderboardCommand extends Command {
 	public constructor() {
@@ -32,7 +32,8 @@ export default class LegendLeaderboardCommand extends Command {
 			export?: boolean;
 			limit?: number;
 			export_disabled?: boolean;
-			enable_auto_updating?: boolean;
+			is_bb?: boolean;
+			enable_auto_updating?: string;
 		}
 	) {
 		const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
@@ -44,25 +45,32 @@ export default class LegendLeaderboardCommand extends Command {
 			if (seasonEndTime !== messageSentSeasonTime) return interaction.editReply({ components: [] });
 		}
 
-		const { embed, legends } = await getLegendLeaderboardEmbedMaker({
-			guild: interaction.guild,
-			sort_by: args.sort_by,
-			limit: args.limit,
-			clanTags: clans.map((clan) => clan.tag)
-		});
+		const { embed, legends } = args.is_bb
+			? await getBbLegendRankingEmbedMaker({
+					guild: interaction.guild,
+					sort_by: args.sort_by,
+					limit: args.limit,
+					clanTags: clans.map((clan) => clan.tag)
+			  })
+			: await getLegendRankingEmbedMaker({
+					guild: interaction.guild,
+					sort_by: args.sort_by,
+					limit: args.limit,
+					clanTags: clans.map((clan) => clan.tag)
+			  });
 
 		if (!legends.length) {
-			embed.setDescription('No players are in the Legend League');
+			embed.setDescription(`No players are in the ${args.is_bb ? 'Legend League' : 'Leaderboard'}`);
 		}
 
 		if (legends.length && args.enable_auto_updating && this.client.util.isManager(interaction.member)) {
 			await this.client.storage.makeAutoBoard({
 				channelId: interaction.channel!.id,
-				boardType: this.id,
+				boardType: args.enable_auto_updating,
 				guild: interaction.guild,
 				props: { limit: args.limit }
 			});
-			return interaction.editReply('Successfully enabled auto updating Legend Leaderboard.');
+			return interaction.editReply('Successfully enabled auto updating Leaderboard.');
 		}
 
 		const payload = {
@@ -80,13 +88,17 @@ export default class LegendLeaderboardCommand extends Command {
 		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
-			new ButtonBuilder()
-				.setEmoji(EMOJIS.EXPORT)
-				.setStyle(ButtonStyle.Secondary)
-				.setCustomId(customIds.export)
-				.setDisabled(Boolean(args.export_disabled))
+			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh)
 		);
+		if (!args.is_bb) {
+			row.addComponents(
+				new ButtonBuilder()
+					.setEmoji(EMOJIS.EXPORT)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId(customIds.export)
+					.setDisabled(Boolean(args.export_disabled))
+			);
+		}
 
 		const sortingRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
@@ -118,7 +130,7 @@ export default class LegendLeaderboardCommand extends Command {
 			await interaction.editReply({ embeds: [embed], components: [row, sortingRow], message: interaction.message.id });
 			await this.export(interaction, legends, clans);
 		} else {
-			await interaction.editReply({ embeds: [embed], components: [row, sortingRow] });
+			await interaction.editReply({ embeds: [embed], components: args.is_bb ? [row] : [row, sortingRow] });
 		}
 	}
 
