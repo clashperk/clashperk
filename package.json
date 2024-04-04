@@ -38,6 +38,7 @@
 		"googleapis": "^105.0.0",
 		"i18next": "^21.6.13",
 		"jsonwebtoken": "^9.0.0",
+		"kafkajs": "^2.2.4",
 		"mixpanel": "^0.17.0",
 		"moment": "^2.29.1",
 		"moment-duration-format": "^2.3.2",

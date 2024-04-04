@@ -108,8 +108,7 @@ export class RolesManager {
 			prev[curr.tag] ??= {
 				roles,
 				warRoleId: curr.warRole,
-				alias: curr.alias ?? null,
-				verifiedOnly: Boolean(curr.secureRole)
+				alias: curr.alias ?? null
 			} as GuildRolesDto['clanRoles'][string];
 			return prev;
 		}, {});
@@ -193,7 +192,7 @@ export class RolesManager {
 		for (const player of players) {
 			for (const clanTag in rolesMap.clanRoles) {
 				const targetClan = rolesMap.clanRoles[clanTag];
-				if (player.warClanTag === clanTag && targetClan.warRoleId) {
+				if (player.warClanTags.includes(clanTag) && targetClan.warRoleId) {
 					rolesToInclude.push(targetClan.warRoleId);
 				}
 
@@ -372,14 +371,17 @@ export class RolesManager {
 
 	private async getWarRolesMap(clanTags: string[]) {
 		const result = await Promise.all(clanTags.map((clanTag) => this.client.http.getCurrentWars(clanTag)));
-		const membersMap: Record<string, string> = {};
+		const membersMap: Record<string, string[]> = {};
 
 		for (const war of result.flat()) {
 			if (war.state === 'notInWar') continue;
 
 			for (const member of war.clan.members) {
 				const inWar = ['preparation', 'inWar'].includes(war.state);
-				if (inWar) membersMap[member.tag] = war.clan.tag;
+				if (!inWar) continue;
+
+				membersMap[member.tag] ??= [];
+				membersMap[member.tag].push(war.clan.tag);
 			}
 		}
 
@@ -454,7 +456,7 @@ export class RolesManager {
 	}: {
 		member: GuildMember;
 		rolesMap: GuildRolesDto;
-		playersInWarMap: Record<string, string>;
+		playersInWarMap: Record<string, string[]>;
 		players: (APIPlayer & { verified: boolean })[];
 	}) {
 		const playerList = players.map(
@@ -468,7 +470,7 @@ export class RolesManager {
 					clanName: player.clan?.name ?? null,
 					clanTag: player.clan?.tag ?? null,
 					isVerified: player.verified,
-					warClanTag: playersInWarMap[player.tag]
+					warClanTags: playersInWarMap[player.tag] ?? []
 				}) satisfies PlayerRolesInput
 		);
 
@@ -629,7 +631,7 @@ interface PlayerRolesInput {
 	clanRole: string | null;
 	clanTag: string | null;
 	clanName: string | null;
-	warClanTag: string | null;
+	warClanTags: string[];
 }
 
 interface GuildRolesDto {
@@ -639,7 +641,6 @@ interface GuildRolesDto {
 	clanRoles: {
 		[clanTag: string]: {
 			roles: { [clanRole: string]: string };
-			verifiedOnly: boolean;
 			warRoleId: string;
 			alias: string | null;
 		};
