@@ -1,5 +1,5 @@
-import { Collection, Db } from 'mongodb';
 import { Guild } from 'discord.js';
+import { Collection, Db } from 'mongodb';
 import { Collections, Settings as SettingsEnum } from '../util/Constants.js';
 
 export default class SettingsProvider {
@@ -9,22 +9,21 @@ export default class SettingsProvider {
 	public constructor(db: Db) {
 		this.db = db.collection(Collections.SETTINGS);
 
-		this.db
-			.watch(
-				[
-					{
-						$match: {
-							operationType: { $in: ['insert', 'update', 'delete'] }
-						}
+		const watchStream = this.db.watch(
+			[
+				{
+					$match: {
+						operationType: { $in: ['insert', 'update', 'delete'] }
 					}
-				],
-				{ fullDocument: 'updateLookup', maxTimeMS: 500, maxAwaitTimeMS: 500 }
-			)
-			.on('change', (change) => {
-				if (change.operationType === 'insert' || change.operationType === 'update') {
-					this.settings.set(change.fullDocument!.guildId, change.fullDocument);
 				}
-			});
+			],
+			{ fullDocument: 'updateLookup' }
+		);
+		watchStream.on('change', (change) => {
+			if (change.operationType === 'insert' || change.operationType === 'update') {
+				this.settings.set(change.fullDocument!.guildId, change.fullDocument);
+			}
+		});
 	}
 
 	public async init() {

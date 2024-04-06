@@ -26,22 +26,18 @@ export default class Patrons {
 
 	public constructor(private readonly client: Client) {
 		this.collection = this.client.db.collection(Collections.PATRONS);
-		this.collection
-			.watch(
-				[
-					{
-						$match: {
-							operationType: { $in: ['insert', 'update', 'delete'] }
-						}
-					}
-				],
-				{ maxTimeMS: 500, maxAwaitTimeMS: 500 }
-			)
-			.on('change', async (change) => {
-				if (['update', 'insert'].includes(change.operationType)) {
-					await this.refresh();
+		const watchStream = this.collection.watch([
+			{
+				$match: {
+					operationType: { $in: ['insert', 'update', 'delete'] }
 				}
-			});
+			}
+		]);
+		watchStream.on('change', async (change) => {
+			if (['update', 'insert'].includes(change.operationType)) {
+				await this.refresh();
+			}
+		});
 	}
 
 	public async init() {

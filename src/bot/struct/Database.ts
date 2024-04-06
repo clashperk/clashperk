@@ -1,9 +1,12 @@
 import { Db, MongoClient } from 'mongodb';
 import { Collections } from '../util/Constants.js';
 
-class MongoDB extends MongoClient {
+export class MongoDbClient extends MongoClient {
+	public dbName = 'clashperk';
+
 	public constructor() {
 		super(process.env.MONGODB_URL!);
+		this.on('open', () => this.createIndex(this.db(this.dbName)));
 	}
 
 	public async connect() {
@@ -439,4 +442,4 @@ class MongoDB extends MongoClient {
 	}
 }
 
-export const Database = new MongoDB();
+export const mongoClient = new MongoDbClient();

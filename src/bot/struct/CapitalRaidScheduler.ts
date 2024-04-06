@@ -44,37 +44,37 @@ export default class CapitalRaidScheduler {
 	}
 
 	public async init() {
-		this.schedulers
-			.watch(
-				[
-					{
-						$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
-					}
-				],
-				{ fullDocument: 'updateLookup' }
-			)
-			.on('change', (change) => {
-				if (change.operationType === 'insert') {
-					const schedule = change.fullDocument;
-					if (schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
-						this.queue(schedule);
-					}
+		const watchStream = this.schedulers.watch(
+			[
+				{
+					$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
 				}
+			],
+			{ fullDocument: 'updateLookup' }
+		);
 
-				if (change.operationType === 'delete') {
-					const id: string = change.documentKey._id.toHexString();
-					if (this.queued.has(id)) this.clear(id);
+		watchStream.on('change', (change) => {
+			if (change.operationType === 'insert') {
+				const schedule = change.fullDocument;
+				if (schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
+					this.queue(schedule);
 				}
+			}
 
-				if (change.operationType === 'update') {
-					const id: string = change.documentKey._id.toHexString();
-					if (this.queued.has(id)) this.clear(id);
-					const schedule = change.fullDocument;
-					if (schedule && !schedule.triggered && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
-						this.queue(schedule);
-					}
+			if (change.operationType === 'delete') {
+				const id: string = change.documentKey._id.toHexString();
+				if (this.queued.has(id)) this.clear(id);
+			}
+
+			if (change.operationType === 'update') {
+				const id: string = change.documentKey._id.toHexString();
+				if (this.queued.has(id)) this.clear(id);
+				const schedule = change.fullDocument;
+				if (schedule && !schedule.triggered && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
+					this.queue(schedule);
 				}
-			});
+			}
+		});
 
 		await this._refresh();
 		setInterval(this._refresh.bind(this), this.refreshRate).unref();

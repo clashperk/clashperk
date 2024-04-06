@@ -1,11 +1,11 @@
-import 'moment-duration-format';
-import 'reflect-metadata';
 import { RewriteFrames } from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
 import { DiscordAPIError } from 'discord.js';
 import i18next from 'i18next';
+import 'moment-duration-format';
 import { fileURLToPath } from 'node:url';
 import { inspect } from 'node:util';
+import 'reflect-metadata';
 import { defaultOptions } from '../locales/index.js';
 import { Client } from './bot/struct/Client.js';
 import { Backend } from './bot/util/Backend.js';
@@ -53,5 +53,8 @@ process.on('unhandledRejection', (error: DiscordAPIError) => {
 	console.error(inspect(error, { depth: Infinity }));
 	Sentry.captureException(error);
 });
+
+process.once('SIGTERM', () => client.close());
+process.once('SIGINT', () => client.close());
 
 client.init(process.env.TOKEN!);

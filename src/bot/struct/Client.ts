@@ -16,7 +16,7 @@ import CapitalRaidScheduler from './CapitalRaidScheduler.js';
 import ClanGamesScheduler from './ClanGamesScheduler.js';
 import ClanWarScheduler from './ClanWarScheduler.js';
 import { CommandsMap } from './CommandsMap.js';
-import { Database } from './Database.js';
+import { mongoClient } from './Database.js';
 import { GuildEventsHandler } from './GuildEventsHandler.js';
 import Http from './Http.js';
 import Patrons from './Patrons.js';
@@ -181,9 +181,8 @@ export class Client extends Discord.Client {
 		await this.listenerHandler.register();
 		await this.inhibitorHandler.register();
 
-		await Database.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
-		this.db = Database.db('clashperk');
-		await Database.createIndex(this.db);
+		await mongoClient.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
+		this.db = mongoClient.db(mongoClient.dbName);
 
 		this.settings = new SettingsProvider(this.db);
 		await this.settings.init();
@@ -216,6 +215,18 @@ export class Client extends Discord.Client {
 
 		this.logger.debug('Connecting to the Gateway', { label: 'DISCORD' });
 		return this.login(token);
+	}
+
+	async close() {
+		try {
+			await this.subscriber.disconnect();
+			await this.publisher.disconnect();
+			await this.redis.disconnect();
+			await this.elastic.close();
+			await mongoClient.close(true);
+		} finally {
+			process.exit();
+		}
 	}
 }
 

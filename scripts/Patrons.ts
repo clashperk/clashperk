@@ -1,12 +1,12 @@
 import fetch from 'node-fetch';
 
-import { Database } from '../src/bot/struct/Database.js';
+import { mongoClient } from '../src/bot/struct/Database.js';
 import { Collections } from '../src/bot/util/Constants.js';
 import { Included, Member } from '../src/bot/struct/Patrons.js';
 
 (async () => {
-	await Database.connect().then(() => console.log('MongoDB Connected!'));
-	const collection = Database.db('clashperk').collection(Collections.PATRONS);
+	await mongoClient.connect().then(() => console.log('MongoDB Connected!'));
+	const collection = mongoClient.db('clashperk').collection(Collections.PATRONS);
 
 	const query = new URLSearchParams({
 		'page[size]': '1000',
@@ -45,5 +45,5 @@ import { Included, Member } from '../src/bot/struct/Patrons.js';
 		if (d && pledge?.attributes.patron_status === 'declined_patron') console.log(entry?.attributes.full_name, entry?.id);
 	});
 
-	return Database.close();
+	return mongoClient.close();
 })();
