@@ -188,8 +188,7 @@ export class Client extends Discord.Client {
 		await this.settings.init();
 
 		await this.redis.connection.connect();
-		await this.subscriber.connect();
-		await this.publisher.connect();
+		await Promise.all([this.subscriber.connect(), this.publisher.connect()]);
 
 		this.storage = new StorageHandler(this);
 		this.rpcHandler = new RPCHandler(this);
