@@ -326,14 +326,15 @@ export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { 
 		embed.setDescription(
 			[
 				'**Clan member activity scores (last 30d)**',
-				`\`\`\`\n\u200eTH  ${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
-					.map(
-						(m) =>
-							`${m.townHallLevel.padStart(2, ' ')}  ${m.count.toString().padStart(4, ' ')}  ${Math.floor(m.count / 30)
-								.toString()
-								.padStart(3, ' ')}  ${m.name}`
-					)
-					.join('\n')}`,
+				'```',
+				`TH  TOTAL AVG  ${padEnd('NAME', 25)}\u200f`,
+				members
+					.map((m) => {
+						const townHallLevel = padStart(m.townHallLevel, 2);
+						const count = padStart(Math.floor(m.count / 30), 3);
+						return `${townHallLevel}  ${padStart(m.count, 4)}  ${count}  ${m.name}`;
+					})
+					.join('\n'),
 				'```'
 			].join('\n')
 		);
@@ -341,15 +342,14 @@ export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { 
 		embed.setDescription(
 			[
 				`**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
-				`\`\`\`\n\u200eTH  LAST-ON 24H  NAME\n${members
-					.map(
-						(m) =>
-							`${m.townHallLevel.padStart(2, ' ')}  ${lastSeenTimestampFormat(m.lastSeen)}  ${padStart(
-								Math.min(m.count, 99),
-								2
-							)}  ${m.name}`
-					)
-					.join('\n')}`,
+				'```',
+				`TH  LAST-ON 24H  ${'NAME'.padEnd(20, ' ')}\u200f`,
+				members
+					.map((m) => {
+						const townHallLevel = padStart(m.townHallLevel, 2);
+						return `${townHallLevel}  ${lastSeenTimestampFormat(m.lastSeen)}  ${padStart(Math.min(m.count, 99), 2)}  ${m.name}`;
+					})
+					.join('\n'),
 				'```'
 			].join('\n')
 		);

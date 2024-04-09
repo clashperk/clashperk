@@ -12,6 +12,7 @@ import {
 	User
 } from 'discord.js';
 import { cluster } from 'radash';
+import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
 import { MembersCommandOptions } from '../../util/CommandOptions.js';
 import { Collections } from '../../util/Constants.js';
@@ -81,8 +82,9 @@ export default class ClanCommand extends Command {
 				}))
 			);
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
+		const clanRow = await getClanSwitchingMenu(interaction, this.createId({ cmd: this.id, string_key: 'tag' }), clan.tag);
 
-		return interaction.editReply({ embeds: [embed], components: [row, menuRow] });
+		return interaction.editReply({ embeds: [embed], components: clanRow ? [row, menuRow, clanRow] : [row, menuRow] });
 	}
 
 	private async embed(guild: Guild, clan: APIClan) {

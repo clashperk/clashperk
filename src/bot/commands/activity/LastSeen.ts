@@ -1,8 +1,9 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction, MessageType, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
+import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
-import { Command } from '../../lib/index.js';
 import { lastSeenEmbedMaker } from '../../util/Helper.js';
+import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 
 export default class LastSeenCommand extends Command {
 	public constructor() {
@@ -40,7 +41,7 @@ export default class LastSeenCommand extends Command {
 		}
 
 		const embed = await lastSeenEmbedMaker(clan, { color: this.client.embed(interaction), scoreView: args.score });
-		if (interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand) {
+		if (interaction.isCommand() || (interaction.isMessageComponent() && interaction.message.type === MessageType.ChatInputCommand)) {
 			embed.setFooter({ text: embed.data.footer!.text, iconURL: interaction.user.displayAvatarURL() });
 		}
 
@@ -58,6 +59,13 @@ export default class LastSeenCommand extends Command {
 					.setLabel(args.score ? 'Last Seen' : 'Scoreboard')
 			);
 
-		return interaction.editReply({ embeds: [embed], components: [row], content: null });
+		const clanRow = await getClanSwitchingMenu(
+			interaction,
+			this.createId({ cmd: this.id, score: args.score, string_key: 'tag' }),
+			clan.tag
+		);
+
+		const components = clanRow ? [row, clanRow] : [row];
+		return interaction.editReply({ embeds: [embed], components, content: null });
 	}
 }

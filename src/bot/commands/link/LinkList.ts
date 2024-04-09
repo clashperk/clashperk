@@ -1,3 +1,5 @@
+import { Settings } from '@app/constants';
+import { Command } from '@lib/core';
 import { APIClan, APIClanMember } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
@@ -11,11 +13,10 @@ import {
 	StringSelectMenuBuilder,
 	User
 } from 'discord.js';
-import { Command } from '../../lib/index.js';
 import { MembersCommandOptions } from '../../util/CommandOptions.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
-import { Settings } from '@app/constants';
+import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -122,21 +123,9 @@ export default class LinkListCommand extends Command {
 			);
 		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-		const clans = await this.client.storage.find(interaction.guildId);
-		const clanMenu = new StringSelectMenuBuilder()
-			.setPlaceholder('Select an clan!')
-			.setCustomId(customIds.tag)
-			.addOptions(
-				clans.slice(0, 25).map((clan) => ({
-					label: `${clan.name} (${clan.tag})`,
-					value: clan.tag,
-					default: args.tag === clan.tag
-				}))
-			);
-		const clanRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(clanMenu);
-
+		const clanRow = await getClanSwitchingMenu(interaction, customIds.tag, clan.tag);
 		const components = args.with_options ? [row, menuRow] : [row];
-		if (clans.length && clans.length <= 25) components.push(clanRow);
+		if (clanRow) components.push(clanRow);
 
 		return interaction.editReply({ embeds: [embed], components });
 	}

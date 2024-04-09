@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, parseEmoji } from 'discord.js';
+import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
 import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/Emojis.js';
 
@@ -54,6 +55,8 @@ export default class CompoCommand extends Command {
 			new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh).setStyle(ButtonStyle.Secondary)
 		);
 
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		const clanRow = await getClanSwitchingMenu(interaction, this.createId({ cmd: this.id, string_key: 'tag' }), clan.tag);
+
+		return interaction.editReply({ embeds: [embed], components: clanRow ? [row, clanRow] : [row] });
 	}
 }

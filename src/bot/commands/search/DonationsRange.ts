@@ -1,8 +1,9 @@
 import { CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
-import { Season, Util } from '../../util/index.js';
 import { Collections } from '../../util/Constants.js';
+import { padStart } from '../../util/Helper.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class DonationsCommand extends Command {
 	public constructor() {
@@ -130,8 +131,8 @@ export default class DonationsCommand extends Command {
 					`${time(moment(gte).toDate())} - ${time(moment(lte).toDate())}`,
 					'',
 					...result.map((player) => {
-						const don = this.donation(player.donated, 5);
-						const rec = this.donation(player.received, 5);
+						const don = padStart(player.donated, 5);
+						const rec = padStart(player.received, 5);
 						const name = escapeMarkdown(player.name);
 						return `\` ${don} ${rec} \` ${name}`;
 					})
@@ -143,14 +144,6 @@ export default class DonationsCommand extends Command {
 		embed.setTimestamp();
 
 		return interaction.editReply({ embeds: [embed] });
-	}
-
-	private padEnd(name: string) {
-		return name.replace(/\`/g, '\\');
-	}
-
-	private donation(num: number, space: number) {
-		return num.toString().padStart(space, ' ');
 	}
 }
 
