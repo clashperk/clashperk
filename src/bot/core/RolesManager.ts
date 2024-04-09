@@ -14,7 +14,7 @@ export const roles: { [key: string]: number } = {
 	leader: 4
 };
 
-const nicknameRoles: Record<string, string> = {
+const defaultRoleLabels: Record<string, string> = {
 	leader: 'Lead',
 	coLeader: 'Co-Lead',
 	admin: 'Eld',
@@ -526,6 +526,7 @@ export class RolesManager {
 		if (!format) return { action: NickActions.UNSET };
 
 		const nickname = this.getFormattedNickname(
+			member.guild.id,
 			{
 				name: player.name,
 				displayName: member.user.displayName,
@@ -568,6 +569,7 @@ export class RolesManager {
 	}
 
 	private getFormattedNickname(
+		guildId: string,
 		player: {
 			name: string;
 			townHallLevel: number;
@@ -579,11 +581,12 @@ export class RolesManager {
 		},
 		format: string
 	) {
+		const roleLabels = this.client.settings.get<Record<string, string>>(guildId, Settings.ROLE_REPLACEMENT_LABELS, {});
 		return format
 			.replace(/{NAME}|{PLAYER_NAME}/gi, player.name)
 			.replace(/{TH}|{TOWN_HALL}/gi, player.townHallLevel.toString())
 			.replace(/{TH_SMALL}|{TOWN_HALL_SMALL}/gi, this.getTownHallSuperScript(player.townHallLevel))
-			.replace(/{ROLE}|{CLAN_ROLE}/gi, player.role ? nicknameRoles[player.role] : '')
+			.replace(/{ROLE}|{CLAN_ROLE}/gi, player.role ? roleLabels[player.role] || defaultRoleLabels[player.role] : '')
 			.replace(/{ALIAS}|{CLAN_ALIAS}/gi, player.alias ?? '')
 			.replace(/{CLAN}|{CLAN_NAME}/gi, player.clan ?? '')
 			.replace(/{DISCORD}|{DISCORD_NAME}/gi, player.displayName)

@@ -1,8 +1,21 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	DiscordjsError,
+	DiscordjsErrorCodes,
+	EmbedBuilder,
+	ModalBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	escapeMarkdown
+} from 'discord.js';
 import { title } from 'radash';
 import { NicknamingAccountPreference } from '../../core/RolesManager.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 
 // {NAME} | {PLAYER_NAME}
 // {TH} | {TOWN_HALL}
@@ -88,33 +101,146 @@ export default class NicknameConfigCommand extends Command {
 			NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT
 		);
 
+		const state = this.client.settings.get<Partial<{ leader: string; coLeader: string; admin: string; member: string }>>(
+			interaction.guild,
+			Settings.ROLE_REPLACEMENT_LABELS,
+			{}
+		);
+
 		const embed = new EmbedBuilder().setAuthor({ name: 'Server Nickname Settings' }).setColor(this.client.embed(interaction));
 		embed.addFields({ name: 'Family Nickname Format', value: `\`${familyFormat || 'None'}\`` });
 		embed.addFields({ name: 'Non-Family Nickname Format', value: `\`${nonFamilyFormat || 'None'}\`` });
 		embed.addFields({ name: 'Change Nicknames', value: `\`${enabledAuto ? 'Yes' : 'No'}\`` });
 		embed.addFields({ name: 'Account Preference', value: `\`${title(accountPreference)}\`` });
-		embed.addFields({
-			name: '\u200b',
-			value: [
-				'**Available Variables**',
-				`\`{NAME}\` or \`{PLAYER_NAME}\``,
-				`\`{TH}\` or \`{TOWN_HALL}\``,
-				`\`{TH_SMALL}\` or \`{TOWN_HALL_SMALL}\``,
-				`\`{ROLE}\` or \`{CLAN_ROLE}\``,
-				`\`{ALIAS}\` or \`{CLAN_ALIAS}\``,
-				`\`{CLAN}\` or \`{CLAN_NAME}\``,
-				`\`{DISCORD}\` or \`{DISCORD_NAME}\``,
-				`\`{USERNAME}\` or \`{DISCORD_USERNAME}\``,
-				'',
-				'**Example Formats**',
-				`\`{NAME} | {TH} | {ROLE}\``,
-				`\`{ROLE} | {TH} | {NAME}\``,
-				`\`{NAME} | {TH} | {ALIAS}\``,
-				'',
-				`Run ${this.client.commands.AUTOROLE_REFRESH} to refresh nicknames.`
-			].join('\n')
-		});
 
-		return interaction.editReply({ embeds: [embed] });
+		const applyRoleLabels = () => {
+			embed.addFields({
+				name: 'Role Labels',
+				value: [
+					`\`Leader    \`: ${escapeMarkdown(state.leader || 'Lead')}`,
+					`\`Co-Leader \`: ${escapeMarkdown(state.coLeader || 'Co-Lead')}`,
+					`\`Elder     \`: ${escapeMarkdown(state.admin || 'Eld')}`,
+					`\`Member    \`: ${escapeMarkdown(state.member || 'Mem')}`
+				].join('\n')
+			});
+
+			embed.addFields({
+				name: '\u200b\nAvailable Variables',
+				value: [
+					`\`{NAME}\` or \`{PLAYER_NAME}\``,
+					`\`{TH}\` or \`{TOWN_HALL}\``,
+					`\`{TH_SMALL}\` or \`{TOWN_HALL_SMALL}\``,
+					`\`{ROLE}\` or \`{CLAN_ROLE}\``,
+					`\`{ALIAS}\` or \`{CLAN_ALIAS}\``,
+					`\`{CLAN}\` or \`{CLAN_NAME}\``,
+					`\`{DISCORD}\` or \`{DISCORD_NAME}\``,
+					`\`{USERNAME}\` or \`{DISCORD_USERNAME}\``,
+					'',
+					'**Example Formats**',
+					`\`{NAME} | {TH} | {ROLE}\``,
+					`\`{ROLE} | {TH} | {NAME}\``,
+					`\`{NAME} | {TH} | {ALIAS}\``,
+					'',
+					`Run ${this.client.commands.AUTOROLE_REFRESH} to refresh nicknames.`
+				].join('\n')
+			});
+		};
+		applyRoleLabels();
+
+		const customIds = {
+			labels: this.client.uuid(),
+			leader: this.client.uuid(),
+			coLeader: this.client.uuid(),
+			admin: this.client.uuid(),
+			member: this.client.uuid()
+		};
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setLabel('Set Role Labels').setCustomId(customIds.labels).setStyle(ButtonStyle.Primary)
+		);
+
+		const message = await interaction.editReply({ embeds: [embed], components: [row] });
+
+		createInteractionCollector({
+			customIds,
+			interaction,
+			message,
+			onClick: async (action) => {
+				const modalCustomId = this.client.uuid(action.user.id);
+				const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Role Labels');
+				const leaderInput = new TextInputBuilder()
+					.setCustomId(customIds.leader)
+					.setLabel('Leader')
+					.setPlaceholder('Leader Role (Defaults to Lead)')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(5)
+					.setRequired(false);
+				if (state.leader) leaderInput.setValue(state.leader);
+
+				const coLeaderInput = new TextInputBuilder()
+					.setCustomId(customIds.coLeader)
+					.setLabel('Co-Leader')
+					.setPlaceholder('Co-Leader Role (Defaults to Co-Lead)')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(5)
+					.setRequired(false);
+				if (state.coLeader) coLeaderInput.setValue(state.coLeader);
+
+				const elderInput = new TextInputBuilder()
+					.setCustomId(customIds.admin)
+					.setLabel('Elder')
+					.setPlaceholder('Elder Role (Defaults to Eld)')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(5)
+					.setRequired(false);
+				if (state.admin) elderInput.setValue(state.admin);
+
+				const memberInput = new TextInputBuilder()
+					.setCustomId(customIds.member)
+					.setLabel('Member')
+					.setPlaceholder('Member Role (Defaults to Mem)')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(5)
+					.setRequired(false);
+				if (state.member) memberInput.setValue(state.member);
+
+				modal.addComponents(
+					new ActionRowBuilder<TextInputBuilder>().addComponents(leaderInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(coLeaderInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(elderInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(memberInput)
+				);
+
+				await action.showModal(modal);
+
+				try {
+					const modalSubmit = await action.awaitModalSubmit({
+						time: 10 * 60 * 1000,
+						filter: (action) => action.customId === modalCustomId
+					});
+					const leaderLabel = modalSubmit.fields.getTextInputValue(customIds.leader);
+					const coLeaderLabel = modalSubmit.fields.getTextInputValue(customIds.coLeader);
+					const adminLabel = modalSubmit.fields.getTextInputValue(customIds.admin);
+					const memberLabel = modalSubmit.fields.getTextInputValue(customIds.member);
+
+					state.leader = leaderLabel.trim();
+					state.coLeader = coLeaderLabel.trim();
+					state.admin = adminLabel.trim();
+					state.member = memberLabel.trim();
+
+					await modalSubmit.deferUpdate();
+
+					embed.spliceFields(-2, 2);
+					applyRoleLabels();
+
+					await this.client.settings.set(interaction.guild, Settings.ROLE_REPLACEMENT_LABELS, state);
+					await modalSubmit.editReply({ embeds: [embed], components: [row] });
+				} catch (e) {
+					if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+						throw e;
+					}
+				}
+			}
+		});
 	}
 }
