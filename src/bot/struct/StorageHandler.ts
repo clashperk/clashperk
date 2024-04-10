@@ -4,11 +4,12 @@ import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import fetch from 'node-fetch';
 import { createHash } from 'node:crypto';
+import { cluster } from 'radash';
 import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
-import { Collections, Flags, Settings, UnrankedWarLeagueId } from '../util/Constants.js';
+import { Collections, Flags, Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
 import { Client } from './Client.js';
@@ -816,7 +817,7 @@ export default class StorageHandler {
 		return createHash('md5').update(id).digest('hex');
 	}
 
-	private async pushToDB(_tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
+	private async pushToDB(clanTag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
 		const uid = this.md5(
 			`${season}-${clans
 				.map((clan) => clan.tag)
@@ -824,7 +825,10 @@ export default class StorageHandler {
 				.join('-')}`
 		);
 
-		const { leagues, clans: _clans } = await this.leagueIds(clans, season);
+		const result = await this.leagueIds(clanTag, season);
+		if (!result) return null;
+
+		const { leagues, clans: _clans } = result;
 		if (clans.length !== _clans.length) return null;
 
 		return this.client.db.collection(Collections.CWL_GROUPS).updateOne(
@@ -847,26 +851,71 @@ export default class StorageHandler {
 		);
 	}
 
-	private async leagueIds(_clans: { tag: string }[], seasonId: string) {
-		const clans = (await this.client.http._getClans(_clans)).map((data) => {
-			const leagueId = data.warLeague?.id ?? UnrankedWarLeagueId;
-			return { name: data.name, tag: data.tag, leagueId };
-		});
+	public async restoreLeagueGroup(clanTag: string, season: string) {
+		const result = await this.leagueIds(clanTag, season);
+		if (!result) return null;
 
-		const leagues = clans.reduce<Record<string, number>>((acc, curr) => {
-			acc[curr.tag] = curr.leagueId;
-			return acc;
-		}, {});
+		const { leagues, clans, warTags, rounds } = result;
 
-		for (const clan of clans) {
-			const res = await fetch(`https://api.clashperk.com/clans/${encodeURIComponent(clan.tag)}/cwl/seasons`);
+		const uid = this.md5(
+			`${season}-${clans
+				.map((clan) => clan.tag)
+				.sort((a, b) => a.localeCompare(b))
+				.join('-')}`
+		);
+
+		return this.client.db.collection(Collections.CWL_GROUPS).updateOne(
+			{ uid },
+			{
+				$setOnInsert: {
+					uid,
+					season,
+					id: await this.uuid(),
+					clans: clans.map((clan) => ({ name: clan.name, tag: clan.tag, leagueId: leagues[clan.tag] })),
+					leagues,
+					warTags,
+					rounds,
+					isDelayed: true,
+					createdAt: new Date()
+				}
+			},
+			{ upsert: true }
+		);
+	}
+
+	private async leagueIds(clanTag: string, seasonId: string) {
+		const group = await this.client.http.getDataFromArchive(clanTag, seasonId);
+		if (!group) return null;
+
+		const leagues: Record<string, number> = {};
+		for (const clan of group.clans) {
+			const res = await fetch(
+				`https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clan.tag)}/cwl/seasons`
+			);
 			const seasons = (await res.json()) as { leagueId: string; seasonId: string }[];
 			const season = seasons.find((season) => season.seasonId === seasonId);
 			if (!season?.leagueId) continue;
 			leagues[clan.tag] = Number(season.leagueId);
 		}
+		Object.assign(Object.fromEntries(group.clans.map((clan) => [clan.tag, group.leagueId])), leagues);
 
-		return { clans, leagues };
+		const rounds: { warTags: string[] }[] = [];
+		for (const _rounds of cluster(group.rounds, 4)) {
+			const warTags = _rounds.map((round) => round.warTag);
+			rounds.push({ warTags });
+		}
+
+		const warTags: Record<string, string[]> = {};
+		for (const round of group.rounds) {
+			warTags[round.clan.tag] ??= [];
+			warTags[round.opponent.tag] ??= [];
+
+			warTags[round.clan.tag].push(round.warTag);
+			warTags[round.opponent.tag].push(round.warTag);
+		}
+
+		const clans = group.clans.map((clan) => ({ name: clan.name, tag: clan.tag, leagueId: leagues[clan.tag] }));
+		return { clans, leagues, rounds, warTags, season: seasonId };
 	}
 
 	public async makeAutoBoard({

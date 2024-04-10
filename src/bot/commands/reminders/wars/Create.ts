@@ -17,6 +17,10 @@ import { Args, Command } from '../../../lib/index.js';
 import { Reminder } from '../../../struct/ClanWarScheduler.js';
 import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../../util/Constants.js';
 
+// 24h (Battle Day)
+// 47h (War Declared)
+// 0m (War Ended)
+
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
 		super('reminder-create', {
@@ -88,7 +92,7 @@ export default class ReminderCreateCommand extends Command {
 		if (dur < 15 * 60 * 1000 && dur !== 0) {
 			return interaction.editReply(this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale }));
 		}
-		if (dur > 45 * 60 * 60 * 1000) {
+		if (dur > 47 * 60 * 60 * 1000) {
 			return interaction.editReply(this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale }));
 		}
 		if (dur % (15 * 60 * 1000) !== 0) {
@@ -110,10 +114,12 @@ export default class ReminderCreateCommand extends Command {
 				.fill(0)
 				.map((_, i) => (i + 2).toString()),
 			smartSkip: false,
+			silent: [47 * 60 * 60 * 1000, 24 * 60 * 60 * 1000, 0].includes(dur),
 			roles: ['leader', 'coLeader', 'admin', 'member'],
 			warTypes: ['cwl', 'normal', 'friendly'],
 			clans: clans.map((clan) => clan.tag)
 		};
+		if (state.silent) state.remaining = ['silent'];
 
 		const mutate = (disable = false) => {
 			const warTypeRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -144,7 +150,7 @@ export default class ReminderCreateCommand extends Command {
 			const attackRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
-					.setMaxValues(3)
+					.setMaxValues(4)
 					.setCustomId(CUSTOM_ID.REMAINING)
 					.setOptions([
 						{
@@ -161,9 +167,15 @@ export default class ReminderCreateCommand extends Command {
 						},
 						{
 							description: 'Skip reminder if the destruction is 100%',
-							label: 'Smart Skip',
+							label: 'Skip at 100%',
 							value: 'smartSkip',
-							default: state.smartSkip
+							default: state.remaining.includes('smartSkip')
+						},
+						{
+							description: 'Does not @ping any individuals, only drops the message',
+							label: 'Message Only (No Ping)',
+							value: 'silent',
+							default: state.remaining.includes('silent')
 						}
 					])
 					.setDisabled(disable)
@@ -223,7 +235,15 @@ export default class ReminderCreateCommand extends Command {
 				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 			);
 
-			return dur === 0 ? [warTypeRow, clanRolesRow, btnRow] : [warTypeRow, attackRow, townHallRow, clanRolesRow, btnRow];
+			if (dur === 0) {
+				return [warTypeRow, btnRow];
+			}
+
+			if (state.silent) {
+				return [warTypeRow, attackRow, btnRow];
+			}
+
+			return [warTypeRow, attackRow, townHallRow, clanRolesRow, btnRow];
 		};
 
 		const msg = await interaction.editReply({
@@ -233,7 +253,10 @@ export default class ReminderCreateCommand extends Command {
 				'',
 				escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')),
 				'',
-				`${args.message}`
+				`${args.message}`,
+				!interaction.options.resolved?.roles?.size && state.silent
+					? '\n*This reminder will not notify any individuals for the remaining attacks. \nPlease include some roles within the reminder message to receive notifications.*'
+					: ''
 			].join('\n'),
 			allowedMentions: { parse: [] }
 		});
@@ -250,8 +273,16 @@ export default class ReminderCreateCommand extends Command {
 			}
 
 			if (action.customId === CUSTOM_ID.REMAINING && action.isStringSelectMenu()) {
-				state.remaining = action.values.filter((v) => v !== 'smartSkip');
+				state.remaining = action.values.filter((v) => !['smartSkip', 'silent'].includes(v));
+
 				state.smartSkip = action.values.includes('smartSkip');
+				state.silent = action.values.includes('silent');
+
+				if (state.silent) {
+					state.remaining = ['silent'];
+				} else if (!state.remaining.some((x) => ['1', '2'].includes(x))) {
+					state.remaining = [...state.remaining, '1', '2'];
+				}
 				await action.update({ components: mutate() });
 			}
 
@@ -281,6 +312,7 @@ export default class ReminderCreateCommand extends Command {
 					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
 					clans: state.clans,
+					silent: state.silent,
 					smartSkip: state.smartSkip,
 					webhook: { id: webhook.id, token: webhook.token! },
 					warTypes: state.warTypes,

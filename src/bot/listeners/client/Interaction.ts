@@ -86,7 +86,36 @@ const preferences: Record<string, string[]> = {
 	'default': ['1h', '4h', '10h', '12h', '16h', '20h', '1d', '1d 6h', '2d', '3d', '4d', '5d', '5d 23h']
 };
 
-const getQuery = (query: string): QueryDslQueryContainer[] => {
+const getClanQuery = (query: string): QueryDslQueryContainer[] => {
+	return [
+		{
+			prefix: {
+				alias: {
+					value: `${query}`,
+					case_insensitive: true
+				}
+			}
+		},
+		{
+			prefix: {
+				name: {
+					value: `${query}`,
+					case_insensitive: true
+				}
+			}
+		},
+		{
+			wildcard: {
+				tag: {
+					value: `*${query}*`,
+					case_insensitive: true
+				}
+			}
+		}
+	];
+};
+
+const getPlayerQuery = (query: string): QueryDslQueryContainer[] => {
 	return [
 		{
 			prefix: {
@@ -464,7 +493,7 @@ export default class InteractionListener extends Listener {
 							query: {
 								bool: {
 									must: { term: { userId } },
-									should: getQuery(query),
+									should: getPlayerQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -474,7 +503,7 @@ export default class InteractionListener extends Listener {
 							query: {
 								bool: {
 									must: { term: { userId } },
-									should: getQuery(query),
+									should: getPlayerQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -483,7 +512,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								dis_max: {
-									queries: getQuery(query),
+									queries: getPlayerQuery(query),
 									tie_breaker: 1
 								}
 							}
@@ -557,7 +586,7 @@ export default class InteractionListener extends Listener {
 							query: {
 								bool: {
 									must: { term: { userId } },
-									should: getQuery(query),
+									should: getClanQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -567,7 +596,7 @@ export default class InteractionListener extends Listener {
 							query: {
 								bool: {
 									must: { term: { guildId } },
-									should: getQuery(query),
+									should: getClanQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -652,7 +681,7 @@ export default class InteractionListener extends Listener {
 							query: {
 								bool: {
 									must: { term: { userId } },
-									should: getQuery(query),
+									should: getClanQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -664,7 +693,7 @@ export default class InteractionListener extends Listener {
 							query: {
 								bool: {
 									must: { term: { guildId } },
-									should: getQuery(query),
+									should: getClanQuery(query),
 									minimum_should_match: 1
 								}
 							}
@@ -675,7 +704,7 @@ export default class InteractionListener extends Listener {
 							query: {
 								bool: {
 									must: { term: { userId } },
-									should: getQuery(query),
+									should: getClanQuery(query),
 									minimum_should_match: 1
 								}
 							}

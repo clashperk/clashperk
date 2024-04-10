@@ -238,13 +238,13 @@ export default class Http extends ClashOfClansClient {
 		} satisfies ClanWarLeagueGroupAggregated;
 	}
 
-	private async getDataFromArchive(clanTag: string, season: string, group?: ClanWarLeagueGroupsEntity) {
+	public async getDataFromArchive(clanTag: string, season: string, group?: ClanWarLeagueGroupsEntity) {
 		const res = await fetch(
 			`https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clanTag)}/cwl/seasons/${season}`
 		);
 		if (!res.ok) return null;
 
-		const data = (await res.json()) as unknown as ClanWarLeagueGroupAggregated;
+		const data = (await res.json()) as unknown as ClanWarLeagueGroupExtended;
 		data['leagues'] = group?.leagues ?? {};
 
 		return data;
@@ -355,4 +355,8 @@ export interface ClanWarLeagueGroupAggregated {
 	clans: { name: string; tag: string }[];
 	rounds: (APIClanWar & { warTag: string })[];
 	leagues: Record<string, number>;
+}
+
+export interface ClanWarLeagueGroupExtended extends ClanWarLeagueGroupAggregated {
+	leagueId: number;
 }

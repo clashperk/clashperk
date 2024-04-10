@@ -32,7 +32,6 @@ export default class CWLRosterCommand extends Command {
 			);
 		}
 
-		this.client.storage.pushWarTags(clan.tag, body);
 		return this.rounds(interaction, { body, clan, args });
 	}
 

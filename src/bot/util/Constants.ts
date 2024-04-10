@@ -168,7 +168,9 @@ export const enum Settings {
 	GUILD_BLACKLIST = 'guildBans',
 	EVENTS_CHANNEL = 'eventsChannel',
 	TOWN_HALL_ROLES = 'townHallRoles',
+	BUILDER_HALL_ROLES = 'builderHallRoles',
 	LEAGUE_ROLES = 'leagueRoles',
+	BB_LEAGUE_ROLES = 'bbLeagueRoles',
 	ROLE_REFRESHED = 'roleRefreshed',
 	LINK_EMBEDS = 'linkEmbeds',
 	WEBHOOK_LIMIT = 'webhookLimit',
@@ -251,6 +253,7 @@ export const attackCounts: Record<string, string> = {
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
 export const MAX_TOWN_HALL_LEVEL = 16;
+export const MAX_BUILDER_HALL_LEVEL = 10;
 
 export const MAX_CLAN_SIZE = 50;
 
@@ -293,7 +296,54 @@ export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
 	29000022: 'legend'
 };
 
+export const BUILDER_BASE_LEAGUE_MAPS = {
+	44000000: 'wood',
+	44000001: 'wood',
+	44000002: 'wood',
+	44000003: 'wood',
+	44000004: 'wood',
+	44000005: 'clay',
+	44000006: 'clay',
+	44000007: 'clay',
+	44000008: 'clay',
+	44000009: 'clay',
+	44000010: 'stone',
+	44000011: 'stone',
+	44000012: 'stone',
+	44000013: 'stone',
+	44000014: 'stone',
+	44000015: 'copper',
+	44000016: 'copper',
+	44000017: 'copper',
+	44000018: 'copper',
+	44000019: 'copper',
+	44000020: 'brass',
+	44000021: 'brass',
+	44000022: 'brass',
+	44000023: 'iron',
+	44000024: 'iron',
+	44000025: 'iron',
+	44000026: 'steel',
+	44000027: 'steel',
+	44000028: 'steel',
+	44000029: 'titanium',
+	44000030: 'titanium',
+	44000031: 'titanium',
+	44000032: 'platinum',
+	44000033: 'platinum',
+	44000034: 'platinum',
+	44000035: 'emerald',
+	44000036: 'emerald',
+	44000037: 'emerald',
+	44000038: 'ruby',
+	44000039: 'ruby',
+	44000040: 'ruby',
+	44000041: 'diamond'
+};
+
 export const PLAYER_LEAGUE_NAMES = Array.from(new Set(Object.values(PLAYER_LEAGUE_MAPS)));
+
+export const BUILDER_BASE_LEAGUE_NAMES = Array.from(new Set(Object.values(BUILDER_BASE_LEAGUE_MAPS)));
 
 export const locales: Record<string, string> = {
 	'en-US': 'English, US',

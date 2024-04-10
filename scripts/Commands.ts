@@ -3919,9 +3919,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Role
 			},
 			{
-				name: 'events_channel',
-				description: command.config.options.events_channel.description,
-				description_localizations: translation('command.config.options.events_channel.description'),
+				name: 'maintenance_notification_channel',
+				description: command.config.options.maintenance_notification_channel.description,
+				description_localizations: translation('command.config.options.maintenance_notification_channel.description'),
 				type: ApplicationCommandOptionType.String
 			},
 			{

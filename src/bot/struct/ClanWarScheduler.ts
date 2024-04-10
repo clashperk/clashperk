@@ -135,11 +135,13 @@ export default class ClanWarScheduler {
 		const members = clan.members
 			.filter((mem) => {
 				if (schedule.warTag && !mem.attacks?.length) return true;
+
+				if (!reminder.remaining) return true;
 				return reminder.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0));
 			})
-			.filter((mem) => reminder.townHalls.includes(mem.townhallLevel))
+			.filter((mem) => (reminder.townHalls ? reminder.townHalls.includes(mem.townhallLevel) : true))
 			.filter((mem) => {
-				if (reminder.roles.length === 4) return true;
+				if (!reminder.roles || reminder.roles.length === 4) return true;
 				const clanMember = clanMembers.find((m) => m.tag === mem.tag);
 				return clanMember && reminder.roles.includes(clanMember.role);
 			});
@@ -224,10 +226,13 @@ export default class ClanWarScheduler {
 		try {
 			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
 			if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_NOT_FOUND);
+
 			if (!this.client.channels.cache.has(reminder.channel))
 				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
+
 			const warType = schedule.warTag ? 'cwl' : schedule.isFriendly ? 'friendly' : 'normal';
-			if (!reminder.warTypes.includes(warType)) return await this.delete(schedule, ReminderDeleteReasons.INVALID_WAR_TYPE);
+			if (reminder.warTypes && !reminder.warTypes.includes(warType))
+				return await this.delete(schedule, ReminderDeleteReasons.INVALID_WAR_TYPE);
 
 			const { body: data, res } = schedule.warTag
 				? await this.client.http.getClanWarLeagueRound(schedule.warTag)
@@ -254,7 +259,7 @@ export default class ClanWarScheduler {
 			if (!guild) return await this.delete(schedule, ReminderDeleteReasons.GUILD_NOT_FOUND);
 
 			const text =
-				schedule.duration === 0
+				schedule.duration === 0 || reminder.silent
 					? this.warEndReminderText(reminder, schedule, data)
 					: await this.getReminderText(reminder, schedule, data, guild);
 			if (!text) return await this.delete(schedule, ReminderDeleteReasons.NO_RECIPIENT);
@@ -307,7 +312,7 @@ export default class ClanWarScheduler {
 				if (webhook) {
 					return webhook.send({
 						content,
-						allowedMentions: { parse: reminder.duration === 0 ? ['users', 'roles'] : ['users'] },
+						allowedMentions: { parse: reminder.duration === 0 || reminder.silent ? ['users', 'roles'] : ['users'] },
 						threadId: reminder.threadId
 					});
 				}
@@ -373,6 +378,7 @@ export interface Reminder {
 	townHalls: number[];
 	linkedOnly?: boolean;
 	smartSkip: boolean;
+	silent: boolean;
 	warTypes: string[];
 	clans: string[];
 	remaining: number[];

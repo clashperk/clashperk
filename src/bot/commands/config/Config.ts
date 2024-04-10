@@ -17,7 +17,7 @@ export default class ConfigCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		args: {
 			color_code?: string;
-			events_channel?: string;
+			maintenance_notification_channel?: string;
 			webhook_limit?: number;
 			manager_role?: Role;
 			roster_manager_role?: Role;
@@ -87,11 +87,11 @@ export default class ConfigCommand extends Command {
 			await this.client.settings.set(interaction.guild, Settings.USE_AUTO_ROLE, args.auto_update_roles);
 		}
 
-		if (args.events_channel) {
-			if (['reset', 'none'].includes(args.events_channel)) {
+		if (args.maintenance_notification_channel) {
+			if (['reset', 'none'].includes(args.maintenance_notification_channel)) {
 				await this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
-			} else if (/\d{17,19}/g.test(args.events_channel)) {
-				const channel = this.client.util.hasPermissions(args.events_channel.match(/\d{17,19}/g)!.at(0)!, [
+			} else if (/\d{17,19}/g.test(args.maintenance_notification_channel)) {
+				const channel = this.client.util.hasPermissions(args.maintenance_notification_channel.match(/\d{17,19}/g)!.at(0)!, [
 					'ManageWebhooks',
 					'ViewChannel'
 				]);
@@ -178,7 +178,7 @@ export default class ConfigCommand extends Command {
 					value: color ? `#${color.toString(16).toUpperCase()}` : 'None'
 				},
 				{
-					name: this.i18n('command.config.events_channel', { lng: interaction.locale }),
+					name: this.i18n('command.config.maintenance_notification_channel', { lng: interaction.locale }),
 					value: channel?.toString() ?? 'None'
 				}
 			]);

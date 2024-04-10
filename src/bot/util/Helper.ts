@@ -327,7 +327,7 @@ export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { 
 			[
 				'**Clan member activity scores (last 30d)**',
 				'```',
-				`TH  TOTAL AVG  ${padEnd('NAME', 25)}\u200f`,
+				`TH  TOTAL AVG  NAME`,
 				members
 					.map((m) => {
 						const townHallLevel = padStart(m.townHallLevel, 2);
@@ -343,7 +343,7 @@ export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { 
 			[
 				`**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
 				'```',
-				`TH  LAST-ON 24H  ${'NAME'.padEnd(20, ' ')}\u200f`,
+				`TH  LAST-ON 24H  NAME`,
 				members
 					.map((m) => {
 						const townHallLevel = padStart(m.townHallLevel, 2);
