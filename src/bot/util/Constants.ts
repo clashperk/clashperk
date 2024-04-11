@@ -263,11 +263,12 @@ export const LEGEND_LEAGUE_ID = 29000022;
 
 export const BIT_FIELD = new PermissionsBitField(17893773667409n).bitfield;
 
-export const getInviteLink = (id: string) => {
+export const getInviteLink = (id: string, guildId?: string, noPermissions = false) => {
 	const query = new URLSearchParams({
 		client_id: id,
 		scope: 'bot applications.commands',
-		permissions: BIT_FIELD.toString()
+		permissions: noPermissions ? '0' : BIT_FIELD.toString(),
+		...(guildId ? { guild_id: guildId } : {})
 	}).toString();
 	return `https://discord.com/api/oauth2/authorize?${query}`;
 };
