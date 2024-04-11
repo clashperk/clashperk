@@ -1,22 +1,21 @@
 import { Settings } from '@app/constants';
 import { Command } from '@lib/core';
-import { APIClan, APIClanMember } from 'clashofclans.js';
+import { APIClan } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
-	Collection,
 	CommandInteraction,
 	EmbedBuilder,
-	GuildMember,
 	StringSelectMenuBuilder,
 	User
 } from 'discord.js';
+import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { MembersCommandOptions } from '../../util/CommandOptions.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { padStart } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
-import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -75,14 +74,19 @@ export default class LinkListCommand extends Command {
 		const userIds = [...new Set(members.map((mem) => mem.userId))];
 		const guildMembers = await interaction.guild.members.fetch({ user: userIds });
 
-		// Players linked and on the guild.
-		const onDiscord = members.filter((mem) => guildMembers.has(mem.userId));
-		// Linked to discord but not on the guild.
-		const notInDiscord = members.filter((mem) => !guildMembers.has(mem.userId));
-		// Not linked to discord.
-		const notLinked = clan.memberList.filter(
-			(m) => !notInDiscord.some((en) => en.tag === m.tag) && !members.some((en) => en.tag === m.tag && guildMembers.has(en.userId))
-		);
+		const clanMembers = clan.memberList.map((member) => {
+			const link = members.find((mem) => mem.tag === member.tag);
+			const username = link ? guildMembers.get(link.userId)?.displayName.slice(0, 14) : member.tag;
+			return {
+				name: this.parseName(member.name),
+				tag: padStart(member.tag, 14),
+				isVerified: Boolean(link?.verified),
+				username: padStart(args.show_tags ? member.tag : username ?? member.tag, 14),
+				townHallLevel: member.townHallLevel,
+				isInServer: Boolean(link && guildMembers.has(link.userId)),
+				isLinked: !!link
+			};
+		});
 
 		const payload = {
 			cmd: this.id,
@@ -97,7 +101,7 @@ export default class LinkListCommand extends Command {
 			tag: this.createId({ ...payload, string_key: 'tag' })
 		};
 
-		const embed = this.getEmbed(guildMembers, clan, args.show_tags!, onDiscord, notLinked, notInDiscord);
+		const embed = this.getEmbed(clan, clanMembers);
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh))
 			.addComponents(
@@ -131,48 +135,43 @@ export default class LinkListCommand extends Command {
 	}
 
 	private getEmbed(
-		guildMembers: Collection<string, GuildMember>,
 		clan: APIClan,
-		showTag: boolean,
-		onDiscord: { tag: string; userId: string; verified: boolean }[],
-		notLinked: APIClanMember[],
-		notInDiscord: { name: string; tag: string; verified: boolean }[]
+		clanMembers: {
+			name: string;
+			tag: string;
+			username: string;
+			isVerified: boolean;
+			isLinked: boolean;
+			isInServer: boolean;
+			townHallLevel: number;
+		}[]
 	) {
+		const playersInServerList = clanMembers.filter((mem) => mem.isInServer && mem.isLinked).sort((a, b) => this.localeSort(a, b));
+		const playersNotInServerList = clanMembers.filter((mem) => !mem.isInServer && mem.isLinked).sort((a, b) => this.localeSort(a, b));
+		const playersNotLinkedList = clanMembers.filter((mem) => !mem.isLinked).sort((a, b) => this.localeSort(a, b));
+
 		const chunks = Util.splitMessage(
 			[
-				`**Players in the Server: ${onDiscord.length}**`,
-				onDiscord
-					.map((mem) => {
-						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
-						const user = showTag
-							? member.tag.padStart(12, ' ')
-							: guildMembers.get(mem.userId)!.displayName.slice(0, 12).padStart(12, ' ');
-						return { name: this.parseName(member.name), user, verified: mem.verified };
-					})
-					.sort((a, b) => this.localeSort(a, b))
-					.map(({ name, user, verified }) => {
-						return `${verified ? EMOJIS.VERIFIED : EMOJIS.OK} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
+				`**Players in the Server: ${playersInServerList.length}**`,
+				playersInServerList
+					.map(({ name, username, isVerified, townHallLevel }) => {
+						const label = isVerified ? EMOJIS.VERIFIED : EMOJIS.OK;
+						return `${label} \`\u200e${padStart(townHallLevel, 2)} ${name} ${username} \u200f\``;
 					})
 					.join('\n'),
-				notInDiscord.length ? `\n**Players not in the Server: ${notInDiscord.length}**` : '',
-				notInDiscord
-					.map((mem) => {
-						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
-						const user: string = member.tag.padStart(12, ' ');
-						return { name: this.parseName(member.name), user, verified: mem.verified };
-					})
-					.sort((a, b) => this.localeSort(a, b))
-					.map(({ name, user, verified }) => {
-						return `${verified ? EMOJIS.VERIFIED : EMOJIS.OK} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
+				playersNotInServerList.length ? `\n**Players not in the Server: ${playersNotInServerList.length}**` : '',
+				playersNotInServerList
+					.map(({ name, username, isVerified, townHallLevel }) => {
+						const label = isVerified ? EMOJIS.VERIFIED : EMOJIS.OK;
+						return `${label} \`\u200e${padStart(townHallLevel, 2)} ${name} ${username} \u200f\``;
 					})
 					.join('\n'),
-				notLinked.length ? `\n**Players not Linked: ${notLinked.length}**` : '',
-				notLinked
-					.sort((a, b) => this.localeSort(a, b))
-					.map(
-						(mem) =>
-							`${EMOJIS.WRONG} \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(12, ' ')} \u200f\``
-					)
+				playersNotLinkedList.length ? `\n**Players not Linked: ${playersNotLinkedList.length}**` : '',
+				playersNotLinkedList
+					.map(({ name, username, townHallLevel }) => {
+						const label = EMOJIS.WRONG;
+						return `${label} \`\u200e${padStart(townHallLevel, 2)} ${name} ${username} \u200f\``;
+					})
 					.join('\n')
 			]
 				.filter((text) => text)
