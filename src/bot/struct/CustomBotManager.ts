@@ -159,13 +159,23 @@ export class CustomBotManager {
 		const hasInvited = emojiServers.every((id) => guildIds.includes(id));
 		if (!hasInvited) return;
 
-		await this._upgradeService(bot.applicationId);
-		this.client.logger.debug(`Custom bot "${bot.name}" was set to production.`, { label: 'CUSTOM-BOT' });
-
-		for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
 		await this.collection.updateOne({ applicationId: bot.applicationId }, { $set: { isLive: true } });
+		for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
 
-		await this._deployWebhook({ content: `Service Upgraded (${bot.applicationId})` });
+		await this._deployWebhook({ content: `Service Upgrading (${bot.applicationId})` });
+
+		try {
+			await this._upgradeService(bot.applicationId);
+			this.client.logger.debug(`Custom bot "${bot.name}" was set to production.`, { label: 'CUSTOM-BOT' });
+		} catch (error) {
+			captureException(error);
+
+			await this.collection.updateOne({ applicationId: bot.applicationId }, { $set: { isLive: false } });
+			for (const guildId of bot.guildIds) await this.client.settings.deleteCustomBot(guildId);
+			this.client.logger.error(`Custom bot "${bot.name}" was failed to set to production.`, { label: 'CUSTOM-BOT' });
+
+			await this._deployWebhook({ content: `Service Upgrading Failed (${bot.applicationId})` });
+		}
 	}
 
 	private async _deployWebhook(payload: WebhookMessageCreateOptions) {
