@@ -4,6 +4,7 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	ComponentType,
+	EmbedBuilder,
 	ModalBuilder,
 	StringSelectMenuBuilder,
 	TextInputBuilder,
@@ -61,11 +62,30 @@ export default class ReminderEditCommand extends Command {
 			townHalls: reminder.townHalls.map((townHall) => townHall.toString()),
 			smartSkip: Boolean(reminder.smartSkip),
 			roles: reminder.roles,
+			silent: reminder.silent || reminder.duration === 0,
 			warTypes: reminder.warTypes,
 			message: reminder.message
 		};
 
+		const dur = `${reminder.duration === 0 ? 'at the end' : `${this.getStatic(reminder.duration)} remaining`}`;
+
+		const embed = new EmbedBuilder();
 		const mutate = (disable = false) => {
+			embed.setDescription(
+				[
+					`**Edit War Reminder (${
+						reminder.duration === 0 ? 'at the end' : `${this.getStatic(reminder.duration)} remaining`
+					})** <#${reminder.channel}>`,
+
+					!interaction.options.resolved?.roles?.size && state.silent
+						? '\n*This reminder will not notify any individuals for the remaining attacks. \nPlease include some roles within the reminder message to receive notifications.*\n'
+						: '',
+					`${state.message}`
+				].join('\n')
+			);
+			embed.setFooter({
+				text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
+			});
 			const warTypeRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select War Types')
@@ -111,9 +131,15 @@ export default class ReminderEditCommand extends Command {
 						},
 						{
 							description: 'Skip reminder if the destruction is 100%',
-							label: 'Smart Skip',
+							label: 'Skip at 100%',
 							value: 'smartSkip',
 							default: state.smartSkip
+						},
+						{
+							description: 'Does not @ping any individuals, only drops the message',
+							label: 'Message Only (No Ping)',
+							value: 'silent',
+							default: state.silent
 						}
 					])
 					.setDisabled(disable)
@@ -174,7 +200,7 @@ export default class ReminderEditCommand extends Command {
 				.addComponents(
 					new ButtonBuilder()
 						.setCustomId(customIds.message)
-						.setLabel('Set Custom Message')
+						.setLabel('Edit Reminder Message')
 						.setStyle(ButtonStyle.Secondary)
 						.setDisabled(disable)
 				)
@@ -182,12 +208,17 @@ export default class ReminderEditCommand extends Command {
 					new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 				);
 
-			return reminder.duration === 0
-				? [warTypeRow, clanRolesRow, btnRow]
-				: [warTypeRow, attackRow, townHallRow, clanRolesRow, btnRow];
+			if (reminder.duration === 0) {
+				return [warTypeRow, btnRow];
+			}
+
+			if (state.silent) {
+				return [warTypeRow, attackRow, btnRow];
+			}
+
+			return [warTypeRow, attackRow, townHallRow, clanRolesRow, btnRow];
 		};
 
-		const dur = `${reminder.duration === 0 ? 'at the end' : `${this.getStatic(reminder.duration)} remaining`}`;
 		const msg = await interaction.editReply({
 			components: mutate(),
 			content: [
@@ -212,9 +243,17 @@ export default class ReminderEditCommand extends Command {
 			}
 
 			if (action.customId === customIds.remaining && action.isStringSelectMenu()) {
-				state.remaining = action.values.filter((v) => v !== 'smartSkip');
+				state.remaining = action.values.filter((v) => !['smartSkip', 'silent'].includes(v));
 				state.smartSkip = action.values.includes('smartSkip');
-				await action.update({ components: mutate() });
+				state.silent = action.values.includes('silent');
+
+				if (state.silent) {
+					state.remaining = [];
+					state.smartSkip = false;
+				} else if (!state.remaining.some((x) => ['1', '2'].includes(x))) {
+					state.remaining = ['1', '2'];
+				}
+				await action.update({ components: mutate(), embeds: [embed] });
 			}
 
 			if (action.customId === customIds.townHalls && action.isStringSelectMenu()) {
@@ -234,7 +273,7 @@ export default class ReminderEditCommand extends Command {
 					.setCustomId(customIds.modalMessage)
 					.setLabel('Reminder Message')
 					.setMinLength(1)
-					.setMaxLength(1000)
+					.setMaxLength(1800)
 					.setRequired(true)
 					.setValue(reminder.message)
 					.setStyle(TextInputStyle.Paragraph);
@@ -250,18 +289,7 @@ export default class ReminderEditCommand extends Command {
 						.then(async (modalSubmit) => {
 							state.message = modalSubmit.fields.getTextInputValue(customIds.modalMessage);
 							await modalSubmit.deferUpdate();
-							await modalSubmit.editReply({
-								components: mutate(),
-								content: [
-									`**Edit War Reminder (${
-										reminder.duration === 0 ? 'at the end' : `${this.getStatic(reminder.duration)} remaining`
-									})** <#${reminder.channel}>`,
-									'',
-									clans.map((clan) => escapeMarkdown(clan.name)).join(', '),
-									'',
-									`${state.message}`
-								].join('\n')
-							});
+							await modalSubmit.editReply({ components: mutate(), embeds: [embed] });
 						});
 				} catch {}
 			}
@@ -277,6 +305,7 @@ export default class ReminderEditCommand extends Command {
 							roles: state.roles,
 							warTypes: state.warTypes,
 							smartSkip: state.smartSkip,
+							silent: state.silent,
 							message: state.message
 						}
 					}

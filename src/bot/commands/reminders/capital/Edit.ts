@@ -4,11 +4,11 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	ComponentType,
+	EmbedBuilder,
 	ModalBuilder,
 	StringSelectMenuBuilder,
 	TextInputBuilder,
-	TextInputStyle,
-	escapeMarkdown
+	TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../../lib/index.js';
@@ -65,7 +65,19 @@ export default class ReminderCreateCommand extends Command {
 			minThreshold: reminder.minThreshold
 		};
 
+		const embed = new EmbedBuilder();
 		const mutate = (disable = false) => {
+			embed.setDescription(
+				[
+					`**Edit Raid Attack Reminder (${this.getStatic(reminder.duration)} remaining)** <#${reminder.channel}>`,
+					'',
+					`${reminder.message}`
+				].join('\n')
+			);
+			embed.setFooter({
+				text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
+			});
+
 			const remAttackRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Min. Attacks Threshold')
@@ -152,13 +164,7 @@ export default class ReminderCreateCommand extends Command {
 		const clans = await this.client.storage.search(interaction.guildId, reminder.clans);
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: [
-				`**Edit Raid Attack Reminder (${this.getStatic(reminder.duration)} remaining)** <#${reminder.channel}>`,
-				'',
-				clans.map((clan) => escapeMarkdown(clan.name)).join(', '),
-				'',
-				`${reminder.message}`
-			].join('\n'),
+			embeds: [embed],
 			allowedMentions: { parse: [] }
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -169,12 +175,12 @@ export default class ReminderCreateCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === customIds.remaining && action.isStringSelectMenu()) {
 				state.remaining = action.values;
-				await action.update({ components: mutate() });
+				await action.update({ components: mutate(), embeds: [embed] });
 			}
 
 			if (action.customId === customIds.minThreshold && action.isStringSelectMenu()) {
 				state.minThreshold = Number(action.values.at(0));
-				await action.update({ components: mutate() });
+				await action.update({ components: mutate(), embeds: [embed] });
 			}
 
 			if (action.customId === customIds.roles && action.isStringSelectMenu()) {
@@ -212,13 +218,7 @@ export default class ReminderCreateCommand extends Command {
 							await modalSubmit.deferUpdate();
 							await modalSubmit.editReply({
 								components: mutate(),
-								content: [
-									`**Edit Raid Attack Reminder (${this.getStatic(reminder.duration)})** <#${reminder.channel}>`,
-									'',
-									`${state.message}`,
-									'',
-									escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', '))
-								].join('\n')
+								embeds: [embed]
 							});
 						});
 				} catch {}

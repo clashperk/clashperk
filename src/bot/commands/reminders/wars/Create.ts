@@ -5,10 +5,13 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	ComponentType,
+	EmbedBuilder,
+	ModalBuilder,
 	PermissionsString,
 	StringSelectMenuBuilder,
 	TextChannel,
-	escapeMarkdown
+	TextInputBuilder,
+	TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
@@ -99,13 +102,15 @@ export default class ReminderCreateCommand extends Command {
 			return interaction.editReply(this.i18n('command.reminders.create.duration_order', { lng: interaction.locale }));
 		}
 
-		const CUSTOM_ID = {
-			ROLES: this.client.uuid(interaction.user.id),
-			TOWN_HALLS: this.client.uuid(interaction.user.id),
-			REMAINING: this.client.uuid(interaction.user.id),
-			CLANS: this.client.uuid(interaction.user.id),
-			SAVE: this.client.uuid(interaction.user.id),
-			WAR_TYPE: this.client.uuid(interaction.user.id)
+		const customIds = {
+			roles: this.client.uuid(interaction.user.id),
+			townHalls: this.client.uuid(interaction.user.id),
+			remaining: this.client.uuid(interaction.user.id),
+			clans: this.client.uuid(interaction.user.id),
+			save: this.client.uuid(interaction.user.id),
+			warType: this.client.uuid(interaction.user.id),
+			message: this.client.uuid(interaction.user.id),
+			modalMessage: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
@@ -117,16 +122,32 @@ export default class ReminderCreateCommand extends Command {
 			silent: [47 * 60 * 60 * 1000, 24 * 60 * 60 * 1000, 0].includes(dur),
 			roles: ['leader', 'coLeader', 'admin', 'member'],
 			warTypes: ['cwl', 'normal', 'friendly'],
-			clans: clans.map((clan) => clan.tag)
+			clans: clans.map((clan) => clan.tag),
+			message: args.message
 		};
-		if (state.silent) state.remaining = ['silent'];
+		if (state.silent) state.remaining = [];
 
+		const embed = new EmbedBuilder();
 		const mutate = (disable = false) => {
+			embed.setDescription(
+				[
+					`**Setup War Reminder (${dur === 0 ? 'at the end' : `${this.getStatic(dur)} remaining`})** <#${args.channel.id}>`,
+
+					!interaction.options.resolved?.roles?.size && state.silent
+						? '\n*This reminder will not notify any individuals for the remaining attacks. \nPlease include some roles within the reminder message to receive notifications.*\n'
+						: '',
+					`${state.message}`
+				].join('\n')
+			);
+			embed.setFooter({
+				text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
+			});
+
 			const warTypeRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select War Types')
 					.setMaxValues(3)
-					.setCustomId(CUSTOM_ID.WAR_TYPE)
+					.setCustomId(customIds.warType)
 					.setOptions([
 						{
 							label: 'Normal',
@@ -151,7 +172,7 @@ export default class ReminderCreateCommand extends Command {
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
 					.setMaxValues(4)
-					.setCustomId(CUSTOM_ID.REMAINING)
+					.setCustomId(customIds.remaining)
 					.setOptions([
 						{
 							description: '1 Attack Remaining',
@@ -169,13 +190,13 @@ export default class ReminderCreateCommand extends Command {
 							description: 'Skip reminder if the destruction is 100%',
 							label: 'Skip at 100%',
 							value: 'smartSkip',
-							default: state.remaining.includes('smartSkip')
+							default: state.smartSkip
 						},
 						{
 							description: 'Does not @ping any individuals, only drops the message',
 							label: 'Message Only (No Ping)',
 							value: 'silent',
-							default: state.remaining.includes('silent')
+							default: state.silent
 						}
 					])
 					.setDisabled(disable)
@@ -183,7 +204,7 @@ export default class ReminderCreateCommand extends Command {
 			const townHallRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
-					.setCustomId(CUSTOM_ID.TOWN_HALLS)
+					.setCustomId(customIds.townHalls)
 					.setMaxValues(MAX_TOWN_HALL_LEVEL - 1)
 					.setOptions(
 						Array(MAX_TOWN_HALL_LEVEL - 1)
@@ -204,7 +225,7 @@ export default class ReminderCreateCommand extends Command {
 			const clanRolesRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
-					.setCustomId(CUSTOM_ID.ROLES)
+					.setCustomId(customIds.roles)
 					.setMaxValues(4)
 					.setOptions([
 						{
@@ -231,9 +252,17 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
-			);
+			const btnRow = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId(customIds.message)
+						.setLabel('Edit Reminder Message')
+						.setStyle(ButtonStyle.Secondary)
+						.setDisabled(disable)
+				)
+				.addComponents(
+					new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
+				);
 
 			if (dur === 0) {
 				return [warTypeRow, btnRow];
@@ -248,60 +277,79 @@ export default class ReminderCreateCommand extends Command {
 
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: [
-				`**Setup War Reminder (${dur === 0 ? 'at the end' : `${this.getStatic(dur)} remaining`})** <#${args.channel.id}>`,
-				'',
-				escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')),
-				'',
-				`${args.message}`,
-				!interaction.options.resolved?.roles?.size && state.silent
-					? '\n*This reminder will not notify any individuals for the remaining attacks. \nPlease include some roles within the reminder message to receive notifications.*'
-					: ''
-			].join('\n'),
+			embeds: [embed],
 			allowedMentions: { parse: [] }
 		});
 
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isStringSelectMenu()) {
+			if (action.customId === customIds.warType && action.isStringSelectMenu()) {
 				state.warTypes = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.REMAINING && action.isStringSelectMenu()) {
+			if (action.customId === customIds.remaining && action.isStringSelectMenu()) {
 				state.remaining = action.values.filter((v) => !['smartSkip', 'silent'].includes(v));
-
 				state.smartSkip = action.values.includes('smartSkip');
 				state.silent = action.values.includes('silent');
 
 				if (state.silent) {
-					state.remaining = ['silent'];
+					state.remaining = [];
+					state.smartSkip = false;
 				} else if (!state.remaining.some((x) => ['1', '2'].includes(x))) {
-					state.remaining = [...state.remaining, '1', '2'];
+					state.remaining = ['1', '2'];
 				}
-				await action.update({ components: mutate() });
+				await action.update({ components: mutate(), embeds: [embed] });
 			}
 
-			if (action.customId === CUSTOM_ID.TOWN_HALLS && action.isStringSelectMenu()) {
+			if (action.customId === customIds.townHalls && action.isStringSelectMenu()) {
 				state.townHalls = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.ROLES && action.isStringSelectMenu()) {
+			if (action.customId === customIds.roles && action.isStringSelectMenu()) {
 				state.roles = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.CLANS && action.isStringSelectMenu()) {
+			if (action.customId === customIds.clans && action.isStringSelectMenu()) {
 				state.clans = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
+			if (action.customId === customIds.message && action.isButton()) {
+				const modalCustomId = this.client.uuid(interaction.user.id);
+				const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Reminder Message');
+				const messageInput = new TextInputBuilder()
+					.setCustomId(customIds.modalMessage)
+					.setLabel('Reminder Message')
+					.setMinLength(1)
+					.setMaxLength(1800)
+					.setRequired(true)
+					.setValue(state.message)
+					.setStyle(TextInputStyle.Paragraph);
+				modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(messageInput));
+				await action.showModal(modal);
+
+				try {
+					await action
+						.awaitModalSubmit({
+							time: 5 * 60 * 1000,
+							filter: (action) => action.customId === modalCustomId
+						})
+						.then(async (modalSubmit) => {
+							state.message = modalSubmit.fields.getTextInputValue(customIds.modalMessage);
+							await modalSubmit.deferUpdate();
+							await modalSubmit.editReply({ components: mutate(), embeds: [embed] });
+						});
+				} catch {}
+			}
+
+			if (action.customId === customIds.save && action.isButton()) {
 				await action.deferUpdate();
 				const reminder = {
 					// TODO: remove this
@@ -316,7 +364,7 @@ export default class ReminderCreateCommand extends Command {
 					smartSkip: state.smartSkip,
 					webhook: { id: webhook.id, token: webhook.token! },
 					warTypes: state.warTypes,
-					message: args.message.trim(),
+					message: state.message.trim(),
 					duration: dur,
 					createdAt: new Date()
 				};
@@ -331,7 +379,7 @@ export default class ReminderCreateCommand extends Command {
 		});
 
 		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(CUSTOM_ID)) this.client.components.delete(id);
+			for (const id of Object.values(customIds)) this.client.components.delete(id);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: mutate(true) });
 		});
 	}

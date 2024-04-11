@@ -5,10 +5,13 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	ComponentType,
+	EmbedBuilder,
+	ModalBuilder,
 	PermissionsString,
 	StringSelectMenuBuilder,
 	TextChannel,
-	escapeMarkdown
+	TextInputBuilder,
+	TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
@@ -98,7 +101,9 @@ export default class ReminderCreateCommand extends Command {
 			clans: this.client.uuid(interaction.user.id),
 			save: this.client.uuid(interaction.user.id),
 			minPoints: this.client.uuid(interaction.user.id),
-			memberType: this.client.uuid(interaction.user.id)
+			memberType: this.client.uuid(interaction.user.id),
+			message: this.client.uuid(interaction.user.id),
+			modalMessage: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
@@ -106,10 +111,21 @@ export default class ReminderCreateCommand extends Command {
 			allMembers: true,
 			minPoints: '0',
 			roles: ['leader', 'coLeader', 'admin', 'member'],
-			clans: clans.map((clan) => clan.tag)
+			clans: clans.map((clan) => clan.tag),
+			message: args.message
 		};
 
+		const embed = new EmbedBuilder();
 		const mutate = (disable = false) => {
+			embed.setDescription(
+				[`**Setup Clan Games Reminder (${this.getStatic(dur)} remaining)** <#${args.channel.id}>`, '', `${state.message}`].join(
+					'\n'
+				)
+			);
+			embed.setFooter({
+				text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
+			});
+
 			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Minimum Points')
@@ -177,22 +193,24 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
-			);
+			const row4 = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId(customIds.message)
+						.setLabel('Edit Reminder Message')
+						.setStyle(ButtonStyle.Secondary)
+						.setDisabled(disable)
+				)
+				.addComponents(
+					new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
+				);
 
 			return [row1, row2, row3, row4];
 		};
 
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: [
-				`**Setup Clan Games Reminder (${this.getStatic(dur)} remaining)** <#${args.channel.id}>`,
-				'',
-				escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')),
-				'',
-				`${args.message}`
-			].join('\n'),
+			embeds: [embed],
 			allowedMentions: { parse: [] }
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -221,6 +239,34 @@ export default class ReminderCreateCommand extends Command {
 				await action.update({ components: mutate() });
 			}
 
+			if (action.customId === customIds.message && action.isButton()) {
+				const modalCustomId = this.client.uuid(interaction.user.id);
+				const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Reminder Message');
+				const messageInput = new TextInputBuilder()
+					.setCustomId(customIds.modalMessage)
+					.setLabel('Reminder Message')
+					.setMinLength(1)
+					.setMaxLength(1800)
+					.setRequired(true)
+					.setValue(state.message)
+					.setStyle(TextInputStyle.Paragraph);
+				modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(messageInput));
+				await action.showModal(modal);
+
+				try {
+					await action
+						.awaitModalSubmit({
+							time: 5 * 60 * 1000,
+							filter: (action) => action.customId === modalCustomId
+						})
+						.then(async (modalSubmit) => {
+							state.message = modalSubmit.fields.getTextInputValue(customIds.modalMessage);
+							await modalSubmit.deferUpdate();
+							await modalSubmit.editReply({ components: mutate(), embeds: [embed] });
+						});
+				} catch {}
+			}
+
 			if (action.customId === customIds.save && action.isButton()) {
 				await action.deferUpdate();
 				const reminder: ClanGamesReminder = {
@@ -233,7 +279,7 @@ export default class ReminderCreateCommand extends Command {
 					allMembers: state.allMembers,
 					minPoints: Number(state.minPoints),
 					webhook: { id: webhook.id, token: webhook.token! },
-					message: args.message.trim(),
+					message: state.message.trim(),
 					duration: dur,
 					createdAt: new Date()
 				};

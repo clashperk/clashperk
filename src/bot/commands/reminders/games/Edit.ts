@@ -4,11 +4,11 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	ComponentType,
+	EmbedBuilder,
 	ModalBuilder,
 	StringSelectMenuBuilder,
 	TextInputBuilder,
-	TextInputStyle,
-	escapeMarkdown
+	TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../../lib/index.js';
@@ -62,7 +62,19 @@ export default class ReminderEditCommand extends Command {
 			message: reminder.message
 		};
 
+		const embed = new EmbedBuilder();
 		const mutate = (disable = false) => {
+			embed.setDescription(
+				[
+					`**Edit Clan Games Reminder (${this.getStatic(reminder.duration)} remaining)** <#${reminder.channel}>`,
+					'',
+					`${reminder.message}`
+				].join('\n')
+			);
+			embed.setFooter({
+				text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
+			});
+
 			const minPointsRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Minimum Points')
@@ -147,13 +159,7 @@ export default class ReminderEditCommand extends Command {
 
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: [
-				`**Edit Clan Games Reminder (${this.getStatic(reminder.duration)} remaining)** <#${reminder.channel}>`,
-				'',
-				clans.map((clan) => clan.name).join(', '),
-				'',
-				`${reminder.message}`
-			].join('\n'),
+			embeds: [embed],
 			allowedMentions: { parse: [] }
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -202,13 +208,7 @@ export default class ReminderEditCommand extends Command {
 							await modalSubmit.deferUpdate();
 							await modalSubmit.editReply({
 								components: mutate(),
-								content: [
-									`**Edit Clan Games Reminder (${this.getStatic(reminder.duration)})** <#${reminder.channel}>`,
-									'',
-									clans.map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`)).join(', '),
-									'',
-									`${state.message}`
-								].join('\n'),
+								embeds: [embed],
 								allowedMentions: { parse: [] }
 							});
 						});
