@@ -9,6 +9,7 @@ import {
 	Guild,
 	PermissionFlagsBits,
 	StringSelectMenuInteraction,
+	WebhookClient,
 	time
 } from 'discord.js';
 import moment from 'moment-timezone';
@@ -1585,5 +1586,35 @@ export class RosterManager {
 		}
 
 		return members;
+	}
+
+	public async rosterChangeLog(
+		roster: IRoster,
+		action: 'signup' | 'opt-out',
+		members: { name: string; tag: string; userId: string | null }[]
+	) {
+		const label = action === 'signup' ? 'Signed up for' : 'Opted out of';
+		const embed = new EmbedBuilder()
+			.setTitle(`${label} ${roster.name}`)
+			.setURL(`http://cprk.eu/${roster.clan.tag.slice(1)}`)
+			.setDescription(members.map((mem) => `\u200e${mem.name} (${mem.tag}) ${mem.userId ? `- <@${mem.userId}>` : ''}`).join('\n'))
+			.setFooter({ text: `${roster.clan.name} (${roster.clan.tag})`, iconURL: roster.clan.badgeUrl });
+
+		const config = this.client.settings.get<{ channelId: string; webhook: { token: string; id: string } }>(
+			roster.guildId,
+			Settings.ROSTER_CHANGELOG,
+			null
+		);
+		if (!config) return null;
+
+		const webhook = new WebhookClient(config.webhook);
+
+		try {
+			return await webhook.send({ embeds: [embed] });
+		} catch (error: any) {
+			if ([10015, 10003].includes(error.code)) {
+				await this.client.settings.delete(roster.guildId, Settings.ROSTER_CHANGELOG);
+			}
+		}
 	}
 }

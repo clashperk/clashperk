@@ -1629,6 +1629,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Flag Alert Log',
 								value: 'flag-alert-log'
+							},
+							{
+								name: 'Roster Change Log',
+								value: 'roster-changelog'
 							}
 						]
 					},
@@ -2816,19 +2820,20 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						autocomplete: true
 					},
 					{
-						name: 'message',
-						description: command.reminders.create.options.message.description,
-						description_localizations: translation('command.reminders.create.options.message.description'),
-						type: ApplicationCommandOptionType.String,
-						required: true
-					},
-					{
 						name: 'clans',
 						required: true,
 						autocomplete: true,
 						description: command.reminders.create.options.clans.description,
 						description_localizations: translation('command.reminders.create.options.clans.description'),
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'message',
+						description: command.reminders.create.options.message.description,
+						description_localizations: translation('command.reminders.create.options.message.description'),
+						type: ApplicationCommandOptionType.String,
+						max_length: 1800,
+						required: true
 					},
 					{
 						name: 'channel',

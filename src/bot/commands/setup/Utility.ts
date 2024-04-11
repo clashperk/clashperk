@@ -69,6 +69,7 @@ export default class SetupUtilsCommand extends Command {
 		if (args.option === 'events-schedular') return this.handleEvents(interaction, args);
 		if (args.option === 'role-refresh-button') return this.selfRefresh(interaction);
 		if (args.option === 'flag-alert-log') return this.flagAlertLog(interaction, args);
+		if (args.option === 'roster-changelog') return this.rosterChangeLog(interaction, args);
 
 		const customIds = {
 			embed: this.client.uuid(),
@@ -269,6 +270,31 @@ export default class SetupUtilsCommand extends Command {
 			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
+	}
+
+	public async rosterChangeLog(
+		interaction: CommandInteraction<'cached'>,
+		args: { channel: TextChannel | AnyThreadChannel; disable?: boolean }
+	) {
+		if (args.disable) {
+			await this.client.settings.delete(interaction.guild, Settings.ROSTER_CHANGELOG);
+			return interaction.editReply({ content: `Roster changelog disabled.` });
+		}
+
+		const webhook = await this.client.storage.getWebhook(args.channel.isThread() ? args.channel.parent! : args.channel);
+		if (!webhook) {
+			return interaction.editReply(
+				// eslint-disable-next-line
+				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+			);
+		}
+
+		await this.client.settings.set(interaction.guild, Settings.ROSTER_CHANGELOG, {
+			channelId: args.channel.id,
+			webhook: { token: webhook.token, id: webhook.id }
+		});
+
+		return interaction.editReply({ content: `Roster changelog set to <#${args.channel.id}>` });
 	}
 
 	public async flagAlertLog(interaction: CommandInteraction<'cached'>, args: { disable?: boolean }) {

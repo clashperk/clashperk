@@ -109,6 +109,7 @@ export default class RosterSignupCommand extends Command {
 			await action.deferUpdate();
 
 			const result = [];
+			const changeLog = [];
 			for (const tag of action.values) {
 				const player = players.find((mem) => mem.tag === tag)!;
 				const updated = await this.client.rosterManager.selfSignup({
@@ -121,6 +122,14 @@ export default class RosterSignupCommand extends Command {
 					success: updated.success,
 					message: `**\u200e${player.name} (${player.tag})** ${updated.success ? '- ' : '\n'}${updated.message}`
 				});
+
+				if (updated.success) {
+					changeLog.push({
+						name: player.name,
+						tag: player.tag,
+						userId: interaction.user.id
+					});
+				}
 			}
 			const errored = result.some((res) => !res.success);
 
@@ -137,6 +146,10 @@ export default class RosterSignupCommand extends Command {
 				await action.editReply({ content: 'You have been added to the roster.', embeds: [], components: [] });
 			}
 
+			if (changeLog.length) {
+				this.client.rosterManager.rosterChangeLog(roster, 'signup', changeLog);
+			}
+
 			const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
 			return interaction.editReply({ embeds: [embed] });
 		};
@@ -144,10 +157,19 @@ export default class RosterSignupCommand extends Command {
 		const optOutUser = async (action: StringSelectMenuInteraction<'cached'>) => {
 			await action.deferUpdate();
 
+			const members = roster.members.filter((mem) => action.values.includes(mem.tag));
+
 			const updated = await this.client.rosterManager.optOut(roster, ...action.values);
 			if (!updated) return action.editReply({ content: 'You are not signed up for this roster.', embeds: [], components: [] });
 
 			await action.editReply({ content: 'You have been removed from the roster.', embeds: [], components: [] });
+			if (members.length) {
+				this.client.rosterManager.rosterChangeLog(
+					roster,
+					'opt-out',
+					members.map((mem) => ({ name: mem.name, tag: mem.tag, userId: mem.userId }))
+				);
+			}
 
 			const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
 			return interaction.editReply({ embeds: [embed] });

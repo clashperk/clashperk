@@ -199,7 +199,8 @@ export const enum Settings {
 	CLAN_CATEGORY_EXCLUSION = 'clanCategoryExclusion',
 	HAS_FLAG_ALERT_LOG = 'hasFlagAlertLog',
 	DISPLAY_CLAN_TAG = 'displayClanTag',
-	ROLE_REPLACEMENT_LABELS = 'roleReplacementLabels'
+	ROLE_REPLACEMENT_LABELS = 'roleReplacementLabels',
+	ROSTER_CHANGELOG = 'rosterChangeLog'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
