@@ -4047,7 +4047,7 @@ export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = 
 			{
 				name: 'opt_out',
 				description: 'Opt-out from the custom bot and delete related services.',
-				type: ApplicationCommandOptionType.String
+				type: ApplicationCommandOptionType.Boolean
 			}
 		]
 	}
