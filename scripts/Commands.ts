@@ -4042,7 +4042,14 @@ export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = 
 	{
 		name: 'bot-personalizer',
 		dm_permission: false,
-		description: 'Build your own Discord bot!'
+		description: 'Build your own Discord bot!',
+		options: [
+			{
+				name: 'opt_out',
+				description: 'Opt-out from the custom bot and delete related services.',
+				type: ApplicationCommandOptionType.String
+			}
+		]
 	}
 ];
 

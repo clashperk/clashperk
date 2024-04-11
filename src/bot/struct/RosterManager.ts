@@ -17,7 +17,7 @@ import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/CommandOptions.js';
-import { Collections, MAX_TOWN_HALL_LEVEL, Settings, WarType } from '../util/Constants.js';
+import { Collections, ColorCodes, MAX_TOWN_HALL_LEVEL, Settings, WarType } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
@@ -1596,6 +1596,7 @@ export class RosterManager {
 		const label = action === 'signup' ? 'Signed up for' : 'Opted out of';
 		const embed = new EmbedBuilder()
 			.setTitle(`${label} ${roster.name}`)
+			.setColor(action === 'signup' ? ColorCodes.GREEN : ColorCodes.RED)
 			.setURL(`http://cprk.eu/${roster.clan.tag.slice(1)}`)
 			.setDescription(members.map((mem) => `\u200e${mem.name} (${mem.tag}) ${mem.userId ? `- <@${mem.userId}>` : ''}`).join('\n'))
 			.setFooter({ text: `${roster.clan.name} (${roster.clan.tag})`, iconURL: roster.clan.badgeUrl });

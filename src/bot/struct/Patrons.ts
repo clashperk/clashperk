@@ -4,7 +4,6 @@ import fetch from 'node-fetch';
 import TimeoutSignal from 'timeout-signal';
 import { Collections, Settings } from '../util/Constants.js';
 import { Client } from './Client.js';
-import { ICustomBot } from './CustomBot.js';
 
 export const rewards = {
 	bronze: '3705318',
@@ -57,6 +56,10 @@ export default class Patrons {
 
 	public async attachCustomBot(patronId: string, applicationId: string) {
 		return this.collection.updateOne({ id: patronId }, { $set: { applicationId } });
+	}
+
+	public async detachCustomBot(patronId: string) {
+		return this.collection.updateOne({ id: patronId }, { $unset: { applicationId: '' } });
 	}
 
 	public async findGuild(guildId: string) {
@@ -145,14 +148,14 @@ export default class Patrons {
 
 			// eslint-disable-next-line
 			for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
-			if (patron.applicationId) await this.suspendService(patron.applicationId);
+			if (patron.applicationId) await this.client.customBotManager.suspendService(patron.applicationId);
 		}
 
 		if (!patron.active && (patron.declined || patron.cancelled) && pledge?.attributes.patron_status === 'active_patron') {
 			await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true, cancelled: false } });
 			// eslint-disable-next-line
 			for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
-			if (patron.applicationId) await this.resumeService(patron.applicationId);
+			if (patron.applicationId) await this.client.customBotManager.resumeService(patron.applicationId);
 
 			this.client.logger.info(`Declined Patron Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
 		}
@@ -165,42 +168,12 @@ export default class Patrons {
 			await this.collection.updateOne({ id: patron.id }, { $set: { declined: true, active: false } });
 			// eslint-disable-next-line
 			for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
-			if (patron.applicationId) await this.suspendService(patron.applicationId);
+			if (patron.applicationId) await this.client.customBotManager.suspendService(patron.applicationId);
 		}
 	}
 
 	private gracePeriodExpired(date: Date) {
 		return Date.now() - date.getTime() >= 3 * 24 * 60 * 60 * 1000;
-	}
-
-	private async suspendService(applicationId: string) {
-		if (!process.env.CUSTOM_BOT_SERVICE_TOKEN && !process.env.CUSTOM_BOT_SERVICE) return;
-		const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/suspend`, {
-			method: 'PUT',
-			headers: {
-				'x-api-key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
-			}
-		});
-
-		const app = await this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS).findOne({ applicationId });
-		for (const guildId of app?.guildIds ?? []) await this.client.settings.deleteCustomBot(guildId);
-
-		this.client.logger.info(`Service suspended ${res.statusText} - ${res.status}`, { label: 'SERVICE' });
-	}
-
-	private async resumeService(applicationId: string) {
-		if (!process.env.CUSTOM_BOT_SERVICE_TOKEN && !process.env.CUSTOM_BOT_SERVICE) return;
-		const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/resume`, {
-			method: 'PUT',
-			headers: {
-				'x-api-key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
-			}
-		});
-
-		const app = await this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS).findOne({ applicationId });
-		for (const guildId of app?.guildIds ?? []) await this.client.settings.setCustomBot(guildId);
-
-		this.client.logger.info(`Service resumed ${res.statusText} - ${res.status}`, { label: 'SERVICE' });
 	}
 
 	private async restoreGuild(guildId: string) {

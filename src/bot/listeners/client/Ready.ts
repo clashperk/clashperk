@@ -1,7 +1,5 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 import { Listener } from '../../lib/index.js';
-import { CustomBot, ICustomBot } from '../../struct/CustomBot.js';
-import { Collections } from '../../util/Constants.js';
 
 export default class ReadyListener extends Listener {
 	public constructor() {
@@ -59,11 +57,9 @@ export default class ReadyListener extends Listener {
 	}
 
 	private async onReady() {
-		const collection = this.client.db.collection<ICustomBot>(Collections.CUSTOM_BOTS);
-		const app = await collection.findOne({ applicationId: this.client.user!.id });
+		const app = await this.client.customBotManager.findBot({ applicationId: this.client.user!.id });
 		if (!app || app.isLive) return;
 
-		const customBot = new CustomBot(app.token);
-		return customBot.handleOnReady(app);
+		return this.client.customBotManager.handleOnReady(app);
 	}
 }

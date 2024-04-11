@@ -32,6 +32,10 @@ export default class GuildDeleteListener extends Listener {
 
 		await this.delete(guild);
 
+		if (this.client.isCustom()) {
+			await this.onDelete(guild.id);
+		}
+
 		if (!this.client.isOwner(guild.ownerId)) {
 			await this.client.stats.post();
 			await this.client.stats.deletion();
@@ -88,5 +92,12 @@ export default class GuildDeleteListener extends Listener {
 		}
 
 		await db.updateMany({ guild: guild.id }, { $set: { paused: true } });
+	}
+
+	private async onDelete(guildId: string) {
+		const app = await this.client.customBotManager.findBot({ applicationId: this.client.user!.id });
+		if (!app) return;
+
+		return this.client.settings.deleteCustomBot(guildId);
 	}
 }

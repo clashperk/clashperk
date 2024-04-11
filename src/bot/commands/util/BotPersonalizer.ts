@@ -13,7 +13,6 @@ import {
 import moment from 'moment';
 import { WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { CustomBot } from '../../struct/CustomBot.js';
 import { Patron, rewards } from '../../struct/Patrons.js';
 import { getInviteLink } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -38,7 +37,7 @@ export default class BotPersonalizerCommand extends Command {
 		return patron.guilds.some((guild) => guild.id === guildId);
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { opt_out?: boolean }) {
 		const customIds = {
 			token: this.client.uuid(interaction.user.id)
 		};
@@ -47,6 +46,11 @@ export default class BotPersonalizerCommand extends Command {
 		const isEligible =
 			Boolean(patron && this.isEligible(patron) && this.isAllowedGuild(patron, interaction.guildId)) ||
 			this.client.isOwner(interaction.user.id);
+
+		if (patron && patron.applicationId && args.opt_out) {
+			await this.client.customBotManager.deleteService(patron.applicationId);
+			return interaction.editReply(`Successfully deleted the personalized bot!`);
+		}
 
 		if (patron?.applicationId && !this.client.isOwner(interaction.user.id)) {
 			return interaction.editReply(
@@ -107,9 +111,8 @@ export default class BotPersonalizerCommand extends Command {
 					return await modalSubmit.editReply({ content: `You must be a patron to deploy your own bot!`, components: [] });
 				}
 
-				const inputValue = modalSubmit.fields.getTextInputValue(customIds.token);
-				const customBot = new CustomBot(inputValue);
-				const app = await customBot.getApplication();
+				const botToken = modalSubmit.fields.getTextInputValue(customIds.token);
+				const app = await this.client.customBotManager.getApplication(botToken);
 
 				if (!app?.id) {
 					return await modalSubmit.editReply({
@@ -118,11 +121,11 @@ export default class BotPersonalizerCommand extends Command {
 					});
 				}
 
-				if (!customBot.hasIntents(app)) {
+				if (!this.client.customBotManager.hasIntents(app)) {
 					return await modalSubmit.editReply({ content: `The bot does not have the all the intents enabled.`, components: [] });
 				}
 
-				if (customBot.isPublic(app)) {
+				if (this.client.customBotManager.isPublic(app)) {
 					return await modalSubmit.editReply({ content: `The bot is public! You must keep the bot private.`, components: [] });
 				}
 
@@ -135,7 +138,7 @@ export default class BotPersonalizerCommand extends Command {
 					components: []
 				});
 
-				const commands = await customBot.createCommands(app.id, interaction.guildId);
+				const commands = await this.client.customBotManager.createCommands(app.id, interaction.guildId, botToken);
 				if (!commands.length) {
 					const member = await interaction.guild.members.fetch(app.id).catch(() => null);
 					messages.push(`${EMOJIS.WRONG} Failed to create application commands...`);
@@ -151,51 +154,27 @@ export default class BotPersonalizerCommand extends Command {
 					components: []
 				});
 
-				const service = await customBot.createService(inputValue, app);
+				const service = await this.client.customBotManager.createService({
+					application: app,
+					guildId: interaction.guildId,
+					patronId: patron.id,
+					token: botToken,
+					user: interaction.user
+				});
+				await this.client.patrons.attachCustomBot(patron.id, app.id);
+
 				if (!service) {
 					messages.push(`${EMOJIS.WRONG} Failed to deploy application...`);
 					messages.push(`\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`);
 					return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
 				}
 
-				await modalSubmit.editReply({
-					content: [...messages, `${EMOJIS.LOADING} Deploying application... [took ${timeTaken()}]`].join('\n'),
-					components: []
-				});
-
-				await customBot.registerBot({
-					application: app,
-					guildId: interaction.guildId,
-					patronId: patron.id,
-					serviceId: service.id,
-					token: inputValue,
-					user: interaction.user
-				});
-				await this.client.patrons.attachCustomBot(patron.id, app.id);
-
-				const status = await customBot.checkDeploymentStatus(service.id, async (status) => {
-					await modalSubmit.editReply({
-						components: [],
-						content: [...messages, `${EMOJIS.LOADING} Deploying! Status **${status}** [took ${timeTaken()}]`].join('\n')
-					});
-				});
-
-				if (status === 'SUCCESS') {
-					messages.push(`${EMOJIS.OK} Successfully deployed application! [took ${timeTaken()}]`);
-					messages.push(`Last step is to invite the bot into our custom emoji servers.`);
-					messages.push(
-						`Join [Support Server](<https://discord.gg/ppuppun>) and check <#1130139203213197434> for the list of emoji servers.`
-					);
-					return modalSubmit.editReply({ content: messages.join('\n'), components: [] });
-				}
-
-				if (status === 'FAILED') {
-					await this.client.settings.deleteCustomBot(interaction.guild);
-				}
-
-				messages.push(`${EMOJIS.WRONG} Failed to deploy application! (with status **${status}**)`);
-				messages.push(`Contact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`);
-				return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
+				messages.push(`${EMOJIS.OK} Successfully deployed application! [took ${timeTaken()}]`);
+				messages.push(`Last step is to invite the bot into our custom emoji servers.`);
+				messages.push(
+					`Join [Support Server](<https://discord.gg/ppuppun>) and check <#1130139203213197434> for the list of the emoji servers.`
+				);
+				return modalSubmit.editReply({ content: messages.join('\n'), components: [] });
 			} catch (e) {
 				if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
 					throw e;

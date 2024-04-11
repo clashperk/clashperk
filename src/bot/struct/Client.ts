@@ -26,6 +26,7 @@ import { RosterManager } from './RosterManager.js';
 import SettingsProvider from './SettingsProvider.js';
 import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
+import { CustomBotManager } from './CustomBotManager.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -46,6 +47,7 @@ export class Client extends Discord.Client {
 	public settings!: SettingsProvider;
 	public http: Http;
 	public stats!: StatsHandler;
+	public customBotManager!: CustomBotManager;
 	public storage!: StorageHandler;
 	public warScheduler!: ClanWarScheduler;
 	public raidScheduler!: CapitalRaidScheduler;
@@ -205,6 +207,7 @@ export class Client extends Discord.Client {
 		this.guildEvents = new GuildEventsHandler(this);
 		this.rosterManager = new RosterManager(this);
 		this.autocomplete = new Autocomplete(this);
+		this.customBotManager = new CustomBotManager();
 
 		await this.http.autoLogin();
 

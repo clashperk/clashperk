@@ -200,7 +200,8 @@ export const enum Settings {
 	HAS_FLAG_ALERT_LOG = 'hasFlagAlertLog',
 	DISPLAY_CLAN_TAG = 'displayClanTag',
 	ROLE_REPLACEMENT_LABELS = 'roleReplacementLabels',
-	ROSTER_CHANGELOG = 'rosterChangeLog'
+	ROSTER_CHANGELOG = 'rosterChangeLog',
+	DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
