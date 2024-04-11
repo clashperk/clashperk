@@ -30,7 +30,8 @@ export default class ExportWarsCommand extends Command {
 
 		let num = Number(args.limit ?? 25);
 		num = Math.min(100, num);
-		const query = args.season ? { season: args.season } : {};
+		const query = args.season ? { preparationStartTime: { $gte: new Date(args.season) } } : {};
+
 		const chunks = [];
 		for (const { tag, name } of clans) {
 			const cursor = this.client.db

@@ -684,7 +684,8 @@ export const getBbLegendRankingEmbedMaker = async ({
 		// @ts-expect-error lol
 		.filter((player) => player.versusTrophies)
 		// @ts-expect-error lol
-		.map((player) => ({ ...player, trophies: player.versusTrophies ?? 0 }));
+		.map((player) => ({ ...player, trophies: player.versusTrophies ?? 0 }))
+		.sort((a, b) => b.trophies - a.trophies);
 
 	if (limit) legends = legends.slice(0, limit);
 

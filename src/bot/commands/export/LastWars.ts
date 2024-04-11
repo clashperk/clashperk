@@ -28,7 +28,7 @@ export default class LastWarsExport extends Command {
 		const clanList = await this.client.http._getClans(clans);
 		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
-		const query: Record<string, string | number> = args.season ? { season: args.season } : {};
+		const query: Record<string, any> = args.season ? { preparationStartTime: { $gte: new Date(args.season) } } : {};
 		if (args.war_type) {
 			query.warType = args.war_type === 'cwl' ? WarType.CWL : WarType.REGULAR;
 		} else {
