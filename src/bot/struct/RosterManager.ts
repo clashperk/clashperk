@@ -844,7 +844,7 @@ export class RosterManager {
 			[
 				heading,
 				...groups.flatMap(({ categoryLabel, members }) => [
-					`${categoryLabel}`,
+					`${categoryLabel} - ${members.length}`,
 					...members.map((member) => {
 						return layouts
 							.map((layout) => (layout.isEmoji ? member[layout.key] : `\`${member[layout.key]}\``))
