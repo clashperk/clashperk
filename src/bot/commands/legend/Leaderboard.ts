@@ -126,11 +126,13 @@ export default class LegendLeaderboardCommand extends Command {
 				)
 		);
 
+		const isDefaultMessage = interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
+
 		if (args.export && interaction.isButton()) {
 			await interaction.editReply({ embeds: [embed], components: [row, sortingRow], message: interaction.message.id });
 			await this.export(interaction, legends, clans);
 		} else {
-			await interaction.editReply({ embeds: [embed], components: args.is_bb ? [row] : [row, sortingRow] });
+			await interaction.editReply({ embeds: [embed], components: args.is_bb || isDefaultMessage ? [row] : [row, sortingRow] });
 		}
 	}
 

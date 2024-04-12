@@ -87,7 +87,9 @@ export default class AutoBoardLog {
 	private _components(cache: Cache) {
 		const btn = new ButtonBuilder()
 			.setStyle(ButtonStyle.Secondary)
-			.setCustomId(JSON.stringify({ cmd: 'legend-leaderboard', is_bb: cache.boardType === 'bb-legend-leaderboard' }))
+			.setCustomId(
+				JSON.stringify({ cmd: 'legend-leaderboard', is_bb: cache.boardType === 'bb-legend-leaderboard', limit: cache.limit })
+			)
 			.setEmoji(EMOJIS.REFRESH);
 
 		return new ActionRowBuilder<ButtonBuilder>().addComponents(btn);
