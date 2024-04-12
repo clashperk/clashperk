@@ -2836,6 +2836,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: true
 					},
 					{
+						name: 'exclude_participant_list',
+						description: 'Whether to exclude participant list and only include the message (clan wars only)',
+						type: ApplicationCommandOptionType.Boolean,
+						required: false
+					},
+					{
 						name: 'channel',
 						description: command.reminders.create.options.channel.description,
 						description_localizations: translation('command.reminders.create.options.channel.description'),

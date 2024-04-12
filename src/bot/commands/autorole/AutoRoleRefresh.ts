@@ -97,6 +97,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		};
 
 		const timeoutId = setInterval(handleChanges, 5000);
+		this.client.storage.updateLinks(interaction.guildId);
 
 		try {
 			const changes = await this.client.rolesManager.updateMany(interaction.guildId, {
