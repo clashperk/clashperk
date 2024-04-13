@@ -18,13 +18,14 @@ import {
 	UserSelectMenuInteraction
 } from 'discord.js';
 import { Filter, ObjectId, WithId } from 'mongodb';
+import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { IRoster, IRosterCategory, PlayerWithLink } from '../../struct/RosterManager.js';
 import { PlayerModel } from '../../types/index.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/index.js';
-import { unique } from 'radash';
 
 export default class RosterManageCommand extends Command {
 	public constructor() {
@@ -1388,6 +1389,7 @@ export default class RosterManageCommand extends Command {
 
 		const confirm = async (action: ButtonInteraction<'cached'>) => {
 			await action.deferUpdate();
+			await action.editReply({ content: `Adding players... ${EMOJIS.LOADING}`, components: [] });
 
 			const result = [];
 			for (const tag of selected.playerTags) {

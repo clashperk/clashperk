@@ -78,6 +78,7 @@ export default class LegendLeaderboardCommand extends Command {
 			clans: resolvedArgs,
 			sort_by: args.sort_by,
 			limit: args.limit,
+			is_bb: args.is_bb,
 			export_disabled: args.export_disabled
 		};
 
