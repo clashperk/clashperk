@@ -7,6 +7,8 @@ import {
 	CommandInteraction,
 	EmbedBuilder,
 	GuildMember,
+	StringSelectMenuBuilder,
+	StringSelectMenuInteraction,
 	User
 } from 'discord.js';
 import moment from 'moment';
@@ -15,7 +17,7 @@ import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections, DOT } from '../../util/Constants.js';
+import { Collections, DOT, Settings } from '../../util/Constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/Emojis.js';
 import { getExportComponents, sumHeroes } from '../../util/Helper.js';
 import { createInteractionCollector, handlePagination } from '../../util/Pagination.js';
@@ -46,12 +48,16 @@ export default class ProfileCommand extends Command {
 		});
 	}
 
-	public args(): Args {
-		// const isOwner = this.client.isOwner(interaction.user.id);
+	public args(interaction: CommandInteraction<'cached'>): Args {
 		return {
 			user: {
-				id: 'user', // isOwner ? 'user' : 'member',
-				match: 'USER' // isOwner ? 'USER' : 'MEMBER'
+				id: 'user',
+				match: 'USER'
+			},
+			member: {
+				id: 'member',
+				match: 'MEMBER',
+				default: interaction.options.getMember('user')
 			}
 		};
 	}
@@ -206,7 +212,9 @@ export default class ProfileCommand extends Command {
 		}
 
 		const customIds = {
-			export: this.client.uuid(interaction.user.id, user.id)
+			export: this.client.uuid(interaction.user.id, user.id),
+			change: this.client.uuid(interaction.user.id),
+			account: this.client.uuid(interaction.user.id)
 		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -221,11 +229,40 @@ export default class ProfileCommand extends Command {
 			row.addComponents(
 				new ButtonBuilder()
 					.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: 'optional' }))
-					.setLabel('Link account')
+					// .setLabel('Link account')
 					.setEmoji('🔗')
 					.setStyle(ButtonStyle.Primary)
 			);
 		}
+
+		if (
+			args.member &&
+			args.member.id === user.id &&
+			players.length > 1 &&
+			players.length <= 25 &&
+			(this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) || user.id === interaction.user.id)
+		) {
+			row.addComponents(
+				new ButtonBuilder().setCustomId(customIds.change).setLabel('Set Default Account').setStyle(ButtonStyle.Success)
+			);
+		}
+
+		const changeDefaultAccount = async (action: StringSelectMenuInteraction<'cached'>) => {
+			await action.deferUpdate();
+
+			const firstAccount = await this.client.db
+				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+				.findOne({ userId: user.id }, { sort: { order: 1 } });
+
+			const order = (firstAccount?.order ?? 0) - 1;
+			const [playerTag] = action.values;
+
+			await this.client.db
+				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+				.updateOne({ userId: user.id, tag: playerTag }, { $set: { order } });
+
+			return this.handler.exec(interaction, this, args);
+		};
 
 		const message = await interaction.editReply({ embeds: [embed], components: [row] });
 		createInteractionCollector({
@@ -233,8 +270,40 @@ export default class ProfileCommand extends Command {
 			customIds,
 			message,
 			onClick: async (action) => {
-				await action.deferReply({ ephemeral: true });
-				return this.export(action, links, user);
+				if (action.customId === customIds.export) {
+					return this.export(action, links, user);
+				}
+				if (action.customId === customIds.change) {
+					if (
+						// not manager && not author
+						(!this.client.util.isManager(action.member, Settings.LINKS_MANAGER_ROLE) && user.id !== action.user.id) ||
+						// not author && has verified account
+						(user.id !== action.user.id && players.some((link) => link.verified))
+					) {
+						return action.reply({ ephemeral: true, content: "You're not allowed to change this user's default account." });
+					}
+
+					const linkedPlayerTags = players.map((link) => link.tag);
+					const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+						new StringSelectMenuBuilder()
+							.setPlaceholder('Select default account!')
+							.setCustomId(customIds.account)
+							.setOptions(
+								playerLinks
+									.filter((player) => linkedPlayerTags.includes(player.tag))
+									.slice(0, 25)
+									.map((link) => ({
+										label: `${link.name} (${link.tag})`,
+										emoji: TOWN_HALLS[link.townHallLevel],
+										value: link.tag
+									}))
+							)
+					);
+					await action.update({ components: [menu] });
+				}
+			},
+			onSelect: (action) => {
+				return changeDefaultAccount(action);
 			}
 		});
 	}

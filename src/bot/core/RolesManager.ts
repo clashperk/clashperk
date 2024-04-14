@@ -81,11 +81,12 @@ export class RolesManager {
 	private async postTriggerAction(guildId: string) {
 		const queuedMemberTags = this.queues.get(guildId);
 		if (queuedMemberTags && queuedMemberTags.length) {
+			// reset the queue
 			this.queues.set(guildId, []);
 
 			await this.delay(1000);
-			this.trigger({ guildId, memberTags: queuedMemberTags });
 			this.client.logger.debug(`Completing remaining ${queuedMemberTags.length} queues`, { label: RolesManager.name });
+			await this.trigger({ guildId, memberTags: queuedMemberTags });
 		} else {
 			this.queues.delete(guildId);
 		}

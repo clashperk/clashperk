@@ -190,7 +190,7 @@ export default class ClanWarScheduler {
 			moment(data.state === 'preparation' ? data.startTime : data.endTime)
 				.toDate()
 				.getTime() - Date.now();
-		const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
+		const warTiming = moment.duration(dur).format('H[h], m[m]', { trim: 'both mid' });
 
 		return [
 			`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`,

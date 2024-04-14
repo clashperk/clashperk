@@ -24,7 +24,7 @@ export default class LinkCreateCommand extends Command {
 
 	public args(): Args {
 		return {
-			default: {
+			is_default: {
 				match: 'BOOLEAN'
 			},
 			user: {
@@ -36,7 +36,7 @@ export default class LinkCreateCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { player_tag?: string; clan_tag?: string; member?: GuildMember; default?: boolean; forcePlayer?: boolean }
+		args: { player_tag?: string; clan_tag?: string; member?: GuildMember; is_default?: boolean; forcePlayer?: boolean }
 	) {
 		if (!(args.clan_tag || args.player_tag)) {
 			const linkButton = new ButtonBuilder()
@@ -78,7 +78,7 @@ export default class LinkCreateCommand extends Command {
 		if (args.player_tag) {
 			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
 			if (!player) return null;
-			return this.playerLink(interaction, { player, member, def: Boolean(args.default) });
+			return this.playerLink(interaction, { player, member, is_default: Boolean(args.is_default) });
 		}
 
 		if (args.clan_tag) {
@@ -122,18 +122,23 @@ export default class LinkCreateCommand extends Command {
 
 	public async playerLink(
 		interaction: CommandInteraction<'cached'>,
-		{ player, member, def }: { player: APIPlayer; member: GuildMember; def: boolean }
+		{ player, member, is_default }: { player: APIPlayer; member: GuildMember; is_default: boolean }
 	) {
-		const [doc, accounts] = await this.getPlayer(player.tag, member.id);
+		const [link, accounts] = await this.getPlayer(player.tag, member.id);
+
+		const isDef =
+			is_default &&
+			(member.id === interaction.user.id ||
+				(this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) && !accounts.some((link) => link.verified)));
+
 		// only owner can set default account
-		if (doc && doc.userId === member.id && ((def && member.id !== interaction.user.id) || !def)) {
-			await this.resetLinkAPI(member.id, player.tag);
+		if (link && link.userId === member.id && !isDef) {
 			return interaction.editReply(
 				this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
 			);
 		}
 
-		if (doc && doc.userId !== member.id) {
+		if (link && link.userId !== member.id) {
 			return interaction.editReply(
 				this.i18n('command.link.create.already_linked', {
 					lng: interaction.locale,
@@ -143,7 +148,7 @@ export default class LinkCreateCommand extends Command {
 			);
 		}
 
-		if (doc && accounts.length >= 25) {
+		if (link && accounts.length >= 25) {
 			return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
 		}
 
@@ -164,10 +169,10 @@ export default class LinkCreateCommand extends Command {
 					discriminator: member.user.discriminator,
 					name: player.name,
 					tag: player.tag,
-					order: def
+					order: isDef
 						? Math.min(0, ...accounts.map((account) => account.order)) - 1
-						: Math.min(0, ...accounts.map((account) => account.order)) + 1,
-					verified: doc?.verified ?? false,
+						: Math.max(0, ...accounts.map((account) => account.order)) + 1,
+					verified: link?.verified ?? false,
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
@@ -194,21 +199,6 @@ export default class LinkCreateCommand extends Command {
 				target: `**${player.name} (${player.tag})**`
 			})
 		);
-
-		// if (this.client.util.isManager(interaction.member)) {
-		// 	const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
-		// 	await interaction.followUp({
-		// 		content: [
-		// 			`**Click the link below to manage Discord links on our Dashboard.**`,
-		// 			'',
-		// 			`[https://clashperk.com/links](https://clashperk.com/links?token=${token})`
-		// 		].join('\n'),
-		// 		ephemeral: true
-		// 	});
-
-		// this.client.storage.updateLinks(interaction.guildId);
-		// TODO: Refresh Roles
-		// }
 	}
 
 	private async getPlayer(tag: string, userId: string) {

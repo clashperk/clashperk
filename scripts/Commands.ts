@@ -1287,9 +1287,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.User
 					},
 					{
-						name: 'default',
-						description: command.link.create.options.default.description,
-						description_localizations: translation('command.link.create.options.default.description'),
+						name: 'is_default',
+						description: command.link.create.options.is_default.description,
+						description_localizations: translation('command.link.create.options.is_default.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{

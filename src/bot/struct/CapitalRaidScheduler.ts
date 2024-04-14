@@ -258,7 +258,7 @@ export default class CapitalRaidScheduler {
 		const prefix = 'ends in'; // data.state === 'preparation' ? 'starts in' : 'ends in';
 		const ends = data.endTime; // data.state === 'preparation' ? data.startTime : data.endTime;
 		const dur = moment(ends).toDate().getTime() - Date.now();
-		const warTiming = moment.duration(dur).format('D[d] H[h], m[m], s[s]', { trim: 'both mid' });
+		const warTiming = moment.duration(dur).format('D[d] H[h], m[m]', { trim: 'both mid' });
 
 		return [
 			`\u200e🔔 **${clan.name} (Capital raid ${prefix} ${warTiming})**`,

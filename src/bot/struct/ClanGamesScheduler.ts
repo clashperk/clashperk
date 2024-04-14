@@ -239,7 +239,7 @@ export default class ClanGamesScheduler {
 		});
 
 		const { endTime } = this.timings();
-		const warTiming = moment.duration(endTime - Date.now()).format('D[d] H[h], m[m], s[s]', { trim: 'both mid' });
+		const warTiming = moment.duration(endTime - Date.now()).format('D[d] H[h], m[m]', { trim: 'both mid' });
 
 		return [
 			`\u200e🔔 **${clan.name} (Clan Games ends in ${warTiming})**`,
