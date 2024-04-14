@@ -190,6 +190,7 @@ export const enum Settings {
 	RATE_LIMIT_WEBHOOK_URL = 'rateLimitWebhookURL',
 	EMOJI_SERVERS = 'emojiServers',
 	FAMILY_ROLE = 'familyRole',
+	EXCLUSIVE_FAMILY_ROLE = 'exclusiveFamilyRole',
 	FAMILY_LEADERS_ROLE = 'familyLeadersRole',
 	ACCOUNT_LINKED_ROLE = 'accountLinkedRole',
 	ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole',
