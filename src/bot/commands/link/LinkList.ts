@@ -52,7 +52,7 @@ export default class LinkListCommand extends Command {
 					.setStyle(ButtonStyle.Link)
 			);
 
-			this.client.storage.updateLinks(interaction.guildId);
+			this.client.storage.updateClanLinks(interaction.guildId);
 
 			return interaction.followUp({
 				content: [`**Click the button below to manage Discord links on our Dashboard.**`].join('\n'),

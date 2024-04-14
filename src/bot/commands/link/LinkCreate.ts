@@ -189,7 +189,7 @@ export default class LinkCreateCommand extends Command {
 
 		this.client.rolesManager.updateOne(member.user, interaction.guildId);
 
-		this.client.storage.updateLinks(interaction.guildId);
+		this.client.storage.updateClanLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
 		return interaction.editReply(

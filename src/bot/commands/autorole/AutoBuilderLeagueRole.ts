@@ -83,7 +83,7 @@ export default class AutoBbLeagueRoleCommand extends Command {
 		Object.assign(rolesConfig, Object.fromEntries(selected.map((s) => [s.league, s.role.id])));
 		await this.client.settings.set(interaction.guildId, Settings.BUILDER_LEAGUE_ROLES, rolesConfig);
 
-		this.client.storage.updateLinks(interaction.guildId);
+		this.client.storage.updateClanLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
 		const roles = BUILDER_BASE_LEAGUE_NAMES.map((league) => ({

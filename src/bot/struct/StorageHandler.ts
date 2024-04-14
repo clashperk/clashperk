@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import fetch from 'node-fetch';
 import { createHash } from 'node:crypto';
-import { cluster } from 'radash';
+import { cluster, unique } from 'radash';
 import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
@@ -953,57 +953,70 @@ export default class StorageHandler {
 		return this.client.rpcHandler.addAutoBoard(value!._id.toHexString());
 	}
 
-	public async updateLinks(guildId: string) {
+	public async updateClanLinks(guildId: string) {
 		const conflicts = [];
 
 		const clans = await this.find(guildId);
-		const collection = this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS);
 		for (const clan of clans) {
 			const { res, body: data } = await this.client.http.getClan(clan.tag);
 			if (!res.ok) continue;
 
-			const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
-			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
-
-			for (const { userId, tag } of unknowns) {
-				if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
-				const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
-
-				const player =
-					data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.getPlayer(tag).then(({ body }) => body));
-				if (!player?.name) continue;
-
-				const user = await this.client.users.fetch(userId).catch(() => null);
-				if (!user || user.bot) continue;
-
-				const dirtyLink = links.find((link) => link.tag === tag && link.userId !== userId && link.source === 'api');
-
-				try {
-					if (dirtyLink) await collection.deleteOne({ tag: dirtyLink.tag });
-
-					await collection.insertOne({
-						userId: user.id,
-						username: user.username,
-						displayName: user.displayName,
-						discriminator: user.discriminator,
-						tag,
-						name: player.name,
-						verified: false,
-						order: (lastAccount?.order ?? 0) + 1,
-						source: 'api',
-						createdAt: new Date()
-					});
-				} catch {
-					conflicts.push({ userId: user.id, playerTag: tag });
-				}
-			}
+			const result = await this.updatePlayerLinks(data.memberList);
+			conflicts.push(...result);
 		}
+
 		if (conflicts.length) {
 			this.client.logger.debug(
 				conflicts.map(({ playerTag }) => playerTag),
 				{ label: 'AccountConflicts' }
 			);
 		}
+	}
+
+	public async updatePlayerLinks(players: { tag: string; name?: string }[]) {
+		const conflicts = [];
+
+		const collection = this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS);
+		const links = await collection.find({ tag: { $in: players.map((mem) => mem.tag) } }).toArray();
+		const unknowns = await this.client.http.getDiscordLinks(players);
+
+		const userIds = unique([...links.map((link) => link.userId), ...unknowns.map((link) => link.userId)]);
+		const discordLinks = await this.client.http.getDiscordLinks(userIds.map((id) => ({ tag: id })));
+
+		for (const { userId, tag } of discordLinks) {
+			if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
+			const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
+
+			const player =
+				players.find((mem) => mem.tag === tag && mem.name) ?? (await this.client.http.getPlayer(tag).then(({ body }) => body));
+			if (!player?.name) continue;
+
+			const user = await this.client.users.fetch(userId).catch(() => null);
+			if (!user || user.bot) continue;
+
+			const dirtyLink = links.find((link) => link.tag === tag && link.userId !== userId && link.source === 'api');
+
+			try {
+				if (dirtyLink) await collection.deleteOne({ tag: dirtyLink.tag });
+
+				await collection.insertOne({
+					userId: user.id,
+					username: user.username,
+					displayName: user.displayName,
+					discriminator: user.discriminator,
+					tag,
+					name: player.name,
+					verified: false,
+					order: (lastAccount?.order ?? 0) + 1,
+					source: 'api',
+					createdAt: new Date()
+				});
+			} catch {
+				conflicts.push({ userId: user.id, playerTag: tag });
+			}
+		}
+
+		return conflicts;
 	}
 
 	private async uuid() {

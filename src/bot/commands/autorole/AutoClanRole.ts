@@ -72,7 +72,7 @@ export default class AutoClanRoleCommand extends Command {
 				.updateMany({ tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id }, { $set: { ...rolesSettings } });
 		}
 
-		this.client.storage.updateLinks(interaction.guildId);
+		this.client.storage.updateClanLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
 		return interaction.editReply(

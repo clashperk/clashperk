@@ -71,7 +71,7 @@ export default class AutoBuilderHallRoleCommand extends Command {
 		Object.assign(rolesConfig, Object.fromEntries(selected.map((s) => [s.hall, s.role.id])));
 		await this.client.settings.set(interaction.guildId, Settings.BUILDER_HALL_ROLES, rolesConfig);
 
-		this.client.storage.updateLinks(interaction.guildId);
+		this.client.storage.updateClanLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
 		const roles = BUILDER_HALL_LEVELS_FOR_ROLES.map((hall) => ({

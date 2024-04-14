@@ -12,7 +12,7 @@ import {
 	User
 } from 'discord.js';
 import moment from 'moment';
-import { cluster } from 'radash';
+import { cluster, diff } from 'radash';
 import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/Google.js';
@@ -122,6 +122,11 @@ export default class ProfileCommand extends Command {
 			this.client.http.getDiscordLinks(players)
 		]);
 
+		// JUST FOR LOGGING
+		const hasExtraAccount = diff(
+			otherTags,
+			players.map((en) => en.tag)
+		).length;
 		const dirtyUserIds = new Set([user.id, ...otherLinks.map((link) => link.userId)]);
 		const hasDiscrepancy = dirtyUserIds.size > 1;
 		if (hasDiscrepancy) this.client.logger.info(`UserIds: ${Array.from(dirtyUserIds).join(',')}`, { label: 'LinkDiscrepancy' });
@@ -136,6 +141,10 @@ export default class ProfileCommand extends Command {
 		const _players = await Promise.all(playerTags.map((tag) => this.client.http.getPlayer(tag)));
 		const playerLinks = _players.filter(({ res }) => res.ok).map(({ body }) => body);
 		const defaultPlayerTag = playerLinks[0]?.tag;
+
+		if (hasExtraAccount || hasDiscrepancy) {
+			this.client.storage.updatePlayerLinks(playerTags.map((tag) => ({ tag })));
+		}
 
 		_players.forEach(({ res }, idx) => {
 			const tag = playerTags[idx];
@@ -172,13 +181,14 @@ export default class ProfileCommand extends Command {
 			const tag = player.tag;
 			const isDefault = defaultPlayerTag === tag;
 
-			const signature = this.isVerified(players, tag) ? '**✓**' : this.isLinked(players, tag) ? '' : '';
+			const signature = this.isVerified(players, tag) ? '**✓**' : this.isLinked(players, tag) ? '' : '⚠️';
 			const weaponLevel = player.townHallWeaponLevel ? weaponLevels[player.townHallWeaponLevel] : '';
 			const townHall = `${TOWN_HALLS[player.townHallLevel]} ${player.townHallLevel}${weaponLevel}`;
+			const defMark = isDefault ? '**(Default)**' : '';
+			const url = this.playerShortUrl(player.tag);
+
 			_fields.push({
-				field: `${townHall} ${DOT} [${player.name} (${player.tag})](${this.playerShortUrl(player.tag)}) ${signature} ${
-					isDefault ? '**(Default)**' : ''
-				}`,
+				field: `${townHall} ${DOT} [${player.name} (${player.tag})](${url}) ${signature} ${defMark}`,
 				values: [this.heroes(player), this.clanName(player)].filter((a) => a.length)
 			});
 		});

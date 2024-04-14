@@ -81,7 +81,7 @@ export default class AutoRoleDisableCommand extends Command {
 			this.client.settings.delete(interaction.guildId, Settings.FAMILY_ROLE);
 		}
 		if (args.type === 'exclusive-family') {
-			this.client.settings.delete(interaction.guildId, Settings.FAMILY_ROLE);
+			this.client.settings.delete(interaction.guildId, Settings.EXCLUSIVE_FAMILY_ROLE);
 		}
 		if (args.type === 'guest') {
 			this.client.settings.delete(interaction.guildId, Settings.GUEST_ROLE);

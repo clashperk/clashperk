@@ -50,7 +50,7 @@ export default class AutoClanRoleCommand extends Command {
 			}
 		);
 
-		this.client.storage.updateLinks(interaction.guildId);
+		this.client.storage.updateClanLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
 		return interaction.editReply('Clan war role successfully enabled.');

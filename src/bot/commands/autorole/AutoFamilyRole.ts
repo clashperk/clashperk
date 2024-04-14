@@ -92,7 +92,7 @@ export default class AutoFamilyRoleCommand extends Command {
 			await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.verified_role.id);
 		}
 
-		this.client.storage.updateLinks(interaction.guildId);
+		this.client.storage.updateClanLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
 		const mutate = async () => {
