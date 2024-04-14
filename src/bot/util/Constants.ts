@@ -170,7 +170,7 @@ export const enum Settings {
 	TOWN_HALL_ROLES = 'townHallRoles',
 	BUILDER_HALL_ROLES = 'builderHallRoles',
 	LEAGUE_ROLES = 'leagueRoles',
-	BB_LEAGUE_ROLES = 'bbLeagueRoles',
+	BUILDER_LEAGUE_ROLES = 'builderLeagueRoles',
 	ROLE_REFRESHED = 'roleRefreshed',
 	LINK_EMBEDS = 'linkEmbeds',
 	WEBHOOK_LIMIT = 'webhookLimit',
@@ -274,6 +274,14 @@ export const getInviteLink = (id: string, guildId?: string, noPermissions = fals
 	return `https://discord.com/api/oauth2/authorize?${query}`;
 };
 
+export const BUILDER_HALL_LEVELS_FOR_ROLES = Array(MAX_BUILDER_HALL_LEVEL - 2)
+	.fill(0)
+	.map((_, i) => i + 3);
+
+export const TOWN_HALL_LEVELS_FOR_ROLES = Array(MAX_TOWN_HALL_LEVEL - 2)
+	.fill(0)
+	.map((_, i) => i + 3);
+
 export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
 	29000000: 'unranked',
 	29000001: 'bronze',
@@ -300,7 +308,7 @@ export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
 	29000022: 'legend'
 };
 
-export const BUILDER_BASE_LEAGUE_MAPS = {
+export const BUILDER_BASE_LEAGUE_MAPS: Record<string, string> = {
 	44000000: 'wood',
 	44000001: 'wood',
 	44000002: 'wood',

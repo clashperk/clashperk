@@ -1,12 +1,25 @@
-import { ApplicationCommandOptionType, ApplicationCommandType, ChannelType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
+import {
+	APIApplicationCommandBasicOption,
+	ApplicationCommandOptionType,
+	ApplicationCommandType,
+	ChannelType,
+	RESTPostAPIApplicationCommandsJSONBody
+} from 'discord.js';
 import i18next from 'i18next';
 import moment from 'moment';
 import { fileURLToPath } from 'node:url';
+import { title } from 'radash';
 import { command, common } from '../locales/en.js';
 import { defaultOptions, fallbackLng } from '../locales/index.js';
 import { Backend } from '../src/bot/util/Backend.js';
 import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/bot/util/CommandOptions.js';
-import { MAX_TOWN_HALL_LEVEL } from '../src/bot/util/Constants.js';
+import {
+	BUILDER_BASE_LEAGUE_NAMES,
+	BUILDER_HALL_LEVELS_FOR_ROLES,
+	MAX_TOWN_HALL_LEVEL,
+	PLAYER_LEAGUE_NAMES,
+	TOWN_HALL_LEVELS_FOR_ROLES
+} from '../src/bot/util/Constants.js';
 import { TranslationKey } from '../src/bot/util/i18n.js';
 import { Season } from '../src/bot/util/index.js';
 
@@ -2486,76 +2499,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description: 'Manage automatic Town Hall roles.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
-					{
-						name: 'th_3',
-						description: 'Town Hall 3 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_4',
-						description: 'Town Hall 4 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_5',
-						description: 'Town Hall 5 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_6',
-						description: 'Town Hall 6 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_7',
-						description: 'Town Hall 7 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_8',
-						description: 'Town Hall 8 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_9',
-						description: 'Town Hall 9 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_10',
-						description: 'Town Hall 10 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_11',
-						description: 'Town Hall 11 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_12',
-						description: 'Town Hall 12 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_13',
-						description: 'Town Hall 13 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_14',
-						description: 'Town Hall 14 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_15',
-						description: 'Town Hall 15 role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'th_16',
-						description: 'Town Hall 16 role.',
-						type: ApplicationCommandOptionType.Role
-					},
+					...TOWN_HALL_LEVELS_FOR_ROLES.map(
+						(hall) =>
+							({
+								name: `th_${hall}`,
+								description: `Town Hall ${hall} role.`,
+								type: ApplicationCommandOptionType.Role
+							}) satisfies APIApplicationCommandBasicOption
+					),
 					{
 						name: 'allow_non_family_accounts',
 						description: 'Whether to give roles to the members that are not in the family clans.',
@@ -2574,55 +2525,33 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'builder-hall',
+				description: 'Manage automatic Builder Hall roles.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					...BUILDER_HALL_LEVELS_FOR_ROLES.map(
+						(hall) =>
+							({
+								name: `bh_${hall}`,
+								description: `Builder Hall ${hall} role.`,
+								type: ApplicationCommandOptionType.Role
+							}) satisfies APIApplicationCommandBasicOption
+					)
+				]
+			},
+			{
 				name: 'leagues',
 				description: 'Set leagues roles.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
-					{
-						name: 'unranked',
-						description: 'Unranked league role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'bronze',
-						description: 'Bronze league role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'silver',
-						description: 'Silver league role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'gold',
-						description: 'Gold league role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'crystal',
-						description: 'Crystal league role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'master',
-						description: 'Master league role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'champion',
-						description: 'Champion league role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'titan',
-						description: 'Titan league role.',
-						type: ApplicationCommandOptionType.Role
-					},
-					{
-						name: 'legend',
-						description: 'Legend league role.',
-						type: ApplicationCommandOptionType.Role
-					},
+					...PLAYER_LEAGUE_NAMES.map(
+						(league) =>
+							({
+								name: league,
+								description: `${title(league)} league role.`,
+								type: ApplicationCommandOptionType.Role
+							}) satisfies APIApplicationCommandBasicOption
+					),
 					{
 						name: 'allow_non_family_accounts',
 						description: 'Whether to give roles to the members that are not in the family clans.',
@@ -2638,6 +2567,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							}
 						]
 					}
+				]
+			},
+			{
+				name: 'builder-leagues',
+				description: 'Set builder base league roles.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					...BUILDER_BASE_LEAGUE_NAMES.map(
+						(league) =>
+							({
+								name: league,
+								description: `${title(league)} league role.`,
+								type: ApplicationCommandOptionType.Role
+							}) satisfies APIApplicationCommandBasicOption
+					)
 				]
 			},
 			{
@@ -2673,6 +2617,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'family_role',
 						description: 'Family role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'exclusive_family_role',
+						description: 'Exclusive Family role.',
 						type: ApplicationCommandOptionType.Role
 					},
 					{
@@ -2726,6 +2675,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Family Role',
 								value: 'family'
+							},
+							{
+								name: 'Exclusive Family Role',
+								value: 'exclusive-family'
 							},
 							{
 								name: 'Guest Role',

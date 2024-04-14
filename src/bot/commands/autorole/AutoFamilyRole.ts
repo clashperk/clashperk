@@ -33,6 +33,7 @@ export default class AutoFamilyRoleCommand extends Command {
 		args: {
 			family_leaders_role?: Role;
 			family_role?: Role;
+			exclusive_family_role?: Role;
 			guest_role?: Role;
 			verified_role?: Role;
 		}
@@ -44,7 +45,7 @@ export default class AutoFamilyRoleCommand extends Command {
 			);
 		}
 
-		const roles = [args.verified_role, args.guest_role, args.family_role, args.family_leaders_role];
+		const roles = [args.verified_role, args.guest_role, args.family_role, args.family_leaders_role, args.exclusive_family_role];
 
 		const selected = roles.filter((role) => role) as Role[];
 		if (!selected.length) {
@@ -66,6 +67,10 @@ export default class AutoFamilyRoleCommand extends Command {
 
 		if (args.family_role) {
 			await this.client.settings.set(interaction.guild, Settings.FAMILY_ROLE, args.family_role.id);
+		}
+
+		if (args.exclusive_family_role) {
+			await this.client.settings.set(interaction.guild, Settings.EXCLUSIVE_FAMILY_ROLE, args.exclusive_family_role.id);
 		}
 
 		if (args.family_leaders_role) {
@@ -94,12 +99,13 @@ export default class AutoFamilyRoleCommand extends Command {
 			const rolesMap = await this.client.rolesManager.getGuildRolesMap(interaction.guildId);
 
 			const embed = new EmbedBuilder();
-			embed.setAuthor({ name: 'Family Role Settings' });
+			embed.setTitle('Family Role Settings').setURL('https://docs.clashperk.com/features/auto-role');
 			embed.addFields({
 				name: 'Family Leaders Roles',
 				value: rolesMap.familyLeadersRoles.map((id) => this.getRoleOrNone(id)).join(', ') || 'None'
 			});
 			embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
+			embed.addFields({ name: 'Exclusive Family Role', value: this.getRoleOrNone(rolesMap.exclusiveFamilyRoleId) });
 			embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
 			embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
 

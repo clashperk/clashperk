@@ -1,13 +1,13 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Settings, TOWN_HALL_LEVELS_FOR_ROLES } from '../../util/Constants.js';
+import { BUILDER_HALL_LEVELS_FOR_ROLES, Settings } from '../../util/Constants.js';
 import { ORANGE_NUMBERS } from '../../util/Emojis.js';
 
-export default class AutoTownHallRoleCommand extends Command {
+export default class AutoBuilderHallRoleCommand extends Command {
 	public constructor() {
-		super('setup-town-hall-roles', {
-			aliases: ['autorole-town-hall'],
-			category: 'none',
+		super('setup-builder-hall-roles', {
+			aliases: ['autorole-builder-hall'],
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks', 'ManageRoles'],
@@ -33,12 +33,12 @@ export default class AutoTownHallRoleCommand extends Command {
 			);
 		}
 
-		const TOWN_HALL_KEYS = TOWN_HALL_LEVELS_FOR_ROLES.map((level) => `th_${level}`);
+		const BUILDER_HALL_KEYS = BUILDER_HALL_LEVELS_FOR_ROLES.map((level) => `bh_${level}`);
 
 		const rolesMap: Record<string, Role> = {};
 		for (const key in args) {
-			if (!TOWN_HALL_KEYS.includes(key)) continue;
-			rolesMap[key.replace(/^th_/, '')] = args[key]!;
+			if (!BUILDER_HALL_KEYS.includes(key)) continue;
+			rolesMap[key.replace(/^bh_/, '')] = args[key]!;
 		}
 
 		const selected = Object.entries(rolesMap).map(([hall, role]) => ({ hall, role }));
@@ -46,7 +46,7 @@ export default class AutoTownHallRoleCommand extends Command {
 		if (typeof args.allowExternal === 'boolean') {
 			await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, Boolean(args.allowExternal));
 			if (!selected.length) {
-				return interaction.editReply('Town Hall roles settings updated.');
+				return interaction.editReply('Builder Hall roles settings updated.');
 			}
 		}
 
@@ -67,14 +67,14 @@ export default class AutoTownHallRoleCommand extends Command {
 			return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
 		}
 
-		const rolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.TOWN_HALL_ROLES, {});
+		const rolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.BUILDER_HALL_ROLES, {});
 		Object.assign(rolesConfig, Object.fromEntries(selected.map((s) => [s.hall, s.role.id])));
-		await this.client.settings.set(interaction.guildId, Settings.TOWN_HALL_ROLES, rolesConfig);
+		await this.client.settings.set(interaction.guildId, Settings.BUILDER_HALL_ROLES, rolesConfig);
 
 		this.client.storage.updateLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
-		const roles = TOWN_HALL_LEVELS_FOR_ROLES.map((hall) => ({
+		const roles = BUILDER_HALL_LEVELS_FOR_ROLES.map((hall) => ({
 			hall,
 			role: rolesConfig[hall]
 		}));

@@ -4,7 +4,7 @@ import { parallel } from 'radash';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/Client.js';
-import { Collections, PLAYER_LEAGUE_MAPS, SUPER_SCRIPTS, Settings } from '../util/Constants.js';
+import { BUILDER_BASE_LEAGUE_MAPS, Collections, PLAYER_LEAGUE_MAPS, SUPER_SCRIPTS, Settings } from '../util/Constants.js';
 import { makeAbbr, sumHeroes } from '../util/Helper.js';
 
 export const roles: { [key: string]: number } = {
@@ -95,10 +95,13 @@ export class RolesManager {
 	public async getGuildRolesMap(guildId: string): Promise<GuildRolesDto> {
 		const clans = await this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).find({ guild: guildId }).toArray();
 
-		const townHallRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.TOWN_HALL_ROLES, {});
-		const leagueRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.LEAGUE_ROLES, {});
 		const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, false);
 		const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
+
+		const townHallRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.TOWN_HALL_ROLES, {});
+		const builderHallRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.BUILDER_HALL_ROLES, {});
+		const leagueRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.LEAGUE_ROLES, {});
+		const builderLeagueRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.BUILDER_LEAGUE_ROLES, {});
 		const familyRoleId = this.client.settings.get<string>(guildId, Settings.FAMILY_ROLE, null);
 		const exclusiveFamilyRoleId = this.client.settings.get<string>(guildId, Settings.EXCLUSIVE_FAMILY_ROLE, null);
 		const familyLeadersRoles = this.client.settings.get<string | string[]>(guildId, Settings.FAMILY_LEADERS_ROLE, []);
@@ -140,7 +143,9 @@ export class RolesManager {
 			verifiedRoleId,
 			guestRoleId,
 			leagueRoles,
+			builderLeagueRoles,
 			townHallRoles,
+			builderHallRoles,
 			clanRoles,
 			verifiedOnlyClanRoles
 		};
@@ -148,7 +153,9 @@ export class RolesManager {
 
 	private getTargetedRoles(rolesMap: GuildRolesDto) {
 		const leagueRoles = Object.values(rolesMap.leagueRoles).filter((id) => id);
+		const builderLeagueRoles = Object.values(rolesMap.builderLeagueRoles).filter((id) => id);
 		const townHallRoles = Object.values(rolesMap.townHallRoles).filter((id) => id);
+		const builderHallRoles = Object.values(rolesMap.builderHallRoles).filter((id) => id);
 		const clanRoles = Object.values(rolesMap.clanRoles ?? {})
 			.map((_rMap) => Object.values(_rMap.roles))
 			.flat()
@@ -164,6 +171,8 @@ export class RolesManager {
 			rolesMap.guestRoleId,
 			rolesMap.verifiedRoleId,
 			...rolesMap.familyLeadersRoles,
+			...builderHallRoles,
+			...builderLeagueRoles,
 			...warRoles,
 			...leagueRoles,
 			...townHallRoles,
@@ -209,17 +218,27 @@ export class RolesManager {
 				if (rolesMap.verifiedOnlyClanRoles && !player.isVerified) continue;
 
 				const targetClanRolesMap = targetClan.roles ?? {};
-				const highestRole = this.getHighestRole(players, clanTag);
+				const highestRole = this.getHighestRole(players, clanTag, targetClanRolesMap);
 				if (highestRole) {
 					rolesToInclude.push(targetClanRolesMap[highestRole], targetClanRolesMap['everyone']);
 				}
 			}
 
+			// Town Hall Roles
 			if (rolesMap.allowNonFamilyTownHallRoles || (inFamily && !rolesMap.allowNonFamilyTownHallRoles)) {
 				rolesToInclude.push(rolesMap.townHallRoles[player.townHallLevel]);
 			}
+			// Builder Hall Roles
+			if (rolesMap.allowNonFamilyTownHallRoles || (inFamily && !rolesMap.allowNonFamilyTownHallRoles)) {
+				rolesToInclude.push(rolesMap.builderHallRoles[player.builderHallLevel]);
+			}
+			// League Roles
 			if (rolesMap.allowNonFamilyLeagueRoles || (inFamily && !rolesMap.allowNonFamilyLeagueRoles)) {
 				rolesToInclude.push(rolesMap.leagueRoles[PLAYER_LEAGUE_MAPS[player.leagueId]]);
+			}
+			// Builder League Roles
+			if (rolesMap.allowNonFamilyLeagueRoles || (inFamily && !rolesMap.allowNonFamilyLeagueRoles)) {
+				rolesToInclude.push(rolesMap.builderLeagueRoles[BUILDER_BASE_LEAGUE_MAPS[player.builderLeagueId]]);
 			}
 
 			if (player.isVerified) rolesToInclude.push(rolesMap.verifiedRoleId);
@@ -476,7 +495,9 @@ export class RolesManager {
 					name: player.name,
 					tag: player.tag,
 					townHallLevel: player.townHallLevel,
+					builderHallLevel: player.builderHallLevel ?? 0,
 					leagueId: player.league?.id ?? UnrankedLeagueData.id,
+					builderLeagueId: player.builderBaseLeague?.id ?? 0,
 					clanRole: player.role ?? null,
 					clanName: player.clan?.name ?? null,
 					clanTag: player.clan?.tag ?? null,
@@ -572,9 +593,14 @@ export class RolesManager {
 		return guild.members.me && role && !role.managed && guild.members.me.roles.highest.position > role.position && role.id !== guild.id;
 	}
 
-	private getHighestRole(players: PlayerRolesInput[], clanTag: string) {
+	private getHighestRole(
+		players: PlayerRolesInput[],
+		clanTag: string,
+		/** Clan specific roles map. If a specific role is not set, skip it; */
+		clanRoles: Record<string, string>
+	) {
 		const highestRoles = players
-			.filter((player) => player.clanTag && player.clanTag === clanTag && player.clanRole)
+			.filter((player) => player.clanTag && player.clanTag === clanTag && player.clanRole && clanRoles[player.clanRole])
 			.map((player) => player.clanRole!);
 		return highestRoles.sort((a, b) => roles[b] - roles[a]).at(0) ?? null;
 	}
@@ -640,7 +666,9 @@ interface PlayerRolesInput {
 	name: string;
 	tag: string;
 	townHallLevel: number;
+	builderHallLevel: number;
 	leagueId: number;
+	builderLeagueId: number;
 	isVerified: boolean;
 	clanRole: string | null;
 	clanTag: string | null;
@@ -650,8 +678,10 @@ interface PlayerRolesInput {
 
 interface GuildRolesDto {
 	guildId: string;
-	townHallRoles: { [townHallLevel: string]: string };
+	townHallRoles: { [level: string]: string };
+	builderHallRoles: { [level: string]: string };
 	leagueRoles: { [leagueId: string]: string };
+	builderLeagueRoles: { [leagueId: string]: string };
 	clanRoles: {
 		[clanTag: string]: {
 			roles: { [clanRole: string]: string };

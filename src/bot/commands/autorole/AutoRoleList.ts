@@ -23,7 +23,10 @@ export default class AutoRoleListCommand extends Command {
 		);
 
 		const leagueRoles = Array.from(new Set(Object.values(rolesMap.leagueRoles).filter((id) => id)));
+		const builderLeagueRoles = Array.from(new Set(Object.values(rolesMap.builderLeagueRoles).filter((id) => id)));
 		const townHallRoles = Array.from(new Set(Object.values(rolesMap.townHallRoles).filter((id) => id)));
+		const builderHallRoles = Array.from(new Set(Object.values(rolesMap.builderHallRoles).filter((id) => id)));
+
 		const clanRoles = Array.from(
 			new Set(
 				Object.values(rolesMap.clanRoles ?? {})
@@ -55,8 +58,8 @@ export default class AutoRoleListCommand extends Command {
 		const requiresVerification = this.client.settings.get<boolean>(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 
 		const embed = new EmbedBuilder();
-		embed.setAuthor({ name: 'Roles Config' });
 		embed.setColor(this.client.embed(interaction));
+		embed.setURL('https://docs.clashperk.com/features/auto-role');
 
 		if (args.expand) {
 			embed.setTitle('Clan Roles and War Roles');
@@ -86,14 +89,23 @@ export default class AutoRoleListCommand extends Command {
 				value: [townHallRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
 			});
 			embed.addFields({
+				name: 'BuilderHall Roles' + (builderHallRoles.length && !allowNonFamilyTownHallRoles ? ' (Family Only)' : ''),
+				value: [builderHallRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
+			});
+			embed.addFields({
 				name: 'League Roles' + (leagueRoles.length && !allowNonFamilyLeagueRoles ? ' (Family Only)' : ''),
 				value: [leagueRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
+			});
+			embed.addFields({
+				name: 'Builder League Roles' + (builderLeagueRoles.length && !allowNonFamilyLeagueRoles ? ' (Family Only)' : ''),
+				value: [builderLeagueRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
 			});
 			embed.addFields({
 				name: 'Family Leaders Roles',
 				value: rolesMap.familyLeadersRoles.map((id) => this.getRoleOrNone(id)).join(', ') || 'None'
 			});
 			embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
+			embed.addFields({ name: 'Exclusive Family Role', value: this.getRoleOrNone(rolesMap.exclusiveFamilyRoleId) });
 			embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
 			embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
 		}
