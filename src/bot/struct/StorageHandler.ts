@@ -977,10 +977,11 @@ export default class StorageHandler {
 		const conflicts = [];
 
 		const collection = this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS);
-		const links = await collection.find({ tag: { $in: players.map((mem) => mem.tag) } }).toArray();
-		const unknowns = await this.client.http.getDiscordLinks(players);
+		const _links = await collection.find({ tag: { $in: players.map((mem) => mem.tag) } }).toArray();
+		const _discordLinks = await this.client.http.getDiscordLinks(players);
 
-		const userIds = unique([...links.map((link) => link.userId), ...unknowns.map((link) => link.userId)]);
+		const userIds = unique([..._links.map((link) => link.userId), ..._discordLinks.map((link) => link.userId)]);
+		const links = await collection.find({ userId: { $in: userIds } }).toArray();
 		const discordLinks = await this.client.http.getDiscordLinks(userIds.map((id) => ({ tag: id })));
 
 		for (const { userId, tag } of discordLinks) {
