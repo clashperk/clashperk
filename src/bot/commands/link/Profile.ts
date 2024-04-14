@@ -57,7 +57,7 @@ export default class ProfileCommand extends Command {
 			member: {
 				id: 'member',
 				match: 'MEMBER',
-				default: interaction.options.getMember('user')
+				default: interaction.options.getMember('user') || interaction.member
 			}
 		};
 	}
@@ -131,17 +131,15 @@ export default class ProfileCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const collection: { field: string; values: string[] }[] = [];
+		const _fields: { field: string; values: string[] }[] = [];
 		const playerTags = [...new Set([...players.map((en) => en.tag), ...otherTags])];
-		const __players = await Promise.all(playerTags.map((tag) => this.client.http.getPlayer(tag)));
-		const playerLinks = __players.filter(({ res }) => res.ok).map(({ body }) => body);
-		const defaultPlayer = playerLinks.at(0);
+		const _players = await Promise.all(playerTags.map((tag) => this.client.http.getPlayer(tag)));
+		const playerLinks = _players.filter(({ res }) => res.ok).map(({ body }) => body);
+		const defaultPlayerTag = playerLinks[0]?.tag;
 
-		__players.forEach(({ res }, n) => {
-			const tag = playerTags[n];
-			if (res.status === 404) {
-				this.deleteBanned(user.id, tag);
-			}
+		_players.forEach(({ res }, idx) => {
+			const tag = playerTags[idx];
+			if (res.status === 404) this.deleteBanned(user.id, tag);
 		});
 
 		if (user.bot) {
@@ -155,38 +153,38 @@ export default class ProfileCommand extends Command {
 		playerLinks.sort((a, b) => sumHeroes(b) - sumHeroes(a));
 		playerLinks.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-		const links: LinkData[] = [];
-		playerLinks.forEach((player) => {
-			const tag = player.tag;
-			const isDefault = defaultPlayer?.tag === tag;
-
-			const signature = this.isVerified(players, tag) ? '**✓**' : this.isLinked(players, tag) ? '' : '';
-			const weaponLevel = player.townHallWeaponLevel ? weaponLevels[player.townHallWeaponLevel] : '';
-			const townHall = `${TOWN_HALLS[player.townHallLevel]} ${player.townHallLevel}${weaponLevel}`;
-			collection.push({
-				field: `${townHall} ${DOT} [${player.name} (${player.tag})](${this.playerShortUrl(player.tag)}) ${signature} ${
-					isDefault ? '**(Default)**' : ''
-				}`,
-				values: [this.heroes(player), this.clanName(player)].filter((a) => a.length)
-			});
-
-			links.push({
+		const links: LinkData[] = playerLinks.map((player) => {
+			return {
 				name: player.name,
 				tag: player.tag,
-				verified: this.isVerified(players, tag) ? 'Yes' : 'No',
+				verified: this.isVerified(players, player.tag) ? 'Yes' : 'No',
 				clan: {
 					name: player.clan?.name,
 					tag: player.clan?.tag
 				},
 				townHallLevel: player.townHallLevel,
 				role: player.role,
-				internal: this.isLinked(players, tag) ? 'Yes' : 'No'
+				internal: this.isLinked(players, player.tag) ? 'Yes' : 'No'
+			};
+		});
+
+		playerLinks.forEach((player) => {
+			const tag = player.tag;
+			const isDefault = defaultPlayerTag === tag;
+
+			const signature = this.isVerified(players, tag) ? '**✓**' : this.isLinked(players, tag) ? '' : '';
+			const weaponLevel = player.townHallWeaponLevel ? weaponLevels[player.townHallWeaponLevel] : '';
+			const townHall = `${TOWN_HALLS[player.townHallLevel]} ${player.townHallLevel}${weaponLevel}`;
+			_fields.push({
+				field: `${townHall} ${DOT} [${player.name} (${player.tag})](${this.playerShortUrl(player.tag)}) ${signature} ${
+					isDefault ? '**(Default)**' : ''
+				}`,
+				values: [this.heroes(player), this.clanName(player)].filter((a) => a.length)
 			});
 		});
 
 		const embeds: EmbedBuilder[] = [];
-
-		cluster(collection, 15).forEach((fields, page) => {
+		cluster(_fields, 15).forEach((fields, page) => {
 			if (page === 0) {
 				embed.setFields(
 					fields.map(({ field, values }, itemIndex) => ({
@@ -261,7 +259,7 @@ export default class ProfileCommand extends Command {
 				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 				.updateOne({ userId: user.id, tag: playerTag }, { $set: { order } });
 
-			return this.handler.exec(interaction, this, args);
+			return this.handler.exec(action, this, args);
 		};
 
 		const message = await interaction.editReply({ embeds: [embed], components: [row] });
@@ -290,6 +288,7 @@ export default class ProfileCommand extends Command {
 							.setCustomId(customIds.account)
 							.setOptions(
 								playerLinks
+									.filter((player) => player.tag !== defaultPlayerTag)
 									.filter((player) => linkedPlayerTags.includes(player.tag))
 									.slice(0, 25)
 									.map((link) => ({
