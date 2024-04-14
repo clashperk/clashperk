@@ -142,8 +142,8 @@ export default class ProfileCommand extends Command {
 		const playerLinks = _players.filter(({ res }) => res.ok).map(({ body }) => body);
 		const defaultPlayerTag = playerLinks[0]?.tag;
 
-		this.client.storage.updatePlayerLinks(playerTags.map((tag) => ({ tag })));
 		if (hasExtraAccount || hasDiscrepancy) {
+			this.client.storage.updatePlayerLinks(playerTags.map((tag) => ({ tag })));
 		}
 
 		_players.forEach(({ res }, idx) => {
