@@ -1,6 +1,8 @@
-import { CommandInteraction, Guild, Role } from 'discord.js';
+import { ActionRowBuilder, CommandInteraction, EmbedBuilder, Guild, Role, RoleSelectMenuBuilder } from 'discord.js';
+import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 
 export interface IArgs {
 	command?: 'refresh' | 'disable' | null;
@@ -67,7 +69,14 @@ export default class AutoFamilyRoleCommand extends Command {
 		}
 
 		if (args.family_leaders_role) {
-			await this.client.settings.set(interaction.guild, Settings.FAMILY_LEADERS_ROLE, args.family_leaders_role.id);
+			const _familyLeadersRoles = this.client.settings.get<string | string[]>(interaction.guild, Settings.FAMILY_LEADERS_ROLE, []);
+			const familyLeadersRoles = Array.isArray(_familyLeadersRoles) ? _familyLeadersRoles : [_familyLeadersRoles];
+
+			await this.client.settings.set(
+				interaction.guild,
+				Settings.FAMILY_LEADERS_ROLE,
+				unique([...familyLeadersRoles, args.family_leaders_role.id]).filter((id) => interaction.guild.roles.cache.has(id))
+			);
 		}
 
 		if (args.guest_role) {
@@ -81,7 +90,74 @@ export default class AutoFamilyRoleCommand extends Command {
 		this.client.storage.updateLinks(interaction.guildId);
 		// TODO: Refresh Roles
 
-		await interaction.editReply('Family role enabled successfully!');
+		const mutate = async () => {
+			const rolesMap = await this.client.rolesManager.getGuildRolesMap(interaction.guildId);
+
+			const embed = new EmbedBuilder();
+			embed.setAuthor({ name: 'Family Role Settings' });
+			embed.addFields({
+				name: 'Family Leaders Roles',
+				value: rolesMap.familyLeadersRoles.map((id) => this.getRoleOrNone(id)).join(', ')
+			});
+			embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
+			embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
+			embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
+
+			return embed;
+		};
+
+		const embed = await mutate();
+		if (!args.family_leaders_role) return interaction.editReply({ embeds: [embed] });
+
+		const customIds = { roles: this.client.uuid() };
+		const menu = new RoleSelectMenuBuilder()
+			.setPlaceholder('Select Family Leaders Roles')
+			.setCustomId(customIds.roles)
+			.setMaxValues(25);
+
+		const familyLeadersRoles = this.client.settings
+			.get<string[]>(interaction.guild, Settings.FAMILY_LEADERS_ROLE, [])
+			.filter((id) => interaction.guild.roles.cache.has(id));
+		if (familyLeadersRoles.length) menu.setDefaultRoles(...familyLeadersRoles);
+
+		const row = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(menu);
+
+		const message = await interaction.editReply({ embeds: [embed], components: [row] });
+
+		createInteractionCollector({
+			interaction,
+			message,
+			customIds,
+			onRoleSelect: async (action) => {
+				if (action.roles.some((role) => this.isSystemRole(role, action.guild))) {
+					const systemRoles = action.roles
+						.filter((role) => this.isSystemRole(role, action.guild))
+						.map(({ id }) => `<@&${id}>`)
+						.join(', ');
+
+					return action.reply({
+						content: `${this.i18n('command.autorole.no_system_roles', { lng: action.locale })} (${systemRoles})`,
+						ephemeral: true
+					});
+				}
+
+				if (action.roles.some((role) => this.isHigherRole(role, action.guild))) {
+					return action.reply({
+						content: this.i18n('command.autorole.no_higher_roles', { lng: action.locale }),
+						ephemeral: true
+					});
+				}
+
+				await this.client.settings.set(
+					action.guild,
+					Settings.FAMILY_LEADERS_ROLE,
+					action.roles.map((role) => role.id)
+				);
+
+				const embed = await mutate();
+				return action.update({ embeds: [embed], components: [] });
+			}
+		});
 	}
 
 	private isSystemRole(role: Role, guild: Guild) {
@@ -90,5 +166,9 @@ export default class AutoFamilyRoleCommand extends Command {
 
 	private isHigherRole(role: Role, guild: Guild) {
 		return role.position > guild.members.me!.roles.highest.position;
+	}
+
+	private getRoleOrNone(id?: string | null) {
+		return id ? `<@&${id}>` : 'None';
 	}
 }

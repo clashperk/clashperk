@@ -99,7 +99,7 @@ export class RolesManager {
 		const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, false);
 		const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
 		const familyRoleId = this.client.settings.get<string>(guildId, Settings.FAMILY_ROLE, null);
-		const familyLeadersRoleId = this.client.settings.get<string>(guildId, Settings.FAMILY_LEADERS_ROLE, null);
+		const familyLeadersRoles = this.client.settings.get<string | string[]>(guildId, Settings.FAMILY_LEADERS_ROLE, []);
 		const verifiedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_VERIFIED_ROLE, null);
 		const guestRoleId = this.client.settings.get<string>(guildId, Settings.GUEST_ROLE, null);
 
@@ -133,7 +133,7 @@ export class RolesManager {
 			allowNonFamilyLeagueRoles,
 			allowNonFamilyTownHallRoles,
 			familyRoleId,
-			familyLeadersRoleId,
+			familyLeadersRoles: Array.isArray(familyLeadersRoles) ? familyLeadersRoles : [familyLeadersRoles],
 			verifiedRoleId,
 			guestRoleId,
 			leagueRoles,
@@ -218,7 +218,7 @@ export class RolesManager {
 		if (inFamily) rolesToInclude.push(rolesMap.familyRoleId);
 		else rolesToInclude.push(rolesMap.guestRoleId);
 
-		if (isFamilyLeader) rolesToInclude.push(rolesMap.familyLeadersRoleId);
+		if (isFamilyLeader) rolesToInclude.push(...rolesMap.familyLeadersRoles);
 
 		rolesToInclude = rolesToInclude.filter((id) => id);
 		const rolesToExclude = targetedRoles.filter((id) => !rolesToInclude.includes(id));
@@ -650,7 +650,7 @@ interface GuildRolesDto {
 	};
 	guestRoleId: string;
 	familyRoleId: string;
-	familyLeadersRoleId: string;
+	familyLeadersRoles: string[];
 	verifiedRoleId: string;
 	clanTags: string[];
 	warClanTags: string[];

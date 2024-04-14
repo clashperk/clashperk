@@ -89,7 +89,10 @@ export default class AutoRoleListCommand extends Command {
 				name: 'League Roles' + (leagueRoles.length && !allowNonFamilyLeagueRoles ? ' (Family Only)' : ''),
 				value: [leagueRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
 			});
-			embed.addFields({ name: 'Family Leaders Role', value: this.getRoleOrNone(rolesMap.familyLeadersRoleId) });
+			embed.addFields({
+				name: 'Family Leaders Roles',
+				value: rolesMap.familyLeadersRoles.map((id) => this.getRoleOrNone(id)).join(', ')
+			});
 			embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
 			embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
 			embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });

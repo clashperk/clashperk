@@ -73,9 +73,9 @@ export default class NicknameConfigCommand extends Command {
 				return interaction.editReply(
 					`Invalid **non-family nickname** format \`${nonFamilyFormat}\`, it must **not** include \`{CLAN}\` \`{CLAN_NAME}\` \`{ALIAS}\` \`{CLAN_ALIAS}\` \`{ROLE}\` \`{CLAN_ROLE}\``
 				);
-			} else if (!/{NAME}/gi.test(nonFamilyFormat)) {
+			} else if (!/{NAME}|{PLAYER_NAME}|{DISCORD_NAME}|{DISCORD_USERNAME}|{USERNAME}|{DISCORD}/gi.test(nonFamilyFormat)) {
 				return interaction.editReply(
-					`Invalid **non-family nickname** format \`${familyFormat}\`, it must include \`{NAME}\` or \`{PLAYER_NAME}\``
+					`Invalid **non-family nickname** format \`${nonFamilyFormat}\`, it must include \`{PLAYER_NAME}\` or \`{DISCORD_NAME}\` or \`{DISCORD_USERNAME}\``
 				);
 			} else {
 				this.client.settings.set(interaction.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT, nonFamilyFormat);
