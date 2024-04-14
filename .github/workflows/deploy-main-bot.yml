@@ -1,11 +1,6 @@
 name: deploy-main-bot
 
 on:
-  # push:
-  #   branches:
-  #     - deploy
-  #   paths-ignore:
-  #     - scripts/**
   workflow_dispatch:
 
 jobs:
