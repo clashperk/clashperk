@@ -91,7 +91,7 @@ export default class AutoRoleListCommand extends Command {
 			});
 			embed.addFields({
 				name: 'Family Leaders Roles',
-				value: rolesMap.familyLeadersRoles.map((id) => this.getRoleOrNone(id)).join(', ')
+				value: rolesMap.familyLeadersRoles.map((id) => this.getRoleOrNone(id)).join(', ') || 'None'
 			});
 			embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
 			embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
