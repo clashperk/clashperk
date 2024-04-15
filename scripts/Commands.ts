@@ -2665,6 +2665,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'leagues'
 							},
 							{
+								name: 'Builder Hall Roles',
+								value: 'builder-hall'
+							},
+							{
+								name: 'Builder Leagues Roles',
+								value: 'builder-leagues'
+							},
+							{
 								name: 'Wars Role',
 								value: 'wars'
 							},
