@@ -599,10 +599,18 @@ export class RolesManager {
 		/** Clan specific roles map. If a specific role is not set, skip it; */
 		clanRoles: Record<string, string>
 	) {
-		const highestRoles = players
-			.filter((player) => player.clanTag && player.clanTag === clanTag && player.clanRole && clanRoles[player.clanRole])
+		const playerRoles = players
+			.filter((player) => player.clanTag && player.clanTag === clanTag && player.clanRole)
 			.map((player) => player.clanRole!);
-		return highestRoles.sort((a, b) => roles[b] - roles[a]).at(0) ?? null;
+
+		return (
+			playerRoles
+				// making sure the highest roles are actually set
+				.filter((role) => clanRoles[role])
+				.sort((a, b) => roles[b] - roles[a])
+				// if none of the in-game roles are set and player is in the clan, return everyone role;
+				.at(0) ?? (playerRoles.length ? 'everyone' : null)
+		);
 	}
 
 	private getFormattedNickname(
