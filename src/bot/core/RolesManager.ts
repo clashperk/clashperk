@@ -204,9 +204,9 @@ export class RolesManager {
 				['leader', 'coLeader'].includes(player.clanRole) &&
 				rolesMap.clanTags.includes(player.clanTag)
 		);
-		const isExclusiveFamily = players.every(
-			(player) => player.clanTag && player.clanRole && rolesMap.clanTags.includes(player.clanTag)
-		);
+		const isExclusiveFamily =
+			players.length > 0 &&
+			players.every((player) => player.clanTag && player.clanRole && rolesMap.clanTags.includes(player.clanTag));
 
 		for (const player of players) {
 			for (const clanTag in rolesMap.clanRoles) {
