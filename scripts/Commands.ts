@@ -2882,6 +2882,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description_localizations: translation('command.reminders.create.options.channel.description'),
 						type: ApplicationCommandOptionType.Channel,
 						channel_types: ChannelTypes
+					},
+					{
+						name: 'reminder_id',
+						description: 'List a reminder by ID (do /reminders list to get the ID)',
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},

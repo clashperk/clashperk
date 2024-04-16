@@ -1,7 +1,7 @@
+import { ClanCategoriesEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { ClanCategories } from '../../struct/StorageHandler.js';
 import { Collections } from '../../util/Constants.js';
 
 export default class CategoryEditCommand extends Command {
@@ -33,7 +33,7 @@ export default class CategoryEditCommand extends Command {
 			});
 		}
 
-		const payload: Partial<ClanCategories> = {};
+		const payload: Partial<ClanCategoriesEntity> = {};
 		if (args.category_order) payload.order = args.category_order;
 		if (args.category_name) {
 			payload.displayName = args.category_name.trim();

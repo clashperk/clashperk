@@ -11,17 +11,12 @@ import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Collections, Flags, Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
-import { Reminder, Schedule } from './ClanWarScheduler.js';
 import { Client } from './Client.js';
-
-export interface ClanStore extends ClanStoresEntity {}
-
-export interface ClanCategories extends ClanCategoriesEntity {}
 
 export const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
 
 export default class StorageHandler {
-	public collection: Collection<ClanStore>;
+	public collection: Collection<ClanStoresEntity>;
 
 	public constructor(private readonly client: Client) {
 		this.collection = client.db.collection(Collections.CLAN_STORES);
@@ -56,7 +51,7 @@ export default class StorageHandler {
 		await this.client.db.collection(collection).deleteMany({ _id: { $in: result.map((doc) => doc._id) } });
 	}
 
-	public async search(guildId: string, query: string[]): Promise<WithId<ClanStore>[]> {
+	public async search(guildId: string, query: string[]): Promise<WithId<ClanStoresEntity>[]> {
 		if (!query.length) return [];
 		return this.collection
 			.find(
@@ -118,7 +113,7 @@ export default class StorageHandler {
 	public async findOrCreateCategory({ guildId, category }: { guildId: string; category?: string }) {
 		if (!category) return null;
 
-		const collection = this.client.db.collection<ClanCategories>(Collections.CLAN_CATEGORIES);
+		const collection = this.client.db.collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES);
 
 		const formattedName = this.formatCategoryName(category);
 		if (ObjectId.isValid(category)) {
@@ -141,7 +136,7 @@ export default class StorageHandler {
 
 	public async getOrCreateDefaultCategories(guildId: string) {
 		const categories = await this.client.db
-			.collection<ClanCategories>(Collections.CLAN_CATEGORIES)
+			.collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES)
 			.find({ guildId })
 			.sort({ order: 1 })
 			.toArray();
@@ -154,7 +149,7 @@ export default class StorageHandler {
 				name: name.toLowerCase(),
 				displayName: name
 			}));
-			await this.client.db.collection<ClanCategories>(Collections.CLAN_CATEGORIES).insertMany(payload);
+			await this.client.db.collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES).insertMany(payload);
 			return payload.map((result) => ({ value: result._id.toHexString(), name: result.displayName, order: result.order }));
 		}
 
@@ -455,10 +450,10 @@ export default class StorageHandler {
 	}
 
 	public async deleteWarReminders(clanTag: string, guild: string) {
-		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).find({ guild, clans: clanTag }).toArray();
+		const reminders = await this.client.db.collection(Collections.REMINDERS).find({ guild, clans: clanTag }).toArray();
 		if (!reminders.length) return null;
 		for (const rem of reminders) {
-			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId: rem._id });
+			await this.client.db.collection(Collections.SCHEDULERS).deleteMany({ reminderId: rem._id });
 			if (rem.clans.length === 1) {
 				await this.client.db.collection(Collections.REMINDERS).deleteOne({ _id: rem._id });
 			} else {

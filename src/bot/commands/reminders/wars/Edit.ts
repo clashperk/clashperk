@@ -1,3 +1,4 @@
+import { ClanWarRemindersEntity } from '@app/entities';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -8,12 +9,10 @@ import {
 	ModalBuilder,
 	StringSelectMenuBuilder,
 	TextInputBuilder,
-	TextInputStyle,
-	escapeMarkdown
+	TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../../lib/index.js';
-import { Reminder } from '../../../struct/ClanWarScheduler.js';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
 import { hexToNanoId } from '../../../util/Helper.js';
 
@@ -30,8 +29,11 @@ export default class ReminderEditCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { id: string }) {
-		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).find({ guild: interaction.guild.id }).toArray();
+	public async exec(interaction: CommandInteraction<'cached'>, args: { id: string; disable?: boolean }) {
+		const reminders = await this.client.db
+			.collection<ClanWarRemindersEntity>(Collections.REMINDERS)
+			.find({ guild: interaction.guild.id })
+			.toArray();
 		if (!reminders.length)
 			return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
 
@@ -40,7 +42,7 @@ export default class ReminderEditCommand extends Command {
 			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
 
-		const reminder = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ _id: reminderId });
+		const reminder = await this.client.db.collection<ClanWarRemindersEntity>(Collections.REMINDERS).findOne({ _id: reminderId });
 		if (!reminder) {
 			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
@@ -51,6 +53,7 @@ export default class ReminderEditCommand extends Command {
 			remaining: this.client.uuid(interaction.user.id),
 			clans: this.client.uuid(interaction.user.id),
 			save: this.client.uuid(interaction.user.id),
+			disable: this.client.uuid(interaction.user.id),
 			warTypes: this.client.uuid(interaction.user.id),
 			message: this.client.uuid(interaction.user.id),
 			modalMessage: this.client.uuid(interaction.user.id)
@@ -64,10 +67,9 @@ export default class ReminderEditCommand extends Command {
 			roles: reminder.roles,
 			silent: reminder.silent || reminder.duration === 0,
 			warTypes: reminder.warTypes,
-			message: reminder.message
+			message: reminder.message,
+			disabled: args.disable ?? reminder.disabled
 		};
-
-		const dur = `${reminder.duration === 0 ? 'at the end' : `${this.getStatic(reminder.duration)} remaining`}`;
 
 		const embed = new EmbedBuilder();
 		const mutate = (disable = false) => {
@@ -84,7 +86,7 @@ export default class ReminderEditCommand extends Command {
 				].join('\n')
 			);
 			embed.setFooter({
-				text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
+				text: [state.disabled ? 'Reminder Disabled\n' : '', clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
 			});
 			const warTypeRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
@@ -205,6 +207,13 @@ export default class ReminderEditCommand extends Command {
 						.setDisabled(disable)
 				)
 				.addComponents(
+					new ButtonBuilder()
+						.setCustomId(customIds.disable)
+						.setLabel(state.disabled ? 'Enable' : 'Disable')
+						.setStyle(state.disabled ? ButtonStyle.Success : ButtonStyle.Danger)
+						.setDisabled(disable)
+				)
+				.addComponents(
 					new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 				);
 
@@ -221,13 +230,7 @@ export default class ReminderEditCommand extends Command {
 
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: [
-				`**Edit War Reminder (${dur})** <#${reminder.channel}>`,
-				'',
-				escapeMarkdown(clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')),
-				'',
-				`${reminder.message}`
-			].join('\n'),
+			embeds: [embed],
 			allowedMentions: { parse: [] }
 		});
 
@@ -294,9 +297,14 @@ export default class ReminderEditCommand extends Command {
 				} catch {}
 			}
 
+			if (action.customId === customIds.disable && action.isButton()) {
+				state.disabled = !state.disabled;
+				await action.update({ components: mutate(), embeds: [embed] });
+			}
+
 			if (action.customId === customIds.save && action.isButton()) {
 				await action.deferUpdate();
-				await this.client.db.collection<Reminder>(Collections.REMINDERS).updateOne(
+				await this.client.db.collection<ClanWarRemindersEntity>(Collections.REMINDERS).updateOne(
 					{ _id: reminder._id },
 					{
 						$set: {
@@ -306,6 +314,7 @@ export default class ReminderEditCommand extends Command {
 							warTypes: state.warTypes,
 							smartSkip: state.smartSkip,
 							silent: state.silent,
+							disabled: state.disabled,
 							message: state.message
 						}
 					}

@@ -16,8 +16,8 @@ import {
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import ms from 'ms';
+import { RaidRemindersEntity } from '../../../entities/capital-raid-reminders.entity.js';
 import { Args, Command } from '../../../lib/index.js';
-import { RaidReminder } from '../../../struct/CapitalRaidScheduler.js';
 import { Collections, missingPermissions } from '../../../util/Constants.js';
 
 export default class ReminderCreateCommand extends Command {
@@ -77,7 +77,7 @@ export default class ReminderCreateCommand extends Command {
 		}
 
 		const reminders = await this.client.db
-			.collection<RaidReminder>(Collections.RAID_REMINDERS)
+			.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS)
 			.countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
 			return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
@@ -291,7 +291,7 @@ export default class ReminderCreateCommand extends Command {
 					createdAt: new Date()
 				};
 
-				const { insertedId } = await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).insertOne(reminder);
+				const { insertedId } = await this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS).insertOne(reminder);
 				this.client.raidScheduler.create({ ...reminder, _id: insertedId });
 				await action.editReply({
 					components: mutate(true),

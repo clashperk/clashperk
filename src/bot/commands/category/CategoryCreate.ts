@@ -1,7 +1,7 @@
+import { ClanCategoriesEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { ClanCategories } from '../../struct/StorageHandler.js';
 import { Collections } from '../../util/Constants.js';
 
 export default class CategoryCreateCommand extends Command {
@@ -18,7 +18,7 @@ export default class CategoryCreateCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { category_name: string; category_order?: number }) {
 		const formattedName = this.client.storage.formatCategoryName(args.category_name);
 
-		const collection = this.client.db.collection<ClanCategories>(Collections.CLAN_CATEGORIES);
+		const collection = this.client.db.collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES);
 
 		const alreadyExists = await collection.findOne({ guildId: interaction.guildId, name: formattedName });
 		if (alreadyExists) {

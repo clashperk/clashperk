@@ -1,6 +1,6 @@
+import { ClanStoresEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { ClanStore } from '../../struct/StorageHandler.js';
 import { Settings } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
 
@@ -26,7 +26,7 @@ export default class ClansCommand extends Command {
 		const categories = await this.getCategoriesMap(interaction.guildId);
 		const categoryIds = Object.keys(categories);
 
-		const clansReduced = clans.reduce<Record<string, ClanStore[]>>((prev, curr) => {
+		const clansReduced = clans.reduce<Record<string, ClanStoresEntity[]>>((prev, curr) => {
 			let categoryId = curr.categoryId?.toHexString() || 'general';
 			if (!(categoryId in categories)) categoryId = 'general';
 

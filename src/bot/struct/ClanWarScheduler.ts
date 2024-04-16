@@ -1,3 +1,4 @@
+import { ClanWarRemindersEntity, ClanWarSchedulersEntity } from '@app/entities';
 import { APIClanWar } from 'clashofclans.js';
 import { APIMessage, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
@@ -9,8 +10,8 @@ import { ReminderDeleteReasons } from './CapitalRaidScheduler.js';
 import { Client } from './Client.js';
 
 export default class ClanWarScheduler {
-	protected schedulers!: Collection<Schedule>;
-	protected reminders!: Collection<Reminder>;
+	protected schedulers!: Collection<ClanWarSchedulersEntity>;
+	protected reminders!: Collection<ClanWarRemindersEntity>;
 	private readonly refreshRate: number;
 	private readonly queued = new Map<string, NodeJS.Timeout>();
 
@@ -57,7 +58,7 @@ export default class ClanWarScheduler {
 		setInterval(this._refresh.bind(this), this.refreshRate).unref();
 	}
 
-	public async create(reminder: Reminder) {
+	public async create(reminder: ClanWarRemindersEntity) {
 		for (const tag of reminder.clans) {
 			const wars = await this.client.http.getCurrentWars(tag);
 			const rand = Math.random();
@@ -86,7 +87,7 @@ export default class ClanWarScheduler {
 		}
 	}
 
-	private queue(schedule: Schedule) {
+	private queue(schedule: ClanWarSchedulersEntity) {
 		if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
 		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
@@ -98,7 +99,7 @@ export default class ClanWarScheduler {
 		);
 	}
 
-	private async delete(schedule: Schedule, reason: string) {
+	private async delete(schedule: ClanWarSchedulersEntity, reason: string) {
 		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
 		this.clear(schedule._id.toHexString());
@@ -116,14 +117,14 @@ export default class ClanWarScheduler {
 		return res.ok ? body.memberList : [];
 	}
 
-	private wasInMaintenance(schedule: Schedule, data: APIClanWar) {
+	private wasInMaintenance(schedule: ClanWarSchedulersEntity, data: APIClanWar) {
 		const timestamp = moment(data.endTime).toDate().getTime() - schedule.duration;
 		return timestamp > schedule.timestamp.getTime();
 	}
 
 	public async getReminderText(
-		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly'>,
-		schedule: Pick<Schedule, 'tag' | 'warTag'>,
+		reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly'>,
+		schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
 		data: APIClanWar,
 		_guild: Guild
 	) {
@@ -213,19 +214,20 @@ export default class ClanWarScheduler {
 	}
 
 	private warEndReminderText(
-		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message'>,
-		schedule: Pick<Schedule, 'tag' | 'warTag'>,
+		reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message'>,
+		schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
 		data: APIClanWar
 	) {
 		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
 		return [`\u200e🔔 **${clan.name} (War has ended)**`, `📨 ${reminder.message}`].join('\n');
 	}
 
-	private async trigger(schedule: Schedule) {
+	private async trigger(schedule: ClanWarSchedulersEntity) {
 		const id = schedule._id.toHexString();
 		try {
 			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
 			if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_NOT_FOUND);
+			if (reminder.disabled) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_DISABLED);
 
 			if (!this.client.channels.cache.has(reminder.channel))
 				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
@@ -294,7 +296,7 @@ export default class ClanWarScheduler {
 		content,
 		webhook
 	}: {
-		reminder: WithId<Reminder>;
+		reminder: WithId<ClanWarRemindersEntity>;
 		webhook: WebhookClient;
 		content: string;
 		channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | null;
@@ -321,7 +323,7 @@ export default class ClanWarScheduler {
 		}
 	}
 
-	private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<Reminder>) {
+	private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<ClanWarRemindersEntity>) {
 		const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
 		if (webhook) {
 			reminder.webhook = { id: webhook.id, token: webhook.token! };
@@ -349,40 +351,6 @@ export default class ClanWarScheduler {
 			}
 		}
 	}
-}
-
-export interface Schedule {
-	_id: ObjectId;
-	guild: string;
-	name: string;
-	tag: string;
-	warTag?: string;
-	duration: number;
-	source?: string;
-	reminderId: ObjectId;
-	isFriendly: boolean;
-	triggered: boolean;
-	timestamp: Date;
-	createdAt: Date;
-}
-
-export interface Reminder {
-	_id: ObjectId;
-	guild: string;
-	channel: string;
-	message: string;
-	duration: number;
-	webhook?: { id: string; token: string } | null;
-	threadId?: string;
-	roles: string[];
-	townHalls: number[];
-	linkedOnly?: boolean;
-	smartSkip: boolean;
-	silent: boolean;
-	warTypes: string[];
-	clans: string[];
-	remaining: number[];
-	createdAt: Date;
 }
 
 interface UserMention {

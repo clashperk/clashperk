@@ -11,8 +11,8 @@ import {
 	TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
+import { RaidRemindersEntity } from '../../../entities/capital-raid-reminders.entity.js';
 import { Command } from '../../../lib/index.js';
-import { RaidReminder } from '../../../struct/CapitalRaidScheduler.js';
 import { Collections } from '../../../util/Constants.js';
 import { hexToNanoId } from '../../../util/Helper.js';
 
@@ -30,7 +30,7 @@ export default class ReminderCreateCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { id: string }) {
 		const reminders = await this.client.db
-			.collection<RaidReminder>(Collections.RAID_REMINDERS)
+			.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS)
 			.find({ guild: interaction.guild.id })
 			.toArray();
 		if (!reminders.length)
@@ -41,7 +41,7 @@ export default class ReminderCreateCommand extends Command {
 			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
 
-		const reminder = await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).findOne({ _id: reminderId });
+		const reminder = await this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS).findOne({ _id: reminderId });
 		if (!reminder) {
 			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
@@ -226,7 +226,7 @@ export default class ReminderCreateCommand extends Command {
 
 			if (action.customId === customIds.save && action.isButton()) {
 				await action.deferUpdate();
-				await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).updateOne(
+				await this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS).updateOne(
 					{ _id: reminder._id },
 					{
 						$set: {

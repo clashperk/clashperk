@@ -1,3 +1,4 @@
+import { RaidRemindersEntity, RaidSchedulersEntity } from '@app/entities';
 import { APICapitalRaidSeason } from 'clashofclans.js';
 import { APIMessage, ForumChannel, MediaChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
@@ -8,6 +9,7 @@ import { Client } from './Client.js';
 
 export const ReminderDeleteReasons = {
 	REMINDER_NOT_FOUND: 'reminder_not_found',
+	REMINDER_DISABLED: 'reminder_disabled',
 	CHANNEL_NOT_FOUND: 'channel_not_found',
 	TOO_LATE: 'too_late',
 	CHANNEL_MISSING_PERMISSIONS: 'channel_missing_permissions',
@@ -20,8 +22,8 @@ export const ReminderDeleteReasons = {
 } as const;
 
 export default class CapitalRaidScheduler {
-	protected schedulers!: Collection<RaidSchedule>;
-	protected reminders!: Collection<RaidReminder>;
+	protected schedulers!: Collection<RaidSchedulersEntity>;
+	protected reminders!: Collection<RaidRemindersEntity>;
 	private readonly refreshRate: number;
 	private readonly queued = new Map<string, NodeJS.Timeout>();
 
@@ -91,7 +93,7 @@ export default class CapitalRaidScheduler {
 		return moment(date).toDate();
 	}
 
-	public async create(reminder: RaidReminder) {
+	public async create(reminder: RaidRemindersEntity) {
 		for (const tag of reminder.clans) {
 			const data = await this.getLastRaidSeason(tag);
 			if (!data) continue;
@@ -120,7 +122,7 @@ export default class CapitalRaidScheduler {
 		}
 	}
 
-	private queue(schedule: RaidSchedule) {
+	private queue(schedule: RaidSchedulersEntity) {
 		if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
 		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
@@ -132,7 +134,7 @@ export default class CapitalRaidScheduler {
 		);
 	}
 
-	private async delete(schedule: RaidSchedule, reason: string) {
+	private async delete(schedule: RaidSchedulersEntity, reason: string) {
 		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
 		this.clear(schedule._id.toHexString());
@@ -145,7 +147,7 @@ export default class CapitalRaidScheduler {
 		return this.queued.delete(id);
 	}
 
-	private wasInMaintenance(schedule: RaidSchedule, data: APICapitalRaidSeason) {
+	private wasInMaintenance(schedule: RaidSchedulersEntity, data: APICapitalRaidSeason) {
 		const timestamp = moment(data.endTime).toDate().getTime() - schedule.duration;
 		return timestamp > schedule.timestamp.getTime();
 	}
@@ -163,8 +165,8 @@ export default class CapitalRaidScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly' | 'minThreshold'>,
-		schedule: Pick<RaidSchedule, 'tag'>,
+		reminder: Pick<RaidRemindersEntity, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly' | 'minThreshold'>,
+		schedule: Pick<RaidSchedulersEntity, 'tag'>,
 		data: Required<APICapitalRaidSeason>
 	) {
 		const { body: clan, res } = await this.client.http.getClan(schedule.tag);
@@ -279,11 +281,12 @@ export default class CapitalRaidScheduler {
 		].join('\n');
 	}
 
-	private async trigger(schedule: RaidSchedule) {
+	private async trigger(schedule: RaidSchedulersEntity) {
 		const id = schedule._id.toHexString();
 		try {
 			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
-			if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
+			if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_NOT_FOUND);
+
 			if (!this.client.channels.cache.has(reminder.channel))
 				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
 
@@ -340,7 +343,7 @@ export default class CapitalRaidScheduler {
 		content,
 		webhook
 	}: {
-		reminder: WithId<RaidReminder>;
+		reminder: WithId<RaidRemindersEntity>;
 		webhook: WebhookClient;
 		content: string;
 		channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | null;
@@ -357,7 +360,7 @@ export default class CapitalRaidScheduler {
 		}
 	}
 
-	private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<RaidReminder>) {
+	private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<RaidRemindersEntity>) {
 		const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
 		if (webhook) {
 			reminder.webhook = { id: webhook.id, token: webhook.token! };
@@ -385,36 +388,6 @@ export default class CapitalRaidScheduler {
 			}
 		}
 	}
-}
-
-export interface RaidSchedule {
-	_id: ObjectId;
-	guild: string;
-	name: string;
-	tag: string;
-	duration: number;
-	source?: string;
-	reminderId: ObjectId;
-	triggered: boolean;
-	timestamp: Date;
-	createdAt: Date;
-}
-
-export interface RaidReminder {
-	_id: ObjectId;
-	guild: string;
-	channel: string;
-	message: string;
-	duration: number;
-	allMembers: boolean;
-	minThreshold: number;
-	webhook?: { id: string; token: string } | null;
-	threadId?: string;
-	linkedOnly?: boolean;
-	roles: string[];
-	clans: string[];
-	remaining: number[];
-	createdAt: Date;
 }
 
 interface UserMention {

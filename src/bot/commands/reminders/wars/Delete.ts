@@ -1,3 +1,4 @@
+import { ClanWarRemindersEntity, ClanWarSchedulersEntity } from '@app/entities';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -11,7 +12,6 @@ import {
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../../lib/index.js';
-import { Reminder, Schedule } from '../../../struct/ClanWarScheduler.js';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
 import { hexToNanoId } from '../../../util/Helper.js';
 
@@ -44,13 +44,16 @@ export default class ReminderDeleteCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { id?: string; clear: boolean }) {
-		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).find({ guild: interaction.guild.id }).toArray();
+		const reminders = await this.client.db
+			.collection<ClanWarRemindersEntity>(Collections.REMINDERS)
+			.find({ guild: interaction.guild.id })
+			.toArray();
 		if (!reminders.length)
 			return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
 
 		if (args.clear) {
-			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteMany({ guild: interaction.guild.id });
-			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ guild: interaction.guildId });
+			await this.client.db.collection<ClanWarRemindersEntity>(Collections.REMINDERS).deleteMany({ guild: interaction.guild.id });
+			await this.client.db.collection<ClanWarSchedulersEntity>(Collections.SCHEDULERS).deleteMany({ guild: interaction.guildId });
 			return interaction.editReply(this.i18n('command.reminders.delete.cleared', { lng: interaction.locale }));
 		}
 
@@ -58,8 +61,8 @@ export default class ReminderDeleteCommand extends Command {
 			const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id?.toUpperCase())?._id;
 			if (!reminderId)
 				return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
-			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: reminderId });
-			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId });
+			await this.client.db.collection<ClanWarRemindersEntity>(Collections.REMINDERS).deleteOne({ _id: reminderId });
+			await this.client.db.collection<ClanWarSchedulersEntity>(Collections.SCHEDULERS).deleteMany({ reminderId });
 			return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id }));
 		}
 
@@ -180,8 +183,12 @@ export default class ReminderDeleteCommand extends Command {
 				await action.deferUpdate();
 				state.reminders.delete(state.selected!);
 
-				await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: new ObjectId(state.selected!) });
-				await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId: new ObjectId(state.selected!) });
+				await this.client.db
+					.collection<ClanWarRemindersEntity>(Collections.REMINDERS)
+					.deleteOne({ _id: new ObjectId(state.selected!) });
+				await this.client.db
+					.collection<ClanWarSchedulersEntity>(Collections.SCHEDULERS)
+					.deleteMany({ reminderId: new ObjectId(state.selected!) });
 
 				const rems = reminders.filter((rem) => state.reminders.has(rem._id.toHexString()));
 				await action.editReply({

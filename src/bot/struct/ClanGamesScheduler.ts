@@ -1,3 +1,4 @@
+import { ClanGamesRemindersEntity, ClanGamesSchedulersEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import { APIMessage, ForumChannel, MediaChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
@@ -11,8 +12,8 @@ import { Client } from './Client.js';
 
 // fetch links from our db
 export default class ClanGamesScheduler {
-	protected schedulers!: Collection<ClanGamesSchedule>;
-	protected reminders!: Collection<ClanGamesReminder>;
+	protected schedulers!: Collection<ClanGamesSchedulersEntity>;
+	protected reminders!: Collection<ClanGamesRemindersEntity>;
 	private readonly refreshRate: number;
 	private readonly queued = new Map<string, NodeJS.Timeout>();
 
@@ -91,7 +92,7 @@ export default class ClanGamesScheduler {
 		this.client.logger.info(`Inserted new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
 	}
 
-	public async create(reminder: ClanGamesReminder) {
+	public async create(reminder: ClanGamesRemindersEntity) {
 		const { startTime, endTime } = this.timings();
 		if (!(Date.now() >= startTime && Date.now() <= endTime)) return;
 
@@ -118,7 +119,7 @@ export default class ClanGamesScheduler {
 		}
 	}
 
-	private queue(schedule: ClanGamesSchedule) {
+	private queue(schedule: ClanGamesSchedulersEntity) {
 		if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
 		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
@@ -130,7 +131,7 @@ export default class ClanGamesScheduler {
 		);
 	}
 
-	private async delete(schedule: ClanGamesSchedule, reason: string) {
+	private async delete(schedule: ClanGamesSchedulersEntity, reason: string) {
 		if (!this.client.guilds.cache.has(schedule.guild)) return;
 
 		this.clear(schedule._id.toHexString());
@@ -182,8 +183,8 @@ export default class ClanGamesScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<ClanGamesReminder, 'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers' | 'linkedOnly'>,
-		schedule: Pick<ClanGamesSchedule, 'tag'>
+		reminder: Pick<ClanGamesRemindersEntity, 'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers' | 'linkedOnly'>,
+		schedule: Pick<ClanGamesSchedulersEntity, 'tag'>
 	) {
 		const { res, body: clan } = await this.client.http.getClan(schedule.tag);
 		if (res.status === 503) throw new Error('MaintenanceBreak');
@@ -260,11 +261,12 @@ export default class ClanGamesScheduler {
 		].join('\n');
 	}
 
-	private async trigger(schedule: ClanGamesSchedule) {
+	private async trigger(schedule: ClanGamesSchedulersEntity) {
 		const id = schedule._id.toHexString();
 		try {
 			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
 			if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_NOT_FOUND);
+
 			if (!this.client.channels.cache.has(reminder.channel))
 				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
 
@@ -307,7 +309,7 @@ export default class ClanGamesScheduler {
 		content,
 		webhook
 	}: {
-		reminder: WithId<ClanGamesReminder>;
+		reminder: WithId<ClanGamesRemindersEntity>;
 		webhook: WebhookClient;
 		content: string;
 		channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | null;
@@ -324,7 +326,7 @@ export default class ClanGamesScheduler {
 		}
 	}
 
-	private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<ClanGamesReminder>) {
+	private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<ClanGamesRemindersEntity>) {
 		const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
 		if (webhook) {
 			reminder.webhook = { id: webhook.id, token: webhook.token! };
@@ -352,37 +354,6 @@ export default class ClanGamesScheduler {
 			}
 		}
 	}
-}
-
-export interface ClanGamesData {}
-
-export interface ClanGamesSchedule {
-	_id: ObjectId;
-	guild: string;
-	name: string;
-	tag: string;
-	duration: number;
-	source?: string;
-	reminderId: ObjectId;
-	triggered: boolean;
-	timestamp: Date;
-	createdAt: Date;
-}
-
-export interface ClanGamesReminder {
-	_id: ObjectId;
-	guild: string;
-	channel: string;
-	message: string;
-	duration: number;
-	allMembers: boolean;
-	webhook?: { id: string; token: string } | null;
-	threadId?: string;
-	minPoints: number;
-	linkedOnly?: boolean;
-	roles: string[];
-	clans: string[];
-	createdAt: Date;
 }
 
 interface UserMention {

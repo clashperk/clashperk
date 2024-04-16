@@ -1,3 +1,4 @@
+import { ClanGamesRemindersEntity } from '@app/entities';
 import {
 	ActionRowBuilder,
 	AnyThreadChannel,
@@ -17,7 +18,6 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import ms from 'ms';
 import { Args, Command } from '../../../lib/index.js';
-import { ClanGamesReminder } from '../../../struct/ClanGamesScheduler.js';
 import { CLAN_GAMES_MINIMUM_POINTS, Collections, missingPermissions } from '../../../util/Constants.js';
 
 export default class ReminderCreateCommand extends Command {
@@ -77,7 +77,7 @@ export default class ReminderCreateCommand extends Command {
 		}
 
 		const reminders = await this.client.db
-			.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
+			.collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS)
 			.countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
 			return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
@@ -269,7 +269,7 @@ export default class ReminderCreateCommand extends Command {
 
 			if (action.customId === customIds.save && action.isButton()) {
 				await action.deferUpdate();
-				const reminder: ClanGamesReminder = {
+				const reminder = {
 					// TODO: remove this
 					_id: new ObjectId(),
 					guild: interaction.guild.id,
@@ -284,7 +284,9 @@ export default class ReminderCreateCommand extends Command {
 					createdAt: new Date()
 				};
 
-				const { insertedId } = await this.client.db.collection<ClanGamesReminder>(Collections.CG_REMINDERS).insertOne(reminder);
+				const { insertedId } = await this.client.db
+					.collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS)
+					.insertOne(reminder);
 				this.client.cgScheduler.create({ ...reminder, _id: insertedId });
 				await action.editReply({
 					components: mutate(true),

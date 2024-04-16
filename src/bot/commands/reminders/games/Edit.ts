@@ -1,3 +1,4 @@
+import { ClanGamesRemindersEntity } from '@app/entities';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -12,7 +13,6 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../../lib/index.js';
-import { ClanGamesReminder } from '../../../struct/ClanGamesScheduler.js';
 import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../../util/Constants.js';
 import { hexToNanoId } from '../../../util/Helper.js';
 
@@ -30,7 +30,7 @@ export default class ReminderEditCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { id: string }) {
 		const reminders = await this.client.db
-			.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
+			.collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS)
 			.find({ guild: interaction.guild.id })
 			.toArray();
 		if (!reminders.length)
@@ -41,7 +41,7 @@ export default class ReminderEditCommand extends Command {
 			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
 
-		const reminder = await this.client.db.collection<ClanGamesReminder>(Collections.CG_REMINDERS).findOne({ _id: reminderId });
+		const reminder = await this.client.db.collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS).findOne({ _id: reminderId });
 		if (!reminder) {
 			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
@@ -217,7 +217,7 @@ export default class ReminderEditCommand extends Command {
 
 			if (action.customId === customIds.save && action.isButton()) {
 				await action.deferUpdate();
-				await this.client.db.collection<ClanGamesReminder>(Collections.CG_REMINDERS).updateOne(
+				await this.client.db.collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS).updateOne(
 					{ _id: reminder._id },
 					{
 						$set: {
