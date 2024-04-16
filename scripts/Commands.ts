@@ -1464,9 +1464,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'group_by_players',
-						description: 'Group by players',
-						type: ApplicationCommandOptionType.Boolean
+						name: 'clans',
+						autocomplete: true,
+						description: command.autorole.disable.options.clans.description,
+						description_localizations: translation('command.autorole.disable.options.clans.description'),
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},

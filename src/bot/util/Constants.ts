@@ -196,7 +196,6 @@ export const enum Settings {
 	ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole',
 	GUEST_ROLE = 'guestRole',
 	CLANS_SORTING_KEY = 'clansSortingKey',
-	FLAG_LIST_GROUP_BY_PLAYERS = 'flagListGroupByPlayers',
 	CLAN_CATEGORY_EXCLUSION = 'clanCategoryExclusion',
 	HAS_FLAG_ALERT_LOG = 'hasFlagAlertLog',
 	DISPLAY_CLAN_TAG = 'displayClanTag',
