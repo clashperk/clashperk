@@ -8,6 +8,7 @@ interface RosterGroupModifyProps {
 	command: 'modify';
 	group: string;
 	name?: string;
+	order?: number;
 	selectable?: boolean;
 	group_role?: Role;
 	delete_role?: boolean;
@@ -51,6 +52,7 @@ export default class RosterGroupsModifyCommand extends Command {
 		if (args.selectable) data.selectable = args.selectable;
 		if (args.group_role) data.roleId = args.group_role.id;
 		if (args.delete_role) data.roleId = null;
+		if (args.order) data.order = args.order;
 
 		if (args.group_role) {
 			const dup = await this.client.rosterManager.categories.findOne({ _id: { $ne: category._id }, roleId: args.group_role.id });

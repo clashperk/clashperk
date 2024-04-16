@@ -2355,6 +2355,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								type: ApplicationCommandOptionType.String
 							},
 							{
+								name: 'order',
+								description: 'Order of the group.',
+								type: ApplicationCommandOptionType.Integer,
+								max_value: 1000,
+								min_value: 1
+							},
+							{
 								name: 'group_role',
 								description: 'Role of the user group',
 								type: ApplicationCommandOptionType.Role

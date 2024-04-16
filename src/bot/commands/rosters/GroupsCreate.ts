@@ -30,9 +30,13 @@ export default class RosterGroupsCreateCommand extends Command {
 			if (dup) return interaction.editReply({ content: 'A group with this role already exists.' });
 		}
 
+		const categories = await this.client.rosterManager.getCategories(interaction.guildId);
+		const maxCategoryOrder = Math.max(...categories.map((cat) => cat.order));
+
 		await this.client.rosterManager.createCategory({
 			name: args.name,
 			displayName: args.name,
+			order: maxCategoryOrder + 10,
 			guildId: interaction.guild.id,
 			roleId: args.group_role?.id,
 			selectable: Boolean(args.selectable),

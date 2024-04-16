@@ -127,9 +127,10 @@ export default class RosterListCommand extends Command {
 			groupEmbed.setDescription(
 				categories
 					.map((category, i) => {
-						return `**${i + 1}.** ${escapeMarkdown(category.displayName)} (${category.selectable ? 'Public' : 'Private'}) ${
-							category.roleId ? `- <@&${category.roleId}>` : ''
-						}`;
+						const name = escapeMarkdown(category.displayName);
+						const label = category.selectable ? 'Public' : 'Private';
+						const role = category.roleId ? `- <@&${category.roleId}>` : '';
+						return `**${i + 1}.** ${name} (${label}) [${category.order}] ${role}`;
 					})
 					.join('\n')
 			);

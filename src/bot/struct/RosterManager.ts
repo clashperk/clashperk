@@ -182,6 +182,7 @@ export type PlayerWithLink = APIPlayer & {
 export interface IRosterCategory {
 	displayName: string;
 	name: string;
+	order: number;
 	guildId: string;
 	selectable: boolean;
 	roleId?: string | null;
@@ -778,7 +779,7 @@ export class RosterManager {
 		membersGroup.sort(([a], [b]) => {
 			if (a === 'none') return 1;
 			if (b === 'none') return -1;
-			return categoriesMap[a].createdAt.getTime() - categoriesMap[b].createdAt.getTime();
+			return categoriesMap[a].order - categoriesMap[b].order;
 		});
 
 		const embed = new EmbedBuilder()
@@ -1122,7 +1123,7 @@ export class RosterManager {
 	}
 
 	public async getCategories(guildId: string) {
-		return this.categories.find({ guildId }).toArray();
+		return this.categories.find({ guildId }, { sort: { order: 1 } }).toArray();
 	}
 
 	public async getCategory(categoryId: ObjectId) {
@@ -1155,6 +1156,7 @@ export class RosterManager {
 			{
 				displayName: 'Confirmed',
 				name: 'confirmed',
+				order: 10,
 				guildId,
 				selectable: true,
 				roleId: null,
@@ -1163,6 +1165,7 @@ export class RosterManager {
 			{
 				displayName: 'Substitute',
 				name: 'substitute',
+				order: 20,
 				guildId,
 				selectable: true,
 				roleId: null,
