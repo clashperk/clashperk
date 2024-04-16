@@ -130,7 +130,7 @@ export default class RosterListCommand extends Command {
 						const name = escapeMarkdown(category.displayName);
 						const label = category.selectable ? 'Public' : 'Private';
 						const role = category.roleId ? `- <@&${category.roleId}>` : '';
-						return `**${i + 1}.** ${name} (${label}) [${category.order}] ${role}`;
+						return `**${i + 1}.** ${name} (${label}) [Order ${category.order}] ${role}`;
 					})
 					.join('\n')
 			);
