@@ -123,8 +123,7 @@ export default class ClanWarScheduler {
 	}
 
 	private earlyOrLate(ms: number) {
-		const seconds = ms / 1000;
-		return Math.abs(seconds - 59) < 0.001;
+		return Math.abs(ms) <= 60 * 1000;
 	}
 
 	public async getReminderText(

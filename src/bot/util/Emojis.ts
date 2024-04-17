@@ -34,7 +34,8 @@ export const HERO_PETS: Record<string, string> = {
 	'Diggy': '<:Diggy:1029115689157525504>',
 	'Frosty': '<:Frosty:1029115796271669369>',
 	'Phoenix': '<:Phoenix:1029115881982271549>',
-	'Spirit Fox': '<:SpiritFox:1184210185263259778>'
+	'Spirit Fox': '<:SpiritFox:1184210185263259778>',
+	'Angry Jelly': '<:AngryJelly:1230233853013004319>'
 };
 
 export const HERO_EQUIPMENT: Record<string, string> = {

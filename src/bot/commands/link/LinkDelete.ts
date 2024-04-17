@@ -46,23 +46,28 @@ export default class LinkDeleteCommand extends Command {
 				);
 			}
 
+			const isTrustedGuild = this.isTrustedGuild(interaction);
+
 			const { body: data } = await this.client.http.getPlayer(playerTag);
 			// The player should be in the clan;
-			if (!data.clan) {
+			if (!data.clan && !isTrustedGuild) {
 				return interaction.editReply(
 					this.i18n('command.link.delete.no_access', { lng: interaction.locale, command: this.client.commands.VERIFY })
 				);
 			}
 
-			const { body: clan } = await this.client.http.getClan(data.clan.tag);
-			const authorIsInClan = clan.memberList.find((mem) => ['leader', 'coLeader'].includes(mem.role) && playerTags.includes(mem.tag));
-			const isTrustedGuild = await this.isTrustedGuild(interaction, clan.tag);
-
-			// The user should be a co/leader of the same clan;
-			if (!authorIsInClan && !isTrustedGuild) {
-				return interaction.editReply(
-					this.i18n('command.link.delete.no_access', { lng: interaction.locale, command: this.client.commands.VERIFY })
+			if (data.clan) {
+				const { body: clan } = await this.client.http.getClan(data.clan.tag);
+				const authorIsInClan = clan.memberList.find(
+					(mem) => ['leader', 'coLeader'].includes(mem.role) && playerTags.includes(mem.tag)
 				);
+
+				// The user should be a co/leader of the same clan;
+				if (!authorIsInClan && !isTrustedGuild) {
+					return interaction.editReply(
+						this.i18n('command.link.delete.no_access', { lng: interaction.locale, command: this.client.commands.VERIFY })
+					);
+				}
 			}
 		}
 
@@ -102,15 +107,12 @@ export default class LinkDeleteCommand extends Command {
 		return target ? { id: target.userId } : link ? { id: link.userId } : { id: interaction.user.id };
 	}
 
-	private async isTrustedGuild(interaction: CommandInteraction<'cached'>, clanTag: string) {
+	private isTrustedGuild(interaction: CommandInteraction<'cached'>) {
 		const isTrusted = this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
 		if (!isTrusted) return false;
 
 		const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
 		if (!isManager) return false;
-
-		const clans = await this.client.storage.search(interaction.guildId, [clanTag]);
-		if (!clans.length) return false;
 
 		return true;
 	}
