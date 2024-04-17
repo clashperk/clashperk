@@ -122,6 +122,11 @@ export default class ClanWarScheduler {
 		return timestamp > schedule.timestamp.getTime();
 	}
 
+	private earlyOrLate(ms: number) {
+		const seconds = ms / 1000;
+		return Math.abs(seconds - 59) < 0.001;
+	}
+
 	public async getReminderText(
 		reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly'>,
 		schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
@@ -192,9 +197,10 @@ export default class ClanWarScheduler {
 				.toDate()
 				.getTime() - Date.now();
 		const warTiming = moment.duration(dur).format('H[h], m[m]', { trim: 'both mid' });
+		const label = this.earlyOrLate(dur) ? `War started` : `War ${prefix} ${warTiming}`;
 
 		return [
-			`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`,
+			`\u200e🔔 **${clan.name} (${label})**`,
 			`📨 ${reminder.message}`,
 			'',
 			users
@@ -214,12 +220,27 @@ export default class ClanWarScheduler {
 	}
 
 	private warEndReminderText(
-		reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message'>,
+		reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'duration'>,
 		schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
 		data: APIClanWar
 	) {
+		const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
+		const dur =
+			moment(data.state === 'preparation' ? data.startTime : data.endTime)
+				.toDate()
+				.getTime() - Date.now();
+		const warTiming = moment.duration(dur).format('H[h], m[m]', { trim: 'both mid' });
 		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
-		return [`\u200e🔔 **${clan.name} (War has ended)**`, `📨 ${reminder.message}`].join('\n');
+
+		if (reminder.duration === 24 * 60 * 60 * 1000) {
+			return [`\u200e🔔 **${clan.name} (War started)**`, `📨 ${reminder.message}`].join('\n');
+		}
+
+		if (reminder.duration === 0) {
+			return [`\u200e🔔 **${clan.name} (War has ended)**`, `📨 ${reminder.message}`].join('\n');
+		}
+
+		return [`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`, `📨 ${reminder.message}`].join('\n');
 	}
 
 	private async trigger(schedule: ClanWarSchedulersEntity) {
