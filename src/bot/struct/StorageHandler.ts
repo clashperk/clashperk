@@ -935,6 +935,7 @@ export default class StorageHandler {
 					...props
 				},
 				$unset: {
+					disabled: '',
 					webhook: '',
 					messageId: ''
 				},

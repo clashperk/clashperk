@@ -146,17 +146,20 @@ export default class AutoBoardLog {
 		try {
 			return await webhook.editMessage(cache.messageId!, payload);
 		} catch (error: any) {
-			if (error.code === 10008) {
-				delete cache.messageId;
-				// this.deleteMessage(cache);
-				return this._send(cache, webhook, payload);
-			}
+			if (error.code === 10008) return this.disableLog(cache);
+
 			// Unknown Webhook / Unknown Channel
 			if ([10015, 10003].includes(error.code)) {
 				await this.deleteWebhook(cache);
 			}
 			throw error;
 		}
+	}
+
+	public async disableLog(cache: Cache) {
+		this.cached.delete(cache._id);
+		await this.collection.updateOne({ _id: new ObjectId(cache._id) }, { $set: { disabled: true } });
+		return null;
 	}
 
 	private async send(cache: Cache, webhook: WebhookClient) {
@@ -289,6 +292,7 @@ export default class AutoBoardLog {
 			for (const log of logs) {
 				if (!this.client.guilds.cache.has(log.guildId)) continue;
 				if (this.queued.has(log._id.toHexString())) continue;
+				if (log.disabled) continue;
 
 				this.queued.add(log._id.toHexString());
 				await this.exec(log._id.toHexString(), { channelId: log.channelId });

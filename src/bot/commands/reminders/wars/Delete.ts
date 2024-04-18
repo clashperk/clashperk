@@ -128,29 +128,29 @@ export default class ReminderDeleteCommand extends Command {
 			if (reminder.roles.length === 4) {
 				embed.addFields([{ name: 'Roles', value: 'Any' }]);
 			} else {
-				embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => roles[role]).join(', ') }]);
+				embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => roles[role]).join(', ') || 'None' }]);
 			}
 			if (reminder.townHalls.length === MAX_TOWN_HALL_LEVEL - 1) {
 				embed.addFields([{ name: 'Town Halls', value: 'Any' }]);
 			} else {
-				embed.addFields([{ name: 'Town Halls', value: reminder.townHalls.join(', ') }]);
+				embed.addFields([{ name: 'Town Halls', value: reminder.townHalls.join(', ') || 'None' }]);
 			}
 			if (reminder.remaining.length === 2) {
 				embed.addFields([{ name: 'Remaining Hits', value: 'Any' }]);
 			} else {
-				embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') }]);
+				embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') || 'None' }]);
 			}
 			if (reminder.warTypes.length === 3) {
 				embed.addFields([{ name: 'War Types', value: 'Any' }]);
 			} else {
-				embed.addFields([{ name: 'War Types', value: reminder.warTypes.join(', ').toUpperCase() }]);
+				embed.addFields([{ name: 'War Types', value: reminder.warTypes.join(', ').toUpperCase() || 'None' }]);
 			}
 			const clanNames = clans
 				.filter((clan) => reminder.clans.includes(clan.tag))
 				.map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`));
-			if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) }]);
-			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').slice(0, 1024) }]);
-			embed.addFields([{ name: 'Message', value: reminder.message.slice(0, 1024) }]);
+			if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) || 'None' }]);
+			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').slice(0, 1024) || 'None' }]);
+			embed.addFields([{ name: 'Message', value: reminder.message.slice(0, 1024) || 'None' }]);
 			return embed;
 		};
 
