@@ -282,12 +282,13 @@ export default class ProfileCommand extends Command {
 					await action.deferReply({ ephemeral: true });
 					return this.export(action, links, user);
 				}
+				const isTrustedGuild = this.isTrustedGuild(interaction);
 				if (action.customId === customIds.change) {
 					if (
 						// not manager && not author
 						(!this.client.util.isManager(action.member, Settings.LINKS_MANAGER_ROLE) && user.id !== action.user.id) ||
 						// not author && has verified account
-						(user.id !== action.user.id && players.some((link) => link.verified))
+						(user.id !== action.user.id && players.some((link) => link.verified) && !isTrustedGuild)
 					) {
 						return action.reply({ ephemeral: true, content: "You're not allowed to change this user's default account." });
 					}
@@ -409,6 +410,16 @@ export default class ProfileCommand extends Command {
 
 	private playerShortUrl(tag: string) {
 		return `http://cprk.eu/p/${tag.replace('#', '')}`;
+	}
+
+	private isTrustedGuild(interaction: CommandInteraction<'cached'>) {
+		const isTrusted = this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+		if (!isTrusted) return false;
+
+		const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
+		if (!isManager) return false;
+
+		return true;
 	}
 }
 

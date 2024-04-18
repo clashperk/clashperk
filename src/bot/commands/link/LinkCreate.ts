@@ -125,11 +125,14 @@ export default class LinkCreateCommand extends Command {
 		{ player, member, is_default }: { player: APIPlayer; member: GuildMember; is_default: boolean }
 	) {
 		const [link, accounts] = await this.getPlayer(player.tag, member.id);
+		const isTrustedGuild = this.isTrustedGuild(interaction);
 
 		const isDef =
 			is_default &&
 			(member.id === interaction.user.id ||
-				(this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) && !accounts.some((link) => link.verified)));
+				(this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) &&
+					!accounts.some((link) => link.verified) &&
+					!isTrustedGuild));
 
 		// only owner can set default account
 		if (link && link.userId === member.id && !isDef) {
@@ -209,5 +212,15 @@ export default class LinkCreateCommand extends Command {
 	private async resetLinkAPI(user: string, tag: string) {
 		await this.client.http.unlinkPlayerTag(tag);
 		await this.client.http.linkPlayerTag(user, tag);
+	}
+
+	private isTrustedGuild(interaction: CommandInteraction<'cached'>) {
+		const isTrusted = this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+		if (!isTrusted) return false;
+
+		const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
+		if (!isManager) return false;
+
+		return true;
 	}
 }
