@@ -1062,6 +1062,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'Legend Attacks',
 						value: 'legend-attacks'
+					},
+					{
+						name: 'Season End Trophies',
+						value: 'eos-trophies'
 					}
 				]
 			},

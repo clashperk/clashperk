@@ -20,6 +20,7 @@ export default class HistoryCommand extends Command {
 			'clan-games': this.handler.modules.get('clan-games-history')!,
 			'join-leave': this.handler.modules.get('join-leave-history')!,
 			'donations': this.handler.modules.get('donations-history')!,
+			'eos-trophies': this.handler.modules.get('eos-trophies-history')!,
 			'attacks': this.handler.modules.get('attacks-history')!,
 			'loot': this.handler.modules.get('loot-history')!,
 			'legend-attacks': this.handler.modules.get('history-legend-attacks')!
