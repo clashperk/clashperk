@@ -734,6 +734,8 @@ export class RosterManager {
 		);
 
 		const sortKey = roster.sortBy ?? 'SIGNUP_TIME';
+		roster.members.sort((a, b) => a.name.localeCompare(b.name));
+
 		switch (sortKey) {
 			case 'TOWN_HALL_LEVEL':
 				roster.members.sort((a, b) => b.townHallLevel - a.townHallLevel);
