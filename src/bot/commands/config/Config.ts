@@ -1,6 +1,53 @@
-import { CommandInteraction, EmbedBuilder, HexColorString, PermissionFlagsBits, Role, resolveColor } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	HexColorString,
+	MessageComponentInteraction,
+	Role,
+	StringSelectMenuBuilder,
+	resolveColor
+} from 'discord.js';
+import { title } from 'radash';
+import { command } from '../../../../locales/en.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
+
+const options = [
+	{
+		name: 'manager_role',
+		key: Settings.MANAGER_ROLE,
+		description: command.config.options.manager_role.description
+	},
+	{
+		name: 'roster_manager_role',
+		key: Settings.ROSTER_MANAGER_ROLE,
+		description: command.config.options.roster_manager_role.description
+	},
+	{
+		name: 'flags_manager_role',
+		key: Settings.FLAGS_MANAGER_ROLE,
+		description: command.config.options.flags_manager_role.description
+	},
+	{
+		name: 'links_manager_role',
+		key: Settings.LINKS_MANAGER_ROLE,
+		description: command.config.options.links_manager_role.description
+	},
+	{
+		name: 'maintenance_notification_channel',
+		key: Settings.EVENTS_CHANNEL,
+		description: command.config.options.maintenance_notification_channel.description
+	},
+	{
+		name: 'color_code',
+		key: Settings.COLOR,
+		description: command.config.options.color_code.description
+	}
+];
 
 export default class ConfigCommand extends Command {
 	public constructor() {
@@ -9,7 +56,7 @@ export default class ConfigCommand extends Command {
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
-			defer: false
+			defer: true
 		});
 	}
 
@@ -31,24 +78,12 @@ export default class ConfigCommand extends Command {
 		}
 	) {
 		if (args.color_code) {
-			if (['reset', 'none'].includes(args.color_code)) {
-				await this.client.settings.delete(interaction.guild, Settings.COLOR);
-			}
 			await this.client.settings.set(interaction.guild, Settings.COLOR, this.getColor(args.color_code));
 		}
 
 		if (args.webhook_limit) {
 			const webhookLimit = Math.max(3, Math.min(8, args.webhook_limit));
 			await this.client.settings.set(interaction.guild, Settings.WEBHOOK_LIMIT, webhookLimit);
-		}
-
-		if (args.manager_role || args.roster_manager_role) {
-			if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
-				return interaction.reply({
-					content: this.i18n('common.missing_manager_role', { lng: interaction.locale }),
-					ephemeral: true
-				});
-			}
 		}
 
 		if (args.manager_role) {
@@ -88,27 +123,57 @@ export default class ConfigCommand extends Command {
 		}
 
 		if (args.maintenance_notification_channel) {
-			if (['reset', 'none'].includes(args.maintenance_notification_channel)) {
-				await this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
-			} else if (/\d{17,19}/g.test(args.maintenance_notification_channel)) {
-				const channel = this.client.util.hasPermissions(args.maintenance_notification_channel.match(/\d{17,19}/g)!.at(0)!, [
-					'ManageWebhooks',
-					'ViewChannel'
-				]);
-				if (!channel) {
-					return interaction.reply({
-						content: this.i18n('command.config.no_text_channel', { lng: interaction.locale }),
-						ephemeral: true
-					});
-				}
-				await this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.channel.id);
+			const channel = this.client.util.hasPermissions(args.maintenance_notification_channel, ['ManageWebhooks', 'ViewChannel']);
+			if (!channel) {
+				return interaction.reply({
+					content: this.i18n('command.config.no_text_channel', { lng: interaction.locale }),
+					ephemeral: true
+				});
 			}
+			await this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.channel.id);
 		}
 
-		return this.fallback(interaction);
+		const validOptions = this.getOptions(interaction.guildId);
+		const embed = this.fallback(interaction);
+		if (!validOptions.length) return interaction.editReply({ embeds: [embed] });
+
+		const customIds = {
+			unset: this.client.uuid(interaction.user.id),
+			menu: this.client.uuid(interaction.user.id)
+		};
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setLabel('Unset Config').setStyle(ButtonStyle.Success).setCustomId(customIds.unset)
+		);
+		const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder().setCustomId(customIds.menu).setPlaceholder('Select a config to unset').addOptions(validOptions)
+		);
+
+		const message = await interaction.editReply({ embeds: [embed], components: [row] });
+		createInteractionCollector({
+			message,
+			customIds,
+			interaction,
+			onClick: (action) => {
+				return action.update({ embeds: [this.fallback(action)], components: [menu] });
+			},
+			onSelect: async (action) => {
+				const key = action.values[0];
+				await this.client.settings.delete(action.guild.id, key);
+
+				const validOptions = this.getOptions(interaction.guildId);
+				return action.update({ embeds: [this.fallback(action)], components: validOptions.length ? [row] : [] });
+			}
+		});
 	}
 
-	public fallback(interaction: CommandInteraction<'cached'>) {
+	private getOptions(guildId: string) {
+		return options
+			.filter((op) => !!this.client.settings.get(guildId, op.key, null))
+			.map((op) => ({ label: title(op.name), value: op.key, description: op.description }));
+	}
+
+	public fallback(interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>) {
 		const color = this.client.settings.get<number>(interaction.guild, Settings.COLOR, null);
 		const channel = interaction.guild.channels.cache.get(
 			this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null)
@@ -187,7 +252,7 @@ export default class ConfigCommand extends Command {
 			embed.setFooter({ text: `Service ID: ${process.env.RAILWAY_SERVICE_ID!}` });
 		}
 
-		return interaction.reply({ embeds: [embed], ephemeral: this.muted });
+		return embed;
 	}
 
 	private getColor(hex: string) {

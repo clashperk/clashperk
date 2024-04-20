@@ -71,6 +71,11 @@ export default class StorageHandler {
 			.toArray();
 	}
 
+	public async getNickname(guildId: string, clanTag: string, defaultName: string): Promise<string> {
+		const clan = await this.collection.findOne({ guild: guildId, tag: clanTag });
+		return clan?.nickname ?? defaultName;
+	}
+
 	public async handleSearch(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
 		{ args, required }: { args?: string; required?: boolean }

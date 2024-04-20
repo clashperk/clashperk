@@ -332,6 +332,8 @@ export class RolesManager {
 		}
 
 		for (const member of targetedMembers.values()) {
+			if (this.client.rpcHandler.isInMaintenance) continue;
+
 			const players = await this.getPlayers(linkedPlayers[member.id] ?? []);
 			const roleUpdate = await this.preRoleUpdateAction({
 				member,

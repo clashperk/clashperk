@@ -206,6 +206,7 @@ export const createInteractionCollector = ({
 	onUserSelect,
 	onRoleSelect,
 	onChannelSelect,
+	onClose,
 	interaction,
 	message,
 	clear
@@ -216,6 +217,7 @@ export const createInteractionCollector = ({
 	onUserSelect?: (interaction: UserSelectMenuInteraction<'cached'>) => unknown;
 	onRoleSelect?: (interaction: RoleSelectMenuInteraction<'cached'>) => unknown;
 	onChannelSelect?: (interaction: ChannelSelectMenuInteraction<'cached'>) => unknown;
+	onClose?: () => unknown;
 	interaction: CommandInteraction<'cached'>;
 	message: Message<true>;
 	clear?: boolean;
@@ -236,6 +238,7 @@ export const createInteractionCollector = ({
 	});
 
 	collector.on('end', async (_, reason) => {
+		onClose?.();
 		collector.off('collect', () => null);
 		collector.off('end', () => null);
 		Object.values(customIds).forEach((id) => client.components.delete(id));

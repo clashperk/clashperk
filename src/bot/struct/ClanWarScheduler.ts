@@ -1,9 +1,19 @@
 import { ClanWarRemindersEntity, ClanWarSchedulersEntity } from '@app/entities';
 import { APIClanWar } from 'clashofclans.js';
-import { APIMessage, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
+import {
+	APIMessage,
+	ForumChannel,
+	MediaChannel,
+	MessageMentionOptions,
+	NewsChannel,
+	TextChannel,
+	WebhookClient,
+	escapeMarkdown
+} from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
-import { Collections } from '../util/Constants.js';
+import { unique } from 'radash';
+import { Collections, Settings } from '../util/Constants.js';
 import { ORANGE_NUMBERS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import { ReminderDeleteReasons } from './CapitalRaidScheduler.js';
@@ -129,13 +139,12 @@ export default class ClanWarScheduler {
 	public async getReminderText(
 		reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly'>,
 		schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
-		data: APIClanWar,
-		_guild: Guild
-	) {
+		data: APIClanWar
+	): Promise<[string | null, string[]]> {
 		const clanMembers = reminder.roles.length === 4 ? [] : await this.getClanMembers(schedule.tag);
 		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
 		const attacksPerMember = data.attacksPerMember ?? 1;
-		if (reminder.smartSkip && clan.destructionPercentage >= 100) return null;
+		if (reminder.smartSkip && clan.destructionPercentage >= 100) return [null, []];
 
 		const members = clan.members
 			.filter((mem) => {
@@ -150,10 +159,9 @@ export default class ClanWarScheduler {
 				const clanMember = clanMembers.find((m) => m.tag === mem.tag);
 				return clanMember && reminder.roles.includes(clanMember.role);
 			});
-		if (!members.length) return null;
+		if (!members.length) return [null, []];
 
 		const links = await this.client.resolver.getLinkedUsers(members);
-		// if (!links.length) return null;
 
 		const mentions: UserMention[] = [];
 
@@ -173,7 +181,9 @@ export default class ClanWarScheduler {
 			});
 		}
 
-		if (!mentions.length) return null;
+		if (!mentions.length) return [null, []];
+
+		const userIds = unique(mentions.map((m) => m.id).filter((id) => id !== '0x'));
 		mentions.sort((a, b) => a.position - b.position);
 
 		const users = Object.entries(
@@ -198,8 +208,10 @@ export default class ClanWarScheduler {
 		const warTiming = moment.duration(dur).format('H[h], m[m]', { trim: 'both mid' });
 		const label = this.earlyOrLate(dur) ? `War started` : `War ${prefix} ${warTiming}`;
 
-		return [
-			`\u200e🔔 **${clan.name} (${label})**`,
+		const clanNick = await this.client.storage.getNickname(reminder.guild, clan.tag, clan.name);
+
+		const text = [
+			`\u200e🔔 **${clanNick} (${label})**`,
 			`📨 ${reminder.message}`,
 			'',
 			users
@@ -216,13 +228,15 @@ export default class ClanWarScheduler {
 				)
 				.join('\n')
 		].join('\n');
+
+		return [text, userIds];
 	}
 
-	private warEndReminderText(
+	private async warEndReminderText(
 		reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'duration'>,
 		schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
 		data: APIClanWar
-	) {
+	): Promise<[string | null, string[]]> {
 		const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
 		const dur =
 			moment(data.state === 'preparation' ? data.startTime : data.endTime)
@@ -231,15 +245,19 @@ export default class ClanWarScheduler {
 		const warTiming = moment.duration(dur).format('H[h], m[m]', { trim: 'both mid' });
 		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
 
+		const clanNick = await this.client.storage.getNickname(reminder.guild, clan.tag, clan.name);
 		if (reminder.duration === 24 * 60 * 60 * 1000) {
-			return [`\u200e🔔 **${clan.name} (War started)**`, `📨 ${reminder.message}`].join('\n');
+			const text = [`\u200e🔔 **${clanNick} (War started)**`, `📨 ${reminder.message}`].join('\n');
+			return [text, []];
 		}
 
 		if (reminder.duration === 0) {
-			return [`\u200e🔔 **${clan.name} (War has ended)**`, `📨 ${reminder.message}`].join('\n');
+			const text = [`\u200e🔔 **${clanNick} (War has ended)**`, `📨 ${reminder.message}`].join('\n');
+			return [text, []];
 		}
 
-		return [`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`, `📨 ${reminder.message}`].join('\n');
+		const text = [`\u200e🔔 **${clanNick} (War ${prefix} ${warTiming})**`, `📨 ${reminder.message}`].join('\n');
+		return [text, []];
 	}
 
 	private async trigger(schedule: ClanWarSchedulersEntity) {
@@ -280,10 +298,10 @@ export default class ClanWarScheduler {
 			const guild = this.client.guilds.cache.get(reminder.guild);
 			if (!guild) return await this.delete(schedule, ReminderDeleteReasons.GUILD_NOT_FOUND);
 
-			const text =
+			const [text, userIds] =
 				schedule.duration === 0 || reminder.silent
-					? this.warEndReminderText(reminder, schedule, data)
-					: await this.getReminderText(reminder, schedule, data, guild);
+					? await this.warEndReminderText(reminder, schedule, data)
+					: await this.getReminderText(reminder, schedule, data);
 			if (!text) return await this.delete(schedule, ReminderDeleteReasons.NO_RECIPIENT);
 
 			const channel = this.client.util.hasPermissions(reminder.channel, [
@@ -297,7 +315,7 @@ export default class ClanWarScheduler {
 				const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
 
 				for (const content of Util.splitMessage(text)) {
-					if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content });
+					if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
 				}
 			} else {
 				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
@@ -314,17 +332,19 @@ export default class ClanWarScheduler {
 		reminder,
 		channel,
 		content,
+		userIds,
 		webhook
 	}: {
 		reminder: WithId<ClanWarRemindersEntity>;
 		webhook: WebhookClient;
 		content: string;
+		userIds: string[];
 		channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | null;
 	}): Promise<APIMessage | null> {
 		try {
 			return await webhook.send({
 				content,
-				allowedMentions: { parse: reminder.duration === 0 ? ['users', 'roles'] : ['users'] },
+				allowedMentions: this.allowedMentions(reminder, userIds),
 				threadId: reminder.threadId
 			});
 		} catch (error: any) {
@@ -334,7 +354,7 @@ export default class ClanWarScheduler {
 				if (webhook) {
 					return webhook.send({
 						content,
-						allowedMentions: { parse: reminder.duration === 0 || reminder.silent ? ['users', 'roles'] : ['users'] },
+						allowedMentions: this.allowedMentions(reminder, userIds),
 						threadId: reminder.threadId
 					});
 				}
@@ -351,6 +371,28 @@ export default class ClanWarScheduler {
 			return new WebhookClient({ id: webhook.id, token: webhook.token! });
 		}
 		return null;
+	}
+
+	private allowedMentions(reminder: ClanWarRemindersEntity, userIds: string[]): MessageMentionOptions {
+		if (reminder.duration === 0 || reminder.silent) return { parse: ['users', 'roles'] };
+
+		const config = this.client.settings.get<{ type: 'optIn' | 'optOut'; wars: string; warsExclusionUserIds: string[] }>(
+			reminder.guild,
+			Settings.REMINDER_EXCLUSION,
+			{
+				type: 'optIn',
+				warsExclusionUserIds: []
+			}
+		);
+
+		const guild = this.client.guilds.cache.get(reminder.guild);
+		if (!config.wars || !guild) return { parse: ['users'] };
+
+		if (config.type === 'optIn') {
+			return { parse: [], users: userIds.filter((id) => config.warsExclusionUserIds.includes(id)) };
+		}
+
+		return { parse: [], users: userIds.filter((id) => !config.warsExclusionUserIds.includes(id)) };
 	}
 
 	private async _refresh() {

@@ -1,9 +1,19 @@
 import { RaidRemindersEntity, RaidSchedulersEntity } from '@app/entities';
 import { APICapitalRaidSeason } from 'clashofclans.js';
-import { APIMessage, ForumChannel, MediaChannel, NewsChannel, TextChannel, WebhookClient, escapeMarkdown } from 'discord.js';
+import {
+	APIMessage,
+	ForumChannel,
+	MediaChannel,
+	MessageMentionOptions,
+	NewsChannel,
+	TextChannel,
+	WebhookClient,
+	escapeMarkdown
+} from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
-import { Collections, MAX_TOWN_HALL_LEVEL } from '../util/Constants.js';
+import { unique } from 'radash';
+import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/Constants.js';
 import { Util } from '../util/index.js';
 import { Client } from './Client.js';
 
@@ -168,10 +178,10 @@ export default class CapitalRaidScheduler {
 		reminder: Pick<RaidRemindersEntity, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly' | 'minThreshold'>,
 		schedule: Pick<RaidSchedulersEntity, 'tag'>,
 		data: Required<APICapitalRaidSeason>
-	) {
+	): Promise<[string | null, string[]]> {
 		const { body: clan, res } = await this.client.http.getClan(schedule.tag);
 		if (res.status === 503) throw new Error('MaintenanceBreak');
-		if (!res.ok) return null;
+		if (!res.ok) return [null, []];
 		const unwantedMembers = reminder.allMembers
 			? await this.unwantedMembers(clan.memberList, this.getWeekId(data.startTime), schedule.tag)
 			: [];
@@ -220,10 +230,9 @@ export default class CapitalRaidScheduler {
 				if (reminder.roles.length === 4) return true;
 				return reminder.roles.includes(mem.role);
 			});
-		if (!members.length) return null;
+		if (!members.length) return [null, []];
 
 		const links = await this.client.resolver.getLinkedUsers(members);
-		// if (!links.length) return null;
 
 		const mentions: UserMention[] = [];
 
@@ -241,7 +250,9 @@ export default class CapitalRaidScheduler {
 			});
 		}
 
-		if (!mentions.length) return null;
+		if (!mentions.length) return [null, []];
+
+		const userIds = unique(mentions.map((m) => m.id).filter((id) => id !== '0x'));
 
 		const users = Object.entries(
 			mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
@@ -261,9 +272,10 @@ export default class CapitalRaidScheduler {
 		const ends = data.endTime; // data.state === 'preparation' ? data.startTime : data.endTime;
 		const dur = moment(ends).toDate().getTime() - Date.now();
 		const warTiming = moment.duration(dur).format('D[d] H[h], m[m]', { trim: 'both mid' });
+		const clanNick = await this.client.storage.getNickname(reminder.guild, clan.tag, clan.name);
 
-		return [
-			`\u200e🔔 **${clan.name} (Capital raid ${prefix} ${warTiming})**`,
+		const text = [
+			`\u200e🔔 **${clanNick} (Capital raid ${prefix} ${warTiming})**`,
 			`📨 ${reminder.message}`,
 			'',
 			users
@@ -279,6 +291,8 @@ export default class CapitalRaidScheduler {
 				)
 				.join('\n')
 		].join('\n');
+
+		return [text, userIds];
 	}
 
 	private async trigger(schedule: RaidSchedulersEntity) {
@@ -310,7 +324,7 @@ export default class CapitalRaidScheduler {
 			const guild = this.client.guilds.cache.get(reminder.guild);
 			if (!guild) return await this.delete(schedule, ReminderDeleteReasons.GUILD_NOT_FOUND);
 
-			const text = await this.getReminderText(reminder, schedule, data);
+			const [text, userIds] = await this.getReminderText(reminder, schedule, data);
 			if (!text) return await this.delete(schedule, ReminderDeleteReasons.NO_RECIPIENT);
 
 			const channel = this.client.util.hasPermissions(reminder.channel, [
@@ -324,7 +338,7 @@ export default class CapitalRaidScheduler {
 				const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
 
 				for (const content of Util.splitMessage(text)) {
-					if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content });
+					if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
 				}
 			} else {
 				return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
@@ -341,20 +355,31 @@ export default class CapitalRaidScheduler {
 		reminder,
 		channel,
 		content,
+		userIds,
 		webhook
 	}: {
 		reminder: WithId<RaidRemindersEntity>;
 		webhook: WebhookClient;
 		content: string;
+		userIds: string[];
 		channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | null;
 	}): Promise<APIMessage | null> {
 		try {
-			return await webhook.send({ content, allowedMentions: { parse: ['users'] }, threadId: reminder.threadId });
+			return await webhook.send({
+				content,
+				allowedMentions: this.allowedMentions(reminder, userIds),
+				threadId: reminder.threadId
+			});
 		} catch (error: any) {
 			// Unknown Webhook / Unknown Channel
 			if ([10015, 10003].includes(error.code) && channel) {
 				const webhook = await this.webhook(channel, reminder);
-				if (webhook) return webhook.send({ content, allowedMentions: { parse: ['users'] }, threadId: reminder.threadId });
+				if (webhook)
+					return webhook.send({
+						content,
+						allowedMentions: this.allowedMentions(reminder, userIds),
+						threadId: reminder.threadId
+					});
 			}
 			throw error;
 		}
@@ -368,6 +393,26 @@ export default class CapitalRaidScheduler {
 			return new WebhookClient({ id: webhook.id, token: webhook.token! });
 		}
 		return null;
+	}
+
+	private allowedMentions(reminder: RaidRemindersEntity, userIds: string[]): MessageMentionOptions {
+		const config = this.client.settings.get<{ type: 'optIn' | 'optOut'; raids: string; raidsExclusionUserIds: string[] }>(
+			reminder.guild,
+			Settings.REMINDER_EXCLUSION,
+			{
+				type: 'optIn',
+				raidsExclusionUserIds: []
+			}
+		);
+
+		const guild = this.client.guilds.cache.get(reminder.guild);
+		if (!config.raids || !guild) return { parse: ['users'] };
+
+		if (config.type === 'optIn') {
+			return { parse: [], users: userIds.filter((id) => config.raidsExclusionUserIds.includes(id)) };
+		}
+
+		return { parse: [], users: userIds.filter((id) => !config.raidsExclusionUserIds.includes(id)) };
 	}
 
 	private async _refresh() {

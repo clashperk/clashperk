@@ -7,6 +7,7 @@ export interface ClanStoresEntity {
 	tag: string;
 	flag: number;
 	alias?: string;
+	nickname?: string;
 	guild: string;
 	patron: boolean;
 	paused: boolean;

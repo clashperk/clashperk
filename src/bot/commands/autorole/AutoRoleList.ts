@@ -48,7 +48,7 @@ export default class AutoRoleListCommand extends Command {
 			.map((clan) => {
 				const roleSet = rolesMap.clanRoles[clan.tag];
 				return {
-					name: `${clan.name} (${clan.tag})`,
+					name: `${clan.nickname || clan.name} (${clan.tag})`,
 					roleIds: Object.values(roleSet?.roles ?? {}),
 					warRoleId: roleSet?.warRoleId
 				};

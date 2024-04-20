@@ -1648,6 +1648,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Roster Change Log',
 								value: 'roster-changelog'
+							},
+							{
+								name: 'Reminder Ping Exclusion',
+								value: 'reminder-ping-exclusion'
 							}
 						]
 					},
@@ -1761,18 +1765,26 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				options: [
 					{
 						name: 'clan',
-						description: command.alias.create.options.tag.description,
-						description_localizations: translation('command.alias.create.options.tag.description'),
+						description: command.alias.create.options.clan.description,
+						description_localizations: translation('command.alias.create.options.clan.description'),
 						required: true,
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'name',
-						required: true,
+						name: 'alias_name',
+						required: false,
 						max_length: 6,
-						description: command.alias.create.options.name.description,
-						description_localizations: translation('command.alias.create.options.name.description'),
+						description: command.alias.create.options.alias_name.description,
+						description_localizations: translation('command.alias.create.options.alias_name.description'),
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clan_nickname',
+						required: false,
+						max_length: 15,
+						description: command.alias.create.options.clan_nickname.description,
+						description_localizations: translation('command.alias.create.options.clan_nickname.description'),
 						type: ApplicationCommandOptionType.String
 					}
 				]

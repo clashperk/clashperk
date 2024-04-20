@@ -8,7 +8,7 @@ import { Util } from '../../util/index.js';
 const states: Record<string, string> = {
 	inWar: '**End time:**',
 	preparation: '**Start time:**',
-	warEnded: '**End time:**'
+	warEnded: '**Ended:**'
 };
 
 export default class SummaryWarsCommand extends Command {

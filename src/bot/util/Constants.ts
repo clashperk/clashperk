@@ -201,6 +201,7 @@ export const enum Settings {
 	DISPLAY_CLAN_TAG = 'displayClanTag',
 	ROLE_REPLACEMENT_LABELS = 'roleReplacementLabels',
 	ROSTER_CHANGELOG = 'rosterChangeLog',
+	REMINDER_EXCLUSION = 'reminderExclusion',
 	DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook'
 }
 
