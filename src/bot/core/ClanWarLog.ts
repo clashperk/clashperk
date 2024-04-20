@@ -302,11 +302,11 @@ export default class ClanWarLog extends BaseLog {
 		const twoRem = data.remaining
 			.filter((m) => !m.attacks)
 			.sort((a, b) => a.mapPosition - b.mapPosition)
-			.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]!} ${m.name}`);
+			.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]!} ${escapeMarkdown(m.name)}`);
 		const oneRem = data.remaining
 			.filter((m) => m.attacks?.length === 1)
 			.sort((a, b) => a.mapPosition - b.mapPosition)
-			.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]!} ${m.name}`);
+			.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]!} ${escapeMarkdown(m.name)}`);
 
 		const friendly = data.attacksPerMember === 1;
 		if (twoRem.length) {

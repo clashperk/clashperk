@@ -131,7 +131,9 @@ export default class RemainingCommand extends Command {
 					embed.data.description,
 					'',
 					`**${body.attacksPerMember ?? 2} ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-					...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
+					...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(
+						(m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`
+					)
 				].join('\n')
 			);
 		}
@@ -142,7 +144,9 @@ export default class RemainingCommand extends Command {
 					embed.data.description,
 					'',
 					`**1 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
-					...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
+					...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(
+						(m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`
+					)
 				].join('\n')
 			);
 		}
@@ -216,7 +220,7 @@ export default class RemainingCommand extends Command {
 		const remaining = players.reduce((a, b) => a + b.remaining, 0);
 		players.slice(0, 25).map(({ member, clan, remaining, endTime }, i) => {
 			embed.addFields({
-				name: `${member.name} (${member.tag})`,
+				name: `\u200e${member.name} (${member.tag})`,
 				value: [
 					`${remaining} remaining in **${escapeMarkdown(clan.name)}**`,
 					`- ${Util.getRelativeTime(endTime.getTime())}`,
@@ -272,7 +276,7 @@ export default class RemainingCommand extends Command {
 		const maxTotalAttacks = players.reduce((a, b) => a + b.attackLimit, 0);
 		players.slice(0, 25).map(({ member, clan, attacks, attackLimit }, i) => {
 			embed.addFields({
-				name: `${member.name} (${member.tag})`,
+				name: `\u200e${member.name} (${member.tag})`,
 				value: [`${attacks}/${attackLimit} in **${escapeMarkdown(clan.name)}**`, i === players.length - 1 ? '' : '\u200b'].join(
 					'\n'
 				)
@@ -329,7 +333,7 @@ export default class RemainingCommand extends Command {
 		const maxTotalPoints = players.reduce((a, b) => a + b.maxPoints, 0);
 		players.slice(0, 25).map(({ member, clan, maxPoints, points }, i) => {
 			embed.addFields({
-				name: `${member.name} (${member.tag})`,
+				name: `\u200e${member.name} (${member.tag})`,
 				value: [`${points}/${maxPoints} in **${escapeMarkdown(clan.name)}**`, i === players.length - 1 ? '' : '\u200b'].join('\n')
 			});
 		});
