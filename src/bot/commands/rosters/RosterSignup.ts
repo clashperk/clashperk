@@ -5,6 +5,7 @@ import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
+import { sumHeroes } from '../../util/Helper.js';
 
 export default class RosterSignupCommand extends Command {
 	public constructor() {
@@ -31,6 +32,9 @@ export default class RosterSignupCommand extends Command {
 		}
 
 		const players = await this.client.resolver.getPlayers(interaction.user.id, 75);
+		players.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
+		players.sort((a, b) => sumHeroes(b) - sumHeroes(a));
+		players.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
 		const playerCustomIds: Record<string, string> = {
 			0: this.client.uuid(interaction.user.id),
