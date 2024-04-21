@@ -58,7 +58,7 @@ export default class EosTrophiesHistoryCommand extends Command {
 				{
 					$match: {
 						createdAt: {
-							$gte: moment().startOf('month').subtract(7, 'month').toDate()
+							$gte: moment().startOf('month').subtract(12, 'month').toDate()
 						}
 					}
 				},
@@ -83,7 +83,7 @@ export default class EosTrophiesHistoryCommand extends Command {
 		for (const chunk of Util.chunk(result, 15)) {
 			const embed = new EmbedBuilder();
 			embed.setColor(this.client.embed(interaction));
-			embed.setTitle('Season End Trophies (last 6 months)');
+			embed.setTitle('Season End Trophies (last 12 months)');
 
 			chunk.forEach(({ name, tag, seasons }) => {
 				embed.addFields({

@@ -25,7 +25,7 @@ import { Client } from '../struct/Client.js';
 import { CustomIdProps } from '../struct/ComponentHandler.js';
 import { Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
-import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util.js';
+import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor, WSEvents } from './util.js';
 
 type ArgsMatchType =
 	| 'SUB_COMMAND'
@@ -387,7 +387,8 @@ export class ListenerHandler extends BaseHandler {
 		const emitter = {
 			client: this.client as unknown as EventEmitter,
 			commandHandler: this.client.commandHandler,
-			rest: this.client.rest as unknown as EventEmitter
+			rest: this.client.rest as unknown as EventEmitter,
+			ws: this.client.ws as unknown as EventEmitter
 		}[listener.emitter];
 		if (!emitter) return; // eslint-disable-line
 
@@ -509,17 +510,17 @@ export class Command implements CommandOptions {
 }
 
 export interface ListenerOptions {
-	emitter: 'client' | 'commandHandler' | 'rest';
+	emitter: 'client' | 'commandHandler' | 'rest' | 'ws';
 	category?: string;
 	once?: boolean;
-	event: keyof ClientEvents | keyof CommandEvents | keyof RestEvents;
+	event: keyof ClientEvents | keyof CommandEvents | keyof RestEvents | keyof WSEvents;
 }
 
 export class Listener implements ListenerOptions {
 	public id: string;
-	public emitter: 'client' | 'commandHandler' | 'rest';
+	public emitter: 'client' | 'commandHandler' | 'rest' | 'ws';
 	public category?: string;
-	public event: keyof ClientEvents | keyof CommandEvents | keyof RestEvents;
+	public event: keyof ClientEvents | keyof CommandEvents | keyof RestEvents | keyof WSEvents;
 	public once?: boolean;
 	public handler: ListenerHandler;
 	public client: Client;

@@ -373,7 +373,10 @@ export default class ClanWarScheduler {
 		return null;
 	}
 
-	private allowedMentions(reminder: ClanWarRemindersEntity, userIds: string[]): MessageMentionOptions {
+	public allowedMentions(
+		reminder: Pick<ClanWarRemindersEntity, 'guild' | 'duration' | 'silent'>,
+		userIds: string[]
+	): MessageMentionOptions {
 		if (reminder.duration === 0 || reminder.silent) return { parse: ['users', 'roles'] };
 
 		const config = this.client.settings.get<{ type: 'optIn' | 'optOut'; wars: string; warsExclusionUserIds: string[] }>(

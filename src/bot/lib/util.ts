@@ -10,6 +10,14 @@ export const CommandHandlerEvents = {
 	MISSING_PERMISSIONS: 'missingPermissions'
 } as const;
 
+export const WSEventTypes = {
+	GUILD_MEMBER_UPDATE: 'GUILD_MEMBER_UPDATE'
+} as const;
+
+export interface WSEvents {
+	[WSEventTypes.GUILD_MEMBER_UPDATE]: [];
+}
+
 export interface CommandEvents {
 	[CommandHandlerEvents.ERROR]: [];
 	[CommandHandlerEvents.COMMAND_INVALID]: [];

@@ -197,7 +197,7 @@ export default class ReminderNowCommand extends Command {
 			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
 				await action.update({ components: [], content: `**Fetching wars...** ${EMOJIS.LOADING}` });
 
-				const texts = await this.getWars(action, {
+				const [texts, userIds] = await this.getWars(action, {
 					remaining: state.remaining.map((num) => Number(num)),
 					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
@@ -212,7 +212,7 @@ export default class ReminderNowCommand extends Command {
 					await action.editReply({ content: this.i18n('command.reminders.now.no_match', { lng: interaction.locale }) });
 				}
 
-				await this.send(action, texts);
+				await this.send(action, texts, userIds);
 			}
 		});
 
@@ -234,6 +234,7 @@ export default class ReminderNowCommand extends Command {
 		}
 	) {
 		const texts: string[] = [];
+		const userIds: string[] = [];
 		for (const tag of reminder.clans) {
 			const currentWars = await this.client.http.getCurrentWars(tag);
 			for (const data of currentWars) {
@@ -242,22 +243,29 @@ export default class ReminderNowCommand extends Command {
 				const warType = data.warTag ? 'cwl' : data.isFriendly ? 'friendly' : 'normal';
 				if (!reminder.warTypes.includes(warType)) continue;
 
-				const [text] = await this.client.warScheduler.getReminderText(
+				const [text, _userIds] = await this.client.warScheduler.getReminderText(
 					{ ...reminder, guild: interaction.guild.id, smartSkip: false, linkedOnly: false },
 					{ tag: data.clan.tag, warTag: data.warTag },
 					data
 				);
 
-				if (text) texts.push(text);
+				if (text) {
+					texts.push(text);
+					userIds.push(..._userIds);
+				}
 			}
 		}
-		return texts;
+		return [texts, userIds];
 	}
 
-	private async send(interaction: ButtonInteraction<'cached'>, texts: string[]) {
+	private async send(interaction: ButtonInteraction<'cached'>, texts: string[], _userIds: string[]) {
 		for (const text of texts) {
 			for (const content of Util.splitMessage(text, { maxLength: 2000 })) {
-				await interaction.followUp({ content, allowedMentions: { parse: ['users'] }, ephemeral: this.muted });
+				await interaction.followUp({
+					content,
+					allowedMentions: { parse: ['users'] },
+					ephemeral: this.muted
+				});
 			}
 			await Util.delay(1000);
 		}
