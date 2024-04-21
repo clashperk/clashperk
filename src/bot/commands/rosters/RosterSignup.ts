@@ -30,7 +30,7 @@ export default class RosterSignupCommand extends Command {
 			return interaction.followUp({ content: 'Roster is closed.', ephemeral: true });
 		}
 
-		const players = await this.client.resolver.getPlayers('635202661725241345', 75);
+		const players = await this.client.resolver.getPlayers(interaction.user.id, 75);
 
 		const playerCustomIds: Record<string, string> = {
 			0: this.client.uuid(interaction.user.id),
