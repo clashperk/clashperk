@@ -1,5 +1,7 @@
+import { APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
+import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
@@ -28,16 +30,32 @@ export default class RosterSignupCommand extends Command {
 			return interaction.followUp({ content: 'Roster is closed.', ephemeral: true });
 		}
 
-		const players = await this.client.resolver.getPlayers(interaction.user.id, 75);
+		const players = await this.client.resolver.getPlayers('635202661725241345', 75);
+
+		const playerCustomIds: Record<string, string> = {
+			0: this.client.uuid(interaction.user.id),
+			1: this.client.uuid(interaction.user.id),
+			2: this.client.uuid(interaction.user.id)
+		};
 		const customIds = {
 			select: this.client.uuid(interaction.user.id),
-			category: this.client.uuid(interaction.user.id)
+			category: this.client.uuid(interaction.user.id),
+			...playerCustomIds
+		};
+
+		const filterPlayers = (player: APIPlayer) => {
+			if (players.length < 25) return true;
+
+			const hasSignedUp = signedUp.includes(player.tag);
+			if (roster.minTownHall) {
+				return !hasSignedUp && player.townHallLevel >= roster.minTownHall;
+			}
+			return !hasSignedUp;
 		};
 
 		const signedUp = roster.members.map((member) => member.tag);
 		const linked = players
-			.filter((player) => (players.length > 25 ? !signedUp.includes(player.tag) : true))
-			.slice(0, 25)
+			.filter((player) => filterPlayers(player))
 			.map((player) => {
 				const heroes = player.heroes.filter((hero) => hero.village === 'home');
 				return {
@@ -51,13 +69,12 @@ export default class RosterSignupCommand extends Command {
 			});
 		const registered = roster.members
 			.filter((mem) => mem.userId === interaction.user.id)
-			.slice(0, 25)
 			.map((mem) => ({
 				label: `${mem.name} (${mem.tag})`,
 				value: mem.tag,
 				emoji: TOWN_HALLS[mem.townHallLevel]
 			}));
-		const options = args.signup ? linked : registered;
+		const _options = args.signup ? linked : registered;
 
 		if (!linked.length && args.signup) {
 			return interaction.followUp({ content: 'You are not linked to any players.', ephemeral: true });
@@ -90,19 +107,28 @@ export default class RosterSignupCommand extends Command {
 			);
 		const categoryRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(categoryMenu);
 
-		const accountsMenu = new StringSelectMenuBuilder()
-			.setMinValues(1)
-			.setMaxValues(options.length)
-			.setPlaceholder('Select accounts!')
-			.setCustomId(customIds.select)
-			.setOptions(options);
-		const accountsRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(accountsMenu);
+		const accountsRows = cluster(_options.slice(0, 75), 25).map((options, idx) => {
+			const accountsMenu = new StringSelectMenuBuilder()
+				.setMinValues(1)
+				.setMaxValues(options.length)
+				.setCustomId(playerCustomIds[idx])
+				.setOptions(options);
+
+			if (_options.length > 25) {
+				accountsMenu.setPlaceholder(`Select accounts! [${25 * idx + 1} - ${25 * (idx + 1)}]`);
+			} else {
+				accountsMenu.setPlaceholder('Select accounts!');
+			}
+			return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(accountsMenu);
+		});
 
 		const msg = await interaction.followUp({
 			content: args.signup ? 'Select the accounts you want to signup with.' : 'Select the accounts you want to remove.',
 			ephemeral: true,
 			components:
-				args.signup && roster.allowCategorySelection && selectableCategories.length ? [categoryRow, accountsRow] : [accountsRow]
+				args.signup && roster.allowCategorySelection && selectableCategories.length
+					? [categoryRow, ...accountsRows]
+					: [...accountsRows]
 		});
 
 		const signupUser = async (action: StringSelectMenuInteraction<'cached'>) => {
@@ -184,7 +210,7 @@ export default class RosterSignupCommand extends Command {
 					default: selected.category === category._id.toHexString()
 				}))
 			);
-			await action.update({ content: msg.content, components: [categoryRow, accountsRow] });
+			await action.update({ content: msg.content, components: [categoryRow, ...accountsRows] });
 		};
 
 		createInteractionCollector({
