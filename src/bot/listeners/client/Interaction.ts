@@ -261,7 +261,7 @@ export default class InteractionListener extends Listener {
 				if (interaction.commandName === 'roster' && subCommand === 'manage' && focused === 'target_roster') {
 					return this.client.autocomplete.handle(interaction);
 				}
-				return this.rosterAutocomplete(interaction, focused);
+				return this.rosterAutocomplete(interaction, focused, subCommand === 'edit');
 			}
 			case 'target_group':
 			case 'group': {
@@ -363,7 +363,7 @@ export default class InteractionListener extends Listener {
 		);
 	}
 
-	private async rosterAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+	private async rosterAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string, allowBulk: boolean) {
 		const filter: Filter<IRoster> = {
 			guildId: interaction.guild.id
 		};
@@ -390,9 +390,16 @@ export default class InteractionListener extends Listener {
 		});
 		if (!rosters.length) return interaction.respond([{ value: '0', name: 'No rosters found.' }]);
 
-		return interaction.respond(
-			rosters.map((roster) => ({ value: roster._id.toHexString(), name: `${roster.clan.name} - ${roster.name}`.slice(0, 100) }))
-		);
+		const options = rosters.map((roster) => ({
+			value: roster._id.toHexString(),
+			name: `${roster.clan.name} - ${roster.name}`.slice(0, 100)
+		}));
+
+		if (allowBulk) {
+			options.unshift({ value: '*', name: 'All Rosters (Bulk Edit)' });
+		}
+
+		return interaction.respond(options);
 	}
 
 	private async rosterCategoryAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {

@@ -1,9 +1,19 @@
-import { ActionRowBuilder, CommandInteraction, Role, StringSelectMenuBuilder } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	Role,
+	StringSelectMenuBuilder,
+	StringSelectMenuInteraction
+} from 'discord.js';
 import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
 import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
-import { Settings, UnrankedWarLeagueId } from '../../util/Constants.js';
+import { RosterCommandSortOptions } from '../../util/CommandOptions.js';
+import { Collections, Settings, UnrankedWarLeagueId } from '../../util/Constants.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class RosterEditCommand extends Command {
@@ -54,6 +64,8 @@ export default class RosterEditCommand extends Command {
 			components_only?: boolean;
 		}
 	) {
+		if (args.roster === '*') return this.handleBulk(interaction);
+
 		if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
 
 		const rosterId = new ObjectId(args.roster);
@@ -209,6 +221,100 @@ export default class RosterEditCommand extends Command {
 
 				const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
 				return interaction.update({ embeds: [embed], components: [menuRow] });
+			}
+		});
+	}
+
+	public async handleBulk(interaction: CommandInteraction<'cached'>) {
+		const customIds = {
+			sort: this.client.uuid(interaction.user.id),
+			layout: this.client.uuid(interaction.user.id),
+			applyToAll: this.client.uuid(interaction.user.id)
+		};
+
+		const keys = Object.entries(rosterLayoutMap);
+		const layoutMenu = new StringSelectMenuBuilder()
+			.setCustomId(customIds.layout)
+			.setPlaceholder('Select a custom layout!')
+			.setMinValues(3)
+			.setMaxValues(5)
+			.setOptions(keys.map(([key, { name, description }]) => ({ label: name, description, value: key })));
+		const layoutMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(layoutMenu);
+
+		const sortMenu = new StringSelectMenuBuilder()
+			.setCustomId(customIds.sort)
+			.setPlaceholder('Select roster sorting key!')
+			.setOptions(RosterCommandSortOptions.map((option) => ({ label: option.name, value: option.value })));
+		const sortMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(sortMenu);
+
+		const applyToAllButton = new ButtonBuilder()
+			.setCustomId(customIds.applyToAll)
+			.setStyle(ButtonStyle.Danger)
+			.setLabel('Apply to all Rosters')
+			.setDisabled(true);
+		const applyRow = new ActionRowBuilder<ButtonBuilder>().addComponents(applyToAllButton);
+		const selected: Partial<Pick<IRoster, 'layout' | 'sortBy'>> = {};
+
+		const getContent = () => {
+			const texts = [
+				`**Change Roster Layout and Sorting Key**`,
+				'',
+				'*\\*Currently, bulk edit mode only supports editing layout and sorting key.*'
+			];
+
+			if (selected.layout) {
+				texts.push('', '**Layout**', `\`${selected.layout}\``);
+			}
+
+			if (selected.sortBy) {
+				texts.push('', '**Sorting Key**', `\`${selected.sortBy}\``);
+			}
+
+			return texts.join('\n');
+		};
+
+		const message = await interaction.editReply({
+			components: [layoutMenuRow, sortMenuRow, applyRow],
+			content: getContent()
+		});
+
+		const selectSortBy = async (action: StringSelectMenuInteraction<'cached'>) => {
+			selected.sortBy = action.values.at(0)! as RosterSortTypes;
+
+			applyToAllButton.setDisabled(!selected.layout && !selected.sortBy);
+			await action.update({ content: getContent(), components: [layoutMenuRow, sortMenuRow, applyRow] });
+		};
+
+		const selectLayout = async (action: StringSelectMenuInteraction<'cached'>) => {
+			selected.layout = action.values.join('/');
+
+			applyToAllButton.setDisabled(!selected.layout && !selected.sortBy);
+			await action.update({ content: getContent(), components: [layoutMenuRow, sortMenuRow, applyRow] });
+		};
+
+		const apply = async (action: ButtonInteraction<'cached'>) => {
+			await this.client.db
+				.collection<IRoster>(Collections.ROSTERS)
+				.updateMany({ guildId: interaction.guild.id, category: { $ne: 'TROPHY' } }, { $set: selected });
+			await action.deferUpdate();
+		};
+
+		createInteractionCollector({
+			message,
+			interaction,
+			customIds,
+			onClick: (action) => {
+				if (action.customId === customIds.applyToAll) {
+					return apply(action);
+				}
+			},
+			onSelect: (action) => {
+				if (action.customId === customIds.layout) {
+					return selectLayout(action);
+				}
+				if (action.customId === customIds.sort) {
+					return selectSortBy(action);
+				}
 			}
 		});
 	}

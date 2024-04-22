@@ -274,7 +274,7 @@ export default class RosterEditCommand extends Command {
 
 			const sortMenu = new StringSelectMenuBuilder()
 				.setCustomId(customIds.sort)
-				.setPlaceholder('Select a sort order!')
+				.setPlaceholder('Select roster sorting key!')
 				.setOptions(
 					sortingItems.map((option) => ({ label: option.name, value: option.value, default: roster.sortBy === option.value }))
 				);
@@ -282,9 +282,10 @@ export default class RosterEditCommand extends Command {
 
 			return action.update({
 				components: [layoutMenuRow, sortMenuRow],
-				content: `**Change Roster Layout** \n- More settings can be edited using ${this.client.commands.get(
-					'/roster edit'
-				)} command.`
+				content: [
+					`**Change Roster Layout**`,
+					`- More settings can be edited using ${this.client.commands.get('/roster edit')} command.`
+				].join('\n')
 			});
 		};
 
