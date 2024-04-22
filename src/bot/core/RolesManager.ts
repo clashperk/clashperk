@@ -333,8 +333,9 @@ export class RolesManager {
 
 		for (const member of targetedMembers.values()) {
 			if (this.client.rpcHandler.isInMaintenance) continue;
+			const links = linkedPlayers[member.id] ?? [];
 
-			const players = await this.getPlayers(linkedPlayers[member.id] ?? []);
+			const players = await this.getPlayers(links);
 			const roleUpdate = await this.preRoleUpdateAction({
 				member,
 				rolesMap,
@@ -349,7 +350,9 @@ export class RolesManager {
 				userId: member.id,
 				displayName: member.user.displayName
 			};
-			const editOptions: GuildMemberEditOptions & { _updated?: boolean } = { reason };
+			const editOptions: GuildMemberEditOptions & { _updated?: boolean } = {
+				reason: `${reason}; ${players.length}/${links.length} accounts;`
+			};
 
 			if (roleUpdate.excluded.length || roleUpdate.included.length) {
 				const existingRoleIds = member.roles.cache.map((role) => role.id);
@@ -469,6 +472,9 @@ export class RolesManager {
 					$replaceRoot: {
 						newRoot: '$links'
 					}
+				},
+				{
+					$sort: { order: 1 }
 				}
 			])
 			.toArray();
