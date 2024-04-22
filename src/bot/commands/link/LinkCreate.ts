@@ -173,8 +173,8 @@ export default class LinkCreateCommand extends Command {
 					name: player.name,
 					tag: player.tag,
 					order: isDef
-						? Math.min(0, ...accounts.map((account) => account.order)) - 1
-						: Math.max(0, ...accounts.map((account) => account.order)) + 1,
+						? Math.min(...accounts.map((account) => account.order), 0) - 1
+						: Math.max(...accounts.map((account) => account.order), 0) + 1,
 					verified: link?.verified ?? false,
 					updatedAt: new Date()
 				},

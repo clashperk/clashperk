@@ -30,12 +30,11 @@ export default class LinkAddCommand extends Command {
 
 	private async playerLink(
 		interaction: ModalSubmitInteraction<'cached'>,
-		{ player, member, def }: { player: APIPlayer; member: GuildMember; def: boolean; token?: string }
+		{ player, member }: { player: APIPlayer; member: GuildMember; token?: string }
 	) {
 		const [doc, accounts] = await this.getPlayer(player.tag, member.id);
-		// only owner can set default account
-		if (doc && doc.userId === member.id && ((def && member.id !== interaction.user.id) || !def)) {
-			await this.resetLinkAPI(member.id, player.tag);
+
+		if (doc && doc.userId === member.id) {
 			return interaction.editReply(
 				this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
 			);
@@ -72,9 +71,7 @@ export default class LinkAddCommand extends Command {
 					discriminator: member.user.discriminator,
 					name: player.name,
 					tag: player.tag,
-					order: def
-						? Math.min(0, ...accounts.map((account) => account.order)) - 1
-						: Math.min(0, ...accounts.map((account) => account.order)) + 1,
+					order: Math.max(...accounts.map((account) => account.order), 0) + 1,
 					verified: doc?.verified ?? false,
 					updatedAt: new Date()
 				},
@@ -152,7 +149,7 @@ export default class LinkAddCommand extends Command {
 						return this.verify(modalSubmit, data, token);
 					}
 
-					return this.playerLink(modalSubmit, { player: data, member: interaction.member, def: false });
+					return this.playerLink(modalSubmit, { player: data, member: interaction.member });
 				});
 		} catch (e) {
 			if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {

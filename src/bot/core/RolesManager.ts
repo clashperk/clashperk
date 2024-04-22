@@ -523,11 +523,12 @@ export class RolesManager {
 			NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT
 		);
 
-		if (accountPreference === NicknamingAccountPreference.DEFAULT_ACCOUNT) return players.at(0);
+		const defaultAccount = players.at(0);
+
+		if (accountPreference === NicknamingAccountPreference.DEFAULT_ACCOUNT) return defaultAccount;
 
 		if (accountPreference === NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT) {
-			const player = players.at(0);
-			if (player && player.clan && rolesMap.clanTags.includes(player.clan.tag)) return player;
+			if (defaultAccount?.clan && rolesMap.clanTags.includes(defaultAccount.clan.tag)) return defaultAccount;
 		}
 
 		const inFamilyPlayers = players.filter((player) => player.clan && rolesMap.clanTags.includes(player.clan.tag));
@@ -535,7 +536,7 @@ export class RolesManager {
 		inFamilyPlayers.sort((a, b) => sumHeroes(b) - sumHeroes(a));
 		inFamilyPlayers.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-		return inFamilyPlayers.at(0) ?? players.at(0);
+		return inFamilyPlayers.at(0) ?? defaultAccount;
 	}
 
 	public preNicknameUpdate(players: APIPlayer[], member: GuildMember, rolesMap: GuildRolesDto) {
