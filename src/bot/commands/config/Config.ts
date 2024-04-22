@@ -125,9 +125,8 @@ export default class ConfigCommand extends Command {
 		if (args.maintenance_notification_channel) {
 			const channel = this.client.util.hasPermissions(args.maintenance_notification_channel, ['ManageWebhooks', 'ViewChannel']);
 			if (!channel) {
-				return interaction.reply({
-					content: this.i18n('command.config.no_text_channel', { lng: interaction.locale }),
-					ephemeral: true
+				return interaction.editReply({
+					content: this.i18n('command.config.no_text_channel', { lng: interaction.locale })
 				});
 			}
 			await this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.channel.id);
