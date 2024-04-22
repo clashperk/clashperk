@@ -296,7 +296,7 @@ export default class RosterEditCommand extends Command {
 			await this.client.db
 				.collection<IRoster>(Collections.ROSTERS)
 				.updateMany({ guildId: interaction.guild.id, category: { $ne: 'TROPHY' } }, { $set: selected });
-			await action.deferUpdate();
+			await action.update({ components: [] });
 		};
 
 		createInteractionCollector({
