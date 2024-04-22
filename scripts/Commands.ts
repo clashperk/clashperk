@@ -1656,6 +1656,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Reminder Ping Exclusion',
 								value: 'reminder-ping-exclusion'
+							},
+							{
+								name: 'Maintenance Notification Channel',
+								value: 'maintenance-notification-channel'
 							}
 						]
 					},
@@ -3922,8 +3926,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'maintenance_notification_channel',
-				description: command.config.options.maintenance_notification_channel.description,
-				description_localizations: translation('command.config.options.maintenance_notification_channel.description'),
+				description: '[DEPRECATED] This option has been moved to /setup utility command.',
 				type: ApplicationCommandOptionType.String
 			},
 			{

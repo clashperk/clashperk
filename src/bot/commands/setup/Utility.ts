@@ -21,7 +21,7 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/GuildEventsHandler.js';
-import { Collections, Settings, URL_REGEX } from '../../util/Constants.js';
+import { Collections, Settings, URL_REGEX, missingPermissions } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 
@@ -55,23 +55,20 @@ export default class SetupUtilsCommand extends Command {
 			channel: {
 				match: 'CHANNEL',
 				default: interaction.channel!
-			},
-			color: {
-				match: 'COLOR',
-				default: this.client.embed(interaction)
 			}
 		};
 	}
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { channel: TextChannel | AnyThreadChannel; color: number; option: string; disable?: boolean; max_duration?: number }
+		args: { option: string; channel: TextChannel | AnyThreadChannel; disable?: boolean }
 	) {
 		if (args.option === 'events-schedular') return this.handleEvents(interaction, args);
 		if (args.option === 'role-refresh-button') return this.selfRefresh(interaction);
 		if (args.option === 'flag-alert-log') return this.flagAlertLog(interaction, args);
 		if (args.option === 'roster-changelog') return this.rosterChangeLog(interaction, args);
 		if (args.option === 'reminder-ping-exclusion') return this.reminderPingExclusion(interaction, args);
+		if (args.option === 'maintenance-notification-channel') return this.maintenanceNotificationChannel(interaction, args);
 
 		const customIds = {
 			embed: this.client.uuid(),
@@ -297,6 +294,36 @@ export default class SetupUtilsCommand extends Command {
 		});
 
 		return interaction.editReply({ content: `Roster changelog set to <#${args.channel.id}>` });
+	}
+
+	public async maintenanceNotificationChannel(
+		interaction: CommandInteraction<'cached'>,
+		args: { channel: TextChannel | AnyThreadChannel; disable?: boolean }
+	) {
+		if (args.disable) {
+			await this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
+			return interaction.editReply({ content: `Maintenance notification channel disabled.` });
+		}
+
+		const permission = missingPermissions(args.channel, interaction.guild.members.me!, [
+			'ManageWebhooks',
+			'ViewChannel',
+			'SendMessages',
+			'UseExternalEmojis'
+		]);
+
+		if (permission.missing) {
+			return interaction.editReply(
+				this.i18n('common.missing_access', {
+					lng: interaction.locale,
+					channel: args.channel.toString(), // eslint-disable-line
+					permission: permission.missingPerms
+				})
+			);
+		}
+
+		await this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, args.channel.id);
+		return interaction.editReply(`Maintenance notification channel set to <#${args.channel.id}>`);
 	}
 
 	public async reminderPingExclusion(

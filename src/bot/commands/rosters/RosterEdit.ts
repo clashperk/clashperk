@@ -3,8 +3,8 @@ import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
 import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
+import { Settings, UnrankedWarLeagueId } from '../../util/Constants.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
-import { Settings } from '../../util/Constants.js';
 
 export default class RosterEditCommand extends Command {
 	public constructor() {
@@ -75,7 +75,16 @@ export default class RosterEditCommand extends Command {
 
 		const data: Partial<IRoster> = {};
 
-		if (args.clan && clan) data.clan = { tag: clan.tag, name: clan.name, badgeUrl: clan.badgeUrls.large };
+		if (args.clan && clan)
+			data.clan = {
+				tag: clan.tag,
+				name: clan.name,
+				badgeUrl: clan.badgeUrls.large,
+				league: {
+					id: clan.warLeague?.id ?? UnrankedWarLeagueId,
+					name: clan.warLeague?.name ?? 'Unranked'
+				}
+			};
 		if (args.name) data.name = args.name;
 		if (args.max_members) data.maxMembers = args.max_members;
 		if (args.min_town_hall) data.minTownHall = args.min_town_hall;

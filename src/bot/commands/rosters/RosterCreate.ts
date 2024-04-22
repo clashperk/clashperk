@@ -2,7 +2,7 @@ import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Args, Command } from '../../lib/index.js';
 import { DEFAULT_TROPHY_ROSTER_LAYOUT, IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
-import { Settings } from '../../util/Constants.js';
+import { Settings, UnrankedWarLeagueId } from '../../util/Constants.js';
 
 // /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2})$/
 
@@ -62,7 +62,11 @@ export default class RosterCreateCommand extends Command {
 			clan: {
 				name: clan.name,
 				tag: clan.tag,
-				badgeUrl: clan.badgeUrls.large
+				badgeUrl: clan.badgeUrls.large,
+				league: {
+					id: clan.warLeague?.id ?? UnrankedWarLeagueId,
+					name: clan.warLeague?.name ?? 'Unranked'
+				}
 			},
 			guildId: interaction.guild.id,
 			closed: false,

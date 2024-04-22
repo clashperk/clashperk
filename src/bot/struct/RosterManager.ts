@@ -17,7 +17,7 @@ import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/CommandOptions.js';
-import { Collections, ColorCodes, MAX_TOWN_HALL_LEVEL, Settings, WarType } from '../util/Constants.js';
+import { Collections, ColorCodes, MAX_TOWN_HALL_LEVEL, Settings, UnrankedWarLeagueId, WarType } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
@@ -66,8 +66,17 @@ export const rosterLayoutMap = {
 		isEmoji: false,
 		key: 'username',
 		align: 'left',
-		name: 'Discord Username',
-		description: 'The Discord username of the player.'
+		name: 'Discord Displayname',
+		description: 'The Discord displayname of the player.'
+	},
+	'DISCORD_ID': {
+		width: 19,
+		label: 'USER ID',
+		isEmoji: false,
+		key: 'userId',
+		align: 'left',
+		name: 'Discord User ID',
+		description: 'The Discord User ID of the player.'
 	},
 	'NAME': {
 		width: 12,
@@ -77,6 +86,15 @@ export const rosterLayoutMap = {
 		align: 'left',
 		name: 'Player Name',
 		description: 'The name of the player.'
+	},
+	'TAG': {
+		width: 10,
+		label: 'TAG',
+		isEmoji: false,
+		key: 'tag',
+		align: 'left',
+		name: 'Player Tag',
+		description: 'The tag of the player.'
 	},
 	'CLAN': {
 		width: 6,
@@ -140,6 +158,10 @@ export interface IRoster {
 	clan: {
 		tag: string;
 		name: string;
+		league: {
+			id: number;
+			name: string;
+		};
 		badgeUrl: string;
 	};
 	members: IRosterMember[];
@@ -686,6 +708,13 @@ export class RosterManager {
 			...new Set(members.filter((mem) => mem.clan?.tag).map((mem) => mem.clan!.tag))
 		]);
 		const players = await Promise.all(members.map((mem) => this.client.http.getPlayer(mem.tag)));
+		const { body, res } = await this.client.http.getClan(roster.clan.tag);
+
+		const clan = roster.clan;
+		if (res.ok && body) {
+			clan.league = { id: body.warLeague?.id ?? UnrankedWarLeagueId, name: body.warLeague?.name ?? 'Unranked' };
+			clan.badgeUrl = body.badgeUrls.large;
+		}
 
 		const _categories = await this.getCategories(roster.guildId);
 		const categories = _categories.reduce<Record<string, IRosterCategory>>(
@@ -719,7 +748,7 @@ export class RosterManager {
 
 		const { value } = await this.rosters.findOneAndUpdate(
 			{ _id: roster._id },
-			{ $set: { members, lastUpdated: new Date() } },
+			{ $set: { members, clan, lastUpdated: new Date() } },
 			{ returnDocument: 'after' }
 		);
 
@@ -784,14 +813,18 @@ export class RosterManager {
 			return categoriesMap[a].order - categoriesMap[b].order;
 		});
 
-		const embed = new EmbedBuilder()
-			.setTitle(roster.name)
-			.setURL(this.client.http.getClanURL(roster.clan.tag))
-			.setAuthor({
-				name: `${roster.clan.name} (${roster.clan.tag})`,
-				iconURL: roster.clan.badgeUrl,
-				url: this.client.http.getClanURL(roster.clan.tag)
-			});
+		const embed = new EmbedBuilder().setURL(this.client.http.getClanURL(roster.clan.tag)).setAuthor({
+			name: `${roster.clan.name} (${roster.clan.tag})`,
+			iconURL: roster.clan.badgeUrl,
+			url: this.client.http.getClanURL(roster.clan.tag)
+		});
+
+		if (roster.category === 'CWL' && roster.clan.league?.id) {
+			embed.setTitle(`${roster.name} (${roster.clan.league.name})`);
+		} else {
+			embed.setTitle(`${roster.name}`);
+		}
+
 		if (roster.colorCode) embed.setColor(roster.colorCode);
 
 		const groups = membersGroup.map(([categoryId, members]) => {
@@ -801,7 +834,9 @@ export class RosterManager {
 				members: members.map((mem, i) => {
 					const index = `${1 + i}`.padStart(rosterLayoutMap['#'].width, ' ');
 					const name = this.snipe(mem.name, rosterLayoutMap.NAME.width);
+					const tag = this.snipe(mem.tag, rosterLayoutMap.TAG.width);
 					const username = this.snipe(mem.username ?? ' ', rosterLayoutMap.DISCORD.width);
+					const userId = this.snipe(mem.userId ?? ' ', rosterLayoutMap.DISCORD_ID.width);
 					const clanName = roster.useClanAlias
 						? this.snipe(mem.clan?.alias ?? mem.clan?.name ?? ' ', rosterLayoutMap.CLAN.width)
 						: this.snipe(mem.clan?.name ?? ' ', rosterLayoutMap.CLAN.width);
@@ -816,6 +851,8 @@ export class RosterManager {
 					return {
 						index,
 						name,
+						tag,
+						userId,
 						username,
 						clanName,
 						townHallLevel,
@@ -866,23 +903,29 @@ export class RosterManager {
 			}
 		}
 
+		const total = `Total ${roster.members.length}/${roster.maxMembers || 65}`;
 		if (roster.startTime && roster.startTime > new Date()) {
 			embed.addFields({
 				name: '\u200e',
-				value: [`Total ${roster.members.length}`, `Signup opens on ${time(roster.startTime)}`].join('\n')
+				value: [`${total}`, `Signup opens on ${time(roster.startTime)}`].join('\n')
 			});
 		} else if (roster.endTime) {
 			embed.addFields({
 				name: '\u200e',
-				value: [
-					`Total ${roster.members.length}`,
-					`Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`
-				].join('\n')
+				value: [`${total}`, `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`].join('\n')
 			});
 		} else if (roster.closed) {
-			embed.addFields({ name: '\u200e', value: [`Total ${roster.members.length}`, 'Signup is **closed**'].join('\n') });
+			embed.addFields({
+				name: '\u200e',
+				value: [`${total}`, 'Signup is **closed**'].join('\n')
+			});
 		} else {
-			embed.addFields({ name: '\u200e', value: `Total ${roster.members.length}` });
+			const minTownHall = roster.minTownHall ? ` | Min. TH${roster.minTownHall}` : '';
+			const maxTownHall = roster.maxTownHall ? ` | Max. TH${roster.maxTownHall}` : '';
+			embed.addFields({
+				name: '\u200e',
+				value: `${total}${minTownHall}${maxTownHall}`
+			});
 		}
 
 		return embed;

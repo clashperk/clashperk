@@ -38,11 +38,6 @@ const options = [
 		description: command.config.options.links_manager_role.description
 	},
 	{
-		name: 'maintenance_notification_channel',
-		key: Settings.EVENTS_CHANNEL,
-		description: command.config.options.maintenance_notification_channel.description
-	},
-	{
 		name: 'color_code',
 		key: Settings.COLOR,
 		description: command.config.options.color_code.description
@@ -64,7 +59,6 @@ export default class ConfigCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		args: {
 			color_code?: string;
-			maintenance_notification_channel?: string;
 			webhook_limit?: number;
 			manager_role?: Role;
 			roster_manager_role?: Role;
@@ -75,6 +69,8 @@ export default class ConfigCommand extends Command {
 			clans_sorting_key?: string;
 			auto_update_roles?: boolean;
 			verified_only_clan_roles?: boolean;
+			/** @deprecated */
+			maintenance_notification_channel?: string;
 		}
 	) {
 		if (args.color_code) {
@@ -123,13 +119,7 @@ export default class ConfigCommand extends Command {
 		}
 
 		if (args.maintenance_notification_channel) {
-			const channel = this.client.util.hasPermissions(args.maintenance_notification_channel, ['ManageWebhooks', 'ViewChannel']);
-			if (!channel) {
-				return interaction.editReply({
-					content: this.i18n('command.config.no_text_channel', { lng: interaction.locale })
-				});
-			}
-			await this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.channel.id);
+			return interaction.editReply(`This option has been moved to ${this.client.commands.get('/setup utility')}`);
 		}
 
 		const validOptions = this.getOptions(interaction.guildId);
