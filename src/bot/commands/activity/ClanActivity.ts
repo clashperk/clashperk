@@ -203,7 +203,7 @@ export default class ClanActivityCommand extends Command {
 				{
 					$set: {
 						count: {
-							$size: '$counterSet'
+							$min: [50, { $size: '$counterSet' }]
 						}
 					}
 				},
