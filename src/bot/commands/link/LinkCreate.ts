@@ -131,8 +131,7 @@ export default class LinkCreateCommand extends Command {
 			is_default &&
 			(member.id === interaction.user.id ||
 				(this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) &&
-					!accounts.some((link) => link.verified) &&
-					!isTrustedGuild));
+					(!accounts.some((link) => link.verified) || isTrustedGuild)));
 
 		// only owner can set default account
 		if (link && link.userId === member.id && !isDef) {
