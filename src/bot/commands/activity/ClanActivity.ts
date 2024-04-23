@@ -159,8 +159,7 @@ export default class ClanActivityCommand extends Command {
 						tag: '$tag',
 						name: '$name',
 						clan: '$clan',
-						time: '$entries.entry',
-						count: '$entries.count'
+						time: '$entries.entry'
 					}
 				},
 				{
@@ -193,9 +192,18 @@ export default class ClanActivityCommand extends Command {
 						name: {
 							$last: '$name'
 						},
-						count: isHourly ? { $sum: 1 } : { $max: '$count' },
 						hour: {
 							$last: '$hour'
+						},
+						counterSet: {
+							$addToSet: '$tag'
+						}
+					}
+				},
+				{
+					$set: {
+						count: {
+							$size: '$counterSet'
 						}
 					}
 				},
