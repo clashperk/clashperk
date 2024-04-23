@@ -1,6 +1,6 @@
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits, Role, User } from 'discord.js';
-import { parallel } from 'radash';
+import { parallel, unique } from 'radash';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/Client.js';
@@ -113,7 +113,8 @@ export class RolesManager {
 			prev[curr.tag] ??= {
 				roles,
 				warRoleId: curr.warRole,
-				alias: curr.alias ?? null
+				alias: curr.alias ?? null,
+				order: curr.order || 0
 			} as GuildRolesDto['clanRoles'][string];
 			return prev;
 		}, {});
@@ -530,19 +531,31 @@ export class RolesManager {
 		);
 
 		const defaultAccount = players.at(0);
-
-		if (accountPreference === NicknamingAccountPreference.DEFAULT_ACCOUNT) return defaultAccount;
-
-		if (accountPreference === NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT) {
-			if (defaultAccount?.clan && rolesMap.clanTags.includes(defaultAccount.clan.tag)) return defaultAccount;
-		}
-
 		const inFamilyPlayers = players.filter((player) => player.clan && rolesMap.clanTags.includes(player.clan.tag));
 		inFamilyPlayers.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
 		inFamilyPlayers.sort((a, b) => sumHeroes(b) - sumHeroes(a));
 		inFamilyPlayers.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-		return inFamilyPlayers.at(0) ?? defaultAccount;
+		if (accountPreference === NicknamingAccountPreference.DEFAULT_ACCOUNT) {
+			return {
+				player: defaultAccount,
+				inFamilyPlayers
+			};
+		}
+
+		if (accountPreference === NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT) {
+			if (defaultAccount?.clan && rolesMap.clanTags.includes(defaultAccount.clan.tag)) {
+				return {
+					player: defaultAccount,
+					inFamilyPlayers
+				};
+			}
+		}
+
+		return {
+			player: inFamilyPlayers.at(0) ?? defaultAccount,
+			inFamilyPlayers
+		};
 	}
 
 	public preNicknameUpdate(players: APIPlayer[], member: GuildMember, rolesMap: GuildRolesDto) {
@@ -554,7 +567,7 @@ export class RolesManager {
 		if (!isNickNamingEnabled) return { action: NickActions.NO_ACTION };
 
 		if (!players.length) return { action: NickActions.UNSET };
-		const player = this.getPreferredPlayer(players, rolesMap);
+		const { player, inFamilyPlayers } = this.getPreferredPlayer(players, rolesMap);
 		if (!player) return { action: NickActions.UNSET };
 
 		const familyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.FAMILY_NICKNAME_FORMAT);
@@ -562,6 +575,16 @@ export class RolesManager {
 
 		const inFamily = player.clan && rolesMap.clanTags.includes(player.clan.tag);
 		const clanAlias = player.clan && inFamily ? rolesMap.clanRoles[player.clan.tag]?.alias || makeAbbr(player.clan.name) : null;
+
+		const sortedClanAliases = inFamilyPlayers
+			.map((player) => ({
+				alias: rolesMap.clanRoles[player.clan!.tag]?.alias,
+				order: rolesMap.clanRoles[player.clan!.tag]?.order
+			}))
+			.filter((_record) => _record.alias)
+			.sort((a, b) => a.order - b.order)
+			.map((_record) => _record.alias as string);
+		const clanAliases = inFamily ? unique([clanAlias, ...sortedClanAliases]) : null;
 
 		const format = inFamily ? familyFormat : nonFamilyFormat;
 		if (!format) return { action: NickActions.UNSET };
@@ -573,7 +596,8 @@ export class RolesManager {
 				displayName: member.user.displayName,
 				username: member.user.username,
 				townHallLevel: player.townHallLevel,
-				alias: clanAlias ?? null,
+				alias: clanAlias,
+				aliases: clanAliases?.join(' | ') ?? null,
 				clan: player.clan && inFamily ? player.clan.name : null,
 				role: player.role && inFamily ? player.role : null
 			},
@@ -630,6 +654,7 @@ export class RolesManager {
 			role?: string | null;
 			clan?: string | null;
 			alias?: string | null;
+			aliases?: string | null;
 			displayName: string;
 			username: string;
 		},
@@ -642,6 +667,7 @@ export class RolesManager {
 			.replace(/{TH_SMALL}|{TOWN_HALL_SMALL}/gi, this.getTownHallSuperScript(player.townHallLevel))
 			.replace(/{ROLE}|{CLAN_ROLE}/gi, player.role ? roleLabels[player.role] || defaultRoleLabels[player.role] : '')
 			.replace(/{ALIAS}|{CLAN_ALIAS}/gi, player.alias ?? '')
+			.replace(/{ALIASES}|{CLAN_ALIASES}/gi, player.aliases ?? '')
 			.replace(/{CLAN}|{CLAN_NAME}/gi, player.clan ?? '')
 			.replace(/{DISCORD}|{DISCORD_NAME}/gi, player.displayName)
 			.replace(/{USERNAME}|{DISCORD_USERNAME}/gi, player.username)
@@ -704,6 +730,7 @@ interface GuildRolesDto {
 			roles: { [clanRole: string]: string };
 			warRoleId: string;
 			alias: string | null;
+			order: number;
 		};
 	};
 	guestRoleId: string;

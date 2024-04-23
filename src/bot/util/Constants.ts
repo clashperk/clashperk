@@ -78,6 +78,8 @@ export const enum Collections {
 	PLAYER_LINKS = 'PlayerLinks',
 	USERS = 'Users',
 
+	PLAYER_ACTIVITIES = 'PlayerActivities',
+
 	REMINDERS = 'Reminders',
 	SCHEDULERS = 'Schedulers',
 	RAID_REMINDERS = 'RaidReminders',

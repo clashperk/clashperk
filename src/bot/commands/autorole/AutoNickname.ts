@@ -22,6 +22,7 @@ import { createInteractionCollector } from '../../util/Pagination.js';
 // {TH_SMALL} | {TOWN_HALL_SMALL}
 // {ROLE} | {CLAN_ROLE}
 // {ALIAS} | {CLAN_ALIAS}
+// {ALIASES} | {CLAN_ALIASES}
 // {CLAN} | {CLAN_NAME}
 // {DISCORD} | {DISCORD_NAME}
 // {USERNAME} | {DISCORD_USERNAME}
@@ -69,7 +70,7 @@ export default class NicknameConfigCommand extends Command {
 		}
 
 		if (args.non_family_nickname_format && !/^none$/i.test(args.non_family_nickname_format)) {
-			if (/{CLAN}|{CLAN_NAME}|{ALIAS}|{CLAN_ALIAS}|{ROLE}|{CLAN_ROLE}/gi.test(nonFamilyFormat)) {
+			if (/{CLAN}|{CLAN_NAME}|{ALIAS}|{CLAN_ALIAS}|{ALIASES}|{CLAN_ALIASES}|{ROLE}|{CLAN_ROLE}/gi.test(nonFamilyFormat)) {
 				return interaction.editReply(
 					`Invalid **non-family nickname** format \`${nonFamilyFormat}\`, it must **not** include \`{CLAN}\` \`{CLAN_NAME}\` \`{ALIAS}\` \`{CLAN_ALIAS}\` \`{ROLE}\` \`{CLAN_ROLE}\``
 				);
@@ -132,6 +133,7 @@ export default class NicknameConfigCommand extends Command {
 					`\`{TH_SMALL}\` or \`{TOWN_HALL_SMALL}\``,
 					`\`{ROLE}\` or \`{CLAN_ROLE}\``,
 					`\`{ALIAS}\` or \`{CLAN_ALIAS}\``,
+					`\`{ALIASES}\` or \`{CLAN_ALIASES}\``,
 					`\`{CLAN}\` or \`{CLAN_NAME}\``,
 					`\`{DISCORD}\` or \`{DISCORD_NAME}\``,
 					`\`{USERNAME}\` or \`{DISCORD_USERNAME}\``,
