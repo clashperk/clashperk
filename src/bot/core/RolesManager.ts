@@ -1,7 +1,7 @@
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits, Role, User } from 'discord.js';
 import { UpdateFilter, WithId } from 'mongodb';
-import { parallel, unique } from 'radash';
+import { parallel, sift, unique } from 'radash';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { RoleDeletionDelaysEntity } from '../entities/role-deletion-delays.entity.js';
@@ -536,7 +536,8 @@ export class RolesManager {
 			forced,
 			member,
 			rolesToExclude: playerRolesMap.rolesToExclude,
-			rolesToInclude: playerRolesMap.rolesToInclude
+			rolesToInclude: playerRolesMap.rolesToInclude,
+			rolesExcludedFromDelays: sift([rolesMap.verifiedRoleId])
 		});
 	}
 
@@ -545,11 +546,13 @@ export class RolesManager {
 		isDryRun,
 		member,
 		rolesToExclude,
-		rolesToInclude
+		rolesToInclude,
+		rolesExcludedFromDelays
 	}: {
 		member: GuildMember;
 		rolesToExclude: string[];
 		rolesToInclude: string[];
+		rolesExcludedFromDelays: string[];
 		isDryRun: boolean;
 		forced: boolean;
 	}) {
@@ -562,7 +565,7 @@ export class RolesManager {
 		const collection = this.client.db.collection<RoleDeletionDelaysEntity>(Collections.ROLE_DELETION_DELAYS);
 		const delay = await collection.findOne({ guildId: member.guild.id, userId: member.user.id });
 
-		const freeToDelete: string[] = [];
+		const freeToDelete: string[] = [...rolesExcludedFromDelays];
 
 		const update: UpdateFilter<RoleDeletionDelaysEntity> = {};
 		for (const [roleId, _delayed] of Object.entries(delay?.roles ?? {})) {
@@ -577,6 +580,7 @@ export class RolesManager {
 
 		for (const roleId of rolesToExclude.filter((id) => member.roles.cache.has(id))) {
 			if (delay && delay.roles[roleId]) continue;
+			if (!rolesExcludedFromDelays.includes(roleId)) continue;
 			update.$min = { ...update.$min, [`roles.${roleId}`]: delayedFor };
 		}
 
@@ -852,6 +856,13 @@ interface PlayerRolesInput {
 
 interface GuildRolesDto {
 	guildId: string;
+	clanTags: string[];
+	warClanTags: string[];
+
+	allowNonFamilyTownHallRoles: boolean;
+	allowNonFamilyLeagueRoles: boolean;
+	verifiedOnlyClanRoles: boolean;
+
 	townHallRoles: { [level: string]: string };
 	builderHallRoles: { [level: string]: string };
 	leagueRoles: { [leagueId: string]: string };
@@ -869,11 +880,6 @@ interface GuildRolesDto {
 	exclusiveFamilyRoleId: string;
 	familyLeadersRoles: string[];
 	verifiedRoleId: string;
-	clanTags: string[];
-	warClanTags: string[];
-	allowNonFamilyTownHallRoles: boolean;
-	allowNonFamilyLeagueRoles: boolean;
-	verifiedOnlyClanRoles: boolean;
 }
 
 interface AddRoleInput {
