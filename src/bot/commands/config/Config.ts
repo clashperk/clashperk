@@ -10,6 +10,7 @@ import {
 	StringSelectMenuBuilder,
 	resolveColor
 } from 'discord.js';
+import ms from 'ms';
 import { title } from 'radash';
 import { command } from '../../../../locales/en.js';
 import { Command } from '../../lib/index.js';
@@ -69,6 +70,7 @@ export default class ConfigCommand extends Command {
 			clans_sorting_key?: string;
 			auto_update_roles?: boolean;
 			verified_only_clan_roles?: boolean;
+			role_removal_delays?: string;
 			/** @deprecated */
 			maintenance_notification_channel?: string;
 		}
@@ -120,6 +122,10 @@ export default class ConfigCommand extends Command {
 
 		if (args.maintenance_notification_channel) {
 			return interaction.editReply(`This option has been moved to ${this.client.commands.get('/setup utility')}`);
+		}
+
+		if (args.role_removal_delays) {
+			await this.client.settings.set(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, ms(args.role_removal_delays));
 		}
 
 		const validOptions = this.getOptions(interaction.guildId);
@@ -182,6 +188,7 @@ export default class ConfigCommand extends Command {
 		const clansSortingKey = this.client.settings.get<string>(interaction.guild, Settings.CLANS_SORTING_KEY, 'name');
 		const verifiedOnlyClanRoles = this.client.settings.get<string>(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 		const useAutoRole = this.client.settings.get<string>(interaction.guild, Settings.USE_AUTO_ROLE, true);
+		const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -226,6 +233,10 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Auto Update Roles',
 					value: `${useAutoRole ? 'Yes' : 'No'}`
+				},
+				{
+					name: 'Role Removal Delays',
+					value: `${roleRemovalDelays ? ms(roleRemovalDelays, { long: true }) : 'None'}`
 				},
 				{
 					name: this.i18n('common.color_code', { lng: interaction.locale }),

@@ -160,6 +160,16 @@ export class MongoDbClient extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.ROLE_DELETION_DELAYS).createIndexes([
+				{
+					key: { guildId: 1, userId: 1 },
+					unique: true
+				},
+				{
+					key: { guildId: 1 }
+				}
+			]),
+
 			db.collection(Collections.CLAN_STORES).createIndexes([
 				{
 					key: { guild: 1, tag: 1 },

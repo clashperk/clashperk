@@ -1,8 +1,10 @@
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits, Role, User } from 'discord.js';
+import { UpdateFilter, WithId } from 'mongodb';
 import { parallel, unique } from 'radash';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
+import { RoleDeletionDelaysEntity } from '../entities/role-deletion-delays.entity.js';
 import { Client } from '../struct/Client.js';
 import { BUILDER_BASE_LEAGUE_MAPS, Collections, PLAYER_LEAGUE_MAPS, SUPER_SCRIPTS, Settings } from '../util/Constants.js';
 import { makeAbbr, sumHeroes } from '../util/Helper.js';
@@ -43,8 +45,11 @@ export type Mentionable = { target: User; isUser: true } | { target: Role; isUse
 export class RolesManager {
 	private queues = new Map<string, string[]>();
 	private changeLogs: Record<string, RolesChangeLog> = {};
+	private interval = 6 * 60 * 60 * 1000;
 
-	public constructor(private readonly client: Client) {}
+	public constructor(private readonly client: Client) {
+		setTimeout(this._roleRefresh.bind(this), 5 * 60 * 1000);
+	}
 
 	async exec(clanTag: string, pollingInput: RolesManagerPollingInput) {
 		if (pollingInput.state && pollingInput.state === 'inWar') return;
@@ -183,11 +188,6 @@ export class RolesManager {
 		return {
 			targetedRoles: [...new Set(targetedRoles)],
 			warRoles: [...new Set(warRoles)]
-
-			// NOT USING THEM ANYWHERE
-			// clanRoles: [...new Set(clanRoles)],
-			// leagueRoles: [...new Set(leagueRoles)],
-			// townHallRoles: [...new Set(townHallRoles)]
 		};
 	}
 
@@ -516,11 +516,60 @@ export class RolesManager {
 		);
 
 		const playerRolesMap = this.getPlayerRoles(playerList, rolesMap);
-		return this.checkRoles({
+		return this.handleRoleDeletionDelays({
 			member,
 			rolesToExclude: playerRolesMap.rolesToExclude,
 			rolesToInclude: playerRolesMap.rolesToInclude
 		});
+	}
+
+	private async handleRoleDeletionDelays({
+		member,
+		rolesToExclude,
+		rolesToInclude
+	}: {
+		member: GuildMember;
+		rolesToExclude: string[];
+		rolesToInclude: string[];
+	}) {
+		const delaysInMs = this.client.settings.get<number>(member.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
+		if (!delaysInMs) {
+			return this.checkRoles({ member, rolesToExclude, rolesToInclude });
+		}
+
+		const delayedFor = new Date(Date.now() + delaysInMs).getTime();
+		const collection = this.client.db.collection<RoleDeletionDelaysEntity>(Collections.ROLE_DELETION_DELAYS);
+		const delay = await collection.findOne({ guildId: member.guild.id, userId: member.user.id });
+
+		const freeToDelete: string[] = [];
+
+		const update: UpdateFilter<RoleDeletionDelaysEntity> = {};
+		for (const [roleId, _delayed] of Object.entries(delay?.roles ?? {})) {
+			// if the time is right or the player is back
+			if (Date.now() > _delayed || rolesToInclude.includes(roleId)) {
+				update.$unset = { ...update.$unset, [`roles.${roleId}`]: '' };
+			}
+			if (Date.now() > _delayed) {
+				freeToDelete.push(roleId);
+			}
+		}
+
+		for (const roleId of rolesToExclude.filter((id) => member.roles.cache.has(id))) {
+			if (delay && delay.roles[roleId]) continue;
+			update.$min = { ...update.$min, [`roles.${roleId}`]: delayedFor };
+		}
+
+		if (Object.getOwnPropertyNames(update).length) {
+			await collection.updateOne(
+				{ guildId: member.guild.id, userId: member.user.id },
+				{ ...update, $setOnInsert: { createdAt: new Date() }, $set: { updatedAt: new Date() } },
+				{ upsert: true }
+			);
+		} else if (delay && !Object.getOwnPropertyNames(delay.roles).length) {
+			await collection.deleteOne({ guildId: member.guild.id, userId: member.user.id });
+		}
+
+		return this.checkRoles({ member, rolesToInclude, rolesToExclude: rolesToExclude.filter((id) => freeToDelete.includes(id)) });
 	}
 
 	private getPreferredPlayer(players: APIPlayer[], rolesMap: GuildRolesDto) {
@@ -602,12 +651,12 @@ export class RolesManager {
 				role: player.role && inFamily ? player.role : null
 			},
 			format
-		);
+		).slice(0, 32);
 
 		if (!nickname) return { action: NickActions.UNSET };
 		if (member.nickname === nickname) return { action: NickActions.NO_ACTION };
 
-		return { action: NickActions.SET_NAME, nickname: nickname.slice(0, 32) };
+		return { action: NickActions.SET_NAME, nickname };
 	}
 
 	private checkRoles({ member, rolesToExclude, rolesToInclude }: AddRoleInput) {
@@ -702,6 +751,67 @@ export class RolesManager {
 
 	private delay(ms: number) {
 		return new Promise((res) => setTimeout(res, ms));
+	}
+
+	private async _roleRefresh() {
+		const collection = this.client.db.collection<RoleDeletionDelaysEntity>(Collections.ROLE_DELETION_DELAYS);
+		const cursor = collection.aggregate<{ _id: string; delays: WithId<RoleDeletionDelaysEntity>[] }>([
+			{
+				$match: {
+					guildId: {
+						$in: this.client.guilds.cache.map((guild) => guild.id)
+					}
+				}
+			},
+			{
+				$group: {
+					_id: '$guildId',
+					delays: {
+						$push: '$$ROOT'
+					}
+				}
+			}
+		]);
+
+		try {
+			for await (const { delays, _id: guildId } of cursor) {
+				if (!this.client.settings.get(guildId, Settings.USE_AUTO_ROLE, true)) continue;
+				if (this.client.settings.hasCustomBot(guildId) && !this.client.isCustom()) continue;
+
+				const delaysInMs = this.client.settings.get<number>(guildId, Settings.ROLE_REMOVAL_DELAYS, 0);
+				if (!delaysInMs) continue;
+
+				const invalid = delays.filter((delay) => {
+					return !Object.values(delay.roles).filter((_delayed) => Date.now() > _delayed).length;
+				});
+				if (invalid.length) {
+					await collection.deleteOne({ _id: { $in: invalid.map((_delay) => _delay._id) } });
+				}
+
+				const expired = delays.filter((delay) => {
+					return Object.values(delay.roles).filter((_delayed) => Date.now() > _delayed).length;
+				});
+				if (!expired.length) continue;
+
+				const memberTags = await this.client.db
+					.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
+					.distinct('tag', { userId: { $in: expired.map((_delay) => _delay.userId) } });
+				if (!memberTags.length) continue;
+
+				if (!this.client.guilds.cache.has(guildId)) continue;
+
+				if (this.queues.has(guildId)) {
+					this.queues.set(guildId, [...(this.queues.get(guildId) ?? []), ...memberTags]);
+					continue; // a queue is already being processed
+				}
+
+				this.queues.set(guildId, []);
+
+				await this.trigger({ memberTags, guildId });
+			}
+		} finally {
+			setTimeout(this._roleRefresh.bind(this), this.interval);
+		}
 	}
 }
 

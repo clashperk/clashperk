@@ -3954,6 +3954,53 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'role_removal_delays',
+				description: '[AutoRole] Whether to delay the removal of roles.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Off',
+						value: '0'
+					},
+					{
+						name: '4h',
+						value: '4h'
+					},
+					{
+						name: '6h',
+						value: '6h'
+					},
+					{
+						name: '8h',
+						value: '8h'
+					},
+					{
+						name: '12h',
+						value: '12h'
+					},
+					{
+						name: '18h',
+						value: '18h'
+					},
+					{
+						name: '24h',
+						value: '24h'
+					},
+					{
+						name: '36h',
+						value: '36h'
+					},
+					{
+						name: '48h',
+						value: '48h'
+					},
+					{
+						name: '72h',
+						value: '72h'
+					}
+				]
+			},
+			{
 				name: 'verified_only_clan_roles',
 				description: '[AutoRole] Whether to grant clans roles to verified players only (Defaults to No)',
 				type: ApplicationCommandOptionType.String,

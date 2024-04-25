@@ -105,6 +105,8 @@ export const enum Collections {
 
 	CUSTOM_BOTS = 'CustomBots',
 
+	ROLE_DELETION_DELAYS = 'RoleDeletionDelays',
+
 	ROSTERS = 'Rosters',
 	ROSTER_CATEGORIES = 'RosterCategories',
 
@@ -173,7 +175,6 @@ export const enum Settings {
 	BUILDER_HALL_ROLES = 'builderHallRoles',
 	LEAGUE_ROLES = 'leagueRoles',
 	BUILDER_LEAGUE_ROLES = 'builderLeagueRoles',
-	ROLE_REFRESHED = 'roleRefreshed',
 	LINK_EMBEDS = 'linkEmbeds',
 	WEBHOOK_LIMIT = 'webhookLimit',
 	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
@@ -204,7 +205,8 @@ export const enum Settings {
 	ROLE_REPLACEMENT_LABELS = 'roleReplacementLabels',
 	ROSTER_CHANGELOG = 'rosterChangeLog',
 	REMINDER_EXCLUSION = 'reminderExclusion',
-	DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook'
+	DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook',
+	ROLE_REMOVAL_DELAYS = 'roleRemovalDelays'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
