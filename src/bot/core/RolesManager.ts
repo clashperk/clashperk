@@ -580,7 +580,7 @@ export class RolesManager {
 
 		for (const roleId of rolesToExclude.filter((id) => member.roles.cache.has(id))) {
 			if (delay && delay.roles[roleId]) continue;
-			if (!rolesExcludedFromDelays.includes(roleId)) continue;
+			if (rolesExcludedFromDelays.includes(roleId)) continue;
 			update.$min = { ...update.$min, [`roles.${roleId}`]: delayedFor };
 		}
 
