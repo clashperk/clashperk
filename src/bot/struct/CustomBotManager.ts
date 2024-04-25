@@ -145,7 +145,7 @@ export class CustomBotManager {
 
 		await this._suspendService(applicationId);
 		await this._deleteService(applicationId);
-		await this.client.patrons.detachCustomBot(bot.patronId);
+		await this.client.patreonHandler.detachCustomBot(bot.patronId);
 		for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
 		await this.collection.deleteOne({ applicationId });
 

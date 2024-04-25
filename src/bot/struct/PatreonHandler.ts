@@ -2,6 +2,7 @@ import { BaseInteraction } from 'discord.js';
 import { Collection, WithId } from 'mongodb';
 import fetch from 'node-fetch';
 import TimeoutSignal from 'timeout-signal';
+import { PatreonMembersEntity } from '../entities/patrons.entity.js';
 import { Collections, Settings } from '../util/Constants.js';
 import { Client } from './Client.js';
 
@@ -19,12 +20,12 @@ export const guildLimits: Record<string, number> = {
 	[rewards.gold]: 10
 };
 
-export default class Patrons {
+export class PatreonHandler {
 	private readonly collection: Collection<Patron>;
 	private readonly patrons = new Set<string>();
 
 	public constructor(private readonly client: Client) {
-		this.collection = this.client.db.collection(Collections.PATRONS);
+		this.collection = this.client.db.collection(Collections.PATREON_MEMBERS);
 		const watchStream = this.collection.watch([
 			{
 				$match: {
@@ -88,7 +89,7 @@ export default class Patrons {
 
 		const res = await this.fetchAPI();
 		if (!res) return null;
-		if (debug) this.client.logger.info(`Patron Handler Initialized.`, { label: 'PATREON' });
+		if (debug) this.client.logger.info(`Patreon Handler Initialized.`, { label: 'PATREON' });
 
 		const patrons = await this.collection.find().toArray();
 		for (const patron of patrons) {
@@ -144,7 +145,7 @@ export default class Patrons {
 
 		if (patron.active && pledge?.attributes.patron_status === 'former_patron') {
 			await this.collection.updateOne({ id: patron.id }, { $set: { cancelled: true, active: false } });
-			this.client.logger.info(`Declined Patron Deleted ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
+			this.client.logger.info(`Declined Member Deleted ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
 
 			// eslint-disable-next-line
 			for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
@@ -157,7 +158,7 @@ export default class Patrons {
 			for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
 			if (patron.applicationId) await this.client.customBotManager.resumeService(patron.applicationId);
 
-			this.client.logger.info(`Declined Patron Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
+			this.client.logger.info(`Declined Member Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
 		}
 
 		if (
@@ -231,34 +232,7 @@ export default class Patrons {
 	}
 }
 
-export interface Patron {
-	id: string;
-	name: string;
-	rewardId: string;
-
-	userId: string;
-	username: string;
-
-	guilds: {
-		id: string;
-		name: string;
-		limit: number;
-	}[];
-	redeemed: boolean;
-
-	active: boolean;
-	declined: boolean;
-	cancelled: boolean;
-
-	entitledAmount: number;
-	lifetimeSupport: number;
-
-	sponsored: boolean;
-	applicationId?: string;
-
-	createdAt: Date;
-	lastChargeDate: Date;
-}
+export interface Patron extends PatreonMembersEntity {}
 
 export interface Member {
 	attributes: {

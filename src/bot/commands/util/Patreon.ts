@@ -1,11 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, CommandInteraction, ComponentType } from 'discord.js';
-import { Collections, Settings } from '../../util/Constants.js';
-import { Patron } from '../../struct/Patrons.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
+import { Patron } from '../../struct/PatreonHandler.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
-export default class PatronCommand extends Command {
+export default class PatreonCommand extends Command {
 	public constructor() {
-		super('patron', {
+		super('patreon', {
 			category: 'none',
 			clientPermissions: ['EmbedLinks'],
 			defer: true
@@ -34,19 +34,19 @@ export default class PatronCommand extends Command {
 
 			if (action === 'add' && patron) {
 				await this.client.db
-					.collection(Collections.PATRONS)
+					.collection(Collections.PATREON_MEMBERS)
 					.updateOne({ id: patron.id }, { $set: { active: true, declined: false, cancelled: false } });
 
-				await this.client.patrons.refresh();
+				await this.client.patreonHandler.refresh();
 				return interaction.editReply('Success!');
 			}
 
 			if (['del', 'dec'].includes(action) && patron) {
 				await this.client.db
-					.collection(Collections.PATRONS)
+					.collection(Collections.PATREON_MEMBERS)
 					.updateOne({ id: patron.id }, { $set: { active: false, declined: action === 'dec', cancelled: action === 'del' } });
 
-				await this.client.patrons.refresh();
+				await this.client.patreonHandler.refresh();
 				return interaction.editReply('Success!');
 			}
 
@@ -77,7 +77,7 @@ export default class PatronCommand extends Command {
 			if (action.customId === customId) {
 				const embed = new EmbedBuilder();
 				embed.setDescription(
-					[`**Our Current Patrons (${patrons.length})**`, patrons.map((patron) => `• ${patron.username}`).join('\n')].join('\n')
+					[`**Our Current Members (${patrons.length})**`, patrons.map((patron) => `• ${patron.username}`).join('\n')].join('\n')
 				);
 
 				await action.reply({ embeds: [embed], ephemeral: true });
@@ -92,7 +92,7 @@ export default class PatronCommand extends Command {
 	}
 
 	private patrons() {
-		return this.client.db.collection<Patron>(Collections.PATRONS).find().sort({ createdAt: 1 }).toArray();
+		return this.client.db.collection<Patron>(Collections.PATREON_MEMBERS).find().sort({ createdAt: 1 }).toArray();
 	}
 
 	private async add(guild: string) {

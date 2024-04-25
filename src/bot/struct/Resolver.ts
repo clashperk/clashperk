@@ -326,7 +326,7 @@ export default class Resolver {
 		]);
 
 		const max = this.client.settings.get<number>(interaction.guild.id, Settings.CLAN_LIMIT, 2);
-		const isPatron = this.client.patrons.get(interaction.guild.id);
+		const isPatron = this.client.patreonHandler.get(interaction.guild.id);
 
 		if (
 			collection !== Collections.CLAN_STORES &&

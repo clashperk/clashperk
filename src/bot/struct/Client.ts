@@ -16,17 +16,17 @@ import CapitalRaidScheduler from './CapitalRaidScheduler.js';
 import ClanGamesScheduler from './ClanGamesScheduler.js';
 import ClanWarScheduler from './ClanWarScheduler.js';
 import { CommandsMap } from './CommandsMap.js';
+import { CustomBotManager } from './CustomBotManager.js';
 import { mongoClient } from './Database.js';
 import { GuildEventsHandler } from './GuildEventsHandler.js';
 import Http from './Http.js';
-import Patrons from './Patrons.js';
+import { PatreonHandler } from './PatreonHandler.js';
 import RedisService from './RedisService.js';
 import Resolver from './Resolver.js';
 import { RosterManager } from './RosterManager.js';
 import SettingsProvider from './SettingsProvider.js';
 import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
-import { CustomBotManager } from './CustomBotManager.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -73,7 +73,7 @@ export class Client extends Discord.Client {
 	public publisher = this.redis.connection.duplicate();
 
 	public rpcHandler!: RPCHandler;
-	public patrons!: Patrons;
+	public patreonHandler!: PatreonHandler;
 	public components = new Map<string, string[]>();
 	public resolver!: Resolver;
 	public ownerId: string;
@@ -169,7 +169,7 @@ export class Client extends Discord.Client {
 	}
 
 	private run() {
-		this.patrons.init();
+		this.patreonHandler.init();
 		this.rpcHandler.init();
 		this.cgScheduler.init();
 		this.raidScheduler.init();
@@ -195,8 +195,8 @@ export class Client extends Discord.Client {
 		this.storage = new StorageHandler(this);
 		this.rpcHandler = new RPCHandler(this);
 
-		this.patrons = new Patrons(this);
-		await this.patrons.refresh();
+		this.patreonHandler = new PatreonHandler(this);
+		await this.patreonHandler.refresh();
 
 		this.stats = new StatsHandler(this);
 		this.resolver = new Resolver(this);

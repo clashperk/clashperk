@@ -90,7 +90,7 @@ export default class ReminderCreateCommand extends Command {
 		const reminders = await this.client.db
 			.collection<ClanWarRemindersEntity>(Collections.REMINDERS)
 			.countDocuments({ guild: interaction.guild.id });
-		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
+		if (reminders >= 25 && !this.client.patreonHandler.get(interaction.guild.id)) {
 			return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
 		}
 		if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {

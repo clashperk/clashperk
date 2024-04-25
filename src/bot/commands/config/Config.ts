@@ -199,8 +199,8 @@ export default class ConfigCommand extends Command {
 					value: '/'
 				},
 				{
-					name: 'Patron',
-					value: this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No'
+					name: 'Patreon Subscribed',
+					value: this.client.patreonHandler.get(interaction.guild.id) ? 'Yes' : 'No'
 				},
 				{
 					name: 'Manager Role',

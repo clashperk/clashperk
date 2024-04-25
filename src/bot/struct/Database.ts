@@ -389,7 +389,7 @@ export class MongoDbClient extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.PATRONS).createIndex({ id: 1 }, { unique: true }),
+			db.collection(Collections.PATREON_MEMBERS).createIndex({ id: 1 }, { unique: true }),
 
 			db.collection(Collections.SETTINGS).createIndex({ guildId: 1 }, { unique: true }),
 

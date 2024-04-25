@@ -125,7 +125,7 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private async createCommands(guild: Guild) {
-		const patron = await this.client.patrons.findGuild(guild.id);
+		const patron = await this.client.patreonHandler.findGuild(guild.id);
 		if (!patron?.applicationId) return;
 
 		const app = await this.client.customBotManager.findBot({ applicationId: this.client.user!.id });

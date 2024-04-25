@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
-import { Included, Patron, guildLimits } from '../../struct/Patrons.js';
+import { Included, Patron, guildLimits } from '../../struct/PatreonHandler.js';
 import { Collections } from '../../util/Constants.js';
 
 export default class RedeemCommand extends Command {
@@ -33,7 +33,7 @@ export default class RedeemCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, { disable }: { disable?: boolean }) {
-		const data = await this.client.patrons.fetchAPI();
+		const data = await this.client.patreonHandler.fetchAPI();
 		if (!data) {
 			return interaction.editReply({
 				content: '**Something went wrong (unresponsive api), please [contact us.](https://discord.gg/ppuppun)**'
@@ -49,7 +49,7 @@ export default class RedeemCommand extends Command {
 						'I could not find any Patreon account connected to your Discord.',
 						'',
 						'Make sure that you are connected and subscribed to ClashPerk.',
-						'Not subscribed yet? [Become a Patron](https://www.patreon.com/clashperk)'
+						'Not subscribed yet? [Subscribe on Patreon](https://www.patreon.com/clashperk)'
 					].join('\n')
 				)
 				.addFields([{ name: 'How to connect?', value: 'https://www.patreon.com/settings/apps' }])
@@ -58,7 +58,7 @@ export default class RedeemCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const collection = this.client.db.collection<Patron>(Collections.PATRONS);
+		const collection = this.client.db.collection<Patron>(Collections.PATREON_MEMBERS);
 		const user = await collection.findOne({ id: patron.id });
 
 		if (disable) {
@@ -70,7 +70,7 @@ export default class RedeemCommand extends Command {
 			return this.disableRedemption(interaction, { select: true, user, message: { content: '**Manage Patreon Subscriptions**' } });
 		}
 
-		if (this.client.patrons.get(interaction.guild.id)) {
+		if (this.client.patreonHandler.get(interaction.guild.id)) {
 			return interaction.editReply('**This server already has an active subscription.**');
 		}
 
@@ -124,20 +124,20 @@ export default class RedeemCommand extends Command {
 				{ upsert: true }
 			);
 
-			await this.client.patrons.refresh();
+			await this.client.patreonHandler.refresh();
 			await this.sync(interaction.guild.id);
 			return interaction.editReply({ embeds: [embed] });
 		}
 
 		const redeemed = this.redeemed({ ...user, rewardId });
 		if (redeemed) {
-			if (!this.isNew(user, interaction, patron)) await this.client.patrons.refresh();
+			if (!this.isNew(user, interaction, patron)) await this.client.patreonHandler.refresh();
 			const embed = new EmbedBuilder()
 				.setColor(16345172)
 				.setDescription(
 					[
 						"You've already claimed your subscription!",
-						"If you think it's wrong, please [contact us.](https://discord.gg/ppuppun)"
+						'If you think it is wrong, please [contact us.](https://discord.gg/ppuppun)'
 					].join('\n')
 				);
 			return this.disableRedemption(interaction, { select: false, user, message: { embeds: [embed] } });
@@ -168,7 +168,7 @@ export default class RedeemCommand extends Command {
 			}
 		);
 
-		await this.client.patrons.refresh();
+		await this.client.patreonHandler.refresh();
 		await this.sync(interaction.guild.id);
 		return interaction.editReply({ embeds: [embed] });
 	}
@@ -177,7 +177,7 @@ export default class RedeemCommand extends Command {
 		interaction: CommandInteraction,
 		{ message, user, select }: { message: WebhookMessageEditOptions; user: WithId<Patron>; select: boolean }
 	) {
-		const collection = this.client.db.collection<Patron>(Collections.PATRONS);
+		const collection = this.client.db.collection<Patron>(Collections.PATREON_MEMBERS);
 		const customIds = {
 			button: this.client.uuid(interaction.user.id),
 			menu: this.client.uuid(interaction.user.id)
@@ -217,7 +217,7 @@ export default class RedeemCommand extends Command {
 				}
 				await action.deferUpdate();
 				await collection.updateOne({ _id: user._id }, { $pull: { guilds: { id } } });
-				await this.client.patrons.deleteGuild(id);
+				await this.client.patreonHandler.deleteGuild(id);
 				await action.editReply({ components: [], content: `Subscription disabled for **${guild.name} (${guild.id})**` });
 			}
 		});
@@ -225,7 +225,7 @@ export default class RedeemCommand extends Command {
 
 	private isNew(user: Patron, interaction: CommandInteraction, patron: Included) {
 		if (user.userId !== interaction.user.id) {
-			this.client.db.collection(Collections.PATRONS).updateOne(
+			this.client.db.collection(Collections.PATREON_MEMBERS).updateOne(
 				{ id: patron.id },
 				{
 					$set: {

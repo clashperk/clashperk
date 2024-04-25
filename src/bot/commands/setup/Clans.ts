@@ -60,7 +60,8 @@ export default class ClansCommand extends Command {
 					`**${categories[categoryId] || 'General'}**`,
 					...clans.map((clan) => {
 						const mem = clansMap[clan.tag] || 0;
-						return `[\u200e${clan.name} [${clan.tag}] - ${mem}](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+						const tag = clan.tag.replace('#', '');
+						return `[\u200e${clan.nickname || clan.name} [${clan.tag}] - ${mem}](http://cprk.eu/c/${tag})`;
 					})
 				].join('\n');
 			})

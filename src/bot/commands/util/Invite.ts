@@ -35,7 +35,7 @@ export default class InviteCommand extends Command {
 					'',
 					`**[Add to Discord](${getInviteLink(this.client.user!.id)})**`,
 					'',
-					'**[Support Discord](https://discord.gg/ppuppun)** | **[Become a Patron](https://www.patreon.com/clashperk)**',
+					'**[Support Server](https://discord.gg/ppuppun)** | **[Subscribe on Patreon](https://www.patreon.com/clashperk)**',
 					'',
 					additionalTexts.join('\n')
 				].join('\n')

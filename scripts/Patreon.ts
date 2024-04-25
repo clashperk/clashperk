@@ -1,12 +1,13 @@
 import fetch from 'node-fetch';
 
+import { PatreonMembersEntity } from '../src/bot/entities/patrons.entity.js';
 import { mongoClient } from '../src/bot/struct/Database.js';
+import { Included, Member } from '../src/bot/struct/PatreonHandler.js';
 import { Collections } from '../src/bot/util/Constants.js';
-import { Included, Member } from '../src/bot/struct/Patrons.js';
 
 (async () => {
 	await mongoClient.connect().then(() => console.log('MongoDB Connected!'));
-	const collection = mongoClient.db('clashperk').collection(Collections.PATRONS);
+	const collection = mongoClient.db('clashperk').collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
 
 	const query = new URLSearchParams({
 		'page[size]': '1000',
@@ -23,24 +24,24 @@ import { Included, Member } from '../src/bot/struct/Patrons.js';
 		.then((res) => res.json())
 		.catch(() => null)) as { data: Member[]; included: Included[] };
 
-	const patrons = await collection.find({ active: true }).toArray();
-	console.log('\n========= DELETED PATRONS ========');
-	patrons.forEach((patron) => {
+	const members = await collection.find({ active: true }).toArray();
+	console.log('\n========= DELETED MEMBERS ========');
+	members.forEach((patron) => {
 		const f = data.data.find((entry) => entry.relationships.user.data.id === patron.id);
 		if (!f) console.log(patron.name, patron.userId);
 	});
 
-	console.log('\n========= PENDING PATRONS ========');
+	console.log('\n========= PENDING MEMBERS ========');
 	data.included.forEach((entry: any) => {
-		const d = patrons.find((p) => p.id === entry?.id);
+		const d = members.find((p) => p.id === entry?.id);
 		const pledge = data.data.find((en) => en.relationships.user.data.id === entry.id);
 		if (!d && pledge?.attributes.patron_status === 'active_patron')
 			console.log(entry?.attributes.full_name, entry?.attributes.email, entry.id);
 	});
 
-	console.log('\n========= DECLINED PATRONS ========');
+	console.log('\n========= DECLINED MEMBERS ========');
 	data.included.forEach((entry: any) => {
-		const d = patrons.find((p) => p.id === entry?.id);
+		const d = members.find((p) => p.id === entry?.id);
 		const pledge = data.data.find((en: any) => en?.relationships?.patron?.data?.id === entry.id);
 		if (d && pledge?.attributes.patron_status === 'declined_patron') console.log(entry?.attributes.full_name, entry?.id);
 	});

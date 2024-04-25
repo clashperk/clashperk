@@ -4114,7 +4114,7 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		dm_permission: true
 	},
 	{
-		name: 'patron',
+		name: 'patreon',
 		description: "Shows information about the bot's Patreon.",
 		dm_permission: true
 	},

@@ -1,6 +1,6 @@
 import { CommandInteraction, Interaction, TextChannel } from 'discord.js';
-import { Collections, Flags } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
+import { Collections, Flags } from '../../util/Constants.js';
 
 export default class ChannelLinkCommand extends Command {
 	public constructor() {
@@ -60,7 +60,7 @@ export default class ChannelLinkCommand extends Command {
 					verified: true,
 					active: true,
 					guild: interaction.guild.id,
-					patron: this.client.patrons.get(interaction.guild.id)
+					patron: this.client.patreonHandler.get(interaction.guild.id)
 				},
 				$push: {
 					channels: args.channel.id

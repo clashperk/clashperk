@@ -13,7 +13,7 @@ import {
 import moment from 'moment';
 import { WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { Patron, rewards } from '../../struct/Patrons.js';
+import { Patron, rewards } from '../../struct/PatreonHandler.js';
 import { getInviteLink } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
@@ -42,7 +42,7 @@ export default class BotPersonalizerCommand extends Command {
 			token: this.client.uuid(interaction.user.id)
 		};
 
-		const patron = await this.client.patrons.findOne(interaction.user.id);
+		const patron = await this.client.patreonHandler.findOne(interaction.user.id);
 		const isEligible =
 			Boolean(patron && this.isEligible(patron) && this.isAllowedGuild(patron, interaction.guildId)) ||
 			this.client.isOwner(interaction.user.id);
@@ -69,7 +69,7 @@ export default class BotPersonalizerCommand extends Command {
 				.setStyle(ButtonStyle.Primary),
 			new ButtonBuilder()
 				.setURL(isEligible ? 'https://discord.com/developers/applications' : 'https://www.patreon.com/clashperk')
-				.setLabel(isEligible ? 'Developer Portal' : 'Become a Patron')
+				.setLabel(isEligible ? 'Developer Portal' : 'Subscribe on Patreon')
 				.setStyle(ButtonStyle.Link)
 		);
 
@@ -108,7 +108,7 @@ export default class BotPersonalizerCommand extends Command {
 				await modalSubmit.deferUpdate();
 
 				if (!patron) {
-					return await modalSubmit.editReply({ content: `You must be a patron to deploy your own bot!`, components: [] });
+					return await modalSubmit.editReply({ content: `You must be a Patreon member to deploy your own bot!`, components: [] });
 				}
 
 				const botToken = modalSubmit.fields.getTextInputValue(customIds.token);
@@ -161,7 +161,7 @@ export default class BotPersonalizerCommand extends Command {
 					token: botToken,
 					user: interaction.user
 				});
-				await this.client.patrons.attachCustomBot(patron.id, app.id);
+				await this.client.patreonHandler.attachCustomBot(patron.id, app.id);
 
 				if (!service) {
 					messages.push(`${EMOJIS.WRONG} Failed to deploy application...`);

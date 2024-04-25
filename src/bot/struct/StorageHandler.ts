@@ -185,7 +185,7 @@ export default class StorageHandler {
 					order: _clan?.order ?? _total + 1,
 					...(data.hexCode ? { color: data.hexCode } : {}),
 					...(data.categoryId ? { categoryId: data.categoryId } : {}),
-					patron: this.client.patrons.get(message.guildId)
+					patron: this.client.patreonHandler.get(message.guildId)
 				},
 				$setOnInsert: {
 					uniqueId: _clan?.uniqueId ?? (_lastClan?.uniqueId ?? 1000) + 1,

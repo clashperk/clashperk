@@ -89,7 +89,7 @@ export const enum Collections {
 
 	WAR_BASE_CALLS = 'WarBaseCalls',
 
-	PATRONS = 'Patrons',
+	PATREON_MEMBERS = 'Patrons',
 	SETTINGS = 'Settings',
 	LAST_SEEN = 'LastSeen',
 	CLAN_WARS = 'ClanWars',
