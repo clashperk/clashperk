@@ -25,7 +25,7 @@ export default class AutoTownHallRoleCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { is_test_run?: boolean; user_or_role?: User | Role }
+		args: { is_test_run?: boolean; user_or_role?: User | Role; force_refresh?: boolean }
 	) {
 		const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
 		if (inProgress) {
@@ -40,11 +40,15 @@ export default class AutoTownHallRoleCommand extends Command {
 			startTime: Date.now(),
 			attempts: 0
 		};
+		const labels = {
+			test: args.is_test_run ? ' [TestRun]' : '',
+			force: args.force_refresh ? ' [Forced]' : ''
+		};
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setDescription(`### Refreshing Server Roles ${EMOJIS.LOADING}`);
-		embed.setFooter({ text: `Progress: (0%)${args.is_test_run ? ' [TestRun]' : ''}` });
+		embed.setFooter({ text: `Progress: (0%)${labels.test}${labels.force}` });
 
 		const message = await interaction.editReply({ embeds: [embed] });
 
@@ -59,7 +63,7 @@ export default class AutoTownHallRoleCommand extends Command {
 					`Time Elapsed: ${moment
 						.duration(Date.now() - refreshCounter.startTime)
 						.format('h[h] m[m] s[s]', { trim: 'both mid' })}`,
-					`Progress: ${changes.progress}/${changes.memberCount} (${percentage}%)${args.is_test_run ? ' [TestRun]' : ''}`
+					`Progress: ${changes.progress}/${changes.memberCount} (${percentage}%)${labels.test}${labels.force}`
 				].join('\n')
 			});
 			refreshCounter.attempts += 1;
@@ -104,7 +108,8 @@ export default class AutoTownHallRoleCommand extends Command {
 				isDryRun: Boolean(args.is_test_run),
 				userOrRole: interaction.isButton() ? interaction.user : args.user_or_role ?? null,
 				logging: true,
-				reason: `manually updated by ${interaction.user.displayName}`
+				forced: Boolean(args.force_refresh),
+				reason: `manually ${args.force_refresh ? 'force ' : ''}updated by ${interaction.user.displayName}`
 			});
 
 			const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);

@@ -77,7 +77,7 @@ export class RolesManager {
 
 	private async trigger({ guildId, memberTags }: { guildId: string; memberTags: string[] }) {
 		try {
-			await this.updateMany(guildId, { isDryRun: false, logging: false, memberTags, reason: 'automatically updated' });
+			await this.updateMany(guildId, { isDryRun: false, logging: false, forced: false, memberTags, reason: 'automatically updated' });
 		} finally {
 			await this.postTriggerAction(guildId);
 		}
@@ -305,8 +305,16 @@ export class RolesManager {
 			memberTags,
 			userOrRole,
 			logging,
-			reason
-		}: { isDryRun: boolean; logging: boolean; userOrRole?: Role | User | null; memberTags?: string[]; reason?: string }
+			reason,
+			forced = false
+		}: {
+			isDryRun: boolean;
+			logging: boolean;
+			forced?: boolean;
+			userOrRole?: Role | User | null;
+			memberTags?: string[];
+			reason?: string;
+		}
 	): Promise<RolesChangeLog | null> {
 		const guild = this.client.guilds.cache.get(guildId);
 		if (!guild) return null;
@@ -338,6 +346,8 @@ export class RolesManager {
 
 			const players = await this.getPlayers(links);
 			const roleUpdate = await this.preRoleUpdateAction({
+				forced,
+				isDryRun,
 				member,
 				rolesMap,
 				players,
@@ -400,6 +410,7 @@ export class RolesManager {
 		return this.updateMany(guildId, {
 			logging: false,
 			isDryRun: false,
+			forced: false,
 			userOrRole: user,
 			reason: 'account linked or updated'
 		});
@@ -488,11 +499,15 @@ export class RolesManager {
 	}
 
 	private async preRoleUpdateAction({
+		isDryRun,
+		forced,
 		member,
 		rolesMap,
 		playersInWarMap,
 		players
 	}: {
+		isDryRun: boolean;
+		forced: boolean;
 		member: GuildMember;
 		rolesMap: GuildRolesDto;
 		playersInWarMap: Record<string, string[]>;
@@ -517,6 +532,8 @@ export class RolesManager {
 
 		const playerRolesMap = this.getPlayerRoles(playerList, rolesMap);
 		return this.handleRoleDeletionDelays({
+			isDryRun,
+			forced,
 			member,
 			rolesToExclude: playerRolesMap.rolesToExclude,
 			rolesToInclude: playerRolesMap.rolesToInclude
@@ -524,6 +541,8 @@ export class RolesManager {
 	}
 
 	private async handleRoleDeletionDelays({
+		forced,
+		isDryRun,
 		member,
 		rolesToExclude,
 		rolesToInclude
@@ -531,9 +550,11 @@ export class RolesManager {
 		member: GuildMember;
 		rolesToExclude: string[];
 		rolesToInclude: string[];
+		isDryRun: boolean;
+		forced: boolean;
 	}) {
 		const delaysInMs = this.client.settings.get<number>(member.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
-		if (!delaysInMs) {
+		if (!delaysInMs || forced) {
 			return this.checkRoles({ member, rolesToExclude, rolesToInclude });
 		}
 
@@ -559,13 +580,13 @@ export class RolesManager {
 			update.$min = { ...update.$min, [`roles.${roleId}`]: delayedFor };
 		}
 
-		if (Object.getOwnPropertyNames(update).length) {
+		if (Object.getOwnPropertyNames(update).length && !isDryRun) {
 			await collection.updateOne(
 				{ guildId: member.guild.id, userId: member.user.id },
 				{ ...update, $setOnInsert: { createdAt: new Date() }, $set: { updatedAt: new Date() } },
 				{ upsert: true }
 			);
-		} else if (delay && !Object.getOwnPropertyNames(delay.roles).length) {
+		} else if (delay && !Object.getOwnPropertyNames(delay.roles).length && !isDryRun) {
 			await collection.deleteOne({ guildId: member.guild.id, userId: member.user.id });
 		}
 
@@ -781,21 +802,21 @@ export class RolesManager {
 				const delaysInMs = this.client.settings.get<number>(guildId, Settings.ROLE_REMOVAL_DELAYS, 0);
 				if (!delaysInMs) continue;
 
-				const invalid = delays.filter((delay) => {
+				const invalidDelays = delays.filter((delay) => {
 					return !Object.values(delay.roles).filter((_delayed) => Date.now() > _delayed).length;
 				});
-				if (invalid.length) {
-					await collection.deleteOne({ _id: { $in: invalid.map((_delay) => _delay._id) } });
+				if (invalidDelays.length) {
+					await collection.deleteOne({ _id: { $in: invalidDelays.map((_delay) => _delay._id) } });
 				}
 
-				const expired = delays.filter((delay) => {
+				const expiredDelays = delays.filter((delay) => {
 					return Object.values(delay.roles).filter((_delayed) => Date.now() > _delayed).length;
 				});
-				if (!expired.length) continue;
+				if (!expiredDelays.length) continue;
 
 				const memberTags = await this.client.db
 					.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
-					.distinct('tag', { userId: { $in: expired.map((_delay) => _delay.userId) } });
+					.distinct('tag', { userId: { $in: expiredDelays.map((_delay) => _delay.userId) } });
 				if (!memberTags.length) continue;
 
 				if (!this.client.guilds.cache.has(guildId)) continue;

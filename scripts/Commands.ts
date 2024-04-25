@@ -2766,6 +2766,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'is_test_run',
 						description: 'Whether to run as a test.',
 						type: ApplicationCommandOptionType.Boolean
+					},
+					{
+						name: 'force_refresh',
+						description: 'Whether to bypass role removal delays and force refresh roles.',
+						type: ApplicationCommandOptionType.Boolean
 					}
 				]
 			}
