@@ -23,37 +23,25 @@ export default class ExportSeason extends Command {
 		if (!clans) return;
 
 		const season = args.season ?? Season.ID;
-
-		const familyClanTags = clans.map((clan) => clan.tag);
+		const _clanTags = clans.map((clan) => clan.tag);
 		const _clans = await this.client.http._getClans(clans);
-		const allMembers = _clans.reduce<(APIClanMember & { clanTag: string })[]>((previous, current) => {
+		const _members = _clans.reduce<(APIClanMember & { clanTag: string })[]>((previous, current) => {
 			previous.push(...current.memberList.map((mem) => ({ ...mem, clanTag: current.tag })));
 			return previous;
 		}, []);
-
-		const memberTags: { tag: string; userId: string }[] = [];
-		memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
-		const dbMembers = await this.client.db
-			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: allMembers.map((m) => m.tag) } })
-			.toArray();
-		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
-		for (const member of dbMembers) {
-			if (!allMembers.find((mem) => mem.tag === member.tag)) continue;
-			if (memberTags.find((mem) => mem.tag === member.tag)) continue;
-			memberTags.push({ tag: member.tag, userId: member.userId });
-		}
-
-		const userIds = unique(memberTags, (m) => m.userId).map((user) => user.userId);
-		const guildMembers = await interaction.guild.members.fetch({ user: userIds });
-
 		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
-		for (const mem of members) {
-			const userId = memberTags.find((m) => m.tag === mem.tag)?.userId;
-			const guildMember = guildMembers.get(userId!);
-			mem.userTag = guildMember ? `${guildMember.user.username}#${guildMember.user.discriminator}` : '';
+
+		const linksMap = await this.client.resolver.getLinkedUsersMap(_members);
+		const userIds = Object.values(linksMap).map((link) => link.userId);
+		const guildMembers = await interaction.guild.members.fetch({ user: unique(userIds) });
+		for (const member of members) {
+			const link = linksMap[member.tag];
+			if (!link) continue;
+
+			const guildMember = guildMembers.get(link.userId);
+			member.userId = guildMember?.id ?? link.userId;
+			member.userTag = guildMember ? `${guildMember.user.username}#${guildMember.user.discriminator}` : link.username;
 		}
-		guildMembers.clear();
 
 		const __achievements = (
 			[
@@ -77,6 +65,7 @@ export default class ExportSeason extends Command {
 					{ name: 'Name', width: 160, align: 'LEFT' },
 					{ name: 'Tag', width: 120, align: 'LEFT' },
 					{ name: 'Discord', width: 160, align: 'LEFT' },
+					{ name: 'ID', width: 160, align: 'LEFT' },
 					{ name: 'Current Clan', width: 160, align: 'LEFT' },
 					{ name: 'Town Hall', width: 100, align: 'RIGHT' },
 					{ name: 'Total Donated', width: 100, align: 'RIGHT' },
@@ -100,10 +89,11 @@ export default class ExportSeason extends Command {
 					m.name,
 					m.tag,
 					m.userTag,
+					m.userId,
 					m.clans?.[m.clanTag]?.name,
 					m.townHallLevel,
-					sum(Object.values(m.clans ?? {}), (clan) => (familyClanTags.includes(clan.tag) ? clan.donations.total : 0)),
-					sum(Object.values(m.clans ?? {}), (clan) => (familyClanTags.includes(clan.tag) ? clan.donationsReceived.total : 0)),
+					sum(Object.values(m.clans ?? {}), (clan) => (_clanTags.includes(clan.tag) ? clan.donations.total : 0)),
+					sum(Object.values(m.clans ?? {}), (clan) => (_clanTags.includes(clan.tag) ? clan.donationsReceived.total : 0)),
 					m.attackWins,
 					m.versusBattleWins.current - m.versusBattleWins.initial,
 					m.trophies.current - m.trophies.initial,
@@ -221,4 +211,5 @@ type PlayerSeasonModelAggregated = PlayerSeasonModel & {
 	score?: number;
 	clanTag: string;
 	userTag?: string;
+	userId?: string;
 };

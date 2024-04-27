@@ -1,13 +1,11 @@
 import { APIPlayer } from 'clashofclans.js';
-import { Collection, CommandInteraction, GuildMember } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
+import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { PlayerLinks } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
 import { HERO_EQUIPMENT, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/Emojis.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { RAW_TROOPS_FILTERED } from '../../util/Troops.js';
-import { Util } from '../../util/index.js';
 
 const achievements = [
 	'Gold Grab',
@@ -56,6 +54,7 @@ export default class ExportClanMembersCommand extends Command {
 			name: string;
 			tag: string;
 			userTag: string;
+			userId: string;
 			clan: string;
 			role: string;
 			clanRank: number;
@@ -111,6 +110,7 @@ export default class ExportClanMembersCommand extends Command {
 					name: player.name,
 					tag: player.tag,
 					userTag: '',
+					userId: '',
 					clan: clan.name,
 					role: roleNames[player.role!],
 					clanRank: n + 1,
@@ -129,30 +129,17 @@ export default class ExportClanMembersCommand extends Command {
 			});
 		}
 
-		const memberTags = [];
-		memberTags.push(...(await this.client.http.getDiscordLinks(members)));
-		const dbMembers = await this.client.db
-			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: members.map((m) => m.tag) } })
-			.toArray();
-		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
-		for (const member of dbMembers) {
-			if (!members.find((mem) => mem.tag === member.tag)) continue;
-			if (memberTags.find((mem) => mem.tag === member.tag)) continue;
-			memberTags.push({ tag: member.tag, userId: member.userId });
-		}
-		let guildMembers = new Collection<string, GuildMember>();
-		const fetchedMembers = await Promise.all(
-			Util.chunk(memberTags, 100).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.userId) }))
-		);
-		guildMembers = guildMembers.concat(...fetchedMembers);
+		const linksMap = await this.client.resolver.getLinkedUsersMap(members);
+		const userIds = Object.values(linksMap).map((link) => link.userId);
+		const guildMembers = await interaction.guild.members.fetch({ user: unique(userIds) });
+		for (const member of members) {
+			const link = linksMap[member.tag];
+			if (!link) continue;
 
-		for (const mem of members) {
-			const userId = memberTags.find((m) => m.tag === mem.tag)?.userId;
-			const guildMember = guildMembers.get(userId!);
-			mem.userTag = guildMember ? `${guildMember.user.username}#${guildMember.user.discriminator}` : '';
+			const guildMember = guildMembers.get(link.userId);
+			member.userId = guildMember?.id ?? link.userId;
+			member.userTag = guildMember ? `${guildMember.user.username}#${guildMember.user.discriminator}` : link.displayName;
 		}
-		guildMembers.clear();
 
 		members
 			.sort(
@@ -172,6 +159,7 @@ export default class ExportClanMembersCommand extends Command {
 					{ name: 'NAME', width: 160, align: 'LEFT' },
 					{ name: 'TAG', width: 120, align: 'LEFT' },
 					{ name: 'Discord', width: 160, align: 'LEFT' },
+					{ name: 'ID', width: 160, align: 'LEFT' },
 					{ name: 'CLAN', width: 160, align: 'LEFT' },
 					{ name: 'ROLE', width: 100, align: 'LEFT' },
 					{ name: 'War Preference', width: 100, align: 'LEFT' },
@@ -187,6 +175,7 @@ export default class ExportClanMembersCommand extends Command {
 					m.name,
 					m.tag,
 					m.userTag,
+					m.userId,
 					m.clan,
 					m.role,
 					m.warPreference,
@@ -229,20 +218,6 @@ export default class ExportClanMembersCommand extends Command {
 
 	private getAchievements(data: APIPlayer) {
 		return achievements.map((name) => ({ name, value: data.achievements.find((en) => en.name === name)?.value ?? 0 }));
-	}
-
-	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
-		for (const data of members) {
-			const member = interaction.guild!.members.cache.get(data.userId);
-			if (
-				member &&
-				(data.username !== member.user.username ||
-					data.discriminator !== member.user.discriminator ||
-					data.displayName !== member.displayName)
-			) {
-				this.client.resolver.updateUserData(interaction.guild!, data.userId);
-			}
-		}
 	}
 
 	private rushedPercentage(data: APIPlayer) {

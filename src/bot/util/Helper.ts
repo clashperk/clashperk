@@ -431,7 +431,7 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
 	for (const m of memberTags) {
 		const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
 		if (!clanMember) continue;
-		members.push({ tag: m.tag, userId: m.user, name: clanMember.name, verified: false });
+		members.push({ tag: m.tag, userId: m.userId, name: clanMember.name, verified: false });
 	}
 
 	for (const member of dbMembers) {

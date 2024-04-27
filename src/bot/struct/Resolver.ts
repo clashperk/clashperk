@@ -246,18 +246,32 @@ export default class Resolver {
 		const fetched = await Promise.all([
 			this.client.http.getDiscordLinks(players),
 			this.client.db
-				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+				.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
 				.find({ tag: { $in: players.map((player) => player.tag) } })
 				.toArray()
 		]);
-		const result = fetched.flat().map((en) => ({ tag: en.tag, userId: en.userId, verified: en.verified }));
-		return result.reduce<Record<string, { userId: string; tag: string; verified: boolean }>>((acc, mem) => {
-			acc[mem.tag] ??= mem; // eslint-disable-line
-			const current = acc[mem.tag];
-			if (!current.verified && mem.verified) acc[mem.tag].verified = true;
-			if (current.userId !== mem.userId) acc[mem.tag] = mem;
-			return acc;
-		}, {});
+
+		const result = fetched.flat().map((link) => {
+			return { tag: link.tag, userId: link.userId, verified: link.verified, displayName: link.displayName, username: link.username };
+		});
+
+		return result.reduce<Record<string, { userId: string; tag: string; verified: boolean; displayName: string; username: string }>>(
+			(acc, link) => {
+				acc[link.tag] ??= link; // eslint-disable-line
+				const prev = acc[link.tag];
+
+				if (!prev.verified && link.verified) acc[link.tag].verified = true;
+
+				if (prev.username === 'unknown' && link.username !== 'unknown') {
+					acc[link.tag].username = link.username;
+					acc[link.tag].displayName = link.displayName;
+				}
+
+				if (prev.userId !== link.userId) acc[link.tag] = link;
+				return acc;
+			},
+			{}
+		);
 	}
 
 	public async getLinkedUsers(players: { tag: string }[]) {

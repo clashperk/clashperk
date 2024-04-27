@@ -327,7 +327,7 @@ export default class Http extends ClashOfClansClient {
 		const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 
 		if (!Array.isArray(data)) return null;
-		return data.map((en) => ({ userId: en.discordId, user: en.discordId }))[0] ?? null;
+		return data.map((en) => ({ userId: en.discordId, tag }))[0] ?? null;
 	}
 
 	public async getDiscordLinks(players: { tag: string }[]) {
@@ -346,7 +346,13 @@ export default class Http extends ClashOfClansClient {
 		if (!Array.isArray(data)) return [];
 		return data
 			.filter((en) => TAG_REGEX.test(en.playerTag) && DISCORD_ID_REGEX.test(en.discordId))
-			.map((en) => ({ tag: this.fixTag(en.playerTag), user: en.discordId, userId: en.discordId, verified: false }));
+			.map((en) => ({
+				tag: this.fixTag(en.playerTag),
+				userId: en.discordId,
+				verified: false,
+				displayName: 'Unknown',
+				username: 'unknown'
+			}));
 	}
 }
 
