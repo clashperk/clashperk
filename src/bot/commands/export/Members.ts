@@ -53,7 +53,8 @@ export default class ExportClanMembersCommand extends Command {
 		const members: {
 			name: string;
 			tag: string;
-			userTag: string;
+			displayName: string;
+			username: string;
 			userId: string;
 			clan: string;
 			role: string;
@@ -109,7 +110,8 @@ export default class ExportClanMembersCommand extends Command {
 				const payload = {
 					name: player.name,
 					tag: player.tag,
-					userTag: '',
+					displayName: '',
+					username: '',
 					userId: '',
 					clan: clan.name,
 					role: roleNames[player.role!],
@@ -138,7 +140,8 @@ export default class ExportClanMembersCommand extends Command {
 
 			const guildMember = guildMembers.get(link.userId);
 			member.userId = guildMember?.id ?? link.userId;
-			member.userTag = guildMember ? `${guildMember.user.username}#${guildMember.user.discriminator}` : link.displayName;
+			member.username = guildMember?.user.username ?? link.username;
+			member.displayName = guildMember?.user.displayName ?? link.displayName;
 		}
 
 		members
@@ -159,6 +162,7 @@ export default class ExportClanMembersCommand extends Command {
 					{ name: 'NAME', width: 160, align: 'LEFT' },
 					{ name: 'TAG', width: 120, align: 'LEFT' },
 					{ name: 'Discord', width: 160, align: 'LEFT' },
+					{ name: 'Username', width: 160, align: 'LEFT' },
 					{ name: 'ID', width: 160, align: 'LEFT' },
 					{ name: 'CLAN', width: 160, align: 'LEFT' },
 					{ name: 'ROLE', width: 100, align: 'LEFT' },
@@ -174,7 +178,8 @@ export default class ExportClanMembersCommand extends Command {
 				rows: members.map((m) => [
 					m.name,
 					m.tag,
-					m.userTag,
+					m.displayName,
+					m.username,
 					m.userId,
 					m.clan,
 					m.role,

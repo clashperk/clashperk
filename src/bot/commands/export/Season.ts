@@ -3,7 +3,7 @@ import { CommandInteraction } from 'discord.js';
 import { sum, unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { PlayerLinks, PlayerSeasonModel, achievements } from '../../types/index.js';
+import { PlayerSeasonModel, achievements } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
 import { Season } from '../../util/index.js';
@@ -40,7 +40,8 @@ export default class ExportSeason extends Command {
 
 			const guildMember = guildMembers.get(link.userId);
 			member.userId = guildMember?.id ?? link.userId;
-			member.userTag = guildMember ? `${guildMember.user.username}#${guildMember.user.discriminator}` : link.username;
+			member.username = guildMember?.user.username ?? link.username;
+			member.displayName = guildMember?.user.displayName ?? link.displayName;
 		}
 
 		const __achievements = (
@@ -65,6 +66,7 @@ export default class ExportSeason extends Command {
 					{ name: 'Name', width: 160, align: 'LEFT' },
 					{ name: 'Tag', width: 120, align: 'LEFT' },
 					{ name: 'Discord', width: 160, align: 'LEFT' },
+					{ name: 'Username', width: 160, align: 'LEFT' },
 					{ name: 'ID', width: 160, align: 'LEFT' },
 					{ name: 'Current Clan', width: 160, align: 'LEFT' },
 					{ name: 'Town Hall', width: 100, align: 'RIGHT' },
@@ -88,7 +90,8 @@ export default class ExportSeason extends Command {
 				rows: members.map((m) => [
 					m.name,
 					m.tag,
-					m.userTag,
+					m.displayName,
+					m.username,
 					m.userId,
 					m.clans?.[m.clanTag]?.name,
 					m.townHallLevel,
@@ -182,34 +185,12 @@ export default class ExportSeason extends Command {
 
 		return cursor.toArray();
 	}
-
-	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
-		for (const data of members) {
-			const member = interaction.guild!.members.cache.get(data.userId);
-			if (
-				member &&
-				(data.username !== member.user.username ||
-					data.discriminator !== member.user.discriminator ||
-					data.displayName !== member.displayName)
-			) {
-				this.client.resolver.updateUserData(interaction.guild!, data.userId);
-			}
-		}
-	}
-
-	private chunks<T>(items: T[] = []) {
-		const chunk = 100;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
-	}
 }
 
 type PlayerSeasonModelAggregated = PlayerSeasonModel & {
 	score?: number;
 	clanTag: string;
-	userTag?: string;
+	displayName?: string;
+	username?: string;
 	userId?: string;
 };
