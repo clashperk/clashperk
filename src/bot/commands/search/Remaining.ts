@@ -1,6 +1,7 @@
 import { APIClanWar, APIPlayer } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
+import { group } from 'radash';
 import { Command } from '../../lib/index.js';
 import { ClanCapitalRaidAttackData, ClanGamesModel } from '../../types/index.js';
 import { Collections, WarType } from '../../util/Constants.js';
@@ -217,17 +218,27 @@ export default class RemainingCommand extends Command {
 		embed.setTitle('Remaining Clan War Attacks');
 		if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
+		const description = Object.entries(group(players, (player) => player.clan.tag))
+			.flatMap(([, _wars]) => {
+				const wars = _wars!;
+				const clan = wars.at(0)!.clan;
+
+				return [
+					`### ${escapeMarkdown(clan.name)} (${clan.tag})`,
+					wars
+						.map(
+							({ member, endTime, remaining }) =>
+								`- ${escapeMarkdown(member.name)} (${member.tag})\n - ${remaining} remaining (${Util.getRelativeTime(
+									endTime.getTime()
+								)})`
+						)
+						.join('\n')
+				];
+			})
+			.join('\n');
+
 		const remaining = players.reduce((a, b) => a + b.remaining, 0);
-		players.slice(0, 25).map(({ member, clan, remaining, endTime }, i) => {
-			embed.addFields({
-				name: `\u200e${member.name} (${member.tag})`,
-				value: [
-					`${remaining} remaining in **${escapeMarkdown(clan.name)}**`,
-					`- ${Util.getRelativeTime(endTime.getTime())}`,
-					i === players.length - 1 ? '' : '\u200b'
-				].join('\n')
-			});
-		});
+		if (players.length) embed.setDescription(description);
 		embed.setFooter({ text: `${remaining} Remaining` });
 
 		return interaction.editReply({ embeds: [embed] });
@@ -272,16 +283,28 @@ export default class RemainingCommand extends Command {
 		embed.setTitle('Remaining Capital Raid Attacks');
 		if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
+		const description = Object.entries(group(players, (player) => player.clan.tag))
+			.flatMap(([, _raids]) => {
+				const raids = _raids!;
+				const clan = raids.at(0)!.clan;
+
+				return [
+					`### ${escapeMarkdown(clan.name)} (${clan.tag})`,
+					raids
+						.map(
+							({ member, endTime, attackLimit, attacks }) =>
+								`- ${escapeMarkdown(member.name)} (${
+									member.tag
+								})\n - ${attacks}/${attackLimit} raids (${Util.getRelativeTime(endTime.getTime())})`
+						)
+						.join('\n')
+				];
+			})
+			.join('\n');
+
 		const totalAttacks = players.reduce((a, b) => a + b.attacks, 0);
 		const maxTotalAttacks = players.reduce((a, b) => a + b.attackLimit, 0);
-		players.slice(0, 25).map(({ member, clan, attacks, attackLimit }, i) => {
-			embed.addFields({
-				name: `\u200e${member.name} (${member.tag})`,
-				value: [`${attacks}/${attackLimit} in **${escapeMarkdown(clan.name)}**`, i === players.length - 1 ? '' : '\u200b'].join(
-					'\n'
-				)
-			});
-		});
+		if (players.length) embed.setDescription(description);
 		embed.setFooter({ text: `${totalAttacks}/${maxTotalAttacks} ${Util.plural(totalAttacks, 'Raid')} (${weekend})` });
 
 		return interaction.editReply({ embeds: [embed] });
@@ -329,14 +352,26 @@ export default class RemainingCommand extends Command {
 		embed.setTitle('Remaining Clan Games Points');
 		if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
+		const description = Object.entries(group(players, (player) => player.clan.tag))
+			.flatMap(([, _raids]) => {
+				const raids = _raids!;
+				const clan = raids.at(0)!.clan;
+
+				return [
+					`### ${escapeMarkdown(clan.name)} (${clan.tag})`,
+					raids
+						.map(
+							({ member, maxPoints, points }) =>
+								`- ${escapeMarkdown(member.name)} (${member.tag})\n - ${points}/${maxPoints} scored`
+						)
+						.join('\n')
+				];
+			})
+			.join('\n');
+
 		const totalPoints = players.reduce((a, b) => a + b.points, 0);
 		const maxTotalPoints = players.reduce((a, b) => a + b.maxPoints, 0);
-		players.slice(0, 25).map(({ member, clan, maxPoints, points }, i) => {
-			embed.addFields({
-				name: `\u200e${member.name} (${member.tag})`,
-				value: [`${points}/${maxPoints} in **${escapeMarkdown(clan.name)}**`, i === players.length - 1 ? '' : '\u200b'].join('\n')
-			});
-		});
+		if (players.length) embed.setDescription(description);
 		embed.setFooter({
 			text: `${totalPoints.toLocaleString()}/${maxTotalPoints.toLocaleString()} ${Util.plural(totalPoints, 'Point')} (${seasonId})`
 		});
