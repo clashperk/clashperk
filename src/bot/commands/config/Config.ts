@@ -71,6 +71,7 @@ export default class ConfigCommand extends Command {
 			auto_update_roles?: boolean;
 			verified_only_clan_roles?: boolean;
 			role_removal_delays?: string;
+			role_addition_delays?: string;
 			/** @deprecated */
 			maintenance_notification_channel?: string;
 		}
@@ -126,6 +127,10 @@ export default class ConfigCommand extends Command {
 
 		if (args.role_removal_delays) {
 			await this.client.settings.set(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, ms(args.role_removal_delays));
+		}
+
+		if (args.role_addition_delays) {
+			await this.client.settings.set(interaction.guild, Settings.ROLE_ADDITION_DELAYS, ms(args.role_addition_delays));
 		}
 
 		const validOptions = this.getOptions(interaction.guildId);
@@ -189,6 +194,7 @@ export default class ConfigCommand extends Command {
 		const verifiedOnlyClanRoles = this.client.settings.get<string>(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 		const useAutoRole = this.client.settings.get<string>(interaction.guild, Settings.USE_AUTO_ROLE, true);
 		const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
+		const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -237,6 +243,10 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Role Removal Delays',
 					value: `${roleRemovalDelays ? ms(roleRemovalDelays, { long: true }) : 'None'}`
+				},
+				{
+					name: 'Role Addition Delays',
+					value: `${roleAdditionDelays ? ms(roleAdditionDelays, { long: true }) : 'None'}`
 				},
 				{
 					name: this.i18n('common.color_code', { lng: interaction.locale }),

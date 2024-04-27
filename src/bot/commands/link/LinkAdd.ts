@@ -32,15 +32,15 @@ export default class LinkAddCommand extends Command {
 		interaction: ModalSubmitInteraction<'cached'>,
 		{ player, member }: { player: APIPlayer; member: GuildMember; token?: string }
 	) {
-		const [doc, accounts] = await this.getPlayer(player.tag, member.id);
+		const [link, accounts] = await this.getPlayer(player.tag, member.id);
 
-		if (doc && doc.userId === member.id) {
+		if (link && link.userId === member.id) {
 			return interaction.editReply(
 				this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
 			);
 		}
 
-		if (doc && doc.userId !== member.id) {
+		if (link && link.userId !== member.id) {
 			return interaction.editReply(
 				this.i18n('command.link.create.already_linked', {
 					lng: interaction.locale,
@@ -50,7 +50,7 @@ export default class LinkAddCommand extends Command {
 			);
 		}
 
-		if (doc && accounts.length >= 25) {
+		if (link && accounts.length >= 25) {
 			return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
 		}
 
@@ -72,7 +72,7 @@ export default class LinkAddCommand extends Command {
 					name: player.name,
 					tag: player.tag,
 					order: Math.max(...accounts.map((account) => account.order), 0) + 1,
-					verified: doc?.verified ?? false,
+					verified: link?.verified ?? false,
 					updatedAt: new Date()
 				},
 				$setOnInsert: {
@@ -83,10 +83,8 @@ export default class LinkAddCommand extends Command {
 			{ upsert: true }
 		);
 
-		// Fix Conflicts
-		await this.resetLinkAPI(member.id, player.tag);
-		// Update Role
-		this.client.rolesManager.updateOne(member.user, interaction.guildId);
+		this.resetLinkAPI(member.id, player.tag);
+		this.client.rolesManager.updateOne(member.user, interaction.guildId, accounts.length === 0);
 
 		return interaction.editReply(
 			this.i18n('command.link.create.success', {
@@ -189,10 +187,8 @@ export default class LinkAddCommand extends Command {
 			{ upsert: true }
 		);
 
-		// Rest Link API
 		this.resetLinkAPI(interaction.user.id, data.tag);
-		// Update Roles
-		this.client.rolesManager.updateOne(interaction.user, interaction.guildId);
+		this.client.rolesManager.updateOne(interaction.user, interaction.guildId, !lastAccount);
 		return interaction.editReply(
 			this.i18n('command.verify.success', { lng: interaction.locale, info: `${data.name} (${data.tag}) ${EMOJIS.VERIFIED}` })
 		);

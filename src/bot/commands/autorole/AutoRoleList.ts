@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import ms from 'ms';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
 
@@ -110,8 +111,21 @@ export default class AutoRoleListCommand extends Command {
 			embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
 		}
 
+		const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
+		const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
 		const useAutoRole = this.client.settings.get<boolean>(interaction.guild, Settings.USE_AUTO_ROLE, true);
-		if (!useAutoRole) embed.setFooter({ text: '*Auto updating is disabled! Use /config to enable it.' });
+
+		const footerTexts: string[] = [];
+		if (roleAdditionDelays) {
+			footerTexts.push(`* ${ms(roleAdditionDelays, { long: true })} role addition delay.`);
+		}
+		if (roleRemovalDelays) {
+			footerTexts.push(`* ${ms(roleRemovalDelays, { long: true })} role removal delay.`);
+		}
+		if (!useAutoRole) {
+			footerTexts.push('* Auto updating is disabled! Use /config to enable it.');
+		}
+		if (footerTexts.length) embed.setFooter({ text: footerTexts.join('\n') });
 
 		const customId = this.createId({ cmd: this.id, expand: !args.expand });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

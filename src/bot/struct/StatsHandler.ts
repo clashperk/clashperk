@@ -203,7 +203,12 @@ export default class StatsHandler {
 		return this.client.db.collection(Collections.BOT_GUILDS).updateOne(
 			{ guild: guild.id },
 			{
-				$set: { guild: guild.id, name: guild.name, locale: guild.preferredLocale },
+				$set: {
+					guild: guild.id,
+					name: guild.name,
+					locale: guild.preferredLocale,
+					memberCount: guild.approximateMemberCount || guild.memberCount
+				},
 				$inc: { usage },
 				$max: { updatedAt: new Date() },
 				$min: { createdAt: new Date() }

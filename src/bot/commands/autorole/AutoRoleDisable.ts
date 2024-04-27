@@ -1,7 +1,8 @@
-import { CommandInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Message, MessageComponentInteraction } from 'discord.js';
 import { title } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class AutoRoleDisableCommand extends Command {
 	public constructor() {
@@ -9,11 +10,12 @@ export default class AutoRoleDisableCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			defer: true,
+			ephemeral: true,
 			userPermissions: ['ManageGuild']
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { type: string; clans?: string; clear?: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { type: string; clans?: string }) {
 		const action = {
 			'town-hall': this.disableTownHallRoles.bind(this),
 			'builder-hall': this.disableBuilderHallRoles.bind(this),
@@ -32,48 +34,41 @@ export default class AutoRoleDisableCommand extends Command {
 		return action(interaction, args);
 	}
 
-	private async disableClanRoles(interaction: CommandInteraction<'cached'>, args: { clear?: boolean; clans?: string }) {
-		if (args.clear) {
-			const { matchedCount } = await this.client.db
-				.collection(Collections.CLAN_STORES)
-				.updateMany({ guild: interaction.guild.id }, { $unset: { roles: '', secureRole: '' } });
-			return interaction.editReply(
-				this.i18n('command.autorole.disable.success_with_count', {
-					lng: interaction.locale,
-					count: matchedCount.toString(),
-					clans: ''
-				})
-			);
-		}
+	private async disableClanRoles(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+		if (!clans) return null;
 
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length ? await this.client.storage.search(interaction.guildId, tags) : [];
+		const { customIds, row } = this.deleteButtonRow();
+		const message = await interaction.editReply({
+			components: [row],
+			content: [
+				'### This action cannot be undone! Are you sure?',
+				`- It will **unset** clan roles from ${clans.length} clan${clans.length === 1 ? '' : 's'}`
+			].join('\n')
+		});
 
-		if (!tags.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.LINK_CREATE })
-			);
-		}
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		return this.confirmInteraction({
+			customIds,
+			interaction,
+			message,
+			onConfirm: async (action) => {
+				await this.client.db
+					.collection(Collections.CLAN_STORES)
+					.updateMany(
+						{ guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } },
+						{ $unset: { roles: '', secureRole: '' } }
+					);
 
-		await this.client.db
-			.collection(Collections.CLAN_STORES)
-			.updateMany(
-				{ guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } },
-				{ $unset: { roles: '', secureRole: '' } }
-			);
-
-		return interaction.editReply(
-			this.i18n('command.autorole.disable.success_with_count', {
-				lng: interaction.locale,
-				count: clans.length.toString(),
-				clans: clans.map((clan) => clan.name).join(', ')
-			})
-		);
+				return action.update({
+					components: [],
+					content: this.i18n('command.autorole.disable.success_with_count', {
+						lng: interaction.locale,
+						count: clans.length.toString(),
+						clans: clans.map((clan) => clan.name).join(', ')
+					})
+				});
+			}
+		});
 	}
 
 	private async disableFamilyRoles(interaction: CommandInteraction<'cached'>, args: { type: string }) {
@@ -117,44 +112,70 @@ export default class AutoRoleDisableCommand extends Command {
 		return interaction.editReply('Successfully disabled Builder Hall roles.');
 	}
 
-	private async disableWarRoles(interaction: CommandInteraction<'cached'>, args: { clans?: string; clear?: boolean }) {
-		if (args.clear) {
-			const { matchedCount } = await this.client.db
-				.collection(Collections.CLAN_STORES)
-				.updateMany({ guild: interaction.guild.id }, { $unset: { warRole: '' } });
-			return interaction.editReply(
-				this.i18n('command.autorole.disable.success_with_count', {
-					lng: interaction.locale,
-					count: matchedCount.toString(),
-					clans: ''
-				})
-			);
-		}
+	private async disableWarRoles(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+		if (!clans) return null;
 
-		const tags = await this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length ? await this.client.storage.search(interaction.guildId, tags) : [];
+		const { customIds, row } = this.deleteButtonRow();
+		const message = await interaction.editReply({
+			components: [row],
+			content: [
+				'### This action cannot be undone! Are you sure?',
+				`- It will **unset** war roles from ${clans.length} clan${clans.length === 1 ? '' : 's'}`
+			].join('\n')
+		});
 
-		if (!tags.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.LINK_CREATE })
-			);
-		}
-		if (!clans.length) {
-			return interaction.editReply(
-				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-			);
-		}
+		return this.confirmInteraction({
+			customIds,
+			interaction,
+			message,
+			onConfirm: async (action) => {
+				await this.client.db
+					.collection(Collections.CLAN_STORES)
+					.updateMany({ guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } }, { $unset: { warRole: '' } });
 
-		await this.client.db
-			.collection(Collections.CLAN_STORES)
-			.updateMany({ guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } }, { $unset: { warRole: '' } });
+				return action.update({
+					components: [],
+					content: this.i18n('command.autorole.disable.success_with_count', {
+						lng: interaction.locale,
+						count: clans.length.toString(),
+						clans: clans.map((clan) => clan.name).join(', ')
+					})
+				});
+			}
+		});
+	}
 
-		return interaction.editReply(
-			this.i18n('command.autorole.disable.success_with_count', {
-				lng: interaction.locale,
-				count: clans.length.toString(),
-				clans: clans.map((clan) => clan.name).join(', ')
-			})
+	private deleteButtonRow() {
+		const customIds = {
+			confirm: this.client.uuid()
+		};
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm').setStyle(ButtonStyle.Danger)
 		);
+		return { row, customIds };
+	}
+
+	private async confirmInteraction({
+		interaction,
+		message,
+		customIds,
+		onConfirm
+	}: {
+		interaction: CommandInteraction<'cached'>;
+		message: Message<true>;
+		customIds: Record<string, string>;
+		onConfirm: (action: MessageComponentInteraction<'cached'>) => unknown | Promise<unknown>;
+	}) {
+		createInteractionCollector({
+			interaction,
+			message,
+			customIds,
+			clear: true,
+			onClick: (action) => {
+				return onConfirm(action);
+			}
+		});
+		return interaction;
 	}
 }

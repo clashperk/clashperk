@@ -2733,22 +2733,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.autorole.disable.options.clans.description,
 						description_localizations: translation('command.autorole.disable.options.clans.description'),
 						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'clear',
-						description: command.autorole.disable.options.clear.description,
-						description_localizations: translation('command.autorole.disable.options.clear.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Yes',
-								value: 'true'
-							},
-							{
-								name: 'No',
-								value: 'false'
-							}
-						]
 					}
 				]
 			},
@@ -4002,6 +3986,49 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: '72h',
 						value: '72h'
+					},
+					{
+						name: '7d',
+						value: '7d'
+					},
+					{
+						name: '12d',
+						value: '12d'
+					}
+				]
+			},
+			{
+				name: 'role_addition_delays',
+				description: '[AutoRole] Whether to delay the addition of roles.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Off',
+						value: '0'
+					},
+					{
+						name: '4h',
+						value: '4h'
+					},
+					{
+						name: '6h',
+						value: '6h'
+					},
+					{
+						name: '8h',
+						value: '8h'
+					},
+					{
+						name: '12h',
+						value: '12h'
+					},
+					{
+						name: '18h',
+						value: '18h'
+					},
+					{
+						name: '24h',
+						value: '24h'
 					}
 				]
 			},

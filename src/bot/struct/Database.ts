@@ -160,13 +160,17 @@ export class MongoDbClient extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.ROLE_DELETION_DELAYS).createIndexes([
+			db.collection(Collections.AUTO_ROLE_DELAYS).createIndexes([
 				{
 					key: { guildId: 1, userId: 1 },
 					unique: true
 				},
 				{
 					key: { guildId: 1 }
+				},
+				{
+					key: { updatedAt: 1 },
+					expireAfterSeconds: 60 * 60 * 24 * 10 // 10 days
 				}
 			]),
 

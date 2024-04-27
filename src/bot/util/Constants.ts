@@ -105,7 +105,7 @@ export const enum Collections {
 
 	CUSTOM_BOTS = 'CustomBots',
 
-	ROLE_DELETION_DELAYS = 'RoleDeletionDelays',
+	AUTO_ROLE_DELAYS = 'AutoRoleDelays',
 
 	ROSTERS = 'Rosters',
 	ROSTER_CATEGORIES = 'RosterCategories',
@@ -206,7 +206,8 @@ export const enum Settings {
 	ROSTER_CHANGELOG = 'rosterChangeLog',
 	REMINDER_EXCLUSION = 'reminderExclusion',
 	DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook',
-	ROLE_REMOVAL_DELAYS = 'roleRemovalDelays'
+	ROLE_REMOVAL_DELAYS = 'roleRemovalDelays',
+	ROLE_ADDITION_DELAYS = 'roleAdditionDelays'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {

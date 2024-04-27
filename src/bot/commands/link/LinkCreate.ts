@@ -185,14 +185,9 @@ export default class LinkCreateCommand extends Command {
 			{ upsert: true }
 		);
 
-		// Fix Conflicts
-		await this.resetLinkAPI(member.id, player.tag);
-		// Update Role
-
-		this.client.rolesManager.updateOne(member.user, interaction.guildId);
-
+		this.resetLinkAPI(member.id, player.tag);
+		this.client.rolesManager.updateOne(member.user, interaction.guildId, accounts.length === 0);
 		this.client.storage.updateClanLinks(interaction.guildId);
-		// TODO: Refresh Roles
 
 		return interaction.editReply(
 			this.i18n('command.link.create.success', {
