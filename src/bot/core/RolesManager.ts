@@ -583,7 +583,7 @@ export class RolesManager {
 			}
 
 			for (const roleId of rolesToExclude.filter((id) => member.roles.cache.has(id))) {
-				if (delay && delay.deletionDelays[roleId]) continue;
+				if (delay && delay.deletionDelays?.[roleId]) continue;
 				if (rolesExcludedFromDelays.includes(roleId)) continue;
 				update.$min = { ...update.$min, [`deletionDelays.${roleId}`]: delayedFor };
 			}
@@ -603,7 +603,7 @@ export class RolesManager {
 			}
 
 			for (const roleId of rolesToInclude.filter((id) => !member.roles.cache.has(id))) {
-				if (delay && delay.additionDelays[roleId]) continue;
+				if (delay && delay.additionDelays?.[roleId]) continue;
 				if (rolesExcludedFromDelays.includes(roleId)) continue;
 				update.$min = { ...update.$min, [`additionDelays.${roleId}`]: delayedFor };
 			}
