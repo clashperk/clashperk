@@ -9,7 +9,8 @@ export const _rolesMap: Record<string, string> = {
 	coLeader: 'co-leader',
 	leader: 'leader',
 	member: 'member',
-	everyone: 'everyone'
+	everyone: 'everyone',
+	warRole: 'war'
 };
 
 export const _rolesPriority: Record<string, number> = {
@@ -17,7 +18,8 @@ export const _rolesPriority: Record<string, number> = {
 	coLeader: 2,
 	admin: 3,
 	member: 4,
-	everyone: 5
+	everyone: 5,
+	warRole: 6
 };
 
 export default class AutoRoleListCommand extends Command {
@@ -71,7 +73,7 @@ export default class AutoRoleListCommand extends Command {
 		const clanRoleList = clans
 			.map((clan) => {
 				const roleSet = rolesMap.clanRoles[clan.tag];
-				const flattenRolesMap = Object.entries(roleSet?.roles ?? {})
+				const flattenRolesMap = Object.entries({ ...(roleSet?.roles ?? {}), warRole: roleSet?.warRoleId })
 					.sort(([a], [b]) => _rolesPriority[a] - _rolesPriority[b])
 					.reduce<Record<string, { roleId: string; roles: string[] }>>((prev, [role, roleId]) => {
 						if (role && roleId && role in _rolesPriority) {
@@ -83,30 +85,26 @@ export default class AutoRoleListCommand extends Command {
 
 				return {
 					name: `${clan.nickname || clan.name} (${clan.tag})`,
-					roles: Object.values(flattenRolesMap),
-					warRoleId: roleSet?.warRoleId
+					roles: Object.values(flattenRolesMap)
 				};
 			})
-			.filter((roleSet) => roleSet.roles.length || roleSet.warRoleId);
+			.filter((roleSet) => roleSet.roles.length);
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
 		embed.setURL('https://docs.clashperk.com/features/auto-role');
 		embed.setTitle('AutoRole Settings');
 
-		if (args.expand) {
+		if (args.expand && clanRoleList.length) {
 			embed.setDescription(
 				[
 					clanRoleList
 						.map((clan) => {
 							return [
 								`${clan.name}`,
-								`${
-									clan.roles
-										.map(({ roles, roleId }) => `- <@&${roleId}> (${roles.map((r) => _rolesMap[r]).join(', ')})`)
-										.join('\n') || '- No clan roles'
-								}`,
-								`${clan.warRoleId ? `- <@&${clan.warRoleId}> (war)\n` : ''}`
+								`${clan.roles
+									.map(({ roles, roleId }) => `- <@&${roleId}> (${roles.map((r) => _rolesMap[r]).join(', ')})`)
+									.join('\n')}`
 							];
 						})
 						.flat()
@@ -180,7 +178,7 @@ export default class AutoRoleListCommand extends Command {
 				.setLabel(args.expand ? 'All Roles' : 'Clan Specific Roles')
 		);
 
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		return interaction.editReply({ embeds: [embed], components: clanRoleList.length ? [row] : [] });
 	}
 
 	private getRoleOrNone(id?: string | null) {

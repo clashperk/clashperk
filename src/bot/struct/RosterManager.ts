@@ -269,9 +269,7 @@ export class RosterManager {
 
 	private async onRosterMemberAdded() {}
 	private async onRosterMemberGroupChanged() {}
-	private async onRosterMemberRemoved() {
-		console.log('lol');
-	}
+	private async onRosterMemberRemoved() {}
 
 	public async create(roster: IRoster) {
 		const { insertedId } = await this.rosters.insertOne(roster);
