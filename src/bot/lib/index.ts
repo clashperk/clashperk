@@ -431,7 +431,7 @@ export interface CommandOptions {
 	defer: boolean;
 	userPermissions?: PermissionsString[];
 	clientPermissions?: PermissionsString[];
-	roleKey?: string;
+	roleKey?: string | null;
 }
 
 export class Command implements CommandOptions {
@@ -445,7 +445,7 @@ export class Command implements CommandOptions {
 	public defer: boolean;
 	public userPermissions?: PermissionsString[];
 	public clientPermissions?: PermissionsString[];
-	public roleKey?: string;
+	public roleKey?: string | null;
 	public muted?: boolean;
 
 	public handler: CommandHandler;

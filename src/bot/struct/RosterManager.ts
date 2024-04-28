@@ -14,6 +14,7 @@ import {
 } from 'discord.js';
 import moment from 'moment-timezone';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
+import { EventEmitter } from 'node:events';
 import { unique } from 'radash';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/CommandOptions.js';
@@ -230,15 +231,46 @@ export interface IRosterMember {
 	createdAt: Date;
 }
 
+export const RosterEvents = {
+	ROSTER_MEMBER_ADDED: 'roster_member_added',
+	ROSTER_MEMBER_REMOVED: 'roster_member_removed',
+	ROSTER_MEMBER_GROUP_CHANGED: 'roster_member_group_changed'
+} as const;
+
+interface IRosterEvents {
+	[RosterEvents.ROSTER_MEMBER_ADDED]: [];
+	[RosterEvents.ROSTER_MEMBER_REMOVED]: [name: string];
+	[RosterEvents.ROSTER_MEMBER_GROUP_CHANGED]: [];
+}
+
 export class RosterManager {
 	public rosters: Collection<IRoster>;
 	public categories: Collection<IRosterCategory>;
 	private readonly queued: Set<string> = new Set();
 	private timeoutId?: NodeJS.Timeout;
+	private _emitter = new EventEmitter();
 
 	public constructor(private readonly client: Client) {
 		this.rosters = this.client.db.collection<IRoster>(Collections.ROSTERS);
 		this.categories = this.client.db.collection<IRosterCategory>(Collections.ROSTER_CATEGORIES);
+
+		this.on(RosterEvents.ROSTER_MEMBER_ADDED, this.onRosterMemberAdded.bind(this));
+		this.on(RosterEvents.ROSTER_MEMBER_REMOVED, this.onRosterMemberRemoved.bind(this));
+		this.on(RosterEvents.ROSTER_MEMBER_GROUP_CHANGED, this.onRosterMemberGroupChanged.bind(this));
+	}
+
+	public emit<K extends keyof IRosterEvents>(event: K, ...args: IRosterEvents[K]) {
+		this._emitter.emit(event, ...args);
+	}
+
+	public on<K extends keyof IRosterEvents>(event: K, listener: (...args: IRosterEvents[K]) => void) {
+		this._emitter.on(event, (...args) => listener(...(args as IRosterEvents[K])));
+	}
+
+	private async onRosterMemberAdded() {}
+	private async onRosterMemberGroupChanged() {}
+	private async onRosterMemberRemoved() {
+		console.log('lol');
 	}
 
 	public async create(roster: IRoster) {

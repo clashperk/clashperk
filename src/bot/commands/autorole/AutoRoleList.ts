@@ -1,7 +1,24 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import ms from 'ms';
+import { title } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
+
+export const _rolesMap: Record<string, string> = {
+	admin: 'elder',
+	coLeader: 'co-leader',
+	leader: 'leader',
+	member: 'member',
+	everyone: 'everyone'
+};
+
+export const _rolesPriority: Record<string, number> = {
+	leader: 1,
+	coLeader: 2,
+	admin: 3,
+	member: 4,
+	everyone: 5
+};
 
 export default class AutoRoleListCommand extends Command {
 	public constructor() {
@@ -28,14 +45,20 @@ export default class AutoRoleListCommand extends Command {
 		const townHallRoles = Array.from(new Set(Object.values(rolesMap.townHallRoles).filter((id) => id)));
 		const builderHallRoles = Array.from(new Set(Object.values(rolesMap.builderHallRoles).filter((id) => id)));
 
-		const clanRoles = Array.from(
-			new Set(
-				Object.values(rolesMap.clanRoles ?? {})
-					.map((_rMap) => Object.values(_rMap.roles))
-					.flat()
-					.filter((id) => id)
-			)
-		);
+		const _clanRolesAggregated = Object.values(rolesMap.clanRoles ?? {})
+			.map((_rMap) => Object.entries(_rMap.roles))
+			.flat()
+			.map(([role, roleId]) => ({ role, roleId }))
+			.sort((a, b) => _rolesPriority[a.role] - _rolesPriority[b.role])
+			.reduce<Record<string, { roleIds: string[]; role: string }>>((prev, { role, roleId }) => {
+				if (role && roleId && role in _rolesPriority) {
+					prev[role] ??= { role, roleIds: [] };
+					if (!prev[role].roleIds.includes(roleId)) prev[role].roleIds.push(roleId);
+				}
+				return prev;
+			}, {});
+		const _clanRoles = Object.values(_clanRolesAggregated);
+
 		const warRoles = Array.from(
 			new Set(
 				Object.values(rolesMap.clanRoles ?? {})
@@ -48,31 +71,42 @@ export default class AutoRoleListCommand extends Command {
 		const clanRoleList = clans
 			.map((clan) => {
 				const roleSet = rolesMap.clanRoles[clan.tag];
+				const flattenRolesMap = Object.entries(roleSet?.roles ?? {})
+					.sort(([a], [b]) => _rolesPriority[a] - _rolesPriority[b])
+					.reduce<Record<string, { roleId: string; roles: string[] }>>((prev, [role, roleId]) => {
+						if (role && roleId && role in _rolesPriority) {
+							prev[roleId] ??= { roleId, roles: [] };
+							prev[roleId].roles.push(role);
+						}
+						return prev;
+					}, {});
+
 				return {
 					name: `${clan.nickname || clan.name} (${clan.tag})`,
-					roleIds: Object.values(roleSet?.roles ?? {}),
+					roles: Object.values(flattenRolesMap),
 					warRoleId: roleSet?.warRoleId
 				};
 			})
-			.filter((roleSet) => roleSet.roleIds.length || roleSet.warRoleId);
-
-		const requiresVerification = this.client.settings.get<boolean>(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
+			.filter((roleSet) => roleSet.roles.length || roleSet.warRoleId);
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
 		embed.setURL('https://docs.clashperk.com/features/auto-role');
+		embed.setTitle('AutoRole Settings');
 
 		if (args.expand) {
-			embed.setTitle('Clan Roles and War Roles');
 			embed.setDescription(
 				[
-					requiresVerification ? '*Requires Verification\n' : '',
 					clanRoleList
 						.map((clan) => {
 							return [
 								`${clan.name}`,
-								`- ${clan.roleIds.map((id) => `<@&${id}>`).join(' ') || 'No clan roles'}`,
-								`${clan.warRoleId ? `- <@&${clan.warRoleId}>\n` : ''}`
+								`${
+									clan.roles
+										.map(({ roles, roleId }) => `- <@&${roleId}> (${roles.map((r) => _rolesMap[r]).join(', ')})`)
+										.join('\n') || '- No clan roles'
+								}`,
+								`${clan.warRoleId ? `- <@&${clan.warRoleId}> (war)\n` : ''}`
 							];
 						})
 						.flat()
@@ -80,10 +114,17 @@ export default class AutoRoleListCommand extends Command {
 				].join('\n')
 			);
 		} else {
-			embed.setTitle('Clan Roles');
 			embed.setDescription(
-				[requiresVerification ? '*Requires Verification\n' : '', clanRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join('\n')
+				[
+					'**Clan Roles**',
+					_clanRoles
+						.map(({ role, roleIds }) => {
+							return `*${title(_rolesMap[role])} Roles*\n${roleIds.map((id) => `<@&${id}>`).join(' ')}`;
+						})
+						.join('\n') || 'None'
+				].join('\n')
 			);
+
 			embed.addFields({ name: 'War Roles', value: warRoles.map((id) => `<@&${id}>`).join(' ') || 'None' });
 			embed.addFields({
 				name: 'TownHall Roles' + (townHallRoles.length && !allowNonFamilyTownHallRoles ? ' (Family Only)' : ''),
@@ -114,6 +155,7 @@ export default class AutoRoleListCommand extends Command {
 		const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
 		const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
 		const useAutoRole = this.client.settings.get<boolean>(interaction.guild, Settings.USE_AUTO_ROLE, true);
+		const requiresVerification = this.client.settings.get<boolean>(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 
 		const footerTexts: string[] = [];
 		if (roleAdditionDelays) {
@@ -121,6 +163,9 @@ export default class AutoRoleListCommand extends Command {
 		}
 		if (roleRemovalDelays) {
 			footerTexts.push(`* ${ms(roleRemovalDelays, { long: true })} role removal delay.`);
+		}
+		if (requiresVerification) {
+			footerTexts.push('* Clan role requires in-game API Token verification.');
 		}
 		if (!useAutoRole) {
 			footerTexts.push('* Auto updating is disabled! Use /config to enable it.');

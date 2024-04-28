@@ -13,14 +13,19 @@ export default class AutoTownHallRoleCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			clientPermissions: ['EmbedLinks', 'ManageRoles', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel', 'UseExternalEmojis'],
-			defer: true,
-			roleKey: Settings.LINKS_MANAGER_ROLE
+			defer: true
 		});
 	}
 
-	public async pre(interaction: ButtonInteraction | CommandInteraction) {
-		if (interaction.isButton()) this.ephemeral = true;
-		else this.ephemeral = false;
+	public async pre(interaction: ButtonInteraction | CommandInteraction, args: { user_or_role?: Role | User }) {
+		if (args.user_or_role && args.user_or_role instanceof User) {
+			this.roleKey = Settings.LINKS_MANAGER_ROLE;
+		} else {
+			this.roleKey = null;
+		}
+
+		// message should be ephemeral for button clicks
+		this.ephemeral = interaction.isButton();
 	}
 
 	public async exec(
