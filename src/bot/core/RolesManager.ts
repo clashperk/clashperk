@@ -619,8 +619,8 @@ export class RolesManager {
 
 		return this.checkRoles({
 			member,
-			rolesToInclude: rolesToInclude.filter((id) => freeToAdd.includes(id)),
-			rolesToExclude: rolesToExclude.filter((id) => freeToDelete.includes(id))
+			rolesToInclude: additionDelay ? rolesToInclude.filter((id) => freeToAdd.includes(id)) : rolesToInclude,
+			rolesToExclude: deletionDelay ? rolesToExclude.filter((id) => freeToDelete.includes(id)) : rolesToExclude
 		});
 	}
 
