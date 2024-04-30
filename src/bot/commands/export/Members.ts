@@ -47,8 +47,7 @@ export default class ExportClanMembersCommand extends Command {
 		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
 		if (!clans) return;
 
-		const __clans = await this.client.storage.find('412991112161001472');
-		const _clans = await this.client.http._getClans(__clans);
+		const _clans = await this.client.http._getClans(clans);
 
 		const members: {
 			name: string;
