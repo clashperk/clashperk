@@ -24,6 +24,7 @@ export default class AutoRoleDisableCommand extends Command {
 			'builder-leagues': this.disableBuilderLeagueRoles.bind(this),
 			'wars': this.disableWarRoles.bind(this),
 			'family': this.disableFamilyRoles.bind(this),
+			'exclusive-family': this.disableFamilyRoles.bind(this),
 			'family-leaders': this.disableFamilyRoles.bind(this),
 			'guest': this.disableFamilyRoles.bind(this),
 			'verified': this.disableFamilyRoles.bind(this)
