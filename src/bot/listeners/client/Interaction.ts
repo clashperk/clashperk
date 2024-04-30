@@ -176,6 +176,8 @@ export default class InteractionListener extends Listener {
 	public async autocomplete(interaction: Interaction) {
 		if (!interaction.isAutocomplete()) return;
 		const focused = interaction.options.getFocused(true).name;
+		const query = interaction.options.getString(focused)?.trim();
+
 		mixpanel.track('Autocomplete', {
 			distinct_id: interaction.user.id,
 			guild_id: interaction.guildId ?? '0',
@@ -221,6 +223,9 @@ export default class InteractionListener extends Listener {
 				return this.durationAutocomplete(interaction, focused);
 			}
 			case 'clans': {
+				if (interaction.commandName === 'activity' && !query) {
+					return this.client.autocomplete.clanAutoComplete(interaction, { withCategory: true, isMulti: true });
+				}
 				return this.clansAutocomplete(interaction, focused);
 			}
 			case 'category': {
@@ -578,7 +583,7 @@ export default class InteractionListener extends Listener {
 		});
 
 		if (!query) {
-			return this.client.autocomplete.clanAutoComplete(interaction, true);
+			return this.client.autocomplete.clanAutoComplete(interaction, { withCategory: false, isMulti: true });
 		}
 
 		const userId = interaction.user.id;
@@ -676,7 +681,7 @@ export default class InteractionListener extends Listener {
 		const guildId = interaction.guild.id;
 
 		if (!query) {
-			return this.client.autocomplete.clanAutoComplete(interaction, false);
+			return this.client.autocomplete.clanAutoComplete(interaction, { withCategory: false, isMulti: false });
 		}
 
 		const now = Date.now();

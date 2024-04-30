@@ -1,7 +1,8 @@
 import { AutocompleteInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { nanoid } from 'nanoid';
-import { unique } from 'radash';
+import { sift, unique } from 'radash';
+import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { FlagsEntity } from '../entities/flags.entity.js';
 import { PlayerModel, UserInfoModel } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
@@ -82,7 +83,10 @@ export class Autocomplete {
 		return interaction.respond(choices);
 	}
 
-	public async clanAutoComplete(interaction: AutocompleteInteraction<'cached'>, isMulti: boolean) {
+	public async clanAutoComplete(
+		interaction: AutocompleteInteraction<'cached'>,
+		{ withCategory, isMulti }: { isMulti: boolean; withCategory: boolean }
+	) {
 		const [clans, userClans] = await Promise.all([
 			this.client.storage.find(interaction.guildId),
 			this.getUserLinkedClan(interaction.user.id)
@@ -92,6 +96,23 @@ export class Autocomplete {
 			[...userClans, ...clans].map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` })),
 			(e) => e.value
 		);
+
+		if (withCategory) {
+			const categoryIds = sift(clans.map((clan) => clan.categoryId));
+			const categories = await this.client.db
+				.collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES)
+				.find({ guildId: interaction.guildId, _id: { $in: categoryIds } }, { sort: { order: 1 }, limit: 10 })
+				.toArray();
+			if (categories.length) {
+				choices.unshift(
+					...categories.map((category) => ({
+						value: `CATEGORY:${interaction.guildId}:${category._id.toHexString()}`,
+						name: `${category.displayName} (Category)`
+					}))
+				);
+			}
+		}
+
 		if (!choices.length) return interaction.respond([{ name: 'Enter a clan tag.', value: '0' }]);
 
 		if (isMulti) {

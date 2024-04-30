@@ -183,9 +183,6 @@ export class MongoDbClient extends MongoClient {
 					key: { alias: 1 }
 				},
 				{
-					key: { roleIds: 1 }
-				},
-				{
 					key: { tag: 1 }
 				},
 				{

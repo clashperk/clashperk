@@ -17,7 +17,7 @@ export interface ClanStoresEntity {
 	channels?: string[];
 	color?: number;
 	order?: number;
-	categoryId?: ObjectId;
+	categoryId?: ObjectId | null;
 	secureRole: boolean;
 	warRole?: string;
 	roles?: { coLeader?: string; admin?: string; member?: string; leader?: string; everyone?: string };

@@ -1,5 +1,6 @@
 import { APIClan, APIPlayer } from 'clashofclans.js';
-import { BaseInteraction, CommandInteraction, Guild, User } from 'discord.js';
+import { BaseInteraction, CommandInteraction, User } from 'discord.js';
+import { ObjectId } from 'mongodb';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
@@ -207,33 +208,6 @@ export default class Resolver {
 		return user?.lastSearchedPlayerTag ?? null;
 	}
 
-	public async updateUserData(guild: Guild, userId: string) {
-		const member = guild.members.cache.get(userId);
-		if (!member) return null;
-
-		await this.client.db.collection(Collections.USERS).updateOne(
-			{ userId: member.user.id },
-			{
-				$set: {
-					username: member.user.username,
-					discriminator: member.user.discriminator,
-					displayName: member.user.displayName
-				}
-			}
-		);
-
-		await this.client.db.collection(Collections.PLAYER_LINKS).updateMany(
-			{ userId: member.user.id },
-			{
-				$set: {
-					username: member.user.username,
-					discriminator: member.user.discriminator,
-					displayName: member.user.displayName
-				}
-			}
-		);
-	}
-
 	public async getLinkedPlayerTags(userId: string) {
 		const [players, others] = await Promise.all([
 			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),
@@ -305,12 +279,25 @@ export default class Resolver {
 		return result.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
 	}
 
+	private async getClansFromCategory(guildId: string, categoryId: string) {
+		const clans = await this.client.db
+			.collection<ClanStoresEntity>(Collections.CLAN_STORES)
+			.find({ guild: guildId, categoryId: ObjectId.isValid(categoryId) ? new ObjectId(categoryId) : null })
+			.toArray();
+		return clans.map((clan) => clan.tag);
+	}
+
 	public async resolveArgs(args?: string) {
 		if (!args || args === '*') return [];
 
 		if (/^ARGS/.test(args)) {
 			const tags = await this.client.redis.connection.get(args);
 			if (tags) return tags.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.http.fixTag(tag) : tag));
+		}
+
+		if (/^CATEGORY:/.test(args)) {
+			const [, guildId, categoryId] = args.split(':');
+			return this.getClansFromCategory(guildId, categoryId);
 		}
 
 		return args.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.http.fixTag(tag) : tag));
