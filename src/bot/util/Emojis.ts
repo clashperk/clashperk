@@ -55,10 +55,12 @@ export const HERO_EQUIPMENT: Record<string, string> = {
 	'Invisibility Vial': '<:InvisibilityVial:1188865423668687008>',
 	'Seeking Shield': '<:SeekingShield:1188865455469908033>',
 	'Vampstache': '<:Vampstache:1188865462675705927>',
-	'Fireball': '<:Fireball:1223332499162398800>',
-	'Rocket Spear': '<:RocketSpear:1223332521358528695>',
 	'Giant Gauntlet': '<:GiantGauntlet:1189622189994025041>',
-	'Frozen Arrow': '<:FrozenArrow:1189622209568841748>'
+	'Frozen Arrow': '<:FrozenArrow:1189622209568841748>',
+	'Fireball': '<:Fireball:1223332499162398800>'
+
+	// 'Rocket Spear': '<:RocketSpear:1223332521358528695>',
+	// 'Spiky Ball': '<:SpikeyBall:1234940460070600804>',
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
@@ -162,6 +164,11 @@ export const HOME_TROOPS: Record<string, string> = {
 export const BUILDER_TROOPS: Record<string, string> = {
 	...BUILDER_ELIXIR_TROOPS,
 	...BUILDER_HEROES
+};
+
+export const ALL_TROOPS: Record<string, string> = {
+	...HOME_TROOPS,
+	...BUILDER_TROOPS
 };
 
 export const TOWN_HALLS: Record<string, string> = {
@@ -441,6 +448,10 @@ export const EMOJIS = {
 	EMPTY: '<:EmptyBlock:699639532013748326>',
 
 	EQUIPMENT: '<:Equipment:1216044689635934218>',
+
+	STARRY_ORE: '<:StarryOre:1234929595820544020>',
+	SHINY_ORE: '<:ShinyOre:1234929589827141863>',
+	GLOWY_ORE: '<:GlowyOre:1234929592947445823>',
 
 	SUPER_TROOP: '<:SuperTroop:831563848174927883>',
 	TOWN_HALL: '<:TownHall:825424125065166919>',

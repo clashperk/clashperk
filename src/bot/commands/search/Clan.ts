@@ -165,7 +165,7 @@ export default class ClanCommand extends Command {
 				...['**Total Wars**', `${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`]
 			);
 		}
-		if (fields.length) embed.addFields([{ name: `**Season Stats (${Season.previousID})**`, value: [...fields, '\u200e'].join('\n') }]);
+		if (fields.length) embed.addFields([{ name: `**Season Stats (${Season.ID})**`, value: [...fields, '\u200e'].join('\n') }]);
 
 		embed.addFields([
 			{
@@ -343,7 +343,7 @@ export default class ClanCommand extends Command {
 				{
 					$match: {
 						__clans: clan.tag,
-						season: Season.previousID,
+						season: Season.ID,
 						tag: { $in: clan.memberList.map((m) => m.tag) }
 					}
 				},
@@ -390,7 +390,7 @@ export default class ClanCommand extends Command {
 					$match: {
 						$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 						state: 'warEnded',
-						season: Season.previousID
+						season: Season.ID
 					}
 				},
 				{

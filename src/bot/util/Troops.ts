@@ -1,5 +1,5 @@
 import { RawData } from 'clashofclans.js';
-import { SUPER_TROOPS } from './Emojis.js';
+import { ALL_TROOPS, SUPER_TROOPS } from './Emojis.js';
 
 export const RAW_TROOPS = RawData.RawUnits;
 
@@ -8,7 +8,11 @@ export const RAW_SUPER_TROOPS = RawData.RawSuperUnits;
 // For calculating rushed and remaining upgrades
 export const RAW_TROOPS_FILTERED = RawData.RawUnits.filter((unit) => !unit.seasonal)
 	.filter((u) => u.category !== 'equipment')
-	.filter((unit) => !(unit.name in SUPER_TROOPS));
+	.filter((unit) => !(unit.name in SUPER_TROOPS) && unit.name in ALL_TROOPS);
+
+export const RAW_TROOPS_WITH_ICONS = RawData.RawUnits.filter((unit) => !unit.seasonal).filter(
+	(unit) => !(unit.name in SUPER_TROOPS) && unit.name in ALL_TROOPS
+);
 
 export const ARMY_CAPACITY = [
 	{

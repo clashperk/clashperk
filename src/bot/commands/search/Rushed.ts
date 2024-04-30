@@ -13,7 +13,7 @@ import { Args, Command } from '../../lib/index.js';
 import { TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/Helper.js';
-import { RAW_TROOPS_FILTERED } from '../../util/Troops.js';
+import { RAW_TROOPS_FILTERED, RAW_TROOPS_WITH_ICONS } from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
 
 export default class RushedCommand extends Command {
@@ -99,7 +99,7 @@ export default class RushedCommand extends Command {
 		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const apiTroops = unitsFlatten(data);
-		const Troops = RAW_TROOPS_FILTERED.filter((unit) => {
+		const Troops = RAW_TROOPS_WITH_ICONS.filter((unit) => {
 			const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 			const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
 			// const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
@@ -122,7 +122,8 @@ export default class RushedCommand extends Command {
 			'Dark Spell Factory': 'Dark Spells',
 			'Town Hall': 'Heroes',
 			'Pet House': 'Pets',
-			'Workshop': 'Siege Machines'
+			'Workshop': 'Siege Machines',
+			'Blacksmith': 'Equipment'
 			// 'Builder Hall': 'Builder Base Hero',
 			// 'Builder Barracks': 'Builder Troops'
 		};
@@ -186,7 +187,7 @@ export default class RushedCommand extends Command {
 				'**Percentage**',
 				`${this.rushedPercentage(data)}% (Lab)`,
 				`${this.heroRushed(data)}% (Hero)`,
-				`${this.rushedOverall(data)}% (Overall)`,
+				`${this.rushedOverall(data)}% (Overall) (equipment are excluded)`,
 				'\u200b'
 			].join('\n')
 		);

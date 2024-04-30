@@ -9,11 +9,12 @@ import {
 	StringSelectMenuBuilder,
 	User
 } from 'discord.js';
+import { unique } from 'radash';
 import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/Helper.js';
-import { RAW_SUPER_TROOPS, RAW_TROOPS } from '../../util/Troops.js';
+import { RAW_SUPER_TROOPS, RAW_TROOPS_WITH_ICONS } from '../../util/Troops.js';
 
 export default class UnitsCommand extends Command {
 	public constructor() {
@@ -101,11 +102,13 @@ export default class UnitsCommand extends Command {
 	private embed(data: APIPlayer, showMaxLevel = false) {
 		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
-		const activeEquipment = data.heroes.flatMap((hero) => (hero.equipment ?? []).map((u) => u.name));
-
-		const Troops = RAW_TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
+		const unlockedEquipment = unique([
+			...data.heroes.flatMap((u) => u.equipment ?? []).map((u) => u.name),
+			...data.heroEquipment.map((u) => u.name)
+		]);
+		const Troops = RAW_TROOPS_WITH_ICONS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
 			.filter((unit) => {
-				if (unit.category === 'equipment' && !activeEquipment.includes(unit.name)) return false;
+				if (unit.category === 'equipment' && !unlockedEquipment.includes(unit.name)) return false;
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > 0;
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 1] > 0;
 				return Boolean(homeTroops || builderTroops);
@@ -192,7 +195,7 @@ export default class UnitsCommand extends Command {
 			};
 			const hallLevel = data.townHallLevel;
 
-			const originalTroop = RAW_TROOPS.find((un) => un.name === name && un.category === 'troop' && un.village === 'home');
+			const originalTroop = RAW_TROOPS_WITH_ICONS.find((un) => un.name === name && un.category === 'troop' && un.village === 'home');
 
 			return {
 				village: unit.village,

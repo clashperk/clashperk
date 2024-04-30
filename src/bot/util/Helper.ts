@@ -861,15 +861,13 @@ export const unitsFlatten = (data: APIPlayer) => {
 			type: 'spell',
 			village: u.village
 		})),
-		...data.heroes.flatMap((hero) =>
-			(hero.equipment ?? []).map((u) => ({
-				name: u.name,
-				level: u.level,
-				maxLevel: u.maxLevel,
-				type: 'equipment',
-				village: u.village
-			}))
-		)
+		...data.heroEquipment.map((u) => ({
+			name: u.name,
+			level: u.level,
+			maxLevel: u.maxLevel,
+			type: 'equipment',
+			village: u.village
+		}))
 	];
 };
 

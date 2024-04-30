@@ -14,7 +14,7 @@ import { Args, Command } from '../../lib/index.js';
 import { TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/Helper.js';
-import { RAW_TROOPS_FILTERED } from '../../util/Troops.js';
+import { RAW_TROOPS_WITH_ICONS } from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
 
 export const EN_ESCAPE = '\u2002';
@@ -109,8 +109,24 @@ export default class UpgradesCommand extends Command {
 				].join('\n')
 			);
 
+		const getCharacterBuilding = (unit: TroopJSON[string][number]) => {
+			if (unit.allowedCharacters.includes('Barbarian King')) {
+				return 'Blacksmith_bk';
+			}
+			if (unit.allowedCharacters.includes('Archer Queen')) {
+				return 'Blacksmith_aq';
+			}
+			if (unit.allowedCharacters.includes('Grand Warden')) {
+				return 'Blacksmith_gw';
+			}
+			if (unit.allowedCharacters.includes('Royal Champion')) {
+				return 'Blacksmith_rc';
+			}
+			return 'Blacksmith';
+		};
+
 		const apiTroops = unitsFlatten(data);
-		const Troops = RAW_TROOPS_FILTERED.filter((unit) => {
+		const Troops = RAW_TROOPS_WITH_ICONS.filter((unit) => {
 			const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 			const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > (apiTroop?.level ?? 0);
 			const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 1] > (apiTroop?.level ?? 0);
@@ -123,13 +139,15 @@ export default class UpgradesCommand extends Command {
 							? 'Elixir Hero'
 							: 'Dark Hero'
 						: 'Builder Hall'
+					: curr.category === 'equipment'
+					? getCharacterBuilding(curr)
 					: curr.unlock.building;
 			if (!(unlockBuilding in prev)) prev[unlockBuilding] = [];
 			prev[unlockBuilding].push(curr);
 			return prev;
 		}, {});
 
-		const rem = RAW_TROOPS_FILTERED.reduce(
+		const rem = RAW_TROOPS_WITH_ICONS.reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {
@@ -152,6 +170,11 @@ export default class UpgradesCommand extends Command {
 			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
 			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`,
 			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
+			'Blacksmith': `${EMOJIS.EQUIPMENT} Equipment`,
+			'Blacksmith_bk': `${EMOJIS.EQUIPMENT} Equipment (BK)`,
+			'Blacksmith_aq': `${EMOJIS.EQUIPMENT} Equipment (AQ)`,
+			'Blacksmith_gw': `${EMOJIS.EQUIPMENT} Equipment (GW)`,
+			'Blacksmith_rc': `${EMOJIS.EQUIPMENT} Equipment (RC)`,
 			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};
 
@@ -171,6 +194,9 @@ export default class UpgradesCommand extends Command {
 		const summary: Record<string, number> = {
 			'Elixir': 0,
 			'Dark Elixir': 0,
+			'Starry Ore': 0,
+			'Glowy Ore': 0,
+			'Shiny Ore': 0,
 			'Time': 0
 		};
 
@@ -192,15 +218,25 @@ export default class UpgradesCommand extends Command {
 					? unit.upgrade.time.slice(level - (unit.minLevel ?? 1), hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0)
 					: unit.unlock.time + unit.upgrade.time.slice(0, hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0);
 
+				const resources = unit.upgrade.resources
+					.slice(level ? level - (unit.minLevel ?? 1) : 0, hallMaxLevel - 1)
+					.flat()
+					.reduce<Record<string, number>>((prev, curr) => {
+						prev[curr.resource] ??= 0;
+						prev[curr.resource] += curr.cost;
+						return prev;
+					}, {});
+
 				return {
-					type: unit.category,
-					village: unit.village,
 					name: unit.name,
 					level,
+					type: unit.category,
+					village: unit.village,
 					isRushed,
 					hallMaxLevel,
 					maxLevel: Math.max(unit.levels[unit.levels.length - 1], maxLevel),
 					resource: unit.upgrade.resource,
+					resources,
 					upgradeCost: level ? unit.upgrade.cost[level - (unit.minLevel ?? 1)] : unit.unlock.cost,
 					upgradeTime: level ? unit.upgrade.time[level - (unit.minLevel ?? 1)] : unit.unlock.time,
 					remainingCost,
@@ -218,8 +254,15 @@ export default class UpgradesCommand extends Command {
 			const remaining = `${Math.round((totalLevel * 100) / totalMaxLevel)}%`;
 
 			const costPerResource = unitsArray.reduce<Record<string, number>>((prev, curr) => {
-				if (!(curr.resource in prev)) prev[curr.resource] = 0;
-				prev[curr.resource] += curr.remainingCost;
+				prev[curr.resource] ??= 0;
+				if (curr.type === 'equipment') {
+					for (const [resource, cost] of Object.entries(curr.resources)) {
+						prev[resource] ??= 0;
+						prev[resource] += cost;
+					}
+				} else {
+					prev[curr.resource] += curr.remainingCost;
+				}
 				return prev;
 			}, {});
 
@@ -233,16 +276,25 @@ export default class UpgradesCommand extends Command {
 				`**${category.title}**`,
 				unitsArray
 					.map((unit) => {
-						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name] || unit.name;
 						const level = this.padStart(unit.level);
 						const maxLevel = this.padEnd(unit.hallMaxLevel);
 						const upgradeTime = this.dur(unit.remainingTime).padStart(5, ' ');
 						const upgradeCost = this.format(unit.remainingCost).padStart(6, ' ');
 						const rushed = unit.isRushed ? `\` R \`` : '`   `';
+
+						const shinyOre = (unit.resources['Shiny Ore'] ? this.format(unit.resources['Shiny Ore']) : '').padStart(6, ' ');
+						const glowyOre = (unit.resources['Glowy Ore'] ? this.format(unit.resources['Glowy Ore']) : '').padStart(5, ' ');
+						const starryOre = (unit.resources['Starry Ore'] ? this.format(unit.resources['Starry Ore']) : '').padStart(3, ' ');
+
+						if (unit.type === 'equipment') {
+							return `\u200e${unitIcon} \` ${level}/${maxLevel} \` \` ${shinyOre}\` \` ${glowyOre}\` \` ${starryOre} \` ${rushed}`;
+						}
+
 						return `\u200e${unitIcon} \` ${level}/${maxLevel} \` \` ${upgradeTime} \` \` ${upgradeCost} \` ${rushed}`;
 					})
 					.join('\n'),
-				unitsArray.length > 1
+				unitsArray.length > 1 && !category.key.includes('Blacksmith')
 					? `\u200e${EMOJIS.CLOCK} \` ${this.centerText(remaining, 5)} \` \` ${totalTime} \` \` ${totalCost} \` \`   \``
 					: ''
 			];
@@ -271,8 +323,16 @@ export default class UpgradesCommand extends Command {
 			const elixir = this.format(summary['Elixir'] || 0);
 			const dark = this.format(summary['Dark Elixir'] || 0);
 			const time = this.dur(summary['Time'] || 0);
+			const shinyOre = this.format(summary['Shiny Ore'] || 0);
+			const glowyOre = this.format(summary['Glowy Ore'] || 0);
+			const starryOre = this.format(summary['Starry Ore'] || 0);
+
 			embed.setFooter({
-				text: [`Remaining ~${remaining}%`, `Total ${elixir} Elixir, ${dark} Dark, ${time}`].join('\n')
+				text: [
+					`Remaining ${remaining}%`,
+					`Total ${elixir} Elixir, ${dark} Dark, ${time}`,
+					`${shinyOre} Shiny, ${glowyOre} Glowy, ${starryOre} Starry`
+				].join('\n')
 			});
 		}
 

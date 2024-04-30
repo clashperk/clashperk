@@ -110,7 +110,9 @@ export interface TroopJSON {
 			cost: number[];
 			time: number[];
 			resource: string;
+			resources: { resource: string; cost: number }[][];
 		};
+		allowedCharacters: string[];
 		minLevel?: number | null;
 		seasonal: boolean;
 		levels: number[];
