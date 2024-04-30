@@ -11,7 +11,6 @@ import {
 	StringSelectMenuInteraction,
 	User
 } from 'discord.js';
-import moment from 'moment';
 import { cluster, diff } from 'radash';
 import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
 import { Args, Command } from '../../lib/index.js';
@@ -83,36 +82,31 @@ export default class ProfileCommand extends Command {
 				.toArray()
 		]);
 
-		if (
-			data &&
-			(data.username !== user.username || data.discriminator !== user.discriminator || data.displayName !== user.displayName)
-		) {
-			this.client.resolver.updateUserData(interaction.guild, user.id);
-		}
-
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() })
-			.setDescription(['**Created**', `${moment(user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`].join('\n'));
+			.setAuthor({ name: `${user.displayName}/${user.username} (${user.id})`, iconURL: user.displayAvatarURL() })
+			.setDescription(['**Username**', `${user.username}`].join('\n'));
 
-		const { res, body: clan } = await this.client.http.getClan(data?.clan?.tag ?? '💩');
-		if (res.status === 503) {
-			return interaction.editReply('**Service is temporarily unavailable because of maintenance.**');
-		}
-
-		if (res.ok) {
-			embed.setDescription(
-				[
-					embed.data.description,
-					'',
-					'**Default Clan**',
-					`${EMOJIS.CLAN} [${clan.name} (${
-						clan.tag
-					})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
-					...[`${EMOJIS.EMPTY} Level ${clan.clanLevel} ${EMOJIS.USERS} ${clan.members} Member${clan.members === 1 ? '' : 's'}`],
-					'\u200b'
-				].join('\n')
-			);
+		if (data?.clan?.tag) {
+			const { res, body: clan } = await this.client.http.getClan(data.clan.tag);
+			if (res.ok) {
+				embed.setDescription(
+					[
+						embed.data.description,
+						'',
+						'**Default Clan**',
+						`${EMOJIS.CLAN} [${clan.name} (${
+							clan.tag
+						})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
+						...[
+							`${EMOJIS.EMPTY} Level ${clan.clanLevel} ${EMOJIS.USERS} ${clan.members} Member${clan.members === 1 ? '' : 's'}`
+						],
+						'\u200b'
+					].join('\n')
+				);
+			} else {
+				embed.setDescription([embed.data.description, '\u200b'].join('\n'));
+			}
 		} else {
 			embed.setDescription([embed.data.description, '\u200b'].join('\n'));
 		}
@@ -150,6 +144,8 @@ export default class ProfileCommand extends Command {
 			const tag = playerTags[idx];
 			if (res.status === 404) this.deleteBanned(user.id, tag);
 		});
+
+		if (!user.bot) this.updateUser(user);
 
 		if (user.bot) {
 			this.deleteBotAccount(
@@ -382,6 +378,30 @@ export default class ProfileCommand extends Command {
 		if (!player.clan) return '';
 		const warPref = player.warPreference === 'in' ? `${EMOJIS.WAR_PREF_IN}` : `${EMOJIS.WAR_PREF_OUT}`;
 		return `${warPref} ${roles[player.role!]} of ${player.clan.name}`;
+	}
+
+	private async updateUser(user: User) {
+		await this.client.db.collection(Collections.USERS).updateOne(
+			{ userId: user.id },
+			{
+				$set: {
+					username: user.username,
+					discriminator: user.discriminator,
+					displayName: user.displayName
+				}
+			}
+		);
+
+		await this.client.db.collection(Collections.PLAYER_LINKS).updateMany(
+			{ userId: user.id },
+			{
+				$set: {
+					username: user.username,
+					discriminator: user.discriminator,
+					displayName: user.displayName
+				}
+			}
+		);
 	}
 
 	private heroes(data: APIPlayer) {

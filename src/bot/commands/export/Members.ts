@@ -1,6 +1,5 @@
 import { APIPlayer } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
-import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { HERO_EQUIPMENT, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/Emojis.js';
@@ -48,7 +47,8 @@ export default class ExportClanMembersCommand extends Command {
 		const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
 		if (!clans) return;
 
-		const _clans = await this.client.http._getClans(clans);
+		const __clans = await this.client.storage.find('412991112161001472');
+		const _clans = await this.client.http._getClans(__clans);
 
 		const members: {
 			name: string;
@@ -132,8 +132,8 @@ export default class ExportClanMembersCommand extends Command {
 		}
 
 		const linksMap = await this.client.resolver.getLinkedUsersMap(members);
-		const userIds = Object.values(linksMap).map((link) => link.userId);
-		const guildMembers = await interaction.guild.members.fetch({ user: unique(userIds) });
+		const guildMembers = await interaction.guild.members.fetch();
+
 		for (const member of members) {
 			const link = linksMap[member.tag];
 			if (!link) continue;
@@ -145,13 +145,7 @@ export default class ExportClanMembersCommand extends Command {
 		}
 
 		members
-			.sort(
-				(a, b) =>
-					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-					b.heroes.reduce((x: any, y: { level: any }) => x + y.level, 0) -
-					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-					a.heroes.reduce((x: any, y: { level: any }) => x + y.level, 0)
-			)
+			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
 		if (!members.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));

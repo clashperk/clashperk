@@ -71,8 +71,7 @@ export default class LinkListCommand extends Command {
 			}
 		}
 
-		const userIds = [...new Set(members.map((mem) => mem.userId))];
-		const guildMembers = await interaction.guild.members.fetch({ user: userIds });
+		const guildMembers = await interaction.guild.members.fetch();
 
 		const clanMembers = clan.memberList.map((member) => {
 			const link = members.find((mem) => mem.tag === member.tag);

@@ -1,6 +1,6 @@
 import { APIClan, APIClanMember } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
-import { sum, unique } from 'radash';
+import { sum } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { PlayerSeasonModel, achievements } from '../../types/index.js';
@@ -32,8 +32,7 @@ export default class ExportSeason extends Command {
 		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 
 		const linksMap = await this.client.resolver.getLinkedUsersMap(_members);
-		const userIds = Object.values(linksMap).map((link) => link.userId);
-		const guildMembers = await interaction.guild.members.fetch({ user: unique(userIds) });
+		const guildMembers = await interaction.guild.members.fetch();
 		for (const member of members) {
 			const link = linksMap[member.tag];
 			if (!link) continue;

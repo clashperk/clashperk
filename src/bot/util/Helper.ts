@@ -443,12 +443,7 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
 		else members.push({ tag: member.tag, userId: member.userId, name: clanMember.name, verified: member.verified });
 	}
 
-	const userIds = members.reduce<string[]>((prev, curr) => {
-		if (!prev.includes(curr.userId)) prev.push(curr.userId);
-		return prev;
-	}, []);
-	const guildMembers = await guild.members.fetch({ user: userIds });
-
+	const guildMembers = await guild.members.fetch();
 	// players linked and on the guild.
 	const onDiscord = members.filter((mem) => guildMembers.has(mem.userId));
 	// linked to discord but not on the guild.
