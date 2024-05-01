@@ -4,20 +4,20 @@ import { Listener, Command } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 
 export default class CommandEndedListener extends Listener {
-	public constructor() {
-		super(CommandHandlerEvents.COMMAND_ENDED, {
-			event: CommandHandlerEvents.COMMAND_ENDED,
-			emitter: 'commandHandler',
-			category: 'commandHandler'
-		});
-	}
+  public constructor() {
+    super(CommandHandlerEvents.COMMAND_ENDED, {
+      event: CommandHandlerEvents.COMMAND_ENDED,
+      emitter: 'commandHandler',
+      category: 'commandHandler'
+    });
+  }
 
-	public async exec(interaction: MessageComponentInteraction | CommandInteraction, _command: Command, _args: unknown) {
-		if (!interaction.isCommand()) return;
-		const suggested = 0 + 1; // await this.client.stats.featureSuggested(interaction);
-		if (suggested > 10) {
-			const msg = await interaction.followUp({
-				content: stripIndent`
+  public async exec(interaction: MessageComponentInteraction | CommandInteraction, _command: Command, _args: unknown) {
+    if (!interaction.isCommand()) return;
+    const suggested = 0 + 1; // await this.client.stats.featureSuggested(interaction);
+    if (suggested > 10) {
+      const msg = await interaction.followUp({
+        content: stripIndent`
 				- **Checkout the new Features!**
 
 				- **Legend Tracking**
@@ -47,9 +47,9 @@ export default class CommandEndedListener extends Listener {
 
 				- [Join Support Server to know more!](https://discord.gg/ppuppun)
 				`,
-				ephemeral: false
-			});
-			setTimeout(() => msg.delete().catch(() => null), 1000 * 60 * 2).unref();
-		}
-	}
+        ephemeral: false
+      });
+      setTimeout(() => msg.delete().catch(() => null), 1000 * 60 * 2).unref();
+    }
+  }
 }

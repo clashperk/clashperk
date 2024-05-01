@@ -1,48 +1,48 @@
 {
-	"root": true,
-	"plugins": ["@typescript-eslint/eslint-plugin", "prettier", "import"],
-	"extends": [
-		"plugin:@typescript-eslint/recommended",
-		"plugin:prettier/recommended"
-		// "eslint:recommended"
-	],
-	"parserOptions": {
-		"project": "./tsconfig.eslint.json"
-	},
-	"env": {
-		"jest": true
-	},
-	"ignorePatterns": ["**/dist/*", "node_modules"],
-	"parser": "@typescript-eslint/parser",
-	"rules": {
-		"no-process-env": 0,
-		"no-inline-comments": 0,
-		"no-warning-comments": 0,
-		"comma-dangle": ["error", "never"],
-		"arrow-parens": ["error", "always"],
-		"import/extensions": [
-			"error",
-			"ignorePackages",
-			{
-				"ts": "never"
-			}
-		],
-		"@typescript-eslint/naming-convention": 0,
-		"@typescript-eslint/no-floating-promises": 0,
-		"@typescript-eslint/no-misused-promises": 0,
-		"@typescript-eslint/no-unsafe-argument": 0,
-		"@typescript-eslint/no-unsafe-return": 0,
-		"@typescript-eslint/no-unsafe-member-access": 0,
-		"@typescript-eslint/no-unsafe-call": 0,
-		"@typescript-eslint/no-unsafe-assignment": 0,
-		"@typescript-eslint/no-non-null-assertion": 0,
-		"@typescript-eslint/no-explicit-any": 0,
-		"@typescript-eslint/restrict-template-expressions": "error",
-		"@typescript-eslint/no-unused-vars": [
-			"error",
-			{
-				"argsIgnorePattern": "^_"
-			}
-		]
-	}
+  "root": true,
+  "plugins": ["@typescript-eslint/eslint-plugin", "prettier", "import"],
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+    // "eslint:recommended"
+  ],
+  "parserOptions": {
+    "project": "./tsconfig.eslint.json"
+  },
+  "env": {
+    "jest": true
+  },
+  "ignorePatterns": ["**/dist/*", "node_modules"],
+  "parser": "@typescript-eslint/parser",
+  "rules": {
+    "no-process-env": 0,
+    "no-inline-comments": 0,
+    "no-warning-comments": 0,
+    "comma-dangle": ["error", "never"],
+    "arrow-parens": ["error", "always"],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "ts": "never"
+      }
+    ],
+    "@typescript-eslint/naming-convention": 0,
+    "@typescript-eslint/no-floating-promises": 0,
+    "@typescript-eslint/no-misused-promises": 0,
+    "@typescript-eslint/no-unsafe-argument": 0,
+    "@typescript-eslint/no-unsafe-return": 0,
+    "@typescript-eslint/no-unsafe-member-access": 0,
+    "@typescript-eslint/no-unsafe-call": 0,
+    "@typescript-eslint/no-unsafe-assignment": 0,
+    "@typescript-eslint/no-non-null-assertion": 0,
+    "@typescript-eslint/no-explicit-any": 0,
+    "@typescript-eslint/restrict-template-expressions": "error",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  }
 }

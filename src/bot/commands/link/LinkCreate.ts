@@ -5,216 +5,216 @@ import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
 
 export default class LinkCreateCommand extends Command {
-	public constructor() {
-		super('link-create', {
-			category: 'link',
-			channel: 'guild',
-			clientPermissions: ['EmbedLinks'],
-			defer: true
-		});
-	}
+  public constructor() {
+    super('link-create', {
+      category: 'link',
+      channel: 'guild',
+      clientPermissions: ['EmbedLinks'],
+      defer: true
+    });
+  }
 
-	public async pre(interaction: CommandInteraction<'cached'>) {
-		if (this.client.settings.get(interaction.guild, Settings.LINKS_MANAGER_ROLE)) {
-			this.userPermissions = ['ManageGuild'];
-		} else {
-			this.userPermissions = [];
-		}
-	}
+  public async pre(interaction: CommandInteraction<'cached'>) {
+    if (this.client.settings.get(interaction.guild, Settings.LINKS_MANAGER_ROLE)) {
+      this.userPermissions = ['ManageGuild'];
+    } else {
+      this.userPermissions = [];
+    }
+  }
 
-	public args(): Args {
-		return {
-			is_default: {
-				match: 'BOOLEAN'
-			},
-			user: {
-				id: 'member',
-				match: 'MEMBER'
-			}
-		};
-	}
+  public args(): Args {
+    return {
+      is_default: {
+        match: 'BOOLEAN'
+      },
+      user: {
+        id: 'member',
+        match: 'MEMBER'
+      }
+    };
+  }
 
-	public async exec(
-		interaction: CommandInteraction<'cached'>,
-		args: { player_tag?: string; clan_tag?: string; member?: GuildMember; is_default?: boolean; forcePlayer?: boolean }
-	) {
-		if (!(args.clan_tag || args.player_tag)) {
-			const linkButton = new ButtonBuilder()
-				.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: 'hidden' }))
-				.setLabel('Link account')
-				.setEmoji('🔗')
-				.setStyle(ButtonStyle.Primary);
-			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { player_tag?: string; clan_tag?: string; member?: GuildMember; is_default?: boolean; forcePlayer?: boolean }
+  ) {
+    if (!(args.clan_tag || args.player_tag)) {
+      const linkButton = new ButtonBuilder()
+        .setCustomId(JSON.stringify({ cmd: 'link-add', token_field: 'hidden' }))
+        .setLabel('Link account')
+        .setEmoji('🔗')
+        .setStyle(ButtonStyle.Primary);
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
-			return interaction.editReply({
-				content: this.i18n('command.link.no_tag', { lng: interaction.locale }),
-				components: [row]
-			});
-		}
+      return interaction.editReply({
+        content: this.i18n('command.link.no_tag', { lng: interaction.locale }),
+        components: [row]
+      });
+    }
 
-		const member = args.member ?? interaction.member;
-		if (member.user.bot) return interaction.editReply(this.i18n('command.link.create.no_bots', { lng: interaction.locale }));
+    const member = args.member ?? interaction.member;
+    if (member.user.bot) return interaction.editReply(this.i18n('command.link.create.no_bots', { lng: interaction.locale }));
 
-		if (interaction.user.id !== member.user.id) {
-			this.client.logger.debug(
-				`${interaction.user.username} (${
-					interaction.user.id
-				}) attempted to link [clan_tag: ${args.clan_tag!}] [player_tag: ${args.player_tag!}] on behalf of ${
-					member.user.username
-				} (${member.user.id})`,
-				{ label: 'LINK' }
-			);
-		}
+    if (interaction.user.id !== member.user.id) {
+      this.client.logger.debug(
+        `${interaction.user.username} (${
+          interaction.user.id
+        }) attempted to link [clan_tag: ${args.clan_tag!}] [player_tag: ${args.player_tag!}] on behalf of ${
+          member.user.username
+        } (${member.user.id})`,
+        { label: 'LINK' }
+      );
+    }
 
-		// Server disallowed linking users;
-		if (
-			this.client.settings.get(interaction.guild, Settings.LINKS_MANAGER_ROLE) &&
-			member.id !== interaction.id &&
-			!this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE)
-		) {
-			return interaction.editReply(this.i18n('common.missing_manager_role', { lng: interaction.locale }));
-		}
+    // Server disallowed linking users;
+    if (
+      this.client.settings.get(interaction.guild, Settings.LINKS_MANAGER_ROLE) &&
+      member.id !== interaction.id &&
+      !this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE)
+    ) {
+      return interaction.editReply(this.i18n('common.missing_manager_role', { lng: interaction.locale }));
+    }
 
-		if (args.player_tag) {
-			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
-			if (!player) return null;
-			return this.playerLink(interaction, { player, member, is_default: Boolean(args.is_default) });
-		}
+    if (args.player_tag) {
+      const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+      if (!player) return null;
+      return this.playerLink(interaction, { player, member, is_default: Boolean(args.is_default) });
+    }
 
-		if (args.clan_tag) {
-			const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
-			if (!clan) return null;
+    if (args.clan_tag) {
+      const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
+      if (!clan) return null;
 
-			await this.clanLink(member, clan);
-			return interaction.editReply(
-				this.i18n('command.link.create.success', {
-					lng: interaction.locale,
-					user: `**${member.user.displayName}**`,
-					target: `**${clan.name} (${clan.tag})**`
-				})
-			);
-		}
+      await this.clanLink(member, clan);
+      return interaction.editReply(
+        this.i18n('command.link.create.success', {
+          lng: interaction.locale,
+          user: `**${member.user.displayName}**`,
+          target: `**${clan.name} (${clan.tag})**`
+        })
+      );
+    }
 
-		return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
-	}
+    return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
+  }
 
-	private async clanLink(member: GuildMember, clan: APIClan) {
-		return this.client.db.collection(Collections.USERS).updateOne(
-			{ userId: member.id },
-			{
-				$set: {
-					clan: {
-						tag: clan.tag,
-						name: clan.name
-					},
-					username: member.user.username,
-					displayName: member.user.displayName,
-					discriminator: member.user.discriminator,
-					updatedAt: new Date()
-				},
-				$setOnInsert: {
-					createdAt: new Date()
-				}
-			},
-			{ upsert: true }
-		);
-	}
+  private async clanLink(member: GuildMember, clan: APIClan) {
+    return this.client.db.collection(Collections.USERS).updateOne(
+      { userId: member.id },
+      {
+        $set: {
+          clan: {
+            tag: clan.tag,
+            name: clan.name
+          },
+          username: member.user.username,
+          displayName: member.user.displayName,
+          discriminator: member.user.discriminator,
+          updatedAt: new Date()
+        },
+        $setOnInsert: {
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
+  }
 
-	public async playerLink(
-		interaction: CommandInteraction<'cached'>,
-		{ player, member, is_default }: { player: APIPlayer; member: GuildMember; is_default: boolean }
-	) {
-		const [link, accounts] = await this.getPlayer(player.tag, member.id);
-		const isTrustedGuild = this.isTrustedGuild(interaction);
+  public async playerLink(
+    interaction: CommandInteraction<'cached'>,
+    { player, member, is_default }: { player: APIPlayer; member: GuildMember; is_default: boolean }
+  ) {
+    const [link, accounts] = await this.getPlayer(player.tag, member.id);
+    const isTrustedGuild = this.isTrustedGuild(interaction);
 
-		const isDef =
-			is_default &&
-			(member.id === interaction.user.id ||
-				(this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) &&
-					(!accounts.some((link) => link.verified) || isTrustedGuild)));
+    const isDef =
+      is_default &&
+      (member.id === interaction.user.id ||
+        (this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) &&
+          (!accounts.some((link) => link.verified) || isTrustedGuild)));
 
-		// only owner can set default account
-		if (link && link.userId === member.id && !isDef) {
-			return interaction.editReply(
-				this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
-			);
-		}
+    // only owner can set default account
+    if (link && link.userId === member.id && !isDef) {
+      return interaction.editReply(
+        this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
+      );
+    }
 
-		if (link && link.userId !== member.id) {
-			return interaction.editReply(
-				this.i18n('command.link.create.already_linked', {
-					lng: interaction.locale,
-					player: `**${player.name} (${player.tag})**`,
-					command: this.client.commands.VERIFY
-				})
-			);
-		}
+    if (link && link.userId !== member.id) {
+      return interaction.editReply(
+        this.i18n('command.link.create.already_linked', {
+          lng: interaction.locale,
+          player: `**${player.name} (${player.tag})**`,
+          command: this.client.commands.VERIFY
+        })
+      );
+    }
 
-		if (link && accounts.length >= 25) {
-			return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
-		}
+    if (link && accounts.length >= 25) {
+      return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
+    }
 
-		await this.client.db
-			.collection<UserInfoModel>(Collections.USERS)
-			.updateOne(
-				{ userId: member.id },
-				{ $set: { username: member.user.username, displayName: member.user.displayName, discriminator: member.user.discriminator } }
-			);
+    await this.client.db
+      .collection<UserInfoModel>(Collections.USERS)
+      .updateOne(
+        { userId: member.id },
+        { $set: { username: member.user.username, displayName: member.user.displayName, discriminator: member.user.discriminator } }
+      );
 
-		await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
-			{ tag: player.tag },
-			{
-				$set: {
-					userId: member.id,
-					username: member.user.username,
-					displayName: member.user.displayName,
-					discriminator: member.user.discriminator,
-					name: player.name,
-					tag: player.tag,
-					order: isDef
-						? Math.min(...accounts.map((account) => account.order), 0) - 1
-						: Math.max(...accounts.map((account) => account.order), 0) + 1,
-					verified: link?.verified ?? false,
-					updatedAt: new Date()
-				},
-				$setOnInsert: {
-					source: 'bot',
-					createdAt: new Date()
-				}
-			},
-			{ upsert: true }
-		);
+    await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
+      { tag: player.tag },
+      {
+        $set: {
+          userId: member.id,
+          username: member.user.username,
+          displayName: member.user.displayName,
+          discriminator: member.user.discriminator,
+          name: player.name,
+          tag: player.tag,
+          order: isDef
+            ? Math.min(...accounts.map((account) => account.order), 0) - 1
+            : Math.max(...accounts.map((account) => account.order), 0) + 1,
+          verified: link?.verified ?? false,
+          updatedAt: new Date()
+        },
+        $setOnInsert: {
+          source: 'bot',
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
 
-		this.resetLinkAPI(member.id, player.tag);
-		this.client.rolesManager.updateOne(member.user, interaction.guildId, accounts.length === 0);
-		this.client.storage.updateClanLinks(interaction.guildId);
+    this.resetLinkAPI(member.id, player.tag);
+    this.client.rolesManager.updateOne(member.user, interaction.guildId, accounts.length === 0);
+    this.client.storage.updateClanLinks(interaction.guildId);
 
-		return interaction.editReply(
-			this.i18n('command.link.create.success', {
-				lng: interaction.locale,
-				user: `**${member.user.displayName}**`,
-				target: `**${player.name} (${player.tag})**`
-			})
-		);
-	}
+    return interaction.editReply(
+      this.i18n('command.link.create.success', {
+        lng: interaction.locale,
+        user: `**${member.user.displayName}**`,
+        target: `**${player.name} (${player.tag})**`
+      })
+    );
+  }
 
-	private async getPlayer(tag: string, userId: string) {
-		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
-		return Promise.all([collection.findOne({ tag }), collection.find({ userId }).toArray()]);
-	}
+  private async getPlayer(tag: string, userId: string) {
+    const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
+    return Promise.all([collection.findOne({ tag }), collection.find({ userId }).toArray()]);
+  }
 
-	private async resetLinkAPI(user: string, tag: string) {
-		await this.client.http.unlinkPlayerTag(tag);
-		await this.client.http.linkPlayerTag(user, tag);
-	}
+  private async resetLinkAPI(user: string, tag: string) {
+    await this.client.http.unlinkPlayerTag(tag);
+    await this.client.http.linkPlayerTag(user, tag);
+  }
 
-	private isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-		const isTrusted = this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
-		if (!isTrusted) return false;
+  private isTrustedGuild(interaction: CommandInteraction<'cached'>) {
+    const isTrusted = this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+    if (!isTrusted) return false;
 
-		const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
-		if (!isManager) return false;
+    const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
+    if (!isManager) return false;
 
-		return true;
-	}
+    return true;
+  }
 }

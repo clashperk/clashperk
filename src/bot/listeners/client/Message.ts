@@ -19,116 +19,113 @@ const REGEX = /\bhttps:\/\/link\.clashofclans\.com\S+/gi;
 // https://link.clashofclans.com/en?action=CopyArmy&army=
 
 export default class MessageListener extends Listener {
-	public constructor() {
-		super('messageCreate', {
-			event: 'messageCreate',
-			emitter: 'client',
-			category: 'client'
-		});
-	}
+  public constructor() {
+    super('messageCreate', {
+      event: 'messageCreate',
+      emitter: 'client',
+      category: 'client'
+    });
+  }
 
-	public async exec(message: Message) {
-		if (!message.guild) return;
-		if (message.author.bot) return;
-		this.client.stats.message(message.guild.id);
+  public async exec(message: Message) {
+    if (!message.guild) return;
+    if (message.author.bot) return;
+    this.client.stats.message(message.guild.id);
 
-		if (message.channel.type === ChannelType.DM) return;
-		if (this.inhibitor(message)) return;
-		if (
-			message.channel.isThread() &&
-			!message.channel.permissionsFor(this.client.user!)?.has(PermissionFlagsBits.SendMessagesInThreads)
-		)
-			return;
-		if (!message.channel.permissionsFor(this.client.user!)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]))
-			return;
+    if (message.channel.type === ChannelType.DM) return;
+    if (this.inhibitor(message)) return;
+    if (message.channel.isThread() && !message.channel.permissionsFor(this.client.user!)?.has(PermissionFlagsBits.SendMessagesInThreads))
+      return;
+    if (!message.channel.permissionsFor(this.client.user!)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]))
+      return;
 
-		if (REGEX.test(message.content)) return this.linkParser(message);
+    if (REGEX.test(message.content)) return this.linkParser(message);
 
-		const parsed = [`<@${this.client.user!.id}>`, `<@!${this.client.user!.id}>`]
-			.map((mention) => this.parseWithPrefix(message, mention))
-			.find((_) => _);
-		if (!parsed) return null;
-		const { command, content, contents } = parsed;
+    const parsed = [`<@${this.client.user!.id}>`, `<@!${this.client.user!.id}>`]
+      .map((mention) => this.parseWithPrefix(message, mention))
+      .find((_) => _);
+    if (!parsed) return null;
+    const { command, content, contents } = parsed;
 
-		if (!command) return;
-		if (!this.client.isOwner(message.author.id)) {
-			return this.client.logger.log(`${command.id} ~ text-command`, { label: `${message.guild.name}/${message.author.displayName}` });
-		}
+    if (!command) return;
+    if (!this.client.isOwner(message.author.id)) {
+      return this.client.logger.log(`${command.id} ~ text-command`, { label: `${message.guild.name}/${message.author.displayName}` });
+    }
 
-		try {
-			const args = command.args();
-			const resolved: Record<string, string> = {};
-			const keys = Object.keys(args);
-			keys.forEach((key, index) => (resolved[key] = contents[index]));
-			if (!keys.length) resolved.content = content;
+    try {
+      const args = command.args();
+      const resolved: Record<string, string> = {};
+      const keys = Object.keys(args);
+      keys.forEach((key, index) => (resolved[key] = contents[index]));
+      if (!keys.length) resolved.content = content;
 
-			this.client.logger.debug(`${command.id}`, { label: `${message.guild.name}/${message.author.displayName}` });
-			await command.run(message, resolved);
-		} catch (error) {
-			this.client.logger.error(`${command.id} ~ ${error as string}`, {
-				label: `${message.guild.name}/${message.author.displayName}`
-			});
-			console.error(error);
-			await message.channel.send('**Something went wrong while executing this command.**');
-		}
-	}
+      this.client.logger.debug(`${command.id}`, { label: `${message.guild.name}/${message.author.displayName}` });
+      await command.run(message, resolved);
+    } catch (error) {
+      this.client.logger.error(`${command.id} ~ ${error as string}`, {
+        label: `${message.guild.name}/${message.author.displayName}`
+      });
+      console.error(error);
+      await message.channel.send('**Something went wrong while executing this command.**');
+    }
+  }
 
-	private parseWithPrefix(message: Message, prefix: string) {
-		// const prefix = this.client.settings.get<string>(message.guild.id, Settings.PREFIX, '!');
-		const lowerContent = message.content.toLowerCase();
-		if (!lowerContent.startsWith(prefix.toLowerCase())) return null;
+  private parseWithPrefix(message: Message, prefix: string) {
+    // const prefix = this.client.settings.get<string>(message.guild.id, Settings.PREFIX, '!');
+    const lowerContent = message.content.toLowerCase();
+    if (!lowerContent.startsWith(prefix.toLowerCase())) return null;
 
-		const endOfPrefix = lowerContent.indexOf(prefix.toLowerCase()) + prefix.length;
-		const startOfArgs = message.content.slice(endOfPrefix).search(/\S/) + prefix.length;
-		const alias = message.content.slice(startOfArgs).split(/\s{1,}|\n{1,}/)[0];
+    const endOfPrefix = lowerContent.indexOf(prefix.toLowerCase()) + prefix.length;
+    const startOfArgs = message.content.slice(endOfPrefix).search(/\S/) + prefix.length;
+    const alias = message.content.slice(startOfArgs).split(/\s{1,}|\n{1,}/)[0];
 
-		const command = this.client.commandHandler.modules.get(alias);
-		const content = message.content.slice(startOfArgs + alias.length + 1).trim();
-		const contents = content.split(/\s+/g);
+    const command = this.client.commandHandler.modules.get(alias);
+    const content = message.content.slice(startOfArgs + alias.length + 1).trim();
+    const contents = content.split(/\s+/g);
 
-		return { command, content, contents };
-	}
+    return { command, content, contents };
+  }
 
-	private linkParser(message: Message) {
-		const matches = (message.content.match(REGEX) ?? []).slice(0, 3);
+  private linkParser(message: Message) {
+    const matches = (message.content.match(REGEX) ?? []).slice(0, 3);
 
-		for (const text of matches) {
-			const url = new URL(text);
-			const action = url.searchParams.get('action')?.toLowerCase();
-			if (!action) continue;
+    for (const text of matches) {
+      const url = new URL(text);
+      const action = url.searchParams.get('action')?.toLowerCase();
+      if (!action) continue;
 
-			switch (action) {
-				case 'openplayerprofile': {
-					const tag = url.searchParams.get('tag');
-					if (!tag) continue;
-					return this.client.commandHandler.modules.get('player')?.run(message, { tag });
-				}
-				case 'openclanprofile': {
-					const tag = url.searchParams.get('tag');
-					return this.client.commandHandler.modules.get('clan')?.run(message, { tag });
-				}
-				case 'supportcreator':
-					break;
-				case 'openmoresettings':
-					break;
-				case 'openhelpshift':
-					break;
-				case 'openlayout':
-					break;
-				case 'copyarmy': {
-					const army = url.searchParams.get('army');
-					if (!army) continue;
-					return this.client.commandHandler.modules.get('army')?.run(message, { link: url.href });
-				}
-				default:
-					break;
-			}
-		}
-	}
+      switch (action) {
+        case 'openplayerprofile': {
+          const tag = url.searchParams.get('tag');
+          if (!tag) continue;
+          return this.client.commandHandler.modules.get('player')?.run(message, { tag });
+        }
+        case 'openclanprofile': {
+          const tag = url.searchParams.get('tag');
+          return this.client.commandHandler.modules.get('clan')?.run(message, { tag });
+        }
+        case 'supportcreator':
+          break;
+        case 'openmoresettings':
+          break;
+        case 'openhelpshift':
+          break;
+        case 'openlayout':
+          break;
+        case 'copyarmy': {
+          const army = url.searchParams.get('army');
+          if (!army) continue;
+          return this.client.commandHandler.modules.get('army')?.run(message, { link: url.href });
+        }
+        default:
+          break;
+      }
+    }
+  }
 
-	private inhibitor(message: Message) {
-		const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
-		const users = this.client.settings.get<string[]>('global', Settings.USER_BLACKLIST, []);
-		return guilds.includes(message.guild!.id) || users.includes(message.author.id);
-	}
+  private inhibitor(message: Message) {
+    const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
+    const users = this.client.settings.get<string[]>('global', Settings.USER_BLACKLIST, []);
+    return guilds.includes(message.guild!.id) || users.includes(message.author.id);
+  }
 }

@@ -1,58 +1,58 @@
 {
-	// Mapped from https://www.typescriptlang.org/tsconfig
-	"compilerOptions": {
-		// Bot
-		"module": "Node16",
-		"moduleResolution": "Node16",
-		"resolveJsonModule": true,
-		"outDir": "dist",
-		"lib": ["ESNext"],
+  // Mapped from https://www.typescriptlang.org/tsconfig
+  "compilerOptions": {
+    // Bot
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "lib": ["ESNext"],
 
-		// Type Checking
-		"allowUnreachableCode": false,
-		"allowUnusedLabels": false,
-		"alwaysStrict": true,
-		"exactOptionalPropertyTypes": false,
-		"noFallthroughCasesInSwitch": true,
-		// "noImplicitOverride": true,
-		// "noImplicitReturns": true,
-		// "noUnusedLocals": true,
-		// "noUnusedParameters": true,
-		"strict": true,
-		"useUnknownInCatchVariables": true,
-		// "noUncheckedIndexedAccess": true,
+    // Type Checking
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "alwaysStrict": true,
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    // "noImplicitOverride": true,
+    // "noImplicitReturns": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    "strict": true,
+    "useUnknownInCatchVariables": true,
+    // "noUncheckedIndexedAccess": true,
 
-		// Emit
-		"declaration": false,
-		"importHelpers": true,
-		// "importsNotUsedAsValues": "error",
-		"inlineSources": true,
-		"newLine": "lf",
-		"noEmitHelpers": true,
-		"preserveConstEnums": false,
-		"removeComments": false,
-		"sourceMap": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
+    // Emit
+    "declaration": false,
+    "importHelpers": true,
+    // "importsNotUsedAsValues": "error",
+    "inlineSources": true,
+    "newLine": "lf",
+    "noEmitHelpers": true,
+    "preserveConstEnums": false,
+    "removeComments": false,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
 
-		// Language and Environment
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"target": "ES2021",
-		"useDefineForClassFields": true,
+    // Language and Environment
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "ES2021",
+    "useDefineForClassFields": true,
 
-		// Completeness
-		"skipLibCheck": true,
+    // Completeness
+    "skipLibCheck": true,
 
-		// Interop Constraints
-		"allowSyntheticDefaultImports": true,
+    // Interop Constraints
+    "allowSyntheticDefaultImports": true,
 
-		"paths": {
-			"@app/constants": ["./src/bot/util/Constants.ts"],
-			"@app/entities": ["./src/bot/entities/index.ts"],
-			"@lib/constants": ["./src/bot/lib/util.ts"],
-			"@lib/core": ["./src/bot/lib/index.ts"]
-		}
-	},
-	"include": ["src", "test", "scripts", "locales", "locales/**/*.json"]
+    "paths": {
+      "@app/constants": ["./src/bot/util/Constants.ts"],
+      "@app/entities": ["./src/bot/entities/index.ts"],
+      "@lib/constants": ["./src/bot/lib/util.ts"],
+      "@lib/core": ["./src/bot/lib/index.ts"]
+    }
+  },
+  "include": ["src", "test", "scripts", "locales", "locales/**/*.json"]
 }

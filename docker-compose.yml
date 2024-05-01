@@ -1,4 +1,4 @@
-version: "3.6"
+version: '3.6'
 
 services:
   clashperk_bot:
@@ -11,7 +11,7 @@ services:
       - .env
     mem_limit: 6gb
     ports:
-      - "8070:8080"
+      - '8070:8080'
     # healthcheck:
     #   test: wget -qO - localhost:8080 || exit 1
     #   interval: 60s
