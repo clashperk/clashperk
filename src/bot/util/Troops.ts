@@ -10,9 +10,9 @@ export const RAW_TROOPS_FILTERED = RawData.RawUnits.filter((unit) => !unit.seaso
   .filter((u) => u.category !== 'equipment')
   .filter((unit) => !(unit.name in SUPER_TROOPS) && unit.name in ALL_TROOPS);
 
-export const RAW_TROOPS_WITH_ICONS = RawData.RawUnits.filter((unit) => !unit.seasonal).filter(
-  (unit) => !(unit.name in SUPER_TROOPS) && unit.name in ALL_TROOPS
-);
+export const RAW_TROOPS_WITH_ICONS = RawData.RawUnits.filter((unit) => !unit.seasonal)
+  // .filter((u) => u.category !== 'equipment')
+  .filter((unit) => !(unit.name in SUPER_TROOPS) && unit.name in ALL_TROOPS);
 
 export const ARMY_CAPACITY = [
   {

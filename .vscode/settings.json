@@ -1,7 +1,7 @@
 {
 	"editor.formatOnSave": true,
 	"editor.codeActionsOnSave": { "source.organizeImports": "explicit" },
-	"editor.tabSize": 4,
+	"editor.tabSize": 2,
 	"editor.detectIndentation": false,
 	"editor.insertSpaces": false,
 	"editor.defaultFormatter": "esbenp.prettier-vscode",

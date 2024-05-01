@@ -2,6 +2,7 @@ import { ClanStoresEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class ClansCommand extends Command {
@@ -75,22 +76,26 @@ export default class ClansCommand extends Command {
     }
 
     const payload = {
-      cmd: this.id,
-      category_filter: args.category_filter === 'exclude' ? 'include' : 'exclude'
+      cmd: this.id
     };
-    const customId = this.createId({ ...payload });
+    const customIds = {
+      switch: this.createId({ ...payload, category_filter: args.category_filter === 'exclude' ? 'include' : 'exclude' }),
+      refresh: this.createId({ ...payload })
+    };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(customId)
-        .setLabel(args.category_filter === 'exclude' ? 'Secondary' : 'Primary')
-        .setStyle(args.category_filter === 'exclude' ? ButtonStyle.Secondary : ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
     );
+    if (args.category_filter && clanCategoryExclusionList.length) {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(customIds.switch)
+          .setLabel(args.category_filter === 'exclude' ? 'Secondary' : 'Primary')
+          .setStyle(args.category_filter === 'exclude' ? ButtonStyle.Secondary : ButtonStyle.Primary)
+      );
+    }
 
-    return interaction.editReply({
-      embeds: [embed],
-      components: args.category_filter && clanCategoryExclusionList.length ? [row] : []
-    });
+    return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
   private async getCategoriesMap(guildId: string) {
