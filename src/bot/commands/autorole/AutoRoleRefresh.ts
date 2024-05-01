@@ -32,6 +32,10 @@ export default class AutoTownHallRoleCommand extends Command {
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     args: { is_test_run?: boolean; user_or_role?: User | Role; force_refresh?: boolean }
   ) {
+    if (interaction.isButton() || (args.user_or_role && args.user_or_role instanceof User)) {
+      args.force_refresh ??= this.client.settings.get<boolean>(interaction.guild, Settings.FORCE_REFRESH_ROLES, false);
+    }
+
     const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
     if (inProgress) {
       return interaction.editReply('Role refresh is currently being processed.');

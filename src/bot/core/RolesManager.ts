@@ -322,7 +322,9 @@ export class RolesManager {
       : await this.getTargetedGuildMembers(guild, memberTags);
 
     const targetedMembers = guildMembers.filter(
-      (m) => !m.user.bot && (m.roles.cache.hasAny(...targetedRoles) || linkedUserIds.includes(m.id))
+      (m) =>
+        !m.user.bot &&
+        (m.roles.cache.hasAny(...targetedRoles) || linkedUserIds.includes(m.id) || (userOrRole && userOrRole instanceof User))
     );
     if (!targetedMembers.size) return null;
 
@@ -356,7 +358,7 @@ export class RolesManager {
         displayName: member.user.displayName
       };
       const editOptions: GuildMemberEditOptions & { _updated?: boolean } = {
-        reason: `${reason}; ${players.length}/${links.length} accounts;`
+        reason: `${reason} ${players.length !== links.length ? `(${players.length}/${links.length} links)` : ''}`
       };
 
       if (roleUpdate.excluded.length || roleUpdate.included.length) {

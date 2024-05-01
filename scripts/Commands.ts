@@ -4033,6 +4033,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         ]
       },
       {
+        name: 'always_force_refresh_roles',
+        description: 'Whether to enforce role refresh for individual users by default.',
+        type: ApplicationCommandOptionType.Boolean
+      },
+      {
         name: 'verified_only_clan_roles',
         description: '[AutoRole] Whether to grant clans roles to verified players only (Defaults to No)',
         type: ApplicationCommandOptionType.String,
