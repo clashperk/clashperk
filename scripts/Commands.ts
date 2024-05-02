@@ -359,6 +359,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         ]
       },
       {
+        name: 'limit',
+        required: false,
+        description: 'Number of clans to show in the graph.',
+        type: ApplicationCommandOptionType.Integer,
+        max_value: 20,
+        min_value: 1
+      },
+      {
         name: 'timezone',
         required: false,
         autocomplete: true,

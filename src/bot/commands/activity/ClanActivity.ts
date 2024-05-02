@@ -1,4 +1,4 @@
-import { AttachmentBuilder, CommandInteraction } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import moment from 'moment';
 import fetch from 'node-fetch';
 import { Command } from '../../lib/index.js';
@@ -16,13 +16,14 @@ export default class ClanActivityCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number; timezone?: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number; timezone?: string; limit?: number }) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
     const result = await this.aggregate(
       clans.map((clan) => clan.tag),
-      args.days ?? 1
+      args.days || 1,
+      args.limit || 10 // if the limit is not provided; let's pick up 10
     );
 
     if (!result.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
@@ -52,7 +53,7 @@ export default class ClanActivityCommand extends Command {
 
     const unit = isHourly ? 'hour' : 'day';
     const hrStart = process.hrtime();
-    const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND!}/clans/activity`, {
+    const res = await fetch(`${process.env.ASSET_API_BACKEND!}/clans/activity`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -60,19 +61,29 @@ export default class ClanActivityCommand extends Command {
       body: JSON.stringify({
         labels: dataLabel.map((d) => d.timestamp),
         datasets,
+        offset: timezone.offset * 1000,
         unit: isHourly ? 'hour' : 'day',
         title: `Active Members Per ${this.titleCase(unit)} (${timezone.name})`
       })
-    }).then((res) => res.arrayBuffer());
+    });
+    const arrayBuffer = await res.arrayBuffer();
 
     const rawFile = new AttachmentBuilder(Buffer.from(arrayBuffer), {
       name: 'chart.png'
     });
 
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setLabel('Open in Web')
+        .setURL(`https://app.clashperk.com/charts/${res.headers.get('x-chart-id')}`)
+    );
+
     const timeZoneCommand = this.client.commands.get('/timezone');
     await interaction.editReply({
       content: timezone.name === 'UTC' ? `Set your timezone with the ${timeZoneCommand} command.` : null,
-      files: [rawFile]
+      files: [rawFile],
+      components: [row]
     });
 
     const diff = process.hrtime(hrStart);
@@ -117,7 +128,7 @@ export default class ClanActivityCommand extends Command {
     return { offset: moment.tz.zone(raw.timezone.timeZoneId)!.utcOffset(Date.now()) * 60 * -1, name: raw.timezone.timeZoneName };
   }
 
-  private aggregate(clanTags: string[], days: number) {
+  private aggregate(clanTags: string[], days: number, limit: number) {
     const isHourly = days <= 3;
     return this.client.db
       .collection(Collections.LAST_SEEN)
@@ -221,9 +232,17 @@ export default class ClanActivityCommand extends Command {
                 count: '$count'
               }
             },
+            _count: {
+              $sum: '$count'
+            },
             name: {
               $first: '$clan.name'
             }
+          }
+        },
+        {
+          $sort: {
+            _count: -1
           }
         },
         {
@@ -232,7 +251,7 @@ export default class ClanActivityCommand extends Command {
           }
         },
         {
-          $limit: 10
+          $limit: limit
         }
       ])
       .toArray();
