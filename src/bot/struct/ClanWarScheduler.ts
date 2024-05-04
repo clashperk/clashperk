@@ -68,6 +68,15 @@ export default class ClanWarScheduler {
     setInterval(this._refresh.bind(this), this.refreshRate).unref();
   }
 
+  public async restoreSchedulers(guildId: string) {
+    const reminders = await this.reminders.find({ guild: guildId }).toArray();
+    for (const reminder of reminders) {
+      await this.schedulers.deleteMany({ reminderId: reminder._id, triggered: false });
+      await this.create(reminder);
+    }
+    this.client.logger.debug(`Schedular restored for ${guildId}`, { label: ClanWarScheduler.name });
+  }
+
   public async create(reminder: ClanWarRemindersEntity) {
     for (const tag of reminder.clans) {
       const wars = await this.client.http.getCurrentWars(tag);
@@ -188,7 +197,7 @@ export default class ClanWarScheduler {
 
     const users = Object.entries(
       mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-				acc[cur.mention] ??= []; // eslint-disable-line
+        acc[cur.mention] ??= []; // eslint-disable-line
         acc[cur.mention].push(cur);
         return acc;
       }, {})

@@ -327,19 +327,12 @@ export class MongoDbClient extends MongoClient {
         {
           key: { warTag: 1 },
           sparse: true
-        },
-        {
-          key: { warType: 1 }
         }
       ]),
 
       db.collection(Collections.FLAGS).createIndex({ guild: 1, tag: 1 }),
 
       db.collection(Collections.LAST_SEEN).createIndexes([
-        // {
-        // 	key: { lastSeen: 1 },
-        // 	expireAfterSeconds: 60 * 60 * 24 * 99
-        // },
         {
           key: { 'clan.tag': 1, 'tag': 1 }
         },
@@ -414,9 +407,6 @@ export class MongoDbClient extends MongoClient {
 
       db.collection(Collections.SCHEDULERS).createIndexes([
         {
-          key: { key: 1 }
-        },
-        {
           key: { tag: 1 }
         },
         {
@@ -427,7 +417,7 @@ export class MongoDbClient extends MongoClient {
         },
         {
           key: { timestamp: 1 },
-          expireAfterSeconds: 60 * 60 * 24
+          expireAfterSeconds: 60 * 60 * 24 * 7
         }
       ]),
 
