@@ -16,6 +16,10 @@ class RedisService {
     return this.connection.disconnect();
   }
 
+  public set(key: string, value: string, EX: number) {
+    return this.connection.set(key, value, { EX });
+  }
+
   public constructor(private readonly client: Client) {
     this.connection.on('error', (error) => this.client.logger.error(error, { label: 'REDIS' }));
   }

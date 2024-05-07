@@ -126,7 +126,7 @@ export class Autocomplete {
     query = query.trim();
     if (query.length > 100) {
       const key = `ARGS:${nanoid()}`;
-      await this.client.redis.connection.set(key, query, { EX: 60 * 60 });
+      await this.client.redis.set(key, query, 60 * 60);
       return key;
     }
     return query;

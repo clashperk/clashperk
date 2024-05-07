@@ -60,6 +60,6 @@ const server = createServer((req, res) => {
   res.end(JSON.stringify({ isReady }));
 });
 
-server.listen(8080, () => {
+server.listen(process.env.PORT || 8080, () => {
   ShardingManager.log('Listening on http://localhost:8080');
 });

@@ -833,7 +833,7 @@ export const recoverDonations = async (clanTag: string) => {
     await client.db.collection<PlayerSeasonModel>(Collections.PLAYER_SEASONS).bulkWrite(ops);
   }
 
-  return client.redis.connection.set(`RECOVERY:${clanTag}`, '-0-', { EX: 60 * 60 * 24 * 30 });
+  return client.redis.set(`RECOVERY:${clanTag}`, '-0-', 60 * 60 * 24 * 30);
 };
 
 export const unitsFlatten = (data: APIPlayer) => {
