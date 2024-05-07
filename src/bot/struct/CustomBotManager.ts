@@ -15,6 +15,7 @@ import { Collection } from 'mongodb';
 import { container } from 'tsyringe';
 import { COMMANDS } from '../../../scripts/Commands.js';
 import { CustomBotsEntity } from '../entities/custom-bot.entity.js';
+import { PatreonMembersEntity } from '../entities/patrons.entity.js';
 import { Collections, Settings } from '../util/Constants.js';
 import Client from './Client.js';
 
@@ -178,6 +179,23 @@ export class CustomBotManager {
     }
   }
 
+  public async checkGuild(bot: CustomBotsEntity) {
+    const patreon = await this.client.db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS).findOne({ id: bot.patronId });
+    if (!patreon) return;
+
+    const guildIds = patreon.guilds.map((guild) => guild.id);
+    if (!guildIds.length) return;
+
+    const missingGuilds = guildIds.filter((id) => !bot.guildIds.includes(id) && this.client.guilds.cache.has(id));
+    if (!missingGuilds.length) return;
+
+    for (const guildId of missingGuilds) {
+      await this.addGuild({ applicationId: bot.applicationId, guildId });
+    }
+
+    this.client.logger.debug(`Guilds restored.`, { label: CustomBotManager.name });
+  }
+
   private async _deployWebhook(payload: WebhookMessageCreateOptions) {
     const url = this.client.settings.get<string>('global', Settings.DEPLOYMENT_WEBHOOK_URL, null);
     if (!url) return;
@@ -233,7 +251,7 @@ export class CustomBotManager {
   }
 
   private async _resumeService(applicationId: string) {
-    const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/suspend`, {
+    const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/resume`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

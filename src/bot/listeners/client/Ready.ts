@@ -56,8 +56,9 @@ export default class ReadyListener extends Listener {
 
   private async onReady() {
     const app = await this.client.customBotManager.findBot({ applicationId: this.client.user!.id });
-    if (!app || app.isLive) return;
+    if (!app) return;
 
-    return this.client.customBotManager.handleOnReady(app);
+    await this.client.customBotManager.checkGuild(app);
+    if (!app.isLive) await this.client.customBotManager.handleOnReady(app);
   }
 }
