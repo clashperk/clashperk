@@ -54,6 +54,11 @@ export default class ExportWarAttackLogCommand extends Command {
         const clan: APIWarClan = war.clan.tag === tag ? war.clan : war.opponent;
         const opponent: APIWarClan = war.clan.tag === tag ? war.opponent : war.clan;
 
+        clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
+        clan.members = clan.members.map((mem, idx) => ({ ...mem, mapPosition: idx + 1 }));
+        opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
+        opponent.members = opponent.members.map((mem, idx) => ({ ...mem, mapPosition: idx + 1 }));
+
         const __attacks = clan.members
           .filter((m) => m.attacks?.length)
           .map((m) => m.attacks!)
