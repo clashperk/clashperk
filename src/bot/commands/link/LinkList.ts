@@ -47,7 +47,9 @@ export default class LinkListCommand extends Command {
       const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
       const linkRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-          .setURL(`https://clashperk.com/links?tag=${encodeURIComponent(clan.tag)}&token=${token}`)
+          .setURL(
+            `https://clashperk.com/links?tag=${encodeURIComponent(clan.tag)}&bot=${this.client.isCustom() ? 'custom' : 'public'}&token=${token}`
+          )
           .setLabel('Open in Browser')
           .setStyle(ButtonStyle.Link)
       );
