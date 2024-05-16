@@ -34,7 +34,7 @@ export default class ExportWarAttackLogCommand extends Command {
 
     const query: Filter<ClanWarsEntity> = args.season ? { season: args.season } : {};
     if (!args.war_type) query.warType = { $in: [WarType.REGULAR, WarType.CWL] };
-    else query.warType = args.war_type === 'cwl' ? WarType.CWL : WarType.REGULAR;
+    else query.warType = args.war_type === 'cwl' ? WarType.CWL : args.war_type === 'friendly' ? WarType.FRIENDLY : WarType.REGULAR;
 
     const chunks = [];
 
@@ -158,28 +158,28 @@ export default class ExportWarAttackLogCommand extends Command {
         { name: 'Tag', width: 120, align: 'LEFT' },
         { name: 'Name', width: 160, align: 'LEFT' },
         { name: 'Position', width: 120, align: 'RIGHT' },
-        { name: 'Town_Hall', width: 100, align: 'RIGHT' },
-        { name: 'War_ID', width: 100, align: 'RIGHT' },
-        { name: 'Attack_Order', width: 100, align: 'RIGHT' },
-        { name: 'Attacker_Tag', width: 100, align: 'LEFT' },
-        { name: 'Defender_Tag', width: 100, align: 'LEFT' },
+        { name: 'Town Hall', width: 100, align: 'RIGHT' },
+        { name: 'War ID', width: 100, align: 'RIGHT' },
+        { name: 'Attack Order', width: 100, align: 'RIGHT' },
+        { name: 'Attacker Tag', width: 100, align: 'LEFT' },
+        { name: 'Defender Tag', width: 100, align: 'LEFT' },
         { name: 'Stars', width: 100, align: 'RIGHT' },
-        { name: 'New_Stars', width: 100, align: 'RIGHT' },
+        { name: 'New Stars', width: 100, align: 'RIGHT' },
         { name: 'Destruction', width: 100, align: 'RIGHT' },
-        { name: 'Defender_Tag', width: 100, align: 'LEFT' },
-        { name: 'Defender_Name', width: 100, align: 'LEFT' },
-        { name: 'Defender_Position', width: 100, align: 'RIGHT' },
-        { name: 'Defender_TH', width: 100, align: 'RIGHT' },
-        { name: 'Attacker_Home_Clan', width: 100, align: 'RIGHT' },
-        { name: 'Clan_Tag', width: 100, align: 'LEFT' },
-        { name: 'Clan_Name', width: 100, align: 'LEFT' },
-        { name: 'Clan_Level', width: 100, align: 'RIGHT' },
-        { name: 'Enemy_Clan_Tag', width: 100, align: 'LEFT' },
-        { name: 'Enemy_Clan_Name', width: 100, align: 'LEFT' },
-        { name: 'Enemy_Clan_Level', width: 100, align: 'RIGHT' },
-        { name: 'War_Start_Time', width: 100, align: 'LEFT' },
-        { name: 'Team_Size', width: 100, align: 'RIGHT' },
-        { name: 'Type', width: 100, align: 'LEFT' }
+        { name: 'Defender Tag', width: 100, align: 'LEFT' },
+        { name: 'Defender Name', width: 100, align: 'LEFT' },
+        { name: 'Defender Position', width: 100, align: 'RIGHT' },
+        { name: 'Defender TH', width: 100, align: 'RIGHT' },
+        { name: 'Attacker Home Clan', width: 100, align: 'RIGHT' },
+        { name: 'Clan Tag', width: 100, align: 'LEFT' },
+        { name: 'Clan Name', width: 100, align: 'LEFT' },
+        { name: 'Clan Level', width: 100, align: 'RIGHT' },
+        { name: 'Enemy Clan Tag', width: 100, align: 'LEFT' },
+        { name: 'Enemy Clan Name', width: 100, align: 'LEFT' },
+        { name: 'Enemy Clan Level', width: 100, align: 'RIGHT' },
+        { name: 'War Start Time', width: 100, align: 'LEFT' },
+        { name: 'Team Size', width: 100, align: 'RIGHT' },
+        { name: 'War Type', width: 100, align: 'LEFT' }
       ],
       rows: chunk.attacks.map((m) => [
         m.tag,

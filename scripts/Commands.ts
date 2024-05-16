@@ -3584,6 +3584,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'CWL',
                 value: 'cwl'
+              },
+              {
+                name: 'Friendly',
+                value: 'friendly'
               }
             ]
           },
