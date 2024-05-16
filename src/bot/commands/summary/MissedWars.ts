@@ -35,7 +35,7 @@ export default class SummaryMissedWarsCommand extends Command {
       for (const war of wars) {
         const clan = war.clan.tag === tag ? war.clan : war.opponent;
         for (const m of clan.members) {
-					const mem = missed[m.tag] // eslint-disable-line
+          const mem = missed[m.tag] // eslint-disable-line
             ? missed[m.tag]
             : (missed[m.tag] = { name: m.name, tag: m.tag, wars: 0, missed: 0 });
           mem.wars += 1;
@@ -74,7 +74,7 @@ export default class SummaryMissedWarsCommand extends Command {
       new ButtonBuilder()
         .setCustomId(customIds.toggle)
         .setStyle(ButtonStyle.Secondary)
-        .setEmoji('🔃')
+        .setEmoji(EMOJIS.SORTING)
         .setLabel(args.is_reversed ? 'High to Low' : 'Low to High')
     );
     return interaction.editReply({ embeds: [embed], components: [row] });
