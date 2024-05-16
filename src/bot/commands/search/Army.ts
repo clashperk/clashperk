@@ -248,7 +248,7 @@ export default class ArmyCommand extends Command {
       embed.addFields([
         {
           name: '\u200b',
-          value: ['**Hero Equipment**', `${EMOJIS.EQUIPMENT} ${args.equipment}`].join('\n')
+          value: [`${EMOJIS.EQUIPMENT} **Hero Equipment**`, `${args.equipment}`].join('\n')
         }
       ]);
     }
@@ -257,7 +257,7 @@ export default class ArmyCommand extends Command {
       embed.addFields([
         {
           name: '\u200b',
-          value: ['**Pets**', `${EMOJIS.PET} ${args.pets}`].join('\n')
+          value: [`${EMOJIS.PET} **Pets**`, `${args.pets}`].join('\n')
         }
       ]);
     }
@@ -266,7 +266,7 @@ export default class ArmyCommand extends Command {
       embed.addFields([
         {
           name: '\u200b',
-          value: ['**Clan Castle**', `${EMOJIS.CLAN_CASTLE} ${args.clan_castle}`].join('\n')
+          value: [`${EMOJIS.CLAN_CASTLE} **Clan Castle**`, `${args.clan_castle}`].join('\n')
         }
       ]);
     }
@@ -275,7 +275,7 @@ export default class ArmyCommand extends Command {
       embed.addFields([
         {
           name: '\u200b',
-          value: ['**Tips**', `${'📌'} ${args.tips}`].join('\n')
+          value: ['📌 **Tips**', `${args.tips}`].join('\n')
         }
       ]);
     }
