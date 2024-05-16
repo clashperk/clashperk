@@ -4,6 +4,7 @@ import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { padStart } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
 
 export default class CWLStarsCommand extends Command {
@@ -86,7 +87,7 @@ export default class CWLStarsCommand extends Command {
         if (['inWar', 'warEnded'].includes(data.state)) {
           for (const m of clan.members) {
             // eslint-disable-next-line
-						members[m.tag] ??= {
+            members[m.tag] ??= {
               name: m.name || m.tag,
               tag: m.tag,
               of: 0,
@@ -130,15 +131,13 @@ export default class CWLStarsCommand extends Command {
       embed.setDescription(
         [
           '**Clan War League Stars**',
-          `**\`\u200e # STR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
+          `**\`\u200e # STR GAIN TH  ${'NAME'.padEnd(15, ' ')}\`**`,
           leaderboard
             .filter((m) => m.of > 0)
             .map((m, i) => {
               const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-              return `\`\u200e${this.pad(++i)} ${this.pad(m.stars)}  ${gained.padStart(3, ' ')}  ${Util.escapeBackTick(m.name).padEnd(
-                15,
-                ' '
-              )}\``;
+              const name = Util.escapeBackTick(`${m.name}`).padEnd(15, ' ');
+              return `\`\u200e${this.pad(++i)} ${this.pad(m.stars)}  ${gained.padStart(3, ' ')}  ${padStart(m.townhallLevel, 2)}  ${name}\``;
             })
             .join('\n')
         ].join('\n')
@@ -147,21 +146,24 @@ export default class CWLStarsCommand extends Command {
       embed.setDescription(
         [
           '**Clan War League Stars**',
-          `\u200e\` # STR DEST HIT  ${'NAME'.padEnd(15, ' ')}\u200f\``,
+          `\u200e\` # STR DEST HIT  TH ${'NAME'.padEnd(15, ' ')}\u200f\``,
           leaderboard
             .filter((m) => m.of > 0)
-            .map(
-              (m, i) =>
-                `\u200e\`${this.pad(++i)} ${this.pad(m.stars, 3)} ${`${Math.floor(m.dest)}%`.padStart(4, ' ')} ${[m.attacks, m.of].join(
-                  '/'
-                )}  ${Util.escapeBackTick(m.name).padEnd(15, ' ')}\u200f\``
-            )
+            .map((m, i) => {
+              const idx = this.pad(++i);
+              const stars = this.pad(m.stars, 3);
+              const dest = `${Math.floor(m.dest)}%`.padStart(4, ' ');
+              const hit = [m.attacks, m.of].join('/');
+              const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
+              const th = padStart(m.townhallLevel, 2);
+              return `\u200e\`${idx} ${stars} ${dest} ${hit}  ${th} ${name}\u200f\``;
+            })
             .join('\n')
         ].join('\n')
       );
     }
 
-    embed.setFooter({ text: `Clan War League ${moment(body.season).format('MMM YYYY')}` });
+    embed.setFooter({ text: `${moment(body.season).format('MMM YYYY')} CWL` });
 
     const payload = {
       cmd: this.id,
