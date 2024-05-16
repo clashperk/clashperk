@@ -11,11 +11,20 @@ import {
   StringSelectMenuBuilder,
   User
 } from 'discord.js';
+import { title } from 'radash';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { MembersCommandOptions } from '../../util/CommandOptions.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { padStart } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
+
+const SortingKey = {
+  NAME: '_name',
+  TAG: '_tag',
+  USERNAME: '_username',
+  TOWN_HALL_LEVEL: '_townHallLevel'
+};
+const sortingKeys = Object.values(SortingKey);
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -30,7 +39,7 @@ export default class LinkListCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: { tag?: string; show_tags?: boolean; user?: User; links?: boolean; with_options?: boolean }
+    args: { tag?: string; sort_by?: string; user?: User; links?: boolean; with_options?: boolean }
   ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
@@ -80,37 +89,58 @@ export default class LinkListCommand extends Command {
       const username = link ? guildMembers.get(link.userId)?.displayName.slice(0, 14) : member.tag;
       return {
         name: this.parseName(member.name),
+        _name: member.name,
         tag: padStart(member.tag, 14),
+        _tag: member.tag,
         isVerified: Boolean(link?.verified),
-        username: padStart(args.show_tags ? member.tag : username ?? member.tag, 14),
+        username: padStart(args.sort_by === SortingKey.TAG ? member.tag : username ?? member.tag, 14),
+        _username: username || '',
         townHallLevel: member.townHallLevel,
+        _townHallLevel: member.townHallLevel,
         isInServer: Boolean(link && guildMembers.has(link.userId)),
         isLinked: !!link
       };
     });
+
+    switch (args.sort_by) {
+      case SortingKey.NAME:
+      case SortingKey.TAG:
+        clanMembers.sort((a, b) => b._townHallLevel - a._townHallLevel);
+        clanMembers.sort((a, b) => this.localeSort(a._name, b._name));
+        break;
+      case SortingKey.USERNAME:
+        clanMembers.sort((a, b) => this.localeSort(a._name, b._name));
+        clanMembers.sort((a, b) => this.localeSort(a._username, b._username));
+        break;
+      case SortingKey.TOWN_HALL_LEVEL:
+        clanMembers.sort((a, b) => this.localeSort(a._name, b._name));
+        clanMembers.sort((a, b) => b._townHallLevel - a._townHallLevel);
+        break;
+      default:
+        break;
+    }
 
     const payload = {
       cmd: this.id,
       tag: clan.tag,
       with_options: args.with_options
     };
+
+    const sortIndex = sortingKeys.indexOf(args.sort_by || SortingKey.NAME);
     const customIds = {
       refresh: this.createId(payload),
-      toggleTag: this.createId({ ...payload, show_tags: !args.show_tags }),
+      sort: this.createId({ ...payload, sort_by: sortingKeys[this.getRotationalKey(sortIndex)] }),
       manage: this.createId({ ...payload, links: true }),
       option: this.createId({ ...payload, cmd: 'members', string_key: 'option' }),
       tag: this.createId({ ...payload, string_key: 'tag' })
     };
 
     const embed = this.getEmbed(clan, clanMembers);
+    if (args.sort_by) embed.setFooter({ text: `Sorted by ${title(args.sort_by)}` });
+
     const row = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh))
-      .addComponents(
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Secondary)
-          .setEmoji(args.show_tags ? EMOJIS.DISCORD : EMOJIS.HASH)
-          .setCustomId(customIds.toggleTag)
-      )
+      .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.SORTING).setCustomId(customIds.sort))
       .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setEmoji('🔗').setLabel('Manage').setCustomId(customIds.manage));
 
     const menu = new StringSelectMenuBuilder()
@@ -145,9 +175,9 @@ export default class LinkListCommand extends Command {
       townHallLevel: number;
     }[]
   ) {
-    const playersInServerList = clanMembers.filter((mem) => mem.isInServer && mem.isLinked).sort((a, b) => this.localeSort(a, b));
-    const playersNotInServerList = clanMembers.filter((mem) => !mem.isInServer && mem.isLinked).sort((a, b) => this.localeSort(a, b));
-    const playersNotLinkedList = clanMembers.filter((mem) => !mem.isLinked).sort((a, b) => this.localeSort(a, b));
+    const playersInServerList = clanMembers.filter((mem) => mem.isInServer && mem.isLinked);
+    const playersNotInServerList = clanMembers.filter((mem) => !mem.isInServer && mem.isLinked);
+    const playersNotLinkedList = clanMembers.filter((mem) => !mem.isLinked);
 
     const chunks = Util.splitMessage(
       [
@@ -193,8 +223,12 @@ export default class LinkListCommand extends Command {
     // return name.replace(/[^\x00-\xF7]+/g, ' ').trim().padEnd(15, ' ');
   }
 
-  private localeSort(a: { name: string }, b: { name: string }) {
-    // return a.name.localeCompare(b.name);
-    return a.name.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.name.replace(/[^\x00-\xF7]+/g, ''));
+  private localeSort(a: string, b: string) {
+    // return a.localeCompare(b);
+    return a.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.replace(/[^\x00-\xF7]+/g, ''));
+  }
+
+  private getRotationalKey(idx: number) {
+    return idx + 1 > sortingKeys.length - 1 ? 0 : idx + 1;
   }
 }
