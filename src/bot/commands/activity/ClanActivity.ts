@@ -46,10 +46,13 @@ export default class ClanActivityCommand extends Command {
       })
       .reverse();
 
-    const datasets = result.map((clan) => ({
-      name: clan.name,
-      data: this.datasets(dataLabel, clan)
-    }));
+    const clansMap = Object.fromEntries(clans.map((clan) => [clan.tag, clan.name]));
+    const datasets = result
+      .map((clan) => ({
+        name: clansMap[clan.clanTag] || clan.clanTag,
+        data: this.datasets(dataLabel, clan)
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     const unit = isHourly ? 'hour' : 'day';
     const hrStart = process.hrtime();
@@ -128,138 +131,62 @@ export default class ClanActivityCommand extends Command {
     return { offset: moment.tz.zone(raw.timezone.timeZoneId)!.utcOffset(Date.now()) * 60 * -1, name: raw.timezone.timeZoneName };
   }
 
-  private aggregate(clanTags: string[], days: number, limit: number) {
+  private async aggregate(clanTags: string[], days: number, limit: number) {
     const isHourly = days <= 3;
-    return this.client.db
-      .collection(Collections.LAST_SEEN)
-      .aggregate([
-        {
-          $match: {
-            'clan.tag': { $in: clanTags }
-          }
-        },
-        {
-          $match: {
-            entries: {
-              $exists: true
+    const body = await this.client.elastic.search<{ clanTag: string }, AggregationsAggregate>({
+      index: 'player_activities',
+      query: {
+        bool: {
+          filter: [
+            {
+              terms: {
+                clanTag: clanTags
+              }
+            },
+            {
+              range: {
+                timestamp: {
+                  gte: `now-${days}d/d`
+                }
+              }
             }
-          }
-        },
-        {
-          $project: {
-            tag: '$tag',
-            clan: '$clan',
-            entries: {
-              $filter: {
-                input: '$entries',
-                as: 'en',
-                cond: {
-                  $gte: ['$$en.entry', new Date(Date.now() - days * 24 * 60 * 60 * 1000)]
+          ]
+        }
+      },
+      aggs: {
+        clans: {
+          terms: {
+            field: 'clanTag',
+            size: limit
+          },
+          aggs: {
+            active_members: {
+              date_histogram: {
+                field: 'timestamp',
+                calendar_interval: isHourly ? 'hour' : 'day'
+              },
+              aggs: {
+                unique_members: {
+                  cardinality: {
+                    field: 'tag'
+                  }
                 }
               }
             }
           }
-        },
-        {
-          $unwind: {
-            path: '$entries'
-          }
-        },
-        {
-          $set: {
-            tag: '$tag',
-            name: '$name',
-            clan: '$clan',
-            time: '$entries.entry'
-          }
-        },
-        {
-          $set: {
-            hour: {
-              $dateTrunc: {
-                date: '$time',
-                unit: isHourly ? 'hour' : 'day'
-              }
-            }
-          }
-        },
-        {
-          $sort: {
-            time: -1
-          }
-        },
-        {
-          $group: {
-            _id: {
-              hour: '$hour',
-              clan: '$clan.tag'
-            },
-            clan: {
-              $last: '$clan'
-            },
-            tag: {
-              $last: '$tag'
-            },
-            name: {
-              $last: '$name'
-            },
-            hour: {
-              $last: '$hour'
-            },
-            counterSet: {
-              $addToSet: '$tag'
-            }
-          }
-        },
-        {
-          $set: {
-            count: {
-              $min: [50, { $size: '$counterSet' }]
-            }
-          }
-        },
-        {
-          $sort: {
-            hour: -1
-          }
-        },
-        {
-          $group: {
-            _id: '$_id.clan',
-            entries: {
-              $push: {
-                time: '$hour',
-                count: '$count'
-              }
-            },
-            _count: {
-              $sum: '$count'
-            },
-            name: {
-              $first: '$clan.name'
-            }
-          }
-        },
-        {
-          $sort: {
-            _count: -1
-          }
-        },
-        {
-          $sort: {
-            name: 1
-          }
-        },
-        {
-          $limit: limit
         }
-      ])
-      .toArray();
+      }
+    });
+
+    return (body.aggregations?.clans.buckets ?? []).map((clan) => ({
+      clanTag: clan.key,
+      entries: clan.active_members.buckets.map((bucket) => ({ count: bucket.unique_members.value, time: bucket.key_as_string }))
+    }));
   }
 
   private datasets(dataLabel: any[], data: any) {
     return dataLabel.map(({ key }) => {
-      const id = data.entries.find((e: any) => e.time.toISOString() === key);
+      const id = data.entries.find((e: any) => e.time === key);
       return id?.count ?? 0;
     });
   }
@@ -298,4 +225,19 @@ export default class ClanActivityCommand extends Command {
       }
     });
   }
+}
+
+interface AggregationsAggregate {
+  clans: {
+    buckets: {
+      key: string;
+      active_members: {
+        buckets: {
+          key_as_string: string;
+          key: number;
+          unique_members: { value: number };
+        }[];
+      };
+    }[];
+  };
 }

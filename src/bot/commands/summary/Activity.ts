@@ -56,75 +56,60 @@ export default class SummaryCommand extends Command {
     return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
-  private async getActivity(clanTag: string): Promise<{ avg_total: number; avg_online: number } | null> {
-    return this.client.db
-      .collection(Collections.LAST_SEEN)
-      .aggregate<{ avg_total: number; avg_online: number }>([
-        {
-          $match: {
-            'clan.tag': clanTag
-          }
-        },
-        {
-          $sort: {
-            lastSeen: -1
-          }
-        },
-        {
-          $limit: 50
-        },
-        {
-          $unwind: {
-            path: '$entries'
-          }
-        },
-        {
-          $match: {
-            'entries.entry': {
-              $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-            }
-          }
-        },
-        {
-          $group: {
-            _id: {
-              date: {
-                $dateToString: {
-                  date: '$entries.entry',
-                  format: '%Y-%m-%d'
+  private async getActivity(clanTag: string): Promise<{ avgDailyActivity: number; avgDailyOnline: number } | null> {
+    const body = await this.client.elastic.search<unknown, AggregationsAggregate>({
+      index: 'player_activities',
+      query: {
+        bool: {
+          filter: [
+            {
+              term: {
+                clanTag: {
+                  value: clanTag
                 }
-              },
-              tag: '$tag'
+              }
             },
-            count: {
-              $sum: '$entries.count'
+            {
+              range: {
+                timestamp: {
+                  gte: 'now-30d/d'
+                }
+              }
+            }
+          ]
+        }
+      },
+      size: 0,
+      aggs: {
+        daily_stats: {
+          date_histogram: {
+            field: 'timestamp',
+            calendar_interval: 'day'
+          },
+          aggs: {
+            online_members_count: {
+              cardinality: {
+                field: 'tag'
+              }
             }
           }
         },
-        {
-          $group: {
-            _id: '$_id.date',
-            online: {
-              $sum: 1
-            },
-            total: {
-              $sum: '$count'
-            }
+        avg_daily_members: {
+          avg_bucket: {
+            buckets_path: 'daily_stats>online_members_count'
           }
         },
-        {
-          $group: {
-            _id: null,
-            avg_online: {
-              $avg: '$online'
-            },
-            avg_total: {
-              $avg: '$total'
-            }
+        avg_daily_activity: {
+          avg_bucket: {
+            buckets_path: 'daily_stats>_count'
           }
         }
-      ])
-      .next();
+      }
+    });
+    return {
+      avgDailyOnline: body.aggregations?.avg_daily_members.value ?? 0,
+      avgDailyActivity: body.aggregations?.avg_daily_activity.value ?? 0
+    };
   }
 
   private async aggregationQuery(playerTags: string[], season: string, ascOrder: boolean) {
@@ -175,8 +160,8 @@ export default class SummaryCommand extends Command {
     for (const clan of clans) {
       const action = await this.getActivity(clan.tag);
       collection.push({
-        online: action?.avg_online ?? 0,
-        total: action?.avg_total ?? 0,
+        online: action?.avgDailyOnline ?? 0,
+        total: action?.avgDailyActivity ?? 0,
         name: clan.name,
         tag: clan.tag
       });
@@ -227,4 +212,24 @@ export default class SummaryCommand extends Command {
     if (!ms) return ''.padEnd(7, ' ');
     return Util.duration(ms + 1e3).padEnd(7, ' ');
   }
+}
+
+// TODO: REMOVE DUPLICATE
+interface AggregationsAggregate {
+  daily_stats: {
+    buckets: {
+      key_as_string: string;
+      key: number;
+      doc_count: number;
+      online_members_count: {
+        value: number;
+      };
+    }[];
+  };
+  avg_daily_members: {
+    value: number | null;
+  };
+  avg_daily_activity: {
+    value: number | null;
+  };
 }

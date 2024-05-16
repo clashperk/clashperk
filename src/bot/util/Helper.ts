@@ -264,52 +264,62 @@ export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { 
   const client = container.resolve(Client);
 
   const db = client.db.collection(Collections.LAST_SEEN);
+  const playerTags = clan.memberList.map((m) => m.tag);
   const result = await db
-    .aggregate<{ count: number; lastSeen: Date; name: string; tag: string; townHallLevel?: number }>([
+    .aggregate<{ lastSeen: Date; name: string; tag: string; townHallLevel?: number }>([
       {
-        $match: { tag: { $in: [...clan.memberList.map((m) => m.tag)] } }
-      },
-      {
-        $match: { 'clan.tag': clan.tag }
+        $match: { tag: { $in: playerTags } }
       },
       {
         $project: {
+          name: '$name',
           tag: '$tag',
-          clan: '$clan',
           lastSeen: '$lastSeen',
-          townHallLevel: '$townHallLevel',
-          entries: {
-            $filter: {
-              input: '$entries',
-              as: 'en',
-              cond: {
-                $gte: ['$$en.entry', new Date(Date.now() - (scoreView ? 30 : 1) * 24 * 60 * 60 * 1000)]
-              }
-            }
-          }
-        }
-      },
-      {
-        $project: {
-          tag: '$tag',
-          clan: '$clan',
-          townHallLevel: '$townHallLevel',
-          lastSeen: '$lastSeen',
-          count: {
-            $sum: '$entries.count'
-          }
+          townHallLevel: '$townHallLevel'
         }
       }
     ])
     .toArray();
 
+  const body = await client.elastic.search<unknown, { players: { buckets: { key: string; doc_count: number }[] } }>({
+    query: {
+      bool: {
+        filter: [
+          {
+            terms: {
+              tag: playerTags
+            }
+          },
+          {
+            range: {
+              timestamp: {
+                gte: scoreView ? 'now-30d/d' : 'now-24h/h',
+                lte: 'now'
+              }
+            }
+          }
+        ]
+      }
+    },
+    size: 0,
+    aggs: {
+      players: {
+        terms: {
+          field: 'tag',
+          size: 50
+        }
+      }
+    }
+  });
+
+  const activityMap = Object.fromEntries((body.aggregations?.players.buckets ?? []).map((bucket) => [bucket.key, bucket.doc_count]));
   const _members = clan.memberList.map((m) => {
     const mem = result.find((d) => d.tag === m.tag);
     return {
       tag: m.tag,
       name: m.name,
       townHallLevel: m.townHallLevel.toString(),
-      count: mem ? Number(mem.count) : 0,
+      count: activityMap[m.tag] || 0,
       lastSeen: mem ? new Date().getTime() - new Date(mem.lastSeen).getTime() : 0
     };
   });
