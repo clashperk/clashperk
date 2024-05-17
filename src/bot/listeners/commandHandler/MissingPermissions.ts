@@ -1,5 +1,5 @@
-import { TextChannel, PermissionsString, User, Interaction, AutocompleteInteraction } from 'discord.js';
-import { Listener, Command } from '../../lib/index.js';
+import { AutocompleteInteraction, Interaction, PermissionsString, TextChannel, User } from 'discord.js';
+import { Command, Listener } from '../../lib/index.js';
 import { BOT_MANAGER_HYPERLINK, missingPermissions } from '../../util/Constants.js';
 
 export default class MissingPermissionsListener extends Listener {
@@ -29,7 +29,7 @@ export default class MissingPermissionsListener extends Listener {
     }[type];
 
     const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
-    this.client.logger.debug(`${command.id} ~ ${type}Permissions`, { label });
+    this.client.logger.debug(`${command.id} ~ ${type}Permissions (${missing.join(', ')})`, { label });
 
     return interaction.reply({ content: text(), ephemeral: true });
   }
