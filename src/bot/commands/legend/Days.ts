@@ -203,18 +203,18 @@ export default class LegendDaysCommand extends Command {
       {
         name: '**Overview**',
         value: [
-          `• Initial Trophies: ${initial?.start || data.trophies}`,
-          `• Current Trophies: ${current?.end || data.trophies}`,
-          ` • ${attackCount} attack${attackCount === 1 ? '' : 's'} (+${trophiesFromAttacks} trophies)`,
-          ` • ${defenseCount} defense${defenseCount === 1 ? '' : 's'} (${trophiesFromDefenses} trophies)`,
-          ` • ${Math.abs(netTrophies)} trophies ${netTrophies >= 0 ? 'earned' : 'lost'}`
+          `- Initial Trophies: ${initial?.start || data.trophies}`,
+          `- Current Trophies: ${current?.end || data.trophies}`,
+          `- ${attackCount} attack${attackCount === 1 ? '' : 's'} (+${trophiesFromAttacks} trophies)`,
+          `- ${defenseCount} defense${defenseCount === 1 ? '' : 's'} (${trophiesFromDefenses} trophies)`,
+          `- ${Math.abs(netTrophies)} trophies ${netTrophies >= 0 ? 'earned' : 'lost'}`
         ].join('\n')
       },
       {
         name: '**Ranking**',
         value: [
-          `• Global Rank: ${globalRank ?? 'N/A'}`,
-          `• Local Rank: ${
+          `- Global Rank: ${globalRank ?? 'N/A'}`,
+          `- Local Rank: ${
             countryRank ? `${countryRank.players.rank} (${countryRank.country} :flag_${countryRank.countryCode.toLowerCase()}:)` : 'N/A'
           }`
         ].join('\n')
@@ -226,9 +226,9 @@ export default class LegendDaysCommand extends Command {
         {
           name: '**Clan**',
           value: [
-            `• ${clan ? `${clan.name} (${clan.tag})` : 'N/A'}`,
-            `• Rank in Clan: ${member.clanRank}`,
-            `• Clan Points Contribution: ${Math.floor((member.trophies * percentage) / 100)} (${percentage}%)`
+            `- ${clan ? `[${clan.name} (${clan.tag})](http://cprk.eu/c/${clan.tag.replace('#', '')})` : 'N/A'}`,
+            `- Rank in Clan: ${member.clanRank}`,
+            `- Clan Points Contribution: ${Math.floor((member.trophies * percentage) / 100)} (${percentage}%)`
           ].join('\n')
         }
       ]);
@@ -251,7 +251,6 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    // const seasonId = Util.getLegendDay() === 0 ? Season.previousID : Season.ID;
     embed.setFooter({ text: `Day ${day} (${Season.ID})` });
     return embed;
   }
@@ -523,7 +522,7 @@ export default class LegendDaysCommand extends Command {
         ''
       ],
       `**Legend Season Logs (${Season.ID})**`,
-      `• ${data.attackWins} ${Util.plural(data.attackWins, 'attack')} and ${data.defenseWins} ${Util.plural(
+      `- ${data.attackWins} ${Util.plural(data.attackWins, 'attack')} and ${data.defenseWins} ${Util.plural(
         data.defenseWins,
         'defense'
       )} won`,

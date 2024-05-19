@@ -36,7 +36,18 @@ export enum NicknamingAccountPreference {
   DEFAULT_OR_BEST_ACCOUNT = 'default-or-best-account'
 }
 
-const OpTypes = ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT', 'LEAGUE_CHANGE', 'TOWN_HALL_UPGRADE', 'NAME_CHANGE', 'WAR', 'WAR_REMOVED'];
+const OpTypes = [
+  'PROMOTED',
+  'DEMOTED',
+  'JOINED',
+  'LEFT',
+  'LEAGUE_CHANGE',
+  'TOWN_HALL_UPGRADE',
+  'NAME_CHANGE',
+  'WAR',
+  'WAR_REMOVED',
+  'BUILDER_LEAGUE_CHANGE'
+];
 
 const EMPTY_GUILD_MEMBER_COLLECTION = new Collection<string, GuildMember>();
 

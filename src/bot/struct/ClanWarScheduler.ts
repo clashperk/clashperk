@@ -87,9 +87,11 @@ export default class ClanWarScheduler {
 
         const ms = endTime.getTime() - reminder.duration;
         if (Date.now() > new Date(ms).getTime()) continue;
+        const key = `${data.clan.tag}-${reminder._id.toHexString()}-${reminder.duration}`;
 
         await this.schedulers.insertOne({
           _id: new ObjectId(),
+          key,
           guild: reminder.guild,
           tag: data.clan.tag,
           name: data.clan.name,

@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 export interface ClanWarSchedulersEntity {
   _id: ObjectId;
   guild: string;
+  key: string;
   name: string;
   tag: string;
   warTag?: string;

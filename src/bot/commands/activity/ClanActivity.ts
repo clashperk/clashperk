@@ -180,13 +180,13 @@ export default class ClanActivityCommand extends Command {
 
     return (body.aggregations?.clans.buckets ?? []).map((clan) => ({
       clanTag: clan.key,
-      entries: clan.active_members.buckets.map((bucket) => ({ count: bucket.unique_members.value, time: bucket.key_as_string }))
+      activities: clan.active_members.buckets.map((bucket) => ({ count: bucket.unique_members.value, time: bucket.key_as_string }))
     }));
   }
 
   private datasets(dataLabel: any[], data: any) {
     return dataLabel.map(({ key }) => {
-      const id = data.entries.find((e: any) => e.time === key);
+      const id = data.activities.find((e: any) => e.time === key);
       return id?.count ?? 0;
     });
   }
