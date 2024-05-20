@@ -11,7 +11,7 @@ import {
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
 import { Included, Patron, guildLimits } from '../../struct/PatreonHandler.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
 export default class RedeemCommand extends Command {
   public constructor() {
@@ -40,7 +40,10 @@ export default class RedeemCommand extends Command {
       });
     }
 
-    const patron = data.included.find((entry) => entry.attributes.social_connections?.discord?.user_id === interaction.user.id);
+    const disabledUserIds = this.client.settings.get<string[]>('global', Settings.DISABLED_PATREON_IDS, []);
+    const patron = data.included.find(
+      (entry) => !disabledUserIds.includes(entry.id) && entry.attributes.social_connections?.discord?.user_id === interaction.user.id
+    );
     if (!patron) {
       const embed = new EmbedBuilder()
         .setColor(16345172)
