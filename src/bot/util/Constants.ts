@@ -208,7 +208,8 @@ export const enum Settings {
   REMINDER_EXCLUSION = 'reminderExclusion',
   DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook',
   ROLE_REMOVAL_DELAYS = 'roleRemovalDelays',
-  ROLE_ADDITION_DELAYS = 'roleAdditionDelays'
+  ROLE_ADDITION_DELAYS = 'roleAdditionDelays',
+  DISABLED_PATREON_IDS = 'disabledPatreonIds'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
