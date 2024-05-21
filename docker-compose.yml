@@ -1,5 +1,3 @@
-version: '3.6'
-
 services:
   clashperk_bot:
     image: 432159388664.dkr.ecr.us-east-1.amazonaws.com/clashperk-bot:latest
