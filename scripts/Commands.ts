@@ -2946,24 +2946,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: command.reminders.delete.options.id.description,
             description_localizations: translation('command.reminders.delete.options.id.description'),
             type: ApplicationCommandOptionType.String
-          },
-          {
-            name: 'clear',
-            description: command.reminders.delete.options.clear.description,
-            description_localizations: translation('command.reminders.delete.options.clear.description'),
-            type: ApplicationCommandOptionType.String,
-            choices: [
-              {
-                name: 'Yes',
-                name_localizations: translation('common.choices.yes'),
-                value: 'true'
-              },
-              {
-                name: 'No',
-                name_localizations: translation('common.choices.no'),
-                value: 'false'
-              }
-            ]
           }
         ]
       },
