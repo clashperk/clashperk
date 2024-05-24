@@ -12,6 +12,19 @@ class RedisService {
     database: 1
   });
 
+  public constructor(private readonly client: Client) {
+    this.connection.on('error', (error) => this.client.logger.error(error, { label: 'REDIS' }));
+  }
+
+  private async fromJSON<T>(id: string) {
+    try {
+      const data = await this.client.redis.connection.json.get(id);
+      return data as unknown as T;
+    } catch {
+      return null;
+    }
+  }
+
   public disconnect() {
     return this.connection.disconnect();
   }
@@ -20,34 +33,42 @@ class RedisService {
     return this.connection.set(key, value, { EX });
   }
 
-  public constructor(private readonly client: Client) {
-    this.connection.on('error', (error) => this.client.logger.error(error, { label: 'REDIS' }));
-  }
-
   public async getClans(clanTags: string[]) {
-    const raw = await this.connection.json.mGet(
-      clanTags.map((tag) => `CLAN:${tag}`),
-      '$'
-    );
-    return raw.flat().filter((_) => _) as unknown as APIClan[];
+    const raw = await this.connection.mGet(clanTags.map((tag) => `CLAN:${tag}`));
+    return raw
+      .flat()
+      .filter((value) => value)
+      .map((value) => JSON.parse(value!)) as unknown as APIClan[];
   }
 
   public async getClan(clanTag: string) {
-    const raw = await this.connection.json.get(`CLAN:${clanTag}`);
-    return raw as unknown as APIClan | null;
+    const raw = await this.connection.get(`CLAN:${clanTag}`);
+    if (!raw) return null;
+
+    return JSON.parse(raw) as unknown as APIClan;
   }
 
   public async getPlayers(playerTags: string[]) {
-    const raw = await this.connection.json.mGet(
-      playerTags.map((tag) => `PLAYER:${tag}`),
-      '$'
-    );
-    return raw.flat().filter((_) => _) as unknown as APIPlayer[];
+    const raw = await this.connection.mGet(playerTags.map((tag) => `PLAYER:${tag}`));
+    return raw
+      .flat()
+      .filter((value) => value)
+      .map((value) => JSON.parse(value!)) as unknown as APIPlayer[];
   }
 
   public async getPlayer(playerTag: string) {
-    const raw = await this.connection.json.get(`PLAYER:${playerTag}`);
-    return raw as unknown as APIPlayer | null;
+    const raw = await this.connection.get(`PLAYER:${playerTag}`);
+    if (!raw) return null;
+
+    return JSON.parse(raw) as unknown as APIPlayer;
+  }
+
+  public async getRaidMembers(playerTags: string[]) {
+    const raw = await this.connection.mGet(playerTags.map((tag) => `RAID_MEMBER:${tag}`));
+    return raw
+      .flat()
+      .filter((value) => value)
+      .map((value) => JSON.parse(value!)) as unknown as { tag: string; weekId: string; clan: { tag: string } }[];
   }
 
   public createCustomId(payload: CustomIdProps) {
@@ -55,18 +76,20 @@ class RedisService {
     if (softId.length <= 100) return softId;
 
     const customId = `CMD:${nanoid()}`;
-
-    const query = this.connection.multi();
-    query.json.set(customId, '$', payload as unknown as RedisJSON);
-    query.expire(customId, 60 * 60 * 24 * 100); // 100 DAYS
-    query.exec();
+    this.connection.set(customId, JSON.stringify(payload), { EX: 60 * 60 * 24 * 100 });
 
     return customId;
   }
 
-  public async getCustomId<T>(customId: string) {
-    const record = await this.connection.json.get(customId);
-    return record as unknown as T;
+  public async getCustomId<T>(id: string) {
+    try {
+      const data = await this.client.redis.connection.get(id);
+      if (!data) return await this.fromJSON<T>(id);
+
+      return JSON.parse(data) as unknown as T;
+    } catch {
+      return this.fromJSON<T>(id);
+    }
   }
 
   public async deleteCustomId(customId: string) {

@@ -163,9 +163,7 @@ export default class CapitalRaidScheduler {
   }
 
   public async unwantedMembers(clanMembers: { tag: string }[], weekId: string, clanTag: string) {
-    const multi = this.client.redis.connection.multi();
-    clanMembers.map((member) => multi.json.get(`RAID_MEMBER:${member.tag}`));
-    const res = (await multi.exec()).filter((_) => _) as unknown as { tag: string; weekId: string; clan: { tag: string } }[];
+    const res = await this.client.redis.getRaidMembers(clanMembers.map((m) => m.tag));
     const members = res.filter((m) => m.weekId === weekId && m.clan.tag !== clanTag);
     return members.map((m) => m.tag);
   }
@@ -256,7 +254,7 @@ export default class CapitalRaidScheduler {
 
     const users = Object.entries(
       mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-				acc[cur.mention] ??= []; // eslint-disable-line
+        acc[cur.mention] ??= []; // eslint-disable-line
         acc[cur.mention].push(cur);
         return acc;
       }, {})

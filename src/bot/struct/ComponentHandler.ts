@@ -15,15 +15,10 @@ const deferredDisallowed = ['link-add'];
 export default class ComponentHandler {
   public constructor(private readonly client: Client) {}
 
-  private async getCustomId<T>(id: string) {
-    const data = await this.client.redis.connection.json.get(id);
-    return data as unknown as T;
-  }
-
   private async parseCommandId(customId: string): Promise<CustomIdProps | null> {
     if (/^{.*}$/.test(customId)) return JSON.parse(customId);
     if (/^CMD/.test(customId)) {
-      return this.getCustomId<CustomIdProps>(customId);
+      return this.client.redis.getCustomId<CustomIdProps>(customId);
     }
     return null;
   }
