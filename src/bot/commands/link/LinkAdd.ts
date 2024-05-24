@@ -73,6 +73,7 @@ export default class LinkAddCommand extends Command {
           tag: player.tag,
           order: Math.max(...accounts.map((account) => account.order), 0) + 1,
           verified: link?.verified ?? false,
+          linkedBy: interaction.user.id,
           updatedAt: new Date()
         },
         $setOnInsert: {
