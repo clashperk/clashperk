@@ -177,6 +177,7 @@ export default class LinkAddCommand extends Command {
           tag: data.tag,
           verified: true,
           source: 'bot',
+          linkedBy: interaction.user.id,
           updatedAt: new Date()
         },
         $setOnInsert: {

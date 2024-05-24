@@ -32,7 +32,14 @@ export default class LinkDeleteCommand extends Command {
     if (!playerTag) return null;
 
     const member = await this.getMember(playerTag, interaction);
-    if (interaction.user.id !== member.id && !this.client.isOwner(interaction.user.id)) {
+    if (!member) {
+      return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${playerTag}**` }));
+    }
+
+    const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
+    const linkedByUserIds = isManager ? [interaction.user.id, 'bot'] : [interaction.user.id];
+
+    if (!(interaction.user.id === member.id || linkedByUserIds.includes(member.linkedBy)) && !this.client.isOwner(interaction.user.id)) {
       const players = await this.client.db
         .collection<PlayerLinks>(Collections.PLAYER_LINKS)
         .find({ userId: interaction.user.id, verified: true })
@@ -69,11 +76,8 @@ export default class LinkDeleteCommand extends Command {
       }
     }
 
-    if (await this.unlinkPlayer(member.id, playerTag)) {
-      return interaction.editReply(this.i18n('command.link.delete.success', { lng: interaction.locale, tag: `**${playerTag}**` }));
-    }
-
-    return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${playerTag}**` }));
+    await this.unlinkPlayer(member.id, playerTag);
+    return interaction.editReply(this.i18n('command.link.delete.success', { lng: interaction.locale, tag: `**${playerTag}**` }));
   }
 
   private async unlinkPlayer(userId: string, tag: string) {
@@ -99,10 +103,14 @@ export default class LinkDeleteCommand extends Command {
 
     // if our db and link db do not match
     if (target && link && link.userId !== target.userId && [link.userId, target.userId].includes(interaction.user.id)) {
-      return { id: interaction.user.id };
+      return { id: interaction.user.id, linkedBy: target.linkedBy || target.userId };
     }
 
-    return target ? { id: target.userId } : link ? { id: link.userId } : { id: interaction.user.id };
+    return target
+      ? { id: target.userId, linkedBy: target.linkedBy || target.userId }
+      : link
+        ? { id: link.userId, linkedBy: link.userId }
+        : null;
   }
 
   private isTrustedGuild(interaction: CommandInteraction<'cached'>) {

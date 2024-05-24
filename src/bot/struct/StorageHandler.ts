@@ -1001,6 +1001,7 @@ export default class StorageHandler {
           verified: false,
           order: (lastAccount?.order ?? 0) + 1,
           source: 'api',
+          linkedBy: 'bot',
           createdAt: new Date()
         });
       } catch {

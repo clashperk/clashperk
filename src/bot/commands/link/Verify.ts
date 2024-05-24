@@ -48,6 +48,7 @@ export default class VerifyPlayerCommand extends Command {
           discriminator: interaction.user.discriminator,
           verified: true,
           source: 'bot',
+          linkedBy: interaction.user.id,
           updatedAt: new Date()
         },
         $setOnInsert: {

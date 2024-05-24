@@ -26,6 +26,7 @@ class RedisService {
 
   public async mGet(keys: string[]) {
     try {
+      if (!keys.length) return [];
       return await this.connection.mGet(keys);
     } catch {
       return [];

@@ -175,6 +175,7 @@ export default class LinkCreateCommand extends Command {
             ? Math.min(...accounts.map((account) => account.order), 0) - 1
             : Math.max(...accounts.map((account) => account.order), 0) + 1,
           verified: link?.verified ?? false,
+          createdBy: interaction.user.id,
           updatedAt: new Date()
         },
         $setOnInsert: {

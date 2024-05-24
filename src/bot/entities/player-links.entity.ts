@@ -8,5 +8,6 @@ export interface PlayerLinksEntity {
   order: number;
   verified: boolean;
   source: 'bot' | 'web' | 'api';
+  linkedBy: string;
   createdAt: Date;
 }

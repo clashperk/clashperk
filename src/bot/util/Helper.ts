@@ -700,15 +700,17 @@ export const getBbLegendRankingEmbedMaker = async ({
   });
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
-  embed.setDescription(
-    legends
-      .slice(0, 50)
-      .map((player, idx) => {
-        const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
-        return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
-      })
-      .join('\n')
-  );
+  if (legends.length) {
+    embed.setDescription(
+      legends
+        .slice(0, 50)
+        .map((player, idx) => {
+          const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
+          return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
+        })
+        .join('\n')
+    );
+  }
 
   return { embed, legends };
 };
