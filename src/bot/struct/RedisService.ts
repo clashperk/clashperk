@@ -16,15 +16,6 @@ class RedisService {
     this.connection.on('error', (error) => this.client.logger.error(error, { label: 'REDIS' }));
   }
 
-  private async fromJSON<T>(id: string) {
-    try {
-      const data = await this.client.redis.connection.json.get(id);
-      return data as unknown as T;
-    } catch {
-      return null;
-    }
-  }
-
   public disconnect() {
     return this.connection.disconnect();
   }
@@ -33,8 +24,16 @@ class RedisService {
     return this.connection.set(key, value, { EX });
   }
 
+  public async mGet(keys: string[]) {
+    try {
+      return await this.connection.mGet(keys);
+    } catch {
+      return [];
+    }
+  }
+
   public async getClans(clanTags: string[]) {
-    const raw = await this.connection.mGet(clanTags.map((tag) => `CLAN:${tag}`));
+    const raw = await this.mGet(clanTags.map((tag) => `CLAN:${tag}`));
     return raw
       .flat()
       .filter((value) => value)
@@ -42,14 +41,14 @@ class RedisService {
   }
 
   public async getClan(clanTag: string) {
-    const raw = await this.connection.get(`CLAN:${clanTag}`);
+    const raw = await this.connection.get(`CLAN:${clanTag}`).catch(() => null);
     if (!raw) return null;
 
     return JSON.parse(raw) as unknown as APIClan;
   }
 
   public async getPlayers(playerTags: string[]) {
-    const raw = await this.connection.mGet(playerTags.map((tag) => `PLAYER:${tag}`));
+    const raw = await this.mGet(playerTags.map((tag) => `PLAYER:${tag}`));
     return raw
       .flat()
       .filter((value) => value)
@@ -57,14 +56,14 @@ class RedisService {
   }
 
   public async getPlayer(playerTag: string) {
-    const raw = await this.connection.get(`PLAYER:${playerTag}`);
+    const raw = await this.connection.get(`PLAYER:${playerTag}`).catch(() => null);
     if (!raw) return null;
 
     return JSON.parse(raw) as unknown as APIPlayer;
   }
 
   public async getRaidMembers(playerTags: string[]) {
-    const raw = await this.connection.mGet(playerTags.map((tag) => `RAID_MEMBER:${tag}`));
+    const raw = await this.mGet(playerTags.map((tag) => `RAID_MEMBER:${tag}`));
     return raw
       .flat()
       .filter((value) => value)
@@ -79,6 +78,15 @@ class RedisService {
     this.connection.set(customId, JSON.stringify(payload), { EX: 60 * 60 * 24 * 100 });
 
     return customId;
+  }
+
+  private async fromJSON<T>(id: string) {
+    try {
+      const data = await this.client.redis.connection.json.get(id);
+      return data as unknown as T;
+    } catch {
+      return null;
+    }
   }
 
   public async getCustomId<T>(id: string) {
