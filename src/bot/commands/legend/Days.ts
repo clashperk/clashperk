@@ -1,58 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import fetch from 'node-fetch';
+import { PlayersEntity } from '../../entities/players.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';
 import { Collections, LEGEND_LEAGUE_ID, attackCounts } from '../../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function randomlySelectItems(array: { timestamp: Date; trophies: null | number }[], itemCount: number) {
-  const newArray = [...array]; // Create a copy of the array
-  const sortedArray = newArray.filter((item) => item.trophies !== null).sort((a, b) => a.trophies! - b.trophies!);
-  const selectedItems = [];
-  let highestItem = null;
-  let lowestItem = null;
-
-  if (sortedArray.length > 0) {
-    highestItem = sortedArray[sortedArray.length - 1];
-    lowestItem = sortedArray[0];
-    selectedItems.push(highestItem);
-
-    const trophyRange = highestItem.trophies! - lowestItem.trophies!;
-    // const nonNullItemCount = sortedArray.length;
-    const stepSize = trophyRange / (itemCount - 1);
-
-    let threshold = highestItem.trophies!;
-    for (let i = 0; i < itemCount - 2; i++) {
-      threshold -= stepSize;
-      let closestItem = null;
-      let closestDistance = Infinity;
-
-      sortedArray.forEach((item) => {
-        const distance = Math.abs(item.trophies! - threshold);
-        if (distance < closestDistance) {
-          closestItem = item;
-          closestDistance = distance;
-        }
-      });
-
-      if (closestItem) {
-        selectedItems.push(closestItem);
-        sortedArray.splice(sortedArray.indexOf(closestItem), 1);
-      } else {
-        break; // Exit the loop if no more non-null items can be found
-      }
-    }
-
-    selectedItems.push(lowestItem);
-  }
-
-  return selectedItems.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-}
 
 export default class LegendDaysCommand extends Command {
   public constructor() {
@@ -107,6 +62,36 @@ export default class LegendDaysCommand extends Command {
           .setStyle(ButtonStyle.Secondary)
       );
 
+    if (!(data.trophies >= 4900)) {
+      return interaction.editReply(`**${data.name} (${data.tag})** is not in the Legend League.`);
+    }
+
+    const seasonId = Season.ID;
+    const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
+    if (!legend) {
+      await this.client.db.collection<PlayersEntity>(Collections.LAST_SEEN).updateOne(
+        { tag: data.tag },
+        {
+          $setOnInsert: {
+            lastSeen: moment().subtract(1, 'day').toDate()
+          },
+          $set: {
+            name: data.name,
+            townHallLevel: data.townHallLevel,
+            leagueId: data.league?.id,
+            clan: data.clan ? { name: data.clan.name, tag: data.clan.tag } : {}
+          }
+        },
+        {
+          upsert: true
+        }
+      );
+
+      return interaction.editReply(
+        [`No data available for **${data.name} (${data.tag})**`, `Going forward, Legend statistics will be collected.`].join('\n')
+      );
+    }
+
     if (args.graph) {
       const url = await this.graph(data);
       if (!url) {
@@ -117,7 +102,7 @@ export default class LegendDaysCommand extends Command {
 
     const embed = args.prev
       ? (await this.logs(data)).setColor(this.client.embed(interaction))
-      : (await this.embed(interaction, data, args.day)).setColor(this.client.embed(interaction));
+      : (await this.embed(interaction, data, legend, args.day)).setColor(this.client.embed(interaction));
 
     return interaction.editReply({ embeds: [embed], components: [row], content: null });
   }
@@ -158,9 +143,7 @@ export default class LegendDaysCommand extends Command {
     };
   }
 
-  private async embed(interaction: CommandInteraction<'cached'>, data: APIPlayer, _day?: number) {
-    const seasonId = Season.ID;
-    const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
+  private async embed(interaction: CommandInteraction<'cached'>, data: APIPlayer, legend: LegendAttacks, _day?: number) {
     const clan = data.clan ? await this.client.redis.getClan(data.clan.tag) : null;
 
     const { startTime, endTime, day } = this.getDay(_day);

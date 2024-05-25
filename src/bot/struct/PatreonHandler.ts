@@ -104,9 +104,9 @@ export class PatreonHandler {
       await this.collection.updateOne({ _id: patron._id }, { $set: { rewardId } });
       if (pledge?.attributes.patron_status === 'active_patron') {
         // eslint-disable-next-line
-				for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
+        for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
         // eslint-disable-next-line
-				for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
+        for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
 
         if (![rewards.gold, rewards.platinum].includes(rewardId)) {
           // if (patron.applicationId) await this.suspendService(patron.applicationId);
@@ -148,14 +148,14 @@ export class PatreonHandler {
       this.client.logger.info(`Declined Member Deleted ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
 
       // eslint-disable-next-line
-			for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
+      for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
       if (patron.applicationId) await this.client.customBotManager.suspendService(patron.applicationId);
     }
 
     if (!patron.active && (patron.declined || patron.cancelled) && pledge?.attributes.patron_status === 'active_patron') {
       await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true, cancelled: false } });
       // eslint-disable-next-line
-			for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
+      for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
       if (patron.applicationId) await this.client.customBotManager.resumeService(patron.applicationId);
 
       this.client.logger.info(`Declined Member Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
@@ -168,7 +168,7 @@ export class PatreonHandler {
     ) {
       await this.collection.updateOne({ id: patron.id }, { $set: { declined: true, active: false } });
       // eslint-disable-next-line
-			for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
+      for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
       if (patron.applicationId) await this.client.customBotManager.suspendService(patron.applicationId);
     }
   }

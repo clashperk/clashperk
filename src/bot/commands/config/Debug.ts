@@ -98,7 +98,14 @@ export default class DebugCommand extends Command {
       ].join('\n')
     );
 
-    for (const chunk of chunks) await interaction.followUp({ content: chunk, allowedMentions: { roles: [] }, ephemeral: this.muted });
+    await interaction.editReply({ content: chunks[0], allowedMentions: { roles: [] } });
+    for (const chunk of chunks.slice(1)) {
+      if (interaction.channel && interaction.appPermissions.has(['SendMessages', 'ViewChannel', 'SendMessagesInThreads'])) {
+        await interaction.channel.send({ content: chunk, allowedMentions: { roles: [] } });
+      } else {
+        await interaction.followUp({ content: chunk, allowedMentions: { roles: [] }, ephemeral: this.muted });
+      }
+    }
   }
 
   private fixTime(num: number) {

@@ -104,7 +104,7 @@ export class CustomBotManager {
 
       const isOk = result.message === 'OK';
       if (isOk) {
-        await this._deployWebhook({ content: `Service Created (${input.application.id})` }).catch(() => null);
+        await this._deployWebhook({ content: `Service Created [${input.application.name}] (${input.application.id})` }).catch(() => null);
       }
 
       return isOk;
@@ -122,7 +122,7 @@ export class CustomBotManager {
     await this._suspendService(applicationId);
     for (const guildId of app.guildIds) await this.client.settings.deleteCustomBot(guildId);
 
-    await this._deployWebhook({ content: `Service Suspended (${applicationId})` });
+    await this._deployWebhook({ content: `Service Suspended [${app.name}] (<@${applicationId}>)` });
   }
 
   public async resumeService(applicationId: string) {
@@ -131,13 +131,13 @@ export class CustomBotManager {
 
     const app = await this.getApplication(bot.token);
     if (!app) {
-      return this._deployWebhook({ content: `Service Resuming Failed (${applicationId})` });
+      return this._deployWebhook({ content: `Service Resuming Failed (<@${applicationId}>)` });
     }
 
     await this._resumeService(applicationId);
     for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
 
-    await this._deployWebhook({ content: `Service Resumed (${applicationId})` });
+    await this._deployWebhook({ content: `Service Resumed [${app.name}] (<@${applicationId}>)` });
   }
 
   public async deleteService(applicationId: string) {
@@ -150,7 +150,7 @@ export class CustomBotManager {
     for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
     await this.collection.deleteOne({ applicationId });
 
-    await this._deployWebhook({ content: `Service Deleted (${applicationId})` });
+    await this._deployWebhook({ content: `Service Deleted [${bot.name}] (<@${applicationId}>)` });
   }
 
   public async handleOnReady(bot: CustomBotsEntity) {
@@ -163,7 +163,7 @@ export class CustomBotManager {
     await this.collection.updateOne({ applicationId: bot.applicationId }, { $set: { isLive: true } });
     for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
 
-    await this._deployWebhook({ content: `Service Upgrading (${bot.applicationId})` });
+    await this._deployWebhook({ content: `Service Upgrading [${bot.name}] (<@${bot.applicationId}>)` });
 
     try {
       await this._upgradeService(bot.applicationId);
@@ -175,7 +175,7 @@ export class CustomBotManager {
       for (const guildId of bot.guildIds) await this.client.settings.deleteCustomBot(guildId);
       this.client.logger.error(`Custom bot "${bot.name}" was failed to set to production.`, { label: 'CUSTOM-BOT' });
 
-      await this._deployWebhook({ content: `Service Upgrading Failed (${bot.applicationId})` });
+      await this._deployWebhook({ content: `Service Upgrading Failed [${bot.name}] (<@${bot.applicationId}>)` });
     }
   }
 
