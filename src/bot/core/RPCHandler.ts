@@ -224,7 +224,7 @@ export default class RPCHandler {
     const OP = {
       [Flags.DONATION_LOG]: this.donationLog,
       [Flags.CLAN_FEED_LOG]: this.clanFeedLog,
-      [Flags.LAST_SEEN_LOG]: this.lastSeenLog,
+      [Flags.PLAYERS_LOG]: this.lastSeenLog,
       [Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
       [Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
       [Flags.CLAN_WAR_LOG]: this.clanWarLog,
@@ -234,7 +234,7 @@ export default class RPCHandler {
     };
 
     if (data.op.toString() in OP) {
-			await OP[data.op as keyof typeof OP].add(id); // eslint-disable-line
+      await OP[data.op as keyof typeof OP].add(id); // eslint-disable-line
     } else {
       Object.values(OP).map((Op) => Op.add(id));
     }
@@ -272,7 +272,7 @@ export default class RPCHandler {
     const OP = {
       [Flags.DONATION_LOG]: this.donationLog,
       [Flags.CLAN_FEED_LOG]: this.clanFeedLog,
-      [Flags.LAST_SEEN_LOG]: this.lastSeenLog,
+      [Flags.PLAYERS_LOG]: this.lastSeenLog,
       [Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
       [Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
       [Flags.CLAN_WAR_LOG]: this.clanWarLog,
@@ -282,7 +282,7 @@ export default class RPCHandler {
     };
 
     if (data.op.toString() in OP) {
-			OP[data.op as keyof typeof OP].delete(id); // eslint-disable-line
+      OP[data.op as keyof typeof OP].delete(id); // eslint-disable-line
     } else {
       Object.values(OP).map((Op) => Op.delete(id));
     }

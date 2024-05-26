@@ -280,7 +280,7 @@ export class MongoDbClient extends MongoClient {
         }
       ]),
 
-      db.collection(Collections.LAST_SEEN_LOGS).createIndexes([
+      db.collection(Collections.PLAYERS_LOGS).createIndexes([
         {
           key: { clanId: 1 }
         },
@@ -332,7 +332,7 @@ export class MongoDbClient extends MongoClient {
 
       db.collection(Collections.FLAGS).createIndex({ guild: 1, tag: 1 }),
 
-      db.collection(Collections.LAST_SEEN).createIndexes([
+      db.collection(Collections.PLAYERS).createIndexes([
         {
           key: { 'clan.tag': 1, 'tag': 1 }
         },

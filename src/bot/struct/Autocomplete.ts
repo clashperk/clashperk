@@ -65,7 +65,7 @@ export class Autocomplete {
       query.$or = [{ name: { $regex: `.*${text}.*`, $options: 'i' } }, { tag: { $regex: `.*${text}.*`, $options: 'i' } }];
     }
 
-    const cursor = this.client.db.collection<PlayerModel>(Collections.LAST_SEEN).find(query, { projection: { name: 1, tag: 1 } });
+    const cursor = this.client.db.collection<PlayerModel>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
     if (!args.player_tag) cursor.sort({ lastSeen: -1 });
     const players = await cursor.limit(24).toArray();
 

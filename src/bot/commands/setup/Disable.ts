@@ -6,7 +6,7 @@ import { Collections, Flags } from '../../util/Constants.js';
 const names: Record<string, string> = {
   [Flags.DONATION_LOG]: 'Donation Log',
   [Flags.CLAN_FEED_LOG]: 'Clan Feed',
-  [Flags.LAST_SEEN_LOG]: 'Last Seen',
+  [Flags.PLAYERS_LOG]: 'Last Seen',
   [Flags.LEGEND_LOG]: 'Legend Log',
   [Flags.CLAN_EMBED_LOG]: 'Clan Embed',
   [Flags.CLAN_GAMES_LOG]: 'Clan Games',
@@ -39,7 +39,7 @@ export default class SetupDisableCommand extends Command {
           [Flags.LEGEND_LOG.toString(), 'legend-log'],
           [Flags.CAPITAL_LOG.toString(), 'capital-log'],
           [Flags.JOIN_LEAVE_LOG.toString(), 'join-leave'],
-          [Flags.LAST_SEEN_LOG.toString(), 'lastseen'],
+          [Flags.PLAYERS_LOG.toString(), 'lastseen'],
           [Flags.CLAN_WAR_LOG.toString(), 'war-feed'],
           [Flags.CLAN_GAMES_LOG.toString(), 'clan-games'],
           [Flags.CLAN_FEED_LOG.toString(), 'clan-feed'],
@@ -81,7 +81,7 @@ export default class SetupDisableCommand extends Command {
       return interaction.editReply(
         this.i18n('command.setup.disable.channel_not_found', {
           lng: interaction.locale,
-					channel: channel.toString() // eslint-disable-line
+          channel: channel.toString() // eslint-disable-line
         })
       );
     }

@@ -263,7 +263,7 @@ export const clanEmbedMaker = async (
 export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { color?: number; scoreView?: boolean }) => {
   const client = container.resolve(Client);
 
-  const db = client.db.collection(Collections.LAST_SEEN);
+  const db = client.db.collection(Collections.PLAYERS);
   const playerTags = clan.memberList.map((m) => m.tag);
   const result = await db
     .aggregate<{ lastSeen: Date; name: string; tag: string; townHallLevel?: number }>([
@@ -735,8 +735,9 @@ export const getMenuFromMessage = (interaction: ButtonInteraction<'cached'>, sel
   return [];
 };
 
-export const recoverDonations = async (clanTag: string) => {
-  if (Date.now() >= new Date('2023-08-28').getTime()) return;
+export const recoverDonations = async (clan: APIClan) => {
+  const clanTag = clan.tag;
+  if (Date.now() >= new Date('2024-05-24T05:00').getTime()) return;
 
   const client = container.resolve(Client);
   const inserted = await client.redis.connection.get(`RECOVERY:${clanTag}`);
@@ -754,7 +755,7 @@ export const recoverDonations = async (clanTag: string) => {
           {
             range: {
               created_at: {
-                gte: '2023-07-31'
+                gte: '2024-04-29T05:00'
               }
             }
           }
@@ -803,12 +804,23 @@ export const recoverDonations = async (clanTag: string) => {
     }
   });
 
+  const membersMap = clan.memberList.reduce<Record<string, { donated: number; received: number }>>((record, mem) => {
+    record[mem.tag] = {
+      donated: mem.donations,
+      received: mem.donationsReceived
+    };
+    return record;
+  }, {});
+
   const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
   const playersMap = buckets.reduce<Record<string, { donated: number; received: number }>>((acc, cur) => {
+    const member = membersMap[cur.key] ?? { donated: 0, received: 0 };
+
     acc[cur.key] = {
-      donated: cur.donated.total.value,
-      received: cur.received.total.value
+      donated: Math.max(cur.donated.total.value, member.donated),
+      received: Math.max(cur.received.total.value, member.received)
     };
+
     return acc;
   }, {});
 
@@ -818,7 +830,7 @@ export const recoverDonations = async (clanTag: string) => {
   const cursor = client.db
     .collection(Collections.PLAYER_SEASONS)
     .find({ tag: { $in: tags } })
-    .project({ tag: 1, clans: 1, _id: 1 });
+    .project({ tag: 1, clans: 1, _id: 1, season: Season.ID });
 
   const ops: AnyBulkWriteOperation<PlayerSeasonModel>[] = [];
   for await (const player of cursor) {
@@ -845,7 +857,7 @@ export const recoverDonations = async (clanTag: string) => {
     await client.db.collection<PlayerSeasonModel>(Collections.PLAYER_SEASONS).bulkWrite(ops);
   }
 
-  return client.redis.set(`RECOVERY:${clanTag}`, '-0-', 60 * 60 * 24 * 30);
+  return client.redis.set(`RECOVERY:${clanTag}`, '-0-', 60 * 60 * 24 * 3);
 };
 
 export const unitsFlatten = (data: APIPlayer) => {

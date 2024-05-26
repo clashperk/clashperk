@@ -32,7 +32,7 @@ export default class BoostsCommand extends Command {
       return interaction.followUp({ content: this.i18n('command.boosts.no_boosts', { lng: interaction.locale }), ephemeral: true });
 
     const boostTimes = await this.client.db
-      .collection<{ tag: string; lastSeen: Date; superTroops?: { name: string; timestamp: number }[] }>(Collections.LAST_SEEN)
+      .collection<{ tag: string; lastSeen: Date; superTroops?: { name: string; timestamp: number }[] }>(Collections.PLAYERS)
       .find({ tag: { $in: players.map((m) => m.tag) } }, { projection: { _id: 0, tag: 1, superTroops: 1, lastSeen: 1 } })
       .toArray();
 

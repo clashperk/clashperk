@@ -125,7 +125,7 @@ export default class ExportSeason extends Command {
       },
       {
         $lookup: {
-          from: Collections.LAST_SEEN,
+          from: Collections.PLAYERS,
           localField: 'tag',
           foreignField: 'tag',
           as: 'lastSeen',

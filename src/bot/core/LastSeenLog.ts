@@ -21,7 +21,7 @@ export default class LastSeenLog extends BaseLog {
   }
 
   public override get collection() {
-    return this.client.db.collection(Collections.LAST_SEEN_LOGS);
+    return this.client.db.collection(Collections.PLAYERS_LOGS);
   }
 
   public override get permissions(): PermissionsString[] {
@@ -130,7 +130,7 @@ export default class LastSeenLog extends BaseLog {
 
     try {
       const logs = await this.client.db
-        .collection(Collections.LAST_SEEN_LOGS)
+        .collection(Collections.PLAYERS_LOGS)
         .aggregate<LastSeenLogModel & { _id: ObjectId }>([
           { $match: { updatedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
           {

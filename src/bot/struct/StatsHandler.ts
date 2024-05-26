@@ -21,7 +21,7 @@ export default class StatsHandler {
     if (!guilds) return;
 
     const clans = await this.client.db.collection(Collections.CLAN_STORES).estimatedDocumentCount();
-    const players = await this.client.db.collection(Collections.LAST_SEEN).estimatedDocumentCount();
+    const players = await this.client.db.collection(Collections.PLAYERS).estimatedDocumentCount();
 
     const collection = this.client.db.collection(Collections.BOT_STATS);
     await collection.updateOne({ name: 'GUILDS' }, { $set: { count: guilds } });

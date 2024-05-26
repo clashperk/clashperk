@@ -162,7 +162,7 @@ export default class SummaryBestCommand extends Command {
         },
         {
           $lookup: {
-            from: Collections.LAST_SEEN,
+            from: Collections.PLAYERS,
             localField: 'tag',
             foreignField: 'tag',
             as: '_score',

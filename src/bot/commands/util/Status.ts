@@ -1,11 +1,11 @@
-import { fileURLToPath, URL } from 'url';
-import os from 'os';
-import { readFile } from 'node:fs/promises';
+import { CommandInteraction, EmbedBuilder, Guild, Message } from 'discord.js';
 import moment from 'moment';
-import { EmbedBuilder, CommandInteraction, Message, Guild } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
-import { Command } from '../../lib/index.js';
 import 'moment-duration-format';
+import { readFile } from 'node:fs/promises';
+import os from 'os';
+import { fileURLToPath, URL } from 'url';
+import { Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
 
 const pkgPath = fileURLToPath(new URL('../../../../../package.json', import.meta.url).href);
 const pkg = JSON.parse((await readFile(pkgPath)).toString()) as { version: string };
@@ -77,7 +77,7 @@ export default class StatusCommand extends Command {
         },
         {
           name: 'Players',
-          value: `${(await this.count(Collections.LAST_SEEN)).toLocaleString()}`,
+          value: `${(await this.count(Collections.PLAYERS)).toLocaleString()}`,
           inline: true
         },
         {

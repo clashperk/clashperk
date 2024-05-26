@@ -154,7 +154,7 @@ export default class RosterManageCommand extends Command {
     }
 
     const signedUp = roster.members.map((member) => member.tag);
-    const cursor = this.client.db.collection<PlayerModel>(Collections.LAST_SEEN).find(query, { projection: { name: 1, tag: 1 } });
+    const cursor = this.client.db.collection<PlayerModel>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
     if (!args.player_tag) cursor.sort({ lastSeen: -1 });
     const players = await cursor.limit(24).toArray();
     if (!players.length) return interaction.respond([{ name: 'No players found.', value: '0' }]);

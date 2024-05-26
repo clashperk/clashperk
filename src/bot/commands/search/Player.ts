@@ -134,7 +134,7 @@ export default class PlayerCommand extends Command {
 
   private async embed(data: APIPlayer) {
     const aggregated = await this.client.db
-      .collection(Collections.LAST_SEEN)
+      .collection(Collections.PLAYERS)
       .aggregate([
         {
           $match: {

@@ -69,7 +69,7 @@ export default class LegendDaysCommand extends Command {
     const seasonId = Season.ID;
     const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
     if (!legend) {
-      await this.client.db.collection<PlayersEntity>(Collections.LAST_SEEN).updateOne(
+      await this.client.db.collection<PlayersEntity>(Collections.PLAYERS).updateOne(
         { tag: data.tag },
         {
           $setOnInsert: {

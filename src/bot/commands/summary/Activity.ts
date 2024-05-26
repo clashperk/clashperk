@@ -113,7 +113,7 @@ export default class SummaryCommand extends Command {
   }
 
   private async aggregationQuery(playerTags: string[], season: string, ascOrder: boolean) {
-    const db = this.client.db.collection(Collections.LAST_SEEN);
+    const db = this.client.db.collection(Collections.PLAYERS);
     const result = await db
       .aggregate<{ name: string; tag: string; lastSeen?: Date; score?: number }>([
         {

@@ -218,15 +218,15 @@ export default class DonationLog extends BaseLog {
     const oldMemberTags = playerTags.filter((tag) => !currentMemberTags.includes(tag));
 
     const players = await this.client.db
-      .collection(Collections.LAST_SEEN)
+      .collection(Collections.PLAYERS)
       .find({ tag: { $in: oldMemberTags } }, { projection: { name: 1, tag: 1 } })
       .toArray();
 
     const result = [...clan.memberList, ...players].map((player) => ({
       name: player.name,
       tag: player.tag,
-			donated: playersMap[player.tag]?.donated ?? 0, // eslint-disable-line
-			received: playersMap[player.tag]?.received ?? 0 // eslint-disable-line
+      donated: playersMap[player.tag]?.donated ?? 0, // eslint-disable-line
+      received: playersMap[player.tag]?.received ?? 0 // eslint-disable-line
     }));
 
     result.sort((a, b) => b.received - a.received);

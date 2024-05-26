@@ -29,7 +29,7 @@ export enum LogTypes {
 
   CLAN_GAMES_EMBED_LOG = 'clan_games_embed_log',
   CLAN_EMBED_LOG = 'clan_embed_log',
-  LAST_SEEN_EMBED_LOG = 'last_seen_embed_log',
+  PLAYERS_EMBED_LOG = 'PLAYERS_embed_log',
   SUPER_TROOP_BOOSTS_LOG = 'super_troop_boosts_log',
 
   CLAN_WAR_EMBED_LOG = 'clan_war_embed_log',

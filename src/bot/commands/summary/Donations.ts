@@ -41,7 +41,7 @@ export default class DonationSummaryCommand extends Command {
       return interaction.editReply(this.i18n('common.fetch_failed', { lng: interaction.locale }));
     }
 
-    await Promise.allSettled(fetched.map((clan) => recoverDonations(clan.tag)));
+    await Promise.allSettled(fetched.map((clan) => recoverDonations(clan)));
     const [topClansEmbed, topPlayersEmbed] = await Promise.all([
       this.clanDonations(interaction, {
         clans: fetched,

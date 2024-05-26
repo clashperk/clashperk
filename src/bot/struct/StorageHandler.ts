@@ -271,8 +271,8 @@ export default class StorageHandler {
           { upsert: true }
         );
         break;
-      case Flags.LAST_SEEN_LOG:
-        await this.client.db.collection(Collections.LAST_SEEN_LOGS).updateOne(
+      case Flags.PLAYERS_LOG:
+        await this.client.db.collection(Collections.PLAYERS_LOGS).updateOne(
           { tag: data.tag, guild: data.guild },
           {
             $set: {
@@ -430,7 +430,7 @@ export default class StorageHandler {
       this.client.db.collection(Collections.DONATION_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.JOIN_LEAVE_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+      this.client.db.collection(Collections.PLAYERS_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.CLAN_GAMES_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) }),
@@ -496,8 +496,8 @@ export default class StorageHandler {
       return this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clanId: new ObjectId(id) });
     }
 
-    if (data.op === Flags.LAST_SEEN_LOG) {
-      return this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clanId: new ObjectId(id) });
+    if (data.op === Flags.PLAYERS_LOG) {
+      return this.client.db.collection(Collections.PLAYERS_LOGS).deleteOne({ clanId: new ObjectId(id) });
     }
 
     if (data.op === Flags.CLAN_GAMES_LOG) {
@@ -597,10 +597,10 @@ export default class StorageHandler {
                 }
               }
             ],
-            [Collections.LAST_SEEN_LOGS]: [
+            [Collections.PLAYERS_LOGS]: [
               {
                 $lookup: {
-                  from: Collections.LAST_SEEN_LOGS,
+                  from: Collections.PLAYERS_LOGS,
                   localField: '_id',
                   foreignField: 'clanId',
                   as: 'webhook',

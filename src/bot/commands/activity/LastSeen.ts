@@ -1,9 +1,9 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
+import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { lastSeenEmbedMaker } from '../../util/Helper.js';
-import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 
 export default class LastSeenCommand extends Command {
   public constructor() {
@@ -33,7 +33,7 @@ export default class LastSeenCommand extends Command {
       );
     }
 
-    const enough = await this.client.db.collection(Collections.LAST_SEEN).countDocuments({ 'clan.tag': clan.tag });
+    const enough = await this.client.db.collection(Collections.PLAYERS).countDocuments({ 'clan.tag': clan.tag });
     if (!enough) {
       return interaction.editReply(this.i18n('common.no_clan_data', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
     }

@@ -56,7 +56,7 @@ export enum CommandCategories {
 export const enum Collections {
   CLAN_STORES = 'ClanStores',
   DONATION_LOGS = 'DonationLogs',
-  LAST_SEEN_LOGS = 'LastSeenLogs',
+  PLAYERS_LOGS = 'LastSeenLogs',
   CLAN_GAMES_LOGS = 'ClanGamesLogs',
   CLAN_EMBED_LOGS = 'ClanEmbedLogs',
   CLAN_FEED_LOGS = 'ClanFeedLogs',
@@ -91,7 +91,7 @@ export const enum Collections {
 
   PATREON_MEMBERS = 'Patrons',
   SETTINGS = 'Settings',
-  LAST_SEEN = 'LastSeen',
+  PLAYERS = 'Players',
   CLAN_WARS = 'ClanWars',
   CLAN_GAMES = 'ClanGames',
   CWL_GROUPS = 'CWLGroups',
@@ -144,7 +144,7 @@ export const BOT_MANAGER_HYPERLINK = '[Bot Manager](<https://docs.clashperk.com/
 export const enum Flags {
   DONATION_LOG = 1 << 0,
   CLAN_FEED_LOG = 1 << 1,
-  LAST_SEEN_LOG = 1 << 2,
+  PLAYERS_LOG = 1 << 2,
   CLAN_EMBED_LOG = 1 << 3,
   CLAN_GAMES_LOG = 1 << 4,
   CLAN_WAR_LOG = 1 << 5,
