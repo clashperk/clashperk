@@ -405,6 +405,15 @@ export class MongoDbClient extends MongoClient {
         }
       ]),
 
+      db.collection(Collections.CG_REMINDERS).createIndexes([
+        {
+          key: { guild: 1 }
+        },
+        {
+          key: { clans: 1 }
+        }
+      ]),
+
       db.collection(Collections.SCHEDULERS).createIndexes([
         {
           key: { tag: 1 }
@@ -417,14 +426,11 @@ export class MongoDbClient extends MongoClient {
         },
         {
           key: { timestamp: 1 },
-          expireAfterSeconds: 60 * 60 * 24 * 7
+          expireAfterSeconds: 60 * 60 * 24 * 3
         }
       ]),
 
       db.collection(Collections.RAID_SCHEDULERS).createIndexes([
-        {
-          key: { key: 1 }
-        },
         {
           key: { tag: 1 }
         },
@@ -436,7 +442,23 @@ export class MongoDbClient extends MongoClient {
         },
         {
           key: { timestamp: 1 },
-          expireAfterSeconds: 60 * 60 * 24
+          expireAfterSeconds: 60 * 60 * 24 * 3
+        }
+      ]),
+
+      db.collection(Collections.CG_SCHEDULERS).createIndexes([
+        {
+          key: { tag: 1 }
+        },
+        {
+          key: { guild: 1 }
+        },
+        {
+          key: { reminderId: 1 }
+        },
+        {
+          key: { timestamp: 1 },
+          expireAfterSeconds: 60 * 60 * 24 * 3
         }
       ])
     ]);
