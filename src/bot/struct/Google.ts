@@ -1,5 +1,5 @@
+import { Auth, google, sheets_v4 } from 'googleapis';
 import fetch from 'node-fetch';
-import { google, sheets_v4, Auth } from 'googleapis';
 import { Util } from '../util/index.js';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
