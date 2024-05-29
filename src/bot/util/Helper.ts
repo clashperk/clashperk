@@ -17,7 +17,7 @@ import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { ClanEmbedFields } from './CommandOptions.js';
-import { Collections, LEGEND_LEAGUE_ID, Settings, UnrankedCapitalLeagueId } from './Constants.js';
+import { Collections, LEGEND_LEAGUE_ID, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './Constants.js';
 import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Season, Util } from './index.js';
 
@@ -235,7 +235,7 @@ export const clanEmbedMaker = async (
   if (fields?.includes(ClanEmbedFields.CLAN_CAPITAL_LEAGUE)) {
     embed.addFields({
       name: 'Clan Capital League',
-      value: `${CAPITAL_LEAGUES[clan.capitalLeague?.id ?? UnrankedCapitalLeagueId]} ${clan.capitalLeague?.name ?? 'Unranked'} ${
+      value: `${CAPITAL_LEAGUES[clan.capitalLeague?.id ?? UNRANKED_CAPITAL_LEAGUE_ID]} ${clan.capitalLeague?.name ?? 'Unranked'} ${
         EMOJIS.CAPITAL_TROPHY
       } ${clan.clanCapitalPoints || 0}`
     });

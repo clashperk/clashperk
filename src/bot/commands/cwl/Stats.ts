@@ -4,7 +4,7 @@ import moment from 'moment';
 import fetch from 'node-fetch';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
-import { WarLeagueMap, calculateCWLMedals, promotionMap } from '../../util/Constants.js';
+import { WAR_LEAGUE_MAP, WAR_LEAGUE_PROMOTION_MAP, calculateCWLMedals } from '../../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -124,7 +124,7 @@ export default class CWLStatsCommand extends Command {
           const end = new Date(moment(data.endTime).toDate()).getTime();
           for (const m of clan.members) {
             // eslint-disable-next-line
-						members[m.tag] ??= {
+            members[m.tag] ??= {
               name: m.name,
               of: 0,
               attacks: 0,
@@ -171,7 +171,7 @@ export default class CWLStatsCommand extends Command {
           const started = new Date(moment(data.startTime).toDate()).getTime();
           for (const m of clan.members) {
             // eslint-disable-next-line
-						members[m.tag] ??= {
+            members[m.tag] ??= {
               name: m.name,
               of: 0,
               attacks: 0,
@@ -237,9 +237,9 @@ export default class CWLStatsCommand extends Command {
       .map((clan) => ({
         ...clan,
         pos: leagueId
-          ? clan.rank <= promotionMap[leagueId].promotion
+          ? clan.rank <= WAR_LEAGUE_PROMOTION_MAP[leagueId].promotion
             ? 'up'
-            : clan.rank >= promotionMap[leagueId].demotion
+            : clan.rank >= WAR_LEAGUE_PROMOTION_MAP[leagueId].demotion
               ? 'down'
               : 'same'
           : 0,
@@ -272,9 +272,9 @@ export default class CWLStatsCommand extends Command {
           ranks
             .map((clan) => {
               const emoji =
-                clan.rank <= promotionMap[leagueId].promotion
+                clan.rank <= WAR_LEAGUE_PROMOTION_MAP[leagueId].promotion
                   ? EMOJIS.UP_KEY
-                  : clan.rank >= promotionMap[leagueId].demotion
+                  : clan.rank >= WAR_LEAGUE_PROMOTION_MAP[leagueId].demotion
                     ? EMOJIS.DOWN_KEY
                     : EMOJIS.STAYED_SAME;
 
@@ -328,7 +328,7 @@ export default class CWLStatsCommand extends Command {
         rankIndex: rankIndex,
         season: body.season,
         medals: medals,
-        leagueName: WarLeagueMap[leagueId],
+        leagueName: WAR_LEAGUE_MAP[leagueId],
         rounds: `${activeRounds}/${body.clans.length - 1}`
       })
     }).then((res) => res.arrayBuffer());

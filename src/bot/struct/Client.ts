@@ -27,6 +27,7 @@ import { RosterManager } from './RosterManager.js';
 import SettingsProvider from './SettingsProvider.js';
 import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
+import { PostHog } from 'posthog-node';
 
 export class Client extends Discord.Client {
   public commandHandler = new CommandHandler(this, {
@@ -82,6 +83,7 @@ export class Client extends Discord.Client {
   public cacheOverLimitGuilds = new Set<string>();
   public rolesManager = new RolesManager(this);
   public commands!: CommandsMap;
+  public postHog: PostHog;
 
   public constructor() {
     super({
@@ -135,6 +137,12 @@ export class Client extends Discord.Client {
     this.logger = new Logger(this);
     this.util = new ClientUtil(this);
     this.http = new Http(this);
+
+    this.postHog = new PostHog(process.env.POSTHOG_API_KEY!, {
+      host: 'https://us.i.posthog.com',
+      personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY!,
+      preloadFeatureFlags: true
+    });
 
     this.ownerId = process.env.OWNER!;
     container.register(Client, { useValue: this });

@@ -2,7 +2,7 @@ import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
-import { WarLeagueMap, promotionMap } from '../../util/Constants.js';
+import { WAR_LEAGUE_MAP, WAR_LEAGUE_PROMOTION_MAP } from '../../util/Constants.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
 
@@ -70,9 +70,9 @@ export default class SummaryCWLRanks extends Command {
 
       const __clans = clans.map((clan) => {
         const emoji =
-          clan.rank <= promotionMap[leagueId].promotion
+          clan.rank <= WAR_LEAGUE_PROMOTION_MAP[leagueId].promotion
             ? EMOJIS.UP_KEY
-            : clan.rank >= promotionMap[leagueId].demotion
+            : clan.rank >= WAR_LEAGUE_PROMOTION_MAP[leagueId].demotion
               ? EMOJIS.DOWN_KEY
               : EMOJIS.STAYED_SAME;
         const stars = clan.stars.toString().padStart(3, ' ');
@@ -85,7 +85,7 @@ export default class SummaryCWLRanks extends Command {
       const chunks = Util.splitMessage(`${__clans.join('\n')}${emptySpace}`, { maxLength: 1024 });
       chunks.forEach((chunk, i) => {
         embed.addFields({
-          name: i === 0 ? `${CWL_LEAGUES[WarLeagueMap[leagueId]]} ${WarLeagueMap[leagueId]}` : '\u200b',
+          name: i === 0 ? `${CWL_LEAGUES[WAR_LEAGUE_MAP[leagueId]]} ${WAR_LEAGUE_MAP[leagueId]}` : '\u200b',
           value: chunk
         });
       });

@@ -1,7 +1,7 @@
 import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { LegendAttacks, LegendLogModel } from '../types/index.js';
-import { attackCounts, Collections } from '../util/Constants.js';
+import { ATTACK_COUNTS, Collections } from '../util/Constants.js';
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';
@@ -116,8 +116,8 @@ export default class LegendLog extends BaseLog {
         '\u200e GAIN  LOSS FINAL NAME',
         ...members.map(
           (mem) =>
-            `${this.pad(`+${mem.trophiesFromAttacks}${attackCounts[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
-              `-${Math.abs(mem.trophiesFromDefenses)}${attackCounts[Math.min(9, mem.defenseCount)]}`,
+            `${this.pad(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
+              `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(9, mem.defenseCount)]}`,
               5
             )}  ${this.pad(mem.current.end)} ${escapeMarkdown(mem.name)}`
         ),

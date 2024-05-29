@@ -3,7 +3,7 @@ import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMess
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { FlagsEntity } from '../entities/flags.entity.js';
-import { Collections, ColorCodes, DeepLinkTypes, Settings } from '../util/Constants.js';
+import { COLOR_CODES, Collections, DEEP_LINK_TYPES, Settings } from '../util/Constants.js';
 import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
 import { unitsFlatten } from '../util/Helper.js';
 import { RAW_TROOPS_FILTERED } from '../util/Troops.js';
@@ -12,8 +12,8 @@ import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';
 
 const OP: { [key: string]: number } = {
-  JOINED: ColorCodes.GREEN,
-  LEFT: ColorCodes.RED
+  JOINED: COLOR_CODES.GREEN,
+  LEFT: COLOR_CODES.RED
 };
 
 export default class JoinLeaveLog extends BaseLog {
@@ -69,10 +69,10 @@ export default class JoinLeaveLog extends BaseLog {
 
     let content = null;
     const embed = new EmbedBuilder().setColor(OP[member.op]).setTitle(`\u200e${player.name} (${player.tag})`);
-    if (!cache.deepLink || cache.deepLink === DeepLinkTypes.OpenInCOS) {
+    if (!cache.deepLink || cache.deepLink === DEEP_LINK_TYPES.OPEN_IN_COS) {
       embed.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
     }
-    if (cache.deepLink === DeepLinkTypes.OpenInGame) {
+    if (cache.deepLink === DEEP_LINK_TYPES.OPEN_IN_GAME) {
       embed.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
     }
 

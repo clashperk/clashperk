@@ -13,12 +13,12 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import {
-  ClanFeedLogTypes,
+  CLAN_FEED_LOG_TYPES,
   Collections,
-  DeepLinkTypes,
+  DEEP_LINK_TYPES,
   DonationLogFrequencyTypes,
   Flags,
-  WarFeedLogTypes,
+  WAR_FEED_LOG_TYPES,
   missingPermissions
 } from '../../util/Constants.js';
 
@@ -146,7 +146,7 @@ export default class ClanLogCommand extends Command {
         tag: data.tag
       });
     };
-    await mutate({ deepLink: DeepLinkTypes.OpenInGame });
+    await mutate({ deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME });
 
     const embed = new EmbedBuilder()
       .setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
@@ -170,7 +170,7 @@ export default class ClanLogCommand extends Command {
     };
 
     const state: BaseState = {
-      deepLink: DeepLinkTypes.OpenInGame,
+      deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME,
       logTypes: null,
       role: null,
       interval: null
@@ -185,12 +185,12 @@ export default class ClanLogCommand extends Command {
           {
             label: 'Open in Game',
             description: 'This will open the player profile in the Game.',
-            value: DeepLinkTypes.OpenInGame
+            value: DEEP_LINK_TYPES.OPEN_IN_GAME
           },
           {
             label: 'Open in Clash of Stats',
             description: 'This will open the player profile in Clash of Stats.',
-            value: DeepLinkTypes.OpenInCOS
+            value: DEEP_LINK_TYPES.OPEN_IN_COS
           }
         ])
     );
@@ -213,23 +213,23 @@ export default class ClanLogCommand extends Command {
         .setOptions([
           {
             label: 'Town Hall',
-            value: ClanFeedLogTypes.TownHallUpgrade,
+            value: CLAN_FEED_LOG_TYPES.TOWN_HALL_UPGRADE,
             description: 'Town Hall upgrades.'
           },
           {
             label: 'War Preference',
-            value: ClanFeedLogTypes.WarPreferenceChange,
+            value: CLAN_FEED_LOG_TYPES.WAR_PREFERENCE_CHANGE,
             description: 'War preference changes.'
           },
           {
             label: 'Player Name',
             description: 'Player name changes.',
-            value: ClanFeedLogTypes.PlayerNameChange
+            value: CLAN_FEED_LOG_TYPES.PLAYER_NAME_CHANGE
           },
           {
             label: 'Season Best',
             description: 'Best players at the end of season.',
-            value: ClanFeedLogTypes.SeasonBestPlayers
+            value: CLAN_FEED_LOG_TYPES.SEASON_BEST_PLAYERS
           }
         ])
     );
@@ -244,22 +244,22 @@ export default class ClanLogCommand extends Command {
           {
             label: 'Regular War',
             description: 'Regular war logs.',
-            value: WarFeedLogTypes.RegularWarEmbed
+            value: WAR_FEED_LOG_TYPES.REGULAR_WAR_EMBED
           },
           {
             label: 'CWL',
             description: 'CWL logs.',
-            value: WarFeedLogTypes.CWLWarEmbed
+            value: WAR_FEED_LOG_TYPES.CWL_WAR_EMBED
           },
           {
             label: 'Friendly War',
             description: 'Friendly war logs.',
-            value: WarFeedLogTypes.FriendlyWarEmbed
+            value: WAR_FEED_LOG_TYPES.FRIENDLY_WAR_EMBED
           },
           {
             label: 'Missed Attacks',
             description: 'Missed attacks logs.',
-            value: WarFeedLogTypes.MissedAttackEmbed
+            value: WAR_FEED_LOG_TYPES.MISSED_ATTACK_EMBED
           }
         ])
     );
@@ -274,22 +274,22 @@ export default class ClanLogCommand extends Command {
           {
             label: 'Instant',
             description: 'Logs every donation.',
-            value: DonationLogFrequencyTypes.Instant
+            value: DonationLogFrequencyTypes.INSTANT
           },
           {
             label: 'Daily',
             description: 'Every 24 hours.',
-            value: DonationLogFrequencyTypes.Daily
+            value: DonationLogFrequencyTypes.DAILY
           },
           {
             label: 'Weekly',
             description: 'Every 7 days.',
-            value: DonationLogFrequencyTypes.Weekly
+            value: DonationLogFrequencyTypes.WEEKLY
           },
           {
             label: 'Monthly',
             description: 'End of season.',
-            value: DonationLogFrequencyTypes.Monthly
+            value: DonationLogFrequencyTypes.MONTHLY
           }
         ])
     );
@@ -366,7 +366,7 @@ export default class ClanLogCommand extends Command {
 
       if (action.customId === customIds.interval && action.isStringSelectMenu()) {
         await action.deferUpdate();
-        if (action.values.includes(DonationLogFrequencyTypes.Instant) && action.values.length > 1) {
+        if (action.values.includes(DonationLogFrequencyTypes.INSTANT) && action.values.length > 1) {
           await action.followUp({
             content: 'You cannot select multiple intervals when using the option `Instant`',
             ephemeral: true

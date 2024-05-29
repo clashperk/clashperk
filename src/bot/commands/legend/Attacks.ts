@@ -1,9 +1,9 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { attackCounts, Collections } from '../../util/Constants.js';
+import { LegendAttacks } from '../../types/index.js';
+import { ATTACK_COUNTS, Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
-import { LegendAttacks } from '../../types/index.js';
 
 export default class LegendAttacksCommand extends Command {
   public constructor() {
@@ -94,8 +94,8 @@ export default class LegendAttacksCommand extends Command {
         '\u200e GAIN  LOSS FINAL NAME',
         ...members.map(
           (mem) =>
-            `\u200e${this.pad(`+${mem.trophiesFromAttacks}${attackCounts[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
-              `-${Math.abs(mem.trophiesFromDefenses)}${attackCounts[Math.min(9, mem.defenseCount)]}`,
+            `\u200e${this.pad(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
+              `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(9, mem.defenseCount)]}`,
               5
             )}  ${this.pad(mem.current.end)} ${escapeMarkdown(mem.name)}`
         ),

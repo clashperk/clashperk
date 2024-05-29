@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { group, parallel } from 'radash';
 import { Command } from '../../lib/index.js';
-import { UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
+import { UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_MAP } from '../../util/Constants.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
 
 enum SpinStatus {
@@ -50,7 +50,7 @@ export default class SummaryCWLStatus extends Command {
         name: clan.name,
         tag: clan.tag,
         status,
-        leagueId: clan.warLeague?.id ?? UnrankedWarLeagueId
+        leagueId: clan.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID
       });
     }
 
@@ -72,7 +72,7 @@ export default class SummaryCWLStatus extends Command {
 
     clanGroups.map(([leagueId, clans]) => {
       embed.addFields({
-        name: `${CWL_LEAGUES[WarLeagueMap[leagueId]]} ${WarLeagueMap[leagueId]}`,
+        name: `${CWL_LEAGUES[WAR_LEAGUE_MAP[leagueId]]} ${WAR_LEAGUE_MAP[leagueId]}`,
         value: clans.map((clan) => `${statusMap[clan.status]} \u200e${clan.name}`).join('\n')
       });
     });

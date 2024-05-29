@@ -18,7 +18,7 @@ import { EventEmitter } from 'node:events';
 import { unique } from 'radash';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/CommandOptions.js';
-import { Collections, ColorCodes, MAX_TOWN_HALL_LEVEL, Settings, UnrankedWarLeagueId, WarType } from '../util/Constants.js';
+import { COLOR_CODES, Collections, MAX_TOWN_HALL_LEVEL, Settings, UNRANKED_WAR_LEAGUE_ID, WarType } from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
@@ -594,7 +594,7 @@ export class RosterManager {
 
     const grouped = affectedUsers.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
       if (!curr.userId) return prev;
-			prev[curr.userId] ??= []; // eslint-disable-line
+      prev[curr.userId] ??= []; // eslint-disable-line
       prev[curr.userId].push(curr);
       return prev;
     }, {});
@@ -701,12 +701,12 @@ export class RosterManager {
 
     const rolesMap: Record<string, string[]> = {};
     roster.members.forEach((member) => {
-			if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
+      if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
       if (roster.roleId && member.userId) rolesMap[member.userId].push(roster.roleId);
       if (member.categoryId && member.userId) {
         const category = categories[member.categoryId.toHexString()];
         // eslint-disable-next-line
-				if (category?.roleId) rolesMap[member.userId].push(category.roleId);
+        if (category?.roleId) rolesMap[member.userId].push(category.roleId);
       }
     });
 
@@ -740,7 +740,7 @@ export class RosterManager {
 
     const clan = roster.clan;
     if (res.ok && body) {
-      clan.league = { id: body.warLeague?.id ?? UnrankedWarLeagueId, name: body.warLeague?.name ?? 'Unranked' };
+      clan.league = { id: body.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID, name: body.warLeague?.name ?? 'Unranked' };
       clan.badgeUrl = body.badgeUrls.large;
     }
 
@@ -752,12 +752,12 @@ export class RosterManager {
 
     const rolesMap: Record<string, string[]> = {};
     members.forEach((member, i) => {
-			if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
+      if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
       if (roster.roleId && member.userId) rolesMap[member.userId].push(roster.roleId);
       if (member.categoryId && member.userId) {
         const category = categories[member.categoryId.toHexString()];
         // eslint-disable-next-line
-				if (category?.roleId) rolesMap[member.userId].push(category.roleId);
+        if (category?.roleId) rolesMap[member.userId].push(category.roleId);
       }
 
       const { body: player, res } = players[i];
@@ -829,7 +829,7 @@ export class RosterManager {
       roster.members.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
         const key = curr.categoryId?.toHexString();
         const categoryId = key && key in categoriesMap ? key : 'none';
-				prev[categoryId] ??= []; // eslint-disable-line
+        prev[categoryId] ??= []; // eslint-disable-line
         prev[categoryId].push(curr);
         return prev;
       }, {})
@@ -1617,7 +1617,7 @@ export class RosterManager {
           if (m.tag !== playerTag) continue;
 
           // eslint-disable-next-line
-					members[m.tag] ??= {
+          members[m.tag] ??= {
             name: m.name,
             tag: m.tag,
             participated: 0,
@@ -1670,7 +1670,7 @@ export class RosterManager {
     const label = action === 'signup' ? 'Signed up for' : 'Opted out of';
     const embed = new EmbedBuilder()
       .setTitle(`${label} ${roster.name}`)
-      .setColor(action === 'signup' ? ColorCodes.GREEN : ColorCodes.RED)
+      .setColor(action === 'signup' ? COLOR_CODES.GREEN : COLOR_CODES.RED)
       .setURL(`http://cprk.eu/${roster.clan.tag.slice(1)}`)
       .setDescription(members.map((mem) => `\u200e${mem.name} (${mem.tag}) ${mem.userId ? `- <@${mem.userId}>` : ''}`).join('\n'))
       .setFooter({ text: `${roster.clan.name} (${roster.clan.tag})`, iconURL: roster.clan.badgeUrl });

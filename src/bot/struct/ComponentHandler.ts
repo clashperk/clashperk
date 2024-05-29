@@ -1,4 +1,5 @@
 import { ButtonInteraction, StringSelectMenuInteraction } from 'discord.js';
+import { i18n } from '../util/i18n.js';
 import { Client } from './Client.js';
 
 export interface CustomIdProps {
@@ -39,6 +40,11 @@ export default class ComponentHandler {
 
     if (!interaction.inCachedGuild() && command.channel !== 'dm') return true;
     if (interaction.inCachedGuild() && !interaction.channel) return true;
+
+    if (parsed.is_locked && interaction.message.interaction && interaction.message.interaction?.user.id !== interaction.user.id) {
+      await interaction.reply({ content: i18n('common.component.unauthorized', { lng: interaction.locale }), ephemeral: true });
+      return true;
+    }
 
     const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
     if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) {

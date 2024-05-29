@@ -2,7 +2,7 @@ import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
-import { Collections, UnrankedCapitalLeagueId } from '../../util/Constants.js';
+import { Collections, UNRANKED_CAPITAL_LEAGUE_ID } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
 
 export default class ExportCapital extends Command {
@@ -45,7 +45,7 @@ export default class ExportCapital extends Command {
           tag: clan.tag,
           status: remark,
           weekId: clan.weekId,
-          leagueId: clan.capitalLeague?.id ?? UnrankedCapitalLeagueId,
+          leagueId: clan.capitalLeague?.id ?? UNRANKED_CAPITAL_LEAGUE_ID,
           leagueName: clan.state === 'ongoing' ? 'Ongoing' : (clan.capitalLeague?.name ?? 'Unknown').replace(/League/g, '').trim(),
           capitalTotalLoot: clan.capitalTotalLoot,
           totalAttacks: clan.totalAttacks,

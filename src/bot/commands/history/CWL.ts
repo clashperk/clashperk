@@ -2,7 +2,7 @@ import { APIClanWar, APIClanWarAttack, APIClanWarMember, APIWarClan } from 'clas
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { Collections, WarLeagueMap, WarType } from '../../util/Constants.js';
+import { Collections, WAR_LEAGUE_MAP, WarType } from '../../util/Constants.js';
 import { BLUE_NUMBERS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { handlePagination } from '../../util/Pagination.js';
 
@@ -61,7 +61,7 @@ export default class CWLHistoryCommand extends Command {
 
     const warMap = _wars.reduce<Record<string, IWar[]>>((acc, war) => {
       const key = `${war.member.name} (${war.member.tag})`;
-			acc[key] ??= []; // eslint-disable-line
+      acc[key] ??= []; // eslint-disable-line
       acc[key].push(war);
       return acc;
     }, {});
@@ -74,7 +74,7 @@ export default class CWLHistoryCommand extends Command {
 
         const _warsMap = userGroups.reduce<Record<string, IWar[]>>((acc, war) => {
           const seasonId = war.endTime.toISOString().slice(0, 7);
-					acc[seasonId] ??= []; // eslint-disable-line
+          acc[seasonId] ??= []; // eslint-disable-line
           acc[seasonId].push(war);
           return acc;
         }, {});
@@ -90,7 +90,7 @@ export default class CWLHistoryCommand extends Command {
             const season = moment(seasonId).format('MMM YYYY').toString();
             const [{ member, clan }] = wars;
             const leagueId = groupMap[`${seasonId}-${clan.tag}`];
-            const leagueName = WarLeagueMap[leagueId];
+            const leagueName = WAR_LEAGUE_MAP[leagueId];
             const leagueIcon = CWL_LEAGUES[leagueName];
             return [
               `**${season}** (#${member.mapPosition}, TH${member.townhallLevel})${leagueName ? `\n${leagueIcon} ${clan.name}` : ''}`,

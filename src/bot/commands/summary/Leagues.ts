@@ -2,7 +2,13 @@ import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
-import { CapitalLeagueMap, Collections, UnrankedCapitalLeagueId, UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
+import {
+  CAPITAL_LEAGUE_MAP,
+  Collections,
+  UNRANKED_CAPITAL_LEAGUE_ID,
+  UNRANKED_WAR_LEAGUE_ID,
+  WAR_LEAGUE_MAP
+} from '../../util/Constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -47,18 +53,18 @@ export default class SummaryLeaguesCommand extends Command {
   }
 
   private getWarLeagueId(clan: APIClan) {
-    return clan.warLeague?.id ?? UnrankedWarLeagueId;
+    return clan.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID;
   }
 
   private getCapitalLeagueId(clan: APIClan) {
-    return clan.capitalLeague?.id ?? UnrankedCapitalLeagueId;
+    return clan.capitalLeague?.id ?? UNRANKED_CAPITAL_LEAGUE_ID;
   }
 
   private getWarLeagueGroups(guild: Guild, clans: APIClan[]) {
     const leagueGroup = Object.entries(
       clans.reduce<Record<string, APIClan[]>>((acc, clan) => {
         const league = this.getWarLeagueId(clan);
-				acc[league] ??= []; // eslint-disable-line
+        acc[league] ??= []; // eslint-disable-line
         acc[league].push(clan);
         return acc;
       }, {})
@@ -71,7 +77,7 @@ export default class SummaryLeaguesCommand extends Command {
       .map(([leagueId, clans], i) => {
         const emptySpace = this.extraSpace(leagueGroup.length, i);
         embed.addFields({
-          name: `${CWL_LEAGUES[WarLeagueMap[leagueId]]} ${WarLeagueMap[leagueId]}`,
+          name: `${CWL_LEAGUES[WAR_LEAGUE_MAP[leagueId]]} ${WAR_LEAGUE_MAP[leagueId]}`,
           value: `${clans.map((clan) => `\u200e${Util.escapeBackTick(clan.name)} (${clan.tag})`).join('\n')}${emptySpace}`
         });
       });
@@ -104,7 +110,7 @@ export default class SummaryLeaguesCommand extends Command {
     const leagueGroup = Object.entries(
       clans.reduce<Record<string, APIClan[]>>((acc, clan) => {
         const league = this.getCapitalLeagueId(clan);
-				acc[league] ??= []; // eslint-disable-line
+        acc[league] ??= []; // eslint-disable-line
         acc[league].push(clan);
         return acc;
       }, {})
@@ -137,14 +143,14 @@ export default class SummaryLeaguesCommand extends Command {
         const emptySpace = this.extraSpace(leagueGroup.length, i);
         clans.sort((a, b) => (b.clanCapitalPoints || 0) - (a.clanCapitalPoints || 0));
         embed.addFields({
-          name: `${CAPITAL_LEAGUES[leagueId]} ${CapitalLeagueMap[leagueId]}`,
+          name: `${CAPITAL_LEAGUES[leagueId]} ${CAPITAL_LEAGUE_MAP[leagueId]}`,
           value: `${clans
             .map((clan) => {
               const capitalPoints = (clan.clanCapitalPoints || 0).toString().padStart(4, ' ');
-							const _gained = leaguesMap[clan.tag]?.gained ?? 0; // eslint-disable-line
+              const _gained = leaguesMap[clan.tag]?.gained ?? 0; // eslint-disable-line
               const gained = `${_gained >= 0 ? '+' : ''}${_gained}`.padStart(4, ' ');
               const name = Util.escapeBackTick(clan.name);
-							const emoji = leaguesMap[clan.tag]?.emoji || EMOJIS.CAPITAL_TROPHY; // eslint-disable-line
+              const emoji = leaguesMap[clan.tag]?.emoji || EMOJIS.CAPITAL_TROPHY; // eslint-disable-line
               return `\u200e${emoji} \`${capitalPoints}\` \`${gained}\` \u2002${name}`;
             })
             .join('\n')}${emptySpace}`

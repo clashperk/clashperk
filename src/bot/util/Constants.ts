@@ -1,18 +1,25 @@
 import { GuildMember, GuildTextBasedChannel, PermissionsBitField, PermissionsString, User } from 'discord.js';
 import i18next from 'i18next';
 
-export const ColorCodes = {
-  GREEN: 0x38d863,
-  DARK_GREEN: 0x6dbc1e,
-  RED: 0xeb3508,
-  DARK_RED: 0xd74c1d,
-  PEACH: 0xdf9666,
-  CYAN: 0x00dbf3,
-  YELLOW: 0xeffd5f,
-  PURPLE: 0x5865f2
-};
+export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
-export const getHttpStatusText = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
+export const MAX_TOWN_HALL_LEVEL = 16;
+
+export const MAX_BUILDER_HALL_LEVEL = 10;
+
+export const MAX_CLAN_SIZE = 50;
+
+export const BIT_FIELD = new PermissionsBitField(17893773667409n).bitfield;
+
+export const BOT_MANAGER_HYPERLINK = '[Bot Manager](<https://docs.clashperk.com/others/bot-manager>)';
+
+export const URL_REGEX = /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+
+export const UNRANKED_CAPITAL_LEAGUE_ID = 85000000;
+
+export const LEGEND_LEAGUE_ID = 29000022;
+
+export const UNRANKED_WAR_LEAGUE_ID = 48000000;
 
 export const ESCAPE_CHAR_REGEX = /[\u200e|\u200f|\u200b|\u2002]+/g;
 
@@ -26,6 +33,10 @@ export const UNICODE_EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 
 export const RTL_LANGUAGE_SAMPLE = 'مرحبا بالعالم';
 
+export const PATREON_LINK = 'https://www.patreon.com/clashperk';
+
+export const SUPPORT_SERVER_LINK = 'https://discord.gg/ppuppun';
+
 export const UP_ARROW = '↑';
 export const DOWN_ARROW = '↓';
 export const LEFT_ARROW = '←';
@@ -36,22 +47,18 @@ export const UP_LEFT_ARROW = '↖';
 export const UP_RIGHT_ARROW = '↗';
 export const DOWN_LEFT_ARROW = '↙';
 export const DOWN_RIGHT_ARROW = '↘';
-
 export const DOT = '•';
 
-export enum CommandCategories {
-  SEARCH = 'search',
-  CONFIG = 'config',
-  SETUP = 'setup',
-  WAR = 'war',
-  CWL = 'cwl',
-  ROSTER = 'roster',
-  UTIL = 'util',
-  ACTIVITY = 'activity',
-  SUMMARY = 'summary',
-  EXPORT = 'export',
-  HISTORY = 'history'
-}
+export const COLOR_CODES = {
+  GREEN: 0x38d863,
+  DARK_GREEN: 0x6dbc1e,
+  RED: 0xeb3508,
+  DARK_RED: 0xd74c1d,
+  PEACH: 0xdf9666,
+  CYAN: 0x00dbf3,
+  YELLOW: 0xeffd5f,
+  PURPLE: 0x5865f2
+};
 
 export const enum Collections {
   CLAN_STORES = 'ClanStores',
@@ -125,39 +132,6 @@ export const enum Collections {
   BOT_INTERACTIONS = 'BotInteractions'
 }
 
-export enum ElasticIndex {
-  USER_LINKED_PLAYERS = 'user_linked_players',
-  USER_LINKED_CLANS = 'user_linked_clans',
-  GUILD_LINKED_CLANS = 'guild_linked_clans',
-  RECENT_PLAYERS = 'recently_searched_players',
-  RECENT_CLANS = 'recently_searched_clans'
-}
-
-export const enum WarType {
-  REGULAR = 1,
-  FRIENDLY,
-  CWL
-}
-
-export const BOT_MANAGER_HYPERLINK = '[Bot Manager](<https://docs.clashperk.com/others/bot-manager>)';
-
-export const enum Flags {
-  DONATION_LOG = 1 << 0,
-  CLAN_FEED_LOG = 1 << 1,
-  PLAYERS_LOG = 1 << 2,
-  CLAN_EMBED_LOG = 1 << 3,
-  CLAN_GAMES_LOG = 1 << 4,
-  CLAN_WAR_LOG = 1 << 5,
-  CHANNEL_LINKED = 1 << 6,
-  SERVER_LINKED = 1 << 7,
-  LEGEND_LOG = 1 << 8,
-  TOWN_HALL_LOG = 1 << 9,
-  PLAYER_FEED_LOG = 1 << 10,
-  JOIN_LEAVE_LOG = 1 << 11,
-  CAPITAL_LOG = 1 << 12,
-  CLAN_EVENT_LOG = 1 << 13
-}
-
 export const enum Settings {
   BOT_ADMIN_ROLE = 'botAdminRole',
   PREFIX = 'prefix',
@@ -212,36 +186,50 @@ export const enum Settings {
   DISABLED_PATREON_IDS = 'disabledPatreonIds'
 }
 
-export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
-  const missingPerms = channel
-    .permissionsFor(member)!
-    .missing(permissions)
-    .map((str) => {
-      if (str === 'ViewChannel') return '**Read Messages**';
-      if (str === 'SendTTSMessages') return '**Send TTS Messages**';
-      if (str === 'UseVAD') return '**Use VAD**';
-      if (str === 'ManageGuild') return '**Manage Server**';
-      return `**${str
-        .replace(/([A-Z])/g, ' $1')
-        .toLowerCase()
-        .trim()
-        .replace(/\b(\w)/g, (char) => char.toUpperCase())}**`;
-    });
-
-  return {
-    missing: Boolean(missingPerms.length > 0),
-    permissionStrings: missingPerms,
-    missingPerms:
-      missingPerms.length > 1
-        ? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]!} permissions`
-        : `${missingPerms[0]!} permission`
-  };
+export enum ElasticIndex {
+  USER_LINKED_PLAYERS = 'user_linked_players',
+  USER_LINKED_CLANS = 'user_linked_clans',
+  GUILD_LINKED_CLANS = 'guild_linked_clans',
+  RECENT_PLAYERS = 'recently_searched_players',
+  RECENT_CLANS = 'recently_searched_clans'
 }
 
-export const URLS = {
-  PATREON: 'https://www.patreon.com/clashperk',
-  SUPPORT_SERVER: 'https://discord.gg/ppuppun'
-};
+export const enum Flags {
+  DONATION_LOG = 1 << 0,
+  CLAN_FEED_LOG = 1 << 1,
+  PLAYERS_LOG = 1 << 2,
+  CLAN_EMBED_LOG = 1 << 3,
+  CLAN_GAMES_LOG = 1 << 4,
+  CLAN_WAR_LOG = 1 << 5,
+  CHANNEL_LINKED = 1 << 6,
+  SERVER_LINKED = 1 << 7,
+  LEGEND_LOG = 1 << 8,
+  TOWN_HALL_LOG = 1 << 9,
+  PLAYER_FEED_LOG = 1 << 10,
+  JOIN_LEAVE_LOG = 1 << 11,
+  CAPITAL_LOG = 1 << 12,
+  CLAN_EVENT_LOG = 1 << 13
+}
+
+export const enum WarType {
+  REGULAR = 1,
+  FRIENDLY,
+  CWL
+}
+
+export enum CommandCategories {
+  SEARCH = 'search',
+  CONFIG = 'config',
+  SETUP = 'setup',
+  WAR = 'war',
+  CWL = 'cwl',
+  ROSTER = 'roster',
+  UTIL = 'util',
+  ACTIVITY = 'activity',
+  SUMMARY = 'summary',
+  EXPORT = 'export',
+  HISTORY = 'history'
+}
 
 export const SUPER_SCRIPTS: Record<string, string> = {
   0: '⁰',
@@ -256,29 +244,8 @@ export const SUPER_SCRIPTS: Record<string, string> = {
   9: '⁹'
 } as const;
 
-export const attackCounts: Record<string, string> = {
+export const ATTACK_COUNTS: Record<string, string> = {
   ...SUPER_SCRIPTS
-};
-
-export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
-
-export const MAX_TOWN_HALL_LEVEL = 16;
-export const MAX_BUILDER_HALL_LEVEL = 10;
-
-export const MAX_CLAN_SIZE = 50;
-
-export const LEGEND_LEAGUE_ID = 29000022;
-
-export const BIT_FIELD = new PermissionsBitField(17893773667409n).bitfield;
-
-export const getInviteLink = (id: string, guildId?: string, noPermissions = false) => {
-  const query = new URLSearchParams({
-    client_id: id,
-    scope: 'bot applications.commands',
-    permissions: noPermissions ? '0' : BIT_FIELD.toString(),
-    ...(guildId ? { guild_id: guildId } : {})
-  }).toString();
-  return `https://discord.com/api/oauth2/authorize?${query}`;
 };
 
 export const BUILDER_HALL_LEVELS_FOR_ROLES = Array(MAX_BUILDER_HALL_LEVEL - 2)
@@ -364,82 +331,46 @@ export const PLAYER_LEAGUE_NAMES = Array.from(new Set(Object.values(PLAYER_LEAGU
 
 export const BUILDER_BASE_LEAGUE_NAMES = Array.from(new Set(Object.values(BUILDER_BASE_LEAGUE_MAPS)));
 
-export const locales: Record<string, string> = {
-  'en-US': 'English, US',
-  'en-GB': 'English, UK',
-  'bg': 'Bulgarian',
-  'zh-CN': 'Chinese, China',
-  'zh-TW': 'Chinese, Taiwan',
-  'hr': 'Croatian',
-  'cs': 'Czech',
-  'da': 'Danish',
-  'nl': 'Dutch',
-  'fi': 'Finnish',
-  'fr': 'French',
-  'de': 'German',
-  'el': 'Greek',
-  'hi': 'Hindi',
-  'hu': 'Hungarian',
-  'it': 'Italian',
-  'ja': 'Japanese',
-  'ko': 'Korean',
-  'lt': 'Lithuanian',
-  'no': 'Norwegian',
-  'pl': 'Polish',
-  'pt-BR': 'Portuguese, Brazilian',
-  'ro': 'Romanian, Romania',
-  'ru': 'Russian',
-  'es-ES': 'Spanish',
-  'sv-SE': 'Swedish',
-  'th': 'Thai',
-  'tr': 'Turkish',
-  'uk': 'Ukrainian',
-  'vi': 'Vietnamese'
-};
-
 export const CLAN_GAMES_MINIMUM_POINTS = [
   1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4500, 5000
 ];
 
-export const ClanFeedLogTypes = {
-  TownHallUpgrade: 'TOWN_HALL_UPGRADE',
-  WarPreferenceChange: 'WAR_PREFERENCE_CHANGE',
-  PlayerNameChange: 'PLAYER_NAME_CHANGE',
-  DonationReset: 'PLAYER_DONATION_RESET',
-  RoleChange: 'PLAYER_ROLE_CHANGE',
-  SeasonBestPlayers: 'SEASON_BEST_PLAYERS'
+export const CLAN_FEED_LOG_TYPES = {
+  TOWN_HALL_UPGRADE: 'TOWN_HALL_UPGRADE',
+  WAR_PREFERENCE_CHANGE: 'WAR_PREFERENCE_CHANGE',
+  PLAYER_NAME_CHANGE: 'PLAYER_NAME_CHANGE',
+  DONATION_RESET: 'PLAYER_DONATION_RESET',
+  ROLE_CHANGE: 'PLAYER_ROLE_CHANGE',
+  SEASON_BEST_PLAYERS: 'SEASON_BEST_PLAYERS'
 } as const;
 
-export const DeepLinkTypes = {
-  OpenInGame: 'OPEN_IN_GAME',
-  OpenInCOS: 'OPEN_IN_COS'
+export const DEEP_LINK_TYPES = {
+  OPEN_IN_GAME: 'OPEN_IN_GAME',
+  OPEN_IN_COS: 'OPEN_IN_COS'
 } as const;
 
-export const WarFeedLogTypes = {
-  RegularWarEmbed: 'REGULAR_EMBED',
-  MissedAttackEmbed: 'MISSED_ATTACK_EMBED',
-  CWLWarEmbed: 'CWL_WAR_EMBED',
-  FriendlyWarEmbed: 'FRIENDLY_WAR_EMBED'
+export const WAR_FEED_LOG_TYPES = {
+  REGULAR_WAR_EMBED: 'REGULAR_EMBED',
+  MISSED_ATTACK_EMBED: 'MISSED_ATTACK_EMBED',
+  CWL_WAR_EMBED: 'CWL_WAR_EMBED',
+  FRIENDLY_WAR_EMBED: 'FRIENDLY_WAR_EMBED'
 } as const;
 
 export const enum DonationLogFrequencyTypes {
-  Instant = 'INSTANT',
-  Daily = 'DAILY',
-  Weekly = 'WEEKLY',
-  Monthly = 'MONTHLY'
+  INSTANT = 'INSTANT',
+  DAILY = 'DAILY',
+  WEEKLY = 'WEEKLY',
+  MONTHLY = 'MONTHLY'
 }
 
-export const enum UserPermissionTypes {
-  ManageRoster = 'MANGE_ROSTER',
-  ManageClans = 'MANAGE_CLANS',
-  FullControl = 'FULL_CONTROL'
-}
+export const PLAYER_ROLES_MAP: Record<string, string> = {
+  admin: 'Elder',
+  coLeader: 'Co-Leader',
+  leader: 'Leader',
+  member: 'Member'
+};
 
-export const URL_REGEX = /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
-
-export const UnrankedCapitalLeagueId = 85000000;
-
-export const CapitalLeagueMap: Record<string, string> = {
+export const CAPITAL_LEAGUE_MAP: Record<string, string> = {
   85000000: 'Unranked',
   85000001: 'Bronze League III',
   85000002: 'Bronze League II',
@@ -465,7 +396,7 @@ export const CapitalLeagueMap: Record<string, string> = {
   85000022: 'Legend League'
 };
 
-export const PlayerLeagueMap: Record<string, string> = {
+export const PLAYER_LEAGUE_MAP: Record<string, string> = {
   29000000: 'Unranked',
   29000001: 'Bronze League III',
   29000002: 'Bronze League II',
@@ -491,9 +422,7 @@ export const PlayerLeagueMap: Record<string, string> = {
   29000022: 'Legend League'
 };
 
-export const UnrankedWarLeagueId = 48000000;
-
-export const WarLeagueMap: Record<string, string> = {
+export const WAR_LEAGUE_MAP: Record<string, string> = {
   48000000: 'Unranked',
   48000001: 'Bronze League III',
   48000002: 'Bronze League II',
@@ -519,7 +448,7 @@ export const WarLeagueMap: Record<string, string> = {
   48000022: 'Legend League'
 };
 
-export const promotionMap: Record<string, { promotion: number; demotion: number; name: string }> = {
+export const WAR_LEAGUE_PROMOTION_MAP: Record<string, { promotion: number; demotion: number; name: string }> = {
   48000000: { promotion: 3, demotion: 9, name: 'Unranked' },
   48000001: { promotion: 3, demotion: 9, name: 'Bronze League III' },
   48000002: { promotion: 3, demotion: 8, name: 'Bronze League II' },
@@ -541,7 +470,7 @@ export const promotionMap: Record<string, { promotion: number; demotion: number;
   48000018: { promotion: 0, demotion: 6, name: 'Champion League I' }
 };
 
-export const medalsRankingMap: Record<string, number[]> = {
+export const MEDALS_RANKING_MAP: Record<string, number[]> = {
   48000000: [34, 32, 30, 28, 26, 24, 22, 20],
   48000001: [34, 32, 30, 28, 26, 24, 22, 20],
   48000002: [46, 44, 42, 40, 38, 36, 34, 32],
@@ -563,7 +492,19 @@ export const medalsRankingMap: Record<string, number[]> = {
   48000018: [508, 501, 494, 487, 480, 473, 466, 459]
 };
 
-export const BuilderBaseLeagues = [
+export const MEDALS_PERCENTAGE_MAP: Record<string, number> = {
+  '0': 20,
+  '1': 30,
+  '2': 40,
+  '3': 50,
+  '4': 60,
+  '5': 70,
+  '6': 80,
+  '7': 90,
+  '8': 100
+};
+
+export const BUILDER_BASE_LEAGUES = [
   {
     id: 44000000,
     name: 'Wood League V'
@@ -734,22 +675,48 @@ export const BuilderBaseLeagues = [
   }
 ];
 
-export const medalsPercentageMap: Record<string, number> = {
-  '0': 20,
-  '1': 30,
-  '2': 40,
-  '3': 50,
-  '4': 60,
-  '5': 70,
-  '6': 80,
-  '7': 90,
-  '8': 100
-};
-
 export const calculateCWLMedals = (leagueId: string, stars: number, rank: number) => {
-  const percentage = medalsPercentageMap[Math.min(8, stars)];
-  const ranks = medalsRankingMap[leagueId];
+  const percentage = MEDALS_PERCENTAGE_MAP[Math.min(8, stars)];
+  const ranks = MEDALS_RANKING_MAP[leagueId];
   const rankMedals = ranks[rank - 1];
   const totalMedals = Math.round((rankMedals * percentage) / 100);
   return totalMedals;
 };
+
+export const getHttpStatusText = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
+
+export const getInviteLink = (id: string, guildId?: string, noPermissions = false) => {
+  const query = new URLSearchParams({
+    client_id: id,
+    scope: 'bot applications.commands',
+    permissions: noPermissions ? '0' : BIT_FIELD.toString(),
+    ...(guildId ? { guild_id: guildId } : {})
+  }).toString();
+  return `https://discord.com/api/oauth2/authorize?${query}`;
+};
+
+export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
+  const missingPerms = channel
+    .permissionsFor(member)!
+    .missing(permissions)
+    .map((str) => {
+      if (str === 'ViewChannel') return '**Read Messages**';
+      if (str === 'SendTTSMessages') return '**Send TTS Messages**';
+      if (str === 'UseVAD') return '**Use VAD**';
+      if (str === 'ManageGuild') return '**Manage Server**';
+      return `**${str
+        .replace(/([A-Z])/g, ' $1')
+        .toLowerCase()
+        .trim()
+        .replace(/\b(\w)/g, (char) => char.toUpperCase())}**`;
+    });
+
+  return {
+    missing: Boolean(missingPerms.length > 0),
+    permissionStrings: missingPerms,
+    missingPerms:
+      missingPerms.length > 1
+        ? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]!} permissions`
+        : `${missingPerms[0]!} permission`
+  };
+}

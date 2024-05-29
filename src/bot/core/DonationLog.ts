@@ -37,7 +37,7 @@ export default class DonationLog extends BaseLog {
       !(data.gte && data.lte) &&
       cache.interval &&
       cache.interval.some((i) =>
-        [DonationLogFrequencyTypes.Daily, DonationLogFrequencyTypes.Monthly, DonationLogFrequencyTypes.Weekly].includes(i)
+        [DonationLogFrequencyTypes.DAILY, DonationLogFrequencyTypes.MONTHLY, DonationLogFrequencyTypes.WEEKLY].includes(i)
       )
     ) {
       return null;
@@ -317,7 +317,7 @@ export default class DonationLog extends BaseLog {
   private async _refreshDaily() {
     if (this.timeouts.daily) clearTimeout(this.timeouts.daily);
     try {
-      const interval = DonationLogFrequencyTypes.Daily;
+      const interval = DonationLogFrequencyTypes.DAILY;
       const lte = moment().startOf('day').toDate();
       const gte = moment(lte).subtract(1, 'd').toISOString();
 
@@ -348,7 +348,7 @@ export default class DonationLog extends BaseLog {
   private async _refreshWeekly() {
     if (this.timeouts.weekly) clearTimeout(this.timeouts.weekly);
     try {
-      const interval = DonationLogFrequencyTypes.Weekly;
+      const interval = DonationLogFrequencyTypes.WEEKLY;
       const lte = moment().startOf('week').toDate();
       const gte = moment(lte).subtract(7, 'days').toISOString();
 
@@ -378,7 +378,7 @@ export default class DonationLog extends BaseLog {
   private async _refreshMonthly() {
     if (this.timeouts.monthly) clearTimeout(this.timeouts.monthly);
     try {
-      const interval = DonationLogFrequencyTypes.Monthly;
+      const interval = DonationLogFrequencyTypes.MONTHLY;
       const season = moment(Season.ID);
       const lte = Season.getLastMondayOfMonth(season.month() - 1, season.year());
       const gte = Season.getLastMondayOfMonth(lte.getMonth() - 1, lte.getFullYear()).toISOString();

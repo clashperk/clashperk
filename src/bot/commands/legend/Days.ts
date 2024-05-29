@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import { PlayersEntity } from '../../entities/players.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';
-import { Collections, LEGEND_LEAGUE_ID, attackCounts } from '../../util/Constants.js';
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
 
@@ -42,23 +42,27 @@ export default class LegendDaysCommand extends Command {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
+    const isLockedFeatureFlag = await this.client.postHog.isFeatureEnabled('legend-days-component-lock', interaction.guildId, {
+      personProperties: { name: interaction.guild.name, id: interaction.guild.id }
+    });
+
     const row = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(
         new ButtonBuilder()
           .setEmoji(EMOJIS.REFRESH)
-          .setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev, tag: data.tag }))
+          .setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev, tag: data.tag, is_locked: isLockedFeatureFlag }))
           .setStyle(ButtonStyle.Secondary)
       )
       .addComponents(
         new ButtonBuilder()
           .setLabel(args.prev ? 'Current Day' : 'Previous Days')
-          .setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag }))
+          .setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag, is_locked: isLockedFeatureFlag }))
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       )
       .addComponents(
         new ButtonBuilder()
           .setLabel(args.graph ? 'Overview' : 'View Graph')
-          .setCustomId(JSON.stringify({ cmd: this.id, graph: !args.graph, tag: data.tag }))
+          .setCustomId(JSON.stringify({ cmd: this.id, graph: !args.graph, tag: data.tag, is_locked: isLockedFeatureFlag }))
           .setStyle(ButtonStyle.Secondary)
       );
 
@@ -168,7 +172,7 @@ export default class LegendDaysCommand extends Command {
 
     const { globalRank, countryRank } = await this.rankings(data.tag);
 
-    const weaponLevel = data.townHallWeaponLevel ? attackCounts[data.townHallWeaponLevel] : '';
+    const weaponLevel = data.townHallWeaponLevel ? ATTACK_COUNTS[data.townHallWeaponLevel] : '';
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
       .setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
@@ -465,7 +469,7 @@ export default class LegendDaysCommand extends Command {
       return prev;
     }, []);
 
-    const weaponLevel = data.townHallWeaponLevel ? attackCounts[data.townHallWeaponLevel] : '';
+    const weaponLevel = data.townHallWeaponLevel ? ATTACK_COUNTS[data.townHallWeaponLevel] : '';
     const logDescription =
       perDayLogs.length >= 32
         ? [
@@ -473,8 +477,8 @@ export default class LegendDaysCommand extends Command {
             'DAY   ATK    DEF   +/-   INIT  FINAL ',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
-              const def = this.pad(`-${Math.abs(day.loss)}${attackCounts[Math.min(9, day.defenseCount)]}`, 5);
-              const atk = this.pad(`+${day.gain}${attackCounts[Math.min(9, day.attackCount)]}`, 5);
+              const def = this.pad(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(9, day.defenseCount)]}`, 5);
+              const atk = this.pad(`+${day.gain}${ATTACK_COUNTS[Math.min(9, day.attackCount)]}`, 5);
               const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
               const final = this.pad(day.final, 4);
               const init = this.pad(day.initial, 5);
@@ -487,8 +491,8 @@ export default class LegendDaysCommand extends Command {
             '`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
-              const def = this.pad(`-${Math.abs(day.loss)}${attackCounts[Math.min(9, day.defenseCount)]}`, 5);
-              const atk = this.pad(`+${day.gain}${attackCounts[Math.min(9, day.attackCount)]}`, 5);
+              const def = this.pad(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(9, day.defenseCount)]}`, 5);
+              const atk = this.pad(`+${day.gain}${ATTACK_COUNTS[Math.min(9, day.attackCount)]}`, 5);
               const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
               const final = this.pad(day.final, 4);
               const init = this.pad(day.initial, 5);

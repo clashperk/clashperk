@@ -2,8 +2,8 @@ import { APIPlayer } from 'clashofclans.js';
 import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { ClanFeedLogModel } from '../types/index.js';
-import { ClanFeedLogTypes, Collections, ColorCodes, DeepLinkTypes } from '../util/Constants.js';
-import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
+import { CLAN_FEED_LOG_TYPES, Collections, COLOR_CODES, DEEP_LINK_TYPES, PLAYER_ROLES_MAP } from '../util/Constants.js';
+import { TOWN_HALLS } from '../util/Emojis.js';
 import { unitsFlatten } from '../util/Helper.js';
 import { Season, Util } from '../util/index.js';
 import { RAW_TROOPS_FILTERED } from '../util/Troops.js';
@@ -11,24 +11,24 @@ import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';
 
 const OP: { [key: string]: number } = {
-  NAME_CHANGE: ColorCodes.PEACH,
-  TOWN_HALL_UPGRADE: ColorCodes.CYAN,
-  DONATION_RESET: ColorCodes.YELLOW,
-  WAR_PREF_CHANGE: ColorCodes.CYAN
+  NAME_CHANGE: COLOR_CODES.PEACH,
+  TOWN_HALL_UPGRADE: COLOR_CODES.CYAN,
+  PROMOTED: COLOR_CODES.CYAN,
+  DEMOTED: COLOR_CODES.RED,
+  WAR_PREF_CHANGE: COLOR_CODES.CYAN
 };
 
 const clanTypeEvents = {
-  CAPITAL_HALL_LEVEL_UP: ColorCodes.CYAN,
-  CAPITAL_LEAGUE_CHANGE: ColorCodes.CYAN,
-  WAR_LEAGUE_CHANGE: ColorCodes.CYAN,
-  CLAN_LEVEL_UP: ColorCodes.CYAN
+  CAPITAL_HALL_LEVEL_UP: COLOR_CODES.CYAN,
+  CAPITAL_LEAGUE_CHANGE: COLOR_CODES.CYAN,
+  WAR_LEAGUE_CHANGE: COLOR_CODES.CYAN,
+  CLAN_LEVEL_UP: COLOR_CODES.CYAN
 } satisfies Record<string, number>;
 
 const logTypes: Record<string, string> = {
-  NAME_CHANGE: ClanFeedLogTypes.PlayerNameChange,
-  TOWN_HALL_UPGRADE: ClanFeedLogTypes.TownHallUpgrade,
-  DONATION_RESET: ClanFeedLogTypes.DonationReset,
-  WAR_PREF_CHANGE: ClanFeedLogTypes.WarPreferenceChange
+  NAME_CHANGE: CLAN_FEED_LOG_TYPES.PLAYER_NAME_CHANGE,
+  TOWN_HALL_UPGRADE: CLAN_FEED_LOG_TYPES.TOWN_HALL_UPGRADE,
+  WAR_PREF_CHANGE: CLAN_FEED_LOG_TYPES.WAR_PREFERENCE_CHANGE
 };
 
 export default class ClanFeedLog extends BaseLog {
@@ -120,21 +120,23 @@ export default class ClanFeedLog extends BaseLog {
 
     let content: string | undefined;
     const embed = new EmbedBuilder().setColor(OP[member.op]).setTitle(`\u200e${player.name} (${player.tag})`);
-    if (!cache.deepLink || cache.deepLink === DeepLinkTypes.OpenInCOS) {
+    if (!cache.deepLink || cache.deepLink === DEEP_LINK_TYPES.OPEN_IN_COS) {
       embed.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
     }
-    if (cache.deepLink === DeepLinkTypes.OpenInGame) {
+    if (cache.deepLink === DEEP_LINK_TYPES.OPEN_IN_GAME) {
       embed.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
     }
     if (member.op === 'NAME_CHANGE') {
       embed.setDescription(`Name changed from **${member.name}**`);
       embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
     }
-    if (member.op === 'DONATION_RESET') {
+    if (member.op === 'PROMOTED') {
       embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
-      embed.setDescription(
-        `Reset Donations/Receives **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
-      );
+      embed.setDescription(`Promoted to **${PLAYER_ROLES_MAP[member.role]}**`);
+    }
+    if (member.op === 'DEMOTED') {
+      embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
+      embed.setDescription(`Demoted to **${PLAYER_ROLES_MAP[member.role]}**`);
     }
     if (member.op === 'TOWN_HALL_UPGRADE') {
       if (cache.role) content = `<@&${cache.role}>`;
@@ -151,11 +153,11 @@ export default class ClanFeedLog extends BaseLog {
       embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
       if (player.warPreference === 'in') {
         embed.setDescription(`**Opted in** for clan wars.`);
-        embed.setColor(ColorCodes.DARK_GREEN);
+        embed.setColor(COLOR_CODES.DARK_GREEN);
       }
       if (player.warPreference === 'out') {
         embed.setDescription(`**Opted out** of clan wars.`);
-        embed.setColor(ColorCodes.DARK_RED);
+        embed.setColor(COLOR_CODES.DARK_RED);
       }
     }
     embed.setTimestamp();
