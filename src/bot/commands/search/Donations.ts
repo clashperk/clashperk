@@ -93,16 +93,19 @@ export default class DonationsCommand extends Command {
       const m = dbMembers.find((m) => m.tag === mem.tag);
       if (m) {
         const curr = m.clans?.[clan.tag] ?? { donations: { current: 0, total: 0 }, donationsReceived: { current: 0, total: 0 } };
-        const donated = isSameSeason
+        let donated = isSameSeason
           ? mem.donations >= curr.donations.current
             ? curr.donations.total + (mem.donations - curr.donations.current)
-            : Math.max(mem.donations, curr.donations.total)
+            : curr.donations.total
           : curr.donations.total;
-        const received = isSameSeason
+        donated = Math.max(mem.donations, donated);
+
+        let received = isSameSeason
           ? mem.donationsReceived >= curr.donationsReceived.current
             ? curr.donationsReceived.total + (mem.donationsReceived - curr.donationsReceived.current)
-            : Math.max(mem.donationsReceived, curr.donationsReceived.total)
+            : curr.donationsReceived.total
           : curr.donationsReceived.total;
+        received = Math.max(mem.donationsReceived, received);
 
         members.push({
           name: mem.name,
