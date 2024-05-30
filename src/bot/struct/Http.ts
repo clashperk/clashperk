@@ -17,7 +17,7 @@ import Client from './Client.js';
 export default class Http extends ClashOfClansClient {
   private bearerToken!: string;
 
-  public constructor(client: Client) {
+  public constructor(private readonly client: Client) {
     const keys = process.env.CLASH_TOKENS?.split(',') ?? [];
 
     super({
@@ -41,7 +41,7 @@ export default class Http extends ClashOfClansClient {
           !(!(body as Record<string, string>)?.message && status === 403) &&
           !(path.includes('war') && status === 404)
         ) {
-          client.logger.debug(`${status} ${path}`, { label: 'HTTP' });
+          this.client.logger.debug(`${status} ${path}`, { label: 'HTTP' });
         }
       }
     });
@@ -274,6 +274,9 @@ export default class Http extends ClashOfClansClient {
   }
 
   public async linkPlayerTag(discordId: string, playerTag: string) {
+    const isEnabled = await this.client.postHog.isFeatureEnabled('use-link-api-service', 'global');
+    if (!isEnabled) return true;
+
     const res = await request('https://cocdiscord.link/links', {
       method: 'POST',
       headers: {
