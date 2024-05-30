@@ -11,7 +11,7 @@ import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
 import { request } from 'undici';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
-import { DISCORD_ID_REGEX, TAG_REGEX } from '../util/Constants.js';
+import { DISCORD_ID_REGEX, FeatureFlags, TAG_REGEX } from '../util/Constants.js';
 import Client from './Client.js';
 
 export default class Http extends ClashOfClansClient {
@@ -274,7 +274,7 @@ export default class Http extends ClashOfClansClient {
   }
 
   public async linkPlayerTag(discordId: string, playerTag: string) {
-    const isEnabled = await this.client.postHog.isFeatureEnabled('use-link-api-service', 'global');
+    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.USE_LINK_API_SERVICE, 'global');
     if (!isEnabled) return true;
 
     const res = await request('https://cocdiscord.link/links', {

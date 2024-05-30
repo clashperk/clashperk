@@ -3,12 +3,13 @@ import Discord, { BaseInteraction, GatewayIntentBits, Message, Options } from 'd
 import { Db } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { URL, fileURLToPath } from 'node:url';
+import { PostHog } from 'posthog-node';
 import { container } from 'tsyringe';
 import RPCHandler from '../core/RPCHandler.js';
 import { RolesManager } from '../core/RolesManager.js';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/index.js';
 import { ClientUtil } from '../util/ClientUtil.js';
-import { Settings } from '../util/Constants.js';
+import { FeatureFlags, Settings } from '../util/Constants.js';
 import Logger from '../util/Logger.js';
 import { i18n } from '../util/i18n.js';
 import { Autocomplete } from './Autocomplete.js';
@@ -27,7 +28,6 @@ import { RosterManager } from './RosterManager.js';
 import SettingsProvider from './SettingsProvider.js';
 import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
-import { PostHog } from 'posthog-node';
 
 export class Client extends Discord.Client {
   public commandHandler = new CommandHandler(this, {
@@ -141,11 +141,19 @@ export class Client extends Discord.Client {
     this.postHog = new PostHog(process.env.POSTHOG_API_KEY!, {
       host: 'https://us.i.posthog.com',
       personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY!,
-      preloadFeatureFlags: true
+      preloadFeatureFlags: true,
+      disableGeoip: true
     });
 
     this.ownerId = process.env.OWNER!;
     container.register(Client, { useValue: this });
+  }
+
+  public isFeatureEnabled(flag: FeatureFlags, distinctId: string) {
+    return this.postHog.isFeatureEnabled(flag, distinctId, {
+      onlyEvaluateLocally: true,
+      disableGeoip: true
+    });
   }
 
   public isOwner(user: string | Discord.User) {

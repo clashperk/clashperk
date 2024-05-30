@@ -194,6 +194,12 @@ export enum ElasticIndex {
   RECENT_CLANS = 'recently_searched_clans'
 }
 
+export enum FeatureFlags {
+  CLAN_MEMBERS_PROMOTION_LOG = 'clan-members-promotion-log',
+  USE_LINK_API_SERVICE = 'use-link-api-service',
+  LEGEND_DAYS_COMPONENT_LOCK = 'legend-days-component-lock'
+}
+
 export const enum Flags {
   DONATION_LOG = 1 << 0,
   CLAN_FEED_LOG = 1 << 1,

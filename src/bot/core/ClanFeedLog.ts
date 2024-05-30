@@ -2,7 +2,7 @@ import { APIPlayer } from 'clashofclans.js';
 import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { ClanFeedLogModel } from '../types/index.js';
-import { CLAN_FEED_LOG_TYPES, Collections, COLOR_CODES, DEEP_LINK_TYPES, PLAYER_ROLES_MAP } from '../util/Constants.js';
+import { CLAN_FEED_LOG_TYPES, Collections, COLOR_CODES, DEEP_LINK_TYPES, FeatureFlags, PLAYER_ROLES_MAP } from '../util/Constants.js';
 import { TOWN_HALLS } from '../util/Emojis.js';
 import { unitsFlatten } from '../util/Helper.js';
 import { Season, Util } from '../util/index.js';
@@ -114,6 +114,9 @@ export default class ClanFeedLog extends BaseLog {
   private async embed(cache: Cache, member: Member, data: Feed) {
     const { body: player, res } = await this.client.http.getPlayer(member.tag);
     if (!res.ok) return null;
+
+    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_MEMBERS_PROMOTION_LOG, cache.guild);
+    if (!isEnabled && ['DEMOTED', 'PROMOTED'].includes(member.op)) return null;
 
     // do not post if the logTypes are set and the logType is not included
     if (cache.logTypes && !cache.logTypes.includes(logTypes[member.op])) return null;
