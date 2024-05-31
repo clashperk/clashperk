@@ -149,10 +149,11 @@ export class Client extends Discord.Client {
     container.register(Client, { useValue: this });
   }
 
-  public isFeatureEnabled(flag: FeatureFlags, distinctId: string) {
+  public isFeatureEnabled(flag: FeatureFlags, distinctId: string, sendFeatureFlagEvents = true) {
     return this.postHog.isFeatureEnabled(flag, distinctId, {
       onlyEvaluateLocally: true,
-      disableGeoip: true
+      disableGeoip: true,
+      sendFeatureFlagEvents
     });
   }
 

@@ -115,7 +115,7 @@ export default class ClanFeedLog extends BaseLog {
     const { body: player, res } = await this.client.http.getPlayer(member.tag);
     if (!res.ok) return null;
 
-    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_MEMBERS_PROMOTION_LOG, cache.guild);
+    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_MEMBERS_PROMOTION_LOG, cache.guild, false);
     if (!isEnabled && ['DEMOTED', 'PROMOTED'].includes(member.op)) return null;
 
     // do not post if the logTypes are set and the logType is not included
