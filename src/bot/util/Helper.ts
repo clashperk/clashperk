@@ -736,11 +736,11 @@ export const getMenuFromMessage = (interaction: ButtonInteraction<'cached'>, sel
 };
 
 export const recoverDonations = async (clan: APIClan) => {
-  const clanTag = clan.tag;
+  const client = container.resolve(Client);
+
   if (Date.now() >= new Date('2024-05-24T05:00').getTime()) return;
 
-  const client = container.resolve(Client);
-  const inserted = await client.redis.connection.get(`RECOVERY:${clanTag}`);
+  const inserted = await client.redis.connection.get(`RECOVERY:${clan.tag}`);
   if (inserted) return;
 
   const { aggregations } = await client.elastic.search({
@@ -749,7 +749,7 @@ export const recoverDonations = async (clan: APIClan) => {
         filter: [
           {
             term: {
-              clan_tag: clanTag
+              clan_tag: clan.tag
             }
           },
           {
@@ -834,19 +834,19 @@ export const recoverDonations = async (clan: APIClan) => {
 
   const ops: AnyBulkWriteOperation<PlayerSeasonModel>[] = [];
   for await (const player of cursor) {
-    if (!player.clans?.[clanTag]) continue;
+    if (!player.clans?.[clan.tag]) continue;
 
     const record = playersMap[player.tag];
-    const donations = Math.max(player.clans[clanTag].donations.total, record.donated);
-    const received = Math.max(player.clans[clanTag].donationsReceived.total, record.received);
+    const donations = Math.max(player.clans[clan.tag].donations.total, record.donated);
+    const received = Math.max(player.clans[clan.tag].donationsReceived.total, record.received);
 
     ops.push({
       updateOne: {
         filter: { _id: player._id },
         update: {
           $set: {
-            [`clans.${clanTag}.donations.total`]: donations,
-            [`clans.${clanTag}.donationsReceived.total`]: received
+            [`clans.${clan.tag}.donations.total`]: donations,
+            [`clans.${clan.tag}.donationsReceived.total`]: received
           }
         }
       }
@@ -857,7 +857,7 @@ export const recoverDonations = async (clan: APIClan) => {
     await client.db.collection<PlayerSeasonModel>(Collections.PLAYER_SEASONS).bulkWrite(ops);
   }
 
-  return client.redis.set(`RECOVERY:${clanTag}`, '-0-', 60 * 60 * 24 * 3);
+  return client.redis.set(`RECOVERY:${clan.tag}`, '-0-', 60 * 60 * 24 * 3);
 };
 
 export const unitsFlatten = (data: APIPlayer) => {

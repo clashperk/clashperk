@@ -19,7 +19,7 @@
     // "noUnusedLocals": true,
     // "noUnusedParameters": true,
     "strict": true,
-    "useUnknownInCatchVariables": true,
+    "useUnknownInCatchVariables": false,
     // "noUncheckedIndexedAccess": true,
 
     // Emit

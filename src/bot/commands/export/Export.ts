@@ -21,7 +21,8 @@ export default class ExportCommand extends Command {
       'last-wars': this.handler.modules.get('export-last-wars')!,
       'cwl': this.handler.modules.get('export-cwl')!,
       'capital': this.handler.modules.get('export-capital')!,
-      'attack-log': this.handler.modules.get('export-attack-log')!
+      'attack-log': this.handler.modules.get('export-attack-log')!,
+      'rosters': this.handler.modules.get('export-rosters')!
     }[args.command];
 
     if (!command) throw Error('Command not found.');

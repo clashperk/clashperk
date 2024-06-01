@@ -3694,6 +3694,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String
           }
         ]
+      },
+      {
+        name: 'rosters',
+        description: 'Export all rosters.',
+        type: ApplicationCommandOptionType.Subcommand
       }
     ]
   },
