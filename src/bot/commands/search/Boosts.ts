@@ -1,7 +1,7 @@
 import { APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { BOOST_DURATION, Collections } from '../../util/Constants.js';
+import { Collections } from '../../util/Constants.js';
 import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis.js';
 import { RAW_SUPER_TROOPS } from '../../util/Troops.js';
 import { Util } from '../../util/index.js';
@@ -32,8 +32,8 @@ export default class BoostsCommand extends Command {
       return interaction.followUp({ content: this.i18n('command.boosts.no_boosts', { lng: interaction.locale }), ephemeral: true });
 
     const boostTimes = await this.client.db
-      .collection<{ tag: string; lastSeen: Date; superTroops?: { name: string; timestamp: number }[] }>(Collections.PLAYERS)
-      .find({ tag: { $in: players.map((m) => m.tag) } }, { projection: { _id: 0, tag: 1, superTroops: 1, lastSeen: 1 } })
+      .collection<{ tag: string; lastSeen: Date }>(Collections.PLAYERS)
+      .find({ tag: { $in: players.map((m) => m.tag) } }, { projection: { _id: 0, tag: 1, lastSeen: 1 } })
       .toArray();
 
     const recently = boostTimes.filter((m) => m.lastSeen >= new Date(Date.now() - 10 * 60 * 1000)).map((m) => m.tag);
@@ -47,9 +47,7 @@ export default class BoostsCommand extends Command {
       for (const troop of curr.troops) {
         if (troop.name in SUPER_TROOPS && troop.superTroopIsActive && (args.unit && selected ? args.unit === troop.name : true)) {
           if (!(troop.name in pre)) pre[troop.name] = [];
-          const boosted = boostTimes.find((mem) => mem.tag === curr.tag)?.superTroops?.find((en) => en.name === troop.name);
-          const duration = boosted?.timestamp ? BOOST_DURATION - (Date.now() - boosted.timestamp) : 0;
-          pre[troop.name].push({ name: curr.name, duration: duration > 0 ? duration : 0, online: recently.includes(curr.tag) });
+          pre[troop.name].push({ name: curr.name, duration: 0, online: recently.includes(curr.tag) });
         }
       }
       return pre;

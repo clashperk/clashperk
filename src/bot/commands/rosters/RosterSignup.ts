@@ -4,8 +4,8 @@ import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
 import { sumHeroes } from '../../util/Helper.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class RosterSignupCommand extends Command {
   public constructor() {
@@ -87,14 +87,11 @@ export default class RosterSignupCommand extends Command {
     }
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
-    const selectableCategories = categories.filter((category) => category.selectable);
+    const selectableCategories = categories.filter((category) => category.selectable).sort((a, b) => a.order - b.order);
 
     const selected: { category: null | string } = {
       category: null
     };
-
-    const category = selectableCategories.find((category) => category.name === 'confirmed');
-    if (category && roster.allowCategorySelection) selected.category = category._id.toHexString();
 
     const categoryMenu = new StringSelectMenuBuilder()
       .setMinValues(1)
@@ -131,6 +128,8 @@ export default class RosterSignupCommand extends Command {
         args.signup && roster.allowCategorySelection && selectableCategories.length ? [categoryRow, ...accountsRows] : [...accountsRows]
     });
 
+    const categoryId = roster.allowCategorySelection ? selectableCategories.at(0)?._id.toHexString() : null;
+
     const signupUser = async (action: StringSelectMenuInteraction<'cached'>) => {
       await action.deferUpdate();
 
@@ -142,7 +141,7 @@ export default class RosterSignupCommand extends Command {
           player,
           rosterId,
           user: interaction.user,
-          categoryId: selected.category
+          categoryId: selected.category || categoryId
         });
         result.push({
           success: updated.success,

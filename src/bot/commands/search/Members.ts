@@ -114,36 +114,39 @@ export default class MembersCommand extends Command {
       const members = await this.getWarPref(data, fetched);
       const optedIn = members.filter((m) => m.warPreference === 'in');
       const optedOut = members.filter((m) => m.warPreference !== 'in');
+
       optedIn.sort((a, b) => {
         if (a.inTime && b.inTime) return b.inTime.getTime() - a.inTime.getTime();
         if (a.inTime) return -1;
         if (b.inTime) return 1;
         return 0;
       });
+      optedIn.sort((a, b) => b.townHallLevel - a.townHallLevel);
       optedOut.sort((a, b) => {
         if (a.outTime && b.outTime) return b.outTime.getTime() - a.outTime.getTime();
         if (a.outTime) return -1;
         if (b.outTime) return 1;
         return 0;
       });
+      optedOut.sort((a, b) => b.townHallLevel - a.townHallLevel);
+
       embed.setDescription(
         [
-          '**War Preferences and Last Opted In/Out**',
-          `**Opted in - ${optedIn.length}**`,
+          'War Preferences and Last Opted In/Out',
+          `### Opted-In - ${optedIn.length}`,
           optedIn
             .map((m) => {
               const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
               const inTime = m.inTime ? ms(Date.now() - m.inTime.getTime()) : `---`;
-              return `**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${inTime.padStart(4, ' ')}  ${name}\u200f\``;
+              return `${EMOJIS.WAR_PREF_IN} ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${inTime.padStart(4, ' ')}  ${name}\u200f\``;
             })
             .join('\n'),
-          '',
-          `**Opted out - ${optedOut.length}**`,
+          `### Opted-Out - ${optedOut.length}`,
           optedOut
             .map((m) => {
               const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
               const outTime = m.outTime ? ms(Date.now() - m.outTime.getTime()) : `---`;
-              return `**✘** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${outTime.padStart(4, ' ')}  ${name}\u200f\``;
+              return `${EMOJIS.WAR_PREF_OUT} ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${outTime.padStart(4, ' ')}  ${name}\u200f\``;
             })
             .join('\n')
         ].join('\n')
@@ -183,10 +186,10 @@ export default class MembersCommand extends Command {
       const upgrades = fetched.map((player) => ({
         name: player.name,
         tag: player.tag,
-				hero: members[player.tag]?.HERO ?? 0, // eslint-disable-line
-				pet: members[player.tag]?.PET ?? 0, // eslint-disable-line
-				troop: members[player.tag]?.TROOP ?? 0, // eslint-disable-line
-				spell: members[player.tag]?.SPELL ?? 0 // eslint-disable-line
+        hero: members[player.tag]?.HERO ?? 0, // eslint-disable-line
+        pet: members[player.tag]?.PET ?? 0, // eslint-disable-line
+        troop: members[player.tag]?.TROOP ?? 0, // eslint-disable-line
+        spell: members[player.tag]?.SPELL ?? 0 // eslint-disable-line
       }));
 
       upgrades.sort((a, b) => {

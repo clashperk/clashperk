@@ -1,6 +1,7 @@
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import moment from 'moment';
+import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -25,9 +26,10 @@ export default class CWLStarsCommand extends Command {
       this.client.storage.getWarTags(clan.tag, args.season)
     ]);
     if (res.status === 504 || body.state === 'notInWar') {
-      return interaction.editReply(
-        this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
-      );
+      return interaction.followUp({
+        ephemeral: true,
+        content: this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+      });
     }
 
     const isIncorrectSeason = !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
@@ -35,13 +37,19 @@ export default class CWLStarsCommand extends Command {
     const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
 
     if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.followUp({
+        ephemeral: true,
+        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+      });
     }
 
     const aggregated = await this.client.http.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
 
     if (!aggregated) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.followUp({
+        ephemeral: true,
+        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+      });
     }
 
     return this.rounds(interaction, {
@@ -115,9 +123,13 @@ export default class CWLStarsCommand extends Command {
 
     const leaderboard = Object.values(members);
     if (!leaderboard.length && body.season !== Util.getCWLSeasonId()) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.followUp({
+        ephemeral: true,
+        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+      });
     }
-    if (!leaderboard.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
+    if (!leaderboard.length)
+      return interaction.followUp({ ephemeral: true, content: this.i18n('command.cwl.no_rounds', { lng: interaction.locale }) });
     leaderboard.sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars);
 
     const comparisonMode = args.list_view === 'GAINED';
@@ -173,7 +185,8 @@ export default class CWLStarsCommand extends Command {
 
     const customIds = {
       refresh: this.createId(payload),
-      toggle: this.createId({ ...payload, string_key: 'list_view' })
+      toggle: this.createId({ ...payload, string_key: 'list_view' }),
+      clans: this.createId({ cmd: this.id, string_key: 'tag' })
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -202,7 +215,8 @@ export default class CWLStarsCommand extends Command {
       );
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-    return interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
+    const clanMenu = await getClanSwitchingMenu(interaction, customIds.clans, clanTag);
+    return interaction.editReply({ embeds: [embed], components: clanMenu ? [buttonRow, menuRow, clanMenu] : [buttonRow, menuRow] });
   }
 
   private pad(num: number, depth = 2) {
