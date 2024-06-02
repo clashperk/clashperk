@@ -9,7 +9,7 @@ export default class PingCommand extends Command {
     });
   }
 
-  public async run(message: Message) {
+  public async run(message: Message<true>) {
     const msg = await message.channel.send({
       content: '**Pinging...**',
       allowedMentions: { repliedUser: false },
