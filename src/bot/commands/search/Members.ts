@@ -14,7 +14,8 @@ import ms from 'ms';
 import { Command } from '../../lib/index.js';
 import { MembersCommandOptions as options } from '../../util/CommandOptions.js';
 import { UP_ARROW } from '../../util/Constants.js';
-import { EMOJIS, HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { EMOJIS, HERO_PETS } from '../../util/Emojis.js';
+import { padStart } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
 
 const roleIds: { [key: string]: number } = {
@@ -138,7 +139,7 @@ export default class MembersCommand extends Command {
             .map((m) => {
               const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
               const inTime = m.inTime ? ms(Date.now() - m.inTime.getTime()) : `---`;
-              return `${EMOJIS.WAR_PREF_IN} ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${inTime.padStart(4, ' ')}  ${name}\u200f\``;
+              return `${EMOJIS.WAR_PREF_IN} \`${padStart(m.townHallLevel, 2)}\` \` ${inTime.padStart(4, ' ')} \`  \u200e\` ${name}\u200f\``;
             })
             .join('\n'),
           `### Opted-Out - ${optedOut.length}`,
@@ -146,7 +147,7 @@ export default class MembersCommand extends Command {
             .map((m) => {
               const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
               const outTime = m.outTime ? ms(Date.now() - m.outTime.getTime()) : `---`;
-              return `${EMOJIS.WAR_PREF_OUT} ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${outTime.padStart(4, ' ')}  ${name}\u200f\``;
+              return `${EMOJIS.WAR_PREF_OUT} \`${padStart(m.townHallLevel, 2)}\` \` ${outTime.padStart(4, ' ')} \`  \u200e\` ${name}\u200f\``;
             })
             .join('\n')
         ].join('\n')
