@@ -142,19 +142,21 @@ export class Client extends Discord.Client {
       host: 'https://us.i.posthog.com',
       personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY!,
       preloadFeatureFlags: true,
-      disableGeoip: true
+      disableGeoip: true,
+      featureFlagsPollingInterval: 30_000
     });
 
     this.ownerId = process.env.OWNER!;
     container.register(Client, { useValue: this });
   }
 
-  public isFeatureEnabled(flag: FeatureFlags, distinctId: string, sendFeatureFlagEvents = true) {
-    return this.postHog.isFeatureEnabled(flag, distinctId, {
+  public async isFeatureEnabled(flag: FeatureFlags, distinctId: string) {
+    const isEnabled = await this.postHog.isFeatureEnabled(flag, distinctId, {
       onlyEvaluateLocally: true,
       disableGeoip: true,
-      sendFeatureFlagEvents
+      sendFeatureFlagEvents: false
     });
+    return !!isEnabled;
   }
 
   public isOwner(user: string | Discord.User) {

@@ -11,11 +11,13 @@ export default class InteractionCaptureListener extends Listener {
   }
 
   public exec(interaction: Interaction) {
-    if (!interaction.inCachedGuild()) return;
+    if (!interaction.inCachedGuild() || interaction.isAutocomplete()) return;
 
     this.client.postHog.capture({
       distinctId: interaction.guildId,
       event: 'Interaction',
+      sendFeatureFlags: false,
+      disableGeoip: true,
       properties: {
         $set: {
           name: interaction.guild.name,

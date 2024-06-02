@@ -195,9 +195,16 @@ export enum ElasticIndex {
 }
 
 export enum FeatureFlags {
-  CLAN_MEMBERS_PROMOTION_LOG = 'clan-members-promotion-log',
-  USE_LINK_API_SERVICE = 'use-link-api-service',
-  LEGEND_DAYS_COMPONENT_LOCK = 'legend-days-component-lock'
+  CLAN_MEMBERS_PROMOTION_LOG = 'clan-member-promotion-log',
+  LINK_API_SERVICE = 'link-api-service',
+  LEGEND_DAYS_COMPONENT_LOCK = 'legend-days-component-lock',
+
+  /** unused */
+  LEGEND_ATTACKS_DAILY_LOG = 'legend-attacks-daily-log',
+  /** unused */
+  CLAN_GAMES_EMBED = 'clan-games-embed',
+  /** unused */
+  LAST_SEEN_EMBED = 'last-seen-embed'
 }
 
 export const enum Flags {

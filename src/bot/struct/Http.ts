@@ -274,7 +274,7 @@ export default class Http extends ClashOfClansClient {
   }
 
   public async linkPlayerTag(discordId: string, playerTag: string) {
-    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.USE_LINK_API_SERVICE, 'global');
+    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.LINK_API_SERVICE, 'global');
     if (!isEnabled) return true;
 
     const res = await request('https://cocdiscord.link/links', {
