@@ -6,6 +6,12 @@ import moment from 'moment';
 import { Filter } from 'mongodb';
 import ms from 'ms';
 import { nanoid } from 'nanoid';
+import {
+  CAPITAL_RAID_REMINDERS_AUTOCOMPLETE,
+  CLAN_GAMES_REMINDERS_AUTOCOMPLETE,
+  DEFAULT_REMINDERS_AUTOCOMPLETE,
+  WAR_REMINDERS_AUTOCOMPLETE
+} from '../../helper/reminders-autocomplete-helper.js';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
 import Google from '../../struct/Google.js';
@@ -19,71 +25,6 @@ const ranges: Record<string, number> = {
   'capital-raids': ms('3d'),
   'clan-games': ms('5d') + ms('23h'),
   'default': ms('5d') + ms('23h')
-};
-
-const preferences: Record<string, string[]> = {
-  'clan-wars': [
-    '15m',
-    '30m',
-    '1h',
-    '1h 30m',
-    '2h',
-    '2h 30m',
-    '3h',
-    '4h',
-    '6h',
-    '8h',
-    '10h',
-    '12h',
-    '14h',
-    '16h',
-    '18h',
-    '23h',
-    '1d',
-    '1d 6h',
-    '1d 12h'
-  ],
-  'capital-raids': [
-    '1h',
-    '6h',
-    '10h',
-    '12h',
-    '15h',
-    '16h',
-    '18h',
-    '20h',
-    '23h',
-    '1d',
-    '1d 12h',
-    '1d 18h',
-    '2d',
-    '2d 12h',
-    '2d 18h',
-    '2d 23h'
-  ],
-  'clan-games': [
-    '1h',
-    '2h',
-    '3h',
-    '4h',
-    '6h',
-    '8h',
-    '10h',
-    '12h',
-    '14h',
-    '16h',
-    '18h',
-    '20h',
-    '23h',
-    '1d',
-    '1d 6h',
-    '1d 12h',
-    '2d',
-    '2d 12h',
-    '3d',
-    '4d'
-  ],
-  'default': ['1h', '4h', '10h', '12h', '16h', '20h', '1d', '1d 6h', '2d', '3d', '4d', '5d', '5d 23h']
 };
 
 const getClanQuery = (query: string): QueryDslQueryContainer[] => {
@@ -482,8 +423,13 @@ export default class InteractionListener extends Listener {
       return interaction.respond(this.getTimes(times, matchedDur, cmd));
     }
 
-    const times = preferences[cmd ?? 'default'];
-    return interaction.respond(this.getTimes(times, matchedDur, cmd));
+    const choices = {
+      'clan-wars': WAR_REMINDERS_AUTOCOMPLETE,
+      'capital-raids': CAPITAL_RAID_REMINDERS_AUTOCOMPLETE,
+      'clan-games': CLAN_GAMES_REMINDERS_AUTOCOMPLETE,
+      'default': DEFAULT_REMINDERS_AUTOCOMPLETE
+    }[cmd ?? 'default']!;
+    return interaction.respond(choices);
   }
 
   private async playerTagAutocomplete(interaction: AutocompleteInteraction, focused: string) {

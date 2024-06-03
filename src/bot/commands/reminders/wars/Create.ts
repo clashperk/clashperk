@@ -103,7 +103,7 @@ export default class ReminderCreateCommand extends Command {
     if (dur < 15 * 60 * 1000 && dur !== 0) {
       return interaction.editReply(this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale }));
     }
-    if (dur > 46 * 60 * 60 * 1000) {
+    if (dur > 48 * 60 * 60 * 1000) {
       return interaction.editReply(this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale }));
     }
     if (dur % (15 * 60 * 1000) !== 0) {
@@ -127,7 +127,7 @@ export default class ReminderCreateCommand extends Command {
         .fill(0)
         .map((_, i) => (i + 2).toString()),
       smartSkip: false,
-      silent: args.exclude_participant_list || [46 * 60 * 60 * 1000, 24 * 60 * 60 * 1000, 0].includes(dur),
+      silent: args.exclude_participant_list || [48 * 60 * 60 * 1000, 24 * 60 * 60 * 1000, 0].includes(dur),
       roles: ['leader', 'coLeader', 'admin', 'member'],
       warTypes: ['cwl', 'normal', 'friendly'],
       clans: clans.map((clan) => clan.tag),
