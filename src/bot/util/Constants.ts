@@ -49,6 +49,12 @@ export const DOWN_LEFT_ARROW = '↙';
 export const DOWN_RIGHT_ARROW = '↘';
 export const DOT = '•';
 
+export enum DiscordErrorCodes {
+  UNKNOWN_MESSAGE = 10008,
+  UNKNOWN_CHANNEL = 10003,
+  UNKNOWN_WEBHOOK = 10015
+}
+
 export const COLOR_CODES = {
   GREEN: 0x38d863,
   DARK_GREEN: 0x6dbc1e,

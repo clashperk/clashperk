@@ -1,9 +1,9 @@
-import { CommandInteraction, InteractionReplyOptions } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { IRoster } from '../../struct/RosterManager.js';
 import { Settings } from '../../util/Constants.js';
 import { nullsLastSortAlgo } from '../../util/Helper.js';
+import { createInteractionCollector } from '../../util/Pagination.js';
 import { Util } from '../../util/Util.js';
 
 export default class RosterPingCommand extends Command {
@@ -45,17 +45,11 @@ export default class RosterPingCommand extends Command {
       if (!groupMembers.length) return interaction.editReply({ content: 'No members found in this group.' });
 
       groupMembers.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
-      return this.followUp(interaction, updated, {
-        content: [
-          msgText,
-          '',
-          groupMembers
-            .map((member) => {
-              return `${member.name} (${member.tag}) ${member.userId ? `<@${member.userId}>` : ''}`;
-            })
-            .join('\n')
-        ].join('\n')
+      const result = groupMembers.map((member) => {
+        return { name: `${member.name} (${member.tag})`, mention: `${member.userId ? `<@${member.userId}>` : ''}` };
       });
+
+      return this.followUp(interaction, msgText, result);
     }
 
     if (args.ping_option === 'unregistered') {
@@ -66,17 +60,10 @@ export default class RosterPingCommand extends Command {
       if (!members.length) return interaction.editReply({ content: 'No unregistered members found.' });
 
       members.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
-      return this.followUp(interaction, updated, {
-        content: [
-          msgText,
-          '',
-          members
-            .map((member) => {
-              return `${member.name} (${member.tag}) ${member.userId ? `<@${member.userId}>` : ''}`;
-            })
-            .join('\n')
-        ].join('\n')
+      const result = members.map((member) => {
+        return { name: `${member.name} (${member.tag})`, mention: `${member.userId ? `<@${member.userId}>` : ''}` };
       });
+      return this.followUp(interaction, msgText, result);
     }
 
     if (args.ping_option === 'missing') {
@@ -84,40 +71,46 @@ export default class RosterPingCommand extends Command {
       if (!missingMembers.length) return interaction.editReply({ content: 'No missing members found.' });
 
       missingMembers.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
-      return this.followUp(interaction, updated, {
-        content: [
-          msgText,
-          '',
-          missingMembers
-            .map((member) => {
-              return `${member.name} (${member.tag}) ${member.userId ? `<@${member.userId}>` : ''}`;
-            })
-            .join('\n')
-        ].join('\n')
+      const result = missingMembers.map((member) => {
+        return { name: `${member.name} (${member.tag})`, mention: `${member.userId ? `<@${member.userId}>` : ''}` };
       });
+
+      return this.followUp(interaction, msgText, result);
     }
 
-    return this.followUp(interaction, updated, {
-      content: [
-        msgText,
-        '',
-        updated.members
-          .map((member) => {
-            return `${member.name} (${member.tag}) ${member.userId ? `<@${member.userId}>` : ''}`;
-          })
-          .join('\n')
-      ].join('\n')
+    const result = updated.members.map((member) => {
+      return { name: `${member.name} (${member.tag})`, mention: `${member.userId ? `<@${member.userId}>` : ''}` };
     });
+    return this.followUp(interaction, msgText, result);
   }
 
-  private async followUp(interaction: CommandInteraction<'cached'>, roster: IRoster, payload: InteractionReplyOptions) {
-    const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
+  private async followUp(interaction: CommandInteraction<'cached'>, msgText: string, result: { name: string; mention: string }[]) {
+    const customIds = {
+      confirm: this.client.uuid(interaction.user.id)
+    };
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm and Ping').setStyle(ButtonStyle.Primary)
+    );
 
-    const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
-    await interaction.editReply({ embeds: [embed] });
+    const message = await interaction.editReply({
+      content: `${msgText}\n${result.map((m) => `0. \u200e${m.name}`).join('\n')}`,
+      components: interaction.ephemeral ? [] : [row],
+      allowedMentions: { parse: [] }
+    });
 
-    for (const content of Util.splitMessage(payload.content!, { maxLength: 2048 })) {
-      return interaction.followUp({ ...payload, content, ephemeral: this.muted });
-    }
+    createInteractionCollector({
+      message,
+      customIds,
+      interaction,
+      onClick: async (action) => {
+        await action.update({ components: [], content: `${msgText}\nPinging ${result.length} members` });
+
+        for (const content of Util.splitMessage(`${msgText}${result.map((m) => `- \u200e${m.name} ${m.mention}`).join('\n')}`, {
+          maxLength: 2000
+        })) {
+          await action.followUp({ content, ephemeral: this.muted });
+        }
+      }
+    });
   }
 }

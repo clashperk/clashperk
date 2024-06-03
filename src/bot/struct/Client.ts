@@ -143,7 +143,7 @@ export class Client extends Discord.Client {
       personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY!,
       preloadFeatureFlags: true,
       disableGeoip: true,
-      featureFlagsPollingInterval: 30_000
+      featureFlagsPollingInterval: 300_000
     });
 
     this.ownerId = process.env.OWNER!;

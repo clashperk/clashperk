@@ -18,7 +18,15 @@ import { EventEmitter } from 'node:events';
 import { unique } from 'radash';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/CommandOptions.js';
-import { COLOR_CODES, Collections, MAX_TOWN_HALL_LEVEL, Settings, UNRANKED_WAR_LEAGUE_ID, WarType } from '../util/Constants.js';
+import {
+  COLOR_CODES,
+  Collections,
+  DiscordErrorCodes,
+  MAX_TOWN_HALL_LEVEL,
+  Settings,
+  UNRANKED_WAR_LEAGUE_ID,
+  WarType
+} from '../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import Client from './Client.js';
@@ -173,6 +181,7 @@ export interface IRoster {
   endTime?: Date | null;
   sortBy?: RosterSortTypes;
   useClanAlias?: boolean;
+  maxAccountsPerPlayer?: number | null;
   allowUnlinked?: boolean;
   allowMultiSignup?: boolean;
   category: 'GENERAL' | 'CWL' | 'WAR' | 'TROPHY';
@@ -371,6 +380,16 @@ export class RosterManager {
         success: false,
         message: `This roster is full (maximum ${maxMembers} members).`
       };
+    }
+
+    if (roster.maxAccountsPerPlayer && user) {
+      const count = roster.members.filter((m) => m.userId === user.id).length;
+      if (count >= roster.maxAccountsPerPlayer) {
+        return {
+          success: false,
+          message: `${isOwner ? 'You have' : 'This player has'} reached the maximum number of accounts allowed per player (${roster.maxAccountsPerPlayer}).`
+        };
+      }
     }
 
     if (roster.minTownHall && player.townHallLevel < roster.minTownHall) {
@@ -1688,8 +1707,8 @@ export class RosterManager {
 
     try {
       return await webhook.send({ embeds: [embed] });
-    } catch (error: any) {
-      if ([10015, 10003].includes(error.code)) {
+    } catch (error) {
+      if ([DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)) {
         await this.client.settings.delete(roster.guildId, Settings.ROSTER_CHANGELOG);
       }
     }

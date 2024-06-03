@@ -102,6 +102,16 @@ export default class RosterEditCommand extends Command {
             label: 'Edit Roster',
             description: 'Edit roster layout and sorting options.',
             value: 'edit'
+          },
+          {
+            label: 'Unregistered Members',
+            description: 'List of members who did not sign up for the roster.',
+            value: 'unregistered'
+          },
+          {
+            label: 'Missing Members',
+            description: 'List of members who are currently not in the clan.',
+            value: 'missing'
           }
         ])
     );
@@ -328,6 +338,24 @@ export default class RosterEditCommand extends Command {
             return exportSheet(action);
           case 'edit':
             return editRoster(action);
+          case 'unregistered': {
+            await action.deferReply({ ephemeral: true });
+            const command = this.client.commandHandler.modules.get('roster-ping')!;
+            return command.exec(action, {
+              roster: rosterId.toHexString(),
+              ping_option: 'unregistered',
+              message: 'Unregistered Members (who did not sign up)'
+            });
+          }
+          case 'missing': {
+            await action.deferReply({ ephemeral: true });
+            const command = this.client.commandHandler.modules.get('roster-ping')!;
+            return command.exec(action, {
+              roster: rosterId.toHexString(),
+              ping_option: 'missing',
+              message: 'Missing Members (signed up but not in the clan)'
+            });
+          }
 
           case RosterManageActions.ADD_USER:
           case RosterManageActions.DEL_USER:
