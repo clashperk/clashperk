@@ -39,7 +39,7 @@ export default class RosterCreateCommand extends Command {
       roster_role?: Role;
       allow_group_selection?: boolean;
       allow_multi_signup?: boolean;
-      max_accounts_per_player?: number;
+      max_accounts_per_user?: number;
       end_time?: string;
       start_time?: string;
       sort_by?: RosterSortTypes;
@@ -82,7 +82,7 @@ export default class RosterCreateCommand extends Command {
       minTownHall: args.min_town_hall ?? defaultSettings.minTownHall,
       maxTownHall: args.max_town_hall ?? defaultSettings.maxTownHall,
       useClanAlias: args.use_clan_alias ?? defaultSettings.useClanAlias,
-      maxAccountsPerPlayer: args.max_accounts_per_player ?? null,
+      maxAccountsPerUser: args.max_accounts_per_user ?? null,
       roleId: args.roster_role?.id ?? null,
       colorCode: args.color_code ?? defaultSettings.colorCode,
       members: [],

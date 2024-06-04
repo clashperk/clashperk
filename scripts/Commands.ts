@@ -1964,6 +1964,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.Integer
           },
           {
+            name: 'max_accounts_per_user',
+            min_value: 1,
+            max_value: 65,
+            description: 'Max accounts per user',
+            type: ApplicationCommandOptionType.Integer
+          },
+          {
             name: 'min_town_hall',
             description: 'Minimum TownHall level',
             type: ApplicationCommandOptionType.Integer,
@@ -2163,6 +2170,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: 'Roster size',
             max_value: 65,
             min_value: 5,
+            type: ApplicationCommandOptionType.Integer
+          },
+          {
+            name: 'max_accounts_per_user',
+            min_value: 1,
+            max_value: 65,
+            description: 'Max accounts per user',
             type: ApplicationCommandOptionType.Integer
           },
           {

@@ -154,7 +154,6 @@ export const rosterLayoutMap = {
 
 export const DEFAULT_ROSTER_LAYOUT = '#/TH_ICON/DISCORD/NAME/CLAN';
 export const DEFAULT_TROPHY_ROSTER_LAYOUT = '#/TH_ICON/TROPHIES/NAME';
-
 export interface IRoster {
   name: string;
   guildId: string;
@@ -181,7 +180,7 @@ export interface IRoster {
   endTime?: Date | null;
   sortBy?: RosterSortTypes;
   useClanAlias?: boolean;
-  maxAccountsPerPlayer?: number | null;
+  maxAccountsPerUser?: number | null;
   allowUnlinked?: boolean;
   allowMultiSignup?: boolean;
   category: 'GENERAL' | 'CWL' | 'WAR' | 'TROPHY';
@@ -382,12 +381,12 @@ export class RosterManager {
       };
     }
 
-    if (roster.maxAccountsPerPlayer && user) {
+    if (roster.maxAccountsPerUser && user) {
       const count = roster.members.filter((m) => m.userId === user.id).length;
-      if (count >= roster.maxAccountsPerPlayer) {
+      if (count >= roster.maxAccountsPerUser) {
         return {
           success: false,
-          message: `${isOwner ? 'You have' : 'This player has'} reached the maximum number of accounts allowed per player (${roster.maxAccountsPerPlayer}).`
+          message: `${isOwner ? 'You have' : 'This player has'} reached the maximum number of accounts allowed per user (${roster.maxAccountsPerUser}).`
         };
       }
     }

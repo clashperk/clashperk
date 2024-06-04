@@ -51,7 +51,7 @@ export default class RosterEditCommand extends Command {
       delete_role?: boolean;
       allow_multi_signup?: boolean;
       allow_group_selection?: boolean;
-      max_accounts_per_player?: number;
+      max_accounts_per_user?: number;
       end_time?: string;
       start_time?: string;
       timezone?: string;
@@ -109,7 +109,7 @@ export default class RosterEditCommand extends Command {
     if (typeof args.allow_group_selection === 'boolean') data.allowCategorySelection = args.allow_group_selection;
     if (args.clear_members) data.members = [];
     if (args.sort_by) data.sortBy = args.sort_by;
-    if (typeof args.max_accounts_per_player === 'number') data.maxAccountsPerPlayer = args.max_accounts_per_player;
+    if (typeof args.max_accounts_per_user === 'number') data.maxAccountsPerUser = args.max_accounts_per_user;
     if (args.layout) {
       const layoutIds = args.layout.split('/');
       if (layoutIds.length >= 3 && layoutIds.every((id) => id in rosterLayoutMap)) {
