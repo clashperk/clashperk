@@ -37,7 +37,8 @@ export default class EosTrophiesHistoryCommand extends Command {
 
       const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag).slice(0, 1));
       const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
-      return this.getHistory(interaction, playerTags);
+      const { embeds, result } = await this.getHistory(interaction, playerTags);
+      return handlePagination(interaction, embeds, (action) => this.export(action, result));
     }
 
     const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);

@@ -375,7 +375,7 @@ export default class SetupUtilsCommand extends Command {
           `**Clans Wars**`,
           `${config.wars ? `<@&${config.wars}>` : 'None'}`,
           '',
-          `**Capital Wars**`,
+          `**Capital Raids**`,
           `${config.raids ? `<@&${config.raids}>` : 'None'}`,
           '',
           `**Clan Games**`,
