@@ -1,3 +1,4 @@
+import { Settings } from '@app/constants';
 import { CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
@@ -7,6 +8,8 @@ export default class RosterPostCommand extends Command {
     super('roster-post', {
       category: 'roster',
       channel: 'guild',
+      userPermissions: ['ManageGuild'],
+      roleKey: Settings.ROSTER_MANAGER_ROLE,
       defer: true
     });
   }

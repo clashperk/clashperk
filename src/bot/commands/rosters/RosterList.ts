@@ -2,12 +2,15 @@ import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.
 import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { IRoster } from '../../struct/RosterManager.js';
+import { Settings } from '@app/constants';
 
 export default class RosterListCommand extends Command {
   public constructor() {
     super('roster-list', {
       category: 'roster',
       channel: 'guild',
+      userPermissions: ['ManageGuild'],
+      roleKey: Settings.ROSTER_MANAGER_ROLE,
       defer: true,
       ephemeral: true
     });
