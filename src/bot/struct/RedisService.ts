@@ -1,15 +1,16 @@
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { nanoid } from 'nanoid';
-import * as Redis from 'redis';
+import { createClient } from 'redis';
 import Client from './Client.js';
 import { CustomIdProps } from './ComponentHandler.js';
 
 export declare type RedisJSON = null | boolean | number | string | Date;
 
 class RedisService {
-  public connection = Redis.createClient({
+  public connection = createClient({
     url: process.env.REDIS_URL,
-    database: 1
+    database: 1,
+    disableOfflineQueue: false
   });
 
   public constructor(private readonly client: Client) {

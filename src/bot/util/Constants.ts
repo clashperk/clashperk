@@ -189,7 +189,8 @@ export const enum Settings {
   DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook',
   ROLE_REMOVAL_DELAYS = 'roleRemovalDelays',
   ROLE_ADDITION_DELAYS = 'roleAdditionDelays',
-  DISABLED_PATREON_IDS = 'disabledPatreonIds'
+  DISABLED_PATREON_IDS = 'disabledPatreonIds',
+  USE_GROUPED_TODO_LIST = 'useGroupedTodoList'
 }
 
 export enum ElasticIndex {
