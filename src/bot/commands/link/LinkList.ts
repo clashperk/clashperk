@@ -135,6 +135,8 @@ export default class LinkListCommand extends Command {
       tag: this.createId({ ...payload, string_key: 'tag' })
     };
 
+    clan.name = await this.client.storage.getNickname(interaction.guildId, clan.tag, clan.name);
+
     const embed = this.getEmbed(clan, clanMembers);
     if (args.sort_by) embed.setFooter({ text: `Sorted by ${title(args.sort_by)}` });
 
