@@ -9,6 +9,8 @@ export interface CustomIdProps {
   array_key?: string;
   string_key?: string;
   [key: string]: unknown;
+  user_id?: string;
+  is_locked?: boolean;
 }
 
 const deferredDisallowed = ['link-add'];

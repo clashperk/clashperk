@@ -1,5 +1,5 @@
 import { Client as ElasticClient } from '@elastic/elasticsearch';
-import Discord, { BaseInteraction, GatewayIntentBits, Message, Options } from 'discord.js';
+import { BaseInteraction, GatewayIntentBits, Message, Options, Client as DiscordClient, User } from 'discord.js';
 import { Db } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { URL, fileURLToPath } from 'node:url';
@@ -29,7 +29,7 @@ import SettingsProvider from './SettingsProvider.js';
 import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
 
-export class Client extends Discord.Client {
+export class Client extends DiscordClient {
   public commandHandler = new CommandHandler(this, {
     directory: fileURLToPath(new URL('../commands', import.meta.url))
   });
@@ -143,7 +143,7 @@ export class Client extends Discord.Client {
       personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY!,
       preloadFeatureFlags: true,
       disableGeoip: true,
-      featureFlagsPollingInterval: 300_000
+      featureFlagsPollingInterval: 30_000
     });
 
     this.ownerId = process.env.OWNER!;
@@ -159,7 +159,7 @@ export class Client extends Discord.Client {
     return !!isEnabled;
   }
 
-  public isOwner(user: string | Discord.User) {
+  public isOwner(user: string | User) {
     const userId = this.users.resolveId(user);
     return userId === process.env.OWNER!;
   }
