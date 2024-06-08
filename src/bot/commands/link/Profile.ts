@@ -56,7 +56,7 @@ export default class ProfileCommand extends Command {
       member: {
         id: 'member',
         match: 'MEMBER',
-        default: interaction.options.getMember('user') || interaction.member
+        default: interaction.options.get('user') || interaction.member
       }
     };
   }
