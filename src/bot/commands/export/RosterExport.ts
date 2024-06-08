@@ -17,6 +17,8 @@ export default class RosterExportCommand extends Command {
 
   public async exec(interaction: CommandInteraction<'cached'>) {
     const rosters = await this.client.rosterManager.list(interaction.guildId, true);
+    if (!rosters.length) return interaction.editReply({ content: 'No rosters found.' });
+
     const categories = await this.client.rosterManager.getCategories(interaction.guildId);
     const categoriesMap = categories.reduce<Record<string, IRosterCategory>>(
       (prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
