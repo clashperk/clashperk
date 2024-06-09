@@ -15,6 +15,15 @@ const RemainingType = {
   CLAN_GAMES: 'clan-games'
 } as const;
 
+interface CommandArgs {
+  tag?: string;
+  war_id?: number;
+  user?: User;
+  player_tag?: string;
+  is_grouped?: boolean;
+  type?: (typeof RemainingType)[keyof typeof RemainingType];
+}
+
 export default class RemainingCommand extends Command {
   public constructor() {
     super('remaining', {
@@ -25,14 +34,9 @@ export default class RemainingCommand extends Command {
     });
   }
 
-  public async exec(
-    interaction: CommandInteraction<'cached'>,
-    args: { tag?: string; war_id?: number; user?: User; player_tag?: string; type?: (typeof RemainingType)[keyof typeof RemainingType] }
-  ) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: CommandArgs) {
     if ((args.user || args.player_tag) && args.type) {
-      const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
-      if (args.player_tag && !player) return null;
-      return this.forUsers(interaction, { user: args.user, player, type: args.type! });
+      return this.forUsers(interaction, args);
     }
 
     const clan = await this.client.resolver.resolveClan(interaction, args.tag);
@@ -157,21 +161,42 @@ export default class RemainingCommand extends Command {
     return interaction.editReply({ embeds: [embed] });
   }
 
-  private async forUsers(
-    interaction: CommandInteraction<'cached'>,
-    { player, user, type }: { player?: APIPlayer | null; user?: User; type: (typeof RemainingType)[keyof typeof RemainingType] }
-  ) {
-    if (type === RemainingType.CAPITAL_RAIDS) {
-      return this.capitalRaids(interaction, { player, user });
+  private async forUsers(interaction: CommandInteraction<'cached'>, args: CommandArgs) {
+    const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
+    if (args.player_tag && !player) return null;
+
+    args.is_grouped =
+      typeof args.is_grouped === 'boolean'
+        ? args.is_grouped
+        : this.client.settings.get(interaction.guildId, Settings.USE_GROUPED_TODO_LIST, true);
+
+    const embeds: EmbedBuilder[] = [];
+    switch (args.type) {
+      case RemainingType.CAPITAL_RAIDS: {
+        const embed = await this.capitalRaids(interaction, { ...args, player });
+        embeds.push(embed);
+        break;
+      }
+      case RemainingType.CLAN_GAMES: {
+        const embed = await this.clanGames(interaction, { ...args, player });
+        embeds.push(embed);
+        break;
+      }
+      default: {
+        const embed = await this.warAttacks(interaction, { ...args, player });
+        embeds.push(embed);
+        break;
+      }
     }
-    if (type === RemainingType.CLAN_GAMES) {
-      return this.clanGames(interaction, { player, user });
-    }
-    return this.warAttacks(interaction, { player, user });
+
+    return interaction.editReply({
+      components: [this.getComponents(args)],
+      embeds
+    });
   }
 
-  private async warAttacks(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
-    const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
+  private async warAttacks(interaction: CommandInteraction<'cached'>, args: CommandArgs & { player: APIPlayer | null }) {
+    const playerTags = args.player ? [args.player.tag] : await this.client.resolver.getLinkedPlayerTags(args.user!.id);
 
     const wars = await this.client.db
       .collection(Collections.CLAN_WARS)
@@ -218,7 +243,8 @@ export default class RemainingCommand extends Command {
     const embed = new EmbedBuilder();
     embed.setColor(this.client.embed(interaction));
     embed.setTitle('Remaining Clan War Attacks');
-    if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
+    if (args.user && !args.player)
+      embed.setAuthor({ name: `\u200e${args.user.displayName} (${args.user.id})`, iconURL: args.user.displayAvatarURL() });
 
     const groupedDescription = Object.entries(group(players, (player) => player.clan.tag))
       .flatMap(([, _wars]) => {
@@ -246,21 +272,18 @@ export default class RemainingCommand extends Command {
       })
       .join('\n\n');
 
-    const useGroupedTodoList = this.client.settings.get(interaction.guildId, Settings.USE_GROUPED_TODO_LIST, true);
-    if (useGroupedTodoList) embed.setDescription(groupedDescription || null);
+    if (args.is_grouped) embed.setDescription(groupedDescription || null);
     else embed.setDescription(listedDescription || null);
 
     const remaining = players.reduce((a, b) => a + b.remaining, 0);
     embed.setFooter({ text: `${remaining} Remaining` });
 
-    return interaction.editReply({
-      embeds: [embed],
-      components: [this.getComponents({ user, player_tag: player?.tag, type: RemainingType.WAR_ATTACKS })]
-    });
+    return embed;
   }
 
-  private async capitalRaids(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
-    const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
+  private async capitalRaids(interaction: CommandInteraction<'cached'>, args: CommandArgs & { player: APIPlayer | null }) {
+    const playerTags = args.player ? [args.player.tag] : await this.client.resolver.getLinkedPlayerTags(args.user!.id);
+
     const { weekId, startTime, endTime } = Util.getRaidWeekEndTimestamp();
     const weekend = Util.raidWeekDateFormat(startTime, endTime);
 
@@ -296,9 +319,11 @@ export default class RemainingCommand extends Command {
     const embed = new EmbedBuilder();
     embed.setColor(this.client.embed(interaction));
     embed.setTitle('Remaining Capital Raid Attacks');
-    if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
-    const description = Object.entries(group(players, (player) => player.clan.tag))
+    if (args.user && !args.player)
+      embed.setAuthor({ name: `\u200e${args.user.displayName} (${args.user.id})`, iconURL: args.user.displayAvatarURL() });
+
+    const groupedDescription = Object.entries(group(players, (player) => player.clan.tag))
       .flatMap(([, _raids]) => {
         const raids = _raids!;
         const clan = raids.at(0)!.clan;
@@ -317,19 +342,27 @@ export default class RemainingCommand extends Command {
       })
       .join('\n');
 
+    const listedDescription = players
+      .map(({ member, endTime, attackLimit, clan, attacks }) => {
+        return [
+          `**${escapeMarkdown(member.name)} (${member.tag})**`,
+          `${attacks}/${attackLimit} in ${escapeMarkdown(clan.name)} (${Util.getRelativeTime(endTime.getTime())})`
+        ].join('\n');
+      })
+      .join('\n\n');
+
+    if (args.is_grouped) embed.setDescription(groupedDescription || null);
+    else embed.setDescription(listedDescription || null);
+
     const totalAttacks = players.reduce((a, b) => a + b.attacks, 0);
     const maxTotalAttacks = players.reduce((a, b) => a + b.attackLimit, 0);
-    if (players.length) embed.setDescription(description);
     embed.setFooter({ text: `${totalAttacks}/${maxTotalAttacks} ${Util.plural(totalAttacks, 'Raid')} (${weekend})` });
 
-    return interaction.editReply({
-      embeds: [embed],
-      components: [this.getComponents({ user, player_tag: player?.tag, type: RemainingType.CAPITAL_RAIDS })]
-    });
+    return embed;
   }
 
-  private async clanGames(interaction: CommandInteraction<'cached'>, { player, user }: { player?: APIPlayer | null; user?: User }) {
-    const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
+  private async clanGames(interaction: CommandInteraction<'cached'>, args: CommandArgs & { player: APIPlayer | null }) {
+    const playerTags = args.player ? [args.player.tag] : await this.client.resolver.getLinkedPlayerTags(args.user!.id);
 
     const seasonId = Util.clanGamesSeasonId();
     const maxPoints = Util.getClanGamesMaxPoints(seasonId);
@@ -368,9 +401,11 @@ export default class RemainingCommand extends Command {
     const embed = new EmbedBuilder();
     embed.setColor(this.client.embed(interaction));
     embed.setTitle('Remaining Clan Games Points');
-    if (user && !player) embed.setAuthor({ name: `\u200e${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() });
 
-    const description = Object.entries(group(players, (player) => player.clan.tag))
+    if (args.user && !args.player)
+      embed.setAuthor({ name: `\u200e${args.user.displayName} (${args.user.id})`, iconURL: args.user.displayAvatarURL() });
+
+    const groupedDescription = Object.entries(group(players, (player) => player.clan.tag))
       .flatMap(([, _raids]) => {
         const raids = _raids!;
         const clan = raids.at(0)!.clan;
@@ -384,38 +419,47 @@ export default class RemainingCommand extends Command {
       })
       .join('\n');
 
+    const listedDescription = players
+      .map(({ member, points, clan, maxPoints }) => {
+        return `**${escapeMarkdown(member.name)} (${member.tag})** \n${points}/${maxPoints} in ${escapeMarkdown(clan.name)} scored`;
+      })
+      .join('\n\n');
+
+    if (args.is_grouped) embed.setDescription(groupedDescription || null);
+    else embed.setDescription(listedDescription || null);
+
     const totalPoints = players.reduce((a, b) => a + b.points, 0);
     const maxTotalPoints = players.reduce((a, b) => a + b.maxPoints, 0);
-    if (players.length) embed.setDescription(description);
     embed.setFooter({
       text: `${totalPoints.toLocaleString()}/${maxTotalPoints.toLocaleString()} ${Util.plural(totalPoints, 'Point')} (${seasonId})`
     });
 
-    return interaction.editReply({
-      embeds: [embed],
-      components: [this.getComponents({ user, player_tag: player?.tag, type: RemainingType.CLAN_GAMES })]
-    });
+    return embed;
   }
 
-  private getComponents(args: { user?: User; player_tag?: string; type: (typeof RemainingType)[keyof typeof RemainingType] }) {
+  private getComponents(args: CommandArgs) {
     const payload: CustomIdProps = {
       cmd: this.id,
       user_id: args.user?.id,
       player_tag: args.player_tag,
-      is_locked: true
+      is_locked: true,
+      is_grouped: args.is_grouped
     };
 
     const customIds = {
       clanGames: this.createId({ ...payload, type: RemainingType.CLAN_GAMES }),
       capitalRaids: this.createId({ ...payload, type: RemainingType.CAPITAL_RAIDS }),
       warAttacks: this.createId({ ...payload, type: RemainingType.WAR_ATTACKS }),
-      refresh: this.createId({ ...payload, type: args.type })
+      refresh: this.createId({ ...payload, type: args.type }),
+      group: this.createId({ ...payload, type: args.type, is_grouped: !args.is_grouped })
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>();
 
     const refreshButton = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH);
-    row.addComponents(refreshButton);
+    const sortButton = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.group).setEmoji(EMOJIS.SORTING);
+
+    row.addComponents(refreshButton, sortButton);
 
     if (args.type !== RemainingType.WAR_ATTACKS)
       row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(customIds.warAttacks).setLabel('War Attacks'));
