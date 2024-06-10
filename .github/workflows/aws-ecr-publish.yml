@@ -1,16 +1,16 @@
-name: aws-ecr-push-and-deploy
+name: aws-ecr-publish
 
 on:
   push:
     branches:
-      - deploy
+      - main
     paths-ignore:
       - scripts/**
   workflow_dispatch:
 
 jobs:
   build:
-    name: aws-ecr-push-and-deploy
+    name: aws-ecr-publish
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
 
     steps:
@@ -63,23 +63,3 @@ jobs:
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
           build-args: GIT_SHA=${{ github.sha }}
-
-  deploy-main-bot:
-    needs: build
-    name: deploy-main-bot
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Deploy
-        run: curl --fail --location --request POST '${{ secrets.PORTAINER_WEBHOOK_URL }}'
-
-  deploy-custom-bot:
-    needs: build
-    name: deploy-custom-bot
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Deploy
-        run: |
-          curl --fail --location --request POST 'http://${{ secrets.AUTO_DEPLOYMENT_SERVICE_HOST }}/github-webhook' \
-            --header 'x-api-key: ${{ secrets.AUTO_DEPLOYMENT_SERVICE_API_KEY }}'
