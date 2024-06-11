@@ -206,16 +206,32 @@ export default class ConfigCommand extends Command {
         const roleIds = action.roles.map((role) => role.id);
 
         if (customIds.managerRole === action.customId) {
-          await this.client.settings.set(interaction.guild, Settings.MANAGER_ROLE, roleIds);
+          if (roleIds.length) {
+            await this.client.settings.set(interaction.guild, Settings.MANAGER_ROLE, roleIds);
+          } else {
+            await this.client.settings.delete(interaction.guild, Settings.MANAGER_ROLE);
+          }
         }
         if (customIds.flagsManagerRole === action.customId) {
-          await this.client.settings.set(interaction.guild, Settings.FLAGS_MANAGER_ROLE, roleIds);
+          if (roleIds.length) {
+            await this.client.settings.set(interaction.guild, Settings.FLAGS_MANAGER_ROLE, roleIds);
+          } else {
+            await this.client.settings.delete(interaction.guild, Settings.FLAGS_MANAGER_ROLE);
+          }
         }
         if (customIds.rosterManagerRole === action.customId) {
-          await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, roleIds);
+          if (roleIds.length) {
+            await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, roleIds);
+          } else {
+            await this.client.settings.delete(interaction.guild, Settings.ROSTER_MANAGER_ROLE);
+          }
         }
         if (customIds.linksManagerRole === action.customId) {
-          await this.client.settings.set(interaction.guild, Settings.LINKS_MANAGER_ROLE, roleIds);
+          if (roleIds.length) {
+            await this.client.settings.set(interaction.guild, Settings.LINKS_MANAGER_ROLE, roleIds);
+          } else {
+            await this.client.settings.delete(interaction.guild, Settings.LINKS_MANAGER_ROLE);
+          }
         }
 
         return action.update({ embeds: [this.fallback(action)], components: [row] });
@@ -323,7 +339,7 @@ export default class ConfigCommand extends Command {
   }
 
   private getRoles(guild: Guild, key: Settings) {
-    const value = this.client.settings.get<string | string[]>(guild, key, []);
+    const value = this.client.settings.get<string[]>(guild, key, []);
     if (typeof value === 'string') return [value];
     return value;
   }

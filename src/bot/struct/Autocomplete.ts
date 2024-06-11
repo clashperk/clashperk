@@ -22,6 +22,21 @@ export class Autocomplete {
     return command.autocomplete(interaction, args);
   }
 
+  public async commandsAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+    const query = interaction.options.getString(focused)?.trim();
+    const commands = this.client.commands.entries();
+
+    if (!query) {
+      const _commands = commands.slice(0, 25);
+      return interaction.respond(_commands.map((command) => ({ name: command, value: command })));
+    }
+
+    const _commands = commands.filter((command) => command.includes(query)).slice(0, 25);
+    if (!commands.length) return interaction.respond([{ name: 'No commands found.', value: '0' }]);
+
+    return interaction.respond(_commands.map((command) => ({ name: command, value: command })));
+  }
+
   public async flagSearchAutoComplete(
     interaction: AutocompleteInteraction<'cached'>,
     args: { player_tag?: string; flag_type?: 'ban' | 'strike' }

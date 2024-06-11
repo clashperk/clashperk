@@ -11,6 +11,10 @@ export class CommandsMap {
     return this.commands.set(key, value);
   }
 
+  public entries() {
+    return [...this.commands.keys()];
+  }
+
   public get(name: string) {
     return this.commands.get(name) ?? `${name}`;
   }

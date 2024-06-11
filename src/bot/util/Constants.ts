@@ -143,6 +143,7 @@ export const enum Settings {
   PREFIX = 'prefix',
   COLOR = 'color',
   IS_TRUSTED_GUILD = 'isTrustedGuild',
+  COMMAND_WHITELIST = 'commandWhitelist',
   MANAGER_ROLE = 'managerRole',
   ROSTER_MANAGER_ROLE = 'rosterManagerRole',
   FLAGS_MANAGER_ROLE = 'flagsManagerRole',
@@ -211,7 +212,9 @@ export enum FeatureFlags {
   /** unused */
   CLAN_GAMES_EMBED = 'clan-games-embed',
   /** unused */
-  LAST_SEEN_EMBED = 'last-seen-embed'
+  LAST_SEEN_EMBED = 'last-seen-embed',
+
+  COMMAND_WHITELIST = 'command-whitelist'
 }
 
 export const enum Flags {

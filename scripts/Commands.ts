@@ -4090,6 +4090,34 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     ]
   },
   {
+    name: 'whitelist',
+    description: '[Experimental] Whitelist a role or user to use specific commands.',
+    dm_permission: false,
+    options: [
+      {
+        name: 'user_or_role',
+        description: 'User or role to whitelist.',
+        type: ApplicationCommandOptionType.Role
+      },
+      {
+        name: 'command',
+        description: 'Command to whitelist.',
+        type: ApplicationCommandOptionType.String,
+        autocomplete: true
+      },
+      {
+        name: 'clear',
+        description: 'Clear the whitelist.',
+        type: ApplicationCommandOptionType.Boolean
+      },
+      {
+        name: 'list',
+        description: 'List all whitelisted users and roles.',
+        type: ApplicationCommandOptionType.Boolean
+      }
+    ]
+  },
+  {
     name: 'clans',
     description: 'Show all linked clans.',
     dm_permission: false

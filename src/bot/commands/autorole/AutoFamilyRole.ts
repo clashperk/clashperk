@@ -74,8 +74,7 @@ export default class AutoFamilyRoleCommand extends Command {
     }
 
     if (args.family_leaders_role) {
-      const _familyLeadersRoles = this.client.settings.get<string | string[]>(interaction.guild, Settings.FAMILY_LEADERS_ROLE, []);
-      const familyLeadersRoles = Array.isArray(_familyLeadersRoles) ? _familyLeadersRoles : [_familyLeadersRoles];
+      const familyLeadersRoles = this.client.settings.get<string[]>(interaction.guild, Settings.FAMILY_LEADERS_ROLE, []);
 
       await this.client.settings.set(
         interaction.guild,

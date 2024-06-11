@@ -120,7 +120,7 @@ export class RolesManager {
     const builderLeagueRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.BUILDER_LEAGUE_ROLES, {});
     const familyRoleId = this.client.settings.get<string>(guildId, Settings.FAMILY_ROLE, null);
     const exclusiveFamilyRoleId = this.client.settings.get<string>(guildId, Settings.EXCLUSIVE_FAMILY_ROLE, null);
-    const familyLeadersRoles = this.client.settings.get<string | string[]>(guildId, Settings.FAMILY_LEADERS_ROLE, []);
+    const familyLeadersRoles = this.client.settings.get<string[]>(guildId, Settings.FAMILY_LEADERS_ROLE, []);
     const verifiedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_VERIFIED_ROLE, null);
     const guestRoleId = this.client.settings.get<string>(guildId, Settings.GUEST_ROLE, null);
 
@@ -156,7 +156,7 @@ export class RolesManager {
       allowNonFamilyTownHallRoles,
       familyRoleId,
       exclusiveFamilyRoleId,
-      familyLeadersRoles: Array.isArray(familyLeadersRoles) ? familyLeadersRoles : [familyLeadersRoles],
+      familyLeadersRoles,
       verifiedRoleId,
       guestRoleId,
       leagueRoles,

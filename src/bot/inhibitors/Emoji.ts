@@ -1,7 +1,7 @@
 import { Interaction, PermissionFlagsBits } from 'discord.js';
 import { Command, Inhibitor } from '../lib/index.js';
 
-export default class GuildBanInhibitor extends Inhibitor {
+export default class ExternalEmojiInhibitor extends Inhibitor {
   public constructor() {
     super('external-emoji', {
       reason: 'emoji',

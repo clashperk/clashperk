@@ -218,6 +218,9 @@ export default class InteractionListener extends Listener {
       case 'timezone': {
         return this.timezoneAutocomplete(interaction, focused);
       }
+      case 'command': {
+        return this.client.autocomplete.commandsAutocomplete(interaction, focused);
+      }
     }
   }
 

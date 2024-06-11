@@ -10,12 +10,13 @@ export default class LinkCreateCommand extends Command {
       category: 'link',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
+      roleKey: Settings.LINKS_MANAGER_ROLE,
       defer: true
     });
   }
 
   public async pre(interaction: CommandInteraction<'cached'>) {
-    if (this.client.settings.get(interaction.guild, Settings.LINKS_MANAGER_ROLE)) {
+    if (this.client.settings.get<string[]>(interaction.guild, Settings.LINKS_MANAGER_ROLE, []).length) {
       this.userPermissions = ['ManageGuild'];
     } else {
       this.userPermissions = [];

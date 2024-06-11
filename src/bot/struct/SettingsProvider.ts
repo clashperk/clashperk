@@ -1,7 +1,7 @@
 import { Guild } from 'discord.js';
 import { Collection, Db } from 'mongodb';
-import { Collections, Settings as SettingsEnum } from '../util/Constants.js';
 import { unique } from 'radash';
+import { Collections, Settings as SettingsEnum } from '../util/Constants.js';
 
 export default class SettingsProvider {
   protected db: Collection<Settings>;
@@ -34,12 +34,58 @@ export default class SettingsProvider {
     }
   }
 
+  public async addToWhiteList(
+    guild: string | Guild,
+    { userOrRoleId, isRole, commandId }: { userOrRoleId: string; isRole: boolean; commandId: string }
+  ) {
+    const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
+    const record = this.settings.get(guildId) || {};
+
+    const whiteList = (record[SettingsEnum.COMMAND_WHITELIST] || []) as {
+      key: string;
+      userOrRoleId: string;
+      commandId: string;
+      isRole: boolean;
+    }[];
+
+    whiteList.push({
+      key: `${userOrRoleId}-${commandId}`,
+      userOrRoleId,
+      commandId,
+      isRole
+    });
+
+    record[SettingsEnum.COMMAND_WHITELIST] = unique(whiteList, (list) => list.key);
+
+    this.settings.set(guildId, record);
+    return this.db.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: whiteList } }, { upsert: true });
+  }
+
+  public async removeFromWhiteList(guild: string | Guild, { userOrRoleId, commandId }: { userOrRoleId: string; commandId: string }) {
+    const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
+    const record = this.settings.get(guildId) || {};
+
+    const whiteList = (record[SettingsEnum.COMMAND_WHITELIST] || []) as {
+      key: string;
+      userOrRoleId: string;
+      commandId: string;
+      isRole: boolean;
+    }[];
+
+    const key = `${userOrRoleId}-${commandId}`;
+    const filtered = whiteList.filter((list) => list.key !== key);
+    record[SettingsEnum.COMMAND_WHITELIST] = filtered;
+
+    this.settings.set(guildId, record);
+    return this.db.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: filtered } });
+  }
+
   public get<T>(guild: string | Guild, key: string, defaultValue?: any): T {
     const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
     if (this.settings.has(guildId)) {
       const value = this.settings.get(guildId)[key];
       // eslint-disable-next-line
-			return value == null ? defaultValue : value;
+      return value == null ? defaultValue : value;
     }
 
     return defaultValue;
@@ -71,7 +117,7 @@ export default class SettingsProvider {
   public async delete(guild: string | Guild, key: string) {
     const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
     const data = this.settings.get(guildId) || {};
-		delete data[key]; // eslint-disable-line
+    delete data[key]; // eslint-disable-line
 
     return this.db.updateOne({ guildId }, { $unset: { [key]: '' } });
   }
@@ -100,7 +146,7 @@ export default class SettingsProvider {
 
   private static guildId(guild: string | Guild) {
     if (guild instanceof Guild) return guild.id;
-		if (guild === 'global' || guild === null) return 'global'; // eslint-disable-line
+    if (guild === 'global' || guild === null) return 'global'; // eslint-disable-line
     if (/^\d+$/.test(guild)) return guild;
     throw new TypeError('Invalid guild specified. Must be a Guild instance, guild ID, "global", or null.');
   }

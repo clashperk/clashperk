@@ -138,6 +138,24 @@ export class CommandHandler extends BaseHandler {
     return result;
   }
 
+  public resolveCommandId(interaction: CommandInteraction | AutocompleteInteraction) {
+    const resolved: Record<string, unknown> = {};
+
+    for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
+      const key = name.toString();
+
+      if (option.type === ApplicationCommandOptionType.Subcommand || option.type === ApplicationCommandOptionType.SubcommandGroup) {
+        resolved[key] = option.name;
+      }
+    }
+
+    const subCommandGroup = resolved.subCommand ? ` ${resolved.subCommand as string}` : '';
+    const subCommand = resolved.command ? ` ${resolved.command as string}` : '';
+    const commandId = `/${interaction.commandName}${subCommandGroup}${subCommand}`;
+
+    return commandId;
+  }
+
   public rawArgs(interaction: CommandInteraction | AutocompleteInteraction) {
     const resolved: Record<string, unknown> = {};
     for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
@@ -246,9 +264,9 @@ export class CommandHandler extends BaseHandler {
   }
 
   private handleSubCommandInteraction(interaction: CommandInteraction) {
-    const rawArgs = this.rawArgs(interaction);
+    const commandId = this.resolveCommandId(interaction);
 
-    const command = this.getCommand(rawArgs.commandName as string);
+    const command = this.getCommand(commandId);
     if (!command) return;
 
     if (this.preInhibitor(interaction, command)) return;
@@ -342,24 +360,58 @@ export class CommandHandler extends BaseHandler {
       }
     }
 
+    const [isValidWhitelist, isWhitelisted] = this.checkWhitelist(interaction);
+    if (isValidWhitelist && isWhitelisted) return false;
+
     if (command.userPermissions?.length) {
       const missing = interaction.channel?.permissionsFor(interaction.user)?.missing(command.userPermissions);
 
-      const managerRoleIds = this.client.settings.get<string | string[]>(interaction.guild, Settings.MANAGER_ROLE, []);
+      const managerRoleIds = this.client.settings.get<string[]>(interaction.guild, Settings.MANAGER_ROLE, []);
       if (managerRoleIds.length && interaction.member.roles.cache.hasAny(...managerRoleIds)) return false;
 
       if (command.roleKey) {
-        const roleOverrides = this.client.settings.get<string[] | string>(interaction.guild, command.roleKey, []);
+        const roleOverrides = this.client.settings.get<string[]>(interaction.guild, command.roleKey, []);
         if (roleOverrides.length && interaction.member.roles.cache.hasAny(...roleOverrides)) return false;
       }
+
+      if (!missing?.length) return false;
 
       if (missing?.length) {
         this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);
         return true;
       }
+
+      if (isValidWhitelist && !isWhitelisted) {
+        this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.WHITELIST);
+        return true;
+      }
     }
 
     return false;
+  }
+
+  public checkWhitelist(interaction: BaseInteraction): [boolean, boolean] {
+    if (!interaction.inCachedGuild()) return [false, false];
+    if (!interaction.isCommand()) return [false, false];
+
+    const commandId = this.client.commandHandler.resolveCommandId(interaction);
+    if (!commandId) return [false, false];
+
+    const commandWhitelist = this.client.settings.get<{ key: string; userOrRoleId: string; commandId: string; isRole: boolean }[]>(
+      interaction.guild,
+      Settings.COMMAND_WHITELIST,
+      []
+    );
+    if (!commandWhitelist.length) return [false, false];
+
+    const whitelisted = commandWhitelist.filter((whitelist) => whitelist.commandId === commandId);
+    if (!whitelisted.length) return [false, false];
+
+    const authorized = whitelisted.find(({ userOrRoleId }) => {
+      return interaction.member.roles.cache.has(userOrRoleId) || interaction.user.id === userOrRoleId;
+    });
+
+    return [true, !!authorized];
   }
 }
 

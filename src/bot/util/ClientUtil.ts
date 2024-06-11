@@ -105,12 +105,12 @@ export class ClientUtil {
 
   public isManager(member: GuildMember, roleKey?: string) {
     if (this.client.isOwner(member.user)) return true;
-    const managerRoleIds = this.client.settings.get<string | string[]>(member.guild, Settings.MANAGER_ROLE, []);
-    const roleOverrides = roleKey ? this.client.settings.get<string[] | string>(member.guild, roleKey, []) : [];
+    const managerRoleIds = this.client.settings.get<string[]>(member.guild, Settings.MANAGER_ROLE, []);
+    const roleOverrides = roleKey ? this.client.settings.get<string[]>(member.guild, roleKey, []) : [];
     return (
       member.permissions.has(PermissionsBitField.Flags.ManageGuild) ||
       member.roles.cache.hasAny(...managerRoleIds) ||
-      Boolean(roleOverrides && member.roles.cache.hasAny(...roleOverrides))
+      Boolean(roleOverrides.length && member.roles.cache.hasAny(...roleOverrides))
     );
   }
 

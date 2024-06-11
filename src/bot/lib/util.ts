@@ -31,6 +31,7 @@ export interface CommandEvents {
 export const BuiltInReasons = {
   DM: 'dm',
   USER: 'user',
+  WHITELIST: 'whitelist',
   GUILD: 'guild',
   CHANNEL: 'channel',
   CLIENT: 'client',
