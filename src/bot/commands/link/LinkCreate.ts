@@ -10,7 +10,6 @@ export default class LinkCreateCommand extends Command {
       category: 'link',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
-      roleKey: Settings.LINKS_MANAGER_ROLE,
       defer: true
     });
   }

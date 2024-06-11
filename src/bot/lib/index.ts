@@ -264,9 +264,9 @@ export class CommandHandler extends BaseHandler {
   }
 
   private handleSubCommandInteraction(interaction: CommandInteraction) {
-    const commandId = this.resolveCommandId(interaction);
+    const rawArgs = this.rawArgs(interaction);
 
-    const command = this.getCommand(commandId);
+    const command = this.getCommand(rawArgs.commandName as string);
     if (!command) return;
 
     if (this.preInhibitor(interaction, command)) return;
