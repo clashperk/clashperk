@@ -4,9 +4,11 @@ import {
   ButtonStyle,
   CommandInteraction,
   EmbedBuilder,
+  Guild,
   HexColorString,
   MessageComponentInteraction,
   Role,
+  RoleSelectMenuBuilder,
   StringSelectMenuBuilder,
   resolveColor
 } from 'discord.js';
@@ -37,11 +39,6 @@ const options = [
     name: 'links_manager_role',
     key: Settings.LINKS_MANAGER_ROLE,
     description: command.config.options.links_manager_role.description
-  },
-  {
-    name: 'color_code',
-    key: Settings.COLOR,
-    description: command.config.options.color_code.description
   }
 ];
 
@@ -87,19 +84,19 @@ export default class ConfigCommand extends Command {
     }
 
     if (args.manager_role) {
-      await this.client.settings.set(interaction.guild, Settings.MANAGER_ROLE, args.manager_role.id);
+      await this.client.settings.push(interaction.guild, Settings.MANAGER_ROLE, [args.manager_role.id]);
     }
 
     if (args.roster_manager_role) {
-      await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, args.roster_manager_role.id);
+      await this.client.settings.push(interaction.guild, Settings.ROSTER_MANAGER_ROLE, [args.roster_manager_role.id]);
     }
 
     if (args.flags_manager_role) {
-      await this.client.settings.set(interaction.guild, Settings.FLAGS_MANAGER_ROLE, args.flags_manager_role.id);
+      await this.client.settings.push(interaction.guild, Settings.FLAGS_MANAGER_ROLE, [args.flags_manager_role.id]);
     }
 
     if (args.links_manager_role) {
-      await this.client.settings.set(interaction.guild, Settings.LINKS_MANAGER_ROLE, args.links_manager_role.id);
+      await this.client.settings.push(interaction.guild, Settings.LINKS_MANAGER_ROLE, [args.links_manager_role.id]);
     }
 
     if (args.clans_sorting_key) {
@@ -138,21 +135,28 @@ export default class ConfigCommand extends Command {
       await this.client.settings.set(interaction.guild, Settings.ROLE_ADDITION_DELAYS, ms(args.role_addition_delays));
     }
 
-    const validOptions = this.getOptions(interaction.guildId);
+    const validOptions = this.getOptions();
     const embed = this.fallback(interaction);
-    if (!validOptions.length) return interaction.editReply({ embeds: [embed] });
 
     const customIds = {
-      unset: this.client.uuid(interaction.user.id),
-      menu: this.client.uuid(interaction.user.id)
+      manage: this.client.uuid(interaction.user.id),
+      menu: this.client.uuid(interaction.user.id),
+      [Settings.MANAGER_ROLE]: this.client.uuid(interaction.user.id),
+      [Settings.ROSTER_MANAGER_ROLE]: this.client.uuid(interaction.user.id),
+      [Settings.FLAGS_MANAGER_ROLE]: this.client.uuid(interaction.user.id),
+      [Settings.LINKS_MANAGER_ROLE]: this.client.uuid(interaction.user.id)
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setLabel('Unset Config').setStyle(ButtonStyle.Success).setCustomId(customIds.unset)
+      new ButtonBuilder().setLabel('Manage Permissions').setStyle(ButtonStyle.Success).setCustomId(customIds.manage)
     );
-    const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder().setCustomId(customIds.menu).setPlaceholder('Select a config to unset').addOptions(validOptions)
-    );
+    const menuOptions = new StringSelectMenuBuilder()
+      .setCustomId(customIds.menu)
+      .setPlaceholder('What would you like to set?')
+      .addOptions(validOptions);
+    const optionMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menuOptions);
+
+    const roleKeys = [Settings.MANAGER_ROLE, Settings.FLAGS_MANAGER_ROLE, Settings.ROSTER_MANAGER_ROLE, Settings.LINKS_MANAGER_ROLE];
 
     const message = await interaction.editReply({ embeds: [embed], components: [row] });
     createInteractionCollector({
@@ -160,22 +164,63 @@ export default class ConfigCommand extends Command {
       customIds,
       interaction,
       onClick: (action) => {
-        return action.update({ embeds: [this.fallback(action)], components: [menu] });
+        const validOptions = this.getOptions().map((op) => ({ ...op, default: false }));
+        menuOptions.setOptions(validOptions);
+
+        return action.update({
+          embeds: [],
+          content: ['### Select an option to set Permissions', ...roleKeys.map((key) => `- ${title(key)}`)].join('\n'),
+          components: [optionMenu]
+        });
       },
       onSelect: async (action) => {
-        const key = action.values[0];
-        await this.client.settings.delete(action.guild.id, key);
+        const roleKey = action.values[0];
 
-        const validOptions = this.getOptions(interaction.guildId);
-        return action.update({ embeds: [this.fallback(action)], components: validOptions.length ? [row] : [] });
+        const roleMenus: ActionRowBuilder<RoleSelectMenuBuilder>[] = [];
+        for (const key of roleKeys) {
+          if (key !== roleKey) continue;
+
+          const roles = this.getRoles(interaction.guild, key);
+          const roleMenu = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+            new RoleSelectMenuBuilder()
+              .setCustomId(customIds[key as keyof typeof customIds])
+              .setPlaceholder(`Select ${title(key)}`)
+              .setMinValues(0)
+              .setMaxValues(25)
+              .setDefaultRoles(...roles)
+          );
+          roleMenus.push(roleMenu);
+        }
+
+        const validOptions = this.getOptions().map((op) => ({ ...op, default: op.value === roleKey }));
+        const opt = validOptions.find((op) => op.value === roleKey)!;
+        menuOptions.setOptions(validOptions);
+
+        return action.update({
+          embeds: [],
+          content: `### Select ${opt.label}s\n${opt.description}`,
+          components: [optionMenu, ...roleMenus]
+        });
+      },
+      onRoleSelect: async (action) => {
+        const roleIds = action.roles.map((role) => role.id);
+
+        if (customIds.managerRole === action.customId) {
+          await this.client.settings.set(interaction.guild, Settings.MANAGER_ROLE, roleIds);
+        }
+        if (customIds.flagsManagerRole === action.customId) {
+          await this.client.settings.set(interaction.guild, Settings.FLAGS_MANAGER_ROLE, roleIds);
+        }
+        if (customIds.rosterManagerRole === action.customId) {
+          await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, roleIds);
+        }
+        if (customIds.linksManagerRole === action.customId) {
+          await this.client.settings.set(interaction.guild, Settings.LINKS_MANAGER_ROLE, roleIds);
+        }
+
+        return action.update({ embeds: [this.fallback(action)], components: [row] });
       }
     });
-  }
-
-  private getOptions(guildId: string) {
-    return options
-      .filter((op) => !!this.client.settings.get(guildId, op.key, null))
-      .map((op) => ({ label: title(op.name), value: op.key, description: op.description }));
   }
 
   public fallback(interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>) {
@@ -183,16 +228,12 @@ export default class ConfigCommand extends Command {
     const channel = interaction.guild.channels.cache.get(
       this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null)
     );
-    const managerRole = interaction.guild.roles.cache.get(this.client.settings.get<string>(interaction.guild, Settings.MANAGER_ROLE, null));
-    const flagsManagerRole = interaction.guild.roles.cache.get(
-      this.client.settings.get<string>(interaction.guild, Settings.FLAGS_MANAGER_ROLE, null)
-    );
-    const rosterManagerRole = interaction.guild.roles.cache.get(
-      this.client.settings.get<string>(interaction.guild, Settings.ROSTER_MANAGER_ROLE, null)
-    );
-    const linksManagerRole = interaction.guild.roles.cache.get(
-      this.client.settings.get<string>(interaction.guild, Settings.LINKS_MANAGER_ROLE, null)
-    );
+
+    const managerRoles = this.getRoles(interaction.guild, Settings.MANAGER_ROLE);
+    const flagsManagerRoles = this.getRoles(interaction.guild, Settings.FLAGS_MANAGER_ROLE);
+    const rosterManagerRoles = this.getRoles(interaction.guild, Settings.ROSTER_MANAGER_ROLE);
+    const linksManagerRoles = this.getRoles(interaction.guild, Settings.LINKS_MANAGER_ROLE);
+
     const clansSortingKey = this.client.settings.get<string>(interaction.guild, Settings.CLANS_SORTING_KEY, 'name');
     const verifiedOnlyClanRoles = this.client.settings.get<string>(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
     const useAutoRole = this.client.settings.get<string>(interaction.guild, Settings.USE_AUTO_ROLE, true);
@@ -213,20 +254,20 @@ export default class ConfigCommand extends Command {
           value: this.client.patreonHandler.get(interaction.guild.id) ? 'Yes' : 'No'
         },
         {
-          name: 'Manager Role',
-          value: `${managerRole?.toString() ?? 'None'}`
+          name: 'Manager Roles',
+          value: `${managerRoles.map((id) => `<@&${id}>`).join(' ') || 'None'}`
         },
         {
-          name: 'Roster Manager Role',
-          value: `${rosterManagerRole?.toString() ?? 'None'}`
+          name: 'Roster Manager Roles',
+          value: `${rosterManagerRoles.map((id) => `<@&${id}>`).join(' ') || 'None'}`
         },
         {
-          name: 'Flags Manager Role',
-          value: `${flagsManagerRole?.toString() ?? 'None'}`
+          name: 'Flags Manager Roles',
+          value: `${flagsManagerRoles.map((id) => `<@&${id}>`).join(' ') || 'None'}`
         },
         {
-          name: 'Links Manager Role',
-          value: `${linksManagerRole?.toString() ?? 'None'}`
+          name: 'Links Manager Roles',
+          value: `${linksManagerRoles.map((id) => `<@&${id}>`).join(' ') || 'None'}`
         },
         {
           name: 'Webhook Limit',
@@ -279,5 +320,15 @@ export default class ConfigCommand extends Command {
     } catch {
       return null;
     }
+  }
+
+  private getRoles(guild: Guild, key: Settings) {
+    const value = this.client.settings.get<string | string[]>(guild, key, []);
+    if (typeof value === 'string') return [value];
+    return value;
+  }
+
+  private getOptions() {
+    return options.map((op) => ({ label: title(op.name), value: op.key, description: op.description }));
   }
 }

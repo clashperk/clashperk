@@ -1,6 +1,7 @@
 import { Guild } from 'discord.js';
 import { Collection, Db } from 'mongodb';
 import { Collections, Settings as SettingsEnum } from '../util/Constants.js';
+import { unique } from 'radash';
 
 export default class SettingsProvider {
   protected db: Collection<Settings>;
@@ -49,6 +50,21 @@ export default class SettingsProvider {
     const data = this.settings.get(guildId) || {};
     data[key] = value;
     this.settings.set(guildId, data);
+    return this.db.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
+  }
+
+  public async push(guild: string | Guild, key: string, items: string[]) {
+    const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
+    const record = this.settings.get(guildId) || {};
+
+    let value = record[key] || [];
+    if (Array.isArray(value)) value = value.concat(items);
+    else if (value) value = [value, ...items];
+    else value = items;
+
+    record[key] = unique(value);
+
+    this.settings.set(guildId, record);
     return this.db.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
   }
 

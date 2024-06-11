@@ -345,14 +345,12 @@ export class CommandHandler extends BaseHandler {
     if (command.userPermissions?.length) {
       const missing = interaction.channel?.permissionsFor(interaction.user)?.missing(command.userPermissions);
 
-      const managerRole = interaction.guild.roles.cache.get(
-        this.client.settings.get<string>(interaction.guild, Settings.MANAGER_ROLE, null)
-      );
-      if (managerRole && interaction.member.roles.cache.has(managerRole.id)) return false;
+      const managerRoleIds = this.client.settings.get<string | string[]>(interaction.guild, Settings.MANAGER_ROLE, []);
+      if (managerRoleIds.length && interaction.member.roles.cache.hasAny(...managerRoleIds)) return false;
 
       if (command.roleKey) {
-        const role = interaction.guild.roles.cache.get(this.client.settings.get<string>(interaction.guild, command.roleKey, null));
-        if (role && interaction.member.roles.cache.has(role.id)) return false;
+        const roleOverrides = this.client.settings.get<string[] | string>(interaction.guild, command.roleKey, []);
+        if (roleOverrides.length && interaction.member.roles.cache.hasAny(...roleOverrides)) return false;
       }
 
       if (missing?.length) {
@@ -390,7 +388,7 @@ export class ListenerHandler extends BaseHandler {
       rest: this.client.rest as unknown as EventEmitter,
       ws: this.client.ws as unknown as EventEmitter
     }[listener.emitter];
-		if (!emitter) return; // eslint-disable-line
+    if (!emitter) return; // eslint-disable-line
 
     if (listener.once) {
       emitter.once(listener.event, listener.exec.bind(listener));
