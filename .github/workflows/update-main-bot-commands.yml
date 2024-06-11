@@ -8,8 +8,6 @@ on:
   push:
     tags:
       - '*'
-    branches:
-      - deploy
     paths:
       - scripts/**
 

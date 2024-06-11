@@ -2,8 +2,8 @@ name: aws-ecr-publish-and-deploy
 
 on:
   push:
-    branches:
-      - deploy
+    tags:
+      - '*'
     paths-ignore:
       - scripts/**
   workflow_dispatch:

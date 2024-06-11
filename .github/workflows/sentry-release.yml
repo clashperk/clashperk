@@ -2,8 +2,8 @@ name: sentry-release
 
 on:
   push:
-    branches:
-      - deploy
+    tags:
+      - '*'
     paths-ignore:
       - scripts/**
 
