@@ -24,10 +24,9 @@ import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../../u
 // 47h (War Declared)
 // 0m (War Ended)
 
-export default class ReminderCreateCommand extends Command {
+export default class ClanWarsReminderCreateCommand extends Command {
   public constructor() {
-    super('reminder-create', {
-      aliases: ['reminders-create'],
+    super('clan-wars-reminder-create', {
       category: 'reminder',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
@@ -73,7 +72,7 @@ export default class ReminderCreateCommand extends Command {
       return interaction.editReply(
         this.i18n('common.missing_access', {
           lng: interaction.locale,
-					channel: args.channel.toString(), // eslint-disable-line
+          channel: args.channel.toString(), // eslint-disable-line
           permission: permission.missingPerms
         })
       );
@@ -83,7 +82,7 @@ export default class ReminderCreateCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-				this.i18n('command.reminders.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+        this.i18n('command.reminders.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
       );
     }
 

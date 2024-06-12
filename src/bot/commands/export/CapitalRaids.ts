@@ -5,9 +5,10 @@ import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { getExportComponents } from '../../util/Helper.js';
 
-export default class ExportCapitalMissed extends Command {
+export default class ExportCapitalRaidsCommand extends Command {
   public constructor() {
     super('export-capital-missed', {
+      aliases: ['export-capital-raids'],
       category: 'export',
       channel: 'guild',
       clientPermissions: ['AttachFiles', 'EmbedLinks'],

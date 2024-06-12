@@ -5,6 +5,7 @@ import { Collections, Flags } from '../../util/Constants.js';
 export default class ServerLinkCommand extends Command {
   public constructor() {
     super('setup-server-link', {
+      aliases: ['setup-clan'],
       category: 'none',
       channel: 'guild',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
@@ -23,7 +24,10 @@ export default class ServerLinkCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag: string; color?: number; category?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag: string; color?: number; category?: string; clan_alias?: string; clan_nickname?: string }
+  ) {
     const clan = await this.client.storage.collection.findOne({ tag: args.tag, guild: interaction.guild.id });
 
     const data = await this.client.resolver.enforceSecurity(interaction, { tag: args.tag, collection: Collections.CLAN_STORES });

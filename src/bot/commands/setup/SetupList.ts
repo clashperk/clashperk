@@ -24,9 +24,9 @@ const roles: Record<string, string> = {
   everyone: 'Everyone'
 };
 
-export default class SetupCommand extends Command {
+export default class SetupListCommand extends Command {
   public constructor() {
-    super('setup', {
+    super('setup-list', {
       category: 'setup',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
@@ -34,16 +34,7 @@ export default class SetupCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { command: string }) {
-    const command = {
-      enable: this.handler.modules.get('setup-enable')!,
-      disable: this.handler.modules.get('setup-disable')!,
-      utility: this.handler.modules.get('setup-utility')!
-    }[args.command];
-    if (command) {
-      return this.handler.continue(interaction, command);
-    }
-
+  public async exec(interaction: CommandInteraction<'cached'>) {
     const CUSTOM_ID = {
       FEATURES: this.client.uuid(interaction.user.id),
       LIST: this.client.uuid(interaction.user.id),
