@@ -84,7 +84,7 @@ export default class ProfileCommand extends Command {
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `${user.displayName}/${user.username} (${user.id})`, iconURL: user.displayAvatarURL() })
+      .setAuthor({ name: `${user.displayName} (${user.id})`, iconURL: user.displayAvatarURL() })
       .setDescription(['**Username**', `${user.username}`].join('\n'));
 
     if (data?.clan?.tag) {
