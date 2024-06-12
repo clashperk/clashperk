@@ -21,12 +21,13 @@ export default class ExportCapitalMissed extends Command {
 
     const chunks = [];
     for (const { tag, name } of clans) {
-      const weekends = await this.client.db
+      const cursor = this.client.db
         .collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
-        .find({ tag })
+        .find(args.season ? { tag, startDate: { $gte: new Date(args.season) } } : { tag })
         .sort({ _id: -1 })
-        .limit(10)
-        .toArray();
+        .limit(args.limit ?? 10);
+
+      const weekends = await cursor.toArray();
 
       const membersMap: Record<
         string,
@@ -45,7 +46,7 @@ export default class ExportCapitalMissed extends Command {
       for (const clan of weekends.reverse()) {
         for (const member of clan.members) {
           // eslint-disable-next-line
-					membersMap[member.tag] ??= {
+          membersMap[member.tag] ??= {
             name: member.name,
             tag: member.tag,
             capitalResourcesLooted: 0,

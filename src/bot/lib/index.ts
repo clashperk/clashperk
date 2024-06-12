@@ -374,17 +374,17 @@ export class CommandHandler extends BaseHandler {
         if (roleOverrides.length && interaction.member.roles.cache.hasAny(...roleOverrides)) return false;
       }
 
-      if (!missing?.length) return false;
-
       if (missing?.length) {
         this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);
         return true;
+      } else {
+        return false;
       }
+    }
 
-      if (isValidWhitelist && !isWhitelisted) {
-        this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.WHITELIST);
-        return true;
-      }
+    if (isValidWhitelist && !isWhitelisted) {
+      this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.WHITELIST);
+      return true;
     }
 
     return false;

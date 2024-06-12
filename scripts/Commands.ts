@@ -3648,6 +3648,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'limit',
             description: command.export.options.wars.description,
+            max_value: 100,
+            min_value: 1,
             description_localizations: translation('command.export.options.wars.description'),
             type: ApplicationCommandOptionType.Integer
           }
@@ -4097,7 +4099,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       {
         name: 'user_or_role',
         description: 'User or role to whitelist.',
-        type: ApplicationCommandOptionType.Role
+        type: ApplicationCommandOptionType.Mentionable
       },
       {
         name: 'command',
