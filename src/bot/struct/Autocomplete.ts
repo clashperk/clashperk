@@ -24,17 +24,17 @@ export class Autocomplete {
 
   public async commandsAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
     const query = interaction.options.getString(focused)?.trim();
-    const commands = this.client.commands.entries();
+    const commands = this.client.commands.entries().map((cmd) => ({ name: cmd, value: cmd.replace(/^\//, '').replace(/\s+/g, '-') }));
 
     if (!query) {
-      const _commands = commands.slice(0, 25);
-      return interaction.respond(_commands.map((command) => ({ name: command, value: command })));
+      const choices = commands.slice(0, 25);
+      return interaction.respond(choices);
     }
 
-    const _commands = commands.filter((command) => command.includes(query)).slice(0, 25);
-    if (!commands.length) return interaction.respond([{ name: 'No commands found.', value: '0' }]);
+    const choices = commands.filter(({ name }) => name.includes(query)).slice(0, 25);
+    if (!choices.length) return interaction.respond([{ name: 'No commands found.', value: '0' }]);
 
-    return interaction.respond(_commands.map((command) => ({ name: command, value: command })));
+    return interaction.respond(choices);
   }
 
   public async flagSearchAutoComplete(

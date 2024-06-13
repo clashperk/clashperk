@@ -6,7 +6,6 @@ import {
   Collection,
   CommandInteraction,
   CommandInteractionOption,
-  EmbedBuilder,
   Events,
   GuildBasedChannel,
   Interaction,
@@ -115,8 +114,16 @@ export class CommandHandler extends BaseHandler {
     }
   }
 
-  public getCommand(alias: string): Command | null {
-    return this.modules.get(alias) ?? this.modules.get(this.aliases.get(alias)!) ?? null;
+  public getCommand(commandName: string): Command | null {
+    const alias = this.aliases.get(commandName);
+    if (!alias) return null;
+
+    const command = this.modules.get(alias);
+    if (!command) return null;
+
+    if (command) command.resolvedId = alias;
+
+    return command;
   }
 
   public transformInteraction(
@@ -136,24 +143,6 @@ export class CommandHandler extends BaseHandler {
     }
 
     return result;
-  }
-
-  public resolveCommandId(interaction: CommandInteraction | AutocompleteInteraction) {
-    const resolved: Record<string, unknown> = {};
-
-    for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
-      const key = name.toString();
-
-      if (option.type === ApplicationCommandOptionType.Subcommand || option.type === ApplicationCommandOptionType.SubcommandGroup) {
-        resolved[key] = option.name;
-      }
-    }
-
-    const subCommandGroup = resolved.subCommand ? ` ${resolved.subCommand as string}` : '';
-    const subCommand = resolved.command ? ` ${resolved.command as string}` : '';
-    const commandId = `/${interaction.commandName}${subCommandGroup}${subCommand}`;
-
-    return commandId;
   }
 
   public rawArgs(interaction: CommandInteraction | AutocompleteInteraction) {
@@ -254,19 +243,13 @@ export class CommandHandler extends BaseHandler {
   }
 
   public handleInteraction(interaction: CommandInteraction) {
-    const command = this.getCommand(interaction.commandName);
-    if (!command) return this.handleSubCommandInteraction(interaction);
+    let command = this.getCommand(interaction.commandName);
 
-    if (this.preInhibitor(interaction, command)) return;
+    if (!command) {
+      const rawArgs = this.rawArgs(interaction);
+      command = this.getCommand(rawArgs.commandName as string);
+    }
 
-    const args = this.argumentRunner(interaction, command);
-    return this.exec(interaction, command, args);
-  }
-
-  private handleSubCommandInteraction(interaction: CommandInteraction) {
-    const rawArgs = this.rawArgs(interaction);
-
-    const command = this.getCommand(rawArgs.commandName as string);
     if (!command) return;
 
     if (this.preInhibitor(interaction, command)) return;
@@ -275,6 +258,7 @@ export class CommandHandler extends BaseHandler {
     return this.exec(interaction, command, args);
   }
 
+  /** This method should only be used with CommandInteraction */
   public continue(interaction: CommandInteraction | MessageComponentInteraction, command: Command) {
     if (this.preInhibitor(interaction, command)) return;
     const args = this.argumentRunner(interaction as CommandInteraction, command);
@@ -282,7 +266,6 @@ export class CommandHandler extends BaseHandler {
   }
 
   public async exec(interaction: CommandInteraction | MessageComponentInteraction, command: Command, args: Record<string, unknown> = {}) {
-    if (await this.postInhibitor(interaction, command)) return;
     try {
       await command.pre(interaction, args);
       await command.permissionCheck(interaction);
@@ -308,19 +291,6 @@ export class CommandHandler extends BaseHandler {
     }
 
     return !interaction.appPermissions.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]);
-  }
-
-  public async postInhibitor(interaction: CommandInteraction | MessageComponentInteraction, command: Command) {
-    const passed = command.condition(interaction);
-    if (!passed) return false;
-
-    this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.POST);
-    if (interaction.replied) {
-      await interaction.followUp({ ...passed, ephemeral: true });
-    } else {
-      await interaction.reply({ ...passed, ephemeral: true });
-    }
-    return true;
   }
 
   public preInhibitor(interaction: BaseInteraction, command: Command) {
@@ -360,7 +330,7 @@ export class CommandHandler extends BaseHandler {
       }
     }
 
-    const [isValidWhitelist, isWhitelisted] = this.checkWhitelist(interaction);
+    const [isValidWhitelist, isWhitelisted] = this.checkWhitelist(interaction, command);
     if (isValidWhitelist && isWhitelisted) return false;
 
     if (command.userPermissions?.length) {
@@ -390,12 +360,11 @@ export class CommandHandler extends BaseHandler {
     return false;
   }
 
-  public checkWhitelist(interaction: BaseInteraction): [boolean, boolean] {
+  public checkWhitelist(interaction: BaseInteraction, command: Command): [boolean, boolean] {
     if (!interaction.inCachedGuild()) return [false, false];
     if (!interaction.isCommand()) return [false, false];
 
-    const commandId = this.client.commandHandler.resolveCommandId(interaction);
-    if (!commandId) return [false, false];
+    if (!command.resolvedId) return [false, false];
 
     const commandWhitelist = this.client.settings.get<{ key: string; userOrRoleId: string; commandId: string; isRole: boolean }[]>(
       interaction.guild,
@@ -404,7 +373,7 @@ export class CommandHandler extends BaseHandler {
     );
     if (!commandWhitelist.length) return [false, false];
 
-    const whitelisted = commandWhitelist.filter((whitelist) => whitelist.commandId === commandId);
+    const whitelisted = commandWhitelist.filter((whitelist) => whitelist.commandId === command.resolvedId);
     if (!whitelisted.length) return [false, false];
 
     const authorized = whitelisted.find(({ userOrRoleId }) => {
@@ -497,6 +466,7 @@ export class Command implements CommandOptions {
   public clientPermissions?: PermissionsString[];
   public roleKey?: string | null;
   public muted?: boolean;
+  public resolvedId?: string;
 
   public handler: CommandHandler;
   public i18n = i18n;
@@ -521,11 +491,6 @@ export class Command implements CommandOptions {
 
   public autocomplete(interaction: AutocompleteInteraction, args: Record<string, unknown>): Promise<unknown> | unknown;
   public autocomplete(): Promise<unknown> | unknown {
-    return null;
-  }
-
-  public condition(interaction: BaseInteraction): { embeds: EmbedBuilder[] } | null;
-  public condition(): { embeds: EmbedBuilder[] } | null {
     return null;
   }
 

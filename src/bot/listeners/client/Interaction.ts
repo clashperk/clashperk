@@ -147,7 +147,10 @@ export default class InteractionListener extends Listener {
           id: interaction.id,
           type: InteractionType[interaction.type]
         },
-        [focused]: interaction.options.getString(focused)?.slice(0, 100),
+        focused: {
+          name: focused,
+          value: query
+        },
         args: this.client.commandHandler.rawArgs(interaction)
       }
     });

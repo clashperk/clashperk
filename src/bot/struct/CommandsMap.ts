@@ -1,22 +1,35 @@
 import Client from './Client.js';
 
 export class CommandsMap {
-  private commands: Map<string, string>;
+  private nameMappings: Map<string, string>;
+  private idMappings: Map<string, string>;
 
   public constructor(private readonly client: Client) {
-    this.commands = new Map();
+    this.nameMappings = new Map();
+    this.idMappings = new Map();
   }
 
-  public set(key: string, value: string) {
-    return this.commands.set(key, value);
+  public set(name: string, formatted: string, mappedId: string) {
+    this.nameMappings.set(name, formatted);
+    this.idMappings.set(mappedId, name);
   }
 
   public entries() {
-    return [...this.commands.keys()];
+    return [...this.nameMappings.keys()];
   }
 
+  /**
+   * @param name - `/command name`
+   */
   public get(name: string) {
-    return this.commands.get(name) ?? `${name}`;
+    return this.nameMappings.get(name) ?? `${name}`;
+  }
+
+  /**
+   * @param id - `command-id`
+   */
+  public resolve(id: string) {
+    return this.get(this.idMappings.get(id) ?? `/${id}`);
   }
 
   public get SETUP_ENABLE() {

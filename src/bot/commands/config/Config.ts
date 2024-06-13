@@ -13,7 +13,7 @@ import {
   resolveColor
 } from 'discord.js';
 import ms from 'ms';
-import { title } from 'radash';
+import { title, unique } from 'radash';
 import { command } from '../../../../locales/en.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
@@ -187,7 +187,7 @@ export default class ConfigCommand extends Command {
               .setPlaceholder(`Select ${title(key)}`)
               .setMinValues(0)
               .setMaxValues(25)
-              .setDefaultRoles(...roles)
+              .setDefaultRoles(...unique(roles))
           );
           roleMenus.push(roleMenu);
         }
@@ -203,7 +203,7 @@ export default class ConfigCommand extends Command {
         });
       },
       onRoleSelect: async (action) => {
-        const roleIds = action.roles.map((role) => role.id);
+        const roleIds = unique(action.roles.map((role) => role.id));
 
         if (customIds.managerRole === action.customId) {
           if (roleIds.length) {

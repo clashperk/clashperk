@@ -40,7 +40,7 @@ export default class WhitelistCommand extends Command {
 
       const content = commandWhitelist.map((whitelist) => {
         const userOrRole = whitelist.isRole ? `<@&${whitelist.userOrRoleId}>` : `<@${whitelist.userOrRoleId}>`;
-        return `**${whitelist.commandId}** - ${userOrRole}`;
+        return `**${this.client.commands.resolve(whitelist.commandId)}** - ${userOrRole}`;
       });
 
       return interaction.editReply({
@@ -55,7 +55,7 @@ export default class WhitelistCommand extends Command {
     if (args.clear) {
       await this.client.settings.removeFromWhiteList(interaction.guild, { commandId: args.command, userOrRoleId: args.user_or_role.id });
       return interaction.editReply({
-        content: `### Successfully cleared the whitelist for ${args.user_or_role.toString()} on ${this.client.commands.get(args.command)}`
+        content: `### Successfully cleared the whitelist for ${args.user_or_role.toString()} on ${this.client.commands.resolve(args.command)}`
       });
     }
 
@@ -71,7 +71,7 @@ export default class WhitelistCommand extends Command {
     return interaction.editReply({
       allowedMentions: { parse: [] },
       content: [
-        `### Successfully whitelisted ${args.user_or_role.toString()} for ${this.client.commands.get(args.command)}`,
+        `### Successfully whitelisted ${args.user_or_role.toString()} for ${this.client.commands.resolve(args.command)}`,
         '',
         '- You can whitelist a role or a user. Once you whitelist a command, only that role or user will be able to use it. The command will be restricted for others, blocking them from using it unless they have other managerial roles or permissions.',
         '- The whitelist is limited to commands and does not extend to buttons or select menus. For better control over both commands and buttons, utilize manager roles.'
