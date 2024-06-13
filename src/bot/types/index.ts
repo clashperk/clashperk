@@ -282,6 +282,7 @@ export interface CallerCollection {
 export interface LegendAttacks {
   name: string;
   tag: string;
+  streak: number;
   logs: {
     start: number;
     end: number;

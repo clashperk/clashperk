@@ -191,7 +191,8 @@ export default class LegendDaysCommand extends Command {
           `- Current Trophies: ${current?.end || data.trophies}`,
           `- ${attackCount} attack${attackCount === 1 ? '' : 's'} (+${trophiesFromAttacks} trophies)`,
           `- ${defenseCount} defense${defenseCount === 1 ? '' : 's'} (${trophiesFromDefenses} trophies)`,
-          `- ${Math.abs(netTrophies)} trophies ${netTrophies >= 0 ? 'earned' : 'lost'}`
+          `- ${Math.abs(netTrophies)} trophies ${netTrophies >= 0 ? 'earned' : 'lost'}`,
+          `- Streak: ${legend.streak ?? 0}`
         ].join('\n')
       },
       {

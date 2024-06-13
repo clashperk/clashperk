@@ -333,24 +333,17 @@ export class CommandHandler extends BaseHandler {
     const [isValidWhitelist, isWhitelisted] = this.checkWhitelist(interaction, command);
     if (isValidWhitelist && isWhitelisted) return false;
 
-    if (command.userPermissions?.length) {
+    const isManager = this.client.util.isManager(interaction.member, command.roleKey);
+
+    if (!isManager && command.userPermissions?.length) {
       const missing = interaction.channel?.permissionsFor(interaction.user)?.missing(command.userPermissions);
-
-      const managerRoleIds = this.client.settings.get<string[]>(interaction.guild, Settings.MANAGER_ROLE, []);
-      if (managerRoleIds.length && interaction.member.roles.cache.hasAny(...managerRoleIds)) return false;
-
-      if (command.roleKey) {
-        const roleOverrides = this.client.settings.get<string[]>(interaction.guild, command.roleKey, []);
-        if (roleOverrides.length && interaction.member.roles.cache.hasAny(...roleOverrides)) return false;
-      }
-
       if (missing?.length) {
         this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);
         return true;
-      } else {
-        return false;
       }
     }
+
+    if (isManager) return false;
 
     if (isValidWhitelist && !isWhitelisted) {
       this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.WHITELIST);
