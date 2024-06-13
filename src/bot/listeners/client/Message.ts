@@ -79,7 +79,7 @@ export default class MessageListener extends Listener {
     const startOfArgs = message.content.slice(endOfPrefix).search(/\S/) + prefix.length;
     const alias = message.content.slice(startOfArgs).split(/\s{1,}|\n{1,}/)[0];
 
-    const command = this.client.commandHandler.modules.get(alias);
+    const command = this.client.commandHandler.getCommand(alias);
     const content = message.content.slice(startOfArgs + alias.length + 1).trim();
     const contents = content.split(/\s+/g);
 
@@ -98,11 +98,11 @@ export default class MessageListener extends Listener {
         case 'openplayerprofile': {
           const tag = url.searchParams.get('tag');
           if (!tag) continue;
-          return this.client.commandHandler.modules.get('player')?.run(message, { tag });
+          return this.client.commandHandler.getCommand('player')?.run(message, { tag });
         }
         case 'openclanprofile': {
           const tag = url.searchParams.get('tag');
-          return this.client.commandHandler.modules.get('clan')?.run(message, { tag });
+          return this.client.commandHandler.getCommand('clan')?.run(message, { tag });
         }
         case 'supportcreator':
           break;
@@ -115,7 +115,7 @@ export default class MessageListener extends Listener {
         case 'copyarmy': {
           const army = url.searchParams.get('army');
           if (!army) continue;
-          return this.client.commandHandler.modules.get('army')?.run(message, { link: url.href });
+          return this.client.commandHandler.getCommand('army')?.run(message, { link: url.href });
         }
         default:
           break;

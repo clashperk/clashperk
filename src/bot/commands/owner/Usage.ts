@@ -48,7 +48,7 @@ export default class UsageCommand extends Command {
         '',
         `__**\`\u200e # ${'Uses'.padStart(maxDigit + 1, ' ')}  ${'Command'.padEnd(15, ' ')}\u200f\`**__`,
         ...commands.splice(0, 50).map(({ id, uses }, index) => {
-          const command = `/${this.client.commandHandler.modules.get(id)!.id}`;
+          const command = `/${this.handler.getCommand(id)!.id}`;
           return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses
             .toString()
             .padStart(maxDigit, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
@@ -66,7 +66,7 @@ export default class UsageCommand extends Command {
       .toArray();
 
     const commands = result
-      .filter((cmd) => this.handler.modules.has(cmd.command))
+      .filter((cmd) => this.handler.getCommand(cmd.command))
       .map((cmd) => ({
         id: cmd.command,
         uses: cmd.total

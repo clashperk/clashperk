@@ -37,7 +37,7 @@ export default class ComponentHandler {
     const parsed = await this.parseCommandId(interaction.customId);
     if (!parsed) return false;
 
-    const command = this.client.commandHandler.modules.get(parsed.cmd);
+    const command = this.client.commandHandler.getCommand(parsed.cmd);
     if (!command) return false;
 
     if (!interaction.inCachedGuild() && command.channel !== 'dm') return true;

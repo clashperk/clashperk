@@ -340,7 +340,7 @@ export default class RosterEditCommand extends Command {
             return editRoster(action);
           case 'unregistered': {
             await action.deferReply({ ephemeral: true });
-            const command = this.client.commandHandler.modules.get('roster-ping')!;
+            const command = this.handler.getCommand('roster-ping')!;
             return command.exec(action, {
               roster: rosterId.toHexString(),
               ping_option: 'unregistered',
@@ -349,7 +349,7 @@ export default class RosterEditCommand extends Command {
           }
           case 'missing': {
             await action.deferReply({ ephemeral: true });
-            const command = this.client.commandHandler.modules.get('roster-ping')!;
+            const command = this.handler.getCommand('roster-ping')!;
             return command.exec(action, {
               roster: rosterId.toHexString(),
               ping_option: 'missing',
@@ -362,7 +362,7 @@ export default class RosterEditCommand extends Command {
           case RosterManageActions.CHANGE_ROSTER:
           case RosterManageActions.CHANGE_CATEGORY: {
             await action.deferUpdate();
-            const command = this.client.commandHandler.modules.get('roster-manage')!;
+            const command = this.handler.getCommand('roster-manage')!;
             return command.exec(action, { roster: rosterId.toHexString(), action: value });
           }
         }

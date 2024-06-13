@@ -17,6 +17,7 @@ const roles: Record<string, string> = {
 export default class ReminderListCommand extends Command {
   public constructor() {
     super('capital-reminder-list', {
+      aliases: ['capital-raids-reminder-list'],
       category: 'reminder',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],

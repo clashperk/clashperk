@@ -23,6 +23,7 @@ import { Collections, missingPermissions } from '../../../util/Constants.js';
 export default class ReminderCreateCommand extends Command {
   public constructor() {
     super('capital-reminder-create', {
+      aliases: ['capital-raids-reminder-create'],
       category: 'reminder',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
@@ -62,7 +63,7 @@ export default class ReminderCreateCommand extends Command {
       return interaction.editReply(
         this.i18n('common.missing_access', {
           lng: interaction.locale,
-					channel: args.channel.toString(), // eslint-disable-line
+          channel: args.channel.toString(), // eslint-disable-line
           permission: permission.missingPerms
         })
       );
@@ -72,7 +73,7 @@ export default class ReminderCreateCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-				this.i18n('command.reminders.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+        this.i18n('command.reminders.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
       );
     }
 

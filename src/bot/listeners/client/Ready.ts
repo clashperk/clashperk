@@ -49,7 +49,16 @@ export default class ReadyListener extends Listener {
           }
         ];
       });
-    commands.flat().map((cmd) => this.client.commands.set(cmd.name, cmd.formatted));
+
+    commands.flat().map((cmd) => {
+      this.client.commands.set(cmd.name, cmd.formatted);
+    });
+
+    commands.flat().map((cmd) => {
+      const name = cmd.name.replace('/', '').replace(/ /g, '-');
+      const mod = this.client.commandHandler.getCommand(name);
+      if (!mod) this.client.logger.warn(`${cmd.name}`, { label: 'MissingCommand' });
+    });
 
     if (this.client.isCustom()) await this.onReady();
   }

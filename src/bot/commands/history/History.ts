@@ -13,17 +13,17 @@ export default class HistoryCommand extends Command {
 
   public exec(interaction: CommandInteraction, args: { option: string }) {
     const command = {
-      'cwl-attacks': this.handler.modules.get('cwl-attacks-history')!,
-      'war-attacks': this.handler.modules.get('war-attacks-history')!,
-      'capital-raids': this.handler.modules.get('capital-raids-history')!,
-      'capital-contribution': this.handler.modules.get('capital-contribution-history')!,
-      'clan-games': this.handler.modules.get('clan-games-history')!,
-      'join-leave': this.handler.modules.get('join-leave-history')!,
-      'donations': this.handler.modules.get('donations-history')!,
-      'eos-trophies': this.handler.modules.get('eos-trophies-history')!,
-      'attacks': this.handler.modules.get('attacks-history')!,
-      'loot': this.handler.modules.get('loot-history')!,
-      'legend-attacks': this.handler.modules.get('history-legend-attacks')!
+      'cwl-attacks': this.handler.getCommand('cwl-attacks-history')!,
+      'war-attacks': this.handler.getCommand('war-attacks-history')!,
+      'capital-raids': this.handler.getCommand('capital-raids-history')!,
+      'capital-contribution': this.handler.getCommand('capital-contribution-history')!,
+      'clan-games': this.handler.getCommand('clan-games-history')!,
+      'join-leave': this.handler.getCommand('join-leave-history')!,
+      'donations': this.handler.getCommand('donations-history')!,
+      'eos-trophies': this.handler.getCommand('eos-trophies-history')!,
+      'attacks': this.handler.getCommand('attacks-history')!,
+      'loot': this.handler.getCommand('loot-history')!,
+      'legend-attacks': this.handler.getCommand('history-legend-attacks')!
     }[args.option];
 
     if (!command) throw Error('Command not found.');

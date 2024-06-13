@@ -56,7 +56,7 @@ export default class RemainingCommand extends Command {
     if (!clan.isWarLogPublic) {
       const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
-        return this.handler.exec(interaction, this.handler.modules.get('cwl-attacks')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-attacks')!, { tag: clan.tag });
       }
       embed.setDescription('Private War Log');
       return interaction.editReply({ embeds: [embed] });
@@ -71,7 +71,7 @@ export default class RemainingCommand extends Command {
     if (body.state === 'notInWar') {
       const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
-        return this.handler.exec(interaction, this.handler.modules.get('cwl-attacks')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-attacks')!, { tag: clan.tag });
       }
       embed.setDescription(this.i18n('command.lineup.not_in_war', { lng: interaction.locale }));
       return interaction.editReply({ embeds: [embed] });

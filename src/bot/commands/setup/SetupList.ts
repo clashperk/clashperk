@@ -100,7 +100,7 @@ export default class SetupListCommand extends Command {
         await action.deferReply({ ephemeral: true });
         await action.editReply({ components: [row], message: msg.id });
 
-        const command = this.handler.modules.get('autorole-list');
+        const command = this.handler.getCommand('autorole-list');
         if (!command) throw new Error('Command "autorole-list" not found');
 
         await command.exec(action, { expand: true });

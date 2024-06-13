@@ -14,6 +14,7 @@ import { Util } from '../../../util/index.js';
 export default class CapitalReminderNowCommand extends Command {
   public constructor() {
     super('capital-reminder-now', {
+      aliases: ['capital-raids-reminder-now'],
       category: 'reminder',
       channel: 'guild',
       userPermissions: ['ManageGuild'],

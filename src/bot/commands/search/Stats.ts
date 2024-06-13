@@ -22,6 +22,7 @@ const WarTypes = {
 export default class StatsCommand extends Command {
   public constructor() {
     super('stats', {
+      aliases: ['stats-attacks', 'stats-defense'],
       category: 'search',
       channel: 'guild',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
@@ -105,7 +106,7 @@ export default class StatsCommand extends Command {
     const type = args.type ?? 'noFriendly';
     const attempt = args.attempt;
     const compare = this.compare(args.compare as string);
-		const mode = args.command || 'attacks'; // eslint-disable-line
+    const mode = args.command || 'attacks'; // eslint-disable-line
 
     const data = await this.getDataSource(interaction, args);
     if (!data) return null;
@@ -169,7 +170,7 @@ export default class StatsCommand extends Command {
 
           if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
           // eslint-disable-next-line
-					members[m.tag] ??= {
+          members[m.tag] ??= {
             name: m.name,
             tag: m.tag,
             total: 0,

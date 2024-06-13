@@ -50,7 +50,7 @@ export default class MembersCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; option?: string }) {
-    const command = args.option && this.handler.modules.get(args.option);
+    const command = args.option && this.handler.getCommand(args.option);
     if (command) return this.handler.exec(interaction, command, { tag: args.tag, with_options: true });
 
     const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);

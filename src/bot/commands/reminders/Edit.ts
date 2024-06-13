@@ -1,9 +1,9 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
-export default class RemindersNowCommand extends Command {
+export default class RemindersEditCommand extends Command {
   public constructor() {
-    super('reminders-now', {
+    super('reminders-edit', {
       category: 'reminders',
       channel: 'guild',
       defer: false

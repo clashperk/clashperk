@@ -1,7 +1,7 @@
-import { EmbedBuilder, CommandInteraction, User } from 'discord.js';
 import { APIClanWarMember, APIWarClan } from 'clashofclans.js';
-import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/Emojis.js';
+import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {
@@ -32,7 +32,7 @@ export default class LineupCommand extends Command {
       const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
         // TODO: Fix
-        return this.handler.exec(interaction, this.handler.modules.get('cwl-lineup')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-lineup')!, { tag: clan.tag });
       }
       embed.setDescription('Private WarLog');
       return interaction.editReply({ embeds: [embed] });
@@ -45,7 +45,7 @@ export default class LineupCommand extends Command {
       const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
         // TODO: Fix
-        return this.handler.exec(interaction, this.handler.modules.get('cwl-lineup')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-lineup')!, { tag: clan.tag });
       }
       embed.setDescription(this.i18n('command.lineup.not_in_war', { lng: interaction.locale }));
       return interaction.editReply({ embeds: [embed] });

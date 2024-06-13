@@ -92,7 +92,7 @@ export default class WarCommand extends Command {
     if (!clan.isWarLogPublic && !interaction.isMessageComponent()) {
       const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
-        return this.handler.exec(interaction, this.handler.modules.get('cwl-round')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-round')!, { tag: clan.tag });
       }
       embed.setDescription('Private War Log');
       return interaction.followUp({ embeds: [embed] });
@@ -107,7 +107,7 @@ export default class WarCommand extends Command {
     if (body.state === 'notInWar') {
       const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
-        return this.handler.exec(interaction, this.handler.modules.get('cwl-round')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-round')!, { tag: clan.tag });
       }
       embed.setDescription(this.i18n('command.war.not_in_war', { lng: interaction.locale }));
       return interaction.followUp({ embeds: [embed] });
@@ -560,7 +560,7 @@ export default class WarCommand extends Command {
             const th = member.townhallLevel.toString().padStart(2, ' ');
             const dest = this.percentage(member.destructionPercentage);
             const key = `${member.tag}-${member.originalMapPosition}`;
-						const callerName = this.padEnd(caller[key]?.note ?? ''); // eslint-disable-line
+            const callerName = this.padEnd(caller[key]?.note ?? ''); // eslint-disable-line
             return `\u200e\`${stars[member.stars]} ${dest}% ${map} ${th} ${callerName}\``;
           })
           .join('\n'),
