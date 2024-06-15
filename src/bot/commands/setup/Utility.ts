@@ -21,7 +21,7 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/GuildEventsHandler.js';
-import { Collections, Settings, URL_REGEX, missingPermissions } from '../../util/Constants.js';
+import { Collections, DiscordErrorCodes, Settings, URL_REGEX, missingPermissions } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 
@@ -86,7 +86,7 @@ export default class SetupUtilsCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+        this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
       );
     }
 
@@ -143,7 +143,25 @@ export default class SetupUtilsCommand extends Command {
       .setStyle(ButtonStyle.Primary);
     const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
-    await interaction.editReply({ embeds: [embed], components: [linkButtonRow] });
+    const resetImages = async () => {
+      state.image_url = '';
+      state.thumbnail_url = '';
+      embed.setImage(null);
+      embed.setThumbnail(null);
+      await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
+      await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
+    };
+
+    try {
+      await interaction.editReply({ embeds: [embed], components: [linkButtonRow] });
+    } catch (e) {
+      if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
+        await resetImages();
+      } else {
+        throw e;
+      }
+    }
+
     await interaction.followUp({
       ephemeral: true,
       content: [
@@ -258,7 +276,9 @@ export default class SetupUtilsCommand extends Command {
           await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
           await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
         } catch (e) {
-          if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
+            await resetImages();
+          } else if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
             throw e;
           }
         }
@@ -284,7 +304,7 @@ export default class SetupUtilsCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+        this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
       );
     }
 
@@ -316,7 +336,7 @@ export default class SetupUtilsCommand extends Command {
       return interaction.editReply(
         this.i18n('common.missing_access', {
           lng: interaction.locale,
-					channel: args.channel.toString(), // eslint-disable-line
+          channel: args.channel.toString(), // eslint-disable-line
           permission: permission.missingPerms
         })
       );

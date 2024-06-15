@@ -68,8 +68,9 @@ export default class ExportCWL extends Command {
             { name: 'Name', width: 160, align: 'LEFT' },
             { name: 'Tag', width: 120, align: 'LEFT' },
             { name: 'Town Hall', width: 100, align: 'RIGHT' },
-            { name: 'War Count', width: 100, align: 'RIGHT' },
-            { name: 'Total Attacks', width: 100, align: 'RIGHT' },
+            { name: 'Wars Participated ', width: 100, align: 'RIGHT' },
+            { name: 'Number of Attacks', width: 100, align: 'RIGHT' },
+            { name: 'Attack Percentage', width: 100, align: 'RIGHT' },
             { name: 'Total Stars', width: 100, align: 'RIGHT' },
             { name: 'Avg. Stars', width: 100, align: 'RIGHT' },
             { name: 'True Stars', width: 100, align: 'RIGHT' },
@@ -96,7 +97,8 @@ export default class ExportCWL extends Command {
               m.tag,
               m.townHallLevel,
               m.wars,
-              m.of,
+              m.attacks,
+              Number(((m.attacks / m.of) * 100).toFixed(2)),
               m.stars,
               Number((m.stars / m.of || 0).toFixed(2)),
               m.trueStars,
@@ -254,7 +256,7 @@ export default class ExportCWL extends Command {
         if (data.state === 'notInWar' && !season) continue;
 
         // eslint-disable-next-line
-				ranking[data.clan.tag] ??= {
+        ranking[data.clan.tag] ??= {
           name: data.clan.name,
           tag: data.clan.tag,
           stars: 0,
@@ -271,7 +273,7 @@ export default class ExportCWL extends Command {
         clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
         // eslint-disable-next-line
-				ranking[data.opponent.tag] ??= {
+        ranking[data.opponent.tag] ??= {
           name: data.opponent.name,
           tag: data.opponent.tag,
           stars: 0,

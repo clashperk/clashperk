@@ -52,7 +52,8 @@ export const DOT = '•';
 export enum DiscordErrorCodes {
   UNKNOWN_MESSAGE = 10008,
   UNKNOWN_CHANNEL = 10003,
-  UNKNOWN_WEBHOOK = 10015
+  UNKNOWN_WEBHOOK = 10015,
+  INVALID_FORM_BODY = 50035
 }
 
 export const COLOR_CODES = {
