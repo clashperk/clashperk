@@ -16,20 +16,22 @@ export default class StatusCommand extends Command {
       category: 'none',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
-      ownerOnly: true,
       defer: true,
       ephemeral: true
     });
   }
 
-  public async run(message: Message) {
-    const embed = await this.get(message.guild!, false);
-    await message.channel.send({ embeds: [embed] });
-    await message.delete().catch(() => null);
+  public async run(message: Message<true>) {
+    const embed = await this.get(message.guild, this.client.isOwner(message.author));
+    return message.channel.send({
+      embeds: [embed],
+      reply: { messageReference: message.id, failIfNotExists: false },
+      allowedMentions: { repliedUser: false }
+    });
   }
 
   public async exec(interaction: CommandInteraction<'cached'>) {
-    const embed = await this.get(interaction.guild, this.client.isOwner(interaction.user.id));
+    const embed = await this.get(interaction.guild, this.client.isOwner(interaction.user));
     return interaction.editReply({ embeds: [embed] });
   }
 
@@ -45,71 +47,75 @@ export default class StatusCommand extends Command {
       memory += value[1];
     }
 
-    const owner = await this.client.users.fetch(this.client.ownerId);
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(guild.id))
       .setTitle('Status')
       .setAuthor({ name: `${this.client.user!.displayName}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
-      .addFields(
-        {
-          name: 'Memory Usage',
-          value: `${memory.toFixed(2)} MB`,
-          inline: true
-        },
-        {
-          name: 'Free Memory',
-          value: `${this.freemem.toFixed(2)} MB`,
-          inline: true
-        },
-        {
-          name: 'Uptime',
-          value: moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }),
-          inline: true
-        },
-        {
-          name: 'Servers',
-          value: guilds.toLocaleString(),
-          inline: true
-        }
-      );
+      .addFields({
+        name: 'Memory Usage',
+        value: `${memory.toFixed(2)} MB`,
+        inline: false
+      });
+
+    if (isOwner) {
+      embed.addFields({
+        name: 'Free Memory',
+        value: `${this.freemem.toFixed(2)} MB`,
+        inline: false
+      });
+    }
+
+    embed.addFields(
+      {
+        name: 'Uptime',
+        value: moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }),
+        inline: false
+      },
+      {
+        name: 'Servers',
+        value: guilds.toLocaleString(),
+        inline: false
+      },
+      {
+        name: 'Commands Used',
+        value: `${(await this.usage()).toLocaleString()} (last 30d)`,
+        inline: false
+      },
+      {
+        name: 'Clans',
+        value: `${((await this.count(Collections.CLAN_STORES)) + 10_000).toLocaleString()}`,
+        inline: false
+      }
+    );
 
     if (isOwner) {
       embed.addFields(
         {
-          name: 'Clans',
-          value: `${(await this.count(Collections.CLAN_STORES)).toLocaleString()}`,
-          inline: true
-        },
-        {
           name: 'Players',
           value: `${(await this.count(Collections.PLAYERS)).toLocaleString()}`,
-          inline: true
+          inline: false
         },
         {
           name: 'Links',
           value: `${(await this.count(Collections.PLAYER_LINKS)).toLocaleString()}`,
-          inline: true
+          inline: false
         }
       );
     }
 
-    embed
-      .addFields(
-        {
-          name: 'Shard',
-          value: `${guild.shard.id}/${this.client.shard?.count ?? 1}`,
-          inline: true
-        },
-        {
-          name: 'Version',
-          value: `[${pkg.version}](https://github.com/clashperk/clashperk/commit/${process.env.GIT_SHA!})`,
-          inline: true
-        }
-      )
-      .setFooter({
-        text: `© ${new Date().getFullYear()} ${owner.username.toUpperCase()}`,
-        iconURL: owner.displayAvatarURL({ forceStatic: false })
-      });
+    embed.addFields(
+      {
+        name: 'Shard',
+        value: `${guild.shard.id}/${this.client.shard?.count ?? 1}`,
+        inline: false
+      },
+      {
+        name: 'Version',
+        value: isOwner ? `[${pkg.version}](https://github.com/clashperk/clashperk/commit/${process.env.GIT_SHA!})` : pkg.version,
+        inline: false
+      }
+    );
+
     return embed;
   }
 
@@ -119,5 +125,35 @@ export default class StatusCommand extends Command {
 
   private count(collection: string) {
     return this.client.db.collection(collection).estimatedDocumentCount();
+  }
+
+  private async usage() {
+    const [usage] = await this.client.db
+      .collection(Collections.BOT_USAGE)
+      .aggregate<{ total: number }>([
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $match: {
+            createdAt: {
+              $gte: moment().subtract(30, 'days').toDate()
+            }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: {
+              $sum: '$usage'
+            }
+          }
+        }
+      ])
+      .toArray();
+
+    return (usage?.total ?? 0) + 200_000;
   }
 }

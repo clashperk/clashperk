@@ -58,8 +58,8 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Giant Gauntlet': '<:GiantGauntlet:1189622189994025041>',
   'Frozen Arrow': '<:FrozenArrow:1189622209568841748>',
   'Fireball': '<:Fireball:1223332499162398800>',
-  'Spiky Ball': '<:SpikeyBall:1234940460070600804>'
-  // 'Rocket Spear': '<:RocketSpear:1223332521358528695>',
+  'Spiky Ball': '<:SpikeyBall:1234940460070600804>',
+  'Rocket Spear': '<:RocketSpear:1223332521358528695>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
