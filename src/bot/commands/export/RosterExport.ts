@@ -1,4 +1,5 @@
 import { CommandInteraction } from 'discord.js';
+import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { IRosterCategory } from '../../struct/RosterManager.js';
@@ -56,6 +57,81 @@ export default class RosterExportCommand extends Command {
         ];
       })
     }));
+
+    const clans = await this.client.redis.getClans(unique(rosters.map((roster) => roster.clan.tag)));
+
+    const allRosterMembers = rosters.flatMap((roster) =>
+      roster.members.map((member) => ({
+        ...member,
+        roster: {
+          name: roster.name,
+          clan: {
+            name: roster.clan.name,
+            tag: roster.clan.tag
+          }
+        }
+      }))
+    );
+    const allClanMembers = clans.flatMap((clan) =>
+      clan.memberList.map((member) => ({
+        member,
+        clan: {
+          name: clan.name,
+          tag: clan.tag
+        }
+      }))
+    );
+
+    const allRosterMembersTags = allRosterMembers.map((member) => member.tag);
+    const missingMembers = allClanMembers.filter((clanMember) => !allRosterMembersTags.includes(clanMember.member.tag));
+
+    sheets.push(
+      {
+        title: Util.escapeSheetName('All Members'),
+        columns: [
+          { name: 'Player Name', align: 'LEFT', width: 160 },
+          { name: 'Player Tag', align: 'LEFT', width: 120 },
+          { name: 'Roster', align: 'LEFT', width: 160 },
+          { name: 'Roster Clan', align: 'LEFT', width: 160 },
+          { name: 'In Clan?', align: 'LEFT', width: 120 },
+          { name: 'Current Clan', align: 'LEFT', width: 160 },
+          { name: 'Current ClanTag', align: 'LEFT', width: 120 },
+          { name: 'Discord', align: 'LEFT', width: 160 },
+          { name: 'War Preference', align: 'LEFT', width: 100 },
+          { name: 'Group', align: 'LEFT', width: 160 },
+          { name: 'Town Hall', align: 'RIGHT', width: 100 },
+          { name: 'Combined Heroes', align: 'RIGHT', width: 100 }
+        ],
+        rows: allRosterMembers.map((member) => {
+          const key = member.categoryId?.toHexString();
+          const category = key && key in categoriesMap ? categoriesMap[key].displayName : '';
+          return [
+            member.name,
+            member.tag,
+            member.roster.name,
+            member.roster.clan.name,
+            member.clan?.tag === member.roster.clan.tag ? 'Yes' : 'No',
+            member.clan?.name ?? '',
+            member.clan?.tag ?? '',
+            member.username ?? '',
+            member.warPreference ?? '',
+            category,
+            member.townHallLevel,
+            Object.values(member.heroes).reduce((acc, num) => acc + num, 0)
+          ];
+        })
+      },
+      {
+        title: Util.escapeSheetName('Missing Members'),
+        columns: [
+          { name: 'Player Name', align: 'LEFT', width: 160 },
+          { name: 'Player Tag', align: 'LEFT', width: 120 },
+          { name: 'Clan', align: 'LEFT', width: 160 },
+          { name: 'Clan Tag', align: 'LEFT', width: 120 }
+        ],
+        rows: missingMembers.map((member) => [member.member.name, member.member.tag, member.clan.name, member.clan.tag])
+      }
+    );
 
     const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Rosters]`, sheets);
     return interaction.editReply({ content: `**Roster Export**`, components: getExportComponents(spreadsheet) });
