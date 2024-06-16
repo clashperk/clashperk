@@ -1,4 +1,4 @@
-import { AnyThreadChannel, CommandInteraction, EmbedBuilder, TextChannel, escapeMarkdown, time } from 'discord.js';
+import { AnyThreadChannel, CommandInteraction, EmbedBuilder, Interaction, TextChannel, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import { Filter } from 'mongodb';
 import { RaidRemindersEntity } from '../../../entities/capital-raid-reminders.entity.js';
@@ -26,9 +26,13 @@ export default class ReminderListCommand extends Command {
     });
   }
 
+  async pre(_: Interaction, args: { compact_list?: boolean }) {
+    this.ephemeral = !!args.compact_list;
+  }
+
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { reminder_id?: string; channel?: TextChannel | AnyThreadChannel; clans?: string }
+    args: { reminder_id?: string; channel?: TextChannel | AnyThreadChannel; clans?: string; compact_list?: boolean }
   ) {
     const filter: Filter<RaidRemindersEntity> = {
       guild: interaction.guildId
@@ -54,21 +58,28 @@ export default class ReminderListCommand extends Command {
     const chunks = filtered.map((reminder) => {
       const clanNames = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => `${clan.name} (${clan.tag})`);
       const timestamp = moment(raidWeekEndTime).subtract(reminder.duration, 'milliseconds').toDate();
+
+      const id = `**🔔 Reminder (ID: ${hexToNanoId(reminder._id)})**`;
+      const channel = `Channel** \n<#${reminder.channel}>`;
+      const timeLeft = `**Time Left** \n${label(reminder.duration)}`;
+      const clanInfo = `**Clans** \n${clanNames.length ? `${escapeMarkdown(clanNames.join(', '))}` : 'Any'}`;
+      const message = `**Message** \n${filtered.length === 1 ? reminder.message : reminder.message.slice(0, 300)}`;
+
+      if (args.compact_list) {
+        return [id, timeLeft, channel, clanInfo, message].join('\n');
+      }
+
       return [
         `**🔔 Reminder (ID: ${hexToNanoId(reminder._id)})**`,
         `${label(reminder.duration)} remaining - ${time(timestamp, 'R')}`,
-        '**Channel**',
-        `<#${reminder.channel}>`,
+        channel,
         '**Roles**',
         reminder.roles.length === 4 ? 'Any' : `${reminder.roles.map((role) => roles[role]).join(', ')}`,
         reminder.minThreshold ? '**Min. Attack Threshold**' : '**Remaining Hits**',
         reminder.minThreshold ? reminder.minThreshold : reminder.remaining.length === 6 ? 'Any' : `${reminder.remaining.join(', ')}`,
         '**Members**',
-        reminder.allMembers ? 'All Members' : 'Only Participants',
-        '**Clans**',
-        clanNames.length ? `${escapeMarkdown(clanNames.join(', '))}` : 'Any',
-        '**Message**',
-        `${filtered.length === 1 ? reminder.message : reminder.message.slice(0, 300)}`
+        clanInfo,
+        message
       ].join('\n');
     });
 

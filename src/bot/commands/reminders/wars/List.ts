@@ -1,5 +1,5 @@
 import { ClanWarRemindersEntity } from '@app/entities';
-import { AnyThreadChannel, CommandInteraction, EmbedBuilder, TextChannel, escapeMarkdown } from 'discord.js';
+import { AnyThreadChannel, CommandInteraction, EmbedBuilder, Interaction, TextChannel, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Filter } from 'mongodb';
 import { Command } from '../../../lib/index.js';
@@ -25,9 +25,13 @@ export default class ReminderListCommand extends Command {
     });
   }
 
+  async pre(_: Interaction, args: { compact_list?: boolean }) {
+    this.ephemeral = !args.compact_list;
+  }
+
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { reminder_id?: string; channel?: TextChannel | AnyThreadChannel; clans?: string }
+    args: { reminder_id?: string; channel?: TextChannel | AnyThreadChannel; clans?: string; compact_list?: boolean }
   ) {
     const filter: Filter<ClanWarRemindersEntity> = {
       guild: interaction.guildId
@@ -51,11 +55,20 @@ export default class ReminderListCommand extends Command {
     const chunks = filtered.map((reminder) => {
       const clanNames = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => `${clan.name} (${clan.tag})`);
 
+      const id = `**🔔 Reminder (ID: ${hexToNanoId(reminder._id)})**`;
+      const channel = `**Channel** \n<#${reminder.channel}>`;
+      const timeLeft = `**Time Left** \n${label(reminder.duration)}`;
+      const clanInfo = `**Clans** \n${clanNames.length ? `${escapeMarkdown(clanNames.join(', '))}` : 'Any'}`;
+      const message = `**Message** \n${filtered.length === 1 ? reminder.message : reminder.message.slice(0, 300)}`;
+
+      if (args.compact_list) {
+        return [id, timeLeft, channel, clanInfo, message].join('\n');
+      }
+
       const header = [
         `**🔔 Reminder (ID: ${hexToNanoId(reminder._id)})${reminder.disabled ? ' [DISABLED]' : ''}**`,
         `${label(reminder.duration)} remaining; ${reminder.smartSkip ? 'Skip at 100%; ' : ''}${reminder.silent ? 'Message Only;' : ''}`,
-        '**Channel**',
-        `<#${reminder.channel}>`
+        channel
       ].join('\n');
       const body = [
         '**Roles**',
@@ -68,10 +81,8 @@ export default class ReminderListCommand extends Command {
       const footer = [
         '**War Types**',
         reminder.warTypes.length === 3 ? 'Any' : `${reminder.warTypes.join(', ').toUpperCase()}`,
-        '**Clans**',
-        clanNames.length ? `${escapeMarkdown(clanNames.join(', '))}` : 'Any',
-        '**Message**',
-        `${filtered.length === 1 ? reminder.message : reminder.message.slice(0, 300)}`
+        clanInfo,
+        message
       ].join('\n');
 
       return (reminder.silent ? [header, footer] : [header, body, footer]).join('\n');
@@ -79,10 +90,10 @@ export default class ReminderListCommand extends Command {
 
     if (chunks.length === 1) {
       const embed = new EmbedBuilder().setDescription(chunks.join(''));
-      return interaction.followUp({ embeds: [embed], ephemeral: true });
+      return interaction.followUp({ embeds: [embed], ephemeral: !args.compact_list });
     }
 
     const contents = Util.splitMessage(chunks.join('\n\u200b\n'), { maxLength: 2000, char: '\n\u200b\n' });
-    for (const content of contents) await interaction.followUp({ content, ephemeral: true });
+    for (const content of contents) await interaction.followUp({ content, ephemeral: !args.compact_list });
   }
 }

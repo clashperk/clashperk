@@ -2935,6 +2935,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           },
           {
+            name: 'compact_list',
+            description: 'Show a compact list of the reminders and disable ephemeral.',
+            type: ApplicationCommandOptionType.Boolean
+          },
+          {
             name: 'clans',
             autocomplete: true,
             description: command.reminders.create.options.clans.description,
