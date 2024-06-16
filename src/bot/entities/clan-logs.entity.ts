@@ -1,26 +1,32 @@
 export interface ClanLogsEntity {
   clanTag: string;
   guildId: string;
-  logType: LogTypes;
+  logType: ClanLogType;
   channelId: string;
   threadId: string | null;
+  messageId: string | null;
+  deepLink: string;
   webhook: { id: string; token: string } | null;
-  embedColor: number | null;
+  color: number;
+  updatedAt: Date;
+  createdAt: Date;
 }
 
-export enum LogTypes {
-  DONATION_LOG_CONTINUOUS = 'donation_log_continuous',
-  DONATION_LOG_DAILY = 'donation_log_daily',
-  DONATION_LOG_WEEKLY = 'donation_log_weekly',
-  DONATION_LOG_MONTHLY = 'donation_log_monthly',
+export enum ClanLogType {
+  FREQUENT_DONATION_LOG = 'frequent_log_continuous',
+  DAILY_DONATION_LOG = 'daily_donation_log',
+  WEEKLY_DONATION_LOG = 'weekly_donation_log',
+  MONTHLY_DONATION_LOG = 'monthly_donation_log',
 
-  CLAN_FEED_MEMBER_JOIN_LOG = 'clan_feed_member_join_log',
-  CLAN_FEED_MEMBER_LEAVE_LOG = 'clan_feed_member_leave_log',
-  CLAN_FEED_ROLE_CHANGE_LOG = 'clan_feed_role_change_log',
-  CLAN_FEED_HERO_UPGRADE_LOG = 'clan_feed_hero_upgrade_log',
-  CLAN_FEED_TOWN_HALL_UPGRADE_LOG = 'clan_feed_town_hall_upgrade_log',
-  CLAN_FEED_WAR_PREFERENCE_CHANGE_LOG = 'clan_feed_war_preference_change_log',
-  CLAN_FEED_CLAN_ACHIEVEMENTS_CHANGE_LOG = 'clan_feed_clan_achievements_change_log',
+  CLAN_MEMBER_JOIN_LOG = 'clan_member_join_log',
+  CLAN_MEMBER_LEAVE_LOG = 'clan_member_leave_log',
+  CLAN_MEMBER_PROMOTION_LOG = 'clan_member_promotion_log',
+  CLAN_MEMBER_DEMOTION_LOG = 'clan_member_demotion_log',
+  HERO_UPGRADE_LOG = 'hero_upgrade_log',
+  TOWN_HALL_UPGRADE_LOG = 'town_hall_upgrade_log',
+  WAR_PREFERENCE_CHANGE_LOG = 'war_preference_change_log',
+  CLAN_MEMBER_NAME_CHANGE = 'clan_member_name_change',
+  CLAN_ACHIEVEMENTS_CHANGE_LOG = 'clan_achievements_change_log',
 
   CLAN_CAPITAL_DONATION_LOG = 'clan_capital_donation_log',
   CLAN_CAPITAL_ATTACKS_LOG = 'clan_capital_attacks_log',
@@ -29,8 +35,8 @@ export enum LogTypes {
 
   CLAN_GAMES_EMBED_LOG = 'clan_games_embed_log',
   CLAN_EMBED_LOG = 'clan_embed_log',
-  PLAYERS_EMBED_LOG = 'PLAYERS_embed_log',
-  SUPER_TROOP_BOOSTS_LOG = 'super_troop_boosts_log',
+  LAST_SEEN_EMBED_LOG = 'last_seen_embed_log',
+  SUPER_TROOP_BOOSTS_EMBED_LOG = 'super_troop_boosts_embed_log',
 
   CLAN_WAR_EMBED_LOG = 'clan_war_embed_log',
   CLAN_WAR_MISSED_ATTACKS_LOG = 'clan_war_missed_attacks_log',

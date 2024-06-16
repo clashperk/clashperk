@@ -488,15 +488,17 @@ export default class SetupUtilsCommand extends Command {
 
     const flagLog = await this.client.db.collection(Collections.FLAG_ALERT_LOGS).findOne({ guildId: interaction.guildId });
 
-    const state: { channelId: string | null; roleId: string | null } = {
+    const state: { channelId: string | null; roleId: string | null; useAutoRole: boolean } = {
       channelId: flagLog?.channelId ?? interaction.channelId,
-      roleId: flagLog?.roleId ?? null
+      roleId: flagLog?.roleId ?? null,
+      useAutoRole: flagLog?.useAutoRole ?? false
     };
 
     const customIds = {
       channel: this.client.uuid(),
       role: this.client.uuid(),
-      confirm: this.client.uuid()
+      confirm: this.client.uuid(),
+      useAutoRole: this.client.uuid()
     };
 
     const channelMenu = new ChannelSelectMenuBuilder()
@@ -505,7 +507,10 @@ export default class SetupUtilsCommand extends Command {
       .setPlaceholder('Select flag notification channel');
     if (state.channelId) channelMenu.setDefaultChannels(state.channelId);
 
-    const roleMenu = new RoleSelectMenuBuilder().setCustomId(customIds.role).setPlaceholder('Select flag notification role');
+    const roleMenu = new RoleSelectMenuBuilder()
+      .setCustomId(customIds.role)
+      .setPlaceholder('Select flag notification role')
+      .setDisabled(state.useAutoRole);
     if (state.roleId) roleMenu.setDefaultRoles(state.roleId);
 
     const confirmButton = new ButtonBuilder()
@@ -514,11 +519,28 @@ export default class SetupUtilsCommand extends Command {
       .setCustomId(customIds.confirm)
       .setDisabled(!state.channelId);
 
+    const useAutoRoleButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Secondary)
+      .setLabel(state.useAutoRole ? 'Use the Selected Role' : 'Use Clan-Specific Roles')
+      .setCustomId(customIds.useAutoRole)
+      .setDisabled(!state.channelId);
+
     const channelRow = new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu);
     const roleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleMenu);
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton);
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, useAutoRoleButton);
 
-    const message = await interaction.editReply({ content: '### Setting up Flag Alert Log', components: [channelRow, roleRow, row] });
+    const getText = () => {
+      return [
+        '### Setting up Flag Alert Log',
+        state.useAutoRole ? '- Roles will be selected based on the AutoRole settings (Leader and Co-Leader only)' : '',
+        state.useAutoRole ? '- Only specific Leader and Co-Leader roles will be notified if a banned player joins their clan.' : ''
+      ].join('\n');
+    };
+
+    const message = await interaction.editReply({
+      content: getText(),
+      components: [channelRow, roleRow, row]
+    });
 
     const onMutation = async () => {
       if (!state.channelId) return;
@@ -529,6 +551,7 @@ export default class SetupUtilsCommand extends Command {
           $set: {
             channelId: state.channelId,
             roleId: state.roleId,
+            useAutoRole: state.useAutoRole,
             updatedAt: new Date()
           },
           ...(flagLog && flagLog.channelId !== state.channelId ? { $unset: { webhook: '' } } : {}),
@@ -560,15 +583,33 @@ export default class SetupUtilsCommand extends Command {
         await action.update({ components: [channelRow, roleRow, row] });
       },
       onClick: async (action) => {
+        if (action.customId === customIds.useAutoRole) {
+          state.useAutoRole = !state.useAutoRole;
+          roleMenu.setDisabled(!state.channelId || state.useAutoRole);
+          useAutoRoleButton.setLabel(state.useAutoRole ? 'Use the Selected Role' : 'Use Clan-Specific Roles');
+          return action.update({ components: [channelRow, roleRow, row], content: getText() });
+        }
+
         roleMenu.setDisabled(true);
         channelMenu.setDisabled(true);
 
-        const embed = new EmbedBuilder()
-          .setTitle('Flag Alert Log')
-          .setColor(this.client.embed(interaction))
-          .setDescription(
+        const embed = new EmbedBuilder();
+        embed.setTitle('Flag Alert Log');
+        embed.setColor(this.client.embed(interaction));
+        if (state.useAutoRole) {
+          embed.setDescription(
+            [
+              '### Channel',
+              `<#${state.channelId!}>`,
+              '### Roles',
+              'Will be selected from the AutoRole settings (Leader and Co-Leader only)'
+            ].join('\n')
+          );
+        } else {
+          embed.setDescription(
             ['### Channel', `<#${state.channelId!}>`, '### Role', `${state.roleId ? `<@&${state.roleId}>` : 'None'}`].join('\n')
           );
+        }
 
         const role = state.roleId && interaction.guild.roles.cache.get(state.roleId);
         const channel = state.channelId && interaction.guild.channels.cache.get(state.channelId);

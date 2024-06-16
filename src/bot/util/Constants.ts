@@ -80,6 +80,7 @@ export const enum Collections {
   CAPITAL_LOGS = 'CapitalLogs',
   FLAG_ALERT_LOGS = 'FlagAlertLogs',
   CLAN_LOGS = 'ClanLogs',
+  COMPETE_BOARDS = 'CompeteBoards',
 
   AUTO_BOARDS = 'AutoBoardLogs',
 

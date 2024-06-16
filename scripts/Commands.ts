@@ -1939,10 +1939,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'WAR',
                 value: 'WAR'
-              },
-              {
-                name: 'TROPHY',
-                value: 'TROPHY'
               }
             ]
           },
@@ -2147,10 +2143,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'WAR',
                 value: 'WAR'
-              },
-              {
-                name: 'TROPHY',
-                value: 'TROPHY'
               }
             ]
           },
@@ -2473,6 +2465,39 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       }
     ]
   },
+  // {
+  //   name: 'leaderboard',
+  //   description: 'Leaderboard of the top clans and players.',
+  //   dm_permission: false,
+  //   options: [
+  //     {
+  //       name: 'clans',
+  //       description: 'Top clans leaderboard',
+  //       type: ApplicationCommandOptionType.Subcommand,
+  //       options: [
+  //         {
+  //           name: 'location',
+  //           description: 'Location of the leaderboard',
+  //           type: ApplicationCommandOptionType.String,
+  //           autocomplete: true
+  //         }
+  //       ]
+  //     },
+  //     {
+  //       name: 'players',
+  //       description: 'Top clans leaderboard',
+  //       type: ApplicationCommandOptionType.Subcommand,
+  //       options: [
+  //         {
+  //           name: 'location',
+  //           description: 'Location of the leaderboard',
+  //           type: ApplicationCommandOptionType.String,
+  //           autocomplete: true
+  //         }
+  //       ]
+  //     }
+  //   ]
+  // },
   {
     name: 'autorole',
     description: 'Enable automatic clan roles and Town Hall roles',

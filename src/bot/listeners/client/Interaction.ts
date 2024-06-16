@@ -224,6 +224,9 @@ export default class InteractionListener extends Listener {
       case 'command': {
         return this.client.autocomplete.commandsAutocomplete(interaction, focused);
       }
+      case 'location': {
+        return this.client.autocomplete.locationAutoComplete(interaction, query);
+      }
     }
   }
 

@@ -6,6 +6,7 @@ import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { FlagsEntity } from '../entities/flags.entity.js';
 import { PlayerModel, UserInfoModel } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
+import { COUNTRIES } from '../util/Countries.js';
 import Client from './Client.js';
 
 export class Autocomplete {
@@ -35,6 +36,17 @@ export class Autocomplete {
     if (!choices.length) return interaction.respond([{ name: 'No commands found.', value: '0' }]);
 
     return interaction.respond(choices);
+  }
+
+  public async locationAutoComplete(interaction: AutocompleteInteraction<'cached'>, query?: string) {
+    if (!query) {
+      return interaction.respond(COUNTRIES.slice(0, 25).map((country) => ({ name: country.name, value: country.id.toString() })));
+    }
+
+    const countries = COUNTRIES.filter((country) => country.name.toLowerCase().includes(query.toLowerCase())).slice(0, 25);
+    if (!countries.length) return interaction.respond([{ name: 'No countries found.', value: '0' }]);
+
+    return interaction.respond(countries.map((country) => ({ name: country.name, value: country.id.toString() })));
   }
 
   public async flagSearchAutoComplete(

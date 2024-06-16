@@ -173,7 +173,12 @@ export default class FlagAlertLog {
     embed.setFooter({ text: `Joined ${data.clan.name}`, iconURL: data.clan.badge });
 
     const user = await this.client.users.fetch(flag.user, { cache: false }).catch(() => null);
-    if (cache.roleId && guild.roles.cache.has(cache.roleId)) {
+
+    if (cache.useAutoRole) {
+      const clan = await this.client.storage.collection.findOne({ guild: cache.guildId, tag: data.clan.tag });
+      const roles = [clan?.roles?.coLeader, clan?.roles?.leader].filter((roleId) => roleId && guild.roles.cache.has(roleId)) as string[];
+      if (roles.length) content = `<@&${roles.join('> <@&')}>`;
+    } else if (cache.roleId && guild.roles.cache.has(cache.roleId)) {
       content = `<@&${cache.roleId}>`;
     }
 
@@ -201,6 +206,7 @@ export default class FlagAlertLog {
         _id: data._id.toHexString(),
         guildId: data.guildId,
         roleId: data.roleId,
+        useAutoRole: data.useAutoRole,
         channelId: data.channelId,
         updatedAt: data.updatedAt,
         webhook: data.webhook ? new WebhookClient(data.webhook) : null
@@ -216,6 +222,7 @@ export default class FlagAlertLog {
       _id: data._id.toHexString(),
       guildId: data.guildId,
       roleId: data.roleId,
+      useAutoRole: data.useAutoRole,
       channelId: data.channelId,
       updatedAt: data.updatedAt,
       webhook: data.webhook ? new WebhookClient(data.webhook) : null
@@ -233,6 +240,7 @@ interface Cache {
   channelId: Snowflake;
   threadId?: string;
   roleId?: string;
+  useAutoRole: boolean;
   webhook: WebhookClient | null;
   updatedAt: Date;
   deleted?: boolean;
