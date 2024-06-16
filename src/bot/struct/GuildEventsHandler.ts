@@ -1,6 +1,6 @@
 import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, PermissionFlagsBits, time } from 'discord.js';
 import moment from 'moment';
-import { Collections } from '../util/Constants.js';
+import { Collections, FeatureFlags } from '../util/Constants.js';
 import { EMOJIS } from '../util/Emojis.js';
 import { i18n } from '../util/i18n.js';
 import { Season, Util } from '../util/index.js';
@@ -190,10 +190,12 @@ export class GuildEventsHandler {
       enabled: true
     });
 
+    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.GUILD_EVENT_SCHEDULER, 'global');
+
     try {
       for await (const guildEvent of cursor) {
         const guild = this.client.guilds.cache.get(guildEvent.guildId);
-        if (!guild) continue;
+        if (!guild || !isEnabled) continue;
 
         if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
 

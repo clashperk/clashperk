@@ -159,6 +159,7 @@ export const enum Settings {
   LEAGUE_ROLES = 'leagueRoles',
   BUILDER_LEAGUE_ROLES = 'builderLeagueRoles',
   LINK_EMBEDS = 'linkEmbeds',
+  REFRESH_EMBEDS = 'refreshEmbeds',
   WEBHOOK_LIMIT = 'webhookLimit',
   ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
   ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
@@ -216,7 +217,9 @@ export enum FeatureFlags {
   /** unused */
   LAST_SEEN_EMBED = 'last-seen-embed',
 
-  COMMAND_WHITELIST = 'command-whitelist'
+  COMMAND_WHITELIST = 'command-whitelist',
+
+  GUILD_EVENT_SCHEDULER = 'guild-event-scheduler'
 }
 
 export const enum Flags {

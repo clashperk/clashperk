@@ -1,5 +1,5 @@
 import { Client as ElasticClient } from '@elastic/elasticsearch';
-import { BaseInteraction, GatewayIntentBits, Message, Options, Client as DiscordClient, User } from 'discord.js';
+import { BaseInteraction, Client as DiscordClient, GatewayIntentBits, Message, Options, User } from 'discord.js';
 import { Db } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { URL, fileURLToPath } from 'node:url';
@@ -143,6 +143,13 @@ export class Client extends DiscordClient {
       personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY!,
       preloadFeatureFlags: true,
       disableGeoip: true,
+      bootstrap: {
+        featureFlags: {
+          [FeatureFlags.GUILD_EVENT_SCHEDULER]: true,
+          [FeatureFlags.LINK_API_SERVICE]: true,
+          [FeatureFlags.COMMAND_WHITELIST]: true
+        }
+      },
       featureFlagsPollingInterval: 30_000
     });
 
@@ -150,7 +157,7 @@ export class Client extends DiscordClient {
     container.register(Client, { useValue: this });
   }
 
-  public async isFeatureEnabled(flag: FeatureFlags, distinctId: string) {
+  public async isFeatureEnabled(flag: FeatureFlags, distinctId: string | 'global') {
     const isEnabled = await this.postHog.isFeatureEnabled(flag, distinctId, {
       onlyEvaluateLocally: true,
       disableGeoip: true,

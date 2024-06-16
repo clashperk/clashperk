@@ -21,8 +21,7 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/GuildEventsHandler.js';
-import { Collections, DiscordErrorCodes, Settings, URL_REGEX, missingPermissions } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { Collections, Settings, URL_REGEX, missingPermissions } from '../../util/Constants.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class SetupUtilsCommand extends Command {
@@ -45,11 +44,6 @@ export default class SetupUtilsCommand extends Command {
     });
   }
 
-  async pre(_: CommandInteraction, args: { option: string }) {
-    if (args.option === 'role-refresh-button') this.defer = false;
-    else this.defer = true;
-  }
-
   public args(interaction: CommandInteraction<'cached'>): Args {
     return {
       channel: {
@@ -63,232 +57,19 @@ export default class SetupUtilsCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { option: string; channel: TextChannel | AnyThreadChannel; disable?: boolean }
   ) {
+    if (['role-refresh-button', 'link-button'].includes(args.option)) {
+      const command = this.handler.getCommand('setup-buttons');
+      if (!command) throw new Error(`Command "${args.option}" not found.`);
+      return command.exec(interaction, args);
+    }
+
     if (args.option === 'events-schedular') return this.handleEvents(interaction, args);
-    if (args.option === 'role-refresh-button') return this.selfRefresh(interaction);
     if (args.option === 'flag-alert-log') return this.flagAlertLog(interaction, args);
     if (args.option === 'roster-changelog') return this.rosterChangeLog(interaction, args);
     if (args.option === 'reminder-ping-exclusion') return this.reminderPingExclusion(interaction, args);
     if (args.option === 'maintenance-notification-channel') return this.maintenanceNotificationChannel(interaction, args);
 
-    const customIds = {
-      embed: this.client.uuid(),
-      link: this.client.uuid(),
-      roles: this.client.uuid(),
-      token: this.client.uuid(),
-      title: this.client.uuid(),
-      done: this.client.uuid(),
-      description: this.client.uuid(),
-      image_url: this.client.uuid(),
-      thumbnail_url: this.client.uuid()
-    };
-
-    const webhook = await this.client.storage.getWebhook(args.channel.isThread() ? args.channel.parent! : args.channel);
-    if (!webhook) {
-      return interaction.editReply(
-        // eslint-disable-next-line
-        this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
-      );
-    }
-
-    const state = this.client.settings.get<EmbedState>(interaction.guild, Settings.LINK_EMBEDS, {
-      title: `Welcome to ${interaction.guild.name}`,
-      description: 'Click the button below to link your account.',
-      token_field: 'optional',
-      thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
-    });
-
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
-    );
-    const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId(customIds.token)
-        .setPlaceholder('Token options')
-        .setOptions([
-          {
-            label: 'Token is required',
-            value: 'required',
-            default: state.token_field === 'required',
-            description: 'The user must provide a token to link their account.'
-          },
-          {
-            label: 'Token is optional',
-            value: 'optional',
-            default: state.token_field === 'optional',
-            description: 'The user can optionally provide a token to link their account.'
-          },
-          {
-            label: 'Token field is hidden',
-            value: 'hidden',
-            default: state.token_field === 'hidden',
-            description: "The token field won't be shown to the user."
-          }
-        ])
-        .setMaxValues(1)
-        .setMinValues(1)
-    );
-
-    const embed = new EmbedBuilder();
-    embed.setColor(this.client.embed(interaction));
-    embed.setTitle(state.title);
-    embed.setDescription(state.description);
-    embed.setImage(state.image_url || null);
-    embed.setThumbnail(state.thumbnail_url || null);
-
-    const linkButton = new ButtonBuilder()
-      .setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }))
-      .setLabel('Link account')
-      .setEmoji('🔗')
-      .setStyle(ButtonStyle.Primary);
-    const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
-
-    const resetImages = async () => {
-      state.image_url = '';
-      state.thumbnail_url = '';
-      embed.setImage(null);
-      embed.setThumbnail(null);
-      await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
-      await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
-    };
-
-    try {
-      await interaction.editReply({ embeds: [embed], components: [linkButtonRow] });
-    } catch (e) {
-      if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
-        await resetImages();
-      } else {
-        throw e;
-      }
-    }
-
-    await interaction.followUp({
-      ephemeral: true,
-      content: [
-        '### Customization Guide',
-        '- You can customize the embed by clicking the button below.',
-        '- Optionally, you can personalize the webhook name and avatar in the channel settings.',
-        '- Once you are done, click the `Post Embed` button to send the Link button to the channel.'
-      ].join('\n'),
-      components: [menuRow, row]
-    });
-
-    const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-      time: 10 * 60 * 1000
-    });
-
-    collector.on('collect', async (action) => {
-      if (action.customId === customIds.done) {
-        await action.update({ components: [] });
-        collector.stop();
-        await webhook.send(
-          args.channel.isThread()
-            ? { embeds: [embed], components: [linkButtonRow], threadId: args.channel.id }
-            : { embeds: [embed], components: [linkButtonRow] }
-        );
-      }
-
-      if (action.customId === customIds.token && action.isStringSelectMenu()) {
-        await action.deferUpdate();
-        state.token_field = action.values.at(0) as 'required' | 'optional' | 'hidden';
-
-        linkButton.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }));
-        const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
-
-        await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
-        await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
-      }
-
-      if (action.customId === customIds.embed) {
-        const modalCustomId = this.client.uuid(action.user.id);
-        const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Link a Player Account');
-        const titleInput = new TextInputBuilder()
-          .setCustomId(customIds.title)
-          .setLabel('Title')
-          .setPlaceholder('Enter a title')
-          .setStyle(TextInputStyle.Short)
-          .setMaxLength(256)
-          .setRequired(true);
-        if (state.title) titleInput.setValue(state.title);
-
-        const descriptionInput = new TextInputBuilder()
-          .setCustomId(customIds.description)
-          .setLabel('Description')
-          .setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
-          .setStyle(TextInputStyle.Paragraph)
-          .setMaxLength(2000)
-          .setRequired(true);
-        if (state.description) descriptionInput.setValue(state.description);
-
-        const imageInput = new TextInputBuilder()
-          .setCustomId(customIds.image_url)
-          .setLabel('Image URL')
-          .setPlaceholder('Enter an image URL')
-          .setStyle(TextInputStyle.Short)
-          .setMaxLength(256)
-          .setRequired(false);
-        if (state.image_url) imageInput.setValue(state.image_url);
-
-        const thumbnailInput = new TextInputBuilder()
-          .setCustomId(customIds.thumbnail_url)
-          .setLabel('Thumbnail URL')
-          .setPlaceholder('Enter a thumbnail URL')
-          .setStyle(TextInputStyle.Short)
-          .setMaxLength(256)
-          .setRequired(false);
-        if (state.thumbnail_url) thumbnailInput.setValue(state.thumbnail_url);
-
-        modal.addComponents(
-          new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(imageInput),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(thumbnailInput)
-        );
-
-        await action.showModal(modal);
-
-        try {
-          const modalSubmit = await action.awaitModalSubmit({
-            time: 10 * 60 * 1000,
-            filter: (action) => action.customId === modalCustomId
-          });
-          const title = modalSubmit.fields.getTextInputValue(customIds.title);
-          const description = modalSubmit.fields.getTextInputValue(customIds.description);
-          const imageUrl = modalSubmit.fields.getTextInputValue(customIds.image_url);
-          const thumbnailUrl = modalSubmit.fields.getTextInputValue(customIds.thumbnail_url);
-
-          state.title = title;
-          state.description = description;
-          state.image_url = URL_REGEX.test(imageUrl) ? imageUrl : '';
-          state.thumbnail_url = URL_REGEX.test(thumbnailUrl) ? thumbnailUrl : '';
-
-          await modalSubmit.deferUpdate();
-
-          embed.setTitle(state.title);
-          embed.setDescription(state.description);
-          embed.setImage(state.image_url || null);
-          embed.setThumbnail(state.thumbnail_url || null);
-
-          linkButton.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }));
-          const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
-
-          await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
-          await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
-        } catch (e) {
-          if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
-            await resetImages();
-          } else if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
-            throw e;
-          }
-        }
-      }
-    });
-
-    collector.on('end', async (_, reason) => {
-      Object.values(customIds).forEach((id) => this.client.components.delete(id));
-      if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-    });
+    throw new Error(`Command "${args.option}" not found.`);
   }
 
   public async rosterChangeLog(
@@ -633,21 +414,6 @@ export default class SetupUtilsCommand extends Command {
         await action.update({ embeds: [embed], components: [], content: null });
       }
     });
-  }
-
-  public async selfRefresh(interaction: CommandInteraction<'cached'>) {
-    const embed = new EmbedBuilder();
-    embed.setColor(this.client.embed(interaction));
-    embed.setTitle(`Welcome to ${interaction.guild.name}`);
-    embed.setDescription('Click the button below to refresh your roles and nickname.');
-    embed.setThumbnail(interaction.guild.iconURL({ forceStatic: false }));
-
-    const customId = this.createId({ cmd: 'autorole-refresh', defer: true, ephemeral: true });
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setLabel('Refresh Roles').setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Primary)
-    );
-
-    return interaction.reply({ embeds: [embed], components: [row] });
   }
 
   public async handleEvents(
@@ -1031,14 +797,6 @@ export default class SetupUtilsCommand extends Command {
 
     return this.client.settings.set(guild, Settings.REMINDER_EXCLUSION, config);
   }
-}
-
-interface EmbedState {
-  title: string;
-  description: string;
-  image_url: string;
-  thumbnail_url: string;
-  token_field: string;
 }
 
 interface ExclusionConfig {
