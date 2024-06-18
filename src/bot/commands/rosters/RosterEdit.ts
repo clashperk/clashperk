@@ -143,8 +143,8 @@ export default class RosterEditCommand extends Command {
         {
           '_id': { $ne: roster._id },
           'closed': false,
-          'guildId': interaction.guild.id,
           'category': roster.category,
+          'guildId': interaction.guild.id,
           'members.tag': { $in: roster.members.map((mem) => mem.tag) }
         },
         { projection: { name: 1, clan: 1 } }

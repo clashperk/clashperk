@@ -139,6 +139,7 @@ export default class RosterEditCommand extends Command {
           {
             '_id': { $ne: roster._id },
             'closed': false,
+            'category': roster.category,
             'guildId': action.guild.id,
             'members.tag': { $in: roster.members.map((mem) => mem.tag) }
           },
