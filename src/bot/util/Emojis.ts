@@ -22,7 +22,8 @@ export const ELIXIR_TROOPS: Record<string, string> = {
   'Yeti': '<:Yeti:696281814293282857>',
   'Dragon Rider': '<:DragonRider:854290952888909834>',
   'Electro Titan': '<:ElectroTitan:1029113633243922572>',
-  'Root Rider': '<:RootRider:1184210445544992788>'
+  'Root Rider': '<:RootRider:1184210445544992788>',
+  'Druid': '<:Druid:1252640516881911900>'
 };
 
 export const HERO_PETS: Record<string, string> = {
@@ -60,6 +61,9 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Fireball': '<:Fireball:1223332499162398800>',
   'Spiky Ball': '<:SpikeyBall:1234940460070600804>',
   'Rocket Spear': '<:RocketSpear:1223332521358528695>'
+  // 'Electro Boots': '<:ElectroBoots:1252640513790705686>',
+  // 'Magic Mirror': '<:MagicMirror:1252640509403467787>',
+  // 'Heroic Torch': '<:HeroicTorch:1252640503988486327>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
