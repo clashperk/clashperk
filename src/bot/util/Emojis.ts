@@ -22,8 +22,7 @@ export const ELIXIR_TROOPS: Record<string, string> = {
   'Yeti': '<:Yeti:696281814293282857>',
   'Dragon Rider': '<:DragonRider:854290952888909834>',
   'Electro Titan': '<:ElectroTitan:1029113633243922572>',
-  'Root Rider': '<:RootRider:1184210445544992788>',
-  'Druid': '<:Druid:1252640516881911900>'
+  'Root Rider': '<:RootRider:1184210445544992788>'
 };
 
 export const HERO_PETS: Record<string, string> = {
@@ -76,7 +75,8 @@ export const DARK_ELIXIR_TROOPS: Record<string, string> = {
   'Bowler': '<:bowler:696282213360074782>',
   'Ice Golem': '<:IceGolem:696282324798799892>',
   'Headhunter': '<:Headhunter:724650414066106459>',
-  'Apprentice Warden': '<:ApprenticeWarden:1117866249645461604>'
+  'Apprentice Warden': '<:ApprenticeWarden:1117866249645461604>',
+  'Druid': '<:Druid:1252640516881911900>'
 };
 
 export const SIEGE_MACHINES: Record<string, string> = {
@@ -417,7 +417,7 @@ export const EMOJIS = {
   SORTING: '🔃' as const,
   NEXT: '➡️' as const,
   PREVIOUS: '⬅️' as const,
-  SETTINGS: '⚙️' as const,
+  GEAR: '⚙️' as const,
   EXPORT: '📥' as const,
   PRINT: '🖨️' as const,
   MAINTENANCE: '🛠️' as const,

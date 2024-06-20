@@ -17,7 +17,9 @@ export default class LinkCreateCommand extends Command {
   public async pre(interaction: CommandInteraction<'cached'>) {
     if (this.client.settings.get<string[]>(interaction.guild, Settings.LINKS_MANAGER_ROLE, []).length) {
       this.userPermissions = ['ManageGuild'];
+      this.roleKey = Settings.LINKS_MANAGER_ROLE;
     } else {
+      this.roleKey = null;
       this.userPermissions = [];
     }
   }

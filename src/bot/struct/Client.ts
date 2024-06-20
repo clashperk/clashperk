@@ -146,7 +146,6 @@ export class Client extends DiscordClient {
       bootstrap: {
         featureFlags: {
           [FeatureFlags.GUILD_EVENT_SCHEDULER]: true,
-          [FeatureFlags.LINK_API_SERVICE]: true,
           [FeatureFlags.COMMAND_WHITELIST]: true
         }
       },

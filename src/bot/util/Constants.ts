@@ -206,9 +206,8 @@ export enum ElasticIndex {
 }
 
 export enum FeatureFlags {
+  CLAN_LOG_SEPARATION = 'clan-log-separation',
   CLAN_MEMBERS_PROMOTION_LOG = 'clan-member-promotion-log',
-  LINK_API_SERVICE = 'link-api-service',
-  LEGEND_DAYS_COMPONENT_LOCK = 'legend-days-component-lock',
 
   /** unused */
   LEGEND_ATTACKS_DAILY_LOG = 'legend-attacks-daily-log',
@@ -236,7 +235,8 @@ export const enum Flags {
   PLAYER_FEED_LOG = 1 << 10,
   JOIN_LEAVE_LOG = 1 << 11,
   CAPITAL_LOG = 1 << 12,
-  CLAN_EVENT_LOG = 1 << 13
+  CLAN_EVENT_LOG = 1 << 13,
+  DONATION_LOG_V2 = 1 << 14
 }
 
 export const enum WarType {

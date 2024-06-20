@@ -442,7 +442,6 @@ export default class RemainingCommand extends Command {
       cmd: this.id,
       user_id: args.user?.id,
       player_tag: args.player_tag,
-      is_locked: true,
       is_grouped: args.is_grouped
     };
 

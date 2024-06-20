@@ -60,7 +60,7 @@ export default class MaintenanceHandler {
       if (channel?.isTextBased() && channel.permissionsFor(this.client.user!)?.has(['SendMessages', 'ViewChannel', 'UseExternalEmojis'])) {
         const message = i18n(this.isMaintenance ? 'common.maintenance_start' : 'common.maintenance_end', {
           lng: channel.guild.preferredLocale,
-          duration: `(${this.dur(dur)})`
+          duration: `(Started ${this.dur(dur)} ago)`
         });
         await channel.send(`**${EMOJIS.COC_LOGO} ${message}**`);
       }
@@ -73,13 +73,11 @@ export default class MaintenanceHandler {
   }
 
   private getMessage(dur = 0) {
-    if (this.isMaintenance) {
-      return `Maintenance break has started!`;
-    }
-    return `Maintenance break has finished! (${this.dur(dur)})`;
+    if (this.isMaintenance) return `Maintenance break has started!`;
+    return `Maintenance break is ending soon! (Started ${this.dur(dur)} ago)`;
   }
 
   private dur(ms: number) {
-    return moment.duration(ms).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' });
+    return moment.duration(ms).format('D[d], H[h], m[m]', { trim: 'both mid' });
   }
 }

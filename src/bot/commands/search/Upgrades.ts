@@ -250,11 +250,11 @@ export default class UpgradesCommand extends Command {
 
         const remainingCost = level
           ? unit.upgrade.cost.slice(level - (unit.minLevel ?? 1), hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0)
-          : unit.unlock.cost + unit.upgrade.cost.slice(0, hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0);
+          : unit.upgrade.cost.slice(0, hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0); // + unit.unlock.cost;
 
         const remainingTime = level
           ? unit.upgrade.time.slice(level - (unit.minLevel ?? 1), hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0)
-          : unit.unlock.time + unit.upgrade.time.slice(0, hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0);
+          : unit.upgrade.time.slice(0, hallMaxLevel - 1).reduce((prev, curr) => prev + curr, 0); // + unit.unlock.time;
 
         const resources = unit.upgrade.resources
           .slice(level ? level - (unit.minLevel ?? 1) : 0, hallMaxLevel - 1)
@@ -275,8 +275,8 @@ export default class UpgradesCommand extends Command {
           maxLevel: Math.max(unit.levels[unit.levels.length - 1], maxLevel),
           resource: unit.upgrade.resource,
           resources,
-          upgradeCost: level ? unit.upgrade.cost[level - (unit.minLevel ?? 1)] : unit.unlock.cost,
-          upgradeTime: level ? unit.upgrade.time[level - (unit.minLevel ?? 1)] : unit.unlock.time,
+          // upgradeCost: level ? unit.upgrade.cost[level - (unit.minLevel ?? 1)] : unit.unlock.cost,
+          // upgradeTime: level ? unit.upgrade.time[level - (unit.minLevel ?? 1)] : unit.unlock.time,
           remainingCost,
           remainingTime
         };

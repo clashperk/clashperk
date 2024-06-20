@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import { PlayersEntity } from '../../entities/players.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';
-import { ATTACK_COUNTS, Collections, FeatureFlags, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
 
@@ -42,24 +42,23 @@ export default class LegendDaysCommand extends Command {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
-    const isLocked = await this.client.isFeatureEnabled(FeatureFlags.LEGEND_DAYS_COMPONENT_LOCK, interaction.guildId);
     const row = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(
         new ButtonBuilder()
           .setEmoji(EMOJIS.REFRESH)
-          .setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev, tag: data.tag, is_locked: isLocked }))
+          .setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev, tag: data.tag }))
           .setStyle(ButtonStyle.Secondary)
       )
       .addComponents(
         new ButtonBuilder()
           .setLabel(args.prev ? 'Current Day' : 'Previous Days')
-          .setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag, is_locked: isLocked }))
+          .setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag }))
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       )
       .addComponents(
         new ButtonBuilder()
           .setLabel(args.graph ? 'Overview' : 'View Graph')
-          .setCustomId(JSON.stringify({ cmd: this.id, graph: !args.graph, tag: data.tag, is_locked: isLocked }))
+          .setCustomId(JSON.stringify({ cmd: this.id, graph: !args.graph, tag: data.tag }))
           .setStyle(ButtonStyle.Secondary)
       );
 

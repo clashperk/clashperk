@@ -1098,7 +1098,7 @@ export class RosterManager {
             roster: roster._id.toHexString()
           })
         )
-        .setEmoji(EMOJIS.SETTINGS)
+        .setEmoji(EMOJIS.GEAR)
         .setStyle(ButtonStyle.Secondary)
     );
 

@@ -1939,6 +1939,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'WAR',
                 value: 'WAR'
+              },
+              {
+                name: 'TROPHY',
+                value: 'TROPHY'
               }
             ]
           },
@@ -2143,6 +2147,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'WAR',
                 value: 'WAR'
+              },
+              {
+                name: 'TROPHY',
+                value: 'TROPHY'
               }
             ]
           },
