@@ -92,7 +92,7 @@ export const handlePagination = async (
       exportButton.setDisabled(true);
       await interaction.editReply({ components: [row] });
 
-      await action.deferReply({ ephemeral: client.commandHandler.isMessagingDisabled(action) });
+      await action.deferReply();
       await onExport?.(action);
     }
   });

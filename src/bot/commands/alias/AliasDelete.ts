@@ -24,7 +24,7 @@ export default class AliasDeleteCommand extends Command {
       {
         guild: interaction.guild.id,
         alias: { $exists: true },
-        $or: [{ tag: this.parseTag(args.alias) }, { alias: args.alias.trim() }]
+        $or: [{ tag: this.parseTag(args.alias)! }, { alias: args.alias.trim() }]
       },
       { $unset: { alias: '' } }
     );
@@ -33,6 +33,6 @@ export default class AliasDeleteCommand extends Command {
       return interaction.editReply(this.i18n('command.alias.delete.no_result', { lng: interaction.locale, name: args.alias }));
     }
 
-    return interaction.editReply(this.i18n('command.alias.delete.success', { lng: interaction.locale, name: deleted.value.alias }));
+    return interaction.editReply(this.i18n('command.alias.delete.success', { lng: interaction.locale, name: deleted.value.alias! }));
   }
 }

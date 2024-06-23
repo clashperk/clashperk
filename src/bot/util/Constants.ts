@@ -218,7 +218,11 @@ export enum FeatureFlags {
 
   COMMAND_WHITELIST = 'command-whitelist',
 
-  GUILD_EVENT_SCHEDULER = 'guild-event-scheduler'
+  GUILD_EVENT_SCHEDULER = 'guild-event-scheduler',
+
+  NO_PERMISSION_MESSAGE = 'no-permission-message',
+
+  TRUSTED_GUILD = 'trusted-guild'
 }
 
 export const enum Flags {

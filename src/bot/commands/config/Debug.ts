@@ -103,7 +103,7 @@ export default class DebugCommand extends Command {
       if (interaction.channel && interaction.appPermissions.has(['SendMessages', 'ViewChannel', 'SendMessagesInThreads'])) {
         await interaction.channel.send({ content: chunk, allowedMentions: { roles: [] } });
       } else {
-        await interaction.followUp({ content: chunk, allowedMentions: { roles: [] }, ephemeral: this.muted });
+        await interaction.followUp({ content: chunk, allowedMentions: { roles: [] } });
       }
     }
   }

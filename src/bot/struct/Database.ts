@@ -1,5 +1,24 @@
+import { ClanLogsEntity, ClanStoresEntity, ClanWarRemindersEntity, PlayerLinksEntity } from '@app/entities';
 import { Db, MongoClient } from 'mongodb';
+import { PlayersEntity } from '../entities/players.entity.js';
+import { PlayerSeasonModel } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
+
+interface CollectionsMap {
+  [Collections.CLAN_STORES]: ClanStoresEntity;
+  [Collections.PLAYER_SEASONS]: PlayerSeasonModel; // TODO: Fix this
+  [Collections.PLAYERS]: PlayersEntity;
+  [Collections.PLAYER_LINKS]: PlayerLinksEntity;
+  [Collections.CLAN_LOGS]: ClanLogsEntity;
+  [Collections.REMINDERS]: ClanWarRemindersEntity;
+  // [Collections.AUTO_BOARDS]: AutoBoardLogsEntity;
+}
+
+declare module 'mongodb' {
+  interface Db {
+    collection<T extends keyof CollectionsMap>(name: T): Collection<CollectionsMap[T]>;
+  }
+}
 
 export class MongoDbClient extends MongoClient {
   public dbName = 'clashperk';
@@ -206,6 +225,13 @@ export class MongoDbClient extends MongoClient {
         },
         {
           key: { guild: 1, tag: 1 },
+          unique: true
+        }
+      ]),
+
+      db.collection(Collections.CLAN_LOGS).createIndexes([
+        {
+          key: { guildId: 1, clanTag: 1, logType: 1 },
           unique: true
         }
       ]),

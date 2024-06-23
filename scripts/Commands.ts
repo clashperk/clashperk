@@ -2473,39 +2473,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       }
     ]
   },
-  // {
-  //   name: 'leaderboard',
-  //   description: 'Leaderboard of the top clans and players.',
-  //   dm_permission: false,
-  //   options: [
-  //     {
-  //       name: 'clans',
-  //       description: 'Top clans leaderboard',
-  //       type: ApplicationCommandOptionType.Subcommand,
-  //       options: [
-  //         {
-  //           name: 'location',
-  //           description: 'Location of the leaderboard',
-  //           type: ApplicationCommandOptionType.String,
-  //           autocomplete: true
-  //         }
-  //       ]
-  //     },
-  //     {
-  //       name: 'players',
-  //       description: 'Top clans leaderboard',
-  //       type: ApplicationCommandOptionType.Subcommand,
-  //       options: [
-  //         {
-  //           name: 'location',
-  //           description: 'Location of the leaderboard',
-  //           type: ApplicationCommandOptionType.String,
-  //           autocomplete: true
-  //         }
-  //       ]
-  //     }
-  //   ]
-  // },
   {
     name: 'autorole',
     description: 'Enable automatic clan roles and Town Hall roles',
@@ -4218,8 +4185,6 @@ export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = 
   }
 ];
 
-export const BETA_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [];
-
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   {
     name: 'status',
@@ -4274,6 +4239,66 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         description: 'Depth of the returned object.',
         type: ApplicationCommandOptionType.Number,
         required: false
+      }
+    ]
+  },
+  {
+    name: 'leaderboard',
+    description: 'Leaderboard of the top clans and players.',
+    dm_permission: false,
+    options: [
+      {
+        name: 'clans',
+        description: 'Top clans leaderboard',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'location',
+            description: 'Location of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
+          }
+        ]
+      },
+      {
+        name: 'players',
+        description: 'Top clans leaderboard',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'location',
+            description: 'Location of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'setup-logs',
+    description: 'Setup logs.',
+    options: [
+      {
+        name: 'clans',
+        description: 'Select clans for the logs.',
+        type: ApplicationCommandOptionType.String,
+        required: true
+      },
+      {
+        name: 'action',
+        description: 'Select the action for the logs.',
+        type: ApplicationCommandOptionType.String,
+        choices: [
+          {
+            name: 'Enable',
+            value: 'enable'
+          },
+          {
+            name: 'Disable',
+            value: 'disable'
+          }
+        ]
       }
     ]
   }

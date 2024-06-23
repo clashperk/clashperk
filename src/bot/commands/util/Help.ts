@@ -97,7 +97,7 @@ export default class HelpCommand extends Command {
   ) {
     const grouped = commands.reduce<Record<string, CommandInfo[]>>((acc, cur) => {
       if (cur.category in categoryMap) {
-				acc[categoryMap[cur.category]] ??= []; // eslint-disable-line
+        acc[categoryMap[cur.category]] ??= []; // eslint-disable-line
         acc[categoryMap[cur.category]].push(cur);
       }
       return acc;
@@ -107,7 +107,7 @@ export default class HelpCommand extends Command {
       category,
       commandGroups: Object.values(
         commands.reduce<Record<string, CommandInfo[]>>((acc, cur) => {
-					acc[cur.rootName] ??= []; // eslint-disable-line
+          acc[cur.rootName] ??= []; // eslint-disable-line
           acc[cur.rootName].push(cur);
           return acc;
         }, {})
@@ -183,7 +183,7 @@ export default class HelpCommand extends Command {
 
   private async onExport(interaction: CommandInteraction<'cached'>, [embed, ...embeds]: EmbedBuilder[]) {
     await interaction.editReply({ embeds: [embed], components: [] });
-    for (const embed of embeds) await interaction.followUp({ embeds: [embed], ephemeral: this.muted });
+    for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
   }
 
   private async getCommands(interaction: CommandInteraction<'cached'>) {

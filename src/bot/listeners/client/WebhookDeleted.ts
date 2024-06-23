@@ -11,7 +11,7 @@ export default class WebhookDeletedListener extends Listener {
     });
   }
 
-  public async exec(guild: Guild) {
+  public async exec(_guild: Guild) {
     const collections = [
       Collections.DONATION_LOGS,
       Collections.CAPITAL_LOGS,
@@ -29,9 +29,9 @@ export default class WebhookDeletedListener extends Listener {
     for (const collection of collections) {
       if (collection) continue;
 
-      await this.client.db
-        .collection(collection)
-        .updateOne({ $or: [{ guild: guild.id }, { guildId: guild.id }] }, { $set: { webhook: null } });
+      // await this.client.db
+      //   .collection(collection)
+      //   .updateOne({ $or: [{ guild: guild.id }, { guildId: guild.id }] }, { $set: { webhook: null } });
     }
   }
 }

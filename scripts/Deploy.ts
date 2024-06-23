@@ -3,11 +3,9 @@ import { RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'disc
 import fetch from 'node-fetch';
 import 'reflect-metadata';
 import { inspect } from 'util';
-import { BETA_COMMANDS, COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
+import { COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
-
-const masterGuilds = ['609250675431309313', '1016659402817814620', '509784317598105619'];
 
 console.log(new Date().toISOString());
 
@@ -72,30 +70,10 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
     return applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS]);
   }
 
-  if (process.argv.includes('--delete')) {
-    const guilds = process.env.GUILD_IDS!.split(',');
-    for (const guildId of guilds) {
-      await applicationGuildCommands(process.env.PROD_TOKEN!, guildId, []);
-    }
-    return;
-  }
-
-  if (process.argv.includes('--beta')) {
-    const guilds = process.env.GUILD_IDS!.split(',');
-    for (const guildId of new Set(guilds)) {
-      const commands = masterGuilds.includes(guildId)
-        ? [...BETA_COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS]
-        : [...BETA_COMMANDS];
-      await applicationGuildCommands(process.env.PROD_TOKEN!, guildId, commands);
-    }
-    return;
-  }
-
   if (process.argv.includes('--custom-bot')) {
     await customBotCommands([...COMMANDS]);
     return;
   }
 
-  return applicationCommands(token, [...COMMANDS, ...BETA_COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS]);
-  // return applicationCommands(token, []);
+  return applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS]);
 })();

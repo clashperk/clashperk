@@ -262,8 +262,7 @@ export default class ReminderNowCommand extends Command {
       for (const content of Util.splitMessage(text, { maxLength: 2000 })) {
         await interaction.followUp({
           content,
-          allowedMentions: { parse: ['users'] },
-          ephemeral: this.muted
+          allowedMentions: { parse: ['users'] }
         });
       }
       await Util.delay(1000);

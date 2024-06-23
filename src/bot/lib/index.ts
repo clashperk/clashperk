@@ -6,12 +6,12 @@ import {
   Collection,
   CommandInteraction,
   CommandInteractionOption,
+  ContextMenuCommandInteraction,
   Events,
   GuildBasedChannel,
   Interaction,
   Message,
   MessageComponentInteraction,
-  PermissionFlagsBits,
   PermissionsString,
   RestEvents
 } from 'discord.js';
@@ -24,6 +24,7 @@ import { Client } from '../struct/Client.js';
 import { CustomIdProps } from '../struct/ComponentHandler.js';
 import { Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
+import './modifier.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor, WSEvents } from './util.js';
 
 type ArgsMatchType =
@@ -101,6 +102,9 @@ export class CommandHandler extends BaseHandler {
       if (interaction.isChatInputCommand()) {
         return this.handleInteraction(interaction);
       }
+      if (interaction.isContextMenuCommand()) {
+        return this.handleContextInteraction(interaction);
+      }
     });
   }
 
@@ -128,6 +132,19 @@ export class CommandHandler extends BaseHandler {
     if (this.preInhibitor(interaction, command)) return;
 
     const args = this.argumentRunner(interaction, command);
+    return this.exec(interaction, command, args);
+  }
+
+  private async handleContextInteraction(interaction: ContextMenuCommandInteraction) {
+    const command = this.getCommand(interaction.commandName);
+    if (!command) return;
+
+    if (this.preInhibitor(interaction, command)) return;
+
+    const args = interaction.isMessageContextMenuCommand()
+      ? { message: interaction.options.getMessage('message')?.content ?? '' }
+      : { user: interaction.options.get('user') };
+
     return this.exec(interaction, command, args);
   }
 
@@ -269,10 +286,9 @@ export class CommandHandler extends BaseHandler {
   public async exec(interaction: CommandInteraction | MessageComponentInteraction, command: Command, args: Record<string, unknown> = {}) {
     try {
       await command.pre(interaction, args);
-      await command.permissionCheck(interaction);
 
       if (command.defer && !interaction.deferred && !interaction.replied) {
-        await interaction.deferReply({ ephemeral: this.isMessagingDisabled(interaction) || command.ephemeral });
+        await interaction.deferReply({ ephemeral: command.ephemeral });
       }
       this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
       await command.exec(interaction, args);
@@ -281,17 +297,6 @@ export class CommandHandler extends BaseHandler {
     } finally {
       this.emit(CommandHandlerEvents.COMMAND_ENDED, interaction, command, args);
     }
-  }
-
-  public isMessagingDisabled(interaction: CommandInteraction | MessageComponentInteraction) {
-    if (!interaction.inGuild()) return false;
-    if (!interaction.inCachedGuild()) return true;
-
-    if (interaction.channel?.isThread()) {
-      return !interaction.appPermissions.has([PermissionFlagsBits.SendMessagesInThreads]);
-    }
-
-    return !interaction.appPermissions.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]);
   }
 
   public preInhibitor(interaction: BaseInteraction, command: Command) {
@@ -426,7 +431,7 @@ export class InhibitorHandler extends BaseHandler {
     try {
       const inhibitor = this.modules
         .sort((a, b) => b.priority - a.priority)
-        .filter((inhibitor) => inhibitor.exec(interaction, command))
+        .filter((inhibitor) => !inhibitor.disabled && inhibitor.exec(interaction, command))
         .at(0);
       return inhibitor?.reason ?? null;
     } catch (error) {
@@ -459,7 +464,6 @@ export class Command implements CommandOptions {
   public userPermissions?: PermissionsString[];
   public clientPermissions?: PermissionsString[];
   public roleKey?: string | null;
-  public muted?: boolean;
   public resolvedId?: string;
 
   public handler: CommandHandler;
@@ -486,10 +490,6 @@ export class Command implements CommandOptions {
   public autocomplete(interaction: AutocompleteInteraction, args: Record<string, unknown>): Promise<unknown> | unknown;
   public autocomplete(): Promise<unknown> | unknown {
     return null;
-  }
-
-  public async permissionCheck(interaction: CommandInteraction | MessageComponentInteraction) {
-    this.muted = this.handler.isMessagingDisabled(interaction);
   }
 
   public pre(interaction: BaseInteraction, args: Record<string, unknown>): Promise<unknown>;
@@ -554,6 +554,7 @@ export interface InhibitorOptions {
   category?: string;
   priority?: number;
   reason: string;
+  disabled?: boolean;
 }
 
 export class Inhibitor implements InhibitorOptions {
@@ -563,13 +564,15 @@ export class Inhibitor implements InhibitorOptions {
   public priority: number;
   public handler: InhibitorHandler;
   public client: Client;
+  public disabled: boolean;
   public i18n = i18n;
 
-  public constructor(id: string, { category, priority, reason }: InhibitorOptions) {
+  public constructor(id: string, { category, priority, reason, disabled }: InhibitorOptions) {
     this.id = id;
     this.reason = reason;
     this.category = category;
     this.priority = priority ?? 0;
+    this.disabled = disabled ?? false;
     this.client = container.resolve(Client);
     this.handler = container.resolve(InhibitorHandler);
   }

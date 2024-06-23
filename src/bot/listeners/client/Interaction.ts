@@ -91,7 +91,6 @@ export default class InteractionListener extends Listener {
 
   public exec(interaction: Interaction) {
     this.autocomplete(interaction);
-    this.contextInteraction(interaction);
     this.componentInteraction(interaction);
   }
 
@@ -740,21 +739,6 @@ export default class InteractionListener extends Listener {
       return key;
     }
     return query;
-  }
-
-  private async contextInteraction(interaction: Interaction) {
-    if (!interaction.isContextMenuCommand()) return;
-
-    const commandId = interaction.commandName.replace(/\s+/g, '-').toLowerCase();
-    const command = this.client.commandHandler.getCommand(commandId);
-    if (!command) return;
-
-    if (this.client.commandHandler.preInhibitor(interaction, command)) return;
-
-    const args = interaction.isMessageContextMenuCommand()
-      ? { message: interaction.options.getMessage('message')?.content ?? '' }
-      : { member: interaction.options.getMember('user') };
-    return this.client.commandHandler.exec(interaction, command, args);
   }
 
   private async componentInteraction(interaction: Interaction) {

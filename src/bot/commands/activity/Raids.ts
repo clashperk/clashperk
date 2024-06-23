@@ -74,7 +74,6 @@ export default class CapitalRaidsCommand extends Command {
     const { res, body: raid } = await this.client.http.getRaidSeasons(clan.tag, 6);
     if (!res.ok || !raid.items.length) {
       return interaction.followUp({
-        ephemeral: this.muted,
         content: `Raid weekend info isn't available for ${clan.name} (${clan.tag})`
       });
     }
@@ -87,7 +86,6 @@ export default class CapitalRaidsCommand extends Command {
 
       if (!data) {
         return interaction.followUp({
-          ephemeral: this.muted,
           content: `Raid weekend info isn't available for ${clan.name} (${clan.tag})`
         });
       }
@@ -143,8 +141,7 @@ export default class CapitalRaidsCommand extends Command {
             new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-trophies-card?${query.toString()}`, {
               name: 'capital-raid-trophy-card.jpeg'
             })
-          ],
-          ephemeral: this.muted
+          ]
         });
       }
     }
@@ -188,7 +185,6 @@ export default class CapitalRaidsCommand extends Command {
     const members = raidSeason?.members ?? data?.members ?? [];
     if (!members.length || !data) {
       return interaction.followUp({
-        ephemeral: this.muted,
         content: this.i18n('command.capital.raids.no_data', { weekId, clan: clan.name, lng: interaction.locale })
       });
     }

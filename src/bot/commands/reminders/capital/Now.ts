@@ -215,7 +215,7 @@ export default class CapitalReminderNowCommand extends Command {
   private async send(interaction: ButtonInteraction<'cached'>, texts: string[]) {
     for (const text of texts) {
       for (const content of Util.splitMessage(text, { maxLength: 2000 })) {
-        await interaction.followUp({ content, allowedMentions: { parse: ['users'] }, ephemeral: this.muted });
+        await interaction.followUp({ content, allowedMentions: { parse: ['users'] } });
       }
       await Util.delay(1000);
     }

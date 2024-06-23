@@ -140,6 +140,6 @@ export default class AutoTownHallRoleCommand extends Command {
 
   private async onExport(interaction: ButtonInteraction<'cached'>, [embed, ...embeds]: EmbedBuilder[]) {
     await interaction.editReply({ embeds: [embed], components: [] });
-    for (const embed of embeds) await interaction.followUp({ embeds: [embed], ephemeral: this.muted });
+    for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
   }
 }

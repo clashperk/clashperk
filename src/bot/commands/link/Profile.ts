@@ -6,14 +6,13 @@ import {
   ButtonStyle,
   CommandInteraction,
   EmbedBuilder,
-  GuildMember,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
   User
 } from 'discord.js';
 import { cluster, diff } from 'radash';
 import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
-import { Args, Command } from '../../lib/index.js';
+import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections, DOT, Settings } from '../../util/Constants.js';
@@ -47,21 +46,7 @@ export default class ProfileCommand extends Command {
     });
   }
 
-  public args(interaction: CommandInteraction<'cached'>): Args {
-    return {
-      user: {
-        id: 'user',
-        match: 'USER'
-      },
-      member: {
-        id: 'member',
-        match: 'MEMBER',
-        default: interaction.options.get('user') || interaction.member
-      }
-    };
-  }
-
-  public async exec(interaction: CommandInteraction<'cached'>, args: { member?: GuildMember; user?: User; player_tag?: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player_tag?: string }) {
     const whitelist = this.client.settings.get<string[]>('global', 'whitelist', []);
 
     if (args.player_tag && !whitelist.includes(interaction.user.id)) {
@@ -72,7 +57,7 @@ export default class ProfileCommand extends Command {
     const user =
       args.player_tag && whitelist.includes(interaction.user.id)
         ? await this.getUserByTag(interaction, args.player_tag)
-        : args.user ?? (args.member ?? interaction.member).user;
+        : args.user ?? interaction.user;
 
     const [data, players] = await Promise.all([
       this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: user.id }),
@@ -228,15 +213,12 @@ export default class ProfileCommand extends Command {
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(JSON.stringify({ cmd: 'link-add', token_field: 'optional' }))
-          // .setLabel('Link account')
           .setEmoji('🔗')
           .setStyle(ButtonStyle.Primary)
       );
     }
 
     if (
-      args.member &&
-      args.member.id === user.id &&
       players.length > 1 &&
       players.length <= 25 &&
       (this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) || user.id === interaction.user.id)
@@ -271,9 +253,12 @@ export default class ProfileCommand extends Command {
           await action.deferReply({ ephemeral: true });
           return this.export(action, links, user);
         }
+
         const isTrustedGuild = this.isTrustedGuild(interaction);
         if (action.customId === customIds.change) {
+          const isMember = action.user.id === user.id ? action.member : await action.guild.members.fetch(user.id).catch(() => null);
           if (
+            !isMember ||
             // not manager && not author
             (!this.client.util.isManager(action.member, Settings.LINKS_MANAGER_ROLE) && user.id !== action.user.id) ||
             // not author && has verified account

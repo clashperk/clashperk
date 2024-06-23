@@ -5,6 +5,7 @@ import { Client } from './Client.js';
 export interface CustomIdProps {
   cmd: string;
   ephemeral?: boolean;
+  /** It defaults to `true` */
   defer?: boolean;
   array_key?: string;
   string_key?: string;
@@ -51,9 +52,7 @@ export default class ComponentHandler {
     const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
     if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) {
       if (parsed.ephemeral) {
-        await interaction.deferReply({
-          ephemeral: this.client.commandHandler.isMessagingDisabled(interaction) || !!parsed.ephemeral
-        });
+        await interaction.deferReply({ ephemeral: !!parsed.ephemeral });
       } else {
         await interaction.deferUpdate();
       }

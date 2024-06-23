@@ -108,7 +108,7 @@ export default class RosterPingCommand extends Command {
         for (const content of Util.splitMessage(`${msgText}\n${result.map((m) => `- \u200e${m.name} ${m.mention}`).join('\n')}`, {
           maxLength: 2000
         })) {
-          await action.followUp({ content, ephemeral: this.muted });
+          await action.followUp({ content });
         }
       }
     });

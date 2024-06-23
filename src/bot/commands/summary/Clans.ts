@@ -100,10 +100,10 @@ export default class SummaryClansCommand extends Command {
     ];
 
     if (embeds.reduce((prev, acc) => embedLength(acc.toJSON()) + prev, 0) > 6000) {
-      for (const embed of embeds) await interaction.followUp({ embeds: [embed], ephemeral: this.muted });
+      for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
     }
 
-    return interaction.followUp({ embeds, ephemeral: this.muted });
+    return interaction.followUp({ embeds });
   }
 
   private async getJoinLeave(clans: APIClan[]) {
@@ -138,14 +138,14 @@ export default class SummaryClansCommand extends Command {
     const clanMap = buckets
       .flatMap((bucket) => bucket.events.buckets.map(({ doc_count, key }) => ({ bucket, doc_count, key })))
       .reduce<Record<string, Record<string, number>>>((acc, { bucket, doc_count, key }) => {
-				acc[bucket.key] ??= {}; // eslint-disable-line
+        acc[bucket.key] ??= {}; // eslint-disable-line
         acc[bucket.key][key] = doc_count;
         return acc;
       }, {});
 
     return clans.map((clan) => {
-			const join = clanMap[clan.tag]?.JOINED ?? 0; // eslint-disable-line
-			const leave = clanMap[clan.tag]?.LEFT ?? 0; // eslint-disable-line
+      const join = clanMap[clan.tag]?.JOINED ?? 0; // eslint-disable-line
+      const leave = clanMap[clan.tag]?.LEFT ?? 0; // eslint-disable-line
       return { name: clan.name, tag: clan.tag, join, leave };
     });
   }

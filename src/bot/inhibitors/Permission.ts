@@ -1,11 +1,12 @@
-import { Interaction } from 'discord.js';
+import { Interaction, PermissionFlagsBits } from 'discord.js';
 import { Command, Inhibitor } from '../lib/index.js';
 
 export default class PermissionInhibitor extends Inhibitor {
   public constructor() {
     super('permission', {
       reason: 'permission',
-      priority: 10
+      priority: 10,
+      disabled: true
     });
   }
 
@@ -16,12 +17,10 @@ export default class PermissionInhibitor extends Inhibitor {
     if (!interaction.inCachedGuild()) return true;
     if (!interaction.channel) return true;
 
-    return false;
+    if (interaction.channel.isThread()) {
+      return !interaction.appPermissions.has([PermissionFlagsBits.SendMessagesInThreads]);
+    }
 
-    // if (interaction.channel.isThread()) {
-    // 	return !interaction.appPermissions.has([PermissionFlagsBits.SendMessagesInThreads]);
-    // }
-
-    // return !interaction.appPermissions.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]);
+    return !interaction.appPermissions.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]);
   }
 }
