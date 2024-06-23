@@ -19,7 +19,7 @@ import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
 import { EMOJIS } from '../util/Emojis.js';
 import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/Helper.js';
-import { Util } from '../util/index.js';
+import { Season, Util } from '../util/index.js';
 import RPCHandler from './RPCHandler.js';
 
 export default class AutoBoardLog {
@@ -213,14 +213,14 @@ export default class AutoBoardLog {
     if (!guild) return null;
 
     if (cache.boardType === 'bb-legend-leaderboard') {
-      const { embed, legends } = await getBbLegendRankingEmbedMaker({ guild, limit: cache.limit });
-      if (!legends.length) return null;
+      const { embed, players } = await getBbLegendRankingEmbedMaker({ guild, limit: cache.limit, seasonId: Season.ID });
+      if (!players.length) return null;
 
       return embed;
     }
 
-    const { embed, legends } = await getLegendRankingEmbedMaker({ guild, limit: cache.limit });
-    if (!legends.length) return null;
+    const { embed, players } = await getLegendRankingEmbedMaker({ guild, limit: cache.limit, seasonId: Season.ID });
+    if (!players.length) return null;
 
     return embed;
   }

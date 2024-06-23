@@ -1,4 +1,4 @@
-import { APIPlayer } from 'clashofclans.js';
+import { APIPlayerClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -12,6 +12,7 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { getBbLegendRankingEmbedMaker, getExportComponents, getLegendRankingEmbedMaker } from '../../util/Helper.js';
+import { Season } from '../../util/Season.js';
 
 export default class LegendLeaderboardCommand extends Command {
   public constructor() {
@@ -39,31 +40,36 @@ export default class LegendLeaderboardCommand extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    if (interaction.isButton() && interaction.message.type === MessageType.Default) {
-      const seasonEndTime = this.client.http.util.getSeasonEnd(new Date()).getTime();
-      const messageSentSeasonTime = this.client.http.util.getSeasonEnd(interaction.message.createdAt).getTime();
-      if (seasonEndTime !== messageSentSeasonTime) return interaction.editReply({ components: [] });
+    let seasonId = Season.ID;
+
+    const isDefaultMessage = interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
+    if (isDefaultMessage) {
+      const currentSeasonEnd = this.client.http.util.getSeasonEnd(new Date()).toISOString();
+      const messageSentAt = this.client.http.util.getSeasonEnd(interaction.message.createdAt).toISOString();
+      if (currentSeasonEnd !== messageSentAt) seasonId = messageSentAt.slice(0, 7);
     }
 
-    const { embed, legends } = args.is_bb
+    const { embed, players } = args.is_bb
       ? await getBbLegendRankingEmbedMaker({
           guild: interaction.guild,
           sort_by: args.sort_by,
           limit: args.limit,
+          seasonId,
           clanTags: clans.map((clan) => clan.tag)
         })
       : await getLegendRankingEmbedMaker({
           guild: interaction.guild,
           sort_by: args.sort_by,
           limit: args.limit,
+          seasonId,
           clanTags: clans.map((clan) => clan.tag)
         });
 
-    if (!legends.length) {
+    if (!players.length) {
       embed.setDescription(`No players are in the ${args.is_bb ? 'Legend League' : 'Leaderboard'}`);
     }
 
-    if (legends.length && args.enable_auto_updating && this.client.util.isManager(interaction.member)) {
+    if (players.length && args.enable_auto_updating && this.client.util.isManager(interaction.member)) {
       await this.client.storage.makeAutoBoard({
         channelId: interaction.channel!.id,
         boardType: args.enable_auto_updating,
@@ -83,6 +89,7 @@ export default class LegendLeaderboardCommand extends Command {
     };
 
     const customIds = {
+      toggle: this.createId({ ...payload, is_bb: !args.is_bb }),
       refresh: this.createId({ ...payload, export_disabled: false }),
       sortBy: this.createId({ ...payload, string_key: 'sort_by' }),
       export: this.createId({ ...payload, defer: false, export: true, export_disabled: true })
@@ -97,6 +104,16 @@ export default class LegendLeaderboardCommand extends Command {
           .setEmoji(EMOJIS.EXPORT)
           .setStyle(ButtonStyle.Secondary)
           .setCustomId(customIds.export)
+          .setDisabled(Boolean(args.export_disabled))
+      );
+    }
+
+    if (!isDefaultMessage) {
+      row.addComponents(
+        new ButtonBuilder()
+          .setLabel(args.is_bb ? 'Legend League' : 'Builder Base League')
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(customIds.toggle)
           .setDisabled(Boolean(args.export_disabled))
       );
     }
@@ -127,11 +144,13 @@ export default class LegendLeaderboardCommand extends Command {
         )
     );
 
-    const isDefaultMessage = interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
+    if (seasonId !== Season.ID) {
+      return interaction.editReply({ embeds: [embed], components: [] });
+    }
 
     if (args.export && interaction.isButton()) {
       await interaction.editReply({ embeds: [embed], components: [row, sortingRow], message: interaction.message.id });
-      await this.export(interaction, legends, clans);
+      await this.export(interaction, players, clans);
     } else {
       await interaction.editReply({ embeds: [embed], components: args.is_bb || isDefaultMessage ? [row] : [row, sortingRow] });
     }
@@ -139,7 +158,7 @@ export default class LegendLeaderboardCommand extends Command {
 
   private async export(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    players: APIPlayer[],
+    players: { name: string; tag: string; clan?: APIPlayerClan; townHallLevel: number; trophies: number; attackWins: number }[],
     clans: { name: string }[]
   ) {
     const sheets: CreateGoogleSheet[] = [

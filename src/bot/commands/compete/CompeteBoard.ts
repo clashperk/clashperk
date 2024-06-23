@@ -22,6 +22,7 @@ import { Util } from '../../util/Util.js';
 export default class CompeteCommand extends Command {
   public constructor() {
     super('compete', {
+      aliases: ['eos-signup'],
       category: 'compete',
       channel: 'guild',
       clientPermissions: ['EmbedLinks', 'ManageRoles'],
@@ -37,7 +38,7 @@ export default class CompeteCommand extends Command {
     }
   }
 
-  async exec(interaction: CommandInteraction<'cached'>, args: { player_tag: string; signup: boolean; season: string }) {
+  async exec(interaction: CommandInteraction<'cached'>, args: { player_tag: string; signup: boolean; season: string; layout: string }) {
     const collection = this.client.db.collection<CompeteBoardsEntity>(Collections.COMPETE_BOARDS);
     const board = await collection.findOne({ type: 'LEGEND_LEAGUE_TROPHY', guildId: interaction.guildId });
 
@@ -47,7 +48,7 @@ export default class CompeteCommand extends Command {
       new ButtonBuilder()
         .setEmoji(EMOJIS.REFRESH)
         .setStyle(ButtonStyle.Secondary)
-        .setCustomId(JSON.stringify({ cmd: this.id, seasonId })),
+        .setCustomId(JSON.stringify({ cmd: this.id, seasonId, layout: args.layout })),
       new ButtonBuilder()
         .setLabel('Participate')
         .setStyle(ButtonStyle.Success)
@@ -119,6 +120,7 @@ export default class CompeteCommand extends Command {
           await action.editReply({ content: 'Successfully signed up!', components: [] });
           const embed = await this.getLegendEmbed(interaction, {
             seasonId,
+            layout: args.layout,
             playerTags: [...action.values, ...(board?.members ?? [])]
           });
 
@@ -135,11 +137,11 @@ export default class CompeteCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     }
 
-    const embed = await this.getLegendEmbed(interaction, { seasonId, playerTags: board.members });
+    const embed = await this.getLegendEmbed(interaction, { seasonId, playerTags: board.members, layout: args.layout });
     return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
-  public async getLegendEmbed(interaction: CommandInteraction<'cached'>, args: { seasonId: string; playerTags: string[] }) {
+  public async getLegendEmbed(interaction: CommandInteraction<'cached'>, args: { seasonId: string; playerTags: string[]; layout: string }) {
     const raw = await this.client.db
       .collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
       .find({
@@ -147,6 +149,18 @@ export default class CompeteCommand extends Command {
         seasonId: args.seasonId
       })
       .toArray();
+
+    const clans = await this.client.storage.find(interaction.guildId);
+    const clansMap = clans.reduce<Record<string, string>>((acc, cur) => {
+      acc[cur.tag] = cur.alias ?? cur.name;
+      return acc;
+    }, {});
+
+    const players = await this.client.http._getPlayers(args.playerTags.map((tag) => ({ tag })));
+    const playerClansMap = players.reduce<Record<string, string>>((acc, cur) => {
+      acc[cur.tag] = clansMap[cur.clan?.tag ?? '#'] ?? cur.clan?.name ?? '-';
+      return acc;
+    }, {});
 
     const members = [];
     const { startTime, endTime, day } = this.getDay();
@@ -190,7 +204,24 @@ export default class CompeteCommand extends Command {
       .setTimestamp()
       .setFooter({ text: `Day ${day}` });
 
-    if (members.length) {
+    if (!members.length) {
+      embed.setDescription('Waiting for participants...');
+      return embed;
+    }
+
+    if (args.layout === 'compact') {
+      embed.setDescription(
+        members
+          .map((member, idx) => {
+            const name = escapeMarkdown(member.name);
+            const trophies = `${padStart(member.current.end, 4)}`;
+            const clan = escapeMarkdown(playerClansMap[member.tag]);
+
+            return `${BLUE_NUMBERS[idx + 1]} \`${trophies} ${name} ${clan}\``;
+          })
+          .join('\n')
+      );
+    } else {
       embed.setDescription(
         members
           .map((member, idx) => {
@@ -203,8 +234,6 @@ export default class CompeteCommand extends Command {
           })
           .join('\n')
       );
-    } else {
-      embed.setDescription('Waiting for participants...');
     }
 
     return embed;

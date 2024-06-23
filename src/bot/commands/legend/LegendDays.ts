@@ -554,3 +554,14 @@ export interface LogType {
   inc: number;
   type?: string;
 }
+
+export interface LegendAttacksAggregated {
+  _id: string;
+  logs: {
+    timestamp: Date;
+    trophies: number | null;
+  }[];
+  avgGain: number;
+  avgOffense: number;
+  avgDefense: number;
+}

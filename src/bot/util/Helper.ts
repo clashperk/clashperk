@@ -1,4 +1,4 @@
-import { APIClan, APIPlayer } from 'clashofclans.js';
+import { APIClan, APIPlayer, APIPlayerClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -14,10 +14,11 @@ import moment from 'moment';
 import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title } from 'radash';
 import { container } from 'tsyringe';
+import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
 import Client from '../struct/Client.js';
 import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { ClanEmbedFields } from './CommandOptions.js';
-import { Collections, LEGEND_LEAGUE_ID, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './Constants.js';
+import { Collections, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './Constants.js';
 import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Season, Util } from './index.js';
 
@@ -599,46 +600,79 @@ export const getLegendRankingEmbedMaker = async ({
   clanTags,
   guild,
   sort_by,
-  limit
+  limit,
+  seasonId
 }: {
   guild: Guild;
   clanTags?: string[];
   sort_by?: string;
   limit?: number;
+  seasonId: string;
 }) => {
   const client = container.resolve(Client);
   clanTags ??= (await client.storage.find(guild.id)).map((clan) => clan.tag);
 
-  const __clans = await client.redis.getClans(clanTags);
-  const memberTags = __clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
-  const players = await client.redis.getPlayers(memberTags);
+  const _clans = await client.redis.getClans(clanTags);
+  const memberTags = _clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
+  const _players = await client.redis.getPlayers(memberTags);
 
-  let legends = players.filter((player) => player.trophies >= 5000 || player.league?.id === LEGEND_LEAGUE_ID);
+  const playersMap = _players.reduce<Record<string, { townHallLevel: number; attackWins: number; clan?: APIPlayerClan; trophies: number }>>(
+    (prev, curr) => {
+      prev[curr.tag] = {
+        townHallLevel: curr.townHallLevel,
+        attackWins: curr.attackWins,
+        clan: curr.clan,
+        trophies: curr.trophies
+      };
+      return prev;
+    },
+    {}
+  );
+
+  const legends = await client.db
+    .collection<Omit<LegendAttacksEntity, 'logs'>>(Collections.LEGEND_ATTACKS)
+    .find({ tag: { $in: _players.map(({ tag }) => tag) }, seasonId }, { projection: { logs: 0 } })
+    .toArray();
+
+  let players = legends
+    .map((legend) => {
+      const player = playersMap[legend.tag];
+      return {
+        name: legend.name,
+        tag: legend.tag,
+        clan: player.clan,
+        actualTrophies: player.trophies,
+        trophies: legend.trophies,
+        attackWins: player.attackWins,
+        townHallLevel: player.townHallLevel
+      };
+    })
+    .filter((legend) => legend.actualTrophies >= 4900);
 
   if (sort_by === 'town_hall_asc') {
-    legends.sort((a, b) => b.trophies - a.trophies);
-    legends.sort((a, b) => a.townHallLevel - b.townHallLevel);
+    players.sort((a, b) => b.trophies - a.trophies);
+    players.sort((a, b) => a.townHallLevel - b.townHallLevel);
   } else if (sort_by === 'town_hall_desc') {
-    legends.sort((a, b) => b.trophies - a.trophies);
-    legends.sort((a, b) => b.townHallLevel - a.townHallLevel);
+    players.sort((a, b) => b.trophies - a.trophies);
+    players.sort((a, b) => b.townHallLevel - a.townHallLevel);
   } else {
-    legends.sort((a, b) => b.trophies - a.trophies);
+    players.sort((a, b) => b.trophies - a.trophies);
   }
 
-  if (limit) legends = legends.slice(0, limit);
+  if (limit) players = players.slice(0, limit);
 
   const embed = new EmbedBuilder();
   embed.setColor(client.embed(guild.id));
-  embed.setAuthor({ name: `${guild.name} Legend Leaderboard (${moment(Season.ID).format('MMM YYYY')})`, iconURL: guild.iconURL()! });
+  embed.setAuthor({ name: `${guild.name} Legend Leaderboard (${moment(seasonId).format('MMM YYYY')})`, iconURL: guild.iconURL()! });
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
 
-  if (legends.length) {
+  if (players.length) {
     embed.setDescription(
       [
         '```',
         `\u200e #  TH TROPHY WON  NAME`,
-        ...legends.slice(0, 99).map((player, n) => {
+        ...players.slice(0, 99).map((player, n) => {
           const trophies = player.trophies;
           const attacks = padStart(player.attackWins, 3);
           const name = Util.escapeBackTick(player.name);
@@ -650,9 +684,9 @@ export const getLegendRankingEmbedMaker = async ({
     );
   }
 
-  if ((!sort_by || sort_by === 'trophies_only') && legends.length) {
+  if ((!sort_by || sort_by === 'trophies_only') && players.length) {
     embed.setDescription(
-      legends
+      players
         .slice(0, 50)
         .map((player, idx) => {
           const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
@@ -662,47 +696,72 @@ export const getLegendRankingEmbedMaker = async ({
     );
   }
 
-  return { embed, legends };
+  return { embed, players };
 };
 
-// TODO: Merge it with the getLegendRankingEmbedMaker
 export const getBbLegendRankingEmbedMaker = async ({
   clanTags,
   guild,
-  limit
+  limit,
+  seasonId
 }: {
   guild: Guild;
   clanTags?: string[];
   sort_by?: string;
   limit?: number;
+  seasonId: string;
 }) => {
   const client = container.resolve(Client);
   clanTags ??= (await client.storage.find(guild.id)).map((clan) => clan.tag);
 
-  const __clans = await client.redis.getClans(clanTags);
-  const memberTags = __clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
-  const players = await client.redis.getPlayers(memberTags);
+  const _clans = await client.redis.getClans(clanTags);
+  const memberTags = _clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
+  const _players = await client.redis.getPlayers(memberTags);
 
-  let legends = players
-    // @ts-expect-error lol
-    .filter((player) => player.versusTrophies)
-    // @ts-expect-error lol
-    .map((player) => ({ ...player, trophies: player.versusTrophies ?? 0 }))
-    .sort((a, b) => b.trophies - a.trophies);
+  const playersMap = _players.reduce<Record<string, { clan?: APIPlayerClan; attackWins: number; townHallLevel: number }>>((prev, curr) => {
+    prev[curr.tag] = {
+      clan: curr.clan,
+      attackWins: curr.attackWins,
+      townHallLevel: curr.townHallLevel
+    };
+    return prev;
+  }, {});
 
-  if (limit) legends = legends.slice(0, limit);
+  const result = await client.db
+    .collection<{ name: string; tag: string; versusTrophies: { current: number }; builderHallLevel: number }>(Collections.PLAYER_SEASONS)
+    .find(
+      { season: seasonId, tag: { $in: _players.map(({ tag }) => tag) } },
+      { projection: { name: 1, tag: 1, versusTrophies: 1, builderHallLevel: 1 } }
+    )
+    .toArray();
+
+  let players = result.map((player) => {
+    const _player = playersMap[player.tag];
+    return {
+      name: player.name,
+      tag: player.tag,
+      clan: _player.clan,
+      attackWins: _player.attackWins,
+      townHallLevel: _player.townHallLevel,
+      trophies: player.versusTrophies.current ?? 0,
+      builderHallLevel: player.builderHallLevel
+    };
+  });
+
+  players.sort((a, b) => b.trophies - a.trophies);
+  if (limit) players = players.slice(0, limit);
 
   const embed = new EmbedBuilder();
   embed.setColor(client.embed(guild.id));
   embed.setAuthor({
-    name: `${guild.name} Builder Base Leaderboard (${moment(Season.ID).format('MMM YYYY')})`,
+    name: `${guild.name} Builder Base Leaderboard (${moment(seasonId).format('MMM YYYY')})`,
     iconURL: guild.iconURL()!
   });
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
-  if (legends.length) {
+  if (players.length) {
     embed.setDescription(
-      legends
+      players
         .slice(0, 50)
         .map((player, idx) => {
           const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
@@ -712,7 +771,7 @@ export const getBbLegendRankingEmbedMaker = async ({
     );
   }
 
-  return { embed, legends };
+  return { embed, players };
 };
 
 export const getMenuFromMessage = (interaction: ButtonInteraction<'cached'>, selected: string, customId: string) => {

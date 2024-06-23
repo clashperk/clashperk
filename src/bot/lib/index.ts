@@ -98,8 +98,9 @@ export class CommandHandler extends BaseHandler {
     this.aliases = new Collection();
 
     client.on(Events.InteractionCreate, (interaction: Interaction) => {
-      if (!interaction.isChatInputCommand()) return;
-      return this.handleInteraction(interaction);
+      if (interaction.isChatInputCommand()) {
+        return this.handleInteraction(interaction);
+      }
     });
   }
 
@@ -112,6 +113,22 @@ export class CommandHandler extends BaseHandler {
       }
       this.aliases.set(alias, command.id);
     }
+  }
+
+  public handleInteraction(interaction: CommandInteraction) {
+    let command = this.getCommand(interaction.commandName);
+
+    if (!command) {
+      const rawArgs = this.rawArgs(interaction);
+      command = this.getCommand(rawArgs.commandName as string);
+    }
+
+    if (!command) return;
+
+    if (this.preInhibitor(interaction, command)) return;
+
+    const args = this.argumentRunner(interaction, command);
+    return this.exec(interaction, command, args);
   }
 
   public getCommand(commandName: string): Command | null {
@@ -240,22 +257,6 @@ export class CommandHandler extends BaseHandler {
     resolved.commandName = `${interaction.commandName}${subCommandGroup}${subCommand}`;
 
     return resolved;
-  }
-
-  public handleInteraction(interaction: CommandInteraction) {
-    let command = this.getCommand(interaction.commandName);
-
-    if (!command) {
-      const rawArgs = this.rawArgs(interaction);
-      command = this.getCommand(rawArgs.commandName as string);
-    }
-
-    if (!command) return;
-
-    if (this.preInhibitor(interaction, command)) return;
-
-    const args = this.argumentRunner(interaction, command);
-    return this.exec(interaction, command, args);
   }
 
   /** This method should only be used with CommandInteraction */
