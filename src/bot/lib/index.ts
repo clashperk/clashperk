@@ -2,18 +2,20 @@ import {
   ApplicationCommandOptionType,
   AutocompleteInteraction,
   BaseInteraction,
+  ChatInputCommandInteraction,
   ClientEvents,
   Collection,
   CommandInteraction,
   CommandInteractionOption,
-  ContextMenuCommandInteraction,
   Events,
   GuildBasedChannel,
   Interaction,
   Message,
   MessageComponentInteraction,
+  MessageContextMenuCommandInteraction,
   PermissionsString,
-  RestEvents
+  RestEvents,
+  UserContextMenuCommandInteraction
 } from 'discord.js';
 import EventEmitter from 'node:events';
 import { extname } from 'node:path';
@@ -119,7 +121,7 @@ export class CommandHandler extends BaseHandler {
     }
   }
 
-  public handleInteraction(interaction: CommandInteraction) {
+  public handleInteraction(interaction: ChatInputCommandInteraction) {
     let command = this.getCommand(interaction.commandName);
 
     if (!command) {
@@ -135,15 +137,15 @@ export class CommandHandler extends BaseHandler {
     return this.exec(interaction, command, args);
   }
 
-  private async handleContextInteraction(interaction: ContextMenuCommandInteraction) {
+  private async handleContextInteraction(interaction: UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction) {
     const command = this.getCommand(interaction.commandName);
     if (!command) return;
 
     if (this.preInhibitor(interaction, command)) return;
 
     const args = interaction.isMessageContextMenuCommand()
-      ? { message: interaction.options.getMessage('message')?.content ?? '' }
-      : { user: interaction.options.get('user') };
+      ? { message: interaction.options.getMessage('message')?.content }
+      : { user: interaction.options.getUser('user') };
 
     return this.exec(interaction, command, args);
   }
