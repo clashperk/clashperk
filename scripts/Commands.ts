@@ -2656,6 +2656,26 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         ]
       },
       {
+        name: 'eos-push',
+        description: 'Set EOS push roles.',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'role',
+            required: true,
+            description: 'The EOS push role.',
+            type: ApplicationCommandOptionType.Role
+          },
+          {
+            name: 'clans',
+            required: true,
+            autocomplete: true,
+            type: ApplicationCommandOptionType.String,
+            description: 'The clans for which to set the EOS push role.'
+          }
+        ]
+      },
+      {
         name: 'family',
         description: 'Set family roles.',
         type: ApplicationCommandOptionType.Subcommand,
@@ -2726,6 +2746,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'Wars Role',
                 value: 'wars'
+              },
+              {
+                name: 'EOS Push',
+                value: 'eos-push'
               },
               {
                 name: 'Family Leaders Role',
@@ -3719,7 +3743,24 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       {
         name: 'rosters',
         description: 'Export all rosters.',
-        type: ApplicationCommandOptionType.Subcommand
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'category',
+            description: 'Roster category.',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: 'CWL',
+                value: 'CWL'
+              },
+              {
+                name: 'WAR',
+                value: 'WAR'
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -4241,7 +4282,10 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         required: false
       }
     ]
-  },
+  }
+];
+
+export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   {
     name: 'leaderboard',
     description: 'Leaderboard of the top clans and players.',

@@ -164,6 +164,8 @@ export const enum Settings {
   ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
   ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
   VERIFIED_ONLY_CLAN_ROLES = 'verifiedOnlyClanRoles',
+  EOS_PUSH_CLANS = 'eosPushClans',
+  EOS_PUSH_CLAN_ROLES = 'eosPushClanRoles',
   CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths',
   CLAN_GAMES_REMINDER_TIMESTAMP = 'clanGamesReminderTimestamp',
   FAMILY_NICKNAME_FORMAT = 'familyNicknameFormat',

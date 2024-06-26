@@ -27,7 +27,8 @@ export default class AutoRoleDisableCommand extends Command {
       'exclusive-family': this.disableFamilyRoles.bind(this),
       'family-leaders': this.disableFamilyRoles.bind(this),
       'guest': this.disableFamilyRoles.bind(this),
-      'verified': this.disableFamilyRoles.bind(this)
+      'verified': this.disableFamilyRoles.bind(this),
+      'eos-push': this.disableEOSPushRoles.bind(this)
     }[args.type];
 
     if (typeof action !== 'function') throw new Error('Invalid action was specified');
@@ -95,6 +96,12 @@ export default class AutoRoleDisableCommand extends Command {
     this.client.settings.delete(interaction.guildId, Settings.LEAGUE_ROLES);
     this.client.settings.delete(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE);
     return interaction.editReply('Successfully disabled league roles.');
+  }
+
+  private async disableEOSPushRoles(interaction: CommandInteraction<'cached'>) {
+    this.client.settings.delete(interaction.guildId, Settings.EOS_PUSH_CLANS);
+    this.client.settings.delete(interaction.guildId, Settings.EOS_PUSH_CLAN_ROLES);
+    return interaction.editReply('Successfully disabled EOS Push roles.');
   }
 
   private async disableBuilderLeagueRoles(interaction: CommandInteraction<'cached'>) {

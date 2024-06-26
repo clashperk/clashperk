@@ -176,9 +176,9 @@ export default class ClanCommand extends Command {
           '**Win Streak**',
           `${'🏅'} ${clan.warWinStreak}`,
           '**War Frequency**',
-          clan.warFrequency.toLowerCase() === 'morethanonceperweek'
+          (clan.warFrequency || 'unknown').toLowerCase() === 'morethanonceperweek'
             ? '🎟️ More Than Once Per Week'
-            : `🎟️ ${clan.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`,
+            : `🎟️ ${(clan.warFrequency || 'unknown').toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`,
           '**War League**',
           `${CWL_LEAGUES[clan.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${clan.warLeague?.name ?? 'Unranked'}`
         ].join('\n')

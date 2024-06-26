@@ -16,8 +16,10 @@ export default class RosterExportCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>) {
-    const rosters = await this.client.rosterManager.list(interaction.guildId, true);
+  public async exec(interaction: CommandInteraction<'cached'>, args: { category?: string }) {
+    let rosters = await this.client.rosterManager.list(interaction.guildId, true);
+    if (args.category) rosters = rosters.filter((roster) => roster.category === args.category);
+
     if (!rosters.length) return interaction.editReply({ content: 'No rosters found.' });
 
     const categories = await this.client.rosterManager.getCategories(interaction.guildId);
@@ -84,6 +86,7 @@ export default class RosterExportCommand extends Command {
 
     const allRosterMembersTags = allRosterMembers.map((member) => member.tag);
     const missingMembers = allClanMembers.filter((clanMember) => !allRosterMembersTags.includes(clanMember.member.tag));
+    const linksMap = await this.client.resolver.getLinkedUsersMap(missingMembers.map((member) => member.member));
 
     sheets.push(
       {
@@ -126,10 +129,19 @@ export default class RosterExportCommand extends Command {
         columns: [
           { name: 'Player Name', align: 'LEFT', width: 160 },
           { name: 'Player Tag', align: 'LEFT', width: 120 },
+          { name: 'Town Hall', align: 'RIGHT', width: 100 },
+          { name: 'Discord', align: 'LEFT', width: 160 },
           { name: 'Clan', align: 'LEFT', width: 160 },
           { name: 'Clan Tag', align: 'LEFT', width: 120 }
         ],
-        rows: missingMembers.map((member) => [member.member.name, member.member.tag, member.clan.name, member.clan.tag])
+        rows: missingMembers.map(({ member, clan }) => [
+          member.name,
+          member.tag,
+          member.townHallLevel,
+          linksMap[member.tag]?.displayName,
+          clan.name,
+          clan.tag
+        ])
       }
     );
 

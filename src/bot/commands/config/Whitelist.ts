@@ -5,7 +5,7 @@ import { Command } from '../../lib/index.js';
 export default class WhitelistCommand extends Command {
   public constructor() {
     super('whitelist', {
-      category: 'whitelist',
+      category: 'config',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks'],
       channel: 'guild',

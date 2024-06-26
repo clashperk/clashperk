@@ -15,7 +15,7 @@ import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections, DOT, Settings } from '../../util/Constants.js';
+import { Collections, DOT, FeatureFlags, Settings } from '../../util/Constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/Emojis.js';
 import { getExportComponents, sumHeroes } from '../../util/Helper.js';
 import { createInteractionCollector, handlePagination } from '../../util/Pagination.js';
@@ -254,7 +254,7 @@ export default class ProfileCommand extends Command {
           return this.export(action, links, user);
         }
 
-        const isTrustedGuild = this.isTrustedGuild(interaction);
+        const isTrustedGuild = await this.isTrustedGuild(interaction);
         if (action.customId === customIds.change) {
           const isMember = action.user.id === user.id ? action.member : await action.guild.members.fetch(user.id).catch(() => null);
           if (
@@ -410,8 +410,10 @@ export default class ProfileCommand extends Command {
     return `http://cprk.eu/p/${tag.replace('#', '')}`;
   }
 
-  private isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-    const isTrusted = this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+  private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
+    const isTrustedFlag = await this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
+
+    const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
     if (!isTrusted) return false;
 
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);

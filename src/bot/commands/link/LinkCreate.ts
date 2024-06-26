@@ -2,7 +2,7 @@ import { APIClan, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections, Settings } from '../../util/Constants.js';
+import { Collections, FeatureFlags, Settings } from '../../util/Constants.js';
 
 export default class LinkCreateCommand extends Command {
   public constructor() {
@@ -211,8 +211,10 @@ export default class LinkCreateCommand extends Command {
     await this.client.http.linkPlayerTag(user, tag);
   }
 
-  private isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-    const isTrusted = this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+  private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
+    const isTrustedFlag = await this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
+
+    const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
     if (!isTrusted) return false;
 
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);

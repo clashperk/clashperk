@@ -3,9 +3,12 @@ import { RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'disc
 import fetch from 'node-fetch';
 import 'reflect-metadata';
 import { inspect } from 'util';
-import { COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
+import { COMMANDS, HIDDEN_COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
+
+const CUSTOM_BOT_SERVER_ID = '1130572457175175293';
+const SUPPORT_SERVER_ID = '509784317598105619';
 
 console.log(new Date().toISOString());
 
@@ -58,7 +61,7 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
 
   const applications = JSON.parse(decrypt(body.payload)) as { applicationId: string; token: string; guildIds: string[] }[];
   for (const application of applications) {
-    for (const guildId of [...application.guildIds, '1130572457175175293']) {
+    for (const guildId of [...application.guildIds, CUSTOM_BOT_SERVER_ID]) {
       await applicationGuildCommands(application.token, guildId, commands);
     }
   }
@@ -75,5 +78,10 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
     return;
   }
 
-  return applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS]);
+  if (process.argv.includes('--private')) {
+    await applicationGuildCommands(process.env.PROD_TOKEN!, SUPPORT_SERVER_ID, [...PRIVATE_COMMANDS]);
+    return;
+  }
+
+  return applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS, ...HIDDEN_COMMANDS]);
 })();

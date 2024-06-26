@@ -144,6 +144,8 @@ export class RolesManager {
     }
 
     const verifiedOnlyClanRoles = this.client.settings.get<boolean>(guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
+    const eosPushClans = this.client.settings.get<string[]>(guildId, Settings.EOS_PUSH_CLANS, []);
+    const eosPushClanRoles = this.client.settings.get<string[]>(guildId, Settings.EOS_PUSH_CLAN_ROLES, []);
 
     const clanTags = clans.map((clan) => clan.tag);
     const warClanTags = clans.filter((clan) => clan.warRole).map((clan) => clan.tag);
@@ -164,6 +166,8 @@ export class RolesManager {
       townHallRoles,
       builderHallRoles,
       clanRoles,
+      eosPushClans,
+      eosPushClanRoles,
       verifiedOnlyClanRoles
     };
   }
@@ -193,7 +197,8 @@ export class RolesManager {
       ...warRoles,
       ...leagueRoles,
       ...townHallRoles,
-      ...clanRoles
+      ...clanRoles,
+      ...rolesMap.eosPushClanRoles
     ].filter((id) => id);
 
     return {
@@ -230,6 +235,11 @@ export class RolesManager {
         if (highestRole) {
           rolesToInclude.push(targetClanRolesMap[highestRole], targetClanRolesMap['everyone']);
         }
+      }
+
+      // EOS Push Role
+      if (player.clanTag && rolesMap.eosPushClans.includes(player.clanTag)) {
+        rolesToInclude.push(...rolesMap.eosPushClanRoles);
       }
 
       // Town Hall Roles
@@ -892,6 +902,7 @@ interface GuildRolesDto {
   guildId: string;
   clanTags: string[];
   warClanTags: string[];
+  eosPushClans: string[];
 
   allowNonFamilyTownHallRoles: boolean;
   allowNonFamilyLeagueRoles: boolean;
@@ -913,6 +924,7 @@ interface GuildRolesDto {
   familyRoleId: string;
   exclusiveFamilyRoleId: string;
   familyLeadersRoles: string[];
+  eosPushClanRoles: string[];
   verifiedRoleId: string;
 }
 
