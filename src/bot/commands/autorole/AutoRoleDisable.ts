@@ -99,8 +99,8 @@ export default class AutoRoleDisableCommand extends Command {
   }
 
   private async disableEOSPushRoles(interaction: CommandInteraction<'cached'>) {
-    this.client.settings.delete(interaction.guildId, Settings.EOS_PUSH_CLANS);
     this.client.settings.delete(interaction.guildId, Settings.EOS_PUSH_CLAN_ROLES);
+    this.client.settings.set(interaction.guildId, Settings.EOS_PUSH_CLANS, []);
     return interaction.editReply('Successfully disabled EOS Push roles.');
   }
 

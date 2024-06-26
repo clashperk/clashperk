@@ -144,7 +144,13 @@ export default class AutoRoleListCommand extends Command {
       });
       embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
       embed.addFields({ name: 'Exclusive Family Role', value: this.getRoleOrNone(rolesMap.exclusiveFamilyRoleId) });
-      embed.addFields({ name: 'EOS Push Role', value: this.getRoleOrNone(rolesMap.eosPushClanRoles[0]) });
+      embed.addFields({
+        name: 'EOS Push Role',
+        value:
+          rolesMap.eosPushClans.length && rolesMap.eosPushClanRoles
+            ? rolesMap.eosPushClanRoles.map((id) => this.getRoleOrNone(id)).join(', ')
+            : 'None'
+      });
       embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
       embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
     }
