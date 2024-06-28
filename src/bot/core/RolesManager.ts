@@ -6,7 +6,7 @@ import { AutoRoleDelaysEntity } from '../entities/auto-role-delays.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/Client.js';
-import { BUILDER_BASE_LEAGUE_MAPS, Collections, PLAYER_LEAGUE_MAPS, SUPER_SCRIPTS, Settings } from '../util/Constants.js';
+import { BUILDER_BASE_LEAGUE_MAPS, Collections, LEGEND_LEAGUE_ID, PLAYER_LEAGUE_MAPS, SUPER_SCRIPTS, Settings } from '../util/Constants.js';
 import { makeAbbr, sumHeroes } from '../util/Helper.js';
 
 export const roles: { [key: string]: number } = {
@@ -238,7 +238,11 @@ export class RolesManager {
       }
 
       // EOS Push Role
-      if (player.clanTag && rolesMap.eosPushClans.includes(player.clanTag)) {
+      if (
+        player.clanTag &&
+        (player.leagueId === LEGEND_LEAGUE_ID || player.trophies >= 5000) &&
+        rolesMap.eosPushClans.includes(player.clanTag)
+      ) {
         rolesToInclude.push(...rolesMap.eosPushClanRoles);
       }
 
@@ -542,6 +546,7 @@ export class RolesManager {
           clanRole: player.role ?? null,
           clanName: player.clan?.name ?? null,
           clanTag: player.clan?.tag ?? null,
+          trophies: player.trophies,
           isVerified: player.verified,
           warClanTags: playersInWarMap[player.tag] ?? []
         }) satisfies PlayerRolesInput
@@ -890,6 +895,7 @@ interface PlayerRolesInput {
   townHallLevel: number;
   builderHallLevel: number;
   leagueId: number;
+  trophies: number;
   builderLeagueId: number;
   isVerified: boolean;
   clanRole: string | null;

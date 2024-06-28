@@ -2,6 +2,7 @@ export const COUNTRIES = [
   {
     id: 'global',
     name: 'Global',
+    countryCode: 'global',
     isCountry: false
   },
   {
@@ -1576,4 +1577,4 @@ export const COUNTRIES = [
     isCountry: true,
     countryCode: 'ZW'
   }
-];
+].filter((country) => country.countryCode);

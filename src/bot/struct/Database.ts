@@ -1,5 +1,8 @@
 import { ClanLogsEntity, ClanStoresEntity, ClanWarRemindersEntity, PlayerLinksEntity } from '@app/entities';
 import { Db, MongoClient } from 'mongodb';
+import { CapitalRanksEntity } from '../entities/capital-ranks.entity.js';
+import { ClanRanksEntity } from '../entities/clan-ranks.entity.js';
+import { PlayerRanksEntity } from '../entities/player-ranks.entity.js';
 import { PlayersEntity } from '../entities/players.entity.js';
 import { PlayerSeasonModel } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
@@ -12,6 +15,9 @@ interface CollectionsMap {
   [Collections.CLAN_LOGS]: ClanLogsEntity;
   [Collections.REMINDERS]: ClanWarRemindersEntity;
   // [Collections.AUTO_BOARDS]: AutoBoardLogsEntity;
+  [Collections.CLAN_RANKS]: ClanRanksEntity;
+  [Collections.PLAYER_RANKS]: PlayerRanksEntity;
+  [Collections.CAPITAL_RANKS]: CapitalRanksEntity;
 }
 
 declare module 'mongodb' {

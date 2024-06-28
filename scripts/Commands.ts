@@ -3140,6 +3140,70 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     ]
   },
   {
+    name: 'leaderboard',
+    description: 'Leaderboard of the top clans and players.',
+    dm_permission: false,
+    options: [
+      {
+        name: 'clans',
+        description: 'Top clans leaderboard',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'location',
+            description: 'Location of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
+          },
+          {
+            name: 'season',
+            description: 'Season of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            choices: getSeasonIds()
+          }
+        ]
+      },
+      {
+        name: 'players',
+        description: 'Top players leaderboard',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'location',
+            description: 'Location of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
+          },
+          {
+            name: 'season',
+            description: 'Season of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            choices: getSeasonIds()
+          }
+        ]
+      },
+      {
+        name: 'capital',
+        description: 'Top capital leaderboard',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'location',
+            description: 'Location of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
+          },
+          {
+            name: 'season',
+            description: 'Season of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            choices: getSeasonIds()
+          }
+        ]
+      }
+    ]
+  },
+  {
     name: 'summary',
     description: 'Shows summary of the clan family.',
     dm_permission: false,
@@ -4287,39 +4351,6 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 
 export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   {
-    name: 'leaderboard',
-    description: 'Leaderboard of the top clans and players.',
-    dm_permission: false,
-    options: [
-      {
-        name: 'clans',
-        description: 'Top clans leaderboard',
-        type: ApplicationCommandOptionType.Subcommand,
-        options: [
-          {
-            name: 'location',
-            description: 'Location of the leaderboard',
-            type: ApplicationCommandOptionType.String,
-            autocomplete: true
-          }
-        ]
-      },
-      {
-        name: 'players',
-        description: 'Top clans leaderboard',
-        type: ApplicationCommandOptionType.Subcommand,
-        options: [
-          {
-            name: 'location',
-            description: 'Location of the leaderboard',
-            type: ApplicationCommandOptionType.String,
-            autocomplete: true
-          }
-        ]
-      }
-    ]
-  },
-  {
     name: 'setup-logs',
     description: 'Setup logs.',
     options: [
@@ -4327,7 +4358,8 @@ export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         name: 'clans',
         description: 'Select clans for the logs.',
         type: ApplicationCommandOptionType.String,
-        required: true
+        required: true,
+        autocomplete: true
       },
       {
         name: 'action',

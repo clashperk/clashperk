@@ -40,13 +40,13 @@ export class Autocomplete {
 
   public async locationAutoComplete(interaction: AutocompleteInteraction<'cached'>, query?: string) {
     if (!query) {
-      return interaction.respond(COUNTRIES.slice(0, 25).map((country) => ({ name: country.name, value: country.id.toString() })));
+      return interaction.respond(COUNTRIES.slice(0, 25).map((country) => ({ name: country.name, value: country.countryCode! })));
     }
 
     const countries = COUNTRIES.filter((country) => country.name.toLowerCase().includes(query.toLowerCase())).slice(0, 25);
     if (!countries.length) return interaction.respond([{ name: 'No countries found.', value: '0' }]);
 
-    return interaction.respond(countries.map((country) => ({ name: country.name, value: country.id.toString() })));
+    return interaction.respond(countries.map((country) => ({ name: country.name, value: country.countryCode! })));
   }
 
   public async flagSearchAutoComplete(

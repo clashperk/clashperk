@@ -14,10 +14,59 @@ import {
 } from 'discord.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
+import { CustomIdProps } from '../struct/ComponentHandler.js';
 import { EMOJIS } from './Emojis.js';
 
 const NEXT = '➡️';
 const PREV = '⬅️';
+
+export function dynamicPagination(interaction: CommandInteraction<'cached'>, embeds: EmbedBuilder[], customIdProps: CustomIdProps) {
+  const client = container.resolve(Client);
+  let pageIndex = (customIdProps.page ?? 0) as number;
+  if (pageIndex < 0) pageIndex = embeds.length - 1;
+  if (pageIndex >= embeds.length) pageIndex = 0;
+
+  const payload = { ...customIdProps };
+  const customIds = {
+    refresh: client.redis.createCustomId({ ...payload }),
+    next: client.redis.createCustomId({ ...payload, page: pageIndex + 1 }),
+    prev: client.redis.createCustomId({ ...payload, page: pageIndex - 1 }),
+    page: client.uuid()
+  };
+
+  const pagingRow = new ActionRowBuilder<ButtonBuilder>();
+
+  const prevButton = new ButtonBuilder()
+    .setCustomId(customIds.prev)
+    .setEmoji(EMOJIS.PREVIOUS)
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(embeds.length <= 1);
+
+  const nextButton = new ButtonBuilder()
+    .setCustomId(customIds.next)
+    .setEmoji(EMOJIS.NEXT)
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(embeds.length <= 1);
+
+  const pageButton = new ButtonBuilder()
+    .setCustomId(customIds.next)
+    .setLabel(`${pageIndex + 1}/${embeds.length}`)
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(true)
+    .setCustomId('disabled');
+
+  if (embeds.length > 0) {
+    pagingRow.addComponents(prevButton);
+    pagingRow.addComponents(nextButton);
+    pagingRow.addComponents(pageButton);
+  }
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
+  );
+
+  return interaction.editReply({ embeds: [embeds[pageIndex]], components: [row, pagingRow] });
+}
 
 export const handlePagination = async (
   interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
