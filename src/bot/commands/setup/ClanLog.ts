@@ -25,7 +25,7 @@ import {
 const FEATURES: Record<string, string> = {
   [Flags.DONATION_LOG]: 'Donation Log',
   [Flags.CLAN_FEED_LOG]: 'Clan Feed',
-  [Flags.PLAYERS_LOG]: 'Last Seen',
+  [Flags.LAST_SEEN_LOG]: 'Last Seen',
   [Flags.CLAN_EMBED_LOG]: 'Clan Embed',
   [Flags.CLAN_GAMES_LOG]: 'Clan Games',
   [Flags.CLAN_WAR_LOG]: 'War Feed',
@@ -37,7 +37,7 @@ const FEATURES: Record<string, string> = {
 const collectionMap: Record<string, Collections> = {
   [Flags.DONATION_LOG]: Collections.DONATION_LOGS,
   [Flags.CLAN_FEED_LOG]: Collections.CLAN_FEED_LOGS,
-  [Flags.PLAYERS_LOG]: Collections.PLAYERS_LOGS,
+  [Flags.LAST_SEEN_LOG]: Collections.LAST_SEEN_LOGS,
   [Flags.CLAN_EMBED_LOG]: Collections.CLAN_EMBED_LOGS,
   [Flags.CLAN_GAMES_LOG]: Collections.CLAN_GAMES_LOGS,
   [Flags.CLAN_WAR_LOG]: Collections.CLAN_WAR_LOGS,
@@ -92,7 +92,7 @@ export default class ClanLogCommand extends Command {
     args: { tag?: string; channel: TextChannel | AnyThreadChannel; option: string; color?: number }
   ) {
     const flag = {
-      'lastseen': Flags.PLAYERS_LOG,
+      'lastseen': Flags.LAST_SEEN_LOG,
       'clan-feed': Flags.CLAN_FEED_LOG,
       'donation-log': Flags.DONATION_LOG,
       'clan-games': Flags.CLAN_GAMES_LOG,
@@ -155,7 +155,7 @@ export default class ClanLogCommand extends Command {
       .setColor(this.client.embed(interaction))
       .addFields([{ name: 'Channel', value: args.channel.toString() }]); // eslint-disable-line
 
-    if ([Flags.DONATION_LOG, Flags.PLAYERS_LOG, Flags.CLAN_GAMES_LOG].includes(flag)) {
+    if ([Flags.DONATION_LOG, Flags.LAST_SEEN_LOG, Flags.CLAN_GAMES_LOG].includes(flag)) {
       embed.addFields([{ name: 'Color', value: args.color?.toString(16) ?? 'None' }]);
       if (args.color) embed.setColor(args.color);
     }

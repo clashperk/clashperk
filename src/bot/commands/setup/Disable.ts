@@ -6,7 +6,7 @@ import { Collections, Flags } from '../../util/Constants.js';
 const names: Record<string, string> = {
   [Flags.DONATION_LOG]: 'Donation Log',
   [Flags.CLAN_FEED_LOG]: 'Clan Feed',
-  [Flags.PLAYERS_LOG]: 'Last Seen',
+  [Flags.LAST_SEEN_LOG]: 'Last Seen',
   [Flags.LEGEND_LOG]: 'Legend Log',
   [Flags.CLAN_EMBED_LOG]: 'Clan Embed',
   [Flags.CLAN_GAMES_LOG]: 'Clan Games',
@@ -39,7 +39,7 @@ export default class SetupDisableCommand extends Command {
           [Flags.LEGEND_LOG.toString(), 'legend-log'],
           [Flags.CAPITAL_LOG.toString(), 'capital-log'],
           [Flags.JOIN_LEAVE_LOG.toString(), 'join-leave'],
-          [Flags.PLAYERS_LOG.toString(), 'lastseen'],
+          [Flags.LAST_SEEN_LOG.toString(), 'lastseen'],
           [Flags.CLAN_WAR_LOG.toString(), 'war-feed'],
           [Flags.CLAN_GAMES_LOG.toString(), 'clan-games'],
           [Flags.CLAN_FEED_LOG.toString(), 'clan-feed'],
@@ -57,7 +57,10 @@ export default class SetupDisableCommand extends Command {
     return tag ? this.client.http.fixTag(tag) : undefined;
   }
 
-  public async exec(interaction: CommandInteraction, { option, tag, channel }: { option: string; channel: TextChannel; tag?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    { option, tag, channel }: { option: string; channel: TextChannel; tag?: string }
+  ) {
     tag = this.parseTag(tag);
     if (option === 'channel-link') {
       const { value } = await this.client.storage.collection.findOneAndUpdate(
@@ -96,7 +99,7 @@ export default class SetupDisableCommand extends Command {
     const id = data._id.toHexString();
     if (option === 'all') {
       await this.client.storage.delete(id);
-      await this.client.storage.deleteReminders(data.tag, interaction.guild!.id);
+      await this.client.storage.deleteReminders(data.tag, interaction.guild.id);
 
       await this.client.rpcHandler.delete(id, { tag: data.tag, op: 0, guild: interaction.guild!.id });
       return interaction.editReply(

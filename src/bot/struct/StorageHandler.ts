@@ -9,7 +9,7 @@ import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
-import { Collections, Flags, Settings } from '../util/Constants.js';
+import { Collections, FeatureFlags, Flags, Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import { Client } from './Client.js';
 
@@ -27,11 +27,11 @@ export default class StorageHandler {
     return this.collection.find({ guild: guildId }, { sort: { [key]: 1 } }).toArray();
   }
 
-  public async getEnabledFeatures(id: string, collection: Collections) {
+  public async getEnabledFeatures(guildId: string, collection: Collections) {
     return this.client.db
       .collection(collection)
       .aggregate([
-        { $match: { guild: id } },
+        { $match: { guild: guildId } },
         { $lookup: { from: Collections.CLAN_STORES, localField: 'clanId', foreignField: '_id', as: 'root' } },
         { $unwind: { path: '$root', preserveNullAndEmptyArrays: true } },
         { $match: { root: { $exists: true } } }
@@ -271,8 +271,8 @@ export default class StorageHandler {
           { upsert: true }
         );
         break;
-      case Flags.PLAYERS_LOG:
-        await this.client.db.collection(Collections.PLAYERS_LOGS).updateOne(
+      case Flags.LAST_SEEN_LOG:
+        await this.client.db.collection(Collections.LAST_SEEN_LOGS).updateOne(
           { tag: data.tag, guild: data.guild },
           {
             $set: {
@@ -430,7 +430,7 @@ export default class StorageHandler {
       this.client.db.collection(Collections.DONATION_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.JOIN_LEAVE_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.PLAYERS_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+      this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.CLAN_GAMES_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
       this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) }),
@@ -441,48 +441,30 @@ export default class StorageHandler {
   }
 
   public async deleteReminders(clanTag: string, guild: string) {
-    await Promise.allSettled([
-      this.deleteWarReminders(clanTag, guild),
-      this.deleteCapitalReminders(clanTag, guild),
-      this.deleteClanGamesReminders(clanTag, guild)
-    ]);
-  }
-
-  public async deleteWarReminders(clanTag: string, guild: string) {
-    const reminders = await this.client.db.collection(Collections.REMINDERS).find({ guild, clans: clanTag }).toArray();
-    if (!reminders.length) return null;
-    for (const rem of reminders) {
-      await this.client.db.collection(Collections.SCHEDULERS).deleteMany({ reminderId: rem._id });
-      if (rem.clans.length === 1) {
-        await this.client.db.collection(Collections.REMINDERS).deleteOne({ _id: rem._id });
-      } else {
-        await this.client.db.collection(Collections.REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+    const reminders = [
+      {
+        reminder: Collections.REMINDERS,
+        scheduler: Collections.SCHEDULERS
+      },
+      {
+        reminder: Collections.RAID_REMINDERS,
+        scheduler: Collections.RAID_SCHEDULERS
+      },
+      {
+        reminder: Collections.CG_REMINDERS,
+        scheduler: Collections.CG_SCHEDULERS
       }
-    }
-  }
+    ];
 
-  public async deleteCapitalReminders(clanTag: string, guild: string) {
-    const reminders = await this.client.db.collection(Collections.RAID_REMINDERS).find({ guild, clans: clanTag }).toArray();
-    if (!reminders.length) return null;
-    for (const rem of reminders) {
-      await this.client.db.collection(Collections.RAID_SCHEDULERS).deleteMany({ reminderId: rem._id });
-      if (rem.clans.length === 1) {
-        await this.client.db.collection(Collections.RAID_REMINDERS).deleteOne({ _id: rem._id });
-      } else {
-        await this.client.db.collection(Collections.RAID_REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
-      }
-    }
-  }
-
-  public async deleteClanGamesReminders(clanTag: string, guild: string) {
-    const reminders = await this.client.db.collection(Collections.CG_REMINDERS).find({ guild, clans: clanTag }).toArray();
-    if (!reminders.length) return null;
-    for (const rem of reminders) {
-      await this.client.db.collection(Collections.CG_SCHEDULERS).deleteMany({ reminderId: rem._id });
-      if (rem.clans.length === 1) {
-        await this.client.db.collection(Collections.CG_REMINDERS).deleteOne({ _id: rem._id });
-      } else {
-        await this.client.db.collection(Collections.CG_REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+    for (const { reminder, scheduler } of reminders) {
+      const reminders = await this.client.db.collection(reminder).find({ guild, clans: clanTag }).toArray();
+      for (const rem of reminders) {
+        await this.client.db.collection(scheduler).deleteMany({ reminderId: rem._id });
+        if (rem.clans.length === 1) {
+          await this.client.db.collection(reminder).deleteOne({ _id: rem._id });
+        } else {
+          await this.client.db.collection(reminder).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+        }
       }
     }
   }
@@ -496,8 +478,8 @@ export default class StorageHandler {
       return this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clanId: new ObjectId(id) });
     }
 
-    if (data.op === Flags.PLAYERS_LOG) {
-      return this.client.db.collection(Collections.PLAYERS_LOGS).deleteOne({ clanId: new ObjectId(id) });
+    if (data.op === Flags.LAST_SEEN_LOG) {
+      return this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clanId: new ObjectId(id) });
     }
 
     if (data.op === Flags.CLAN_GAMES_LOG) {
@@ -527,204 +509,53 @@ export default class StorageHandler {
     return null;
   }
 
-  public async getWebhookWorkloads(guild: string) {
+  public async getWebhookWorkloads(guildId: string) {
+    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, guildId);
+
+    const logs = isEnabled
+      ? [Collections.CLAN_LOGS]
+      : [
+          Collections.DONATION_LOGS,
+          Collections.CLAN_FEED_LOGS,
+          Collections.JOIN_LEAVE_LOGS,
+          Collections.LAST_SEEN_LOGS,
+          Collections.CLAN_GAMES_LOGS,
+          Collections.CLAN_WAR_LOGS,
+          Collections.CLAN_EMBED_LOGS,
+          Collections.LEGEND_LOGS,
+          Collections.CAPITAL_LOGS
+        ];
+
+    const facet = logs.reduce<Record<string, any[]>>((record, log) => {
+      record[log] = [
+        {
+          $lookup: {
+            from: log,
+            localField: '_id',
+            foreignField: 'clanId',
+            as: 'webhook',
+            pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+          }
+        },
+        {
+          $unwind: '$webhook'
+        },
+        {
+          $project: {
+            tag: 1,
+            name: 1,
+            webhook: 1
+          }
+        }
+      ];
+      return record;
+    }, {});
+
     const result = await this.client.db
       .collection(Collections.CLAN_STORES)
       .aggregate<Record<string, { name: string; tag: string; webhook: { id: string; token: string } }[]>>([
-        { $match: { guild: guild } },
-        {
-          $facet: {
-            [Collections.DONATION_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.DONATION_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ],
-            [Collections.CLAN_FEED_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.CLAN_FEED_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ],
-            [Collections.JOIN_LEAVE_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.JOIN_LEAVE_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ],
-            [Collections.PLAYERS_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.PLAYERS_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ],
-            [Collections.CLAN_GAMES_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.CLAN_GAMES_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ],
-            [Collections.CLAN_WAR_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.CLAN_WAR_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ],
-            [Collections.CLAN_EMBED_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.CLAN_EMBED_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ],
-            [Collections.LEGEND_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.LEGEND_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ],
-            [Collections.CAPITAL_LOGS]: [
-              {
-                $lookup: {
-                  from: Collections.CAPITAL_LOGS,
-                  localField: '_id',
-                  foreignField: 'clanId',
-                  as: 'webhook',
-                  pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-                }
-              },
-              {
-                $unwind: '$webhook'
-              },
-              {
-                $project: {
-                  tag: 1,
-                  name: 1,
-                  webhook: 1
-                }
-              }
-            ]
-          }
-        }
+        { $match: { guild: guildId } },
+        { $facet: facet }
       ])
       .toArray();
 

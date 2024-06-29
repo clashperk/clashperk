@@ -64,7 +64,6 @@ export default class ConfigCommand extends Command {
       links_manager_role?: Role;
       account_linked_role?: Role;
       account_verified_role?: Role;
-      clans_sorting_key?: string;
       auto_update_roles?: boolean;
       verified_only_clan_roles?: boolean;
       role_removal_delays?: string;
@@ -97,10 +96,6 @@ export default class ConfigCommand extends Command {
 
     if (args.links_manager_role) {
       await this.client.settings.push(interaction.guild, Settings.LINKS_MANAGER_ROLE, [args.links_manager_role.id]);
-    }
-
-    if (args.clans_sorting_key) {
-      await this.client.settings.set(interaction.guild, Settings.CLANS_SORTING_KEY, args.clans_sorting_key);
     }
 
     if (args.account_linked_role) {
@@ -250,7 +245,6 @@ export default class ConfigCommand extends Command {
     const rosterManagerRoles = this.getRoles(interaction.guild, Settings.ROSTER_MANAGER_ROLE);
     const linksManagerRoles = this.getRoles(interaction.guild, Settings.LINKS_MANAGER_ROLE);
 
-    const clansSortingKey = this.client.settings.get<string>(interaction.guild, Settings.CLANS_SORTING_KEY, 'name');
     const verifiedOnlyClanRoles = this.client.settings.get<string>(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
     const useAutoRole = this.client.settings.get<string>(interaction.guild, Settings.USE_AUTO_ROLE, true);
     const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
@@ -290,10 +284,6 @@ export default class ConfigCommand extends Command {
           value: `${this.client.settings.get<string>(interaction.guild, Settings.WEBHOOK_LIMIT, 8)}`
         },
         {
-          name: 'Clans Sorting',
-          value: `By ${clansSortingKey}`
-        },
-        {
           name: 'Verified-Only Clan Roles',
           value: `${verifiedOnlyClanRoles ? 'Yes' : 'No'}`
         },
@@ -322,10 +312,6 @@ export default class ConfigCommand extends Command {
           value: channel?.toString() ?? 'None'
         }
       ]);
-
-    if (process.env.RAILWAY_SERVICE_ID) {
-      embed.setFooter({ text: `Service ID: ${process.env.RAILWAY_SERVICE_ID!}` });
-    }
 
     return embed;
   }

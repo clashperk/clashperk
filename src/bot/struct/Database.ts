@@ -14,7 +14,6 @@ interface CollectionsMap {
   [Collections.PLAYER_LINKS]: PlayerLinksEntity;
   [Collections.CLAN_LOGS]: ClanLogsEntity;
   [Collections.REMINDERS]: ClanWarRemindersEntity;
-  // [Collections.AUTO_BOARDS]: AutoBoardLogsEntity;
   [Collections.CLAN_RANKS]: ClanRanksEntity;
   [Collections.PLAYER_RANKS]: PlayerRanksEntity;
   [Collections.CAPITAL_RANKS]: CapitalRanksEntity;
@@ -312,7 +311,7 @@ export class MongoDbClient extends MongoClient {
         }
       ]),
 
-      db.collection(Collections.PLAYERS_LOGS).createIndexes([
+      db.collection(Collections.LAST_SEEN_LOGS).createIndexes([
         {
           key: { clanId: 1 }
         },

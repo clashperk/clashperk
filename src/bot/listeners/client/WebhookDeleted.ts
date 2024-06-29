@@ -16,7 +16,7 @@ export default class WebhookDeletedListener extends Listener {
       Collections.DONATION_LOGS,
       Collections.CAPITAL_LOGS,
       Collections.CLAN_WAR_LOGS,
-      Collections.PLAYERS_LOGS,
+      Collections.LAST_SEEN_LOGS,
       Collections.CLAN_FEED_LOGS,
       Collections.JOIN_LEAVE_LOGS,
       Collections.CLAN_GAMES_LOGS,

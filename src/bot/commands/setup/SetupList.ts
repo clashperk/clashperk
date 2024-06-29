@@ -6,7 +6,7 @@ import { Util } from '../../util/index.js';
 const names: Record<string, string> = {
   [Flags.DONATION_LOG]: 'Donation Log',
   [Flags.CLAN_FEED_LOG]: 'Clan Feed',
-  [Flags.PLAYERS_LOG]: 'Last Seen',
+  [Flags.LAST_SEEN_LOG]: 'Last Seen',
   [Flags.CLAN_EMBED_LOG]: 'Clan Embed',
   [Flags.CLAN_GAMES_LOG]: 'Clan Games',
   [Flags.CLAN_WAR_LOG]: 'War Feed',
@@ -146,7 +146,7 @@ export default class SetupListCommand extends Command {
         const [bit1, bit2, bit3, bit4, bit5, bit6, bit7, bit8, bit9] = await Promise.all([
           this.client.db.collection(Collections.DONATION_LOGS).findOne({ clanId: clan._id }),
           this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clanId: clan._id }),
-          this.client.db.collection(Collections.PLAYERS_LOGS).findOne({ clanId: clan._id }),
+          this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clanId: clan._id }),
           this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clanId: clan._id }),
           this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clanId: clan._id }),
           this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clanId: clan._id }),
@@ -184,7 +184,7 @@ export default class SetupListCommand extends Command {
               channel: this.client.channels.cache.get(bit7?.channel)?.toString()
             },
             {
-              flag: Flags.PLAYERS_LOG,
+              flag: Flags.LAST_SEEN_LOG,
               ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
               channel: this.client.channels.cache.get(bit3?.channel)?.toString()
             },

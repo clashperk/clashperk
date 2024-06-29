@@ -70,7 +70,7 @@ export const COLOR_CODES = {
 export const enum Collections {
   CLAN_STORES = 'ClanStores',
   DONATION_LOGS = 'DonationLogs',
-  PLAYERS_LOGS = 'LastSeenLogs',
+  LAST_SEEN_LOGS = 'LastSeenLogs',
   CLAN_GAMES_LOGS = 'ClanGamesLogs',
   CLAN_EMBED_LOGS = 'ClanEmbedLogs',
   CLAN_FEED_LOGS = 'ClanFeedLogs',
@@ -230,7 +230,7 @@ export enum FeatureFlags {
 export const enum Flags {
   DONATION_LOG = 1 << 0,
   CLAN_FEED_LOG = 1 << 1,
-  PLAYERS_LOG = 1 << 2,
+  LAST_SEEN_LOG = 1 << 2,
   CLAN_EMBED_LOG = 1 << 3,
   CLAN_GAMES_LOG = 1 << 4,
   CLAN_WAR_LOG = 1 << 5,

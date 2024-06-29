@@ -28,10 +28,10 @@ export default class ServerLinkCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { tag: string; color?: number; category?: string; clan_alias?: string; clan_nickname?: string }
   ) {
-    const clan = await this.client.storage.collection.findOne({ tag: args.tag, guild: interaction.guild.id });
-
     const data = await this.client.resolver.enforceSecurity(interaction, { tag: args.tag, collection: Collections.CLAN_STORES });
     if (!data) return;
+
+    const clan = await this.client.storage.collection.findOne({ tag: data.tag, guild: interaction.guild.id });
 
     const categoryId = args.category
       ? await this.client.storage.findOrCreateCategory({ category: args.category, guildId: interaction.guildId })

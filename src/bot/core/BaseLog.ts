@@ -1,3 +1,4 @@
+import { FeatureFlags } from '@app/constants';
 import {
   APIMessage,
   Collection,
@@ -68,7 +69,12 @@ export default class BaseLog {
       // double posting prevention for custom bots
       if (cache?.guild && this.client.settings.hasCustomBot(cache.guild) && !this.client.isCustom()) continue;
 
-      if (cache) await this.permissionsFor(cache, data);
+      if (cache) {
+        const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, cache.guild);
+        if (isEnabled) return null;
+
+        await this.permissionsFor(cache, data);
+      }
     }
     return clans.clear();
   }

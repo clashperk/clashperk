@@ -4178,21 +4178,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         ]
       },
       {
-        name: 'clans_sorting_key',
-        description: 'Sort clans by name or manually set order.',
-        type: ApplicationCommandOptionType.String,
-        choices: [
-          {
-            name: 'By Name',
-            value: 'name'
-          },
-          {
-            name: 'By Order',
-            value: 'order'
-          }
-        ]
-      },
-      {
         name: 'webhook_limit',
         description: 'The maximum number of webhooks that can be created in a channel.',
         type: ApplicationCommandOptionType.Integer,
