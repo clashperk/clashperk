@@ -173,7 +173,6 @@ export default class ClanGamesLogV2 extends BaseClanLog {
       channel: data.channelId,
       message: data.messageId,
       tag: data.clanTag,
-
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,
@@ -200,7 +199,6 @@ interface Cache {
   color?: number;
   threadId?: string;
   logType: string;
-
   deepLink?: string;
   retries: number;
 }

@@ -325,7 +325,6 @@ export default class DonationLogV2 extends BaseClanLog {
       guild: data.guildId,
       channel: data.channelId,
       tag: data.clanTag,
-
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,
@@ -368,7 +367,6 @@ interface Cache {
   color?: number;
   threadId?: string;
   logType: string;
-
   deepLink?: string;
   retries: number;
 }

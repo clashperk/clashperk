@@ -105,11 +105,12 @@ export default class ClanEmbedLogV2 extends BaseClanLog {
 
       for (const log of logs) {
         if (!this.client.guilds.cache.has(log.guildId)) continue;
-        if (this.queued.has(log._id.toHexString())) continue;
+        const logId = log._id.toHexString();
+        if (this.queued.has(logId)) continue;
 
-        this.queued.add(log._id.toHexString());
-        await this.exec(log.clanTag, { logType: ClanLogType.LAST_SEEN_EMBED_LOG, channel: log.channelId } satisfies Feed);
-        this.queued.delete(log._id.toHexString());
+        this.queued.add(logId);
+        await this.exec(log.clanTag, { logType: ClanLogType.CLAN_EMBED_LOG, channel: log.channelId } satisfies Feed);
+        this.queued.delete(logId);
         await Util.delay(3000);
       }
     } finally {
@@ -148,11 +149,9 @@ export default class ClanEmbedLogV2 extends BaseClanLog {
       channel: data.channelId,
       message: data.messageId,
       tag: data.clanTag,
-
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,
-      // This is where the embed is stored
       embed: data.metadata,
       webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
     });
@@ -176,7 +175,6 @@ interface Cache {
   color?: number;
   threadId?: string;
   logType: string;
-
   deepLink?: string;
   retries: number;
   embed: any;

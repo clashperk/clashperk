@@ -143,12 +143,12 @@ export default class ClanWarLogV2 extends BaseClanLog {
       const update: UpdateFilter<ClanLogsEntity> = {
         $set: { 'metadata.uid': data.uid, 'updatedAt': new Date() },
         $inc: { failed: 1 },
-        $unset: { messageId: '' }
+        $unset: { messageId: true }
       };
 
       if (data.warTag && cache.rounds[data.round]?.warTag === data.warTag) {
         delete cache.rounds[data.round];
-        update.$unset = { ...update.$unset, [`metadata.rounds.${data.round}`]: '' };
+        update.$unset = { ...update.$unset, [`metadata.rounds.${data.round}`]: true };
       }
 
       return this.collection.updateOne({ _id: cache._id }, update);
@@ -173,7 +173,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
     cache.message = message.id;
     return this.collection.updateOne(
       { _id: cache._id },
-      { $set: { 'message': message.id, 'metadata.uid': data.uid, 'updatedAt': new Date(), 'failed': 0 } }
+      { $set: { 'messageId': message.id, 'metadata.uid': data.uid, 'updatedAt': new Date(), 'failed': 0 } }
     );
   }
 
@@ -493,7 +493,6 @@ export default class ClanWarLogV2 extends BaseClanLog {
       channel: data.channelId,
       message: data.messageId,
       tag: data.clanTag,
-
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,
@@ -553,7 +552,6 @@ interface Cache {
   color?: number;
   threadId?: string;
   logType: ClanLogType;
-
   deepLink?: string;
   retries: number;
   // metadata

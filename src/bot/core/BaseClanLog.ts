@@ -63,8 +63,8 @@ export default class BaseClanLog {
     }
   }
 
-  public updateWebhook(cache: Cache, webhook: WebhookClient, channel: string) {
-    return this.collection.updateOne({ _id: cache._id }, { $set: { channel, webhook: { id: webhook.id, token: webhook.token } } });
+  public updateWebhook(cache: Cache, webhook: WebhookClient, channelId: string) {
+    return this.collection.updateOne({ _id: cache._id }, { $set: { channelId, webhook: { id: webhook.id, token: webhook.token } } });
   }
 
   public deleteWebhook(cache: Cache) {
@@ -75,11 +75,6 @@ export default class BaseClanLog {
   }
 
   public async updateMessageId(cache: Cache, msg: APIMessage | null) {
-    if (msg) {
-      cache.message = msg.id;
-      cache.channel = msg.channel_id;
-    }
-
     if (msg && (cache.message !== msg.id || cache.channel !== msg.channel_id)) {
       await this.collection.updateOne(
         { _id: cache._id },
@@ -92,6 +87,11 @@ export default class BaseClanLog {
           }
         }
       );
+    }
+
+    if (msg) {
+      cache.message = msg.id;
+      cache.channel = msg.channel_id;
     }
 
     if (!msg) {

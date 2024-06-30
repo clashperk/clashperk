@@ -126,7 +126,7 @@ export default class RPCHandler {
             await Promise.all([this.clanFeedLog.exec(data.tag, data), this.clanLog.exec(data.tag, data)]);
             break;
           case Flags.CLAN_WAR_LOG:
-            await this.clanWarLog.exec(data.clan.tag, data);
+            await Promise.all([this.clanWarLog.exec(data.clan.tag, data), this.clanWarLogV2.exec(data.clan.tag, data)]);
             this.client.rolesManager.exec(data.tag, data);
             break;
           case Flags.DONATION_LOG_V2:
