@@ -325,13 +325,15 @@ export class RolesManager {
       userOrRole,
       logging,
       reason,
-      forced = false
+      forced = false,
+      allowNotLinked = true
     }: {
       isDryRun: boolean;
       logging: boolean;
       forced?: boolean;
       userOrRole?: Role | User | null;
       memberTags?: string[];
+      allowNotLinked?: boolean;
       reason?: string;
     }
   ): Promise<RolesChangeLog | null> {
@@ -364,6 +366,8 @@ export class RolesManager {
     for (const member of targetedMembers.values()) {
       if (this.client.rpcHandler.isInMaintenance) continue;
       const links = linkedPlayers[member.id] ?? [];
+
+      if (!links.length && !allowNotLinked) continue;
 
       const players = await this.getPlayers(links);
       const roleUpdate = await this.preRoleUpdateAction({
@@ -427,11 +431,12 @@ export class RolesManager {
     return this.changeLogs[guildId] ?? null;
   }
 
-  public async updateOne(user: User, guildId: string, forced = false) {
+  public async updateOne(user: User, guildId: string, forced = false, allowNotLinked = true) {
     return this.updateMany(guildId, {
       logging: false,
       isDryRun: false,
       forced,
+      allowNotLinked,
       userOrRole: user,
       reason: 'account linked or updated'
     });

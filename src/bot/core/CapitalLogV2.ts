@@ -390,7 +390,6 @@ interface Cache {
   color?: number;
   threadId?: string;
   logType: string;
-
   deepLink?: string;
   retries: number;
 }

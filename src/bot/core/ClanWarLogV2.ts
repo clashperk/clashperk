@@ -56,14 +56,19 @@ export default class ClanWarLogV2 extends BaseClanLog {
       messageId = (data.uid === cache.uid ? cache.message : null) ?? null;
     }
 
-    if (!data.warTag && data.remaining.length && data.state === 'warEnded') {
+    // MISSED ATTACK LOG
+    if (data.remaining.length && data.state === 'warEnded') {
+      if (data.warTag && cache.logType !== ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG) return null;
+      if (!data.warTag && cache.logType !== ClanLogType.CWL_MISSED_ATTACKS_LOG) return null;
+
       const embed = this.getRemaining(data);
-      try {
-        if (embed) await webhook.send({ embeds: [embed], threadId: cache.threadId });
-      } catch (error) {
-        this.client.logger.warn(error, { label: 'WAR_REMAINING_MESSAGE' });
-      }
+      if (!embed) return null;
+
+      return this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
     }
+
+    if (data.warTag && cache.logType !== ClanLogType.CWL_EMBED_LOG) return null;
+    if (!data.warTag && cache.logType !== ClanLogType.CLAN_WAR_EMBED_LOG) return null;
 
     const embed = this.embed(data);
 
@@ -288,10 +293,12 @@ export default class ClanWarLogV2 extends BaseClanLog {
       .setThumbnail(data.clan.badgeUrls.small)
       .setURL(this.clanURL(data.clan.tag))
       .setDescription(
-        ['**War Against**', `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`].join(
-          '\n'
-        )
+        [
+          `**War Against ${data.warTag ? `CWL Round ${data.round}` : ''}**`,
+          `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+        ].join('\n')
       );
+
     const twoRem = data.remaining
       .filter((m) => !m.attacks)
       .sort((a, b) => a.mapPosition - b.mapPosition)
@@ -404,17 +411,6 @@ export default class ClanWarLogV2 extends BaseClanLog {
       ]);
     }
 
-    if (data.remaining.length) {
-      const oneRem = data.remaining
-        .sort((a, b) => a.mapPosition - b.mapPosition)
-        .map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]!} ${m.name}`);
-
-      if (oneRem.length) {
-        const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-        embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? 'Missed Attacks' : '\u200e', value: chunk })));
-      }
-    }
-
     embed.setFooter({ text: `Round #${data.round}` }).setTimestamp();
     return embed;
   }
@@ -459,7 +455,14 @@ export default class ClanWarLogV2 extends BaseClanLog {
     const guildIds = this.client.guilds.cache.map((guild) => guild.id);
     for await (const data of this.collection.find({
       guildId: { $in: guildIds },
-      logType: ClanLogType.CLAN_WAR_EMBED_LOG,
+      logType: {
+        $in: [
+          ClanLogType.CLAN_WAR_EMBED_LOG,
+          ClanLogType.CWL_EMBED_LOG,
+          ClanLogType.CWL_MISSED_ATTACKS_LOG,
+          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG
+        ]
+      },
       isEnabled: true
     })) {
       this.setCache(data);
@@ -469,7 +472,14 @@ export default class ClanWarLogV2 extends BaseClanLog {
   public async add(guildId: string) {
     for await (const data of this.collection.find({
       guildId,
-      logType: ClanLogType.CLAN_WAR_EMBED_LOG,
+      logType: {
+        $in: [
+          ClanLogType.CLAN_WAR_EMBED_LOG,
+          ClanLogType.CWL_EMBED_LOG,
+          ClanLogType.CWL_MISSED_ATTACKS_LOG,
+          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG
+        ]
+      },
       isEnabled: true
     })) {
       this.setCache(data);
@@ -542,7 +552,7 @@ interface Cache {
   guild: string;
   color?: number;
   threadId?: string;
-  logType: string;
+  logType: ClanLogType;
 
   deepLink?: string;
   retries: number;

@@ -35,9 +35,13 @@ export const logActionsMap: Record<
   [ClanLogType.CLAN_ACHIEVEMENTS_LOG]: {},
   [ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG]: {},
   [ClanLogType.CLAN_GAMES_EMBED_LOG]: {},
-  [ClanLogType.CLAN_WAR_EMBED_LOG]: {},
   [ClanLogType.LAST_SEEN_EMBED_LOG]: {},
-  [ClanLogType.LEGEND_ATTACKS_DAILY_SUMMARY_LOG]: {}
+  [ClanLogType.LEGEND_ATTACKS_DAILY_SUMMARY_LOG]: {},
+
+  [ClanLogType.CLAN_WAR_EMBED_LOG]: {},
+  [ClanLogType.CWL_EMBED_LOG]: {},
+  [ClanLogType.CWL_MISSED_ATTACKS_LOG]: {},
+  [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG]: {}
 };
 
 export default class SetupLogsCommand extends Command {

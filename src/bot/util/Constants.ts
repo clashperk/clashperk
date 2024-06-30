@@ -172,6 +172,7 @@ export const enum Settings {
   NON_FAMILY_NICKNAME_FORMAT = 'nonFamilyNicknameFormat',
   AUTO_NICKNAME = 'autoNickname',
   USE_AUTO_ROLE = 'useAutoRole',
+  AUTO_ROLE_ALLOW_NOT_LINKED = 'autoRoleAllowNotLinked',
   FORCE_REFRESH_ROLES = 'forceRefreshRoles',
   NICKNAMING_ACCOUNT_PREFERENCE = 'nicknamingAccountPreference',
   ROSTER_DEFAULT_SETTINGS = 'rosterDefaultSettings',

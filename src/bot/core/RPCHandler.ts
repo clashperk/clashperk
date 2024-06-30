@@ -132,6 +132,9 @@ export default class RPCHandler {
           case Flags.DONATION_LOG_V2:
             await this.clanLog.exec(data.clan.tag, data);
             break;
+          // case Flags.CAPITAL_LOG:
+          //   await this.clanLog.exec(data.clan.tag, data);
+          //   break;
           default:
             break;
         }

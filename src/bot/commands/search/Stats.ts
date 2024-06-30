@@ -58,14 +58,26 @@ export default class StatsCommand extends Command {
   private compare(value: string): Compare {
     if (!value) return 'all';
     if (value === 'equal') return 'equal';
+
+    const [offense, defense] = value.split('vs');
+    if (offense === '*' && +defense > 1) {
+      return { attackerTownHall: 0, defenderTownHall: +defense };
+    }
+    if (+offense > 1 && defense === '*') {
+      return { attackerTownHall: +offense, defenderTownHall: 0 };
+    }
+
     if (!/^\d{1,2}(vs?|\s+)\d{1,2}$/i.test(value)) return 'all';
     const match = /^(?<attackerTownHall>\d{1,2})(vs?|\s+)(?<defenderTownHall>\d{1,2})$/i.exec(value);
     const attackerTownHall = Number(match?.groups?.attackerTownHall);
     const defenderTownHall = Number(match?.groups?.defenderTownHall);
+
     if (
       !(attackerTownHall > 1 && attackerTownHall <= MAX_TOWN_HALL_LEVEL && defenderTownHall > 1 && defenderTownHall <= MAX_TOWN_HALL_LEVEL)
-    )
+    ) {
       return 'all';
+    }
+
     return { attackerTownHall, defenderTownHall };
   }
 
@@ -111,6 +123,11 @@ export default class StatsCommand extends Command {
     const data = await this.getDataSource(interaction, args);
     if (!data) return null;
 
+    const isValidTh = (level: number, compareTo: number) => {
+      if (compareTo === 0) return true;
+      return level === compareTo;
+    };
+
     const extra =
       type === 'regular'
         ? { warType: WarType.REGULAR }
@@ -123,6 +140,7 @@ export default class StatsCommand extends Command {
               : type === 'noCWL'
                 ? { warType: { $ne: WarType.CWL } }
                 : {};
+
     if (args.days && args.days >= 1) season = moment().subtract(args.days, 'days').format('YYYY-MM-DD');
     const filters = args.wars && args.wars >= 1 ? {} : { preparationStartTime: { $gte: new Date(season) } };
 
@@ -155,12 +173,13 @@ export default class StatsCommand extends Command {
       string,
       { name: string; tag: string; total: number; success: number; hall: number; attacks: number; stars: number }
     > = {};
+
     for (const war of wars) {
       for (const playerTag of playerTags) {
         const clan = getWarClan(war, playerTag);
         if (!clan) continue;
-        const opponent = clan.tag === war.clan.tag ? war.opponent : war.clan;
 
+        const opponent = clan.tag === war.clan.tag ? war.opponent : war.clan;
         const attacks = (mode === 'attacks' ? clan : opponent).members
           .filter((m) => m.attacks?.length)
           .map((m) => m.attacks!)
@@ -168,8 +187,7 @@ export default class StatsCommand extends Command {
         for (const m of clan.members) {
           if (m.tag !== playerTag) continue;
 
-          if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
-          // eslint-disable-next-line
+          if (typeof compare === 'object' && !isValidTh(m.townhallLevel, compare.attackerTownHall)) continue;
           members[m.tag] ??= {
             name: m.name,
             tag: m.tag,
@@ -195,10 +213,9 @@ export default class StatsCommand extends Command {
                 if (this.getStars(attack.stars, stars)) member.success += 1;
               }
             } else if (typeof compare === 'object') {
-              const { attackerTownHall, defenderTownHall } = compare;
-              if (m.townhallLevel === attackerTownHall) {
+              if (isValidTh(m.townhallLevel, compare.attackerTownHall)) {
                 const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
-                if (defender.townhallLevel === defenderTownHall) {
+                if (isValidTh(defender.townhallLevel, compare.defenderTownHall)) {
                   member.total += 1;
                   if (this.getStars(attack.stars, stars)) member.success += 1;
                 }
@@ -228,10 +245,9 @@ export default class StatsCommand extends Command {
                 if (this.getStars(attack.stars, stars)) member.success += 1;
               }
             } else if (typeof compare === 'object') {
-              const { attackerTownHall, defenderTownHall } = compare;
-              if (m.townhallLevel === defenderTownHall) {
+              if (isValidTh(m.townhallLevel, compare.defenderTownHall)) {
                 const attacker = opponent.members.find((m) => m.tag === attack.attackerTag)!;
-                if (attacker.townhallLevel === attackerTownHall) {
+                if (isValidTh(attacker.townhallLevel, compare.attackerTownHall)) {
                   member.total += 1;
                   if (this.getStars(attack.stars, stars)) member.success += 1;
                 }
@@ -256,7 +272,7 @@ export default class StatsCommand extends Command {
 
     const hall =
       typeof compare === 'object'
-        ? `TH ${Object.values(compare).join('vs')}`
+        ? `TH ${compare.attackerTownHall || 'Any'} vs ${compare.defenderTownHall || 'Any'}`
         : `${compare.replace(/\b(\w)/g, (char) => char.toUpperCase())} TH`;
     const tail = attempt ? `% (${attempt.replace(/\b(\w)/g, (char) => char.toUpperCase())})` : 'Rates';
     const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;

@@ -71,6 +71,7 @@ export default class ConfigCommand extends Command {
       always_force_refresh_roles?: boolean;
       /** @deprecated */
       maintenance_notification_channel?: string;
+      autorole_allow_not_linked?: boolean;
     }
   ) {
     if (args.color_code) {
@@ -120,6 +121,10 @@ export default class ConfigCommand extends Command {
 
     if (args.maintenance_notification_channel) {
       return interaction.editReply(`This option has been moved to ${this.client.commands.get('/setup utility')}`);
+    }
+
+    if (typeof args.autorole_allow_not_linked === 'boolean') {
+      await this.client.settings.set(interaction.guild, Settings.AUTO_ROLE_ALLOW_NOT_LINKED, args.autorole_allow_not_linked);
     }
 
     if (args.role_removal_delays) {
@@ -250,6 +255,7 @@ export default class ConfigCommand extends Command {
     const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
     const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
     const forceRefreshRoles = this.client.settings.get<boolean>(interaction.guild, Settings.FORCE_REFRESH_ROLES, false);
+    const autoRoleAllowNotLinked = this.client.settings.get<boolean>(interaction.guild, Settings.AUTO_ROLE_ALLOW_NOT_LINKED, true);
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
@@ -302,6 +308,10 @@ export default class ConfigCommand extends Command {
         {
           name: 'Force Refresh Roles',
           value: `${forceRefreshRoles ? 'Yes (individual user only)' : 'No'}`
+        },
+        {
+          name: 'Allow Not Linked (AutoRole)',
+          value: `${autoRoleAllowNotLinked ? 'Yes' : 'No'}`
         },
         {
           name: this.i18n('common.color_code', { lng: interaction.locale }),

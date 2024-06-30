@@ -4163,6 +4163,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Boolean
       },
       {
+        name: 'autorole_allow_not_linked',
+        description: '[AutoRole] Whether to allow not linked players to get roles.',
+        type: ApplicationCommandOptionType.Boolean
+      },
+      {
         name: 'verified_only_clan_roles',
         description: '[AutoRole] Whether to grant clans roles to verified players only (Defaults to No)',
         type: ApplicationCommandOptionType.String,

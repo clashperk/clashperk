@@ -192,32 +192,39 @@ export class Migrator {
 
     const ops: AnyBulkWriteOperation<ClanLogsEntity>[] = [];
     for (const log of logs) {
-      ops.push({
-        updateOne: {
-          filter: { clanTag: log.tag, guildId: log.guild, logType: ClanLogType.CLAN_WAR_EMBED_LOG },
-          update: {
-            $set: {
-              guildId: log.guild,
-              channelId: log.channel,
-              clanId: log.clanId,
-              clanTag: log.tag,
-              color: log.color,
-              createdAt: log.createdAt,
-              updatedAt: log.updatedAt ?? new Date(),
-              deepLink: log.deepLink,
-              isEnabled: true,
-              lastPostedAt: log.lastPosted ?? new Date(),
-              logType: ClanLogType.CLAN_WAR_EMBED_LOG,
-              messageId: log.message,
-              metadata: {
-                uid: log.uid,
-                rounds: log.rounds
-              },
-              webhook: log.webhook
-            }
-          },
-          upsert: true
-        }
+      [
+        ClanLogType.CLAN_WAR_EMBED_LOG,
+        ClanLogType.CWL_EMBED_LOG,
+        ClanLogType.CWL_MISSED_ATTACKS_LOG,
+        ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG
+      ].forEach((logType) => {
+        ops.push({
+          updateOne: {
+            filter: { clanTag: log.tag, guildId: log.guild, logType },
+            update: {
+              $set: {
+                guildId: log.guild,
+                channelId: log.channel,
+                clanId: log.clanId,
+                clanTag: log.tag,
+                color: log.color,
+                createdAt: log.createdAt,
+                updatedAt: log.updatedAt ?? new Date(),
+                deepLink: log.deepLink,
+                isEnabled: true,
+                lastPostedAt: log.lastPosted ?? new Date(),
+                logType,
+                messageId: log.message,
+                metadata: {
+                  uid: log.uid,
+                  rounds: log.rounds
+                },
+                webhook: log.webhook
+              }
+            },
+            upsert: true
+          }
+        });
       });
     }
 
