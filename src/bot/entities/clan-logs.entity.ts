@@ -1,32 +1,63 @@
+import { ObjectId } from 'mongodb';
+
 export interface ClanLogsEntity {
   clanTag: string;
   guildId: string;
   logType: ClanLogType;
+  clanId: ObjectId;
+  isEnabled: boolean;
   channelId: string;
-  threadId: string | null;
-  messageId: string | null;
   deepLink: string;
   webhook: { id: string; token: string } | null;
+  messageId: string | null;
   color: number;
+  metadata: Record<string, any>;
+  lastPostedAt: Date;
   updatedAt: Date;
   createdAt: Date;
 }
 
+export const LogActions = {
+  NAME_CHANGE: 'NAME_CHANGE',
+  TOWN_HALL_UPGRADE: 'TOWN_HALL_UPGRADE',
+  WAR_PREF_CHANGE: 'WAR_PREF_CHANGE',
+  JOINED: 'JOINED',
+  LEFT: 'LEFT',
+  DEMOTED: 'DEMOTED',
+  PROMOTED: 'PROMOTED',
+  DONATED: 'DONATED',
+  RECEIVED: 'RECEIVED',
+
+  // Clan Types
+  CLAN_LEVEL_UP: 'CLAN_LEVEL_UP',
+  CAPITAL_HALL_LEVEL_UP: 'CAPITAL_HALL_LEVEL_UP',
+  CAPITAL_LEAGUE_CHANGE: 'CAPITAL_LEAGUE_CHANGE',
+  WAR_LEAGUE_CHANGE: 'WAR_LEAGUE_CHANGE'
+} as const;
+
+export type LogAction = (typeof LogActions)[keyof typeof LogActions];
+
 export enum ClanLogType {
-  FREQUENT_DONATION_LOG = 'frequent_log_continuous',
+  // MEMBER
+  CONTINUOUS_DONATION_LOG = 'continuous_donation_log',
   DAILY_DONATION_LOG = 'daily_donation_log',
   WEEKLY_DONATION_LOG = 'weekly_donation_log',
   MONTHLY_DONATION_LOG = 'monthly_donation_log',
 
-  CLAN_MEMBER_JOIN_LOG = 'clan_member_join_log',
-  CLAN_MEMBER_LEAVE_LOG = 'clan_member_leave_log',
-  CLAN_MEMBER_PROMOTION_LOG = 'clan_member_promotion_log',
-  CLAN_MEMBER_DEMOTION_LOG = 'clan_member_demotion_log',
-  HERO_UPGRADE_LOG = 'hero_upgrade_log',
+  // MEMBER
+  MEMBER_JOIN_LEAVE_LOG = 'member_join_leave_log',
+  // MEMBER_JOIN_LOG = 'member_join_log',
+  // MEMBER_LEAVE_LOG = 'member_leave_log',
+  ROLE_CHANGE_LOG = 'role_change_log',
   TOWN_HALL_UPGRADE_LOG = 'town_hall_upgrade_log',
-  WAR_PREFERENCE_CHANGE_LOG = 'war_preference_change_log',
-  CLAN_MEMBER_NAME_CHANGE = 'clan_member_name_change',
-  CLAN_ACHIEVEMENTS_CHANGE_LOG = 'clan_achievements_change_log',
+  NAME_CHANGE_LOG = 'name_change_log',
+
+  // PLAYER
+  WAR_PREFERENCE_LOG = 'war_preference_log',
+  HERO_UPGRADE_LOG = 'hero_upgrade_log',
+
+  // CLAN
+  CLAN_ACHIEVEMENTS_LOG = 'clan_achievements_log',
 
   CLAN_CAPITAL_DONATION_LOG = 'clan_capital_donation_log',
   CLAN_CAPITAL_ATTACKS_LOG = 'clan_capital_attacks_log',
@@ -45,5 +76,6 @@ export enum ClanLogType {
   CWL_MISSED_ATTACKS_LOG = 'cwl_missed_attacks_log',
   CWL_MONTHLY_SUMMARY_LOG = 'cwl_monthly_summary_log',
 
+  // LEGEND
   LEGEND_ATTACKS_DAILY_SUMMARY_LOG = 'legend_attacks_daily_summary_log'
 }

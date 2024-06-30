@@ -1,7 +1,10 @@
+import { ClanLogType } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { title } from 'radash';
 import { Command } from '../../lib/index.js';
-import { Collections, Flags } from '../../util/Constants.js';
+import { Collections, FeatureFlags, Flags } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
+import { logActionsMap } from './SetupLogs.js';
 
 const names: Record<string, string> = {
   [Flags.DONATION_LOG]: 'Donation Log',
@@ -60,7 +63,8 @@ export default class SetupListCommand extends Command {
       if (action.customId === CUSTOM_ID.FEATURES) {
         row.components[0].setDisabled(true);
         await action.update({ components: [row] });
-        const embeds = await this.getFeatures(interaction);
+        const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, action.guildId);
+        const embeds = isEnabled ? await this.getFeaturesV2(interaction) : await this.getFeatures(interaction);
         if (!embeds.length) {
           await action.followUp({
             content: this.i18n('common.no_clans_linked', {
@@ -239,6 +243,55 @@ export default class SetupListCommand extends Command {
           }))
         );
       }
+      return embed;
+    });
+  }
+
+  private async getFeaturesV2(interaction: CommandInteraction<'cached'>) {
+    const clans = await this.client.storage.find(interaction.guild.id);
+    const logTypes = Object.keys(logActionsMap) as ClanLogType[];
+    const logs = await this.client.db
+      .collection(Collections.CLAN_LOGS)
+      .find({ guildId: interaction.guild.id, logType: { $in: logTypes } })
+      .toArray();
+
+    const fetched = clans.map((clan) => {
+      const features = logs.filter((en) => en.clanTag === clan.tag);
+      const channels = clan.channels?.map((id) => this.client.channels.cache.get(id)?.toString()) ?? [];
+
+      return {
+        name: clan.name,
+        tag: clan.tag,
+        color: clan.color,
+        alias: clan.alias ? `(${clan.alias}) ` : '',
+        channels,
+        features: logTypes.map((logType) => {
+          const entry = features.find((en) => en.logType === logType);
+          return {
+            name: logActionsMap[logType].label || title(logType),
+            channel: entry && this.client.channels.cache.get(entry.channelId)?.toString()
+          };
+        })
+      };
+    });
+
+    return fetched.map((clan) => {
+      const channels = clan.channels.filter((_) => _);
+
+      const embed = new EmbedBuilder();
+      embed.setAuthor({ name: `\u200e${clan.name} (${clan.tag})` });
+
+      if (clan.color) embed.setColor(clan.color);
+      if (channels.length) embed.setDescription(channels.join(', '));
+
+      embed.addFields(
+        clan.features.map((record) => ({
+          name: record.name,
+          value: record.channel ?? `-`,
+          inline: true
+        }))
+      );
+
       return embed;
     });
   }

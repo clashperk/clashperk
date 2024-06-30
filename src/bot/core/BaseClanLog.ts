@@ -1,4 +1,4 @@
-import { DiscordErrorCodes } from '@app/constants';
+import { DiscordErrorCodes, FeatureFlags } from '@app/constants';
 import {
   APIMessage,
   Collection,
@@ -36,18 +36,20 @@ export default class BaseClanLog {
     throw new Error('Method not implemented.');
   }
 
-  public async exec(tag: string, data: Record<string, unknown>) {
-    const clans = this.cached.filter((d) => d.tag === tag);
-    for (const id of clans.keys()) {
-      const cache = this.cached.get(id);
+  public async exec(clanTag: string, data: Record<string, unknown>) {
+    const clans = this.cached.filter((cache) => cache.tag === clanTag);
+    for (const _id of clans.keys()) {
+      const cache = this.cached.get(_id);
+      if (!cache) continue;
 
-      // double posting prevention
-      if (data.channel && cache && cache.channel !== data.channel) continue;
+      if (data.channel && cache.channel !== data.channel) continue;
 
-      // double posting prevention for custom bots
-      if (cache?.guild && this.client.settings.hasCustomBot(cache.guild) && !this.client.isCustom()) continue;
+      const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, cache.guild);
+      if (!isEnabled) return null;
 
-      if (cache) await this.permissionsFor(cache, data);
+      // Double posting prevention for custom bots
+      if (this.client.settings.hasCustomBot(cache.guild) && !this.client.isCustom()) continue;
+      await this.permissionsFor(cache, data);
     }
     return clans.clear();
   }
@@ -74,6 +76,11 @@ export default class BaseClanLog {
 
   public async updateMessageId(cache: Cache, msg: APIMessage | null) {
     if (msg) {
+      cache.message = msg.id;
+      cache.channel = msg.channel_id;
+    }
+
+    if (msg && (cache.message !== msg.id || cache.channel !== msg.channel_id)) {
       await this.collection.updateOne(
         { _id: cache._id },
         {
@@ -81,15 +88,16 @@ export default class BaseClanLog {
             retries: 0,
             messageId: msg.id,
             channelId: msg.channel_id,
-            updatedAt: new Date()
+            lastPostedAt: new Date()
           }
         }
       );
-      cache.message = msg.id;
-      cache.channel = msg.channel_id;
-    } else {
-      await this.collection.updateOne({ clanId: cache._id }, { $inc: { retries: 1 } });
     }
+
+    if (!msg) {
+      await this.collection.updateOne({ _id: cache._id }, { $inc: { retries: 1 } });
+    }
+
     return msg;
   }
 
@@ -150,10 +158,8 @@ interface Cache {
   webhook: WebhookClient | null;
   deleted?: boolean;
   channel: string;
-  message?: string;
+  message?: string | null;
   guild: string;
   threadId?: string;
-  logType?: string;
-  deepLink?: string;
   retries?: number;
 }

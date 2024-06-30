@@ -1,35 +1,39 @@
 import { APIPlayer, APIPlayerItem } from 'clashofclans.js';
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions, parseEmoji } from 'discord.js';
 import moment from 'moment';
-import { ObjectId } from 'mongodb';
-import { ClanLogsEntity } from '../entities/clan-logs.entity.js';
+import { ObjectId, WithId } from 'mongodb';
+import { ClanLogType, ClanLogsEntity, LogAction, LogActions } from '../entities/clan-logs.entity.js';
 import { FlagsEntity } from '../entities/flags.entity.js';
-import { COLOR_CODES, Collections, DEEP_LINK_TYPES, FeatureFlags, PLAYER_ROLES_MAP, Settings } from '../util/Constants.js';
-import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
+import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings } from '../util/Constants.js';
+import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALLS } from '../util/Emojis.js';
 import { unitsFlatten } from '../util/Helper.js';
 import { RAW_TROOPS_FILTERED } from '../util/Troops.js';
 import { Util } from '../util/index.js';
 import BaseClanLog from './BaseClanLog.js';
 import RPCHandler from './RPCHandler.js';
 
-const ACTIONS = {
-  NAME_CHANGE: 'NAME_CHANGE',
-  TOWN_HALL_UPGRADE: 'TOWN_HALL_UPGRADE',
-  PROMOTED: 'PROMOTED',
-  DEMOTED: 'DEMOTED',
-  WAR_PREF_CHANGE: 'WAR_PREF_CHANGE',
-  JOINED: 'JOINED',
-  LEFT: 'LEFT'
-} as const;
-
 const COLOR_MAPS: { [key: string]: number } = {
-  [ACTIONS.NAME_CHANGE]: COLOR_CODES.PEACH,
-  [ACTIONS.TOWN_HALL_UPGRADE]: COLOR_CODES.CYAN,
-  [ACTIONS.PROMOTED]: COLOR_CODES.CYAN,
-  [ACTIONS.DEMOTED]: COLOR_CODES.RED,
-  [ACTIONS.WAR_PREF_CHANGE]: COLOR_CODES.CYAN,
-  [ACTIONS.JOINED]: COLOR_CODES.CYAN,
-  [ACTIONS.LEFT]: COLOR_CODES.CYAN
+  [LogActions.NAME_CHANGE]: COLOR_CODES.PEACH,
+  [LogActions.TOWN_HALL_UPGRADE]: COLOR_CODES.CYAN,
+  [LogActions.PROMOTED]: COLOR_CODES.CYAN,
+  [LogActions.DEMOTED]: COLOR_CODES.RED,
+  [LogActions.WAR_PREF_CHANGE]: COLOR_CODES.CYAN,
+  [LogActions.JOINED]: COLOR_CODES.GREEN,
+  [LogActions.LEFT]: COLOR_CODES.RED
+};
+
+const logActionsMap: Record<string, LogAction[]> = {
+  [ClanLogType.MEMBER_JOIN_LEAVE_LOG]: [LogActions.JOINED, LogActions.LEFT],
+  [ClanLogType.ROLE_CHANGE_LOG]: [LogActions.DEMOTED, LogActions.PROMOTED],
+  [ClanLogType.TOWN_HALL_UPGRADE_LOG]: [LogActions.TOWN_HALL_UPGRADE],
+  [ClanLogType.WAR_PREFERENCE_LOG]: [LogActions.WAR_PREF_CHANGE],
+  [ClanLogType.NAME_CHANGE_LOG]: [LogActions.NAME_CHANGE],
+  [ClanLogType.CLAN_ACHIEVEMENTS_LOG]: [
+    LogActions.WAR_LEAGUE_CHANGE,
+    LogActions.CAPITAL_HALL_LEVEL_UP,
+    LogActions.CLAN_LEVEL_UP,
+    LogActions.CAPITAL_LEAGUE_CHANGE
+  ]
 };
 
 export default class ClanLog extends BaseClanLog {
@@ -49,24 +53,35 @@ export default class ClanLog extends BaseClanLog {
   }
 
   public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
+    const actions = logActionsMap[cache.logType] ?? [];
+
+    if (data.logType === 'DONATION_LOG') {
+      if (cache.logType !== ClanLogType.CONTINUOUS_DONATION_LOG) return null;
+      return this.getDonationLogEmbed(cache, webhook, data);
+    }
+
     if (data.type) {
+      if (!actions.includes(data.type)) return null;
       return this.getClanLogEmbed(cache, webhook, data);
     }
 
-    const members = data.members.filter((mem) => (Object.values(ACTIONS) as string[]).includes(mem.op));
+    const members = data.members.filter((member) => (Object.values(LogActions) as string[]).includes(member.op));
     if (!members.length) return null;
 
     const delay = members.length >= 5 ? 2000 : 250;
-    const messages = (await Promise.all(members.map((mem) => this.getPlayerLogEmbed(cache, mem, data)))).filter((m) => m);
 
-    for (const message of messages) {
-      if (!message) continue;
-      const msg = await this.send(cache, webhook, {
-        content: message.content,
-        embeds: [message.embed],
+    for (const member of members) {
+      if (!actions.includes(LogActions[member.op as LogAction])) continue;
+
+      const result = await this.getPlayerLogEmbed(cache, member, data);
+      if (!result) continue;
+
+      await this.send(cache, webhook, {
+        content: result.content,
+        embeds: [result.embed],
         threadId: cache.threadId
       });
-      await this.updateMessageId(cache, msg);
+
       await Util.delay(delay);
     }
 
@@ -76,9 +91,9 @@ export default class ClanLog extends BaseClanLog {
   private async getPlayerLogEmbed(cache: Cache, member: Member, data: Feed) {
     const { body: player, res } = await this.client.http.getPlayer(member.tag);
     if (!res.ok) return null;
+    const actions = logActionsMap[cache.logType] ?? [];
 
-    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_MEMBERS_PROMOTION_LOG, cache.guild);
-    if (!isEnabled && ['DEMOTED', 'PROMOTED'].includes(member.op)) return null;
+    if (!actions.includes(LogActions[member.op as LogAction])) return null;
 
     let content: string | undefined;
 
@@ -88,27 +103,27 @@ export default class ClanLog extends BaseClanLog {
     embed.setTimestamp();
 
     if (!cache.deepLink || cache.deepLink === DEEP_LINK_TYPES.OPEN_IN_COS) {
-      embed.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
+      embed.setURL(`https://www.clashofstats.com/players/${player.tag.slice(1)}`);
     } else {
-      embed.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
+      embed.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
     }
 
-    if (member.op === 'NAME_CHANGE') {
+    if (member.op === LogActions.NAME_CHANGE) {
       embed.setDescription(`Name changed from **${member.name}**`);
       embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
     }
 
-    if (member.op === 'PROMOTED') {
+    if (member.op === LogActions.PROMOTED) {
       embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
-      embed.setDescription(`Promoted to **${PLAYER_ROLES_MAP[member.role]}**`);
+      embed.setDescription(`Was Promoted to **${PLAYER_ROLES_MAP[member.role]}**`);
     }
 
-    if (member.op === 'DEMOTED') {
+    if (member.op === LogActions.DEMOTED) {
       embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
-      embed.setDescription(`Demoted to **${PLAYER_ROLES_MAP[member.role]}**`);
+      embed.setDescription(`Was Demoted to **${PLAYER_ROLES_MAP[member.role]}**`);
     }
 
-    if (member.op === 'TOWN_HALL_UPGRADE') {
+    if (member.op === LogActions.TOWN_HALL_UPGRADE) {
       if (cache.role) content = `<@&${cache.role}>`;
       const { id } = parseEmoji(TOWN_HALLS[player.townHallLevel])!;
       embed.setThumbnail(`https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
@@ -118,7 +133,7 @@ export default class ClanLog extends BaseClanLog {
       );
     }
 
-    if (member.op === 'WAR_PREF_CHANGE' && player.warPreference) {
+    if (member.op === LogActions.WAR_PREF_CHANGE && player.warPreference) {
       const { id } = parseEmoji(TOWN_HALLS[player.townHallLevel])!;
       embed.setThumbnail(`https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
       embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
@@ -132,7 +147,7 @@ export default class ClanLog extends BaseClanLog {
       }
     }
 
-    if (member.op === 'LEFT') {
+    if (member.op === LogActions.LEFT) {
       if (player.clan && player.clan.tag !== data.clan.tag) {
         embed.setFooter({
           text: `Left ${data.clan.name} [${data.memberList.length}/50] \nJoined ${player.clan.name}`,
@@ -144,14 +159,14 @@ export default class ClanLog extends BaseClanLog {
 
       embed.setDescription(
         [
-          `${TOWN_HALLS[player.townHallLevel]!} **${player.townHallLevel}**`,
-          `${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
+          `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
+          `${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]}**${player.trophies}**`,
           `${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
         ].join(' ')
       );
     }
 
-    if (member.op === 'JOINED') {
+    if (member.op === LogActions.JOINED) {
       embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
       const heroes = player.heroes.filter((hero) => hero.village === 'home');
       embed.setDescription(
@@ -198,20 +213,89 @@ export default class ClanLog extends BaseClanLog {
       .setTitle(`\u200e${data.clan.name} (${data.clan.tag})`)
       .setThumbnail(data.clan.badge);
 
-    if (data.type === 'CLAN_LEVEL_UP') {
+    if (data.type === LogActions.CLAN_LEVEL_UP) {
       embed.setDescription(`Clan leveled up to **${data.clan.level}**`);
     }
 
-    if (data.type === 'CAPITAL_HALL_LEVEL_UP') {
+    if (data.type === LogActions.CAPITAL_HALL_LEVEL_UP) {
       embed.setDescription(`Capital Hall leveled up to **${data.clan.capitalHallLevel}**`);
     }
 
-    if (data.type === 'CAPITAL_LEAGUE_CHANGE') {
-      embed.setDescription(`Capital League changed to **${data.clan.capitalLeague.name}**`);
+    if (data.type === LogActions.CAPITAL_LEAGUE_CHANGE) {
+      const isPromoted = this.isPromoted(data.clan.capitalLeague, data.clan.oldCapitalLeague);
+      embed.setColor(isPromoted ? COLOR_CODES.DARK_GREEN : COLOR_CODES.DARK_RED);
+      embed.setDescription(`Capital League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.capitalLeague.name}**`);
     }
 
-    if (data.type === 'WAR_LEAGUE_CHANGE') {
-      embed.setDescription(`War League changed to **${data.clan.warLeague.name}**`);
+    if (data.type === LogActions.WAR_LEAGUE_CHANGE) {
+      const isPromoted = this.isPromoted(data.clan.capitalLeague, data.clan.oldCapitalLeague);
+      embed.setColor(isPromoted ? COLOR_CODES.DARK_GREEN : COLOR_CODES.DARK_RED);
+      embed.setDescription(`War League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.warLeague.name}**`);
+    }
+
+    return this.send(cache, webhook, {
+      embeds: [embed],
+      threadId: cache.threadId
+    });
+  }
+
+  private async getDonationLogEmbed(cache: Cache, webhook: WebhookClient, data: Feed) {
+    const embed = new EmbedBuilder()
+      .setTitle(`${data.clan.name} (${data.clan.tag})`)
+      .setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
+      .setThumbnail(data.clan.badgeUrl)
+      .setFooter({ text: `${data.clan.members}/50`, iconURL: data.clan.badgeUrl })
+      .setTimestamp()
+      .setColor(COLOR_CODES.PURPLE);
+
+    const donatingMembers = data.members.filter((m) => m.op === LogActions.DONATED);
+    if (donatingMembers.length) {
+      embed.addFields([
+        {
+          name: `${EMOJIS.USER_BLUE} Donated`,
+          value: [
+            donatingMembers
+              .map((m) => {
+                if (m.donations > (this.client.isCustom() ? 100 : 200)) {
+                  const [div, mod] = this.divMod(m.donations);
+                  const list = [`\u200e${TOWN_HALLS[m.townHallLevel]} ${BLUE_NUMBERS[(div > 900 ? 900 : div).toString()]} ${m.name}`];
+                  if (mod > 0) {
+                    return list.concat(`\u200e${TOWN_HALLS[m.townHallLevel]} ${BLUE_NUMBERS[mod.toString()]} ${m.name}`).join('\n');
+                  }
+                  return list.join('\n');
+                }
+                return `\u200e${TOWN_HALLS[m.townHallLevel]} ${BLUE_NUMBERS[m.donations]} ${m.name}`;
+              })
+              .join('\n')
+              .slice(0, 1024)
+          ].join('\n')
+        }
+      ]);
+    }
+
+    const receivingMembers = data.members.filter((m) => m.op === LogActions.RECEIVED);
+    if (receivingMembers.length) {
+      embed.addFields([
+        {
+          name: `${EMOJIS.USER_RED} Received`,
+          value: [
+            receivingMembers
+              .map((m) => {
+                if (m.donationsReceived > (this.client.isCustom() ? 100 : 200)) {
+                  const [div, mod] = this.divMod(m.donationsReceived);
+                  const list = [`\u200e${TOWN_HALLS[m.townHallLevel]} ${RED_NUMBERS[(div > 900 ? 900 : div).toString()]} ${m.name}`];
+                  if (mod > 0) {
+                    return list.concat(`\u200e${TOWN_HALLS[m.townHallLevel]} ${RED_NUMBERS[mod.toString()]!} ${m.name}`).join('\n');
+                  }
+                  return list.join('\n');
+                }
+                return `\u200e${TOWN_HALLS[m.townHallLevel]} ${RED_NUMBERS[m.donationsReceived]!} ${m.name}`;
+              })
+              .join('\n')
+              .slice(0, 1024)
+          ].join('\n')
+        }
+      ]);
     }
 
     return this.send(cache, webhook, {
@@ -222,6 +306,17 @@ export default class ClanLog extends BaseClanLog {
 
   private formatHeroes(heroes: APIPlayerItem[]) {
     return heroes.length ? `${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}` : ``;
+  }
+
+  private divMod(num: number) {
+    return [Math.floor(num / 100) * 100, num % 100];
+  }
+
+  private isPromoted(current?: { id: number }, old?: { id: number }) {
+    if (!current?.id) return false;
+    if (!old?.id) return true;
+
+    return current.id > old.id;
   }
 
   private remainingUpgrades(data: APIPlayer) {
@@ -251,29 +346,21 @@ export default class ClanLog extends BaseClanLog {
   }
 
   public async init() {
-    for await (const data of this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })) {
-      this.cached.set((data._id as ObjectId).toHexString(), {
-        _id: data._id,
-        guild: data.guildId,
-        channel: data.channelId,
-        tag: data.clanTag,
-        deepLink: data.deepLink,
-        logType: data.logType,
-        retries: 0,
-        webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
-      });
-    }
+    const guildIds = this.client.guilds.cache.map((guild) => guild.id);
+    for await (const data of this.collection.find({ isEnabled: true, guildId: { $in: guildIds } })) this.setCache(data);
   }
 
-  public async add(id: string) {
-    const data = await this.collection.findOne({ clanId: new ObjectId(id) });
-    if (!data) return null;
+  public async add(guildId: string) {
+    for await (const data of this.collection.find({ guildId, isEnabled: true })) this.setCache(data);
+  }
 
-    return this.cached.set(id, {
+  private setCache(data: WithId<ClanLogsEntity>) {
+    this.cached.set(data._id.toHexString(), {
       _id: data._id,
       guild: data.guildId,
       channel: data.channelId,
       tag: data.clanTag,
+
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,
@@ -283,10 +370,12 @@ export default class ClanLog extends BaseClanLog {
 }
 
 interface Member {
-  op: string;
+  op: LogAction;
   tag: string;
   name: string;
   role: string;
+  leagueId: number;
+  townHallLevel: number;
   donations: number;
   donationsReceived: number;
   logType: string;
@@ -296,10 +385,16 @@ interface Feed {
   clan: {
     tag: string;
     name: string;
+    /** @deprecated To be deprecated */
     badge: string;
+    /** Only for DONATION_LOG */
+    badgeUrl: string;
     level: number;
-    warLeague: { name: string };
-    capitalLeague: { name: string };
+    members: number;
+    warLeague: { name: string; id: number };
+    oldWarLeague: { name: string; id: number };
+    capitalLeague: { name: string; id: number };
+    oldCapitalLeague: { name: string; id: number };
     capitalHallLevel: number;
   };
   members: Member[];
@@ -308,7 +403,8 @@ interface Feed {
     role: string;
     clan: { tag: string };
   }[];
-  type: string;
+  logType: string;
+  type?: LogAction;
 }
 
 interface Cache {
@@ -320,7 +416,8 @@ interface Cache {
   channel: string;
   guild: string;
   threadId?: string;
-  logType: string;
+  logType: ClanLogType;
+
   deepLink?: string;
   retries: number;
 }

@@ -1,6 +1,7 @@
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { BaseInteraction, CommandInteraction, User } from 'discord.js';
 import { ObjectId } from 'mongodb';
+import { unique } from 'radash';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
@@ -226,7 +227,7 @@ export default class Resolver {
 
     return result.reduce<Record<string, { userId: string; tag: string; verified: boolean; displayName: string; username: string }>>(
       (acc, link) => {
-				acc[link.tag] ??= link; // eslint-disable-line
+        acc[link.tag] ??= link; // eslint-disable-line
         const prev = acc[link.tag];
 
         if (!prev.verified && link.verified) acc[link.tag].verified = true;
@@ -327,10 +328,12 @@ export default class Resolver {
     const max = this.client.settings.get<number>(interaction.guild.id, Settings.CLAN_LIMIT, 2);
     const isPatron = this.client.patreonHandler.get(interaction.guild.id);
 
+    const featuresPerClan = unique(features.map((clan) => clan.tag || clan.clanTag));
+
     if (
       collection !== Collections.CLAN_STORES &&
-      features.length >= max &&
-      !features.map((clan) => clan.tag).includes(data.tag) &&
+      featuresPerClan.length >= max &&
+      !featuresPerClan.includes(data.tag) &&
       // make me invincible
       !this.client.isOwner(interaction.user) &&
       !this.client.isOwner(interaction.guild.ownerId)
