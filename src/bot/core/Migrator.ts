@@ -3,7 +3,7 @@ import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import { AnyBulkWriteOperation } from 'mongodb';
 import Client from '../struct/Client.js';
 
-const query = { guild: { $in: ['509784317598105619', '1016659402817814620'] } };
+const query = { tag: '#YL2VRJPV', guild: { $in: ['509784317598105619', '1016659402817814620'] } };
 
 export class Migrator {
   public constructor(private client: Client) {}

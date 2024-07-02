@@ -57,10 +57,11 @@ export default class ClanWarLogV2 extends BaseClanLog {
     }
 
     // MISSED ATTACK LOG
-    if (data.remaining.length && data.state === 'warEnded') {
-      if (data.warTag && cache.logType !== ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG) return null;
-      if (!data.warTag && cache.logType !== ClanLogType.CWL_MISSED_ATTACKS_LOG) return null;
-
+    if (
+      data.remaining.length &&
+      data.state === 'warEnded' &&
+      [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(cache.logType)
+    ) {
       const embed = this.getRemaining(data);
       if (!embed) return null;
 
@@ -82,6 +83,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
       return this.mutate(cache, data, msg);
     }
 
+    cache.message = messageId;
     const msg = await this.edit(cache, webhook, {
       embeds: [embed],
       threadId: cache.threadId,
@@ -96,6 +98,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
       this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLogV2.name });
+      console.log(error);
       return null;
     }
   }
@@ -105,6 +108,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
       this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLogV2.name });
+      console.log(error);
       return null;
     }
   }

@@ -114,8 +114,10 @@ export default class BaseClanLog {
   }
 
   public async editMessage(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
+    if (!cache.message) return this.sendMessage(cache, webhook, payload);
+
     try {
-      return await webhook.editMessage(cache.message!, payload);
+      return await webhook.editMessage(cache.message, payload);
     } catch (error) {
       if (error.code === DiscordErrorCodes.UNKNOWN_MESSAGE) {
         delete cache.message;
