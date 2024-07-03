@@ -71,7 +71,16 @@ jobs:
 
     steps:
       - name: Deploy
-        run: curl --fail --location --request POST '${{ secrets.PORTAINER_WEBHOOK_URL }}'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd clashperk
+            docker compose pull
+            docker compose up -d
 
   deploy-custom-bot:
     needs: build
