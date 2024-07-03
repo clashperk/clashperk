@@ -51,33 +51,7 @@ export default class CommandStartedListener extends Listener {
       locale: interaction.locale
     });
 
-    addBreadcrumb({
-      message: 'command_started',
-      category: command.category,
-      level: 'info',
-      data: {
-        user: {
-          id: interaction.user.id,
-          displayName: interaction.user.displayName,
-          username: interaction.user.username
-        },
-        guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : interaction.guildId,
-        channel: interaction.channel ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] } : interaction.channelId,
-        command: {
-          id: command.id,
-          category: command.category
-        },
-        interaction: {
-          id: interaction.id,
-          type: InteractionType[interaction.type],
-          command: interaction.isCommand() ? interaction.commandName : null,
-          customId: interaction.isMessageComponent() ? interaction.customId : null
-        },
-        args
-      }
-    });
-
-    setContext('command_started', {
+    const context = {
       user: {
         id: interaction.user.id,
         displayName: interaction.user.displayName,
@@ -96,7 +70,15 @@ export default class CommandStartedListener extends Listener {
         customId: interaction.isMessageComponent() ? interaction.customId : null
       },
       args
+    };
+
+    addBreadcrumb({
+      message: 'command_started',
+      category: command.category,
+      level: 'info',
+      data: context
     });
+    setContext('command_started', context);
 
     const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
     this.client.logger.debug(`${command.id}`, { label });

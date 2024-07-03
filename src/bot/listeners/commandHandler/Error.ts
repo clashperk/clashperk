@@ -27,38 +27,13 @@ export default class ErrorListener extends Listener {
     this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
     console.error(inspect(error, { depth: Infinity }));
 
-    addBreadcrumb({
-      message: 'command_errored',
-      category: command ? command.category : 'inhibitor',
-      level: 'error',
-      data: {
-        user: {
-          id: interaction.user.id,
-          displayName: interaction.user.displayName,
-          username: interaction.user.username
-        },
-        guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : interaction.guildId,
-        channel: interaction.channel ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] } : interaction.channelId,
-        command: {
-          id: command?.id,
-          category: command?.category
-        },
-        interaction: {
-          id: interaction.id,
-          type: InteractionType[interaction.type],
-          command: interaction.isCommand() ? interaction.commandName : null,
-          customId: interaction.isMessageComponent() ? interaction.customId : null
-        }
-      }
-    });
-
-    setContext('command_errored', {
+    const context = {
       user: {
         id: interaction.user.id,
-        username: interaction.user.username,
-        displayName: interaction.user.displayName
+        displayName: interaction.user.displayName,
+        username: interaction.user.username
       },
-      guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
+      guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : interaction.guildId,
       channel: interaction.channel ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] } : interaction.channelId,
       command: {
         id: command?.id,
@@ -70,8 +45,15 @@ export default class ErrorListener extends Listener {
         command: interaction.isCommand() ? interaction.commandName : null,
         customId: interaction.isMessageComponent() ? interaction.customId : null
       }
-    });
+    };
 
+    addBreadcrumb({
+      message: 'command_errored',
+      category: command ? command.category : 'inhibitor',
+      level: 'error',
+      data: context
+    });
+    setContext('command_errored', context);
     captureException(error);
 
     const message = {
@@ -92,7 +74,7 @@ export default class ErrorListener extends Listener {
       return await interaction.followUp(message);
     } catch (err) {
       // eslint-disable-next-line
-			this.client.logger.error(`${(err as DiscordAPIError).toString()}`, { label: 'ERRORED' });
+      this.client.logger.error(`${(err as DiscordAPIError).toString()}`, { label: 'ERRORED' });
     }
   }
 }

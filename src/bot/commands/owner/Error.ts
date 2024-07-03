@@ -5,12 +5,19 @@ export default class ErrorCommand extends Command {
   public constructor() {
     super('error', {
       category: 'owner',
+      ownerOnly: true,
       clientPermissions: ['EmbedLinks', 'AttachFiles'],
       defer: false
     });
   }
 
   public run() {
-    captureException(new Error(`Hello from Sentry [${Math.random().toFixed(2)}]`));
+    try {
+      // @ts-expect-error - test error
+      foo(`Hello from Sentry [${Math.random().toFixed(2)}]`);
+    } catch (e) {
+      console.log(e);
+      captureException(e);
+    }
   }
 }
