@@ -158,7 +158,8 @@ export default class SetupButtonsCommand extends Command {
       if (action.customId === customIds.done) {
         await action.update({ components: [] });
         collector.stop();
-        return interaction.channel?.send({ embeds: [embed], components: [linkButtonRow] });
+        await interaction.channel?.send({ embeds: [embed], components: [linkButtonRow] });
+        return;
       }
 
       if (action.customId === customIds.token && action.isStringSelectMenu()) {
@@ -287,7 +288,8 @@ export default class SetupButtonsCommand extends Command {
       if (action.customId === customIds.done) {
         await action.update({ components: [] });
         collector.stop();
-        return interaction.channel?.send({ embeds: [embed], components: [refreshButtonRow] });
+        await interaction.channel?.send({ embeds: [embed], components: [refreshButtonRow] });
+        return;
       }
 
       if (action.customId === customIds.embed) {
