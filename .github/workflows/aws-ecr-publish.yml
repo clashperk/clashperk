@@ -1,11 +1,6 @@
 name: aws-ecr-publish
 
 on:
-  push:
-    tags:
-      - '*'
-    paths-ignore:
-      - scripts/**
   workflow_dispatch:
 
 jobs:

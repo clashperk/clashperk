@@ -62,6 +62,9 @@ export default class ClanWarLogV2 extends BaseClanLog {
       data.state === 'warEnded' &&
       [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(cache.logType)
     ) {
+      if (data.warTag && cache.logType !== ClanLogType.CWL_MISSED_ATTACKS_LOG) return null;
+      if (!data.warTag && cache.logType !== ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG) return null;
+
       const embed = this.getRemaining(data);
       if (!embed) return null;
 

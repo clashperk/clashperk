@@ -20,7 +20,7 @@ import {
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
-import { IRoster, IRosterCategory, PlayerWithLink } from '../../struct/RosterManager.js';
+import { IRoster, IRosterCategory, PlayerWithLink, ROSTER_MAX_LIMIT } from '../../struct/RosterManager.js';
 import { PlayerModel } from '../../types/index.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -1310,7 +1310,7 @@ export default class RosterManageCommand extends Command {
           .split(/\W+/)
           .filter((tag) => TAG_REGEX.test(tag))
           .map((tag) => this.client.http.fixTag(tag))
-          .slice(0, 65); // TODO: Fix
+          .slice(0, ROSTER_MAX_LIMIT); // TODO: Fix
 
         if (!playerTags.length) {
           return await modalSubmit.reply({ content: 'No valid player tags detected.' });

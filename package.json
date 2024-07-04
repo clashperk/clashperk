@@ -58,6 +58,7 @@
     "undici": "^6.9.0"
   },
   "devDependencies": {
+    "@sentry/cli": "^2.32.1",
     "@types/common-tags": "^1.8.1",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/moment-duration-format": "^2.2.3",

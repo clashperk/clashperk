@@ -22,6 +22,7 @@ import {
 } from '../src/bot/util/Constants.js';
 import { TranslationKey } from '../src/bot/util/i18n.js';
 import { Season } from '../src/bot/util/index.js';
+import { ROSTER_MAX_LIMIT } from '../src/bot/struct/RosterManager.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
@@ -1959,14 +1960,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'max_members',
             min_value: 5,
-            max_value: 65,
+            max_value: ROSTER_MAX_LIMIT,
             description: 'Roster size',
             type: ApplicationCommandOptionType.Integer
           },
           {
             name: 'max_accounts_per_user',
             min_value: 1,
-            max_value: 65,
+            max_value: ROSTER_MAX_LIMIT,
             description: 'Max accounts per user',
             type: ApplicationCommandOptionType.Integer
           },
@@ -2168,14 +2169,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'max_members',
             description: 'Roster size',
-            max_value: 65,
+            max_value: ROSTER_MAX_LIMIT,
             min_value: 5,
             type: ApplicationCommandOptionType.Integer
           },
           {
             name: 'max_accounts_per_user',
             min_value: 1,
-            max_value: 65,
+            max_value: ROSTER_MAX_LIMIT,
             description: 'Max accounts per user',
             type: ApplicationCommandOptionType.Integer
           },

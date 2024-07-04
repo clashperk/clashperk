@@ -107,6 +107,7 @@ export default class RosterCreateCommand extends Command {
     if (!args.sort_by && args.category === 'TROPHY') {
       data.sortBy = 'TROPHIES';
     }
+    if (args.category === 'NO_CLAN') data.maxMembers = 500;
 
     if (args.roster_role) {
       const dup = await this.client.rosterManager.rosters.findOne(

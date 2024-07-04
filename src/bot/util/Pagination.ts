@@ -20,7 +20,12 @@ import { EMOJIS } from './Emojis.js';
 const NEXT = '➡️';
 const PREV = '⬅️';
 
-export function dynamicPagination(interaction: CommandInteraction<'cached'>, embeds: EmbedBuilder[], customIdProps: CustomIdProps) {
+export function dynamicPagination(
+  interaction: CommandInteraction<'cached'>,
+  embeds: EmbedBuilder[],
+  customIdProps: CustomIdProps,
+  rows?: ActionRowBuilder<ButtonBuilder>[]
+) {
   const client = container.resolve(Client);
   let pageIndex = (customIdProps.page ?? 0) as number;
   if (pageIndex < 0) pageIndex = embeds.length - 1;
@@ -65,7 +70,7 @@ export function dynamicPagination(interaction: CommandInteraction<'cached'>, emb
     new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
   );
 
-  return interaction.editReply({ embeds: [embeds[pageIndex]], components: [row, pagingRow] });
+  return interaction.editReply({ embeds: [embeds[pageIndex]], components: rows?.length ? [...rows, pagingRow] : [row, pagingRow] });
 }
 
 export const handlePagination = async (

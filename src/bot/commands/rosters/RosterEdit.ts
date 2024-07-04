@@ -292,7 +292,7 @@ export default class RosterEditCommand extends Command {
     const apply = async (action: ButtonInteraction<'cached'>) => {
       await this.client.db
         .collection<IRoster>(Collections.ROSTERS)
-        .updateMany({ guildId: interaction.guild.id, category: { $ne: 'TROPHY' } }, { $set: selected });
+        .updateMany({ guildId: interaction.guild.id, category: { $nin: ['TROPHY', 'NO_CLAN'] } }, { $set: selected });
       await action.update({ components: [] });
     };
 

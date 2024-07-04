@@ -15,7 +15,7 @@ import {
 import moment from 'moment-timezone';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { EventEmitter } from 'node:events';
-import { unique } from 'radash';
+import { parallel, unique } from 'radash';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/CommandOptions.js';
 import {
@@ -183,7 +183,7 @@ export interface IRoster {
   maxAccountsPerUser?: number | null;
   allowUnlinked?: boolean;
   allowMultiSignup?: boolean;
-  category: 'GENERAL' | 'CWL' | 'WAR' | 'TROPHY';
+  category: 'GENERAL' | 'CWL' | 'WAR' | 'TROPHY' | 'NO_CLAN';
   allowCategorySelection?: boolean;
   lastUpdated: Date;
   createdAt: Date;
@@ -244,6 +244,8 @@ export const RosterEvents = {
   ROSTER_MEMBER_REMOVED: 'roster_member_removed',
   ROSTER_MEMBER_GROUP_CHANGED: 'roster_member_group_changed'
 } as const;
+
+export const ROSTER_MAX_LIMIT = 65;
 
 interface IRosterEvents {
   [RosterEvents.ROSTER_MEMBER_ADDED]: [];
@@ -802,7 +804,9 @@ export class RosterManager {
     return value;
   }
 
-  public getRosterEmbed(roster: IRoster, categories: WithId<IRosterCategory>[]) {
+  public getRosterEmbed(roster: IRoster, categories: WithId<IRosterCategory>[], multi: true): EmbedBuilder[];
+  public getRosterEmbed(roster: IRoster, categories: WithId<IRosterCategory>[], multi?: false): EmbedBuilder;
+  public getRosterEmbed(roster: IRoster, categories: WithId<IRosterCategory>[], multi: boolean = false): EmbedBuilder[] | EmbedBuilder {
     const categoriesMap = categories.reduce<Record<string, IRosterCategory>>(
       (prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
       {}
@@ -859,19 +863,23 @@ export class RosterManager {
       return categoriesMap[a].order - categoriesMap[b].order;
     });
 
-    const embed = new EmbedBuilder().setURL(this.client.http.getClanURL(roster.clan.tag)).setAuthor({
-      name: `${roster.clan.name} (${roster.clan.tag})`,
-      iconURL: roster.clan.badgeUrl,
-      url: this.client.http.getClanURL(roster.clan.tag)
-    });
+    const embed = new EmbedBuilder();
+    if (roster.colorCode) embed.setColor(roster.colorCode);
+
+    if (roster.category !== 'NO_CLAN') {
+      embed.setAuthor({
+        name: `${roster.clan.name} (${roster.clan.tag})`,
+        iconURL: roster.clan.badgeUrl,
+        url: this.client.http.getClanURL(roster.clan.tag)
+      });
+    }
 
     if (roster.category === 'CWL' && roster.clan.league?.id) {
       embed.setTitle(`${roster.name} (${roster.clan.league.name})`);
     } else {
       embed.setTitle(`${roster.name}`);
     }
-
-    if (roster.colorCode) embed.setColor(roster.colorCode);
+    embed.setURL(this.client.http.getClanURL(roster.clan.tag));
 
     const groups = membersGroup.map(([categoryId, members]) => {
       const categoryLabel = categoryId === 'none' ? '**Ungrouped**' : `**${categoriesMap[categoryId].displayName}**`;
@@ -926,7 +934,7 @@ export class RosterManager {
       .join(' ')
       .replace(/` `/g, ' ');
 
-    const [description, rest] = Util.splitMessage(
+    const [description, ...rest] = Util.splitMessage(
       [
         heading,
         ...groups.flatMap(({ categoryLabel, members }) => [
@@ -941,13 +949,6 @@ export class RosterManager {
       ].join('\n'),
       { maxLength: 4096 }
     );
-
-    embed.setDescription(description);
-    if (rest) {
-      for (const value of Util.splitMessage(rest, { maxLength: 1024 })) {
-        embed.addFields({ name: '\u200e', value });
-      }
-    }
 
     const total = `Total ${roster.members.length}/${roster.maxMembers || 65}`;
     if (roster.startTime && roster.startTime > new Date()) {
@@ -974,7 +975,20 @@ export class RosterManager {
       });
     }
 
-    return embed;
+    embed.setDescription(description);
+
+    const embeds: EmbedBuilder[] = [embed];
+    if (rest.length && roster.members.length <= ROSTER_MAX_LIMIT) {
+      for (const value of Util.splitMessage(rest[0], { maxLength: 1024 })) {
+        embed.addFields({ name: '\u200e', value });
+      }
+    } else {
+      rest.forEach((value) => {
+        embeds.push(new EmbedBuilder(embed.toJSON()).setDescription(value));
+      });
+    }
+
+    return multi ? embeds : embed;
   }
 
   public getRosterInfoEmbed(roster: IRoster) {
@@ -989,7 +1003,7 @@ export class RosterManager {
       .addFields({
         name: 'Roster Size',
         inline: true,
-        value: `${roster.maxMembers ?? 65} max, ${roster.members.length} signed-up`
+        value: `${roster.maxMembers ?? ROSTER_MAX_LIMIT} max, ${roster.members.length} signed-up`
       })
       .addFields({
         name: 'Roster Category',
@@ -1380,7 +1394,13 @@ export class RosterManager {
       .collection<PlayerLinks>(Collections.PLAYER_LINKS)
       .find({ tag: { $in: memberList.map((mem) => mem.tag) } })
       .toArray();
-    const players = await this.client.http._getPlayers(memberList);
+
+    const fetched = await parallel(25, memberList, async (member) => {
+      const { body, res } = await this.client.http.getPlayer(member.tag);
+      if (!res.ok || !body) return null;
+      return body;
+    });
+    const players = fetched.filter((_) => _) as APIPlayer[];
 
     const members: IRosterMember[] = [];
     players.forEach((player) => {
@@ -1446,15 +1466,19 @@ export class RosterManager {
       (prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
       {}
     );
-
     const seasonId = moment().date() >= 10 ? moment().format('YYYY-MM') : moment().subtract(1, 'month').format('YYYY-MM');
-    const cwlMembers = await this.client.rosterManager.getCWLStats(
-      roster.members.map((m) => m.tag),
-      seasonId
-    );
 
-    const sheets: CreateGoogleSheet[] = [
-      {
+    const sheets: CreateGoogleSheet[] = [];
+
+    if (!['TROPHY', 'NO_CLAN'].includes(roster.category)) {
+      const cwlMembers = !['TROPHY', 'NO_CLAN'].includes(roster.category)
+        ? await this.client.rosterManager.getCWLStats(
+            roster.members.map((m) => m.tag),
+            seasonId
+          )
+        : {};
+
+      sheets.push({
         title: `${roster.name} - ${roster.clan.name}`,
         columns: [
           { name: 'Player Name', align: 'LEFT', width: 160 },
@@ -1513,31 +1537,38 @@ export class RosterManager {
             cwlMember?.defenseCount ? (cwlMember.defenseDestruction / cwlMember.defenseCount).toFixed(2) : ''
           ];
         })
-      },
-      {
-        title: `${clan.name} (${clan.tag})`,
-        columns: [
-          { name: 'Name', align: 'LEFT', width: 160 },
-          { name: 'Tag', align: 'LEFT', width: 120 },
-          { name: 'Discord', align: 'LEFT', width: 160 },
-          { name: 'War Preference', align: 'LEFT', width: 100 },
-          { name: 'Town Hall', align: 'RIGHT', width: 100 },
-          { name: 'Heroes', align: 'RIGHT', width: 100 },
-          { name: 'Signed up?', align: 'LEFT', width: 100 }
-        ],
-        rows: clanMembers.map((member) => {
-          return [
-            member.name,
-            member.tag,
-            member.username ?? '',
-            member.warPreference ?? '',
-            member.townHallLevel,
-            Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
-            signedUp.includes(member.tag) ? 'Yes' : 'No'
-          ];
-        })
-      }
-    ];
+      });
+    }
+
+    sheets.push({
+      title: `${clan.name} (${clan.tag})`,
+      columns: [
+        { name: 'Name', align: 'LEFT', width: 160 },
+        { name: 'Tag', align: 'LEFT', width: 120 },
+        { name: 'Discord', align: 'LEFT', width: 160 },
+        { name: 'War Preference', align: 'LEFT', width: 100 },
+        { name: 'Town Hall', align: 'RIGHT', width: 100 },
+        { name: 'Clan', align: 'LEFT', width: 160 },
+        { name: 'Clan Tag', align: 'LEFT', width: 120 },
+        { name: 'Role', align: 'LEFT', width: 100 },
+        { name: 'Heroes', align: 'RIGHT', width: 100 },
+        { name: 'Signed up?', align: 'LEFT', width: 100 }
+      ],
+      rows: clanMembers.map((member) => {
+        return [
+          member.name,
+          member.tag,
+          member.username ?? '',
+          member.warPreference ?? '',
+          member.townHallLevel,
+          member.clan?.name ?? '',
+          member.clan?.tag ?? '',
+          member.role ? roleNames[member.role] : '',
+          Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
+          signedUp.includes(member.tag) ? 'Yes' : 'No'
+        ];
+      })
+    });
 
     const sheet = roster.sheetId
       ? await updateGoogleSheet(roster.sheetId, sheets, true)
@@ -1605,6 +1636,8 @@ export class RosterManager {
         }
       >
     > = {};
+
+    if (!playerTags.length) return members;
 
     const wars = this.client.db.collection<APIClanWar>(Collections.CLAN_WARS).find({
       $or: [
