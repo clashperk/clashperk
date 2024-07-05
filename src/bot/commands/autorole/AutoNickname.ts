@@ -175,7 +175,7 @@ export default class NicknameConfigCommand extends Command {
           .setLabel('Leader')
           .setPlaceholder('Leader Role (Defaults to Lead)')
           .setStyle(TextInputStyle.Short)
-          .setMaxLength(5)
+          .setMaxLength(10)
           .setRequired(false);
         if (state.leader) leaderInput.setValue(state.leader);
 
@@ -184,7 +184,7 @@ export default class NicknameConfigCommand extends Command {
           .setLabel('Co-Leader')
           .setPlaceholder('Co-Leader Role (Defaults to Co-Lead)')
           .setStyle(TextInputStyle.Short)
-          .setMaxLength(5)
+          .setMaxLength(10)
           .setRequired(false);
         if (state.coLeader) coLeaderInput.setValue(state.coLeader);
 
@@ -193,7 +193,7 @@ export default class NicknameConfigCommand extends Command {
           .setLabel('Elder')
           .setPlaceholder('Elder Role (Defaults to Eld)')
           .setStyle(TextInputStyle.Short)
-          .setMaxLength(5)
+          .setMaxLength(10)
           .setRequired(false);
         if (state.admin) elderInput.setValue(state.admin);
 
@@ -202,7 +202,7 @@ export default class NicknameConfigCommand extends Command {
           .setLabel('Member')
           .setPlaceholder('Member Role (Defaults to Mem)')
           .setStyle(TextInputStyle.Short)
-          .setMaxLength(5)
+          .setMaxLength(10)
           .setRequired(false);
         if (state.member) memberInput.setValue(state.member);
 
