@@ -20,7 +20,7 @@ import {
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
-import { IRoster, IRosterCategory, PlayerWithLink, ROSTER_MAX_LIMIT } from '../../struct/RosterManager.js';
+import { IRoster, IRosterCategory, PlayerWithLink, ROSTER_MAX_LIMIT, RosterLog } from '../../struct/RosterManager.js';
 import { PlayerModel } from '../../types/index.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -456,12 +456,29 @@ export default class RosterManageCommand extends Command {
         true
       );
 
+      const changeLog = [];
       for (const player of players) {
-        await this.client.rosterManager.swapCategory({
+        const newRoster = await this.client.rosterManager.swapCategory({
           roster,
           player,
           user: player.user,
           newCategoryId: selected.targetCategory?._id ?? null
+        });
+
+        if (newRoster) {
+          const oldMember = roster.members.find((mem) => mem.tag === player.tag);
+          const member = newRoster.members.find((mem) => mem.tag === player.tag);
+          if (member) changeLog.push({ ...member, categoryId: oldMember?.categoryId });
+        }
+      }
+
+      if (changeLog.length) {
+        this.client.rosterManager.rosterChangeLog({
+          roster,
+          user: action.user,
+          action: RosterLog.CHANGE_GROUP,
+          members: changeLog,
+          categoryId: selected.categoryId
         });
       }
 
@@ -736,8 +753,9 @@ export default class RosterManageCommand extends Command {
         selected.playerTags.map((tag) => ({ tag })),
         true
       );
-      const result = [];
 
+      const result = [];
+      const changeLog = [];
       for (const player of players) {
         const swapped = await this.client.rosterManager.swapRoster({
           oldRoster: roster,
@@ -749,6 +767,22 @@ export default class RosterManageCommand extends Command {
         result.push({
           success: swapped.success,
           message: `- **\u200e${player.name} (${player.tag})** \n  - ${swapped.message}`
+        });
+
+        if (swapped.success && swapped.roster) {
+          const member = swapped.roster.members.find((mem) => mem.tag === player.tag);
+          if (member) changeLog.push(member);
+        }
+      }
+
+      if (changeLog.length) {
+        this.client.rosterManager.rosterChangeLog({
+          roster: selected.targetRoster!,
+          oldRoster: roster,
+          user: action.user,
+          action: RosterLog.CHANGE_ROSTER,
+          members: changeLog,
+          categoryId: selected.categoryId
         });
       }
 
@@ -1045,8 +1079,19 @@ export default class RosterManageCommand extends Command {
     const confirm = async (action: ButtonInteraction<'cached'>) => {
       await action.deferUpdate();
 
+      const members = roster.members.filter((member) => selected.playerTags.includes(member.tag));
+
       const updated = await this.client.rosterManager.optOut(roster, ...selected.playerTags);
       if (!updated) return action.editReply({ content: 'Roster was deleted.', components: [] });
+
+      if (members.length) {
+        this.client.rosterManager.rosterChangeLog({
+          action: RosterLog.REMOVE_PLAYER,
+          roster,
+          user: action.user,
+          members
+        });
+      }
 
       return action.editReply({ content: 'Players removed successfully.', components: [] });
     };
@@ -1384,6 +1429,7 @@ export default class RosterManageCommand extends Command {
       await action.editReply({ content: `Adding players... ${EMOJIS.LOADING}`, components: [] });
 
       const result = [];
+      const changeLog = [];
       for (const tag of selected.playerTags) {
         const player = selected.players.find((player) => player.tag === tag)!;
         const updated = await this.client.rosterManager.selfSignup({
@@ -1396,6 +1442,20 @@ export default class RosterManageCommand extends Command {
         result.push({
           success: updated.success,
           message: `- **\u200e${player.name} (${player.tag})** \n  - ${updated.message}`
+        });
+        if (updated.success && updated.roster) {
+          const member = updated.roster.members.find((mem) => mem.tag === player.tag);
+          if (member) changeLog.push(member);
+        }
+      }
+
+      if (changeLog.length) {
+        this.client.rosterManager.rosterChangeLog({
+          roster,
+          user: action.user,
+          action: RosterLog.ADD_PLAYER,
+          members: changeLog,
+          categoryId: selected.categoryId
         });
       }
 

@@ -9,6 +9,7 @@ import {
   Guild,
   PermissionFlagsBits,
   StringSelectMenuInteraction,
+  User,
   WebhookClient,
   time
 } from 'discord.js';
@@ -1715,18 +1716,75 @@ export class RosterManager {
     return members;
   }
 
-  public async rosterChangeLog(
-    roster: IRoster,
-    action: 'signup' | 'opt-out',
-    members: { name: string; tag: string; userId: string | null }[]
-  ) {
-    const label = action === 'signup' ? 'Signed up for' : 'Opted out of';
+  public async rosterChangeLog({
+    roster,
+    user,
+    action,
+    members,
+    categoryId
+  }: {
+    roster: IRoster;
+    oldCategory?: IRosterCategory;
+    oldRoster?: IRoster;
+    user: User;
+    action: RosterLog;
+    members: IRosterMember[];
+    categoryId?: string | null;
+  }) {
+    const categories = await this.getCategories(roster.guildId);
+    const categoryMap = categories.reduce<Record<string, IRosterCategory>>(
+      (prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
+      {}
+    );
+
+    let label = action === RosterLog.SIGNUP ? 'Signed-Up' : 'Opted-Out';
+    if (action === RosterLog.ADD_PLAYER) label = 'Players Added';
+    if (action === RosterLog.REMOVE_PLAYER) label = 'Players Removed';
+    if (action === RosterLog.CHANGE_GROUP) label = 'Group Changed';
+    if (action === RosterLog.CHANGE_ROSTER) label = 'Roster Changed';
+
+    const colorCodes: Record<RosterLog, number> = {
+      [RosterLog.SIGNUP]: COLOR_CODES.GREEN,
+      [RosterLog.OPT_OUT]: COLOR_CODES.RED,
+      [RosterLog.ADD_PLAYER]: COLOR_CODES.GREEN,
+      [RosterLog.REMOVE_PLAYER]: COLOR_CODES.RED,
+      [RosterLog.CHANGE_GROUP]: COLOR_CODES.CYAN,
+      [RosterLog.CHANGE_ROSTER]: COLOR_CODES.YELLOW
+    };
+
     const embed = new EmbedBuilder()
-      .setTitle(`${label} ${roster.name}`)
-      .setColor(action === 'signup' ? COLOR_CODES.GREEN : COLOR_CODES.RED)
+      .setColor(colorCodes[action])
+      .setTitle(`${roster.name}`)
       .setURL(`http://cprk.eu/${roster.clan.tag.slice(1)}`)
-      .setDescription(members.map((mem) => `\u200e${mem.name} (${mem.tag}) ${mem.userId ? `- <@${mem.userId}>` : ''}`).join('\n'))
       .setFooter({ text: `${roster.clan.name} (${roster.clan.tag})`, iconURL: roster.clan.badgeUrl });
+
+    embed.setDescription(
+      [
+        `### ${label}`,
+        //
+        members.map((mem) => `\u200e${mem.name} (${mem.tag}) ${mem.userId ? `<@${mem.userId}>` : ''}`).join('\n')
+      ].join('\n')
+    );
+    if (action === RosterLog.CHANGE_GROUP) {
+      embed.setDescription(
+        [
+          `### ${label}`,
+          //
+          members
+            .map(
+              (mem) =>
+                `\u200e${mem.name} (${mem.tag}) ${mem.categoryId ? `- ${categoryMap[mem.categoryId.toHexString()]?.displayName || 'Ungrouped'}` : ''}`
+            )
+            .join('\n')
+        ].join('\n')
+      );
+    }
+
+    if (action !== RosterLog.OPT_OUT && action !== RosterLog.REMOVE_PLAYER) {
+      embed.addFields({ name: 'User Group', value: categoryId ? categoryMap[categoryId]?.displayName : 'None' });
+    }
+
+    embed.addFields({ name: 'User', value: `<@${user.id}>` });
 
     const config = this.client.settings.get<{ channelId: string; webhook: { token: string; id: string } }>(
       roster.guildId,
@@ -1745,4 +1803,13 @@ export class RosterManager {
       }
     }
   }
+}
+
+export enum RosterLog {
+  SIGNUP = 'SIGNUP',
+  OPT_OUT = 'OPT_OUT',
+  ADD_PLAYER = 'ADD_PLAYER',
+  REMOVE_PLAYER = 'REMOVE_PLAYER',
+  CHANGE_GROUP = 'CHANGE_GROUP',
+  CHANGE_ROSTER = 'CHANGE_ROSTER'
 }

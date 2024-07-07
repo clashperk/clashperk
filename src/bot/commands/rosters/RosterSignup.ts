@@ -3,6 +3,7 @@ import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSe
 import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
+import { RosterLog } from '../../struct/RosterManager.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
 import { sumHeroes } from '../../util/Helper.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
@@ -148,12 +149,9 @@ export default class RosterSignupCommand extends Command {
           message: `**\u200e${player.name} (${player.tag})** ${updated.success ? '- ' : '\n'}${updated.message}`
         });
 
-        if (updated.success) {
-          changeLog.push({
-            name: player.name,
-            tag: player.tag,
-            userId: interaction.user.id
-          });
+        if (updated.success && updated.roster) {
+          const member = updated.roster.members.find((mem) => mem.tag === player.tag);
+          if (member) changeLog.push(member);
         }
       }
       const errored = result.some((res) => !res.success);
@@ -172,7 +170,13 @@ export default class RosterSignupCommand extends Command {
       }
 
       if (changeLog.length) {
-        this.client.rosterManager.rosterChangeLog(roster, 'signup', changeLog);
+        this.client.rosterManager.rosterChangeLog({
+          roster,
+          user: interaction.user,
+          action: RosterLog.SIGNUP,
+          members: changeLog,
+          categoryId: selected.category || categoryId
+        });
       }
 
       const embed = this.client.rosterManager.getRosterEmbed(roster, categories);
@@ -188,12 +192,14 @@ export default class RosterSignupCommand extends Command {
       if (!updated) return action.editReply({ content: 'You are not signed up for this roster.', embeds: [], components: [] });
 
       await action.editReply({ content: 'You have been removed from the roster.', embeds: [], components: [] });
+
       if (members.length) {
-        this.client.rosterManager.rosterChangeLog(
+        this.client.rosterManager.rosterChangeLog({
+          action: RosterLog.OPT_OUT,
+          members,
           roster,
-          'opt-out',
-          members.map((mem) => ({ name: mem.name, tag: mem.tag, userId: mem.userId }))
-        );
+          user: interaction.user
+        });
       }
 
       const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
