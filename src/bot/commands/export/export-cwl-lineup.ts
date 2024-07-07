@@ -67,9 +67,7 @@ export default class ExportCwlLineup extends Command {
             { name: 'Attacker Tag', align: 'LEFT', width: 120 },
             { name: 'Opponent', align: 'LEFT', width: 160 },
             { name: 'Opponent Tag', align: 'LEFT', width: 120 },
-            { name: 'Attacker Map', align: 'RIGHT', width: 100 },
             { name: 'Attacker TH', align: 'RIGHT', width: 100 },
-            { name: 'Opponent Map', align: 'RIGHT', width: 100 },
             { name: 'Opponent TH', align: 'RIGHT', width: 100 }
           ],
           rows: round.clan.members.map((m, idx) => {
@@ -82,9 +80,7 @@ export default class ExportCwlLineup extends Command {
               m.tag,
               opponent.name,
               opponent.tag,
-              round.clan.members.findIndex((en) => en.tag === m.tag) + 1,
               m.townhallLevel,
-              round.opponent.members.findIndex((en) => en.tag === opponent.tag) + 1,
               opponent.townhallLevel
             ];
           })

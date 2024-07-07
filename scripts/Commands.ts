@@ -3604,6 +3604,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: command.export.options.wars.description,
             description_localizations: translation('command.export.options.wars.description'),
             type: ApplicationCommandOptionType.Integer
+          },
+          {
+            name: 'lineup_only',
+            description: 'Export only the lineup.',
+            type: ApplicationCommandOptionType.Boolean
           }
         ]
       },
