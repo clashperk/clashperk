@@ -11,6 +11,7 @@ import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
 import { request } from 'undici';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
+import { isWinner } from '../helper/cwl-helper.js';
 import { DISCORD_ID_REGEX, TAG_REGEX } from '../util/Constants.js';
 import Client from './Client.js';
 
@@ -146,17 +147,7 @@ export default class Http extends ClashOfClansClient {
   }
 
   public isWinner(clan: APIWarClan, opponent: APIWarClan) {
-    if (clan.stars > opponent.stars) {
-      return true;
-    } else if (clan.stars < opponent.stars) {
-      return false;
-    }
-    if (clan.destructionPercentage > opponent.destructionPercentage) {
-      return true;
-    } else if (clan.destructionPercentage < opponent.destructionPercentage) {
-      return false;
-    }
-    return false;
+    return isWinner(clan, opponent);
   }
 
   public getRaidSeasons(tag: string, limit = 1) {

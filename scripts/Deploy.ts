@@ -79,7 +79,7 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
   }
 
   if (process.argv.includes('--private')) {
-    await applicationGuildCommands(process.env.PROD_TOKEN!, SUPPORT_SERVER_ID, [...PRIVATE_COMMANDS]);
+    await applicationGuildCommands(process.env.PROD_TOKEN!, SUPPORT_SERVER_ID, [...PRIVATE_COMMANDS, ...HIDDEN_COMMANDS]);
     return;
   }
 

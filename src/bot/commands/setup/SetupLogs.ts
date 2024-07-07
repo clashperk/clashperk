@@ -41,7 +41,9 @@ export const logActionsMap: Record<
   [ClanLogType.CLAN_WAR_EMBED_LOG]: {},
   [ClanLogType.CWL_EMBED_LOG]: {},
   [ClanLogType.CWL_MISSED_ATTACKS_LOG]: {},
-  [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG]: {}
+  [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG]: {},
+  [ClanLogType.CWL_LINEUP_CHANGE_LOG]: {},
+  [ClanLogType.CWL_MONTHLY_SUMMARY_LOG]: {}
 };
 
 export default class SetupLogsCommand extends Command {

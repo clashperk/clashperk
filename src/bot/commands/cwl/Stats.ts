@@ -1,11 +1,12 @@
 import { APIClan, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
-import fetch from 'node-fetch';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
+import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/cwl-helper.js';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
-import { WAR_LEAGUE_MAP, WAR_LEAGUE_PROMOTION_MAP, calculateCWLMedals } from '../../util/Constants.js';
+import { getCWLSummaryImage } from '../../struct/ImageHelper.js';
+import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '../../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -83,46 +84,9 @@ export default class CWLStatsCommand extends Command {
         lost: number;
       }
     > = {};
-    const ranking: Record<
-      string,
-      {
-        name: string;
-        tag: string;
-        stars: number;
-        destruction: number;
-        badgeUrl: string;
-      }
-    > = {};
-
     let activeRounds = 0;
 
     for (const data of body.rounds) {
-      ranking[data.clan.tag] ??= {
-        name: data.clan.name,
-        tag: data.clan.tag,
-        stars: 0,
-        destruction: 0,
-        badgeUrl: data.clan.badgeUrls.large
-      };
-      const clan = ranking[data.clan.tag];
-      clan.stars += data.clan.stars;
-      if (data.state === 'warEnded' && this.winner(data.clan, data.opponent)) clan.stars += 10;
-
-      clan.destruction += data.clan.destructionPercentage * data.teamSize;
-
-      ranking[data.opponent.tag] ??= {
-        name: data.opponent.name,
-        tag: data.opponent.tag,
-        stars: 0,
-        destruction: 0,
-        badgeUrl: data.opponent.badgeUrls.large
-      };
-      const opponent = ranking[data.opponent.tag];
-      opponent.stars += data.opponent.stars;
-      if (data.state === 'warEnded' && this.winner(data.opponent, data.clan)) opponent.stars += 10;
-
-      opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
-
       if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
         const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
         const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
@@ -248,30 +212,10 @@ export default class CWLStatsCommand extends Command {
       .join('\n\n');
 
     const leagueId = body.leagues?.[clan.tag];
-    const ranks = Object.values(ranking)
-      .sort(this.rankingSort)
-      .map((clan, i) => ({ ...clan, leagueId, rank: i + 1 }))
-      .map((clan) => ({
-        ...clan,
-        pos: leagueId
-          ? clan.rank <= WAR_LEAGUE_PROMOTION_MAP[leagueId].promotion
-            ? 'up'
-            : clan.rank >= WAR_LEAGUE_PROMOTION_MAP[leagueId].demotion
-              ? 'down'
-              : 'same'
-          : 0,
-        destruction: Math.round(clan.destruction)
-      }));
+    const ranks = calculateLeagueRanking(aggregateRoundsForRanking(body.rounds), leagueId);
 
     const rankIndex = ranks.findIndex((a) => a.tag === clanTag);
     const padding = Math.max(...ranks.map((r) => r.destruction)) > 9999 ? 6 : 5;
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const maxStars =
-      Object.values(members)
-        .sort((a, b) => b.stars - a.stars)
-        .sort((a, b) => b.dest - a.dest)
-        .at(0)?.stars ?? 0;
 
     const embeds = [
       new EmbedBuilder()
@@ -340,25 +284,18 @@ export default class CWLStatsCommand extends Command {
     await interaction.editReply({ embeds: [...embeds, embed], components: menu ? [row, menu] : [row] });
     if (!leagueId) return null;
 
-    const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND!}/wars/cwl-ranks`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        ranks,
-        rankIndex: rankIndex,
-        season: body.season,
-        medals: medals,
-        leagueName: WAR_LEAGUE_MAP[leagueId],
-        rounds: `${activeRounds}/${body.clans.length - 1}`
-      })
-    }).then((res) => res.arrayBuffer());
-
-    const rawFile = new AttachmentBuilder(Buffer.from(arrayBuffer), {
-      name: 'clan-war-league-ranking.jpeg'
+    const { file, name, attachmentKey } = await getCWLSummaryImage({
+      activeRounds,
+      leagueId,
+      medals,
+      rankIndex,
+      ranks,
+      season: body.season,
+      totalRounds: body.clans.length - 1
     });
-    embed.setImage('attachment://clan-war-league-ranking.jpeg');
+
+    const rawFile = new AttachmentBuilder(file, { name });
+    embed.setImage(attachmentKey);
 
     return interaction.editReply({ files: [rawFile], embeds: [...embeds, embed], components: menu ? [row, menu] : [row] });
   }
@@ -377,10 +314,5 @@ export default class CWLStatsCommand extends Command {
 
   private winner(clan: APIWarClan, opponent: APIWarClan) {
     return this.client.http.isWinner(clan, opponent);
-  }
-
-  private rankingSort(a: { stars: number; destruction: number }, b: { stars: number; destruction: number }) {
-    if (a.stars === b.stars) return b.destruction - a.destruction;
-    return b.stars - a.stars;
   }
 }

@@ -3,6 +3,7 @@ import { APIClanWar, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import {
   APIMessage,
   ActionRowBuilder,
+  AttachmentBuilder,
   ButtonBuilder,
   ButtonStyle,
   Collection,
@@ -15,9 +16,11 @@ import {
 import moment from 'moment';
 import { ObjectId, UpdateFilter, WithId } from 'mongodb';
 import { cluster } from 'radash';
-import { Collections } from '../util/Constants.js';
+import { aggregateRoundsForRanking, calculateLeagueRanking } from '../helper/cwl-helper.js';
+import { getCWLSummaryImage } from '../struct/ImageHelper.js';
+import { Collections, calculateCWLMedals } from '../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/Emojis.js';
-import { Util } from '../util/index.js';
+import { Season, Util } from '../util/index.js';
 import BaseClanLog from './BaseClanLog.js';
 import RPCHandler from './RPCHandler.js';
 
@@ -56,6 +59,20 @@ export default class ClanWarLogV2 extends BaseClanLog {
       messageId = (data.uid === cache.uid ? cache.message : null) ?? null;
     }
 
+    // CWL SUMMARY
+    if (data.type === 'CWL_ENDED') {
+      if (cache.logType !== ClanLogType.CWL_MONTHLY_SUMMARY_LOG) return null;
+
+      const result = await this.getSummaryImage(cache.tag);
+      if (!result) return null;
+
+      return this.send(cache, webhook, {
+        files: [result.attachment],
+        threadId: cache.threadId,
+        content: result.content
+      });
+    }
+
     // MISSED ATTACK LOG
     if (
       data.remaining.length &&
@@ -68,6 +85,12 @@ export default class ClanWarLogV2 extends BaseClanLog {
       const embed = this.getRemaining(data);
       if (!embed) return null;
 
+      return this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+    }
+
+    // LINEUP CHANGE LOG
+    if ((data.oldMembers?.length || data.newMembers?.length) && cache.logType === ClanLogType.CWL_LINEUP_CHANGE_LOG) {
+      const embed = this.getLineupChangeEmbed(data);
       return this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
     }
 
@@ -301,7 +324,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
       .setURL(this.clanURL(data.clan.tag))
       .setDescription(
         [
-          `**War Against ${data.warTag ? `CWL Round ${data.round}` : ''}**`,
+          `**War Against ${data.warTag ? `(CWL Round ${data.round})` : ''}**`,
           `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
         ].join('\n')
       );
@@ -328,6 +351,35 @@ export default class ClanWarLogV2 extends BaseClanLog {
 
     if ((oneRem.length && !friendly) || twoRem.length) return embed;
     return null;
+  }
+
+  private getLineupChangeEmbed(data: Feed) {
+    const embed = new EmbedBuilder()
+      .setTitle(`${data.clan.name} (${data.clan.tag})`)
+      .setThumbnail(data.clan.badgeUrls.small)
+      .setURL(this.clanURL(data.clan.tag))
+      .setDescription(
+        [
+          `**War Against ${data.warTag ? `(CWL Round ${data.round})` : ''}**`,
+          `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+        ].join('\n')
+      );
+
+    if (data.newMembers.length) {
+      embed.addFields({
+        name: 'Members Added',
+        value: data.newMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`).join('\n')
+      });
+    }
+
+    if (data.oldMembers.length) {
+      embed.addFields({
+        name: 'Members Removed',
+        value: data.oldMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`).join('\n')
+      });
+    }
+
+    return embed;
   }
 
   private getLeagueWarEmbed(data: Feed) {
@@ -422,6 +474,36 @@ export default class ClanWarLogV2 extends BaseClanLog {
     return embed;
   }
 
+  private async getSummaryImage(clanTag: string) {
+    const leagueGroup = await this.client.storage.getWarTags(clanTag, Season.ID);
+    if (!leagueGroup) return null;
+
+    const body = await this.client.http.aggregateClanWarLeague(clanTag, leagueGroup, true);
+    if (!body) return null;
+
+    const leagueId = body.leagues?.[clanTag];
+    if (!leagueId) return null;
+
+    const ranks = calculateLeagueRanking(aggregateRoundsForRanking(body.rounds), leagueId);
+    const rankIndex = ranks.findIndex((a) => a.tag === clanTag);
+    const medals = calculateCWLMedals(leagueId.toString(), 8, rankIndex + 1);
+
+    const { file, name } = await getCWLSummaryImage({
+      activeRounds: body.rounds.length,
+      leagueId,
+      medals,
+      rankIndex,
+      ranks,
+      season: body.season,
+      totalRounds: body.clans.length - 1
+    });
+
+    return {
+      content: `## Clan War League ${moment(body.season).format('MMM YYYY')}`,
+      attachment: new AttachmentBuilder(file, { name })
+    };
+  }
+
   private clanURL(tag: string) {
     return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
   }
@@ -449,7 +531,12 @@ export default class ClanWarLogV2 extends BaseClanLog {
       .join('');
   }
 
-  private getRoster(townHalls: Roster[]) {
+  private getRoster(
+    townHalls: {
+      total: number;
+      level: number;
+    }[]
+  ) {
     return cluster(townHalls, 5)
       .map((chunks) => {
         const list = chunks.map((th) => `${TOWN_HALLS[th.level]!} ${ORANGE_NUMBERS[th.total]!}`);
@@ -467,7 +554,9 @@ export default class ClanWarLogV2 extends BaseClanLog {
           ClanLogType.CLAN_WAR_EMBED_LOG,
           ClanLogType.CWL_EMBED_LOG,
           ClanLogType.CWL_MISSED_ATTACKS_LOG,
-          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG
+          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG,
+          ClanLogType.CWL_LINEUP_CHANGE_LOG,
+          ClanLogType.CWL_MONTHLY_SUMMARY_LOG
         ]
       },
       isEnabled: true
@@ -484,7 +573,9 @@ export default class ClanWarLogV2 extends BaseClanLog {
           ClanLogType.CLAN_WAR_EMBED_LOG,
           ClanLogType.CWL_EMBED_LOG,
           ClanLogType.CWL_MISSED_ATTACKS_LOG,
-          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG
+          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG,
+          ClanLogType.CWL_LINEUP_CHANGE_LOG,
+          ClanLogType.CWL_MONTHLY_SUMMARY_LOG
         ]
       },
       isEnabled: true
@@ -510,32 +601,21 @@ export default class ClanWarLogV2 extends BaseClanLog {
   }
 }
 
-interface Roster {
-  total: number;
-  level: number;
-}
-
-interface Attacker {
-  name: string;
-  stars: number;
-  oldStars: number;
-  mapPosition: number;
-  townHallLevel: number;
-  destructionPercentage: number;
-}
-
-interface Defender {
-  mapPosition: number;
-  townHallLevel: number;
-}
-
-interface Recent {
-  attacker: Attacker;
-  defender: Defender;
-}
-
 interface Feed extends APIClanWar {
-  recent?: Recent[];
+  recent?: {
+    attacker: {
+      name: string;
+      stars: number;
+      oldStars: number;
+      mapPosition: number;
+      townHallLevel: number;
+      destructionPercentage: number;
+    };
+    defender: {
+      mapPosition: number;
+      townHallLevel: number;
+    };
+  }[];
   result: string;
   round: number;
   uid: string;
@@ -543,8 +623,21 @@ interface Feed extends APIClanWar {
   warTag?: string;
   attacksPerMember: number;
   remaining: APIClanWarMember[];
-  clan: APIWarClan & { rosters: Roster[] };
-  opponent: APIWarClan & { rosters: Roster[] };
+  clan: APIWarClan & {
+    rosters: {
+      total: number;
+      level: number;
+    }[];
+  };
+  opponent: APIWarClan & {
+    rosters: {
+      total: number;
+      level: number;
+    }[];
+  };
+  oldMembers: APIClanWarMember[];
+  newMembers: APIClanWarMember[];
+  type?: 'CWL_ENDED';
 }
 
 interface Cache {
