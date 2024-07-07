@@ -1746,8 +1746,8 @@ export class RosterManager {
     const colorCodes: Record<RosterLog, number> = {
       [RosterLog.SIGNUP]: COLOR_CODES.GREEN,
       [RosterLog.OPT_OUT]: COLOR_CODES.RED,
-      [RosterLog.ADD_PLAYER]: COLOR_CODES.GREEN,
-      [RosterLog.REMOVE_PLAYER]: COLOR_CODES.RED,
+      [RosterLog.ADD_PLAYER]: COLOR_CODES.DARK_GREEN,
+      [RosterLog.REMOVE_PLAYER]: COLOR_CODES.DARK_RED,
       [RosterLog.CHANGE_GROUP]: COLOR_CODES.CYAN,
       [RosterLog.CHANGE_ROSTER]: COLOR_CODES.YELLOW
     };

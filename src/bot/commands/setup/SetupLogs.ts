@@ -189,7 +189,7 @@ export default class SetupLogsCommand extends Command {
                 updatedAt: new Date()
               },
               $min: {
-                lastPostedAt: new Date()
+                lastPostedAt: new Date(Date.now() - 1000 * 60 * 30)
               }
             },
             { upsert: true }
