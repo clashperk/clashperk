@@ -60,7 +60,7 @@ export const getCWLSummaryImage = async ({
   activeRounds: number;
   totalRounds: number;
 }) => {
-  const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND!}/wars/cwl-ranks`, {
+  const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND}/wars/cwl-ranks`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

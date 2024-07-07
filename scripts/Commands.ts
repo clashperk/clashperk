@@ -4345,8 +4345,8 @@ export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     description: 'Setup logs.',
     options: [
       {
-        name: 'clans',
-        description: 'Select clans for the logs.',
+        name: 'clan',
+        description: 'Select the clan for the logs.',
         type: ApplicationCommandOptionType.String,
         required: true,
         autocomplete: true

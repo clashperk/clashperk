@@ -7,44 +7,67 @@ import { Collections, DEEP_LINK_TYPES, Flags } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { createInteractionCollector } from '../../util/Pagination.js';
 
-export const logActionsMap: Record<
-  string,
-  {
-    label?: string;
-  }
-> = {
-  [ClanLogType.MEMBER_JOIN_LEAVE_LOG]: {
-    label: 'Member Join/Leave Log'
-  },
-  [ClanLogType.ROLE_CHANGE_LOG]: {},
-  [ClanLogType.TOWN_HALL_UPGRADE_LOG]: {},
-  [ClanLogType.WAR_PREFERENCE_LOG]: {},
-  [ClanLogType.NAME_CHANGE_LOG]: {},
-  [ClanLogType.CONTINUOUS_DONATION_LOG]: {
-    label: 'Donation Log (Continuous)'
-  },
-  [ClanLogType.DAILY_DONATION_LOG]: {
-    label: 'Donation Log (Daily)'
-  },
-  [ClanLogType.WEEKLY_DONATION_LOG]: {
-    label: 'Donation Log (Weekly)'
-  },
-  [ClanLogType.MONTHLY_DONATION_LOG]: {
-    label: 'Donation Log (Monthly)'
-  },
-  [ClanLogType.CLAN_ACHIEVEMENTS_LOG]: {},
-  [ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG]: {},
-  [ClanLogType.CLAN_GAMES_EMBED_LOG]: {},
-  [ClanLogType.LAST_SEEN_EMBED_LOG]: {},
-  [ClanLogType.LEGEND_ATTACKS_DAILY_SUMMARY_LOG]: {},
+type LogMap = Record<string, { label?: string }>;
 
-  [ClanLogType.CLAN_WAR_EMBED_LOG]: {},
-  [ClanLogType.CWL_EMBED_LOG]: {},
-  [ClanLogType.CWL_MISSED_ATTACKS_LOG]: {},
-  [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG]: {},
-  [ClanLogType.CWL_LINEUP_CHANGE_LOG]: {},
-  [ClanLogType.CWL_MONTHLY_SUMMARY_LOG]: {}
-};
+export const logGroups: { name: string; logs: LogMap }[] = [
+  {
+    name: 'Clan Logs',
+    logs: {
+      [ClanLogType.MEMBER_JOIN_LEAVE_LOG]: {
+        label: 'Member Join/Leave Log'
+      },
+      [ClanLogType.ROLE_CHANGE_LOG]: {},
+      [ClanLogType.CLAN_ACHIEVEMENTS_LOG]: {},
+
+      [ClanLogType.CONTINUOUS_DONATION_LOG]: {
+        label: 'Donation Log (Instant)'
+      },
+      [ClanLogType.DAILY_DONATION_LOG]: {
+        label: 'Donation Log (Daily)'
+      },
+      [ClanLogType.WEEKLY_DONATION_LOG]: {
+        label: 'Donation Log (Weekly)'
+      },
+      [ClanLogType.MONTHLY_DONATION_LOG]: {
+        label: 'Donation Log (Monthly)'
+      },
+
+      [ClanLogType.CLAN_GAMES_EMBED_LOG]: {},
+      [ClanLogType.LAST_SEEN_EMBED_LOG]: {},
+      [ClanLogType.LEGEND_ATTACKS_DAILY_SUMMARY_LOG]: {}
+    }
+  },
+  {
+    name: 'Capital Logs',
+    logs: {
+      [ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG]: {}
+    }
+  },
+  {
+    name: 'War Logs',
+    logs: {
+      [ClanLogType.CLAN_WAR_EMBED_LOG]: {},
+      [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG]: {},
+      [ClanLogType.CWL_EMBED_LOG]: {},
+      [ClanLogType.CWL_MISSED_ATTACKS_LOG]: {},
+      [ClanLogType.CWL_LINEUP_CHANGE_LOG]: {},
+      [ClanLogType.CWL_MONTHLY_SUMMARY_LOG]: {}
+    }
+  },
+  {
+    name: 'Player Logs',
+    logs: {
+      [ClanLogType.NAME_CHANGE_LOG]: {},
+      [ClanLogType.TOWN_HALL_UPGRADE_LOG]: {},
+      [ClanLogType.WAR_PREFERENCE_LOG]: {}
+    }
+  }
+];
+
+export const logActionsMap = logGroups.reduce<LogMap>((record, group) => {
+  record = { ...record, ...group.logs };
+  return record;
+}, {});
 
 export default class SetupLogsCommand extends Command {
   public constructor() {
@@ -58,9 +81,11 @@ export default class SetupLogsCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans: string; action: 'enable' | 'disable' }) {
-    const clan = await this.client.resolver.enforceSecurity(interaction, { tag: args.clans, collection: Collections.CLAN_LOGS });
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clan: string; action: 'enable' | 'disable' }) {
+    const clan = await this.client.resolver.enforceSecurity(interaction, { tag: args.clan, collection: Collections.CLAN_LOGS });
     if (!clan) return;
+
+    const disabling = args.action === 'disable';
 
     const id = await this.client.storage.register(interaction, {
       op: Flags.SERVER_LINKED,
@@ -76,33 +101,64 @@ export default class SetupLogsCommand extends Command {
     });
 
     const collection = this.client.db.collection<ClanLogsEntity>(Collections.CLAN_LOGS);
-    const logs = Object.keys(logActionsMap) as ClanLogType[];
+    const logTypes = Object.keys(logActionsMap) as ClanLogType[];
+    const _logs = await collection.find({ logType: { $in: logTypes }, clanTag: clan.tag, guildId: interaction.guildId }).toArray();
 
-    const customIds = {
+    const customIds: Record<string, string> = {
       logs: this.client.uuid()
     };
 
-    const menu = new StringSelectMenuBuilder()
-      .setOptions(
-        logs.map((log) => ({
-          label: logActionsMap[log].label || title(log),
-          emoji: EMOJIS.GEAR,
-          value: log
-        }))
-      )
-      .setCustomId(customIds.logs)
-      .setMaxValues(logs.length)
-      .setPlaceholder('Select the Logs');
+    const rows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
+    for (const group of logGroups) {
+      const logs = Object.keys(group.logs) as ClanLogType[];
+      customIds[group.name] = this.client.uuid();
 
-    const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
+      const menu = new StringSelectMenuBuilder()
+        .setOptions(
+          logs.map((log) => ({
+            label: logActionsMap[log].label || title(log),
+            emoji: EMOJIS.GEAR,
+            value: log
+          }))
+        )
+        .setCustomId(customIds[group.name])
+        .setMaxValues(logs.length)
+        .setPlaceholder(`Select the ${group.name}`);
 
-    const _logs = await collection.find({ logType: { $in: logs }, clanTag: clan.tag, guildId: interaction.guildId }).toArray();
+      const row = new ActionRowBuilder<StringSelectMenuBuilder>();
+      if (disabling) {
+        const enabledLogIds = _logs.map((log) => log.logType);
+        const logTypes = logs.filter((log) => enabledLogIds.includes(log));
+        if (!logTypes.length) continue;
+
+        menu.setOptions(
+          logTypes.map((log) => ({
+            label: logActionsMap[log].label || title(log),
+            emoji: EMOJIS.GEAR,
+            value: log
+          }))
+        );
+        menu.setMaxValues(logTypes.length);
+
+        row.addComponents(menu);
+        rows.push(row);
+      } else {
+        row.addComponents(menu);
+        rows.push(row);
+      }
+    }
+    if (!rows.length) return interaction.editReply(`No logs are enabled for **\u200e${clan.name} (${clan.tag})**`);
+
     const message = await interaction.editReply({
       content: [
-        `## Select the logs you want to enable in <#${interaction.channelId}>`,
-        _logs.map((log) => `- ${logActionsMap[log.logType].label || title(log.logType)} (<#${log.channelId}>)`).join('\n')
+        `## ${clan.name} (${clan.tag})`,
+        _logs.length ? `### Currently Enabled Logs` : '',
+
+        _logs.map((log) => `- ${logActionsMap[log.logType].label || title(log.logType)} <#${log.channelId}>`).join('\n'),
+
+        disabling ? '### Select the logs you want to disable' : `### Select the logs you want to enable in <#${interaction.channelId}>`
       ].join('\n'),
-      components: [row]
+      components: [...rows]
     });
 
     return createInteractionCollector({
@@ -124,7 +180,7 @@ export default class SetupLogsCommand extends Command {
                 clanTag: clan.tag,
                 guildId: interaction.guild.id,
                 logType,
-                isEnabled: args.action !== 'disable',
+                isEnabled: !disabling,
                 clanId: new ObjectId(id),
                 channelId: interaction.channelId,
                 deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME,
@@ -143,7 +199,7 @@ export default class SetupLogsCommand extends Command {
 
         await Promise.all(ops);
 
-        if (args.action === 'disable') {
+        if (disabling) {
           const logIds = _logs.filter((log) => selectedLogs.includes(log.logType)).map((log) => log._id);
           logIds.forEach((logId) => this.client.rpcHandler.removeV2(logId.toHexString()));
           await collection.deleteMany({ _id: { $in: logIds } });
@@ -153,7 +209,8 @@ export default class SetupLogsCommand extends Command {
 
         return action.update({
           content: [
-            `## The logs have been enabled in <#${interaction.channelId}>`,
+            `## ${clan.name} (${clan.tag})`,
+            disabling ? '### The logs have been disabled' : `### The logs have been enabled in <#${interaction.channelId}>`,
             selectedLogs.map((log) => `- ${title(log)}`).join('\n')
           ].join('\n'),
           components: []

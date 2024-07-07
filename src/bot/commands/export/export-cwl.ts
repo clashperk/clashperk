@@ -17,7 +17,10 @@ export default class ExportCWL extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string; lineup_only?: boolean }) {
+    const command = this.handler.getCommand('export-cwl-lineup');
+    if (command && args.lineup_only) return command.exec(interaction, args);
+
     const season = args.season === Season.ID ? null : args.season;
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
