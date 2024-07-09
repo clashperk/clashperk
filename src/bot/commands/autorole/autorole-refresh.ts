@@ -1,10 +1,10 @@
-import { Settings } from '@app/constants';
 import { ButtonInteraction, CommandInteraction, EmbedBuilder, Role, User } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
-import { handleMessagePagination } from '../../util/Pagination.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { handleMessagePagination } from '../../util/_Pagination.js';
+import { Settings } from '../../util/constants.js';
 
 export default class AutoTownHallRoleCommand extends Command {
   public constructor() {

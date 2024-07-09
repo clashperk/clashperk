@@ -1,7 +1,7 @@
-import { FeatureFlags } from '@app/constants';
 import { Message } from 'discord.js';
 import { inspect } from 'util';
 import { Command } from '../../lib/index.js';
+import { FeatureFlags } from '../../util/_constants.js';
 
 export default class FeatureFlagsCommand extends Command {
   public constructor() {

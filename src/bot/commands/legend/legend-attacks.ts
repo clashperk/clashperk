@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';
-import { ATTACK_COUNTS, Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { ATTACK_COUNTS, Collections } from '../../util/constants.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class LegendAttacksCommand extends Command {

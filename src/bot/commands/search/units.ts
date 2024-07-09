@@ -12,9 +12,9 @@ import {
 import { unique } from 'radash';
 import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
-import { getMenuFromMessage, unitsFlatten } from '../../util/Helper.js';
-import { RAW_SUPER_TROOPS, RAW_TROOPS_WITH_ICONS } from '../../util/Troops.js';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/_emojis.js';
+import { getMenuFromMessage, unitsFlatten } from '../../util/_Helper.js';
+import { RAW_SUPER_TROOPS, RAW_TROOPS_WITH_ICONS } from '../../util/_Troops.js';
 
 export default class UnitsCommand extends Command {
   public constructor() {

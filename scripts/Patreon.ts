@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import { PatreonMembersEntity } from '../src/bot/entities/patrons.entity.js';
 import { mongoClient } from '../src/bot/struct/Database.js';
 import { Included, Member } from '../src/bot/struct/PatreonHandler.js';
-import { Collections } from '../src/bot/util/Constants.js';
+import { Collections } from '../src/bot/util/_constants.js';
 
 (async () => {
   await mongoClient.connect().then(() => console.log('MongoDB Connected!'));

@@ -1,14 +1,14 @@
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonInteraction,
-  ButtonStyle,
-  CommandInteraction,
-  ComponentType,
-  StringSelectMenuBuilder
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	ComponentType,
+	StringSelectMenuBuilder
 } from 'discord.js';
 import { Command } from '../../../lib/index.js';
-import { EMOJIS } from '../../../util/Emojis.js';
+import { EMOJIS } from '../../../util/_emojis.js';
 import { Util } from '../../../util/index.js';
 
 export default class CapitalReminderNowCommand extends Command {

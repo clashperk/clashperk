@@ -10,10 +10,10 @@ import {
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
-import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/CommandOptions.js';
-import { Settings } from '../../util/Constants.js';
-import { getExportComponents } from '../../util/Helper.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
+import { Settings } from '../../util/_constants.js';
+import { getExportComponents } from '../../util/_Helper.js';
+import { createInteractionCollector } from '../../util/_Pagination.js';
+import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/command-options.js';
 import { Util } from '../../util/index.js';
 
 export default class RosterEditCommand extends Command {

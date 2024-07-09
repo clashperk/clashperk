@@ -1,10 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { Settings } from '../../util/Constants.js';
-import { nullsLastSortAlgo } from '../../util/Helper.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
-import { Util } from '../../util/Util.js';
+import { Settings } from '../../util/_constants.js';
+import { nullsLastSortAlgo } from '../../util/_Helper.js';
+import { createInteractionCollector } from '../../util/_Pagination.js';
+import { Util } from '../../util/_util.js';
 
 export default class RosterPingCommand extends Command {
   public constructor() {

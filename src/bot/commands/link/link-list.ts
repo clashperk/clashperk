@@ -1,4 +1,3 @@
-import { Settings } from '@app/constants';
 import { Command } from '@lib/core';
 import { APIClan } from 'clashofclans.js';
 import {
@@ -13,8 +12,9 @@ import {
 } from 'discord.js';
 import { title } from 'radash';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
-import { MembersCommandOptions } from '../../util/CommandOptions.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { MembersCommandOptions } from '../../util/command-options.js';
+import { Settings } from '../../util/constants.js';
 import { padStart } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
 

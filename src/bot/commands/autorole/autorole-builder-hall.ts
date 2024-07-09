@@ -1,7 +1,7 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { BUILDER_HALL_LEVELS_FOR_ROLES, Settings } from '../../util/Constants.js';
-import { ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { ORANGE_NUMBERS } from '../../util/_emojis.js';
+import { BUILDER_HALL_LEVELS_FOR_ROLES, Settings } from '../../util/constants.js';
 
 export default class AutoBuilderHallRoleCommand extends Command {
   public constructor() {

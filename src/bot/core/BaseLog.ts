@@ -1,4 +1,3 @@
-import { FeatureFlags } from '@app/constants';
 import {
   APIMessage,
   Collection,
@@ -12,6 +11,7 @@ import {
 } from 'discord.js';
 import { Collection as DbCollection, ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
+import { FeatureFlags } from '../util/_constants.js';
 import { Util } from '../util/index.js';
 
 export default class BaseLog {

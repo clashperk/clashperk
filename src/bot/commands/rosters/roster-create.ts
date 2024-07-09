@@ -2,7 +2,7 @@ import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Args, Command } from '../../lib/index.js';
 import { DEFAULT_TROPHY_ROSTER_LAYOUT, IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
-import { Settings, UNRANKED_WAR_LEAGUE_ID } from '../../util/Constants.js';
+import { Settings, UNRANKED_WAR_LEAGUE_ID } from '../../util/_constants.js';
 
 // /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2})$/
 

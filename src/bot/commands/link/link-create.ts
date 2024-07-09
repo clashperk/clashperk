@@ -2,7 +2,7 @@ import { APIClan, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections, FeatureFlags, Settings } from '../../util/Constants.js';
+import { Collections, FeatureFlags, Settings } from '../../util/_constants.js';
 
 export default class LinkCreateCommand extends Command {
   public constructor() {

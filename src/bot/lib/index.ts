@@ -24,7 +24,7 @@ import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/Client.js';
 import { CustomIdProps } from '../struct/ComponentHandler.js';
-import { Settings } from '../util/Constants.js';
+import { Settings } from '../util/_constants.js';
 import { i18n } from '../util/i18n.js';
 import './modifier.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor, WSEvents } from './util.js';

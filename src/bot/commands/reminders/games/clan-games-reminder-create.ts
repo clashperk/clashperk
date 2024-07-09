@@ -18,7 +18,7 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import ms from 'ms';
 import { Args, Command } from '../../../lib/index.js';
-import { CLAN_GAMES_MINIMUM_POINTS, Collections, missingPermissions } from '../../../util/Constants.js';
+import { CLAN_GAMES_MINIMUM_POINTS, Collections, missingPermissions } from '../../../util/_constants.js';
 
 export default class ReminderCreateCommand extends Command {
   public constructor() {
@@ -62,7 +62,7 @@ export default class ReminderCreateCommand extends Command {
       return interaction.editReply(
         this.i18n('common.missing_access', {
           lng: interaction.locale,
-					channel: args.channel.toString(), // eslint-disable-line
+          channel: args.channel.toString(), // eslint-disable-line
           permission: permission.missingPerms
         })
       );
@@ -72,7 +72,7 @@ export default class ReminderCreateCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-				this.i18n('command.reminders.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+        this.i18n('command.reminders.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
       );
     }
 

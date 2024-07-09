@@ -4,7 +4,7 @@ import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
 import { padStart } from '../../util/Helper.js';
 import { Util } from '../../util/index.js';
 

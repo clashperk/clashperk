@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { Settings } from '../../util/Constants.js';
+import { Settings } from '../../util/_constants.js';
 
 export default class RosterDeleteCommand extends Command {
   public constructor() {

@@ -48,7 +48,7 @@
     "allowSyntheticDefaultImports": true,
 
     "paths": {
-      "@app/constants": ["./src/bot/util/Constants.ts"],
+      "@app/constants": ["./src/bot/util/_constants.ts"],
       "@app/entities": ["./src/bot/entities/index.ts"],
       "@lib/constants": ["./src/bot/lib/util.ts"],
       "@lib/core": ["./src/bot/lib/index.ts"]

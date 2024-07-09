@@ -13,7 +13,7 @@ import {
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
-import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/Constants.js';
+import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/_constants.js';
 import { Util } from '../util/index.js';
 import { Client } from './Client.js';
 

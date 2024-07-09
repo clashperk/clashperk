@@ -13,8 +13,8 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../../lib/index.js';
-import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
-import { hexToNanoId } from '../../../util/Helper.js';
+import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/_constants.js';
+import { hexToNanoId } from '../../../util/_Helper.js';
 
 export default class ReminderEditCommand extends Command {
   public constructor() {

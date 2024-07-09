@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
+import { Collections } from '../../util/_constants.js';
 
 export default class AliasDeleteCommand extends Command {
   public constructor() {

@@ -18,7 +18,7 @@ import Google from '../../struct/Google.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
 import { IRoster, IRosterCategory } from '../../struct/RosterManager.js';
 import { UserInfoModel, UserTimezone } from '../../types/index.js';
-import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex, Settings } from '../../util/Constants.js';
+import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex, Settings } from '../../util/_constants.js';
 
 const ranges: Record<string, number> = {
   'clan-wars': ms('46h'),

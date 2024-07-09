@@ -10,8 +10,8 @@ import {
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { Collections } from '../../util/constants.js';
 import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/Helper.js';
 import { ClanGamesConfig, Util } from '../../util/index.js';
 

@@ -12,7 +12,7 @@ import TimeoutSignal from 'timeout-signal';
 import { request } from 'undici';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 import { isWinner } from '../helper/cwl-helper.js';
-import { DISCORD_ID_REGEX, TAG_REGEX } from '../util/Constants.js';
+import { DISCORD_ID_REGEX, TAG_REGEX } from '../util/_constants.js';
 import Client from './Client.js';
 
 export default class Http extends ClashOfClansClient {

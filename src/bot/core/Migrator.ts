@@ -1,7 +1,7 @@
-import { Collections } from '@app/constants';
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import { AnyBulkWriteOperation } from 'mongodb';
 import Client from '../struct/Client.js';
+import { Collections } from '../util/_constants.js';
 
 const query = { tag: '#YL2VRJPV', guild: { $in: ['509784317598105619', '1016659402817814620'] } };
 

@@ -1,6 +1,6 @@
 import { ChannelType, Message, PermissionFlagsBits } from 'discord.js';
 import { Listener } from '../../lib/index.js';
-import { Settings } from '../../util/Constants.js';
+import { Settings } from '../../util/_constants.js';
 
 const REGEX = /\bhttps:\/\/link\.clashofclans\.com\S+/gi;
 

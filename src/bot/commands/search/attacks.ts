@@ -2,9 +2,9 @@ import { APIClanMember } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { MembersCommandOptions } from '../../util/CommandOptions.js';
-import { Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { MembersCommandOptions } from '../../util/command-options.js';
+import { Collections } from '../../util/constants.js';
 import { Season } from '../../util/index.js';
 
 export default class ClanAttacksCommand extends Command {

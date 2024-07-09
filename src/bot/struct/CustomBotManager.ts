@@ -16,7 +16,7 @@ import { container } from 'tsyringe';
 import { COMMANDS } from '../../../scripts/Commands.js';
 import { CustomBotsEntity } from '../entities/custom-bot.entity.js';
 import { PatreonMembersEntity } from '../entities/patrons.entity.js';
-import { Collections, Settings } from '../util/Constants.js';
+import { Collections, Settings } from '../util/_constants.js';
 import Client from './Client.js';
 
 export class CustomBotManager {

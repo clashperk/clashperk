@@ -5,8 +5,8 @@ import fetch from 'node-fetch';
 import { PlayersEntity } from '../../entities/players.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';
-import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
-import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
+import { EMOJIS, TOWN_HALLS } from '../../util/_emojis.js';
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class LegendDaysCommand extends Command {

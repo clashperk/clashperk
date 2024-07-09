@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { DiscordjsErrorCodes, ShardingManager } from 'discord.js';
 import { createServer } from 'node:http';
 import { URL, fileURLToPath } from 'node:url';
-import Logger from './bot/util/Logger.js';
+import Logger from './bot/util/_Logger.js';
 
 class Manager extends ShardingManager {
   private _retry = 0;

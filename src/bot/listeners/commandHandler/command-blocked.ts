@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
-import { Listener, Command } from '../../lib/index.js';
+import { Command, Listener } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
-import { BIT_FIELD } from '../../util/Constants.js';
+import { BIT_FIELD } from '../../util/_constants.js';
 
 const texts: Record<string, string> = {
   guild: 'You must be in a server to use this command.',

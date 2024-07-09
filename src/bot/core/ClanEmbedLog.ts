@@ -1,8 +1,8 @@
 import { APIClan } from 'clashofclans.js';
 import { Collection, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../util/Constants.js';
-import { clanEmbedMaker } from '../util/Helper.js';
+import { Collections } from '../util/_constants.js';
+import { clanEmbedMaker } from '../util/_Helper.js';
 import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';
 

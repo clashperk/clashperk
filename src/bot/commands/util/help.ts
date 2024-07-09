@@ -11,7 +11,7 @@ import {
 import i18next from 'i18next';
 import { command as commandMap } from '../../../../locales/en.js';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
 
 const getTranslation = (key: string): string | null => {
   const [cmd, ...keys] = key.split('.');

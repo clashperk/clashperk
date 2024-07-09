@@ -1,6 +1,6 @@
 import { Guild } from 'discord.js';
 import { Listener } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections } from '../../util/_constants.js';
 
 export default class WebhookDeletedListener extends Listener {
   public constructor() {

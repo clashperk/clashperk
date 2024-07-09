@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { Collections } from '../../util/constants.js';
+import { EMOJIS } from '../../util/_emojis.js';
 import { Season } from '../../util/index.js';
 
 export default class SummaryAttacksCommand extends Command {
@@ -34,7 +34,7 @@ export default class SummaryAttacksCommand extends Command {
     const grouped = Object.values(
       members.reduce<Record<string, { attackWins: number; clan: { name: string; tag: string } }>>((acc, member) => {
         // eslint-disable-next-line
-				acc[member.clan.tag] ??= {
+        acc[member.clan.tag] ??= {
           clan: {
             name: member.clan.name,
             tag: member.clan.tag

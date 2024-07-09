@@ -15,7 +15,7 @@ import {
   Settings,
   TAG_REGEX,
   getHttpStatusText
-} from '../util/Constants.js';
+} from '../util/_constants.js';
 import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
 import { ElasticIndexer } from './Indexer.js';

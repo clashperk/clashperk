@@ -2,8 +2,8 @@ import { AutocompleteInteraction, CommandInteraction } from 'discord.js';
 import { Filter, ObjectId } from 'mongodb';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Command } from '../../lib/index.js';
-import { Collections, Settings } from '../../util/Constants.js';
-import { hexToNanoId } from '../../util/Helper.js';
+import { Collections, Settings } from '../../util/_constants.js';
+import { hexToNanoId } from '../../util/_Helper.js';
 
 export default class FlagDeleteCommand extends Command {
   public constructor() {

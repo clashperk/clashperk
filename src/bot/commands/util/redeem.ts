@@ -11,7 +11,7 @@ import {
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
 import { Included, Patron, guildLimits } from '../../struct/PatreonHandler.js';
-import { Collections, Settings } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/_constants.js';
 
 export default class RedeemCommand extends Command {
   public constructor() {

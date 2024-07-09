@@ -2,7 +2,7 @@ import { AutocompleteInteraction, cleanContent, CommandInteraction, EmbedBuilder
 import moment from 'moment';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Command } from '../../lib/index.js';
-import { Collections, Settings } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/_constants.js';
 
 export default class FlagCreateCommand extends Command {
   public constructor() {

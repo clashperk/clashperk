@@ -1,7 +1,7 @@
 import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, PermissionFlagsBits, time } from 'discord.js';
 import moment from 'moment';
-import { Collections, FeatureFlags } from '../util/Constants.js';
-import { EMOJIS } from '../util/Emojis.js';
+import { EMOJIS } from '../util/_emojis.js';
+import { Collections, FeatureFlags } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
 import { Season, Util } from '../util/index.js';
 import Client from './Client.js';

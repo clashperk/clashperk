@@ -1,8 +1,8 @@
 import { ActionRowBuilder, CommandInteraction, EmbedBuilder, Guild, Role, RoleSelectMenuBuilder } from 'discord.js';
 import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
-import { Settings } from '../../util/Constants.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
+import { Settings } from '../../util/_constants.js';
+import { createInteractionCollector } from '../../util/_Pagination.js';
 
 export interface IArgs {
   command?: 'refresh' | 'disable' | null;

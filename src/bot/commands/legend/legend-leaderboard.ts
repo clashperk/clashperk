@@ -10,9 +10,9 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { Season } from '../../util/_Season.js';
 import { getBbLegendRankingEmbedMaker, getExportComponents, getLegendRankingEmbedMaker } from '../../util/Helper.js';
-import { Season } from '../../util/Season.js';
 
 export default class LegendLeaderboardCommand extends Command {
   public constructor() {

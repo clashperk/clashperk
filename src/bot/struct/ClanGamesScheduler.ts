@@ -14,8 +14,8 @@ import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { ClanGamesModel } from '../types/index.js';
-import { Collections, Settings } from '../util/Constants.js';
-import { ORANGE_NUMBERS } from '../util/Emojis.js';
+import { ORANGE_NUMBERS } from '../util/_emojis.js';
+import { Collections, Settings } from '../util/constants.js';
 import { ClanGamesConfig, Util } from '../util/index.js';
 import { ReminderDeleteReasons } from './CapitalRaidScheduler.js';
 import { Client } from './Client.js';
@@ -238,7 +238,7 @@ export default class ClanGamesScheduler {
 
     const users = Object.entries(
       mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-				acc[cur.mention] ??= []; // eslint-disable-line
+        acc[cur.mention] ??= []; // eslint-disable-line
         acc[cur.mention].push(cur);
         return acc;
       }, {})

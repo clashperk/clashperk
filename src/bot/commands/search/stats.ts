@@ -2,8 +2,8 @@ import { APIClanWar, APIClanWarAttack } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
-import { Collections, MAX_TOWN_HALL_LEVEL, WarType } from '../../util/Constants.js';
-import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { Collections, MAX_TOWN_HALL_LEVEL, WarType } from '../../util/constants.js';
+import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/_emojis.js';
 import { Util } from '../../util/index.js';
 
 export type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };

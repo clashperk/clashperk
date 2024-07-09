@@ -1,8 +1,8 @@
 import { EmbedBuilder, Guild, WebhookClient } from 'discord.js';
 import { Listener } from '../../lib/index.js';
 import { mixpanel } from '../../struct/Mixpanel.js';
-import { Collections, Settings } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { Collections, Settings } from '../../util/_constants.js';
+import { EMOJIS } from '../../util/emojis.js';
 
 export default class GuildDeleteListener extends Listener {
   public webhook: WebhookClient | null = null;

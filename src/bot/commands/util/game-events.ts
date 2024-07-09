@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, parseEmoji } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
 
 export default class GameEvents extends Command {
   public constructor() {

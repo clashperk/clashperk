@@ -4,9 +4,9 @@ import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { RosterLog } from '../../struct/RosterManager.js';
-import { TOWN_HALLS } from '../../util/Emojis.js';
+import { TOWN_HALLS } from '../../util/_emojis.js';
+import { createInteractionCollector } from '../../util/_Pagination.js';
 import { sumHeroes } from '../../util/Helper.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
 
 export default class RosterSignupCommand extends Command {
   public constructor() {

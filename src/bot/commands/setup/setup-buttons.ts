@@ -17,8 +17,8 @@ import {
   TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { DiscordErrorCodes, Settings, URL_REGEX } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { DiscordErrorCodes, Settings, URL_REGEX } from '../../util/constants.js';
+import { EMOJIS } from '../../util/_emojis.js';
 
 export default class SetupButtonsCommand extends Command {
   public constructor() {

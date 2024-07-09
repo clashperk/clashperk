@@ -8,8 +8,8 @@ import {
   StringSelectMenuBuilder
 } from 'discord.js';
 import { Command } from '../../../lib/index.js';
-import { CLAN_GAMES_MINIMUM_POINTS } from '../../../util/Constants.js';
-import { EMOJIS } from '../../../util/Emojis.js';
+import { EMOJIS } from '../../../util/_emojis.js';
+import { CLAN_GAMES_MINIMUM_POINTS } from '../../../util/constants.js';
 import { Util } from '../../../util/index.js';
 
 export default class ClanGamesNowCommand extends Command {

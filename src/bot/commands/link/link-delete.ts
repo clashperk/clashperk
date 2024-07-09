@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { Collections, FeatureFlags, Settings } from '../../util/Constants.js';
+import { Collections, FeatureFlags, Settings } from '../../util/_constants.js';
 
 export default class LinkDeleteCommand extends Command {
   public constructor() {

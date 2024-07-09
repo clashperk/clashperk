@@ -2,7 +2,7 @@ import { ClanCategoriesEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections } from '../../util/_constants.js';
 
 export default class CategoryCreateCommand extends Command {
   public constructor() {

@@ -9,7 +9,7 @@ import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
-import { Collections, FeatureFlags, Flags, Settings } from '../util/Constants.js';
+import { Collections, FeatureFlags, Flags, Settings } from '../util/_constants.js';
 import { i18n } from '../util/i18n.js';
 import { Client } from './Client.js';
 

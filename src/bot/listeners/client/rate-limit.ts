@@ -1,6 +1,6 @@
 import { EmbedBuilder, RateLimitData, WebhookClient } from 'discord.js';
 import { Listener } from '../../lib/index.js';
-import { Settings } from '../../util/Constants.js';
+import { Settings } from '../../util/_constants.js';
 
 export default class RateLimitListener extends Listener {
   public count: number;

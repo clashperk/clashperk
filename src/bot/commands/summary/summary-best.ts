@@ -11,8 +11,8 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
-import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
+import { Collections } from '../../util/constants.js';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/_emojis.js';
 import { Season, Util } from '../../util/index.js';
 
 interface AggregatedValue {

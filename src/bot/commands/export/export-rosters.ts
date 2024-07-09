@@ -3,8 +3,8 @@ import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { IRosterCategory } from '../../struct/RosterManager.js';
-import { getExportComponents } from '../../util/Helper.js';
-import { Util } from '../../util/Util.js';
+import { getExportComponents } from '../../util/_Helper.js';
+import { Util } from '../../util/_util.js';
 
 export default class RosterExportCommand extends Command {
   public constructor() {

@@ -12,9 +12,9 @@ import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
 import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
-import { RosterCommandSortOptions } from '../../util/CommandOptions.js';
-import { Collections, Settings, UNRANKED_WAR_LEAGUE_ID } from '../../util/Constants.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
+import { Collections, Settings, UNRANKED_WAR_LEAGUE_ID } from '../../util/_constants.js';
+import { createInteractionCollector } from '../../util/_Pagination.js';
+import { RosterCommandSortOptions } from '../../util/command-options.js';
 
 export default class RosterEditCommand extends Command {
   public constructor() {

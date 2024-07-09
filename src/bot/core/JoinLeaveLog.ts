@@ -3,10 +3,10 @@ import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMess
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { FlagsEntity } from '../entities/flags.entity.js';
-import { COLOR_CODES, Collections, DEEP_LINK_TYPES, Settings } from '../util/Constants.js';
-import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
+import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/_emojis.js';
+import { RAW_TROOPS_FILTERED } from '../util/_Troops.js';
+import { COLOR_CODES, Collections, DEEP_LINK_TYPES, Settings } from '../util/constants.js';
 import { unitsFlatten } from '../util/Helper.js';
-import { RAW_TROOPS_FILTERED } from '../util/Troops.js';
 import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';

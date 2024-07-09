@@ -19,10 +19,10 @@ import {
   WebhookClient
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { ClanEmbedFieldOptions, ClanEmbedFieldValues } from '../../util/CommandOptions.js';
-import { Collections, Flags, missingPermissions, URL_REGEX } from '../../util/Constants.js';
-import { clanEmbedMaker } from '../../util/Helper.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
+import { Collections, Flags, missingPermissions, URL_REGEX } from '../../util/_constants.js';
+import { clanEmbedMaker } from '../../util/_Helper.js';
+import { createInteractionCollector } from '../../util/_Pagination.js';
+import { ClanEmbedFieldOptions, ClanEmbedFieldValues } from '../../util/command-options.js';
 
 export default class ClanEmbedCommand extends Command {
   public constructor() {
@@ -61,7 +61,7 @@ export default class ClanEmbedCommand extends Command {
       return interaction.editReply(
         this.i18n('common.missing_access', {
           lng: interaction.locale,
-					channel: channel.toString(), // eslint-disable-line
+          channel: channel.toString(), // eslint-disable-line
           permission: permission.missingPerms
         })
       );
@@ -230,7 +230,7 @@ export default class ClanEmbedCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
+        this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
       );
     }
 

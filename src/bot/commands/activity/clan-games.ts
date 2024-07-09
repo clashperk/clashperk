@@ -2,8 +2,8 @@ import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { ClanGamesModel } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { Collections } from '../../util/constants.js';
 import { clanGamesEmbedMaker, clanGamesSortingAlgorithm } from '../../util/Helper.js';
 
 export default class ClanGamesCommand extends Command {

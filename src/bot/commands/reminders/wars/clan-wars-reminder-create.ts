@@ -18,7 +18,7 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import ms from 'ms';
 import { Args, Command } from '../../../lib/index.js';
-import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../../util/Constants.js';
+import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../../util/_constants.js';
 
 // 24h (Battle Day)
 // 47h (War Declared)

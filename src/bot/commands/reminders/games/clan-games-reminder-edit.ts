@@ -13,8 +13,8 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../../lib/index.js';
-import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../../util/Constants.js';
-import { hexToNanoId } from '../../../util/Helper.js';
+import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../../util/_constants.js';
+import { hexToNanoId } from '../../../util/_Helper.js';
 
 export default class ReminderEditCommand extends Command {
   public constructor() {

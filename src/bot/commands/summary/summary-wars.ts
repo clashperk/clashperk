@@ -2,7 +2,7 @@ import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
 import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {

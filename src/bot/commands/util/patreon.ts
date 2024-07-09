@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { Patron } from '../../struct/PatreonHandler.js';
-import { Collections, Settings } from '../../util/Constants.js';
+import { Collections, Settings } from '../../util/_constants.js';
 
 export default class PatreonCommand extends Command {
   public constructor() {

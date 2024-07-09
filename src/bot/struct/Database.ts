@@ -5,7 +5,7 @@ import { ClanRanksEntity } from '../entities/clan-ranks.entity.js';
 import { PlayerRanksEntity } from '../entities/player-ranks.entity.js';
 import { PlayersEntity } from '../entities/players.entity.js';
 import { PlayerSeasonModel } from '../types/index.js';
-import { Collections } from '../util/Constants.js';
+import { Collections } from '../util/_constants.js';
 
 interface CollectionsMap {
   [Collections.CLAN_STORES]: ClanStoresEntity;

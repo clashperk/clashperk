@@ -1,8 +1,8 @@
 import { CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
-import { padStart } from '../../util/Helper.js';
+import { Collections } from '../../util/_constants.js';
+import { padStart } from '../../util/_Helper.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class DonationsCommand extends Command {

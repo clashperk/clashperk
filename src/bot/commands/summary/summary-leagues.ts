@@ -2,14 +2,14 @@ import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
+import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS } from '../../util/_emojis.js';
 import {
   CAPITAL_LEAGUE_MAP,
   Collections,
   UNRANKED_CAPITAL_LEAGUE_ID,
   UNRANKED_WAR_LEAGUE_ID,
   WAR_LEAGUE_MAP
-} from '../../util/Constants.js';
-import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
+} from '../../util/constants.js';
 import { Util } from '../../util/index.js';
 
 export default class SummaryLeaguesCommand extends Command {

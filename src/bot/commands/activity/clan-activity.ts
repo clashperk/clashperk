@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import { Command } from '../../lib/index.js';
 import Google from '../../struct/Google.js';
 import { UserInfoModel } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections } from '../../util/_constants.js';
 
 export default class ClanActivityCommand extends Command {
   public constructor() {

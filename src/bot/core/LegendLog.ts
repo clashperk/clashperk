@@ -1,7 +1,7 @@
 import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { LegendAttacks, LegendLogModel } from '../types/index.js';
-import { ATTACK_COUNTS, Collections } from '../util/Constants.js';
+import { ATTACK_COUNTS, Collections } from '../util/_constants.js';
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';

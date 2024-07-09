@@ -1,6 +1,6 @@
 import moment from 'moment';
 import 'moment-duration-format';
-import { Season } from './Season.js';
+import { Season } from './_Season.js';
 
 const DURATION = {
   SECOND: 1000,

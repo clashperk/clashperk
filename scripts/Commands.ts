@@ -11,15 +11,15 @@ import { fileURLToPath } from 'node:url';
 import { title } from 'radash';
 import { command, common } from '../locales/en.js';
 import { defaultOptions, fallbackLng } from '../locales/index.js';
-import { Backend } from '../src/bot/util/Backend.js';
-import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/bot/util/CommandOptions.js';
+import { Backend } from '../src/bot/util/_Backend.js';
 import {
   BUILDER_BASE_LEAGUE_NAMES,
   BUILDER_HALL_LEVELS_FOR_ROLES,
   MAX_TOWN_HALL_LEVEL,
   PLAYER_LEAGUE_NAMES,
   TOWN_HALL_LEVELS_FOR_ROLES
-} from '../src/bot/util/Constants.js';
+} from '../src/bot/util/_constants.js';
+import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/bot/util/command-options.js';
 import { TranslationKey } from '../src/bot/util/i18n.js';
 import { Season } from '../src/bot/util/index.js';
 

@@ -1,7 +1,7 @@
 import { CommandInteraction, DMChannel, Interaction, PartialDMChannel, PermissionsString, TextBasedChannel } from 'discord.js';
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class DebugCommand extends Command {

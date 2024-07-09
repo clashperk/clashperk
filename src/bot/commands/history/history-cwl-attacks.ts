@@ -2,9 +2,9 @@ import { APIClanWar, APIClanWarAttack, APIClanWarMember, APIWarClan } from 'clas
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { Collections, WAR_LEAGUE_MAP, WarType } from '../../util/Constants.js';
-import { BLUE_NUMBERS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
-import { handlePagination } from '../../util/Pagination.js';
+import { BLUE_NUMBERS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/_emojis.js';
+import { handlePagination } from '../../util/_Pagination.js';
+import { Collections, WAR_LEAGUE_MAP, WarType } from '../../util/constants.js';
 
 const stars: Record<string, string> = {
   0: '☆☆☆',

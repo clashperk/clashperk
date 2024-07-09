@@ -1,4 +1,3 @@
-import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
 import { Command } from '@lib/core';
 import {
   ActionRowBuilder,
@@ -13,11 +12,12 @@ import {
 import moment from 'moment';
 import { CompeteBoardsEntity } from '../../entities/compete-boards.entity.js';
 import { LegendAttacks } from '../../types/index.js';
-import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
+import { createInteractionCollector } from '../../util/_Pagination.js';
+import { Season } from '../../util/_Season.js';
+import { Util } from '../../util/_util../../util/_emojis.js';
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/Helper.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
-import { Season } from '../../util/Season.js';
-import { Util } from '../../util/Util.js';
 
 export default class CompeteCommand extends Command {
   public constructor() {

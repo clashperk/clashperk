@@ -2,8 +2,8 @@ import { CommandInteraction, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { LegendAttacks } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
-import { getExportComponents } from '../../util/Helper.js';
+import { Collections } from '../../util/_constants.js';
+import { getExportComponents } from '../../util/_Helper.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class LegendAttacksHistoryCommand extends Command {
@@ -81,7 +81,7 @@ export default class LegendAttacksHistoryCommand extends Command {
         const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
 
         // eslint-disable-next-line
-				prev.push({
+        prev.push({
           attackCount,
           defenseCount,
           gain,
@@ -104,7 +104,7 @@ export default class LegendAttacksHistoryCommand extends Command {
     const chunks = result
       .map((r) => {
         const records = r.logs.reduce<Record<string, PerDayLog>>((prev, acc) => {
-					prev[acc.day] ??= acc; // eslint-disable-line
+          prev[acc.day] ??= acc; // eslint-disable-line
           return prev;
         }, {});
         return { name: r.name, tag: r.tag, records };

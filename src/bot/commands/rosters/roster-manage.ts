@@ -22,9 +22,9 @@ import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { IRoster, IRosterCategory, PlayerWithLink, ROSTER_MAX_LIMIT, RosterLog } from '../../struct/RosterManager.js';
 import { PlayerModel } from '../../types/index.js';
-import { Collections, Settings, TAG_REGEX } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
-import { createInteractionCollector } from '../../util/Pagination.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { createInteractionCollector } from '../../util/_Pagination.js';
+import { Collections, Settings, TAG_REGEX } from '../../util/constants.js';
 import { Util } from '../../util/index.js';
 
 export default class RosterManageCommand extends Command {

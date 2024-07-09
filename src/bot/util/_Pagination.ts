@@ -15,7 +15,7 @@ import {
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
 import { CustomIdProps } from '../struct/ComponentHandler.js';
-import { EMOJIS } from './Emojis.js';
+import { EMOJIS } from './_emojis.js';
 
 const NEXT = '➡️';
 const PREV = '⬅️';

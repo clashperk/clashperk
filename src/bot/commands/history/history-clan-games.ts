@@ -2,9 +2,9 @@ import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'disco
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { Collections, Settings } from '../../util/Constants.js';
-import { getExportComponents, padStart } from '../../util/Helper.js';
-import { handlePagination } from '../../util/Pagination.js';
+import { Collections, Settings } from '../../util/_constants.js';
+import { getExportComponents, padStart } from '../../util/_Helper.js';
+import { handlePagination } from '../../util/_Pagination.js';
 import { Util } from '../../util/index.js';
 
 export default class ClanGamesHistoryCommand extends Command {
@@ -162,7 +162,7 @@ export default class ClanGamesHistoryCommand extends Command {
             }
           >
         >((prev, acc) => {
-					prev[acc.season] ??= acc; // eslint-disable-line
+          prev[acc.season] ??= acc; // eslint-disable-line
           return prev;
         }, {});
         return { name: r.name, tag: r.tag, seasons };

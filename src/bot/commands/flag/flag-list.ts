@@ -12,8 +12,8 @@ import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Args, Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { EMOJIS } from '../../util/_emojis.js';
+import { Collections } from '../../util/constants.js';
 import { hexToNanoId } from '../../util/Helper.js';
 
 export default class FlagListCommand extends Command {

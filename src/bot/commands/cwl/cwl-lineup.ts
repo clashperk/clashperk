@@ -1,7 +1,7 @@
 import { APIClan, APIClanWarLeagueGroup, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/Emojis.js';
+import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/_emojis.js';
 import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {

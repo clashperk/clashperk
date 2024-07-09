@@ -1,3 +1,3 @@
-export * from './ClanGamesConfig.js';
-export * from './Season.js';
-export * from './Util.js';
+export * from './_Season.js';
+export * from './_util.js';
+export * from './clan-games-config.js';

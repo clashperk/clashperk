@@ -18,7 +18,7 @@ import { ObjectId } from 'mongodb';
 import ms from 'ms';
 import { RaidRemindersEntity } from '../../../entities/capital-raid-reminders.entity.js';
 import { Args, Command } from '../../../lib/index.js';
-import { Collections, missingPermissions } from '../../../util/Constants.js';
+import { Collections, missingPermissions } from '../../../util/_constants.js';
 
 export default class ReminderCreateCommand extends Command {
   public constructor() {

@@ -13,7 +13,7 @@ import {
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
-import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/Emojis.js';
+import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/_emojis.js';
 import { Util } from '../../util/index.js';
 
 const stars: Record<string, string> = {
@@ -207,7 +207,7 @@ export default class CWLAttacksCommand extends Command {
             if (mem.attacks?.length) continue;
             missed[mem.tag] = {
               name: mem.name || mem.tag, // eslint-disable-next-line
-							count: Number((missed[mem.tag] || { count: 0 }).count) + 1
+              count: Number((missed[mem.tag] || { count: 0 }).count) + 1
             };
           }
         }

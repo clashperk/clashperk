@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import ms from 'ms';
 import { title } from 'radash';
 import { Command } from '../../lib/index.js';
-import { Settings } from '../../util/Constants.js';
+import { Settings } from '../../util/_constants.js';
 
 export const _rolesMap: Record<string, string> = {
   admin: 'elder',

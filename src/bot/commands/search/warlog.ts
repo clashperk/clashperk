@@ -1,8 +1,8 @@
 import { CommandInteraction, EmbedBuilder, User, time } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { Collections, WarType } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
+import { Collections, WarType } from '../../util/constants.js';
+import { EMOJIS } from '../../util/_emojis.js';
 
 export default class WarLogCommand extends Command {
   public constructor() {

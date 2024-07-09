@@ -2,6 +2,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { dash } from 'radash';
 import yargs from 'yargs';
 
 const INDEX_FILE_NAME = 'index.ts';
@@ -30,13 +31,38 @@ const main = (): void => {
 
   // rename files and to convert to lower case
   for (const file of files) {
-    if (file.startsWith('_')) continue;
-    if (file === file.toLowerCase()) continue;
+    const underScored = file.startsWith('_');
 
     const oldPath = path.join(dirPath, file);
-    const newPath = path.join(dirPath, `_${file.toLowerCase()}`);
-    console.log(`-> Renaming ${oldPath} to ${newPath}`);
-    fs.renameSync(oldPath, newPath);
+
+    if (underScored) {
+      const newPath = path.join(dirPath, file.toLowerCase().replace(/^_/, ''));
+      console.log(`-> Renaming ${oldPath} to ${newPath}`);
+
+      fs.renameSync(oldPath, newPath);
+      continue;
+    }
+
+    if (file === file.toLowerCase()) continue;
+
+    const dashed = dash(file.replace(/\.ts$/, ''));
+
+    // is pascal case
+    if (dashed.includes('-')) {
+      const newPath = path.join(dirPath, dashed + '.ts');
+      console.log(`-> Renaming ${oldPath} to ${newPath}`);
+
+      fs.renameSync(oldPath, newPath);
+      continue;
+    }
+
+    if (!dashed.includes('-')) {
+      const newPath = path.join(dirPath, `_${file.toLowerCase()}`);
+      console.log(`-> Renaming ${oldPath} to ${newPath}`);
+
+      fs.renameSync(oldPath, newPath);
+      continue;
+    }
   }
 };
 
