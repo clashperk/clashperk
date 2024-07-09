@@ -10,9 +10,9 @@ import {
   WebhookClient
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { clanGamesEmbedMaker } from '../util/__helper.js';
 import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
+import { clanGamesEmbedMaker } from '../util/helper.js';
 import { ClanGamesConfig } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';

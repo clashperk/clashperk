@@ -3,9 +3,9 @@ import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMess
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { FlagsEntity } from '../entities/flags.entity.js';
-import { unitsFlatten } from '../util/__helper.js';
 import { COLOR_CODES, Collections, DEEP_LINK_TYPES, Settings } from '../util/constants.js';
 import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/emojis.js';
+import { unitsFlatten } from '../util/helper.js';
 import { Util } from '../util/index.js';
 import { RAW_TROOPS_FILTERED } from '../util/troops.js';
 import BaseLog from './BaseLog.js';

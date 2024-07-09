@@ -10,9 +10,9 @@ import {
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { RosterSortTypes, rosterLayoutMap } from '../../struct/RosterManager.js';
-import { getExportComponents } from '../../util/__helper.js';
 import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/command-options.js';
 import { Settings } from '../../util/constants.js';
+import { getExportComponents } from '../../util/helper.js';
 import { Util } from '../../util/index.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 

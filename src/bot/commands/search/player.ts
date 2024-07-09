@@ -14,9 +14,9 @@ import {
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
-import { getMenuFromMessage } from '../../util/__helper.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/emojis.js';
+import { getMenuFromMessage } from '../../util/helper.js';
 import { Season } from '../../util/index.js';
 
 const roles: Record<string, string> = {

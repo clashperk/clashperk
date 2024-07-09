@@ -10,9 +10,9 @@ import {
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/__helper.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/helper.js';
 import { ClanGamesConfig, Util } from '../../util/index.js';
 
 export default class SummaryClanGamesCommand extends Command {

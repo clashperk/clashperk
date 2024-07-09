@@ -12,8 +12,8 @@ import {
 import { unique } from 'radash';
 import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
-import { getMenuFromMessage, unitsFlatten } from '../../util/__helper.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
+import { getMenuFromMessage, unitsFlatten } from '../../util/helper.js';
 import { RAW_SUPER_TROOPS, RAW_TROOPS_WITH_ICONS } from '../../util/troops.js';
 
 export default class UnitsCommand extends Command {

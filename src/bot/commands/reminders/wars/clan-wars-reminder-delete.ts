@@ -12,8 +12,8 @@ import {
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../../lib/index.js';
-import { hexToNanoId } from '../../../util/__helper.js';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/constants.js';
+import { hexToNanoId } from '../../../util/helper.js';
 
 const roles: Record<string, string> = {
   member: 'Member',

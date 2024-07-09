@@ -3,8 +3,8 @@ import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, time, Webh
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { title } from 'radash';
-import { padStart } from '../util/__helper.js';
 import { Collections, DonationLogFrequencyTypes } from '../util/constants.js';
+import { padStart } from '../util/helper.js';
 import { Season, Util } from '../util/index.js';
 import BaseClanLog from './BaseClanLog.js';
 import RPCHandler from './RPCHandler.js';

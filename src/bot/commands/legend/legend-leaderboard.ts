@@ -10,8 +10,8 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { getBbLegendRankingEmbedMaker, getExportComponents, getLegendRankingEmbedMaker } from '../../util/__helper.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { getBbLegendRankingEmbedMaker, getExportComponents, getLegendRankingEmbedMaker } from '../../util/helper.js';
 import { Season } from '../../util/season.js';
 
 export default class LegendLeaderboardCommand extends Command {

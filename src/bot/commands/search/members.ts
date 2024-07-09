@@ -12,10 +12,10 @@ import {
 import moment from 'moment';
 import ms from 'ms';
 import { Command } from '../../lib/index.js';
-import { padStart } from '../../util/__helper.js';
 import { MembersCommandOptions as options } from '../../util/command-options.js';
 import { UP_ARROW } from '../../util/constants.js';
 import { EMOJIS, HERO_PETS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Util } from '../../util/index.js';
 
 const roleIds: { [key: string]: number } = {

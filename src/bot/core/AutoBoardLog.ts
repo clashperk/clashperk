@@ -16,9 +16,9 @@ import {
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
-import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/__helper.js';
 import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
+import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/helper.js';
 import { Season, Util } from '../util/index.js';
 import RPCHandler from './RPCHandler.js';
 

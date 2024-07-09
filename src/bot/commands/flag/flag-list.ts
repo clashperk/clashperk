@@ -12,9 +12,9 @@ import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Args, Command } from '../../lib/index.js';
-import { hexToNanoId } from '../../util/__helper.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { hexToNanoId } from '../../util/helper.js';
 
 export default class FlagListCommand extends Command {
   public constructor() {

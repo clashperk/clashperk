@@ -2,8 +2,8 @@ import { CommandInteraction } from 'discord.js';
 import ms from 'ms';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { getExportComponents } from '../../util/__helper.js';
 import { Collections } from '../../util/constants.js';
+import { getExportComponents } from '../../util/helper.js';
 import { WarType } from './export-wars.js';
 
 export default class LastWarsExport extends Command {

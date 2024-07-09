@@ -2,8 +2,8 @@ import { APIClanWarAttack, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { getExportComponents } from '../../util/__helper.js';
 import { Collections } from '../../util/constants.js';
+import { getExportComponents } from '../../util/helper.js';
 
 export enum WarType {
   REGULAR = 1,

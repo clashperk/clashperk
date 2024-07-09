@@ -15,9 +15,9 @@ import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/Google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { getExportComponents, sumHeroes } from '../../util/__helper.js';
 import { Collections, DOT, FeatureFlags, Settings } from '../../util/constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';
+import { getExportComponents, sumHeroes } from '../../util/helper.js';
 import { createInteractionCollector, handlePagination } from '../../util/pagination.js';
 
 const roles: Record<string, string> = {
