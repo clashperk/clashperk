@@ -1,6 +1,6 @@
 import { TextChannel } from 'discord.js';
 import moment from 'moment';
-import { Client } from '../struct/Client.js';
+import { Client } from '../struct/client-module.js';
 import { EMOJIS } from '../util/emojis.js';
 import { i18n } from '../util/i18n.js';
 

@@ -2,7 +2,7 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Comman
 import moment from 'moment';
 import fetch from 'node-fetch';
 import { Command } from '../../lib/index.js';
-import Google from '../../struct/Google.js';
+import Google from '../../struct/_Google.js';
 import { UserInfoModel } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 

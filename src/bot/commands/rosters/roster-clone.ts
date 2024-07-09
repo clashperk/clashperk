@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { IRoster } from '../../struct/RosterManager.js';
+import { IRoster } from '../../struct/roster-manager.js';
 import { Settings } from '../../util/constants.js';
 
 export default class RosterCloneCommand extends Command {

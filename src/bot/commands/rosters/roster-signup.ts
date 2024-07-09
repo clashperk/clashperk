@@ -3,7 +3,7 @@ import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSe
 import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
-import { RosterLog } from '../../struct/RosterManager.js';
+import { RosterLog } from '../../struct/roster-manager.js';
 import { TOWN_HALLS } from '../../util/emojis.js';
 import { sumHeroes } from '../../util/helper.js';
 import { createInteractionCollector } from '../../util/pagination.js';

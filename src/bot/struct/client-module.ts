@@ -12,22 +12,22 @@ import { ClientUtil } from '../util/client-util.js';
 import { FeatureFlags, Settings } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
 import Logger from '../util/logger.js';
-import { Autocomplete } from './Autocomplete.js';
-import CapitalRaidScheduler from './CapitalRaidScheduler.js';
-import ClanGamesScheduler from './ClanGamesScheduler.js';
-import ClanWarScheduler from './ClanWarScheduler.js';
-import { CommandsMap } from './CommandsMap.js';
-import { CustomBotManager } from './CustomBotManager.js';
-import { mongoClient } from './Database.js';
-import { GuildEventsHandler } from './GuildEventsHandler.js';
-import Http from './Http.js';
-import { PatreonHandler } from './PatreonHandler.js';
-import RedisService from './RedisService.js';
-import Resolver from './Resolver.js';
-import { RosterManager } from './RosterManager.js';
-import SettingsProvider from './SettingsProvider.js';
-import StatsHandler from './StatsHandler.js';
-import StorageHandler from './StorageHandler.js';
+import { mongoClient } from './_Database.js';
+import Resolver from './_Resolver.js';
+import { Autocomplete } from './autocomplete-client.js';
+import CapitalRaidScheduler from './capital-raid-scheduler.js';
+import ClanGamesScheduler from './clan-games-scheduler.js';
+import ClanWarScheduler from './clan-war-scheduler.js';
+import { CommandsMap } from './commands-map.js';
+import { CustomBotManager } from './custom-bot-manager.js';
+import { GuildEventsHandler } from './guild-events-handler.js';
+import Http from './_Http.js';
+import { PatreonHandler } from './patreon-handler.js';
+import RedisService from './redis-service.js';
+import { RosterManager } from './roster-manager.js';
+import SettingsProvider from './settings-provider.js';
+import StatsHandler from './stats-handler.js';
+import StorageHandler from './storage-handler.js';
 
 export class Client extends DiscordClient {
   public commandHandler = new CommandHandler(this, {

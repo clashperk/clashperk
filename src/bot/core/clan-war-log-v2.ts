@@ -17,7 +17,7 @@ import moment from 'moment';
 import { ObjectId, UpdateFilter, WithId } from 'mongodb';
 import { cluster } from 'radash';
 import { aggregateRoundsForRanking, calculateLeagueRanking } from '../helper/cwl-helper.js';
-import { getCWLSummaryImage } from '../struct/ImageHelper.js';
+import { getCWLSummaryImage } from '../struct/image-helper.js';
 import { Collections, calculateCWLMedals } from '../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/emojis.js';
 import { Season, Util } from '../util/index.js';

@@ -20,7 +20,7 @@ import {
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
-import { IRoster, IRosterCategory, PlayerWithLink, ROSTER_MAX_LIMIT, RosterLog } from '../../struct/RosterManager.js';
+import { IRoster, IRosterCategory, PlayerWithLink, ROSTER_MAX_LIMIT, RosterLog } from '../../struct/roster-manager.js';
 import { PlayerModel } from '../../types/index.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';

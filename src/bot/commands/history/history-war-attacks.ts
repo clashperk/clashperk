@@ -2,7 +2,7 @@ import { APIClanWar, APIClanWarAttack, APIClanWarMember, APIWarClan } from 'clas
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
 import { Collections, WarType } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { getExportComponents } from '../../util/helper.js';

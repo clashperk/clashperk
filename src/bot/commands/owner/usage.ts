@@ -1,7 +1,7 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
-import Chart from '../../struct/ChartHandler.js';
+import Chart from '../../struct/chart-handler.js';
 import { Collections } from '../../util/constants.js';
 
 export default class UsageCommand extends Command {

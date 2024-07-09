@@ -1,7 +1,7 @@
 import { APIPlayer } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
 import { HERO_EQUIPMENT, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/emojis.js';
 import { getExportComponents } from '../../util/helper.js';
 import { RAW_TROOPS_FILTERED } from '../../util/troops.js';

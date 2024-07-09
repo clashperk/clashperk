@@ -1,6 +1,6 @@
 import { BaseInteraction, Guild } from 'discord.js';
 import { Collections } from '../util/constants.js';
-import { Client } from './Client.js';
+import { Client } from './client-module.js';
 
 export default class StatsHandler {
   public messages = new Map<string, NodeJS.Timeout>();

@@ -1,8 +1,8 @@
 import { CommandInteraction } from 'discord.js';
 import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { IRosterCategory } from '../../struct/RosterManager.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
+import { IRosterCategory } from '../../struct/roster-manager.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Util } from '../../util/util.js';
 

@@ -17,8 +17,8 @@ import { ClanGamesModel } from '../types/index.js';
 import { Collections, Settings } from '../util/constants.js';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
 import { ClanGamesConfig, Util } from '../util/index.js';
-import { ReminderDeleteReasons } from './CapitalRaidScheduler.js';
-import { Client } from './Client.js';
+import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
+import { Client } from './client-module.js';
 
 // fetch links from our db
 export default class ClanGamesScheduler {

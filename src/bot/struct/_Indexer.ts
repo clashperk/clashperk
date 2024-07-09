@@ -1,4 +1,4 @@
-import Client from './Client.js';
+import Client from './client-module.js';
 
 export class ElasticIndexer {
   public constructor(private readonly client: Client) {}

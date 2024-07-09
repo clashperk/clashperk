@@ -7,7 +7,7 @@ import { FlagsEntity } from '../entities/flags.entity.js';
 import { PlayerModel, UserInfoModel } from '../types/index.js';
 import { Collections } from '../util/constants.js';
 import { COUNTRIES } from '../util/countries.js';
-import Client from './Client.js';
+import Client from './client-module.js';
 
 export class Autocomplete {
   public constructor(private readonly client: Client) {}

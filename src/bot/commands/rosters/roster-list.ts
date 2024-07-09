@@ -1,7 +1,7 @@
 import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { IRoster } from '../../struct/RosterManager.js';
+import { IRoster } from '../../struct/roster-manager.js';
 import { Settings } from '../../util/constants.js';
 
 export default class RosterListCommand extends Command {

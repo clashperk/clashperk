@@ -13,10 +13,10 @@ import {
   WAR_REMINDERS_AUTOCOMPLETE
 } from '../../helper/reminders-autocomplete-helper.js';
 import { Listener } from '../../lib/index.js';
-import ComponentHandler from '../../struct/ComponentHandler.js';
-import Google from '../../struct/Google.js';
-import { mixpanel } from '../../struct/Mixpanel.js';
-import { IRoster, IRosterCategory } from '../../struct/RosterManager.js';
+import Google from '../../struct/_Google.js';
+import { mixpanel } from '../../struct/_Mixpanel.js';
+import ComponentHandler from '../../struct/component-handler.js';
+import { IRoster, IRosterCategory } from '../../struct/roster-manager.js';
 import { UserInfoModel, UserTimezone } from '../../types/index.js';
 import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex, Settings } from '../../util/constants.js';
 

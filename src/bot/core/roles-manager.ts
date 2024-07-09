@@ -6,7 +6,7 @@ import { parallel, sift, unique } from 'radash';
 import { AutoRoleDelaysEntity } from '../entities/auto-role-delays.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
-import { Client } from '../struct/Client.js';
+import { Client } from '../struct/client-module.js';
 import { makeAbbr, sumHeroes } from '../util/helper.js';
 
 export const roles: { [key: string]: number } = {

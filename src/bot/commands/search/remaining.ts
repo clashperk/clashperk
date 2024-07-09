@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import moment from 'moment';
 import { group } from 'radash';
 import { Command } from '../../lib/index.js';
-import { CustomIdProps } from '../../struct/ComponentHandler.js';
+import { CustomIdProps } from '../../struct/component-handler.js';
 import { ClanCapitalRaidAttackData, ClanGamesModel } from '../../types/index.js';
 import { Collections, Settings, WarType } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';

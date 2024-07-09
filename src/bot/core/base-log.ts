@@ -10,7 +10,7 @@ import {
   WebhookMessageCreateOptions
 } from 'discord.js';
 import { Collection as DbCollection, ObjectId } from 'mongodb';
-import { Client } from '../struct/Client.js';
+import { Client } from '../struct/client-module.js';
 import { FeatureFlags } from '../util/constants.js';
 import { Util } from '../util/index.js';
 

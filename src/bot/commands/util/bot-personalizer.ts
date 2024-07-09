@@ -13,7 +13,7 @@ import {
 import moment from 'moment';
 import { WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { Patron, rewards } from '../../struct/PatreonHandler.js';
+import { Patron, rewards } from '../../struct/patreon-handler.js';
 import { getInviteLink } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';

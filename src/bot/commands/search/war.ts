@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
 import { CallerCollection } from '../../types/index.js';
 import { WarCommandOptionValues, WarCommandOptions } from '../../util/command-options.js';
 import { Collections, WarType } from '../../util/constants.js';

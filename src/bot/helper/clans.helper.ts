@@ -1,6 +1,6 @@
 import { ActionRowBuilder, CommandInteraction, MessageComponentInteraction, MessageType, StringSelectMenuBuilder } from 'discord.js';
 import { container } from 'tsyringe';
-import Client from '../struct/Client.js';
+import Client from '../struct/client-module.js';
 
 export const getClanSwitchingMenu = async (
   interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,

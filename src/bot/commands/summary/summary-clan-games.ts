@@ -9,7 +9,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/helper.js';

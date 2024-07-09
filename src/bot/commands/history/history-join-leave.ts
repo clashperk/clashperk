@@ -1,7 +1,7 @@
 import { ButtonInteraction, CommandInteraction, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
 import { getExportComponents } from '../../util/helper.js';
 
 export default class JoinLeaveHistoryCommand extends Command {

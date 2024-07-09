@@ -1,7 +1,7 @@
 import { CommandInteraction, Role } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { IRosterCategory } from '../../struct/RosterManager.js';
+import { IRosterCategory } from '../../struct/roster-manager.js';
 import { Settings } from '../../util/constants.js';
 
 interface RosterGroupModifyProps {

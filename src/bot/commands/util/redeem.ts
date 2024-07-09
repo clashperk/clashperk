@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
-import { Included, Patron, guildLimits } from '../../struct/PatreonHandler.js';
+import { Included, Patron, guildLimits } from '../../struct/patreon-handler.js';
 import { Collections, Settings } from '../../util/constants.js';
 
 export default class RedeemCommand extends Command {

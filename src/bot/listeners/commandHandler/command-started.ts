@@ -2,7 +2,7 @@ import { addBreadcrumb, setContext } from '@sentry/node';
 import { BaseInteraction, ChannelType, Interaction, InteractionType } from 'discord.js';
 import { Command, Listener } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
-import { mixpanel } from '../../struct/Mixpanel.js';
+import { mixpanel } from '../../struct/_Mixpanel.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const flattenArgs = (obj: Record<string, any>) => {

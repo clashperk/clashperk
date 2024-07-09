@@ -13,8 +13,8 @@ import {
   UserSelectMenuInteraction
 } from 'discord.js';
 import { container } from 'tsyringe';
-import Client from '../struct/Client.js';
-import { CustomIdProps } from '../struct/ComponentHandler.js';
+import Client from '../struct/client-module.js';
+import { CustomIdProps } from '../struct/component-handler.js';
 import { EMOJIS } from './emojis.js';
 
 const NEXT = '➡️';

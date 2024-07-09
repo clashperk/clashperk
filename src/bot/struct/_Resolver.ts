@@ -17,8 +17,8 @@ import {
   getHttpStatusText
 } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
-import Client from './Client.js';
-import { ElasticIndexer } from './Indexer.js';
+import Client from './client-module.js';
+import { ElasticIndexer } from './_Indexer.js';
 
 export default class Resolver {
   private readonly indexer: ElasticIndexer;

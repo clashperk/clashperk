@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
-import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/_Http.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
 import { Util } from '../../util/index.js';

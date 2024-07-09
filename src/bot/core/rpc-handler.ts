@@ -1,8 +1,8 @@
 import { captureException } from '@sentry/node';
 import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
-import { Client } from '../struct/Client.js';
-import Queue from '../struct/Queue.js';
+import { Client } from '../struct/client-module.js';
+import Queue from '../struct/_Queue.js';
 import { Collections, Flags } from '../util/constants.js';
 import AutoBoardLog from './auto-board-log.js';
 import CapitalLogV2 from './capital-log-v2.js';
@@ -16,14 +16,14 @@ import ClanLog from './clan-log-v2.js';
 import ClanWarLogV2 from './clan-war-log-v2.js';
 import ClanWarLog from './clan-war-log.js';
 import DonationLogV2 from './donation-log-v2.js';
-import DonationLog from './donation-logs.js';
+import DonationLog from './donation-log.js';
 import FlagAlertLog from './flag-alert-log.js';
 import JoinLeaveLog from './join-leave-log.js';
 import LastSeenLogV2 from './last-seen-log-v2.js';
 import LastSeenLog from './last-seen-log.js';
-import LegendLog from './legend-log.js';
 import LegendLogV2 from './legend-log-v2.js';
-import MaintenanceHandler from './_Maintenance.js';
+import LegendLog from './legend-log.js';
+import MaintenanceHandler from './maintenance.js';
 
 interface Cached {
   _id: string;
