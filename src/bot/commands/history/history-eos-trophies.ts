@@ -1,7 +1,7 @@
 import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents, padStart } from '../../util/helper.js';
 import { Util } from '../../util/index.js';

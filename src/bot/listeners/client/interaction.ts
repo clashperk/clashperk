@@ -13,9 +13,9 @@ import {
   WAR_REMINDERS_AUTOCOMPLETE
 } from '../../helper/reminders-autocomplete-helper.js';
 import { Listener } from '../../lib/index.js';
-import Google from '../../struct/_Google.js';
-import { mixpanel } from '../../struct/_Mixpanel.js';
 import ComponentHandler from '../../struct/component-handler.js';
+import Google from '../../struct/google.js';
+import { mixpanel } from '../../struct/mixpanel.js';
 import { IRoster, IRosterCategory } from '../../struct/roster-manager.js';
 import { UserInfoModel, UserTimezone } from '../../types/index.js';
 import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex, Settings } from '../../util/constants.js';

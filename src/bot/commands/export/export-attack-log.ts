@@ -2,7 +2,7 @@ import { APIClanWar, APIClanWarAttack, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
 

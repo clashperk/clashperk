@@ -4,7 +4,7 @@ import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/cwl-helper.js';
 import { Command } from '../../lib/index.js';
-import { ClanWarLeagueGroupAggregated } from '../../struct/_Http.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { getCWLSummaryImage } from '../../struct/image-helper.js';
 import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';

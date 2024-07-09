@@ -2,7 +2,7 @@ import { APIClan, APIClanMember } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { sum } from 'radash';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { PlayerSeasonModel, achievements } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';

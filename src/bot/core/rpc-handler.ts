@@ -2,7 +2,7 @@ import { captureException } from '@sentry/node';
 import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
 import { Client } from '../struct/client-module.js';
-import Queue from '../struct/_Queue.js';
+import Queue from '../struct/queue.js';
 import { Collections, Flags } from '../util/constants.js';
 import AutoBoardLog from './auto-board-log.js';
 import CapitalLogV2 from './capital-log-v2.js';

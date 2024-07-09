@@ -1,7 +1,7 @@
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { ClanWarLeagueGroupAggregated } from '../../struct/_Http.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { WAR_LEAGUE_MAP, WAR_LEAGUE_PROMOTION_MAP } from '../../util/constants.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/index.js';

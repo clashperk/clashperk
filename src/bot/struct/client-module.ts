@@ -12,22 +12,22 @@ import { ClientUtil } from '../util/client-util.js';
 import { FeatureFlags, Settings } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
 import Logger from '../util/logger.js';
-import { mongoClient } from './_Database.js';
-import Resolver from './_Resolver.js';
-import { Autocomplete } from './autocomplete-client.js';
 import CapitalRaidScheduler from './capital-raid-scheduler.js';
 import ClanGamesScheduler from './clan-games-scheduler.js';
 import ClanWarScheduler from './clan-war-scheduler.js';
 import { CommandsMap } from './commands-map.js';
 import { CustomBotManager } from './custom-bot-manager.js';
+import { mongoClient } from './database.js';
 import { GuildEventsHandler } from './guild-events-handler.js';
-import Http from './_Http.js';
+import Http from './http.js';
 import { PatreonHandler } from './patreon-handler.js';
 import RedisService from './redis-service.js';
 import { RosterManager } from './roster-manager.js';
 import SettingsProvider from './settings-provider.js';
 import StatsHandler from './stats-handler.js';
 import StorageHandler from './storage-handler.js';
+import Resolver from './resolver.js';
+import { Autocomplete } from './autocomplete-client.js';
 
 export class Client extends DiscordClient {
   public commandHandler = new CommandHandler(this, {

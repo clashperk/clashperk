@@ -30,8 +30,8 @@ import {
 } from '../util/constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/emojis.js';
 import { Util } from '../util/index.js';
-import Google, { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from './_Google.js';
 import Client from './client-module.js';
+import Google, { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from './google.js';
 
 export type RosterSortTypes = (typeof RosterCommandSortOptions)[number]['value'];
 

@@ -13,7 +13,7 @@ import {
 import { cluster, diff } from 'radash';
 import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/_Google.js';
+import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/google.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections, DOT, FeatureFlags, Settings } from '../../util/constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';

@@ -2,7 +2,7 @@ import { APIClan, APIClanWarMember } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { ClanWarLeagueGroupAggregated } from '../../struct/_Http.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 

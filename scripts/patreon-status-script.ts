@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 
 import { PatreonMembersEntity } from '../src/bot/entities/patrons.entity.js';
-import { mongoClient } from '../src/bot/struct/_Database.js';
+import { mongoClient } from '../src/bot/struct/database.js';
 import { Included, Member } from '../src/bot/struct/patreon-handler.js';
 import { Collections } from '../src/bot/util/constants.js';
 

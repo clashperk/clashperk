@@ -1,6 +1,6 @@
 import { CommandInteraction, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/_Google.js';
+import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { LegendAttacks } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
