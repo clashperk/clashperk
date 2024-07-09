@@ -3,8 +3,8 @@ import { Collection, PermissionsString, Snowflake, WebhookClient } from 'discord
 import { ObjectId } from 'mongodb';
 import { Collections } from '../util/constants.js';
 import { clanEmbedMaker } from '../util/helper.js';
-import BaseLog from './BaseLog.js';
-import RPCHandler from './RPCHandler.js';
+import BaseLog from './base-log.js';
+import RPCHandler from './rpc-handler.js';
 
 export interface Cache {
   clanId: ObjectId;

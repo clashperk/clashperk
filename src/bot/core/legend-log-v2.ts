@@ -5,8 +5,8 @@ import { LegendAttacks } from '../types/index.js';
 import { ATTACK_COUNTS, Collections } from '../util/constants.js';
 import { padStart } from '../util/helper.js';
 import { Season, Util } from '../util/index.js';
-import BaseClanLog from './BaseClanLog.js';
-import RPCHandler from './RPCHandler.js';
+import BaseClanLog from './base-clan-log.js';
+import RPCHandler from './rpc-handler.js';
 
 export default class LegendLogV2 extends BaseClanLog {
   public declare cached: Collection<string, Cache>;

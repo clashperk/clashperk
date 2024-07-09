@@ -18,7 +18,7 @@ import { Client } from '../struct/Client.js';
 import { Collections } from '../util/constants.js';
 import { HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/emojis.js';
 import { Util } from '../util/index.js';
-import RPCHandler from './RPCHandler.js';
+import RPCHandler from './rpc-handler.js';
 
 export default class FlagAlertLog {
   public cached: Collection<string, Cache> = new Collection();

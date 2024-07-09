@@ -5,8 +5,8 @@ import { ObjectId } from 'mongodb';
 import { CapitalLogModel, ClanCapitalGoldModel, ClanCapitalRaidAttackData } from '../types/index.js';
 import { Collections } from '../util/constants.js';
 import { Season, Util } from '../util/index.js';
-import BaseLog from './BaseLog.js';
-import RPCHandler from './RPCHandler.js';
+import BaseLog from './base-log.js';
+import RPCHandler from './rpc-handler.js';
 
 export default class CapitalLog extends BaseLog {
   public declare cached: Collection<string, Cache>;

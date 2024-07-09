@@ -1,6 +1,6 @@
 {
   "name": "clashperk",
-  "version": "3.4.7",
+  "version": "3.5.0",
   "author": "",
   "license": "MIT",
   "description": "Clash of Clans Discord Bot",
@@ -19,10 +19,10 @@
     "lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
     "dev": "node -r dotenv/config --enable-source-maps dist/src/index.js",
     "crowdin": "tsx -r dotenv/config locales/crowdin.ts",
-    "deploy": "tsx -r dotenv/config scripts/Deploy.ts",
-    "patrons": "tsx -r dotenv/config scripts/Patreon.ts",
+    "deploy": "tsx -r dotenv/config scripts/deploy-script.ts",
+    "patrons": "tsx -r dotenv/config scripts/patreon-status-script.ts",
     "pull": "git submodule init && git submodule update --remote",
-    "task:index": "tsx -r dotenv/config scripts/EntryMaker.ts",
+    "task:index": "tsx -r dotenv/config scripts/entry-maker-script.ts",
     "task:rename": "tsx -r dotenv/config scripts/rename-files.ts",
     "build:sentry": "sentry-cli sourcemaps inject --org suvajit --project clashperk_bot ./dist && sentry-cli sourcemaps upload --org suvajit --project clashperk_bot ./dist --release=$(git rev-parse HEAD)"
   },

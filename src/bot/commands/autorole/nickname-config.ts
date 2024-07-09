@@ -12,7 +12,7 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import { title } from 'radash';
-import { NicknamingAccountPreference } from '../../core/RolesManager.js';
+import { NicknamingAccountPreference } from '../../core/roles-manager.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';

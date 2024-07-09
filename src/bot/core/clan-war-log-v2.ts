@@ -1,22 +1,28 @@
+import { ClanLogType, ClanLogsEntity } from '@app/entities';
 import { APIClanWar, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import {
   APIMessage,
   ActionRowBuilder,
+  AttachmentBuilder,
   ButtonBuilder,
   ButtonStyle,
   Collection,
   EmbedBuilder,
   PermissionsString,
   WebhookClient,
+  WebhookMessageCreateOptions,
   escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
-import { ObjectId } from 'mongodb';
-import { Collections } from '../util/constants.js';
+import { ObjectId, UpdateFilter, WithId } from 'mongodb';
+import { cluster } from 'radash';
+import { aggregateRoundsForRanking, calculateLeagueRanking } from '../helper/cwl-helper.js';
+import { getCWLSummaryImage } from '../struct/ImageHelper.js';
+import { Collections, calculateCWLMedals } from '../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/emojis.js';
-import { Util } from '../util/index.js';
-import BaseLog from './BaseLog.js';
-import RPCHandler from './RPCHandler.js';
+import { Season, Util } from '../util/index.js';
+import BaseClanLog from './base-clan-log.js';
+import RPCHandler from './rpc-handler.js';
 
 const states: { [key: string]: number } = {
   preparation: 16745216,
@@ -29,7 +35,7 @@ const results: { [key: string]: number } = {
   tied: 5861569
 };
 
-export default class ClanWarLog extends BaseLog {
+export default class ClanWarLogV2 extends BaseClanLog {
   public declare cached: Collection<string, Cache>;
 
   public constructor(private handler: RPCHandler) {
@@ -38,7 +44,7 @@ export default class ClanWarLog extends BaseLog {
   }
 
   public override get collection() {
-    return this.client.db.collection(Collections.CLAN_WAR_LOGS);
+    return this.client.db.collection<ClanLogsEntity>(Collections.CLAN_LOGS);
   }
 
   public override get permissions(): PermissionsString[] {
@@ -46,55 +52,94 @@ export default class ClanWarLog extends BaseLog {
   }
 
   public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
-    if (data.warTag && cache.rounds[data.round]?.warTag === data.warTag) {
-      return this._handleMessage(cache, webhook, cache.rounds[data.round]?.message ?? null, data);
-    } else if (data.warTag) {
-      return this._handleMessage(cache, webhook, null, data);
+    let messageId: string | null = null;
+    if (data.warTag) {
+      messageId = cache.rounds[data.round]?.warTag === data.warTag ? cache.rounds[data.round].message : null;
+    } else {
+      messageId = (data.uid === cache.uid ? cache.message : null) ?? null;
     }
 
-    if (data.uid === cache.uid) {
-      return this._handleMessage(cache, webhook, cache.message ?? null, data);
+    // CWL SUMMARY
+    if (data.type === 'CWL_ENDED') {
+      if (cache.logType !== ClanLogType.CWL_MONTHLY_SUMMARY_LOG) return null;
+
+      const result = await this.getSummaryImage(cache.tag);
+      if (!result) return null;
+
+      return this.send(cache, webhook, {
+        files: [result.attachment],
+        threadId: cache.threadId,
+        content: result.content
+      });
     }
 
-    return this._handleMessage(cache, webhook, null, data);
-  }
+    // MISSED ATTACK LOG
+    if (
+      data.remaining.length &&
+      data.state === 'warEnded' &&
+      [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(cache.logType)
+    ) {
+      if (data.warTag && cache.logType !== ClanLogType.CWL_MISSED_ATTACKS_LOG) return null;
+      if (!data.warTag && cache.logType !== ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG) return null;
 
-  private async _handleMessage(cache: Cache, webhook: WebhookClient, message: string | null, data: Feed) {
-    if (!data.warTag && data.remaining.length && data.state === 'warEnded') {
       const embed = this.getRemaining(data);
-      try {
-        if (embed) await webhook.send({ embeds: [embed], threadId: cache.threadId });
-      } catch (error) {
-        this.client.logger.warn(error, { label: 'WAR_REMAINING_MESSAGE' });
-      }
+      if (!embed) return null;
+
+      return this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
     }
 
-    if (!message) {
-      const msg = await this.send(cache, webhook, data);
+    // LINEUP CHANGE LOG
+    if ((data.oldMembers?.length || data.newMembers?.length) && cache.logType === ClanLogType.CWL_LINEUP_CHANGE_LOG) {
+      const embed = this.getLineupChangeEmbed(data);
+      return this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+    }
+
+    if (data.warTag && cache.logType !== ClanLogType.CWL_EMBED_LOG) return null;
+    if (!data.warTag && cache.logType !== ClanLogType.CLAN_WAR_EMBED_LOG) return null;
+
+    const embed = this.embed(data);
+
+    if (!messageId) {
+      const msg = await this.send(cache, webhook, {
+        embeds: [embed],
+        threadId: cache.threadId,
+        components: data.state === 'preparation' ? [] : [this._components(data)]
+      });
+
       return this.mutate(cache, data, msg);
     }
 
-    const msg = await this.edit(cache, webhook, message, data);
+    cache.message = messageId;
+    const msg = await this.edit(cache, webhook, {
+      embeds: [embed],
+      threadId: cache.threadId,
+      components: data.state === 'preparation' ? [] : [this._components(data)]
+    });
+
     return this.mutate(cache, data, msg);
   }
 
-  private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
-    const embed = this.embed(data);
-    const row = this.getActionRow(data);
-
+  private async send(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
     try {
-      return await super._send(cache, webhook, {
-        embeds: [embed],
-        components: data.state === 'preparation' ? [] : [row],
-        threadId: cache.threadId
-      });
-    } catch (error: any) {
-      this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
+      return await super.sendMessage(cache, webhook, payload);
+    } catch (error) {
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLogV2.name });
+      console.log(error);
       return null;
     }
   }
 
-  private getActionRow(data: Feed) {
+  private async edit(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
+    try {
+      return await super.editMessage(cache, webhook, payload);
+    } catch (error) {
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLogV2.name });
+      console.log(error);
+      return null;
+    }
+  }
+
+  private _components(data: Feed) {
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setLabel('Attacks')
@@ -121,47 +166,34 @@ export default class ClanWarLog extends BaseLog {
     return row;
   }
 
-  private async edit(cache: Cache, webhook: WebhookClient, message: string, data: Feed) {
-    const embed = this.embed(data);
-    const row = this.getActionRow(data);
-
-    try {
-      return await webhook.editMessage(message, {
-        embeds: [embed],
-        components: data.state === 'preparation' ? [] : [row],
-        threadId: cache.threadId
-      });
-    } catch (error: any) {
-      this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
-      if (error.code === 10008) {
-        delete cache.message;
-        return this.send(cache, webhook, data);
-      }
-      // Unknown Webhook / Unknown Channel
-      if ([10015, 10003].includes(error.code)) {
-        await this.deleteWebhook(cache);
-      }
-      return null;
-    }
-  }
-
   private async mutate(cache: Cache, data: Feed, message: APIMessage | null) {
     if (!message) {
       if (cache.message) delete cache.message;
-      if (data.warTag) cache.rounds[data.round] = { warTag: data.warTag, message: null, round: data.round };
-      return this.collection.updateOne({ clanId: new ObjectId(cache.clanId) }, { $set: { uid: data.uid }, $inc: { failed: 1 } });
+
+      const update: UpdateFilter<ClanLogsEntity> = {
+        $set: { 'metadata.uid': data.uid, 'updatedAt': new Date() },
+        $inc: { failed: 1 },
+        $unset: { messageId: true }
+      };
+
+      if (data.warTag && cache.rounds[data.round]?.warTag === data.warTag) {
+        delete cache.rounds[data.round];
+        update.$unset = { ...update.$unset, [`metadata.rounds.${data.round}`]: true };
+      }
+
+      return this.collection.updateOne({ _id: cache._id }, update);
     }
 
     if (data.warTag) {
-      cache.rounds[data.round] = { warTag: data.warTag, message: message.id, round: data.round };
+      cache.rounds[data.round] = { warTag: data.warTag, message: message.id };
 
       return this.collection.updateOne(
-        { clanId: new ObjectId(cache.clanId) },
+        { _id: cache._id },
         {
           $set: {
             updatedAt: new Date(),
             failed: 0,
-            [`rounds.${data.round}`]: { warTag: data.warTag, message: message.id, round: data.round }
+            [`metadata.rounds.${data.round}`]: { warTag: data.warTag, message: message.id }
           }
         }
       );
@@ -170,8 +202,8 @@ export default class ClanWarLog extends BaseLog {
     cache.uid = data.uid;
     cache.message = message.id;
     return this.collection.updateOne(
-      { clanId: new ObjectId(cache.clanId) },
-      { $set: { message: message.id, uid: data.uid, updatedAt: new Date(), failed: 0 } }
+      { _id: cache._id },
+      { $set: { 'messageId': message.id, 'metadata.uid': data.uid, 'updatedAt': new Date(), 'failed': 0 } }
     );
   }
 
@@ -291,10 +323,12 @@ export default class ClanWarLog extends BaseLog {
       .setThumbnail(data.clan.badgeUrls.small)
       .setURL(this.clanURL(data.clan.tag))
       .setDescription(
-        ['**War Against**', `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`].join(
-          '\n'
-        )
+        [
+          `**War Against ${data.warTag ? `(CWL Round ${data.round})` : ''}**`,
+          `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+        ].join('\n')
       );
+
     const twoRem = data.remaining
       .filter((m) => !m.attacks)
       .sort((a, b) => a.mapPosition - b.mapPosition)
@@ -317,6 +351,35 @@ export default class ClanWarLog extends BaseLog {
 
     if ((oneRem.length && !friendly) || twoRem.length) return embed;
     return null;
+  }
+
+  private getLineupChangeEmbed(data: Feed) {
+    const embed = new EmbedBuilder()
+      .setTitle(`${data.clan.name} (${data.clan.tag})`)
+      .setThumbnail(data.clan.badgeUrls.small)
+      .setURL(this.clanURL(data.clan.tag))
+      .setDescription(
+        [
+          `**War Against ${data.warTag ? `(CWL Round ${data.round})` : ''}**`,
+          `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+        ].join('\n')
+      );
+
+    if (data.newMembers.length) {
+      embed.addFields({
+        name: 'Members Added',
+        value: data.newMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`).join('\n')
+      });
+    }
+
+    if (data.oldMembers.length) {
+      embed.addFields({
+        name: 'Members Removed',
+        value: data.oldMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`).join('\n')
+      });
+    }
+
+    return embed;
   }
 
   private getLeagueWarEmbed(data: Feed) {
@@ -407,19 +470,38 @@ export default class ClanWarLog extends BaseLog {
       ]);
     }
 
-    if (data.remaining.length) {
-      const oneRem = data.remaining
-        .sort((a, b) => a.mapPosition - b.mapPosition)
-        .map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]!} ${m.name}`);
-
-      if (oneRem.length) {
-        const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-        embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? 'Missed Attacks' : '\u200e', value: chunk })));
-      }
-    }
-
     embed.setFooter({ text: `Round #${data.round}` }).setTimestamp();
     return embed;
+  }
+
+  private async getSummaryImage(clanTag: string) {
+    const leagueGroup = await this.client.storage.getWarTags(clanTag, Season.ID);
+    if (!leagueGroup) return null;
+
+    const body = await this.client.http.aggregateClanWarLeague(clanTag, leagueGroup, true);
+    if (!body) return null;
+
+    const leagueId = body.leagues?.[clanTag];
+    if (!leagueId) return null;
+
+    const ranks = calculateLeagueRanking(aggregateRoundsForRanking(body.rounds), leagueId);
+    const rankIndex = ranks.findIndex((a) => a.tag === clanTag);
+    const medals = calculateCWLMedals(leagueId.toString(), 8, rankIndex + 1);
+
+    const { file, name } = await getCWLSummaryImage({
+      activeRounds: body.rounds.length,
+      leagueId,
+      medals,
+      rankIndex,
+      ranks,
+      season: body.season,
+      totalRounds: body.clans.length - 1
+    });
+
+    return {
+      content: `## Clan War League ${moment(body.season).format('MMM YYYY')}`,
+      attachment: new AttachmentBuilder(file, { name })
+    };
   }
 
   private clanURL(tag: string) {
@@ -449,8 +531,13 @@ export default class ClanWarLog extends BaseLog {
       .join('');
   }
 
-  private getRoster(townHalls: Roster[]) {
-    return this.chunk(townHalls)
+  private getRoster(
+    townHalls: {
+      total: number;
+      level: number;
+    }[]
+  ) {
+    return cluster(townHalls, 5)
       .map((chunks) => {
         const list = chunks.map((th) => `${TOWN_HALLS[th.level]!} ${ORANGE_NUMBERS[th.total]!}`);
         return list.join(' ');
@@ -458,73 +545,77 @@ export default class ClanWarLog extends BaseLog {
       .join('\n');
   }
 
-  private chunk(items: Roster[] = []) {
-    const chunk = 5;
-    const array = [];
-    for (let i = 0; i < items.length; i += chunk) {
-      array.push(items.slice(i, i + chunk));
-    }
-    return array;
-  }
-
   public async init() {
-    for await (const data of this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })) {
-      this.cached.set((data.clanId as ObjectId).toHexString(), {
-        tag: data.tag,
-        clanId: data.clanId,
-        guild: data.guild,
-        uid: data.uid,
-        channel: data.channel,
-        rounds: data.rounds || {},
-        message: data.message,
-        webhook: data.webhook ? new WebhookClient(data.webhook) : null
-      });
+    const guildIds = this.client.guilds.cache.map((guild) => guild.id);
+    for await (const data of this.collection.find({
+      guildId: { $in: guildIds },
+      logType: {
+        $in: [
+          ClanLogType.CLAN_WAR_EMBED_LOG,
+          ClanLogType.CWL_EMBED_LOG,
+          ClanLogType.CWL_MISSED_ATTACKS_LOG,
+          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG,
+          ClanLogType.CWL_LINEUP_CHANGE_LOG,
+          ClanLogType.CWL_MONTHLY_SUMMARY_LOG
+        ]
+      },
+      isEnabled: true
+    })) {
+      this.setCache(data);
     }
   }
 
-  public async add(id: string) {
-    const data = await this.collection.findOne({ clanId: new ObjectId(id) });
-    if (!data) return null;
+  public async add(guildId: string) {
+    for await (const data of this.collection.find({
+      guildId,
+      logType: {
+        $in: [
+          ClanLogType.CLAN_WAR_EMBED_LOG,
+          ClanLogType.CWL_EMBED_LOG,
+          ClanLogType.CWL_MISSED_ATTACKS_LOG,
+          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG,
+          ClanLogType.CWL_LINEUP_CHANGE_LOG,
+          ClanLogType.CWL_MONTHLY_SUMMARY_LOG
+        ]
+      },
+      isEnabled: true
+    })) {
+      this.setCache(data);
+    }
+  }
 
-    this.cached.set(id, {
-      tag: data.tag,
-      clanId: data.clanId,
-      guild: data.guild,
-      uid: data.uid,
-      channel: data.channel,
-      rounds: data.rounds || {},
-      message: data.message,
-      webhook: data.webhook ? new WebhookClient(data.webhook) : null
+  private setCache(data: WithId<ClanLogsEntity>) {
+    this.cached.set(data._id.toHexString(), {
+      _id: data._id,
+      guild: data.guildId,
+      channel: data.channelId,
+      message: data.messageId,
+      tag: data.clanTag,
+      deepLink: data.deepLink,
+      logType: data.logType,
+      retries: 0,
+      uid: data.metadata?.uid,
+      rounds: data.metadata?.rounds ?? {},
+      webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
     });
   }
 }
 
-interface Roster {
-  total: number;
-  level: number;
-}
-
-interface Attacker {
-  name: string;
-  stars: number;
-  oldStars: number;
-  mapPosition: number;
-  townHallLevel: number;
-  destructionPercentage: number;
-}
-
-interface Defender {
-  mapPosition: number;
-  townHallLevel: number;
-}
-
-interface Recent {
-  attacker: Attacker;
-  defender: Defender;
-}
-
 interface Feed extends APIClanWar {
-  recent?: Recent[];
+  recent?: {
+    attacker: {
+      name: string;
+      stars: number;
+      oldStars: number;
+      mapPosition: number;
+      townHallLevel: number;
+      destructionPercentage: number;
+    };
+    defender: {
+      mapPosition: number;
+      townHallLevel: number;
+    };
+  }[];
   result: string;
   round: number;
   uid: string;
@@ -532,18 +623,38 @@ interface Feed extends APIClanWar {
   warTag?: string;
   attacksPerMember: number;
   remaining: APIClanWarMember[];
-  clan: APIWarClan & { rosters: Roster[] };
-  opponent: APIWarClan & { rosters: Roster[] };
+  clan: APIWarClan & {
+    rosters: {
+      total: number;
+      level: number;
+    }[];
+  };
+  opponent: APIWarClan & {
+    rosters: {
+      total: number;
+      level: number;
+    }[];
+  };
+  oldMembers: APIClanWarMember[];
+  newMembers: APIClanWarMember[];
+  type?: 'CWL_ENDED';
 }
 
 interface Cache {
-  guild: string;
-  clanId: ObjectId;
-  threadId?: string;
-  channel: string;
+  _id: ObjectId;
   tag: string;
-  rounds: any;
-  uid: string;
-  message?: string;
   webhook: WebhookClient | null;
+  deleted?: boolean;
+  role?: string;
+  channel: string;
+  message?: string | null;
+  guild: string;
+  color?: number;
+  threadId?: string;
+  logType: ClanLogType;
+  deepLink?: string;
+  retries: number;
+  // metadata
+  uid: string;
+  rounds: Record<number, { warTag: string; message: string }>;
 }

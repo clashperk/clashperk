@@ -5,8 +5,8 @@ import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { lastSeenEmbedMaker } from '../util/helper.js';
 import { Util } from '../util/index.js';
-import BaseLog from './BaseLog.js';
-import RPCHandler from './RPCHandler.js';
+import BaseLog from './base-log.js';
+import RPCHandler from './rpc-handler.js';
 
 export default class LastSeenLog extends BaseLog {
   public declare cached: Collection<string, Cache>;

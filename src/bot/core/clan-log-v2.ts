@@ -9,8 +9,8 @@ import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALL
 import { unitsFlatten } from '../util/helper.js';
 import { Util } from '../util/index.js';
 import { RAW_TROOPS_FILTERED } from '../util/troops.js';
-import BaseClanLog from './BaseClanLog.js';
-import RPCHandler from './RPCHandler.js';
+import BaseClanLog from './base-clan-log.js';
+import RPCHandler from './rpc-handler.js';
 
 const COLOR_MAPS: { [key: string]: number } = {
   [LogActions.NAME_CHANGE]: COLOR_CODES.PEACH,

@@ -20,7 +20,7 @@ import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/helper.js';
 import { Season, Util } from '../util/index.js';
-import RPCHandler from './RPCHandler.js';
+import RPCHandler from './rpc-handler.js';
 
 export default class AutoBoardLog {
   public cached: Collection<string, Cache> = new Collection();

@@ -7,8 +7,8 @@ import { TOWN_HALLS } from '../util/emojis.js';
 import { unitsFlatten } from '../util/helper.js';
 import { Season, Util } from '../util/index.js';
 import { RAW_TROOPS_FILTERED } from '../util/troops.js';
-import BaseLog from './BaseLog.js';
-import RPCHandler from './RPCHandler.js';
+import BaseLog from './base-log.js';
+import RPCHandler from './rpc-handler.js';
 
 const OP: { [key: string]: number } = {
   NAME_CHANGE: COLOR_CODES.PEACH,

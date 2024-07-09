@@ -4,8 +4,8 @@ import { ObjectId } from 'mongodb';
 import { Collections, DonationLogFrequencyTypes } from '../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, HOME_BASE_LEAGUES, RED_NUMBERS } from '../util/emojis.js';
 import { Season, Util } from '../util/index.js';
-import BaseLog from './BaseLog.js';
-import RPCHandler from './RPCHandler.js';
+import BaseLog from './base-log.js';
+import RPCHandler from './rpc-handler.js';
 
 export default class DonationLog extends BaseLog {
   public declare cached: Collection<string, Cache>;

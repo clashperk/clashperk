@@ -8,8 +8,8 @@ import { EMOJIS, HEROES, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/emojis.js
 import { unitsFlatten } from '../util/helper.js';
 import { Util } from '../util/index.js';
 import { RAW_TROOPS_FILTERED } from '../util/troops.js';
-import BaseLog from './BaseLog.js';
-import RPCHandler from './RPCHandler.js';
+import BaseLog from './base-log.js';
+import RPCHandler from './rpc-handler.js';
 
 const OP: { [key: string]: number } = {
   JOINED: COLOR_CODES.GREEN,

@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 import { Listener } from '../../lib/index.js';
-import { Migrator } from '../../core/Migrator.js';
+import { Migrator } from '../../core/_Migrator.js';
 
 export default class ReadyListener extends Listener {
   public constructor() {

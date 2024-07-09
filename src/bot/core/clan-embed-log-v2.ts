@@ -4,9 +4,9 @@ import { Collection, PermissionsString, WebhookClient, WebhookMessageCreateOptio
 import { ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/constants.js';
 import { clanEmbedMaker } from '../util/helper.js';
-import BaseClanLog from './BaseClanLog.js';
-import LastSeenLogV2 from './LastSeenLogV2.js';
-import RPCHandler from './RPCHandler.js';
+import BaseClanLog from './base-clan-log.js';
+import LastSeenLogV2 from './last-seen-log-v2.js';
+import RPCHandler from './rpc-handler.js';
 
 export default class ClanEmbedLogV2 extends BaseClanLog {
   public declare cached: Collection<string, Cache>;
