@@ -4,7 +4,7 @@ import { title } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Collections, FeatureFlags, Flags } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
-import { logActionsMap } from './SetupLogs.js';
+import { logActionsMap } from './setup-logs.js';
 
 const names: Record<string, string> = {
   [Flags.DONATION_LOG]: 'Donation Log',
