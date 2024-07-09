@@ -16,8 +16,8 @@ import ms from 'ms';
 import { title, unique } from 'radash';
 import { command } from '../../../../locales/en.js';
 import { Command } from '../../lib/index.js';
-import { Settings } from '../../util/_constants.js';
-import { createInteractionCollector } from '../../util/_Pagination.js';
+import { Settings } from '../../util/constants.js';
+import { createInteractionCollector } from '../../util/pagination.js';
 
 const options = [
   {

@@ -11,7 +11,7 @@ import {
 } from 'discord.js';
 import jwt from 'jsonwebtoken';
 import Client from '../struct/Client.js';
-import { Settings } from './_constants.js';
+import { Settings } from './constants.js';
 
 export class ClientUtil {
   public constructor(private readonly client: Client) {}

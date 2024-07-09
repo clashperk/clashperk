@@ -2,11 +2,11 @@ import { APIPlayer } from 'clashofclans.js';
 import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { ClanFeedLogModel } from '../types/index.js';
-import { TOWN_HALLS } from '../util/_emojis.js';
-import { RAW_TROOPS_FILTERED } from '../util/_Troops.js';
+import { unitsFlatten } from '../util/__helper.js';
 import { CLAN_FEED_LOG_TYPES, Collections, COLOR_CODES, DEEP_LINK_TYPES, FeatureFlags, PLAYER_ROLES_MAP } from '../util/constants.js';
-import { unitsFlatten } from '../util/Helper.js';
+import { TOWN_HALLS } from '../util/emojis.js';
 import { Season, Util } from '../util/index.js';
+import { RAW_TROOPS_FILTERED } from '../util/troops.js';
 import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';
 

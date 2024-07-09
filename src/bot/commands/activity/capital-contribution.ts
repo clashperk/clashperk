@@ -3,8 +3,8 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { ClanCapitalGoldModel } from '../../types/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
 import { Collections } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class CapitalContributionCommand extends Command {

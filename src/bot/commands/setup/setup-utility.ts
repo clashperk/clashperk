@@ -21,8 +21,8 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/GuildEventsHandler.js';
-import { Collections, Settings, URL_REGEX, missingPermissions } from '../../util/_constants.js';
-import { createInteractionCollector } from '../../util/_Pagination.js';
+import { Collections, Settings, URL_REGEX, missingPermissions } from '../../util/constants.js';
+import { createInteractionCollector } from '../../util/pagination.js';
 
 export default class SetupUtilsCommand extends Command {
   public constructor() {

@@ -15,8 +15,8 @@ import {
 import { ObjectId } from 'mongodb';
 import { FlagsEntity } from '../entities/flags.entity.js';
 import { Client } from '../struct/Client.js';
-import { HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/_emojis.js';
 import { Collections } from '../util/constants.js';
+import { HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/emojis.js';
 import { Util } from '../util/index.js';
 import RPCHandler from './RPCHandler.js';
 

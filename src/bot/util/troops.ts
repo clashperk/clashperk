@@ -1,5 +1,5 @@
 import { RawData } from 'clashofclans.js';
-import { ALL_TROOPS, SUPER_TROOPS } from './_emojis.js';
+import { ALL_TROOPS, SUPER_TROOPS } from './emojis.js';
 
 export const RAW_TROOPS = RawData.RawUnits;
 

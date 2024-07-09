@@ -18,7 +18,7 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { DiscordErrorCodes, Settings, URL_REGEX } from '../../util/constants.js';
-import { EMOJIS } from '../../util/_emojis.js';
+import { EMOJIS } from '../../util/emojis.js';
 
 export default class SetupButtonsCommand extends Command {
   public constructor() {

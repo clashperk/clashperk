@@ -2,9 +2,9 @@ import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/_constants.js';
-import { dynamicPagination } from '../../util/_Pagination.js';
-import { Season } from '../../util/_Season.js';
+import { Collections } from '../../util/constants.js';
+import { dynamicPagination } from '../../util/pagination.js';
+import { Season } from '../../util/season.js';
 
 export default class LeaderboardClansCommand extends Command {
   public constructor() {

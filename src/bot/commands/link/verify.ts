@@ -1,8 +1,8 @@
 import { CommandInteraction } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
 import { Collections } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
 
 export default class VerifyPlayerCommand extends Command {
   public constructor() {

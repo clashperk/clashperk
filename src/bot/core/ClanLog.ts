@@ -4,11 +4,11 @@ import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { ClanLogType, ClanLogsEntity, LogAction, LogActions } from '../entities/clan-logs.entity.js';
 import { FlagsEntity } from '../entities/flags.entity.js';
-import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALLS } from '../util/_emojis.js';
-import { RAW_TROOPS_FILTERED } from '../util/_Troops.js';
+import { unitsFlatten } from '../util/__helper.js';
 import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings } from '../util/constants.js';
-import { unitsFlatten } from '../util/Helper.js';
+import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALLS } from '../util/emojis.js';
 import { Util } from '../util/index.js';
+import { RAW_TROOPS_FILTERED } from '../util/troops.js';
 import BaseClanLog from './BaseClanLog.js';
 import RPCHandler from './RPCHandler.js';
 

@@ -1,6 +1,6 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { PLAYER_LEAGUE_NAMES, Settings } from '../../util/_constants.js';
+import { PLAYER_LEAGUE_NAMES, Settings } from '../../util/constants.js';
 
 export interface IArgs {
   command?: 'refresh' | 'disable' | null;

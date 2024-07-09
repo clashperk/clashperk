@@ -13,8 +13,8 @@ import {
 import moment from 'moment';
 import { RaidRemindersEntity } from '../../../entities/capital-raid-reminders.entity.js';
 import { Command } from '../../../lib/index.js';
-import { Collections } from '../../../util/_constants.js';
-import { hexToNanoId } from '../../../util/_Helper.js';
+import { hexToNanoId } from '../../../util/__helper.js';
+import { Collections } from '../../../util/constants.js';
 
 export default class ReminderCreateCommand extends Command {
   public constructor() {

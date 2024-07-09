@@ -2,7 +2,7 @@ import { APIClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, embedLength } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/_constants.js';
+import { Collections } from '../../util/constants.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class SummaryClansCommand extends Command {

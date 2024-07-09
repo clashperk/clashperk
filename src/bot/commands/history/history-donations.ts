@@ -2,10 +2,10 @@ import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'disco
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { Collections } from '../../util/_constants.js';
-import { getExportComponents } from '../../util/_Helper.js';
-import { handlePagination } from '../../util/_Pagination.js';
+import { getExportComponents } from '../../util/__helper.js';
+import { Collections } from '../../util/constants.js';
 import { Util } from '../../util/index.js';
+import { handlePagination } from '../../util/pagination.js';
 
 export default class DonationsHistoryCommand extends Command {
   public constructor() {

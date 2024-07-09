@@ -12,10 +12,10 @@ import {
 } from 'discord.js';
 import { title } from 'radash';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
-import { EMOJIS } from '../../util/_emojis.js';
+import { padStart } from '../../util/__helper.js';
 import { MembersCommandOptions } from '../../util/command-options.js';
 import { Settings } from '../../util/constants.js';
-import { padStart } from '../../util/Helper.js';
+import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 const SortingKey = {

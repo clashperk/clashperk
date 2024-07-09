@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Comman
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
 import { Collections, MAX_TOWN_HALL_LEVEL, WarType } from '../../util/constants.js';
-import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/_emojis.js';
+import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 export type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };

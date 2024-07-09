@@ -3,7 +3,7 @@ import { RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'disc
 import fetch from 'node-fetch';
 import 'reflect-metadata';
 import { inspect } from 'util';
-import { COMMANDS, HIDDEN_COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
+import { COMMANDS, HIDDEN_COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './application-commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
 

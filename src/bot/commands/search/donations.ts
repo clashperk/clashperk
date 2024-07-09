@@ -1,9 +1,9 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerSeasonModel } from '../../types/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
-import { recoverDonations } from '../../util/_Helper.js';
+import { recoverDonations } from '../../util/__helper.js';
 import { Collections } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class DonationsCommand extends Command {

@@ -20,7 +20,7 @@ import {
   Flags,
   WAR_FEED_LOG_TYPES,
   missingPermissions
-} from '../../util/_constants.js';
+} from '../../util/constants.js';
 
 const FEATURES: Record<string, string> = {
   [Flags.DONATION_LOG]: 'Donation Log',

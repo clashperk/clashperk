@@ -2,9 +2,9 @@ import { APIPlayer } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
-import { RAW_TROOPS_FILTERED } from '../../util/_Troops.js';
-import { HERO_EQUIPMENT, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/_emojis.js';
-import { getExportComponents } from '../../util/_Helper.js';
+import { getExportComponents } from '../../util/__helper.js';
+import { HERO_EQUIPMENT, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/emojis.js';
+import { RAW_TROOPS_FILTERED } from '../../util/troops.js';
 
 const achievements = [
   'Gold Grab',

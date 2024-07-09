@@ -1,6 +1,6 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections, Settings } from '../../util/_constants.js';
+import { Collections, Settings } from '../../util/constants.js';
 
 export default class AutoClanRoleCommand extends Command {
   public constructor() {

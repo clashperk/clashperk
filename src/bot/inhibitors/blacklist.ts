@@ -1,6 +1,6 @@
 import { Interaction } from 'discord.js';
 import { Inhibitor } from '../lib/index.js';
-import { Settings } from '../util/_constants.js';
+import { Settings } from '../util/constants.js';
 
 export default class BlacklistInhibitor extends Inhibitor {
   public constructor() {

@@ -1,10 +1,10 @@
 import { APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { EMOJIS, SUPER_TROOPS } from '../../util/_emojis.js';
-import { RAW_SUPER_TROOPS } from '../../util/_Troops.js';
 import { Collections } from '../../util/constants.js';
+import { EMOJIS, SUPER_TROOPS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
+import { RAW_SUPER_TROOPS } from '../../util/troops.js';
 
 export default class BoostsCommand extends Command {
   public constructor() {

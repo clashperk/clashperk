@@ -4,8 +4,8 @@ import { AttachmentBuilder, Collection, EmbedBuilder, PermissionsString, Webhook
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { ClanCapitalGoldModel, ClanCapitalRaidAttackData } from '../types/index.js';
-import { Collections } from '../util/_constants.js';
-import { padStart } from '../util/_Helper.js';
+import { padStart } from '../util/__helper.js';
+import { Collections } from '../util/constants.js';
 import { Season, Util } from '../util/index.js';
 import BaseClanLog from './BaseClanLog.js';
 import RPCHandler from './RPCHandler.js';

@@ -3,7 +3,7 @@ import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
 import { Client } from '../struct/Client.js';
 import Queue from '../struct/Queue.js';
-import { Collections, Flags } from '../util/_constants.js';
+import { Collections, Flags } from '../util/constants.js';
 import AutoBoardLog from './AutoBoardLog.js';
 import CapitalLog from './CapitalLog.js';
 import CapitalLogV2 from './CapitalLogV2.js';

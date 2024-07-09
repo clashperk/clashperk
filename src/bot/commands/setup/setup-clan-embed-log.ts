@@ -19,10 +19,10 @@ import {
   WebhookClient
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Collections, Flags, missingPermissions, URL_REGEX } from '../../util/_constants.js';
-import { clanEmbedMaker } from '../../util/_Helper.js';
-import { createInteractionCollector } from '../../util/_Pagination.js';
+import { clanEmbedMaker } from '../../util/__helper.js';
 import { ClanEmbedFieldOptions, ClanEmbedFieldValues } from '../../util/command-options.js';
+import { Collections, Flags, missingPermissions, URL_REGEX } from '../../util/constants.js';
+import { createInteractionCollector } from '../../util/pagination.js';
 
 export default class ClanEmbedCommand extends Command {
   public constructor() {

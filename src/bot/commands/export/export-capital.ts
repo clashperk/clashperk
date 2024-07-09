@@ -2,8 +2,8 @@ import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
-import { Collections, UNRANKED_CAPITAL_LEAGUE_ID } from '../../util/_constants.js';
-import { getExportComponents } from '../../util/_Helper.js';
+import { getExportComponents } from '../../util/__helper.js';
+import { Collections, UNRANKED_CAPITAL_LEAGUE_ID } from '../../util/constants.js';
 
 export default class ExportCapital extends Command {
   public constructor() {

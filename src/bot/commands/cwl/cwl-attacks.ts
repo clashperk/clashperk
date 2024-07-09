@@ -13,7 +13,7 @@ import {
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
-import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/_emojis.js';
+import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 const stars: Record<string, string> = {

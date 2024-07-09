@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
 import { Collections } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class SummaryCapitalRaidsCommand extends Command {

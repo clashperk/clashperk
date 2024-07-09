@@ -3,7 +3,7 @@ import { CommandInteraction, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { CallerCollection } from '../../types/index.js';
-import { Collections } from '../../util/_constants.js';
+import { Collections } from '../../util/constants.js';
 
 export default class TargetCommand extends Command {
   public constructor() {

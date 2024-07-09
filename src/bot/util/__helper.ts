@@ -18,8 +18,8 @@ import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
 import Client from '../struct/Client.js';
 import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { ClanEmbedFields } from './command-options.js';
-import { Collections, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './_constants.js';
-import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './_emojis.js';
+import { Collections, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './constants.js';
+import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './emojis.js';
 import { Season, Util } from './index.js';
 
 export const hexToNanoId = (hex: ObjectId) => {

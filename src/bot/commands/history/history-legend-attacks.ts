@@ -2,8 +2,8 @@ import { CommandInteraction, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/Google.js';
 import { LegendAttacks } from '../../types/index.js';
-import { Collections } from '../../util/_constants.js';
-import { getExportComponents } from '../../util/_Helper.js';
+import { getExportComponents } from '../../util/__helper.js';
+import { Collections } from '../../util/constants.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class LegendAttacksHistoryCommand extends Command {

@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import Google from '../../struct/Google.js';
 import { UserInfoModel } from '../../types/index.js';
-import { Collections } from '../../util/_constants.js';
+import { Collections } from '../../util/constants.js';
 import { Util } from '../../util/index.js';
 
 export default class TimezoneCommand extends Command {

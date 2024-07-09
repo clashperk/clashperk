@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, Interaction, PermissionsString, TextChannel, User } from 'discord.js';
 import { Command, Listener } from '../../lib/index.js';
-import { BOT_MANAGER_HYPERLINK, missingPermissions } from '../../util/_constants.js';
+import { BOT_MANAGER_HYPERLINK, missingPermissions } from '../../util/constants.js';
 
 export default class MissingPermissionsListener extends Listener {
   public constructor() {

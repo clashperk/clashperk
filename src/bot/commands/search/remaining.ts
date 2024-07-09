@@ -6,7 +6,7 @@ import { Command } from '../../lib/index.js';
 import { CustomIdProps } from '../../struct/ComponentHandler.js';
 import { ClanCapitalRaidAttackData, ClanGamesModel } from '../../types/index.js';
 import { Collections, Settings, WarType } from '../../util/constants.js';
-import { BLUE_NUMBERS, EMOJIS } from '../../util/_emojis.js';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 const RemainingType = {

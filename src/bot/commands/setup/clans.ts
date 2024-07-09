@@ -2,7 +2,7 @@ import { ClanStoresEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/constants.js';
-import { EMOJIS } from '../../util/_emojis.js';
+import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class ClansCommand extends Command {

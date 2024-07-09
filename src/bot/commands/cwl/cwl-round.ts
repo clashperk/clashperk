@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
-import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/_emojis.js';
+import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class CWLRoundCommand extends Command {

@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Collections, Flags } from '../../util/_constants.js';
+import { Collections, Flags } from '../../util/constants.js';
 
 export default class ServerLinkCommand extends Command {
   public constructor() {

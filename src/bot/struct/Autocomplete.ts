@@ -5,7 +5,7 @@ import { sift, unique } from 'radash';
 import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { FlagsEntity } from '../entities/flags.entity.js';
 import { PlayerModel, UserInfoModel } from '../types/index.js';
-import { Collections } from '../util/_constants.js';
+import { Collections } from '../util/constants.js';
 import { COUNTRIES } from '../util/countries.js';
 import Client from './Client.js';
 

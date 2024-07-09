@@ -2,7 +2,7 @@ import { APIClan, APIClanWar, APIClanWarLeagueGroup, APIWarClan } from 'clashofc
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/_emojis.js';
+import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class CWLRosterCommand extends Command {

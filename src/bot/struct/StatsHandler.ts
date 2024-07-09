@@ -1,5 +1,5 @@
 import { BaseInteraction, Guild } from 'discord.js';
-import { Collections } from '../util/_constants.js';
+import { Collections } from '../util/constants.js';
 import { Client } from './Client.js';
 
 export default class StatsHandler {

@@ -3,7 +3,7 @@ import { AttachmentBuilder, Collection, EmbedBuilder, PermissionsString, Webhook
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { CapitalLogModel, ClanCapitalGoldModel, ClanCapitalRaidAttackData } from '../types/index.js';
-import { Collections } from '../util/_constants.js';
+import { Collections } from '../util/constants.js';
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 import RPCHandler from './RPCHandler.js';

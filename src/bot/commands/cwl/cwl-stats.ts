@@ -6,8 +6,8 @@ import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
 import { getCWLSummaryImage } from '../../struct/ImageHelper.js';
-import { BLUE_NUMBERS, EMOJIS } from '../../util/_emojis.js';
 import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '../../util/constants.js';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class CWLStatsCommand extends Command {

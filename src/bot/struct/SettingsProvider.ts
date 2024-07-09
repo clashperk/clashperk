@@ -1,7 +1,7 @@
 import { Guild } from 'discord.js';
 import { Collection, Db } from 'mongodb';
 import { unique } from 'radash';
-import { Collections, Settings as SettingsEnum } from '../util/_constants.js';
+import { Collections, Settings as SettingsEnum } from '../util/constants.js';
 
 export default class SettingsProvider {
   protected db: Collection<Settings>;

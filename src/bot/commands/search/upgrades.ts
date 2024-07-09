@@ -12,10 +12,10 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TroopJSON } from '../../types/index.js';
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/_emojis.js';
-import { getMenuFromMessage, unitsFlatten } from '../../util/_Helper.js';
-import { RAW_TROOPS_WITH_ICONS } from '../../util/_Troops.js';
-import { Util } from '../../util/_util.js';
+import { getMenuFromMessage, unitsFlatten } from '../../util/__helper.js';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
+import { RAW_TROOPS_WITH_ICONS } from '../../util/troops.js';
+import { Util } from '../../util/util.js';
 
 export const EN_ESCAPE = '\u2002';
 

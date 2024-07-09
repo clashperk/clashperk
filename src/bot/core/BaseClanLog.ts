@@ -12,7 +12,7 @@ import {
 import { Collection as DbCollection, ObjectId } from 'mongodb';
 import { ClanLogsEntity } from '../entities/clan-logs.entity.js';
 import { Client } from '../struct/Client.js';
-import { DiscordErrorCodes, FeatureFlags } from '../util/_constants.js';
+import { DiscordErrorCodes, FeatureFlags } from '../util/constants.js';
 
 const WEBHOOK_RETRY_THRESHOLD = 3;
 

@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import { group, parallel } from 'radash';
 import { Command } from '../../lib/index.js';
 import { UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_MAP } from '../../util/constants.js';
-import { CWL_LEAGUES, EMOJIS } from '../../util/_emojis.js';
+import { CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
 
 enum SpinStatus {
   SPINNING = 1,

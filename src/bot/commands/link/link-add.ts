@@ -12,8 +12,8 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { PlayerLinks, UserInfoModel } from '../../types/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
 import { Collections } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
 
 export default class LinkAddCommand extends Command {
   public constructor() {

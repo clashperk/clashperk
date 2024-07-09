@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Settings, getInviteLink } from '../../util/_constants.js';
+import { Settings, getInviteLink } from '../../util/constants.js';
 
 export default class InviteCommand extends Command {
   public constructor() {

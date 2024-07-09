@@ -14,9 +14,9 @@ import moment from 'moment';
 import { WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
 import { Patron, rewards } from '../../struct/PatreonHandler.js';
-import { EMOJIS } from '../../util/_emojis.js';
-import { createInteractionCollector } from '../../util/_Pagination.js';
 import { getInviteLink } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
+import { createInteractionCollector } from '../../util/pagination.js';
 
 export default class BotPersonalizerCommand extends Command {
   public constructor() {

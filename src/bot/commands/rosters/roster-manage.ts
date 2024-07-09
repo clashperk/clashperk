@@ -22,10 +22,10 @@ import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { IRoster, IRosterCategory, PlayerWithLink, ROSTER_MAX_LIMIT, RosterLog } from '../../struct/RosterManager.js';
 import { PlayerModel } from '../../types/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
-import { createInteractionCollector } from '../../util/_Pagination.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
+import { createInteractionCollector } from '../../util/pagination.js';
 
 export default class RosterManageCommand extends Command {
   public constructor() {

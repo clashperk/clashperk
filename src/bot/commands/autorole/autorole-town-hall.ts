@@ -1,7 +1,7 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { ORANGE_NUMBERS } from '../../util/_emojis.js';
 import { Settings, TOWN_HALL_LEVELS_FOR_ROLES } from '../../util/constants.js';
+import { ORANGE_NUMBERS } from '../../util/emojis.js';
 
 export default class AutoTownHallRoleCommand extends Command {
   public constructor() {

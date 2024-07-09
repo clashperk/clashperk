@@ -13,8 +13,8 @@ import {
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
-import { ORANGE_NUMBERS } from '../util/_emojis.js';
 import { Collections, Settings } from '../util/constants.js';
+import { ORANGE_NUMBERS } from '../util/emojis.js';
 import { Util } from '../util/index.js';
 import { ReminderDeleteReasons } from './CapitalRaidScheduler.js';
 import { Client } from './Client.js';

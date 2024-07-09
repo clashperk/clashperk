@@ -2,7 +2,7 @@ import { ClanLogType } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { title } from 'radash';
 import { Command } from '../../lib/index.js';
-import { Collections, FeatureFlags, Flags } from '../../util/_constants.js';
+import { Collections, FeatureFlags, Flags } from '../../util/constants.js';
 import { Util } from '../../util/index.js';
 import { logActionsMap } from './setup-logs.js';
 

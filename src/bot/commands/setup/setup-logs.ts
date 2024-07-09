@@ -3,9 +3,9 @@ import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder } from 'd
 import { ObjectId, UpdateResult } from 'mongodb';
 import { title } from 'radash';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
-import { createInteractionCollector } from '../../util/_Pagination.js';
 import { Collections, DEEP_LINK_TYPES, Flags } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
+import { createInteractionCollector } from '../../util/pagination.js';
 
 type LogMap = Record<string, { label?: string }>;
 

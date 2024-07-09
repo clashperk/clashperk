@@ -4,8 +4,8 @@ import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/Http.js';
-import { EMOJIS } from '../../util/_emojis.js';
-import { padStart } from '../../util/Helper.js';
+import { padStart } from '../../util/__helper.js';
+import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
 
 export default class CWLStarsCommand extends Command {

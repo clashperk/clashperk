@@ -2,9 +2,9 @@ import { ButtonInteraction, CommandInteraction, EmbedBuilder, Role, User } from 
 import moment from 'moment';
 import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
-import { handleMessagePagination } from '../../util/_Pagination.js';
 import { Settings } from '../../util/constants.js';
+import { EMOJIS } from '../../util/emojis.js';
+import { handleMessagePagination } from '../../util/pagination.js';
 
 export default class AutoTownHallRoleCommand extends Command {
   public constructor() {

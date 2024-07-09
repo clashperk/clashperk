@@ -1,9 +1,9 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
-import { EMOJIS } from '../../util/_emojis.js';
+import { lastSeenEmbedMaker } from '../../util/__helper.js';
 import { Collections } from '../../util/constants.js';
-import { lastSeenEmbedMaker } from '../../util/Helper.js';
+import { EMOJIS } from '../../util/emojis.js';
 
 export default class LastSeenCommand extends Command {
   public constructor() {
