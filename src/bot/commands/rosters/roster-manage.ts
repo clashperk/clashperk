@@ -1160,6 +1160,7 @@ export default class RosterManageCommand extends Command {
         ...player,
         user: {
           id: user.id,
+          username: user.username,
           displayName: user.displayName
         }
       }));
@@ -1320,6 +1321,7 @@ export default class RosterManageCommand extends Command {
           ...player,
           user: {
             id: user.id,
+            username: user.username,
             displayName: user.displayName
           }
         }));

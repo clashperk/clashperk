@@ -74,10 +74,19 @@ export const rosterLayoutMap = {
     width: 12,
     label: 'DISCORD',
     isEmoji: false,
+    key: 'displayName',
+    align: 'left',
+    name: 'Discord Name',
+    description: 'The Discord displayName of the player.'
+  },
+  'USERNAME': {
+    width: 12,
+    label: 'USERNAME',
+    isEmoji: false,
     key: 'username',
     align: 'left',
-    name: 'Discord Displayname',
-    description: 'The Discord displayname of the player.'
+    name: 'Discord Username',
+    description: 'The Discord username of the player.'
   },
   'DISCORD_ID': {
     width: 19,
@@ -208,6 +217,7 @@ export type PlayerWithLink = APIPlayer & {
   user: {
     id: string;
     displayName: string;
+    username: string;
   } | null;
 };
 
@@ -225,6 +235,7 @@ export interface IRosterMember {
   name: string;
   tag: string;
   userId: string | null;
+  displayName: string | null;
   username: string | null;
   warPreference: 'in' | 'out' | null;
   role: string | null;
@@ -481,7 +492,7 @@ export class RosterManager {
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>;
     rosterId: ObjectId;
     player: APIPlayer;
-    user: { id: string; displayName: string } | null;
+    user: { id: string; displayName: string; username: string } | null;
     categoryId?: string | null;
     isDryRun?: boolean;
   }) {
@@ -526,7 +537,7 @@ export class RosterManager {
   }: {
     rosterId: ObjectId;
     player: APIPlayer;
-    user: { id: string; displayName: string } | null;
+    user: { id: string; displayName: string; username: string } | null;
     categoryId?: string | null;
     isDryRun?: boolean;
     isOwner?: boolean;
@@ -562,7 +573,7 @@ export class RosterManager {
   }: {
     roster: WithId<IRoster>;
     player: APIPlayer;
-    user: { id: string; displayName: string } | null;
+    user: { id: string; displayName: string; username: string } | null;
     categoryId?: string | null;
   }) {
     const category = categoryId ? await this.getCategory(new ObjectId(categoryId)) : null;
@@ -571,7 +582,8 @@ export class RosterManager {
       name: player.name,
       tag: player.tag,
       userId: user?.id ?? null,
-      username: user?.displayName ?? null,
+      username: user?.username ?? null,
+      displayName: user?.displayName ?? null,
       warPreference: player.warPreference ?? null,
       role: player.role ?? null,
       trophies: player.trophies,
@@ -653,7 +665,7 @@ export class RosterManager {
   }: {
     oldRoster: WithId<IRoster>;
     player: APIPlayer;
-    user: { id: string; displayName: string } | null;
+    user: { id: string; displayName: string; username: string } | null;
     newRosterId: ObjectId;
     categoryId: string | null;
   }) {
@@ -759,6 +771,11 @@ export class RosterManager {
     const players = await Promise.all(members.map((mem) => this.client.http.getPlayer(mem.tag)));
     const { body, res } = await this.client.http.getClan(roster.clan.tag);
 
+    const links = await this.client.db
+      .collection(Collections.PLAYER_LINKS)
+      .find({ tag: { $in: members.map((mem) => mem.tag) } })
+      .toArray();
+
     const clan = roster.clan;
     if (res.ok && body) {
       clan.league = { id: body.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID, name: body.warLeague?.name ?? 'Unranked' };
@@ -784,6 +801,10 @@ export class RosterManager {
       const { body: player, res } = players[i];
       if (!res.ok) return;
 
+      const link = links.find((link) => link.tag === member.tag);
+      if (link && member.userId) member.username = link.username;
+      if (link && member.userId) member.displayName = link.displayName;
+
       member.name = player.name;
       member.townHallLevel = player.townHallLevel;
       member.warPreference = player.warPreference ?? null;
@@ -801,7 +822,11 @@ export class RosterManager {
       { returnDocument: 'after' }
     );
 
-    if (value) this.updateBulkRoles({ roster: value, rolesMap, addRoles: true });
+    if (value) {
+      // skipping await so we don't block the event loop
+      this.updateBulkRoles({ roster: value, rolesMap, addRoles: true });
+    }
+
     return value;
   }
 
@@ -835,6 +860,9 @@ export class RosterManager {
         roster.members.sort((a, b) => (a.clan?.name ?? '').localeCompare(b.clan?.name ?? ''));
         break;
       case 'DISCORD_NAME':
+        roster.members.sort((a, b) => (a.displayName ?? '').localeCompare(b.displayName ?? ''));
+        break;
+      case 'DISCORD_USERNAME':
         roster.members.sort((a, b) => (a.username ?? '').localeCompare(b.username ?? ''));
         break;
       case 'SIGNUP_TIME':
@@ -891,6 +919,7 @@ export class RosterManager {
           const name = this.snipe(mem.name, rosterLayoutMap.NAME.width);
           const tag = this.snipe(mem.tag, rosterLayoutMap.TAG.width);
           const username = this.snipe(mem.username ?? ' ', rosterLayoutMap.DISCORD.width);
+          const displayName = this.snipe(mem.displayName ?? ' ', rosterLayoutMap.USERNAME.width);
           const userId = this.snipe(mem.userId ?? ' ', rosterLayoutMap.DISCORD_ID.width);
           const clanName = roster.useClanAlias
             ? this.snipe(mem.clan?.alias ?? mem.clan?.name ?? ' ', rosterLayoutMap.CLAN.width)
@@ -909,6 +938,7 @@ export class RosterManager {
             tag,
             userId,
             username,
+            displayName,
             clanName,
             townHallLevel,
             townHallIcon,
@@ -1413,7 +1443,8 @@ export class RosterManager {
         tag: player.tag,
         name: player.name,
         userId: link?.userId ?? null,
-        username: link?.displayName ?? link?.username ?? null,
+        username: link?.username ?? null,
+        displayName: link?.displayName ?? null,
         townHallLevel: player.townHallLevel,
         warPreference: player.warPreference ?? null,
         role: player.role ?? null,
@@ -1440,7 +1471,7 @@ export class RosterManager {
       if (!link && !allowUnlinked) return;
 
       members.push({
-        user: link ? { id: link.userId, displayName: link.displayName || link.username } : null,
+        user: link ? { id: link.userId, displayName: link.displayName, username: link.username } : null,
         ...player
       });
     });

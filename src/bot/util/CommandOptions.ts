@@ -52,8 +52,12 @@ export const RosterCommandSortOptions = [
     value: 'PLAYER_NAME'
   },
   {
-    name: 'Discord Username',
+    name: 'Discord Name',
     value: 'DISCORD_NAME'
+  },
+  {
+    name: 'Discord Username',
+    value: 'DISCORD_USERNAME'
   },
   {
     name: 'Town Hall Level',
