@@ -499,7 +499,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
     });
 
     return {
-      content: `## Clan War League ${moment(body.season).format('MMM YYYY')}`,
+      content: `## Clan War League ${moment(body.season).format('MMMM YYYY')}`,
       attachment: new AttachmentBuilder(file, { name })
     };
   }
