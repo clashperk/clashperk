@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild, Message } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
 import { URL } from 'node:url';
 import { Command } from '../../lib/index.js';
 import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/emojis.js';
@@ -13,18 +13,6 @@ export default class ArmyCommand extends Command {
       category: 'search',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
-    });
-  }
-
-  public async run(message: Message, args: { link: string }) {
-    const payload = this.embed(message.guild!, 'en-US', args);
-
-    return message.channel.send({
-      embeds: payload.embeds,
-      components: payload.components,
-      allowedMentions: { repliedUser: false },
-      ...(payload.content ? { content: payload.content } : {}),
-      reply: { messageReference: message, failIfNotExists: false }
     });
   }
 

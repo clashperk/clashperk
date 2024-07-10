@@ -4264,9 +4264,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     dm_permission: false
   },
   {
-    name: 'army',
+    name: 'translate',
     type: ApplicationCommandType.Message,
-    dm_permission: false
+    dm_permission: false,
+    ...IntegrationTypesContexts
   }
 ];
 

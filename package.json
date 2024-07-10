@@ -29,6 +29,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^8.6.0",
     "@google-cloud/local-auth": "^2.1.0",
+    "@google-cloud/translate": "^8.3.0",
     "@sapphire/result": "^2.6.4",
     "@sentry/integrations": "^7.51.2",
     "@sentry/node": "^7.51.2",

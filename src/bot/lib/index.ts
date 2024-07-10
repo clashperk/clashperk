@@ -15,6 +15,7 @@ import {
   MessageContextMenuCommandInteraction,
   PermissionsString,
   RestEvents,
+  User,
   UserContextMenuCommandInteraction
 } from 'discord.js';
 import EventEmitter from 'node:events';
@@ -143,9 +144,17 @@ export class CommandHandler extends BaseHandler {
 
     if (this.preInhibitor(interaction, command)) return;
 
-    const args = interaction.isMessageContextMenuCommand()
-      ? { message: interaction.options.getMessage('message')?.content }
-      : { user: interaction.options.getUser('user') };
+    const args: Record<string, string | User> = {};
+    if (interaction.isMessageContextMenuCommand()) {
+      const message = interaction.options.getMessage('message');
+      if (message) {
+        args.message = message.content;
+        args.url = message.url;
+      }
+    } else {
+      const user = interaction.options.getUser('user');
+      if (user) args.user = user;
+    }
 
     return this.exec(interaction, command, args);
   }
