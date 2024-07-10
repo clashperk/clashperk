@@ -68,7 +68,7 @@ export default class CWLRoundCommand extends Command {
 
     const chunks: { state: string; embed: EmbedBuilder; round: number }[] = [];
     let index = 0;
-    for (const data of body.rounds) {
+    for (const data of body.wars) {
       if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
         const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
         const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;

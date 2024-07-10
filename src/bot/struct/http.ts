@@ -207,24 +207,23 @@ export default class Http extends ClashOfClansClient {
   }
 
   public async aggregateClanWarLeague(clanTag: string, group: ClanWarLeagueGroupsEntity, isApiData: boolean) {
-    const warTags = group.rounds
-      .filter((r) => !r.warTags.includes('#0'))
-      .map((round) => round.warTags)
-      .flat();
+    const rounds = group.rounds.filter((r) => !r.warTags.includes('#0'));
+    const warTags = rounds.map((round) => round.warTags).flat();
 
     const seasonFormat = 'YYYY-MM';
     if (moment().format(seasonFormat) !== moment(group.season).format(seasonFormat) && !isApiData) {
       return this.getDataFromArchive(clanTag, group.season, group);
     }
 
-    const rounds: (APIClanWar & { warTag: string; ok: boolean })[] = (
+    const wars: (APIClanWar & { warTag: string; ok: boolean })[] = (
       await Promise.all(warTags.map((warTag) => this._getCWLRoundWithWarTag(warTag)))
     ).filter((res) => res.ok && res.state !== 'notInWar');
 
     return {
       season: group.season,
       clans: group.clans,
-      rounds,
+      wars,
+      rounds: rounds.length,
       leagues: group.leagues ?? {}
     } satisfies ClanWarLeagueGroupAggregated;
   }
@@ -349,8 +348,9 @@ export default class Http extends ClashOfClansClient {
 
 export interface ClanWarLeagueGroupAggregated {
   season: string;
+  rounds: number;
   clans: { name: string; tag: string }[];
-  rounds: (APIClanWar & { warTag: string })[];
+  wars: (APIClanWar & { warTag: string })[];
   leagues: Record<string, number>;
 }
 

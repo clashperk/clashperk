@@ -722,13 +722,13 @@ export default class StorageHandler {
     Object.assign(Object.fromEntries(group.clans.map((clan) => [clan.tag, group.leagueId])), leagues);
 
     const rounds: { warTags: string[] }[] = [];
-    for (const _rounds of cluster(group.rounds, 4)) {
+    for (const _rounds of cluster(group.wars, 4)) {
       const warTags = _rounds.map((round) => round.warTag);
       rounds.push({ warTags });
     }
 
     const warTags: Record<string, string[]> = {};
-    for (const round of group.rounds) {
+    for (const round of group.wars) {
       warTags[round.clan.tag] ??= [];
       warTags[round.opponent.tag] ??= [];
 

@@ -91,7 +91,7 @@ export default class CWLAttacksCommand extends Command {
     let i = 0;
     const missed: { [key: string]: { name: string; count: number } } = {};
     const chunks: { embed: EmbedBuilder; state: string; round: number }[] = [];
-    for (const data of body.rounds) {
+    for (const data of body.wars) {
       if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
         const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
         const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;

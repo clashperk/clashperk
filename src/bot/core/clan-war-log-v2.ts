@@ -484,12 +484,12 @@ export default class ClanWarLogV2 extends BaseClanLog {
     const leagueId = body.leagues?.[clanTag];
     if (!leagueId) return null;
 
-    const ranks = calculateLeagueRanking(aggregateRoundsForRanking(body.rounds), leagueId);
+    const ranks = calculateLeagueRanking(aggregateRoundsForRanking(body.wars), leagueId);
     const rankIndex = ranks.findIndex((a) => a.tag === clanTag);
     const medals = calculateCWLMedals(leagueId.toString(), 8, rankIndex + 1);
 
     const { file, name } = await getCWLSummaryImage({
-      activeRounds: body.rounds.length,
+      activeRounds: body.rounds,
       leagueId,
       medals,
       rankIndex,

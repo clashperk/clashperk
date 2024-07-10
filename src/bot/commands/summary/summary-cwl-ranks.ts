@@ -114,7 +114,7 @@ export default class SummaryCWLRanks extends Command {
       };
     } = {};
 
-    for (const data of body.rounds) {
+    for (const data of body.wars) {
       ranking[data.clan.tag] ??= {
         name: data.clan.name,
         tag: data.clan.tag,

@@ -86,7 +86,7 @@ export default class CWLStatsCommand extends Command {
     > = {};
     let activeRounds = 0;
 
-    for (const data of body.rounds) {
+    for (const data of body.wars) {
       if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
         const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
         const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
@@ -212,7 +212,7 @@ export default class CWLStatsCommand extends Command {
       .join('\n\n');
 
     const leagueId = body.leagues?.[clan.tag];
-    const ranks = calculateLeagueRanking(aggregateRoundsForRanking(body.rounds), leagueId);
+    const ranks = calculateLeagueRanking(aggregateRoundsForRanking(body.wars), leagueId);
 
     const rankIndex = ranks.findIndex((a) => a.tag === clanTag);
     const padding = Math.max(...ranks.map((r) => r.destruction)) > 9999 ? 6 : 5;

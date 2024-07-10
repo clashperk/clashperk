@@ -89,7 +89,7 @@ export default class CWLStarsCommand extends Command {
       };
     } = {};
 
-    for (const data of body.rounds) {
+    for (const data of body.wars) {
       if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
         const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
         if (['inWar', 'warEnded'].includes(data.state)) {
