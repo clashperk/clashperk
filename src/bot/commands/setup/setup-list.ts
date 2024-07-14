@@ -1,10 +1,14 @@
 import { ClanLogType } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
-import { title } from 'radash';
+import { title as toTitle } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Collections, FeatureFlags, Flags } from '../../util/constants.js';
 import { Util } from '../../util/index.js';
 import { logActionsMap } from './setup-logs.js';
+
+function title(str: string) {
+  return toTitle(str).replace(/cwl/i, 'CWL');
+}
 
 const names: Record<string, string> = {
   [Flags.DONATION_LOG]: 'Donation Log',

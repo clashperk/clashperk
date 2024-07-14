@@ -30,11 +30,11 @@ export default class SummaryCompoCommand extends Command {
       );
     }
 
-    const allClans = await this.client.http._getClans(clans);
+    const _clans = await this.client.http._getClans(clans);
 
     const texts: string[] = [];
     const allPlayers: { tag: string; townHallLevel: number }[] = [];
-    for (const clan of allClans) {
+    for (const clan of _clans) {
       const players = await this.client.db
         .collection<{ tag: string; townHallLevel: number }>(Collections.PLAYER_SEASONS)
         .find({ season: Season.ID, tag: { $in: clan.memberList.map((mem) => mem.tag) } }, { projection: { tag: 1, townHallLevel: 1 } })

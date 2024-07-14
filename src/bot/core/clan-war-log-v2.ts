@@ -77,10 +77,10 @@ export default class ClanWarLogV2 extends BaseClanLog {
     if (
       data.remaining.length &&
       data.state === 'warEnded' &&
-      [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(cache.logType)
+      [ClanLogType.WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(cache.logType)
     ) {
       if (data.warTag && cache.logType !== ClanLogType.CWL_MISSED_ATTACKS_LOG) return null;
-      if (!data.warTag && cache.logType !== ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG) return null;
+      if (!data.warTag && cache.logType !== ClanLogType.WAR_MISSED_ATTACKS_LOG) return null;
 
       const embed = this.getRemaining(data);
       if (!embed) return null;
@@ -95,7 +95,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
     }
 
     if (data.warTag && cache.logType !== ClanLogType.CWL_EMBED_LOG) return null;
-    if (!data.warTag && cache.logType !== ClanLogType.CLAN_WAR_EMBED_LOG) return null;
+    if (!data.warTag && cache.logType !== ClanLogType.WAR_EMBED_LOG) return null;
 
     const embed = this.embed(data);
 
@@ -551,10 +551,10 @@ export default class ClanWarLogV2 extends BaseClanLog {
       guildId: { $in: guildIds },
       logType: {
         $in: [
-          ClanLogType.CLAN_WAR_EMBED_LOG,
+          ClanLogType.WAR_EMBED_LOG,
           ClanLogType.CWL_EMBED_LOG,
           ClanLogType.CWL_MISSED_ATTACKS_LOG,
-          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG,
+          ClanLogType.WAR_MISSED_ATTACKS_LOG,
           ClanLogType.CWL_LINEUP_CHANGE_LOG,
           ClanLogType.CWL_MONTHLY_SUMMARY_LOG
         ]
@@ -570,10 +570,10 @@ export default class ClanWarLogV2 extends BaseClanLog {
       guildId,
       logType: {
         $in: [
-          ClanLogType.CLAN_WAR_EMBED_LOG,
+          ClanLogType.WAR_EMBED_LOG,
           ClanLogType.CWL_EMBED_LOG,
           ClanLogType.CWL_MISSED_ATTACKS_LOG,
-          ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG,
+          ClanLogType.WAR_MISSED_ATTACKS_LOG,
           ClanLogType.CWL_LINEUP_CHANGE_LOG,
           ClanLogType.CWL_MONTHLY_SUMMARY_LOG
         ]

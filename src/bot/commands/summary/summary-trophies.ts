@@ -25,8 +25,8 @@ export default class SummaryTrophiesCommand extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const __clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
-    const members = __clans
+    const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
+    const members = _clans
       .map((clan) => clan.memberList.map((mem) => ({ clan: clan.name, name: mem.name, tag: mem.tag, trophies: mem.trophies })))
       .flat();
 
@@ -35,7 +35,7 @@ export default class SummaryTrophiesCommand extends Command {
     }
 
     const grouped = Object.values(
-      __clans.reduce<Record<string, ClansGroup>>((acc, clan) => {
+      _clans.reduce<Record<string, ClansGroup>>((acc, clan) => {
         acc[clan.tag] = {
           name: clan.name,
           tag: clan.tag,

@@ -13,6 +13,7 @@ export class Migrator {
   }
 
   async migrate() {
+    // await this.migrateClanFeedLog();
     // await this.migrateDonationLog();
     // await this.migrateClanEmbed();
     // await this.migrateCapitalLog();
@@ -20,6 +21,57 @@ export class Migrator {
     // await this.migrateClanWarLogs();
     // await this.migrateLastSeenLogs();
     // await this.migrateLegendLogs();
+  }
+
+  async migrateClanFeedLog() {
+    this.client.logger.info('Migrating donation logs', { label: 'Migrator' });
+    const logs = await this.client.db.collection(Collections.CLAN_FEED_LOGS).find(query).toArray();
+
+    const ops: AnyBulkWriteOperation<ClanLogsEntity>[] = [];
+    for (const log of logs) {
+      for (const logType of [
+        ClanLogType.MEMBER_JOIN_LEAVE_LOG,
+        ClanLogType.TOWN_HALL_UPGRADE_LOG,
+        ClanLogType.ROLE_CHANGE_LOG,
+        ClanLogType.WAR_PREFERENCE_LOG,
+        ClanLogType.NAME_CHANGE_LOG,
+        ClanLogType.CLAN_ACHIEVEMENTS_LOG
+      ] as ClanLogType[]) {
+        const extra: Partial<ClanLogsEntity> = {};
+        if (logType === ClanLogType.MEMBER_JOIN_LEAVE_LOG && log.role) {
+          extra.flagAlertRoleId = log.role;
+        }
+
+        ops.push({
+          updateOne: {
+            filter: { clanTag: log.tag, guildId: log.guild, logType },
+            update: {
+              $set: {
+                guildId: log.guild,
+                channelId: log.channel,
+                clanId: log.clanId,
+                clanTag: log.tag,
+                color: log.color,
+                createdAt: log.createdAt,
+                updatedAt: log.updatedAt ?? new Date(),
+                deepLink: log.deepLink,
+                isEnabled: true,
+                lastPostedAt: new Date(),
+                messageId: null,
+                metadata: {},
+                webhook: log.webhook,
+                ...extra
+              }
+            },
+            upsert: true
+          }
+        });
+      }
+    }
+
+    if (ops.length) await this.collection.bulkWrite(ops, { ordered: false });
+
+    this.client.logger.info('Clan feed logs migrated', { label: 'Migrator' });
   }
 
   async migrateDonationLog() {
@@ -193,10 +245,10 @@ export class Migrator {
     const ops: AnyBulkWriteOperation<ClanLogsEntity>[] = [];
     for (const log of logs) {
       [
-        ClanLogType.CLAN_WAR_EMBED_LOG,
+        ClanLogType.WAR_EMBED_LOG,
         ClanLogType.CWL_EMBED_LOG,
         ClanLogType.CWL_MISSED_ATTACKS_LOG,
-        ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG
+        ClanLogType.WAR_MISSED_ATTACKS_LOG
       ].forEach((logType) => {
         ops.push({
           updateOne: {

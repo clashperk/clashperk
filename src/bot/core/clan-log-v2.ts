@@ -89,11 +89,11 @@ export default class ClanLog extends BaseClanLog {
   }
 
   private async getPlayerLogEmbed(cache: Cache, member: Member, data: Feed) {
+    const actions = logActionsMap[cache.logType] ?? [];
+    if (!actions.includes(LogActions[member.op as LogAction])) return null;
+
     const { body: player, res } = await this.client.http.getPlayer(member.tag);
     if (!res.ok) return null;
-    const actions = logActionsMap[cache.logType] ?? [];
-
-    if (!actions.includes(LogActions[member.op as LogAction])) return null;
 
     let content: string | undefined;
 
@@ -347,11 +347,47 @@ export default class ClanLog extends BaseClanLog {
 
   public async init() {
     const guildIds = this.client.guilds.cache.map((guild) => guild.id);
-    for await (const data of this.collection.find({ isEnabled: true, guildId: { $in: guildIds } })) this.setCache(data);
+    for await (const data of this.collection.find({
+      isEnabled: true,
+      logType: {
+        $in: [
+          ClanLogType.MEMBER_JOIN_LEAVE_LOG,
+          ClanLogType.TOWN_HALL_UPGRADE_LOG,
+          ClanLogType.ROLE_CHANGE_LOG,
+          ClanLogType.ROLE_CHANGE_LOG,
+          ClanLogType.WAR_PREFERENCE_LOG,
+          ClanLogType.NAME_CHANGE_LOG,
+          ClanLogType.HERO_UPGRADE_LOG,
+          ClanLogType.CONTINUOUS_DONATION_LOG,
+          ClanLogType.CLAN_ACHIEVEMENTS_LOG
+        ]
+      },
+      guildId: { $in: guildIds }
+    })) {
+      this.setCache(data);
+    }
   }
 
   public async add(guildId: string) {
-    for await (const data of this.collection.find({ guildId, isEnabled: true })) this.setCache(data);
+    for await (const data of this.collection.find({
+      guildId,
+      isEnabled: true,
+      logType: {
+        $in: [
+          ClanLogType.MEMBER_JOIN_LEAVE_LOG,
+          ClanLogType.TOWN_HALL_UPGRADE_LOG,
+          ClanLogType.ROLE_CHANGE_LOG,
+          ClanLogType.ROLE_CHANGE_LOG,
+          ClanLogType.WAR_PREFERENCE_LOG,
+          ClanLogType.NAME_CHANGE_LOG,
+          ClanLogType.HERO_UPGRADE_LOG,
+          ClanLogType.CONTINUOUS_DONATION_LOG,
+          ClanLogType.CLAN_ACHIEVEMENTS_LOG
+        ]
+      }
+    })) {
+      this.setCache(data);
+    }
   }
 
   private setCache(data: WithId<ClanLogsEntity>) {
@@ -360,7 +396,7 @@ export default class ClanLog extends BaseClanLog {
       guild: data.guildId,
       channel: data.channelId,
       tag: data.clanTag,
-
+      role: data.flagAlertRoleId,
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,
@@ -417,7 +453,6 @@ interface Cache {
   guild: string;
   threadId?: string;
   logType: ClanLogType;
-
   deepLink?: string;
   retries: number;
 }

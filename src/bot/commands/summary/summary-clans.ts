@@ -19,14 +19,14 @@ export default class SummaryClansCommand extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const clanList = await this.client.http._getClans(clans);
+    const _clans = await this.client.http._getClans(clans);
 
-    clanList.sort((a, b) => a.name.localeCompare(b.name));
-    const joinLeaves = await this.getJoinLeave(clanList);
+    _clans.sort((a, b) => a.name.localeCompare(b.name));
+    const joinLeaves = await this.getJoinLeave(_clans);
 
     const texts: string[] = [];
     const allPlayers: { tag: string; townHallLevel: number }[] = [];
-    for (const clan of clanList) {
+    for (const clan of _clans) {
       const players = await this.client.db
         .collection<{ tag: string; townHallLevel: number }>(Collections.PLAYER_SEASONS)
         .find({ season: Season.ID, tag: { $in: clan.memberList.map((mem) => mem.tag) } }, { projection: { tag: 1, townHallLevel: 1 } })
@@ -58,9 +58,9 @@ export default class SummaryClansCommand extends Command {
     joinLeaves.sort((a, b) => a.leave - b.leave);
     joinLeaves.sort((a, b) => b.join - a.join);
 
-    const nameLen = Math.max(...clanList.map((clan) => clan.name.length)) + 1;
-    const tagLen = Math.max(...clanList.map((clan) => clan.tag.length)) + 1;
-    const totalMembers = clanList.reduce((p, c) => p + c.members, 0);
+    const nameLen = Math.max(..._clans.map((clan) => clan.name.length)) + 1;
+    const tagLen = Math.max(..._clans.map((clan) => clan.tag.length)) + 1;
+    const totalMembers = _clans.reduce((p, c) => p + c.members, 0);
 
     const embeds: EmbedBuilder[] = [
       new EmbedBuilder()
@@ -68,7 +68,7 @@ export default class SummaryClansCommand extends Command {
         .setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
         .setDescription(
           [
-            clanList
+            _clans
               .map((clan) => {
                 const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
                 return `\`\u200e${name} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members.toString().padStart(2, ' ')}/50 \u200f\``;

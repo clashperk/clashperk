@@ -313,7 +313,7 @@ export default class Resolver {
       await interaction.editReply(i18n('common.no_clan_tag_first_time', { lng: interaction.locale }));
       return null;
     }
-    const data = await this.getClan(interaction, tag);
+    const data = await this.getClan(interaction, tag, true);
     if (!data) return null;
 
     const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, interaction.guildId);

@@ -27,10 +27,10 @@ export default class SummaryCWLRanks extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const __clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.http._getClans(clans);
 
     const chunks = [];
-    for (const clan of __clans) {
+    for (const clan of _clans) {
       const [lastLeagueGroup, leagueGroup] = await Promise.all([
         this.client.http.getClanWarLeagueGroup(clan.tag),
         this.client.storage.getWarTags(clan.tag, season)
@@ -68,7 +68,7 @@ export default class SummaryCWLRanks extends Command {
       clans.sort((a, b) => b.stars - a.stars);
       clans.sort((a, b) => a.rank - b.rank);
 
-      const __clans = clans.map((clan) => {
+      const _clans = clans.map((clan) => {
         const emoji =
           clan.rank <= WAR_LEAGUE_PROMOTION_MAP[leagueId].promotion
             ? EMOJIS.UP_KEY
@@ -82,7 +82,7 @@ export default class SummaryCWLRanks extends Command {
       });
 
       const emptySpace = idx === leagueGroups.length - 1 ? '' : '\n\u200b';
-      const chunks = Util.splitMessage(`${__clans.join('\n')}${emptySpace}`, { maxLength: 1024 });
+      const chunks = Util.splitMessage(`${_clans.join('\n')}${emptySpace}`, { maxLength: 1024 });
       chunks.forEach((chunk, i) => {
         embed.addFields({
           name: i === 0 ? `${CWL_LEAGUES[WAR_LEAGUE_MAP[leagueId]]} ${WAR_LEAGUE_MAP[leagueId]}` : '\u200b',

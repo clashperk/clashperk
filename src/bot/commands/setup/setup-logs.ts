@@ -1,11 +1,15 @@
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder } from 'discord.js';
 import { ObjectId, UpdateResult } from 'mongodb';
-import { title } from 'radash';
+import { title as toTitle } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Collections, DEEP_LINK_TYPES, Flags } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
+
+function title(str: string) {
+  return toTitle(str).replace(/cwl/i, 'CWL');
+}
 
 type LogMap = Record<string, { label?: string }>;
 
@@ -46,8 +50,8 @@ export const logGroups: { name: string; logs: LogMap }[] = [
   {
     name: 'War Logs',
     logs: {
-      [ClanLogType.CLAN_WAR_EMBED_LOG]: {},
-      [ClanLogType.CLAN_WAR_MISSED_ATTACKS_LOG]: {},
+      [ClanLogType.WAR_EMBED_LOG]: {},
+      [ClanLogType.WAR_MISSED_ATTACKS_LOG]: {},
       [ClanLogType.CWL_EMBED_LOG]: {},
       [ClanLogType.CWL_MISSED_ATTACKS_LOG]: {},
       [ClanLogType.CWL_LINEUP_CHANGE_LOG]: {},
@@ -117,7 +121,7 @@ export default class SetupLogsCommand extends Command {
         .setOptions(
           logs.map((log) => ({
             label: logActionsMap[log].label || title(log),
-            emoji: EMOJIS.GEAR,
+            emoji: EMOJIS.HASH,
             value: log
           }))
         )
@@ -134,7 +138,7 @@ export default class SetupLogsCommand extends Command {
         menu.setOptions(
           logTypes.map((log) => ({
             label: logActionsMap[log].label || title(log),
-            emoji: EMOJIS.GEAR,
+            emoji: EMOJIS.HASH,
             value: log
           }))
         );

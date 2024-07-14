@@ -8,6 +8,7 @@ export interface ClanLogsEntity {
   isEnabled: boolean;
   channelId: string;
   deepLink: string;
+  flagAlertRoleId?: string;
   webhook: { id: string; token: string } | null;
   messageId: string | null;
   color: number;
@@ -71,8 +72,8 @@ export enum ClanLogType {
   LAST_SEEN_EMBED_LOG = 'last_seen_embed_log',
   SUPER_TROOP_BOOSTS_EMBED_LOG = 'super_troop_boosts_embed_log',
 
-  CLAN_WAR_EMBED_LOG = 'clan_war_embed_log',
-  CLAN_WAR_MISSED_ATTACKS_LOG = 'clan_war_missed_attacks_log',
+  WAR_EMBED_LOG = 'war_embed_log',
+  WAR_MISSED_ATTACKS_LOG = 'war_missed_attacks_log',
 
   CWL_EMBED_LOG = 'cwl_embed_log',
   CWL_LINEUP_CHANGE_LOG = 'cwl_lineup_change_log',
