@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { AnyThreadChannel, CommandInteraction, TextChannel } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections, Flags } from '../../util/constants.js';
 
@@ -20,29 +20,49 @@ export default class ServerLinkCommand extends Command {
       color: {
         match: 'COLOR',
         default: this.client.embed(interaction)
+      },
+      channel: {
+        match: 'CHANNEL'
       }
     };
   }
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { tag: string; color?: number; category?: string; clan_alias?: string; clan_nickname?: string }
+    args: {
+      tag?: string;
+      clan?: string;
+      channel?: TextChannel | AnyThreadChannel;
+      color?: number;
+      category?: string;
+      clan_alias?: string;
+      clan_nickname?: string;
+    }
   ) {
-    const data = await this.client.resolver.enforceSecurity(interaction, { tag: args.tag, collection: Collections.CLAN_STORES });
+    const data = await this.client.resolver.enforceSecurity(interaction, {
+      tag: args.tag || args.clan,
+      collection: Collections.CLAN_STORES
+    });
     if (!data) return;
 
     const clan = await this.client.storage.collection.findOne({ tag: data.tag, guild: interaction.guild.id });
-
     const categoryId = args.category
       ? await this.client.storage.findOrCreateCategory({ category: args.category, guildId: interaction.guildId })
       : clan?.categoryId;
+
+    if (args.channel) {
+      await this.client.storage.collection.updateOne(
+        { tag: data.tag, guild: interaction.guild.id },
+        { $push: { channels: args.channel.id } }
+      );
+    }
 
     const id = await this.client.storage.register(interaction, {
       op: Flags.SERVER_LINKED,
       guild: interaction.guild.id,
       name: data.name,
       tag: data.tag,
-      hexCode: args.color ?? null,
+      hexCode: args.color,
       categoryId
     });
 

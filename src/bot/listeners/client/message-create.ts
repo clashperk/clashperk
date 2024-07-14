@@ -18,7 +18,7 @@ const REGEX = /\bhttps:\/\/link\.clashofclans\.com\S+/gi;
 
 // https://link.clashofclans.com/en?action=CopyArmy&army=
 
-export default class MessageListener extends Listener {
+export default class MessageCreateListener extends Listener {
   public constructor() {
     super('messageCreate', {
       event: 'messageCreate',
@@ -30,10 +30,10 @@ export default class MessageListener extends Listener {
   public async exec(message: Message) {
     if (!message.guild) return;
     if (message.author.bot) return;
-    this.client.stats.message(message.guild.id);
 
     if (message.channel.type === ChannelType.DM) return;
     if (this.inhibitor(message)) return;
+
     if (message.channel.isThread() && !message.channel.permissionsFor(this.client.user!)?.has(PermissionFlagsBits.SendMessagesInThreads))
       return;
     if (!message.channel.permissionsFor(this.client.user!)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]))
@@ -44,12 +44,14 @@ export default class MessageListener extends Listener {
     const parsed = [`<@${this.client.user!.id}>`, `<@!${this.client.user!.id}>`]
       .map((mention) => this.parseWithPrefix(message, mention))
       .find((_) => _);
-    if (!parsed) return null;
-    const { command, content, contents } = parsed;
+    if (!parsed) return;
 
+    const { command, content, contents } = parsed;
     if (!command) return;
-    if (!this.client.isOwner(message.author.id)) {
-      return this.client.logger.log(`${command.id} ~ text-command`, { label: `${message.guild.name}/${message.author.displayName}` });
+
+    if (command.ownerOnly && !this.client.isOwner(message.author.id)) {
+      this.client.logger.log(`${command.id} ~ text-command`, { label: `${message.guild.name}/${message.author.displayName}` });
+      return;
     }
 
     try {
@@ -71,7 +73,6 @@ export default class MessageListener extends Listener {
   }
 
   private parseWithPrefix(message: Message, prefix: string) {
-    // const prefix = this.client.settings.get<string>(message.guild.id, Settings.PREFIX, '!');
     const lowerContent = message.content.toLowerCase();
     if (!lowerContent.startsWith(prefix.toLowerCase())) return null;
 

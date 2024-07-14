@@ -32,7 +32,7 @@ export class Migrator {
       for (const logType of [
         ClanLogType.MEMBER_JOIN_LEAVE_LOG,
         ClanLogType.TOWN_HALL_UPGRADE_LOG,
-        ClanLogType.ROLE_CHANGE_LOG,
+        // ClanLogType.ROLE_CHANGE_LOG,
         ClanLogType.WAR_PREFERENCE_LOG,
         ClanLogType.NAME_CHANGE_LOG,
         ClanLogType.CLAN_ACHIEVEMENTS_LOG

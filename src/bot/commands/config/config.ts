@@ -21,7 +21,7 @@ import { createInteractionCollector } from '../../util/pagination.js';
 
 const options = [
   {
-    name: 'manager_role',
+    name: 'bot_manager_role',
     key: Settings.MANAGER_ROLE,
     description: command.config.options.manager_role.description
   },
@@ -58,19 +58,24 @@ export default class ConfigCommand extends Command {
     args: {
       color_code?: string;
       webhook_limit?: number;
-      manager_role?: Role;
+      bot_manager_role?: Role;
       roster_manager_role?: Role;
       flags_manager_role?: Role;
       links_manager_role?: Role;
-      account_linked_role?: Role;
-      account_verified_role?: Role;
+
+      /** @deprecated */
       auto_update_roles?: boolean;
+      /** @deprecated */
       verified_only_clan_roles?: boolean;
+      /** @deprecated */
       role_removal_delays?: string;
+      /** @deprecated */
       role_addition_delays?: string;
+      /** @deprecated */
       always_force_refresh_roles?: boolean;
       /** @deprecated */
       maintenance_notification_channel?: string;
+      /** @deprecated */
       autorole_allow_not_linked?: boolean;
     }
   ) {
@@ -83,8 +88,8 @@ export default class ConfigCommand extends Command {
       await this.client.settings.set(interaction.guild, Settings.WEBHOOK_LIMIT, webhookLimit);
     }
 
-    if (args.manager_role) {
-      await this.client.settings.push(interaction.guild, Settings.MANAGER_ROLE, [args.manager_role.id]);
+    if (args.bot_manager_role) {
+      await this.client.settings.push(interaction.guild, Settings.MANAGER_ROLE, [args.bot_manager_role.id]);
     }
 
     if (args.roster_manager_role) {
@@ -99,40 +104,19 @@ export default class ConfigCommand extends Command {
       await this.client.settings.push(interaction.guild, Settings.LINKS_MANAGER_ROLE, [args.links_manager_role.id]);
     }
 
-    if (args.account_linked_role) {
-      await this.client.settings.set(interaction.guild, Settings.ACCOUNT_LINKED_ROLE, args.account_linked_role.id);
-    }
-
-    if (args.account_verified_role) {
-      await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.account_verified_role.id);
-    }
-
-    if (typeof args.verified_only_clan_roles === 'boolean') {
-      await this.client.settings.set(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, args.verified_only_clan_roles);
-    }
-
-    if (typeof args.auto_update_roles === 'boolean') {
-      await this.client.settings.set(interaction.guild, Settings.USE_AUTO_ROLE, args.auto_update_roles);
-    }
-
-    if (typeof args.always_force_refresh_roles === 'boolean') {
-      await this.client.settings.set(interaction.guild, Settings.FORCE_REFRESH_ROLES, args.always_force_refresh_roles);
-    }
-
     if (args.maintenance_notification_channel) {
-      return interaction.editReply(`This option has been moved to ${this.client.commands.get('/setup utility')}`);
+      return interaction.editReply(`This option has been moved to ${this.client.commands.get('/setup utility')} command.`);
     }
 
-    if (typeof args.autorole_allow_not_linked === 'boolean') {
-      await this.client.settings.set(interaction.guild, Settings.AUTO_ROLE_ALLOW_NOT_LINKED, args.autorole_allow_not_linked);
-    }
-
-    if (args.role_removal_delays) {
-      await this.client.settings.set(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, ms(args.role_removal_delays));
-    }
-
-    if (args.role_addition_delays) {
-      await this.client.settings.set(interaction.guild, Settings.ROLE_ADDITION_DELAYS, ms(args.role_addition_delays));
+    if (
+      typeof args.verified_only_clan_roles === 'boolean' ||
+      typeof args.auto_update_roles === 'boolean' ||
+      typeof args.always_force_refresh_roles === 'boolean' ||
+      typeof args.autorole_allow_not_linked === 'boolean' ||
+      args.role_removal_delays ||
+      args.role_addition_delays
+    ) {
+      return interaction.editReply(`This option has been moved to ${this.client.commands.get('/autorole config')} command.`);
     }
 
     const validOptions = this.getOptions();

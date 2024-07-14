@@ -57,13 +57,11 @@ export default class StatusCommand extends Command {
         inline: false
       });
 
-    if (isOwner) {
-      embed.addFields({
-        name: 'Free Memory',
-        value: `${this.freemem.toFixed(2)} MB`,
-        inline: false
-      });
-    }
+    embed.addFields({
+      name: 'Free Memory',
+      value: `${this.freemem.toFixed(2)} MB`,
+      inline: false
+    });
 
     embed.addFields(
       {
@@ -88,20 +86,18 @@ export default class StatusCommand extends Command {
       }
     );
 
-    if (isOwner) {
-      embed.addFields(
-        {
-          name: 'Players',
-          value: `${(await this.count(Collections.PLAYERS)).toLocaleString()}`,
-          inline: false
-        },
-        {
-          name: 'Links',
-          value: `${(await this.count(Collections.PLAYER_LINKS)).toLocaleString()}`,
-          inline: false
-        }
-      );
-    }
+    embed.addFields(
+      {
+        name: 'Players',
+        value: `${(await this.count(Collections.PLAYERS)).toLocaleString()}`,
+        inline: false
+      },
+      {
+        name: 'Links',
+        value: `${(await this.count(Collections.PLAYER_LINKS)).toLocaleString()}`,
+        inline: false
+      }
+    );
 
     embed.addFields(
       {

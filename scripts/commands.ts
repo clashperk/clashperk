@@ -2811,6 +2811,143 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.Boolean
           }
         ]
+      },
+      {
+        name: 'config',
+        description: 'Manage automatic roles settings.',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'auto_update_roles',
+            description: 'Whether to update roles automatically.',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: 'Yes',
+                value: 'true'
+              },
+              {
+                name: 'No',
+                value: 'false'
+              }
+            ]
+          },
+          {
+            name: 'role_removal_delays',
+            description: 'Whether to delay the removal of roles.',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: 'Off',
+                value: '0'
+              },
+              {
+                name: '4h',
+                value: '4h'
+              },
+              {
+                name: '6h',
+                value: '6h'
+              },
+              {
+                name: '8h',
+                value: '8h'
+              },
+              {
+                name: '12h',
+                value: '12h'
+              },
+              {
+                name: '18h',
+                value: '18h'
+              },
+              {
+                name: '24h',
+                value: '24h'
+              },
+              {
+                name: '36h',
+                value: '36h'
+              },
+              {
+                name: '48h',
+                value: '48h'
+              },
+              {
+                name: '72h',
+                value: '72h'
+              },
+              {
+                name: '7d',
+                value: '7d'
+              },
+              {
+                name: '12d',
+                value: '12d'
+              }
+            ]
+          },
+          {
+            name: 'role_addition_delays',
+            description: 'Whether to delay the addition of roles.',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: 'Off',
+                value: '0'
+              },
+              {
+                name: '4h',
+                value: '4h'
+              },
+              {
+                name: '6h',
+                value: '6h'
+              },
+              {
+                name: '8h',
+                value: '8h'
+              },
+              {
+                name: '12h',
+                value: '12h'
+              },
+              {
+                name: '18h',
+                value: '18h'
+              },
+              {
+                name: '24h',
+                value: '24h'
+              }
+            ]
+          },
+          {
+            name: 'always_force_refresh_roles',
+            description: 'Whether to enforce role refresh for individual users by default.',
+            type: ApplicationCommandOptionType.Boolean
+          },
+          {
+            name: 'allow_not_linked',
+            description: 'Whether to allow not linked players to get roles.',
+            type: ApplicationCommandOptionType.Boolean
+          },
+          {
+            name: 'verified_only_clan_roles',
+            description: 'Whether to grant clans roles to verified players only.',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: 'Yes',
+                value: 'true'
+              },
+              {
+                name: 'No',
+                value: 'false'
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -4028,7 +4165,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     description_localizations: translation('command.config.description'),
     options: [
       {
-        name: 'manager_role',
+        name: 'bot_manager_role',
         description: command.config.options.manager_role.description,
         description_localizations: translation('command.config.options.manager_role.description'),
         type: ApplicationCommandOptionType.Role
@@ -4052,11 +4189,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Role
       },
       {
-        name: 'maintenance_notification_channel',
-        description: '[DEPRECATED] This option has been moved to /setup utility command.',
-        type: ApplicationCommandOptionType.String
-      },
-      {
         name: 'color_code',
         name_localizations: {
           'en-GB': 'colour_code'
@@ -4066,141 +4198,46 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.String
       },
       {
-        name: 'auto_update_roles',
-        description: '[AutoRole] Whether to update roles automatically (defaults to Yes)',
-        type: ApplicationCommandOptionType.String,
-        choices: [
-          {
-            name: 'Yes',
-            value: 'true'
-          },
-          {
-            name: 'No',
-            value: 'false'
-          }
-        ]
-      },
-      {
-        name: 'role_removal_delays',
-        description: '[AutoRole] Whether to delay the removal of roles.',
-        type: ApplicationCommandOptionType.String,
-        choices: [
-          {
-            name: 'Off',
-            value: '0'
-          },
-          {
-            name: '4h',
-            value: '4h'
-          },
-          {
-            name: '6h',
-            value: '6h'
-          },
-          {
-            name: '8h',
-            value: '8h'
-          },
-          {
-            name: '12h',
-            value: '12h'
-          },
-          {
-            name: '18h',
-            value: '18h'
-          },
-          {
-            name: '24h',
-            value: '24h'
-          },
-          {
-            name: '36h',
-            value: '36h'
-          },
-          {
-            name: '48h',
-            value: '48h'
-          },
-          {
-            name: '72h',
-            value: '72h'
-          },
-          {
-            name: '7d',
-            value: '7d'
-          },
-          {
-            name: '12d',
-            value: '12d'
-          }
-        ]
-      },
-      {
-        name: 'role_addition_delays',
-        description: '[AutoRole] Whether to delay the addition of roles.',
-        type: ApplicationCommandOptionType.String,
-        choices: [
-          {
-            name: 'Off',
-            value: '0'
-          },
-          {
-            name: '4h',
-            value: '4h'
-          },
-          {
-            name: '6h',
-            value: '6h'
-          },
-          {
-            name: '8h',
-            value: '8h'
-          },
-          {
-            name: '12h',
-            value: '12h'
-          },
-          {
-            name: '18h',
-            value: '18h'
-          },
-          {
-            name: '24h',
-            value: '24h'
-          }
-        ]
-      },
-      {
-        name: 'always_force_refresh_roles',
-        description: 'Whether to enforce role refresh for individual users by default.',
-        type: ApplicationCommandOptionType.Boolean
-      },
-      {
-        name: 'autorole_allow_not_linked',
-        description: '[AutoRole] Whether to allow not linked players to get roles.',
-        type: ApplicationCommandOptionType.Boolean
-      },
-      {
-        name: 'verified_only_clan_roles',
-        description: '[AutoRole] Whether to grant clans roles to verified players only (Defaults to No)',
-        type: ApplicationCommandOptionType.String,
-        choices: [
-          {
-            name: 'Yes',
-            value: 'true'
-          },
-          {
-            name: 'No',
-            value: 'false'
-          }
-        ]
-      },
-      {
         name: 'webhook_limit',
         description: 'The maximum number of webhooks that can be created in a channel.',
         type: ApplicationCommandOptionType.Integer,
         max_value: 8,
         min_value: 3
+      },
+      {
+        name: 'maintenance_notification_channel',
+        description: '[DEPRECATED] This option has been moved to "/setup utility" command.',
+        type: ApplicationCommandOptionType.String
+      },
+      {
+        name: 'auto_update_roles',
+        type: ApplicationCommandOptionType.String,
+        description: '[DEPRECATED] This option has been moved to /autorole config command.'
+      },
+      {
+        name: 'role_removal_delays',
+        description: '[DEPRECATED] This option has been moved to /autorole config command.',
+        type: ApplicationCommandOptionType.String
+      },
+      {
+        name: 'role_addition_delays',
+        description: '[DEPRECATED] This option has been moved to /autorole config command.',
+        type: ApplicationCommandOptionType.String
+      },
+      {
+        name: 'always_force_refresh_roles',
+        description: '[DEPRECATED] This option has been moved to /autorole config command.',
+        type: ApplicationCommandOptionType.Boolean
+      },
+      {
+        name: 'autorole_allow_not_linked',
+        description: '[DEPRECATED] This option has been moved to /autorole config command.',
+        type: ApplicationCommandOptionType.Boolean
+      },
+      {
+        name: 'verified_only_clan_roles',
+        description: '[DEPRECATED] This option has been moved to /autorole config command.',
+        type: ApplicationCommandOptionType.String
       }
     ]
   },
@@ -4354,6 +4391,36 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 ];
 
 export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
+  {
+    name: 'setup-clan',
+    description: 'Setup a clan.',
+    options: [
+      {
+        name: 'clan',
+        description: 'Select the clan to setup.',
+        type: ApplicationCommandOptionType.String,
+        autocomplete: true,
+        required: true
+      },
+      {
+        name: 'channel',
+        description: 'Select the channel to setup.',
+        type: ApplicationCommandOptionType.Channel,
+        channel_types: ChannelTypes
+      },
+      {
+        name: 'category',
+        description: 'Select the category to setup.',
+        type: ApplicationCommandOptionType.String,
+        autocomplete: true
+      },
+      {
+        name: 'clan_alias',
+        description: 'Enter a clan alias.',
+        type: ApplicationCommandOptionType.String
+      }
+    ]
+  },
   {
     name: 'setup-logs',
     description: 'Setup logs.',
