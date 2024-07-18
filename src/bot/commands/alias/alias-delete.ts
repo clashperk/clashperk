@@ -26,7 +26,7 @@ export default class AliasDeleteCommand extends Command {
         alias: { $exists: true },
         $or: [{ tag: this.parseTag(args.alias)! }, { alias: args.alias.trim() }]
       },
-      { $unset: { alias: '' } }
+      { $unset: { alias: true } }
     );
 
     if (!deleted.value) {

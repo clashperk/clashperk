@@ -174,6 +174,8 @@ export default class SetupLogsCommand extends Command {
         const ops: Promise<UpdateResult<ClanLogsEntity>>[] = [];
 
         for (const logType of selectedLogs) {
+          const existingLog = _logs.find((log) => log.logType === logType && log.channelId === interaction.channelId);
+
           const updateOps = collection.updateOne(
             { clanTag: clan.tag, guildId: interaction.guildId, logType },
             {
@@ -181,15 +183,12 @@ export default class SetupLogsCommand extends Command {
                 createdAt: new Date()
               },
               $set: {
-                clanTag: clan.tag,
-                guildId: interaction.guild.id,
-                logType,
                 isEnabled: !disabling,
                 clanId: new ObjectId(id),
                 channelId: interaction.channelId,
                 deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME,
-                webhook: null,
-                messageId: null,
+                webhook: existingLog?.webhook ?? null,
+                messageId: existingLog?.messageId ?? null,
                 updatedAt: new Date()
               },
               $min: {

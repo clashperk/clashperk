@@ -11,7 +11,6 @@ import {
   DISCORD_MENTION_REGEX,
   ESCAPE_CHAR_REGEX,
   ElasticIndex,
-  FeatureFlags,
   Settings,
   TAG_REGEX,
   getHttpStatusText
@@ -173,7 +172,9 @@ export default class Resolver {
 
   private async getLinkedClanTag(interaction: BaseInteraction<'cached'>, userId: string) {
     const [guildLinkedClan, userLinkedClanTag] = await Promise.all([
-      this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).findOne({ channels: interaction.channelId! }),
+      this.client.db
+        .collection<ClanStoresEntity>(Collections.CLAN_STORES)
+        .findOne({ channels: interaction.channelId!, guild: interaction.guildId }),
       this.getLinkedUserClan(userId, true)
     ]);
 
@@ -315,9 +316,6 @@ export default class Resolver {
     }
     const data = await this.getClan(interaction, tag, true);
     if (!data) return null;
-
-    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, interaction.guildId);
-    if (isEnabled) collection = Collections.CLAN_LOGS;
 
     const memberCount = interaction.guild.memberCount;
     const [features, clans] = await Promise.all([

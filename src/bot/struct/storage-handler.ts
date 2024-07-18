@@ -27,6 +27,10 @@ export default class StorageHandler {
     return this.collection.find({ guild: guildId }, { sort: { [key]: 1 } }).toArray();
   }
 
+  public async getClan(params: { guildId: string; clanTag: string }) {
+    return this.collection.findOne({ guild: params.guildId, tag: params.clanTag });
+  }
+
   public async getEnabledFeatures(guildId: string, collection: Collections) {
     return this.client.db
       .collection(collection)

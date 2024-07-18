@@ -204,13 +204,7 @@ export class MongoDbClient extends MongoClient {
           unique: true
         },
         {
-          key: { alias: 1 }
-        },
-        {
           key: { tag: 1 }
-        },
-        {
-          key: { channels: 1 }
         }
       ]),
 
