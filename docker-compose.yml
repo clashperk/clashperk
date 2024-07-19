@@ -7,7 +7,7 @@ services:
     #   context: .
     env_file:
       - .env
-    mem_limit: 8gb
+    mem_limit: 12gb
     ports:
       - '8070:8080'
     # healthcheck:
