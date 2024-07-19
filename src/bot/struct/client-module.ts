@@ -12,6 +12,7 @@ import { ClientUtil } from '../util/client-util.js';
 import { FeatureFlags, Settings } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
 import Logger from '../util/logger.js';
+import { Autocomplete } from './autocomplete-client.js';
 import CapitalRaidScheduler from './capital-raid-scheduler.js';
 import ClanGamesScheduler from './clan-games-scheduler.js';
 import ClanWarScheduler from './clan-war-scheduler.js';
@@ -22,12 +23,11 @@ import { GuildEventsHandler } from './guild-events-handler.js';
 import Http from './http.js';
 import { PatreonHandler } from './patreon-handler.js';
 import RedisService from './redis-service.js';
+import Resolver from './resolver.js';
 import { RosterManager } from './roster-manager.js';
 import SettingsProvider from './settings-provider.js';
 import StatsHandler from './stats-handler.js';
 import StorageHandler from './storage-handler.js';
-import Resolver from './resolver.js';
-import { Autocomplete } from './autocomplete-client.js';
 
 export class Client extends DiscordClient {
   public commandHandler = new CommandHandler(this, {
@@ -171,7 +171,7 @@ export class Client extends DiscordClient {
   }
 
   public isCustom() {
-    return !['635462521729581058', '526971716711350273'].includes(this.user!.id);
+    return !['635462521729581058', '526971716711350273', '1228022517667467367'].includes(this.user!.id);
   }
 
   public isPrimary() {
