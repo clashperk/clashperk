@@ -1,3 +1,4 @@
+import { ClanLogType } from '@app/entities';
 import {
   ActionRowBuilder,
   AnyThreadChannel,
@@ -18,9 +19,10 @@ import {
   TextInputStyle,
   WebhookClient
 } from 'discord.js';
+import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
 import { ClanEmbedFieldOptions, ClanEmbedFieldValues } from '../../util/command-options.js';
-import { Collections, Flags, missingPermissions, URL_REGEX } from '../../util/constants.js';
+import { Collections, DEEP_LINK_TYPES, Flags, missingPermissions, URL_REGEX } from '../../util/constants.js';
 import { clanEmbedMaker } from '../../util/helper.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -51,9 +53,9 @@ export default class ClanEmbedCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    { tag, color, channel }: { tag: string; color?: number; channel: TextChannel | AnyThreadChannel }
+    { clan, color, channel }: { clan: string; color?: number; channel: TextChannel | AnyThreadChannel }
   ) {
-    const data = await this.client.resolver.enforceSecurity(interaction, { tag, collection: Collections.CLAN_EMBED_LOGS });
+    const data = await this.client.resolver.enforceSecurity(interaction, { tag: clan, collection: Collections.CLAN_LOGS });
     if (!data) return;
 
     const permission = missingPermissions(channel, interaction.guild.members.me!, this.permissions);
@@ -67,7 +69,9 @@ export default class ClanEmbedCommand extends Command {
       );
     }
 
-    const existing = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ tag: data.tag, guild: interaction.guild.id });
+    const existing = await this.client.db
+      .collection(Collections.CLAN_LOGS)
+      .findOne({ clanTag: data.tag, guildId: interaction.guild.id, logType: ClanLogType.CLAN_EMBED_LOG });
 
     const customIds = {
       customize: this.client.uuid(interaction.user.id),
@@ -77,10 +81,10 @@ export default class ClanEmbedCommand extends Command {
     };
 
     const state: Partial<{ description: string; bannerImage: string; accepts: string; fields: ClanEmbedFieldValues[] }> = {
-      description: existing?.embed?.description ?? 'auto',
-      bannerImage: existing?.embed?.bannerImage ?? null,
-      accepts: existing?.embed?.accepts ?? 'auto',
-      fields: existing?.fields ?? ['*']
+      description: existing?.metadata?.description ?? 'auto',
+      bannerImage: existing?.metadata?.bannerImage ?? null,
+      accepts: existing?.metadata?.accepts ?? 'auto',
+      fields: existing?.metadata?.fields ?? ['*']
     };
 
     let embed = await clanEmbedMaker(data, { color, ...state });
@@ -99,10 +103,10 @@ export default class ClanEmbedCommand extends Command {
 
     if (existing) {
       const resendButton = new ButtonBuilder().setLabel('Resend').setStyle(ButtonStyle.Secondary).setCustomId(customIds.resend);
-      const linkButton = new ButtonBuilder()
-        .setLabel('Jump')
-        .setURL(messageLink(existing.channel, existing.message, existing.guild))
-        .setStyle(ButtonStyle.Link);
+      const linkButton = new ButtonBuilder().setLabel('Jump').setStyle(ButtonStyle.Link);
+      if (existing.messageId) {
+        linkButton.setURL(messageLink(existing.channelId, existing.messageId, existing.guildId));
+      }
       buttonRow.addComponents(resendButton, linkButton);
     }
 
@@ -201,26 +205,48 @@ export default class ClanEmbedCommand extends Command {
       }
     };
 
-    const mutate = async (message: string, channel: string, webhook: { id: string; token: string }) => {
+    const mutate = async (messageId: string, channelId: string, webhook: { id: string; token: string }) => {
       const id = await this.client.storage.register(interaction, {
         op: Flags.CLAN_EMBED_LOG,
         guild: interaction.guild.id,
         channel,
         tag: data.tag,
         color,
-        name: data.name,
-        message,
-        embed: {
-          accepts: state.accepts,
-          bannerImage: state.bannerImage,
-          description: state.description?.trim(),
-          fields: state.fields
-        },
-        webhook: { id: webhook.id, token: webhook.token }
+        name: data.name
       });
 
-      this.client.rpcHandler.add(id, {
-        op: Flags.CLAN_EMBED_LOG,
+      await this.client.db.collection(Collections.CLAN_LOGS).updateOne(
+        {
+          clanTag: data.tag,
+          guildId: interaction.guildId,
+          logType: ClanLogType.CLAN_EMBED_LOG
+        },
+        {
+          $set: {
+            isEnabled: true,
+            deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME,
+            channelId,
+            clanId: new ObjectId(id),
+            color,
+            metadata: {
+              accepts: state.accepts,
+              bannerImage: state.bannerImage,
+              description: state.description?.trim(),
+              fields: state.fields
+            },
+            messageId,
+            webhook: { id: webhook.id, token: webhook.token },
+            updatedAt: new Date(),
+            lastPostedAt: new Date(Date.now() - 30 * 60 * 1000)
+          },
+          $setOnInsert: {
+            createdAt: new Date()
+          }
+        },
+        { upsert: true }
+      );
+
+      this.client.rpcHandler.add({
         guild: interaction.guild.id,
         tag: data.tag
       });
@@ -242,16 +268,16 @@ export default class ClanEmbedCommand extends Command {
 
     const onConfirm = async (action: ButtonInteraction<'cached'>) => {
       try {
-        if (!existing) throw new Error('No existing embed found', { cause: '6969' });
+        if (!existing?.messageId) throw new Error('No existing embed found', { cause: '6969' });
 
-        const channel = interaction.guild.channels.cache.get(existing.channel);
-        const webhook = new WebhookClient(existing.webhook);
+        const channel = interaction.guild.channels.cache.get(existing.channelId);
+        const webhook = new WebhookClient(existing.webhook!);
         const msg = await webhook.editMessage(
-          existing.message,
+          existing.messageId,
           channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] }
         );
 
-        await mutate(existing.message, msg.channel_id, existing.webhook);
+        await mutate(existing.messageId, msg.channel_id, existing.webhook!);
         return await action.update({
           embeds: [],
           components: [],

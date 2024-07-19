@@ -6,23 +6,14 @@ import Queue from '../struct/queue.js';
 import { Collections, Flags } from '../util/constants.js';
 import AutoBoardLog from './auto-board-log.js';
 import CapitalLogV2 from './capital-log-v2.js';
-import CapitalLog from './capital-log.js';
 import ClanEmbedLogV2 from './clan-embed-log-v2.js';
-import ClanEmbedLog from './clan-embed-log.js';
-import ClanFeedLog from './clan-feed-log.js';
 import ClanGamesLogV2 from './clan-games-log-v2.js';
-import ClanGamesLog from './clan-games-log.js';
-import ClanLog from './clan-log-v2.js';
+import ClanLogV2 from './clan-log-v2.js';
 import ClanWarLogV2 from './clan-war-log-v2.js';
-import ClanWarLog from './clan-war-log.js';
 import DonationLogV2 from './donation-log-v2.js';
-import DonationLog from './donation-log.js';
 import FlagAlertLog from './flag-alert-log.js';
-import JoinLeaveLog from './join-leave-log.js';
 import LastSeenLogV2 from './last-seen-log-v2.js';
-import LastSeenLog from './last-seen-log.js';
 import LegendLogV2 from './legend-log-v2.js';
-import LegendLog from './legend-log.js';
 import MaintenanceHandler from './maintenance.js';
 
 interface Cached {
@@ -49,22 +40,13 @@ export default class RPCHandler {
   private queue = new Queue();
   private api: MaintenanceHandler;
 
-  private clanWarLog = new ClanWarLog(this);
-  private donationLog = new DonationLog(this);
-  private clanEmbedLog = new ClanEmbedLog(this);
-  private clanGamesLog = new ClanGamesLog(this);
-  private lastSeenLog = new LastSeenLog(this);
   private autoBoard = new AutoBoardLog(this);
-  private clanFeedLog = new ClanFeedLog(this);
-  private legendLog = new LegendLog(this);
-  private capitalLog = new CapitalLog(this);
-  private joinLeaveLog = new JoinLeaveLog(this);
   public flagAlertLog = new FlagAlertLog(this);
 
   public capitalLogV2 = new CapitalLogV2(this);
   public clanEmbedLogV2 = new ClanEmbedLogV2(this);
   public clanGamesLogV2 = new ClanGamesLogV2(this);
-  public clanLog = new ClanLog(this);
+  public clanLogV2 = new ClanLogV2(this);
   public clanWarLogV2 = new ClanWarLogV2(this);
   public donationLogV2 = new DonationLogV2(this);
   public lastSeenLogV2 = new LastSeenLogV2(this);
@@ -98,42 +80,34 @@ export default class RPCHandler {
       try {
         switch (data.op) {
           case Flags.DONATION_LOG:
-            await this.donationLog.exec(data.tag, data);
             break;
           case Flags.CLAN_FEED_LOG:
-            await Promise.all([
-              this.clanFeedLog.exec(data.tag, data),
-              this.joinLeaveLog.exec(data.tag, data),
-              this.flagAlertLog.exec(data.tag, data),
-              this.clanLog.exec(data.tag, data)
-            ]);
+            await Promise.all([this.flagAlertLog.exec(data.tag, data), this.clanLogV2.exec(data.tag, data)]);
             this.client.rolesManager.exec(data.tag, data);
             break;
           case Flags.CLAN_EMBED_LOG:
-            await this.clanEmbedLog.exec(data.tag, data);
             break;
           case Flags.CLAN_GAMES_LOG:
-            await this.clanGamesLog.exec(data.tag, data);
             await this.clanGamesLogV2.exec(data.tag, data);
             break;
           case Flags.CLAN_EVENT_LOG:
-            await Promise.all([this.clanFeedLog.exec(data.tag, data), this.clanLog.exec(data.tag, data)]);
+            await this.clanLogV2.exec(data.tag, data);
             break;
           case Flags.TOWN_HALL_LOG:
-            await Promise.all([this.clanFeedLog.exec(data.tag, data), this.clanLog.exec(data.tag, data)]);
+            await this.clanLogV2.exec(data.tag, data);
             break;
           case Flags.PLAYER_FEED_LOG:
-            await Promise.all([this.clanFeedLog.exec(data.tag, data), this.clanLog.exec(data.tag, data)]);
+            await this.clanLogV2.exec(data.tag, data);
             break;
           case Flags.CLAN_WAR_LOG:
-            await Promise.all([this.clanWarLog.exec(data.clan.tag, data), this.clanWarLogV2.exec(data.clan.tag, data)]);
+            await this.clanWarLogV2.exec(data.clan.tag, data);
             this.client.rolesManager.exec(data.tag, data);
             break;
           case Flags.DONATION_LOG_V2:
-            await this.clanLog.exec(data.clan.tag, data);
+            await this.clanLogV2.exec(data.clan.tag, data);
             break;
           // case Flags.CAPITAL_LOG:
-          //   await this.clanLog.exec(data.clan.tag, data);
+          //   await this.clanLogV2.exec(data.clan.tag, data);
           //   break;
           default:
             break;
@@ -189,21 +163,12 @@ export default class RPCHandler {
     await this.capitalLogV2.init();
     await this.clanEmbedLogV2.init();
     await this.clanGamesLogV2.init();
-    await this.clanLog.init();
+    await this.clanLogV2.init();
     await this.clanWarLogV2.init();
     await this.donationLogV2.init();
     await this.lastSeenLogV2.init();
     await this.legendLogV2.init();
 
-    await this.clanEmbedLog.init();
-    await this.donationLog.init();
-    await this.clanFeedLog.init();
-    await this.lastSeenLog.init();
-    await this.clanGamesLog.init();
-    await this.clanWarLog.init();
-    await this.legendLog.init();
-    await this.joinLeaveLog.init();
-    await this.capitalLog.init();
     await this.autoBoard.init();
     await this.flagAlertLog.init();
 
@@ -211,12 +176,12 @@ export default class RPCHandler {
     return this.client.publisher.publish('INIT', '{}');
   }
 
-  public async add(id: string, data: { tag: string; guild: string; op: number }) {
+  public async add(data: { tag: string; guild: string }) {
     if (!this.client.guilds.cache.has(data.guild)) return;
 
     const [result] = await this.client.db
       .collection(Collections.CLAN_STORES)
-      .aggregate<{ tag: string; patron: boolean; flags: number[]; lastRan?: string; uniqueId: number }>([
+      .aggregate<{ tag: string; lastRan?: string; uniqueId: number }>([
         {
           $match: {
             tag: data.tag,
@@ -227,14 +192,8 @@ export default class RPCHandler {
         {
           $group: {
             _id: '$tag',
-            patron: {
-              $addToSet: '$patron'
-            },
             uniqueId: {
               $max: '$uniqueId'
-            },
-            flags: {
-              $addToSet: '$flag'
             },
             lastRan: {
               $max: '$lastRan'
@@ -243,10 +202,7 @@ export default class RPCHandler {
         },
         {
           $set: {
-            tag: '$_id',
-            patron: {
-              $in: [true, '$patron']
-            }
+            tag: '$_id'
           }
         },
         {
@@ -255,43 +211,23 @@ export default class RPCHandler {
       ])
       .toArray();
 
-    const OP = {
-      [Flags.DONATION_LOG]: this.donationLog,
-      [Flags.CLAN_FEED_LOG]: this.clanFeedLog,
-      [Flags.LAST_SEEN_LOG]: this.lastSeenLog,
-      [Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
-      [Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
-      [Flags.CLAN_WAR_LOG]: this.clanWarLog,
-      [Flags.LEGEND_LOG]: this.legendLog,
-      [Flags.CAPITAL_LOG]: this.capitalLog,
-      [Flags.JOIN_LEAVE_LOG]: this.joinLeaveLog
-    };
-
-    if (data.op.toString() in OP) {
-      await OP[data.op as keyof typeof OP].add(id); // eslint-disable-line
-    } else {
-      Object.values(OP).map((Op) => Op.add(id));
-    }
-
-    await this.addV2(data.guild);
+    await this.addLog(data.guild);
 
     if (result) {
       const clan = {
         tag: result.tag,
-        patron: result.patron,
-        uniqueId: result.uniqueId,
-        flag: this.bitWiseOR(result.flags),
-        lastRan: result.lastRan
+        lastRan: result.lastRan,
+        uniqueId: result.uniqueId
       };
 
       await this._loadClans(data.tag);
-      await this.client.publisher.publish('ADD', JSON.stringify({ ...clan, op: data.op }));
+      await this.client.publisher.publish('ADD', JSON.stringify(clan));
     } else {
       this.cached.delete(data.tag);
     }
   }
 
-  public async delete(id: string, data: { tag: string; op: number; guild: string }) {
+  public async delete(data: { tag: string; guild: string }) {
     const clans = await this.client.db
       .collection(Collections.CLAN_STORES)
       .find(
@@ -305,27 +241,8 @@ export default class RPCHandler {
       )
       .toArray();
 
-    const OP = {
-      [Flags.DONATION_LOG]: this.donationLog,
-      [Flags.CLAN_FEED_LOG]: this.clanFeedLog,
-      [Flags.LAST_SEEN_LOG]: this.lastSeenLog,
-      [Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
-      [Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
-      [Flags.CLAN_WAR_LOG]: this.clanWarLog,
-      [Flags.LEGEND_LOG]: this.legendLog,
-      [Flags.CAPITAL_LOG]: this.capitalLog,
-      [Flags.JOIN_LEAVE_LOG]: this.joinLeaveLog
-    };
-
-    if (data.op.toString() in OP) {
-      OP[data.op as keyof typeof OP].delete(id); // eslint-disable-line
-    } else {
-      Object.values(OP).map((Op) => Op.delete(id));
-    }
-
-    if (!data.op) {
-      await this.deleteV2(data.guild);
-    }
+    const logs = await this.client.db.collection(Collections.CLAN_LOGS).find({ guildId: data.guild, clanTag: data.tag }).toArray();
+    for (const log of logs) this.deleteLog(log._id.toHexString());
 
     if (!clans.length) {
       this.cached.delete(data.tag);
@@ -335,35 +252,28 @@ export default class RPCHandler {
     }
   }
 
-  public async addV2(guildId: string) {
+  public deleteLog(logId: string) {
+    this.capitalLogV2.delete(logId);
+    this.clanEmbedLogV2.delete(logId);
+    this.clanGamesLogV2.delete(logId);
+    this.clanLogV2.delete(logId);
+    this.clanWarLogV2.delete(logId);
+    this.donationLogV2.delete(logId);
+    this.lastSeenLogV2.delete(logId);
+    this.legendLogV2.delete(logId);
+  }
+
+  public async addLog(guildId: string) {
     await Promise.all([
       this.capitalLogV2.add(guildId),
       this.clanEmbedLogV2.add(guildId),
       this.clanGamesLogV2.add(guildId),
-      this.clanLog.add(guildId),
+      this.clanLogV2.add(guildId),
       this.clanWarLogV2.add(guildId),
       this.donationLogV2.add(guildId),
       this.lastSeenLogV2.add(guildId),
       this.legendLogV2.add(guildId)
     ]);
-  }
-
-  public async deleteV2(guildId: string) {
-    const logs = await this.client.db.collection(Collections.CLAN_LOGS).find({ guildId }).toArray();
-    for (const log of logs) {
-      this.removeV2(log._id.toHexString());
-    }
-  }
-
-  public removeV2(_id: string) {
-    this.capitalLogV2.delete(_id);
-    this.clanEmbedLogV2.delete(_id);
-    this.clanGamesLogV2.delete(_id);
-    this.clanLog.delete(_id);
-    this.clanWarLogV2.delete(_id);
-    this.donationLogV2.delete(_id);
-    this.lastSeenLogV2.delete(_id);
-    this.legendLogV2.delete(_id);
   }
 
   public async addAutoBoard(id: string) {
@@ -374,26 +284,14 @@ export default class RPCHandler {
     return this.autoBoard.del(id);
   }
 
-  private bitWiseOR(flags: number[]) {
-    return flags.reduce((acc, curr) => acc | curr, 0);
-  }
-
   public async flush() {
-    this.clanWarLog.cached.clear();
-    this.donationLog.cached.clear();
-    this.clanGamesLog.cached.clear();
-    this.clanEmbedLog.cached.clear();
-    this.clanFeedLog.cached.clear();
-    this.lastSeenLog.cached.clear();
-    this.legendLog.cached.clear();
-    this.capitalLog.cached.clear();
     this.autoBoard.cached.clear();
     this.flagAlertLog.cached.clear();
 
     this.capitalLogV2.cached.clear();
     this.clanEmbedLogV2.cached.clear();
     this.clanGamesLogV2.cached.clear();
-    this.clanLog.cached.clear();
+    this.clanLogV2.cached.clear();
     this.clanWarLogV2.cached.clear();
     this.donationLogV2.cached.clear();
     this.lastSeenLogV2.cached.clear();

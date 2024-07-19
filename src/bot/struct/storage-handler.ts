@@ -9,7 +9,7 @@ import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { ClanWarLeagueGroupsEntity } from '../entities/cwl-groups.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
-import { Collections, FeatureFlags, Flags, Settings } from '../util/constants.js';
+import { Collections, Settings } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
 import { Client } from './client-module.js';
 
@@ -163,284 +163,44 @@ export default class StorageHandler {
     return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O/g, '0')}`;
   }
 
-  public async register(message: CommandInteraction<'cached'>, data: any) {
+  public async register(interaction: CommandInteraction<'cached'>, data: Record<string, any>) {
     const [_total, _clan, _lastClan] = await Promise.all([
-      this.collection.countDocuments({ guild: message.guild!.id }),
+      this.collection.countDocuments({ guild: interaction.guildId }),
       this.collection.findOne({ tag: data.tag }),
       this.collection.find().sort({ uniqueId: -1 }).limit(1).next()
     ]);
 
-    const collection = await this.collection.findOneAndUpdate(
+    const { value } = await this.collection.findOneAndUpdate(
       { tag: data.tag, guild: data.guild },
       {
         $set: {
           name: data.name,
           tag: data.tag,
-          guild: message.guildId,
+          guild: interaction.guildId,
           paused: false,
           active: true,
           verified: true,
           order: _clan?.order ?? _total + 1,
           ...(data.hexCode ? { color: data.hexCode } : {}),
           ...(data.categoryId ? { categoryId: data.categoryId } : {}),
-          patron: this.client.patreonHandler.get(message.guildId)
+          patron: this.client.patreonHandler.get(interaction.guildId)
         },
         $setOnInsert: {
           uniqueId: _clan?.uniqueId ?? (_lastClan?.uniqueId ?? 1000) + 1,
           createdAt: new Date()
-        },
-        $bit: {
-          flag: { or: Number(data.op) }
         }
       },
       { upsert: true, returnDocument: 'after' }
     );
 
-    const id = collection.value!._id.toHexString();
-    switch (data.op) {
-      case Flags.DONATION_LOG:
-        await this.client.db.collection(Collections.DONATION_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              color: data.color,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              },
-              interval: data.interval
-            },
-            $setOnInsert: {
-              monthlyLastPosted: new Date(),
-              weeklyLastPosted: new Date(),
-              dailyLastPosted: new Date(),
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      case Flags.CLAN_FEED_LOG:
-        await this.client.db.collection(Collections.CLAN_FEED_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              role: data.role,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              },
-              deepLink: data.deepLink,
-              logTypes: data.logTypes
-            },
-            $setOnInsert: {
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      case Flags.JOIN_LEAVE_LOG:
-        await this.client.db.collection(Collections.JOIN_LEAVE_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              role: data.role,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              },
-              deepLink: data.deepLink,
-              logTypes: data.logTypes
-            },
-            $setOnInsert: {
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      case Flags.LAST_SEEN_LOG:
-        await this.client.db.collection(Collections.LAST_SEEN_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              color: data.color,
-              message: data.message,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              }
-            },
-            $setOnInsert: {
-              updatedAt: new Date(Date.now() - 30 * 60 * 1000),
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      case Flags.LEGEND_LOG:
-        await this.client.db.collection(Collections.LEGEND_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              color: data.color,
-              message: data.message,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              }
-            },
-            $setOnInsert: {
-              lastPosted: new Date(),
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      case Flags.CAPITAL_LOG:
-        await this.client.db.collection(Collections.CAPITAL_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              color: data.color,
-              message: data.message,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              }
-            },
-            $setOnInsert: {
-              lastPosted: new Date(),
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      case Flags.CLAN_GAMES_LOG:
-        await this.client.db.collection(Collections.CLAN_GAMES_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              color: data.color,
-              message: data.message,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              }
-            },
-            $setOnInsert: {
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      case Flags.CLAN_EMBED_LOG:
-        await this.client.db.collection(Collections.CLAN_EMBED_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              color: data.color,
-              message: data.message,
-              embed: data.embed,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              }
-            },
-            $setOnInsert: {
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      case Flags.CLAN_WAR_LOG:
-        await this.client.db.collection(Collections.CLAN_WAR_LOGS).updateOne(
-          { tag: data.tag, guild: data.guild },
-          {
-            $set: {
-              clanId: new ObjectId(id),
-              tag: data.tag,
-              guild: data.guild,
-              name: data.name,
-              channel: data.channel,
-              webhook: {
-                id: data.webhook.id,
-                token: data.webhook.token
-              },
-              logTypes: data.logTypes
-            },
-            $setOnInsert: {
-              createdAt: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        break;
-      default:
-        break;
-    }
-
+    const id = value!._id.toHexString();
     return id;
   }
 
-  public async delete(id: string) {
+  public async delete(clanId: string) {
     await Promise.all([
-      this.client.db.collection(Collections.DONATION_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.JOIN_LEAVE_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.CLAN_GAMES_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.CAPITAL_LOGS).deleteOne({ clanId: new ObjectId(id) }),
-      this.client.db.collection(Collections.CLAN_STORES).deleteOne({ _id: new ObjectId(id) })
+      this.client.db.collection(Collections.CLAN_STORES).deleteOne({ _id: new ObjectId(clanId) }),
+      this.client.db.collection(Collections.CLAN_LOGS).deleteMany({ clanId: new ObjectId(clanId) })
     ]);
   }
 
@@ -473,62 +233,8 @@ export default class StorageHandler {
     }
   }
 
-  public async remove(id: string, data: any) {
-    if (data.op === Flags.DONATION_LOG) {
-      return this.client.db.collection(Collections.DONATION_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    if (data.op === Flags.CLAN_FEED_LOG) {
-      return this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    if (data.op === Flags.LAST_SEEN_LOG) {
-      return this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    if (data.op === Flags.CLAN_GAMES_LOG) {
-      return this.client.db.collection(Collections.CLAN_GAMES_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    if (data.op === Flags.CLAN_EMBED_LOG) {
-      return this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    if (data.op === Flags.CLAN_WAR_LOG) {
-      return this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    if (data.op === Flags.LEGEND_LOG) {
-      return this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    if (data.op === Flags.CAPITAL_LOG) {
-      return this.client.db.collection(Collections.CAPITAL_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    if (data.op === Flags.JOIN_LEAVE_LOG) {
-      return this.client.db.collection(Collections.JOIN_LEAVE_LOGS).deleteOne({ clanId: new ObjectId(id) });
-    }
-
-    return null;
-  }
-
   public async getWebhookWorkloads(guildId: string) {
-    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, guildId);
-
-    const logs = isEnabled
-      ? [Collections.CLAN_LOGS]
-      : [
-          Collections.DONATION_LOGS,
-          Collections.CLAN_FEED_LOGS,
-          Collections.JOIN_LEAVE_LOGS,
-          Collections.LAST_SEEN_LOGS,
-          Collections.CLAN_GAMES_LOGS,
-          Collections.CLAN_WAR_LOGS,
-          Collections.CLAN_EMBED_LOGS,
-          Collections.LEGEND_LOGS,
-          Collections.CAPITAL_LOGS
-        ];
+    const logs = [Collections.CLAN_LOGS];
 
     const facet = logs.reduce<Record<string, any[]>>((record, log) => {
       record[log] = [

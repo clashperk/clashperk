@@ -3,7 +3,7 @@ import { AnyBulkWriteOperation } from 'mongodb';
 import Client from '../struct/client-module.js';
 import { Collections } from '../util/constants.js';
 
-const query = { tag: '#YL2VRJPV', guild: { $in: ['509784317598105619', '1016659402817814620'] } };
+const query = {};
 
 export class Migrator {
   public constructor(private client: Client) {}
@@ -13,14 +13,14 @@ export class Migrator {
   }
 
   async migrate() {
-    // await this.migrateClanFeedLog();
-    // await this.migrateDonationLog();
-    // await this.migrateClanEmbed();
-    // await this.migrateCapitalLog();
-    // await this.migrateClanGamesLog();
-    // await this.migrateClanWarLogs();
-    // await this.migrateLastSeenLogs();
-    // await this.migrateLegendLogs();
+    await this.migrateClanFeedLog();
+    await this.migrateDonationLog();
+    await this.migrateClanEmbed();
+    await this.migrateCapitalLog();
+    await this.migrateClanGamesLog();
+    await this.migrateClanWarLogs();
+    await this.migrateLastSeenLogs();
+    await this.migrateLegendLogs();
   }
 
   async migrateClanFeedLog() {

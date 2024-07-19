@@ -1538,7 +1538,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
-            name: 'option',
+            name: 'action',
             description: command.setup.enable.options.option.description,
             description_localizations: translation('command.setup.enable.options.option.description'),
             type: ApplicationCommandOptionType.String,
@@ -1546,52 +1546,24 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             choices: [
               {
                 name: 'Server Link',
-                value: 'server-link'
+                value: 'link-clan'
               },
               {
                 name: 'Channel Link',
-                value: 'channel-link'
-              },
-              {
-                name: 'War Feed',
-                value: 'war-feed'
-              },
-              {
-                name: 'Last Seen',
-                value: 'lastseen'
-              },
-              {
-                name: 'Clan Games',
-                value: 'clan-games'
-              },
-              {
-                name: 'Legend Log',
-                value: 'legend-log'
-              },
-              {
-                name: 'Capital Log',
-                value: 'capital-log'
-              },
-              {
-                name: 'Clan Feed',
-                value: 'clan-feed'
-              },
-              {
-                name: 'Join/Leave Log',
-                value: 'join-leave'
+                value: 'link-channel'
               },
               {
                 name: 'Clan Embed',
                 value: 'clan-embed'
               },
               {
-                name: 'Donation Log',
-                value: 'donation-log'
+                name: 'Logs / Feed',
+                value: 'enable-logs'
               }
             ]
           },
           {
-            name: 'tag',
+            name: 'clan',
             description: command.setup.enable.options.tag.description,
             description_localizations: translation('command.setup.enable.options.tag.description'),
             required: true,
@@ -1623,6 +1595,69 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           }
         ]
       },
+      //
+      // {
+      //   name: 'clan',
+      //   description: 'Setup a clan or link a clan to a channel.',
+      //   type: ApplicationCommandOptionType.Subcommand,
+      //   options: [
+      //     {
+      //       name: 'clan',
+      //       description: 'Select the clan to setup.',
+      //       type: ApplicationCommandOptionType.String,
+      //       autocomplete: true,
+      //       required: true
+      //     },
+      //     {
+      //       name: 'channel',
+      //       description: 'Enter the channel to link the clan.',
+      //       type: ApplicationCommandOptionType.Channel,
+      //       channel_types: ChannelTypes
+      //     },
+      //     {
+      //       name: 'category',
+      //       description: 'Enter the category of the clan.',
+      //       type: ApplicationCommandOptionType.String,
+      //       autocomplete: true
+      //     },
+      //     {
+      //       name: 'clan_alias',
+      //       description: 'Enter the alias of the clan.',
+      //       type: ApplicationCommandOptionType.String
+      //     }
+      //   ]
+      // },
+      // {
+      //   name: 'logs',
+      //   description: 'Setup logs for a clan.',
+      //   type: ApplicationCommandOptionType.Subcommand,
+      //   options: [
+      //     {
+      //       name: 'action',
+      //       description: 'Select the action for the logs.',
+      //       type: ApplicationCommandOptionType.String,
+      //       required: true,
+      //       choices: [
+      //         {
+      //           name: 'Enable',
+      //           value: 'enable-logs'
+      //         },
+      //         {
+      //           name: 'Disable',
+      //           value: 'disable-logs'
+      //         }
+      //       ]
+      //     },
+      //     {
+      //       name: 'clan',
+      //       description: 'Select the clan for the logs.',
+      //       type: ApplicationCommandOptionType.String,
+      //       required: true,
+      //       autocomplete: true
+      //     }
+      //   ]
+      // },
+      //
       {
         name: 'list',
         description: command.setup.list.description,
@@ -1696,7 +1731,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
-            name: 'option',
+            name: 'action',
             required: true,
             description: command.setup.disable.options.option.description,
             description_localizations: translation('command.setup.disable.options.option.description'),
@@ -1704,52 +1739,20 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             choices: [
               {
                 name: 'Channel Link',
-                value: 'channel-link'
+                value: 'unlink-channel'
               },
               {
                 name: 'Delete Clan',
-                value: 'remove-clan'
+                value: 'delete-clan'
               },
               {
-                name: 'Clan Feed',
-                value: 'clan-feed'
-              },
-              {
-                name: 'Join/Leave Log',
-                value: 'join-leave'
-              },
-              {
-                name: 'War Feed',
-                value: 'war-feed'
-              },
-              {
-                name: 'Last Seen',
-                value: 'lastseen'
-              },
-              {
-                name: 'Clan Games',
-                value: 'clan-games'
-              },
-              {
-                name: 'Legend Log',
-                value: 'legend-log'
-              },
-              {
-                name: 'Capital Log',
-                value: 'capital-log'
-              },
-              {
-                name: 'Clan Embed',
-                value: 'clan-embed'
-              },
-              {
-                name: 'Donation Log',
-                value: 'donation-log'
+                name: 'Logs / Feed',
+                value: 'disable-logs'
               }
             ]
           },
           {
-            name: 'tag',
+            name: 'clan',
             autocomplete: true,
             description: command.setup.disable.options.tag.description,
             description_localizations: translation('command.setup.disable.options.tag.description'),
@@ -1846,13 +1849,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: true,
             type: ApplicationCommandOptionType.String
           }
-          // {
-          // 	name: 'category_order',
-          // 	min_value: 1,
-          // 	max_value: 100,
-          // 	description: 'Order of the clan category.',
-          // 	type: ApplicationCommandOptionType.Number
-          // }
         ]
       },
       {
@@ -1878,13 +1874,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: 'Name of the clan category.',
             type: ApplicationCommandOptionType.String
           }
-          // {
-          // 	name: 'category_order',
-          // 	min_value: 1,
-          // 	max_value: 100,
-          // 	description: 'Order of the clan category.',
-          // 	type: ApplicationCommandOptionType.Number
-          // }
         ]
       },
       {
@@ -4390,63 +4379,4 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   }
 ];
 
-export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
-  {
-    name: 'setup-clan',
-    description: 'Setup a clan.',
-    options: [
-      {
-        name: 'clan',
-        description: 'Select the clan to setup.',
-        type: ApplicationCommandOptionType.String,
-        autocomplete: true,
-        required: true
-      },
-      {
-        name: 'channel',
-        description: 'Select the channel to setup.',
-        type: ApplicationCommandOptionType.Channel,
-        channel_types: ChannelTypes
-      },
-      {
-        name: 'category',
-        description: 'Select the category to setup.',
-        type: ApplicationCommandOptionType.String,
-        autocomplete: true
-      },
-      {
-        name: 'clan_alias',
-        description: 'Enter a clan alias.',
-        type: ApplicationCommandOptionType.String
-      }
-    ]
-  },
-  {
-    name: 'setup-logs',
-    description: 'Setup logs.',
-    options: [
-      {
-        name: 'clan',
-        description: 'Select the clan for the logs.',
-        type: ApplicationCommandOptionType.String,
-        required: true,
-        autocomplete: true
-      },
-      {
-        name: 'action',
-        description: 'Select the action for the logs.',
-        type: ApplicationCommandOptionType.String,
-        choices: [
-          {
-            name: 'Enable',
-            value: 'enable'
-          },
-          {
-            name: 'Disable',
-            value: 'disable'
-          }
-        ]
-      }
-    ]
-  }
-];
+export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [];

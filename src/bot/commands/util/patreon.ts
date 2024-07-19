@@ -99,7 +99,7 @@ export default class PatreonCommand extends Command {
     await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
 
     for await (const data of this.client.db.collection(Collections.CLAN_STORES).find({ guild })) {
-      this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
+      this.client.rpcHandler.add({ tag: data.tag, guild: data.guild });
     }
   }
 
@@ -110,7 +110,7 @@ export default class PatreonCommand extends Command {
 
     for await (const data of this.client.db.collection(Collections.CLAN_STORES).find({ guild }).skip(2)) {
       this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
-      this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild });
+      this.client.rpcHandler.delete({ tag: data.tag, guild });
     }
   }
 }

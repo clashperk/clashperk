@@ -1,6 +1,5 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
 import { Listener } from '../../lib/index.js';
-import { Migrator } from '../../core/migrator.js';
 
 export default class ReadyListener extends Listener {
   public constructor() {
@@ -17,9 +16,6 @@ export default class ReadyListener extends Listener {
       `${this.client.user!.displayName} (${this.client.user!.id}) [${(process.env.NODE_ENV ?? 'development').toUpperCase()}]`,
       { label: 'READY' }
     );
-
-    const migrator = new Migrator(this.client);
-    await migrator.migrate();
 
     const applicationCommands = await this.client.application?.commands.fetch();
     const commands = applicationCommands!
