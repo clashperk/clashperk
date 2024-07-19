@@ -162,10 +162,10 @@ export default class RPCHandler {
     await this.capitalLogV2.init();
     await this.clanEmbedLogV2.init();
     await this.clanGamesLogV2.init();
-    await this.clanLogV2.init();
     await this.clanWarLogV2.init();
     await this.donationLogV2.init();
     await this.lastSeenLogV2.init();
+    await this.clanLogV2.init();
     await this.legendLogV2.init();
 
     await this.autoBoard.init();

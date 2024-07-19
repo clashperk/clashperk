@@ -17,7 +17,7 @@ export default class LegendLogV2 extends BaseClanLog {
   public constructor(private handler: RPCHandler) {
     super(handler.client);
     this.client = handler.client;
-    this.refreshRate = 15 * 60 * 1000;
+    this.refreshRate = 30 * 60 * 1000;
   }
 
   public override get permissions(): PermissionsString[] {

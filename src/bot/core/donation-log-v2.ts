@@ -22,7 +22,7 @@ export default class DonationLogV2 extends BaseClanLog {
   public constructor(private handler: RPCHandler) {
     super(handler.client);
     this.client = handler.client;
-    this.refreshRate = 10 * 60 * 1000;
+    this.refreshRate = 30 * 60 * 1000;
     this.timeouts = {};
   }
 

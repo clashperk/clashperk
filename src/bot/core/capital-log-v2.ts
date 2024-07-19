@@ -299,6 +299,7 @@ export default class CapitalLogV2 extends BaseClanLog {
     if (this.timeout) clearTimeout(this.timeout);
 
     try {
+      const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const { endTime } = Util.getRaidWeekEndTimestamp();
 
       const timestamp = new Date(endTime.getTime() + 1000 * 60 * 90);
@@ -306,7 +307,7 @@ export default class CapitalLogV2 extends BaseClanLog {
 
       const logs = await this.collection
         .aggregate<ClanLogsEntity & { _id: ObjectId }>([
-          { $match: { lastPostedAt: { $lte: timestamp } } },
+          { $match: { guildId: { $in: guildIds }, lastPostedAt: { $lte: timestamp } } },
           {
             $lookup: {
               from: Collections.CLAN_STORES,

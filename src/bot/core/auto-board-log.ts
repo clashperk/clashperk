@@ -270,10 +270,11 @@ export default class AutoBoardLog {
     if (this.timeout) clearTimeout(this.timeout);
 
     try {
+      const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const logs = await this.client.db
         .collection(Collections.AUTO_BOARDS)
         .aggregate([
-          { $match: { updatedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
+          { $match: { guildId: { $in: guildIds }, updatedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
           {
             $lookup: {
               from: Collections.CLAN_STORES,

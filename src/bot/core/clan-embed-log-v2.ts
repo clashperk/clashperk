@@ -87,9 +87,10 @@ export default class ClanEmbedLogV2 extends BaseClanLog {
     if (this.timeout) clearTimeout(this.timeout);
 
     try {
+      const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const logs = await this.collection
         .aggregate<ClanLogsEntity & { _id: ObjectId }>([
-          { $match: { lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
+          { $match: { guildId: { $in: guildIds }, lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
           {
             $lookup: {
               from: Collections.CLAN_STORES,

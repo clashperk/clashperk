@@ -25,7 +25,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
   public constructor(private handler: RPCHandler) {
     super(handler.client);
     this.client = handler.client;
-    this.refreshRate = 15 * 60 * 1000;
+    this.refreshRate = 30 * 60 * 1000;
   }
 
   public override get collection() {
@@ -109,9 +109,10 @@ export default class LastSeenLogV2 extends BaseClanLog {
     if (this.timeout) clearTimeout(this.timeout);
 
     try {
+      const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const logs = await this.collection
-        .aggregate<ClanLogsEntity & { _id: ObjectId }>([
-          { $match: { lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
+        .aggregate<WithId<ClanLogsEntity>>([
+          { $match: { guildId: { $in: guildIds }, lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
           {
             $lookup: {
               from: Collections.CLAN_STORES,
