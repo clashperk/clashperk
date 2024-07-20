@@ -112,7 +112,13 @@ export default class LastSeenLogV2 extends BaseClanLog {
       const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const logs = await this.collection
         .aggregate<WithId<ClanLogsEntity>>([
-          { $match: { guildId: { $in: guildIds }, lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
+          {
+            $match: {
+              guildId: { $in: guildIds },
+              logType: ClanLogType.LAST_SEEN_EMBED_LOG,
+              lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) }
+            }
+          },
           {
             $lookup: {
               from: Collections.CLAN_STORES,
