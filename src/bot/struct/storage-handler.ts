@@ -12,6 +12,7 @@ import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Collections, Settings } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
 import { Client } from './client-module.js';
+import { ClanWarRemindersEntity } from '@app/entities';
 
 export const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
 
@@ -127,7 +128,7 @@ export default class StorageHandler {
 
     const lastCategory = await collection.findOne({ guildId }, { sort: { order: -1 } });
 
-    const { value } = await collection.findOneAndUpdate(
+    const value = await collection.findOneAndUpdate(
       { guildId, name: formattedName },
       {
         $set: { displayName: category.trim(), guildId, name: formattedName, order: (lastCategory?.order ?? 0) + 1 }
@@ -170,7 +171,7 @@ export default class StorageHandler {
       this.collection.find().sort({ uniqueId: -1 }).limit(1).next()
     ]);
 
-    const { value } = await this.collection.findOneAndUpdate(
+    const value = await this.collection.findOneAndUpdate(
       { tag: data.tag, guild: data.guild },
       {
         $set: {
@@ -227,7 +228,7 @@ export default class StorageHandler {
         if (rem.clans.length === 1) {
           await this.client.db.collection(reminder).deleteOne({ _id: rem._id });
         } else {
-          await this.client.db.collection(reminder).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+          await this.client.db.collection<ClanWarRemindersEntity>(reminder).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
         }
       }
     }
@@ -461,7 +462,7 @@ export default class StorageHandler {
     channelId: string;
     props?: Partial<Record<string, number | string>>;
   }) {
-    const { value } = await this.client.db.collection(Collections.AUTO_BOARDS).findOneAndUpdate(
+    const value = await this.client.db.collection(Collections.AUTO_BOARDS).findOneAndUpdate(
       { guildId: guild.id, boardType },
       {
         $set: {

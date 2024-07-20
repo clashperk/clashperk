@@ -271,31 +271,35 @@ export default class AutoBoardLog {
 
     try {
       const guildIds = this.client.guilds.cache.map((guild) => guild.id);
-      const logs = await this.client.db
-        .collection(Collections.AUTO_BOARDS)
-        .aggregate([
-          { $match: { guildId: { $in: guildIds }, updatedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) } } },
-          {
-            $lookup: {
-              from: Collections.CLAN_STORES,
-              localField: 'guildId',
-              foreignField: 'guild',
-              as: '_store',
-              pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }, { $limit: 1 }]
-            }
-          },
-          { $unwind: { path: '$_store' } }
-        ])
-        .toArray();
+      const cursor = this.client.db.collection(Collections.AUTO_BOARDS).aggregate([
+        {
+          $match: {
+            guildId: { $in: guildIds },
+            updatedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) }
+          }
+        },
+        {
+          $lookup: {
+            from: Collections.CLAN_STORES,
+            localField: 'guildId',
+            foreignField: 'guild',
+            as: '_store',
+            pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }, { $limit: 1 }]
+          }
+        },
+        { $unwind: { path: '$_store' } }
+      ]);
 
-      for (const log of logs) {
+      for await (const log of cursor) {
         if (!this.client.guilds.cache.has(log.guildId)) continue;
-        if (this.queued.has(log._id.toHexString())) continue;
         if (log.disabled) continue;
 
-        this.queued.add(log._id.toHexString());
-        await this.exec(log._id.toHexString(), { channelId: log.channelId });
-        this.queued.delete(log._id.toHexString());
+        const logId = log._id.toHexString();
+        if (this.queued.has(logId)) continue;
+
+        this.queued.add(logId);
+        await this.exec(logId, { channelId: log.channelId });
+        this.queued.delete(logId);
         await Util.delay(3000);
       }
     } finally {

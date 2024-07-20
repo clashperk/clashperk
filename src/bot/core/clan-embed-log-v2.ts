@@ -88,29 +88,27 @@ export default class ClanEmbedLogV2 extends BaseClanLog {
 
     try {
       const guildIds = this.client.guilds.cache.map((guild) => guild.id);
-      const logs = await this.collection
-        .aggregate<ClanLogsEntity & { _id: ObjectId }>([
-          {
-            $match: {
-              guildId: { $in: guildIds },
-              logType: ClanLogType.CLAN_EMBED_LOG,
-              lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) }
-            }
-          },
-          {
-            $lookup: {
-              from: Collections.CLAN_STORES,
-              localField: 'clanId',
-              foreignField: '_id',
-              as: '_store',
-              pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
-            }
-          },
-          { $unwind: { path: '$_store' } }
-        ])
-        .toArray();
+      const cursor = this.collection.aggregate<WithId<ClanLogsEntity>>([
+        {
+          $match: {
+            guildId: { $in: guildIds },
+            logType: ClanLogType.CLAN_EMBED_LOG,
+            lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) }
+          }
+        },
+        {
+          $lookup: {
+            from: Collections.CLAN_STORES,
+            localField: 'clanId',
+            foreignField: '_id',
+            as: '_store',
+            pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
+          }
+        },
+        { $unwind: { path: '$_store' } }
+      ]);
 
-      for (const log of logs) {
+      for await (const log of cursor) {
         if (!this.client.guilds.cache.has(log.guildId)) continue;
         const logId = log._id.toHexString();
         if (this.queued.has(logId)) continue;

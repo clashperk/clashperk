@@ -299,7 +299,7 @@ export class RosterManager {
   }
 
   public async edit(rosterId: ObjectId, data: Partial<IRoster>) {
-    const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: data }, { returnDocument: 'after' });
+    const value = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: data }, { returnDocument: 'after' });
     return value;
   }
 
@@ -332,17 +332,17 @@ export class RosterManager {
   }
 
   public async close(rosterId: ObjectId) {
-    const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: true } }, { returnDocument: 'after' });
+    const value = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: true } }, { returnDocument: 'after' });
     return value;
   }
 
   public async open(rosterId: ObjectId) {
-    const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: false } }, { returnDocument: 'after' });
+    const value = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: false } }, { returnDocument: 'after' });
     return value;
   }
 
   public async attachSheetId(rosterId: ObjectId, sheetId: string) {
-    const { value } = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { sheetId } }, { returnDocument: 'after' });
+    const value = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { sheetId } }, { returnDocument: 'after' });
     return value;
   }
 
@@ -594,7 +594,7 @@ export class RosterManager {
       createdAt: new Date()
     };
 
-    const { value } = await this.rosters.findOneAndUpdate(
+    const value = await this.rosters.findOneAndUpdate(
       { _id: roster._id },
       { $push: { members: { ...member } } },
       { returnDocument: 'after' }
@@ -615,7 +615,7 @@ export class RosterManager {
     const targetedMembers = roster.members.filter((mem) => playerTags.includes(mem.tag));
     if (!targetedMembers.length) return roster;
 
-    const { value } = await this.rosters.findOneAndUpdate(
+    const value = await this.rosters.findOneAndUpdate(
       { _id: roster._id },
       { $pull: { members: { tag: { $in: playerTags } } } },
       { returnDocument: 'after' }
@@ -714,7 +714,7 @@ export class RosterManager {
       if (newCategory?.roleId && user) await this.addRole(roster.guildId, [newCategory.roleId], user.id);
     }
 
-    const { value } = await this.rosters.findOneAndUpdate(
+    const value = await this.rosters.findOneAndUpdate(
       { '_id': roster._id, 'members.tag': player.tag },
       { $set: { 'members.$.categoryId': newCategoryId } },
       { returnDocument: 'after' }
@@ -743,7 +743,7 @@ export class RosterManager {
       }
     });
 
-    const { value } = await this.rosters.findOneAndUpdate(
+    const value = await this.rosters.findOneAndUpdate(
       { _id: roster._id },
       { $set: { members: [], lastUpdated: new Date() }, $unset: { sheetId: '' } },
       { returnDocument: 'after' }
@@ -816,7 +816,7 @@ export class RosterManager {
       else member.clan = null;
     });
 
-    const { value } = await this.rosters.findOneAndUpdate(
+    const value = await this.rosters.findOneAndUpdate(
       { _id: roster._id },
       { $set: { members, clan, lastUpdated: new Date() } },
       { returnDocument: 'after' }
@@ -1331,7 +1331,7 @@ export class RosterManager {
 
   public async editCategory(categoryId: ObjectId, data: Partial<IRosterCategory>) {
     if (data.displayName) data.name = this.formatCategoryName(data.displayName);
-    const { value } = await this.categories.findOneAndUpdate({ _id: categoryId }, { $set: data }, { returnDocument: 'after' });
+    const value = await this.categories.findOneAndUpdate({ _id: categoryId }, { $set: data }, { returnDocument: 'after' });
     return value;
   }
 

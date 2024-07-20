@@ -305,35 +305,34 @@ export default class CapitalLogV2 extends BaseClanLog {
       const timestamp = new Date(endTime.getTime() + 1000 * 60 * 90);
       if (timestamp.getTime() > Date.now()) return;
 
-      const logs = await this.collection
-        .aggregate<ClanLogsEntity & { _id: ObjectId }>([
-          {
-            $match: {
-              guildId: { $in: guildIds },
-              logType: ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG,
-              lastPostedAt: { $lte: timestamp }
-            }
-          },
-          {
-            $lookup: {
-              from: Collections.CLAN_STORES,
-              localField: 'clanId',
-              foreignField: '_id',
-              as: '_store',
-              pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
-            }
-          },
-          { $unwind: { path: '$_store' } }
-        ])
-        .toArray();
+      const cursor = this.collection.aggregate<WithId<ClanLogsEntity>>([
+        {
+          $match: {
+            guildId: { $in: guildIds },
+            logType: ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG,
+            lastPostedAt: { $lte: timestamp }
+          }
+        },
+        {
+          $lookup: {
+            from: Collections.CLAN_STORES,
+            localField: 'clanId',
+            foreignField: '_id',
+            as: '_store',
+            pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
+          }
+        },
+        { $unwind: { path: '$_store' } }
+      ]);
 
-      for (const log of logs) {
+      for await (const log of cursor) {
         if (!this.client.guilds.cache.has(log.guildId)) continue;
-        if (this.queued.has(log._id.toHexString())) continue;
+        const logId = log._id.toHexString();
+        if (this.queued.has(logId)) continue;
 
-        this.queued.add(log._id.toHexString());
+        this.queued.add(logId);
         await this.exec(log.clanTag, { logType: ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG, channel: log.channelId } satisfies Feed);
-        this.queued.delete(log._id.toHexString());
+        this.queued.delete(logId);
         await Util.delay(3000);
       }
     } finally {

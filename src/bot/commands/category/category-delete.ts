@@ -18,7 +18,7 @@ export default class CategoryDeleteCommand extends Command {
     if (!ObjectId.isValid(args.category)) return interaction.editReply('Invalid categoryId.');
 
     const deleted = await this.client.db.collection(Collections.CLAN_CATEGORIES).findOneAndDelete({ _id: new ObjectId(args.category) });
-    if (!deleted.value) return interaction.editReply('Failed to delete the category.');
+    if (!deleted) return interaction.editReply('Failed to delete the category.');
 
     return interaction.editReply('Successfully deleted.');
   }

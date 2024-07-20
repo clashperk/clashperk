@@ -70,7 +70,7 @@ export class CustomBotManager {
   }
 
   public async createService(input: { application: DiscordBot; guildId: string; user: User; patronId: string; token: string }) {
-    const { value } = await this.collection.findOneAndUpdate(
+    const value = await this.collection.findOneAndUpdate(
       {
         applicationId: input.application.id
       },

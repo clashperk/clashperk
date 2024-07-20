@@ -12,7 +12,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { lastSeenEmbedMaker } from '../util/helper.js';
-import { Util } from '../util/index.js';
+import { Util } from '../util/util.js';
 import BaseClanLog from './base-clan-log.js';
 import RPCHandler from './rpc-handler.js';
 
@@ -25,7 +25,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
   public constructor(private handler: RPCHandler) {
     super(handler.client);
     this.client = handler.client;
-    this.refreshRate = 30 * 60 * 1000;
+    this.refreshRate = 3 * 1000;
   }
 
   public override get collection() {
@@ -110,35 +110,34 @@ export default class LastSeenLogV2 extends BaseClanLog {
 
     try {
       const guildIds = this.client.guilds.cache.map((guild) => guild.id);
-      const logs = await this.collection
-        .aggregate<WithId<ClanLogsEntity>>([
-          {
-            $match: {
-              guildId: { $in: guildIds },
-              logType: ClanLogType.LAST_SEEN_EMBED_LOG,
-              lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) }
-            }
-          },
-          {
-            $lookup: {
-              from: Collections.CLAN_STORES,
-              localField: 'clanId',
-              foreignField: '_id',
-              as: '_store',
-              pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
-            }
-          },
-          { $unwind: { path: '$_store' } }
-        ])
-        .toArray();
+      const cursor = this.collection.aggregate<WithId<ClanLogsEntity>>([
+        {
+          $match: {
+            guildId: { $in: guildIds },
+            logType: ClanLogType.LAST_SEEN_EMBED_LOG,
+            lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) }
+          }
+        },
+        {
+          $lookup: {
+            from: Collections.CLAN_STORES,
+            localField: 'clanId',
+            foreignField: '_id',
+            as: '_store',
+            pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
+          }
+        },
+        { $unwind: { path: '$_store' } }
+      ]);
 
-      for (const log of logs) {
+      for await (const log of cursor) {
         if (!this.client.guilds.cache.has(log.guildId)) continue;
-        if (this.queued.has(log._id.toHexString())) continue;
+        const logId = log._id.toHexString();
+        if (this.queued.has(logId)) continue;
 
-        this.queued.add(log._id.toHexString());
+        this.queued.add(logId);
         await this.exec(log.clanTag, { logType: ClanLogType.LAST_SEEN_EMBED_LOG, channel: log.channelId } satisfies Feed);
-        this.queued.delete(log._id.toHexString());
+        this.queued.delete(logId);
         await Util.delay(3000);
       }
     } finally {

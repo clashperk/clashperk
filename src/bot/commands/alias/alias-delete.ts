@@ -29,10 +29,10 @@ export default class AliasDeleteCommand extends Command {
       { $unset: { alias: true } }
     );
 
-    if (!deleted.value) {
+    if (!deleted) {
       return interaction.editReply(this.i18n('command.alias.delete.no_result', { lng: interaction.locale, name: args.alias }));
     }
 
-    return interaction.editReply(this.i18n('command.alias.delete.success', { lng: interaction.locale, name: deleted.value.alias! }));
+    return interaction.editReply(this.i18n('command.alias.delete.success', { lng: interaction.locale, name: deleted.alias! }));
   }
 }

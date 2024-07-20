@@ -82,12 +82,12 @@ export default class LinkDeleteCommand extends Command {
 
   private async unlinkPlayer(userId: string, tag: string) {
     const link = await this.client.http.unlinkPlayerTag(tag);
-    const { value } = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOneAndDelete({ userId, tag });
+    const value = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOneAndDelete({ userId, tag });
     return value ? tag : link ? tag : null;
   }
 
   private async unlinkClan(userId: string, tag: string): Promise<string | null> {
-    const { value } = await this.client.db
+    const value = await this.client.db
       .collection<UserInfoModel>(Collections.USERS)
       .findOneAndUpdate({ userId, 'clan.tag': tag }, { $unset: { clan: '' } }, { returnDocument: 'before' });
     return value?.clan?.tag ?? null;

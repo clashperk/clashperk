@@ -166,7 +166,7 @@ export default class StatsHandler {
 
   public async localeSuggested(interaction: BaseInteraction) {
     if (['en-GB', 'en-US'].includes(interaction.locale)) return true;
-    const { value: user } = await this.client.db.collection(Collections.BOT_USERS).findOneAndUpdate(
+    const user = await this.client.db.collection(Collections.BOT_USERS).findOneAndUpdate(
       { user: interaction.user.id },
       {
         $set: {
@@ -182,7 +182,7 @@ export default class StatsHandler {
   }
 
   public async featureSuggested(interaction: BaseInteraction) {
-    const { value: user } = await this.client.db.collection(Collections.BOT_USERS).findOneAndUpdate(
+    const user = await this.client.db.collection(Collections.BOT_USERS).findOneAndUpdate(
       { user: interaction.user.id },
       {
         $set: {

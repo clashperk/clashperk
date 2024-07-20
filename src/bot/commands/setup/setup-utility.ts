@@ -444,7 +444,7 @@ export default class SetupUtilsCommand extends Command {
       season_reset: this.client.uuid(interaction.user.id)
     };
 
-    const { value } = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
+    const value = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
       { guildId: interaction.guild.id },
       {
         $setOnInsert: {
@@ -546,7 +546,7 @@ export default class SetupUtilsCommand extends Command {
       if (action.customId === customIds.confirm) {
         await action.deferUpdate();
 
-        const { value } = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
+        const value = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
           { guildId: interaction.guild.id },
           {
             $set: {
