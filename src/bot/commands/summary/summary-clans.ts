@@ -1,9 +1,9 @@
 import { APIClan } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder, embedLength } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/constants.js';
-import { Season, Util } from '../../util/index.js';
+import { Util } from '../../util/index.js';
+import { fromReduced } from './summary-compo.js';
 
 export default class SummaryClansCommand extends Command {
   public constructor() {
@@ -15,98 +15,81 @@ export default class SummaryClansCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; display?: string }) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
     const _clans = await this.client.http._getClans(clans);
-
     _clans.sort((a, b) => a.name.localeCompare(b.name));
-    const joinLeaves = await this.getJoinLeave(_clans);
 
-    const texts: string[] = [];
-    const allPlayers: { tag: string; townHallLevel: number }[] = [];
+    const overall: { tag: string; townHallLevel: number }[] = [];
     for (const clan of _clans) {
-      const players = await this.client.db
-        .collection<{ tag: string; townHallLevel: number }>(Collections.PLAYER_SEASONS)
-        .find({ season: Season.ID, tag: { $in: clan.memberList.map((mem) => mem.tag) } }, { projection: { tag: 1, townHallLevel: 1 } })
-        .toArray();
-      allPlayers.push(...players);
-
-      const reduced = players.reduce<{ [key: string]: number }>((count, member) => {
-        const townHall = member.townHallLevel;
-        count[townHall] = (count[townHall] || 0) + 1;
-        return count;
-      }, {});
-      const townHalls = Object.entries(reduced)
-        .map((arr) => ({ level: Number(arr[0]), total: Number(arr[1]) }))
-        .sort((a, b) => b.level - a.level);
-      const avg = townHalls.reduce((p, c) => p + c.total * c.level, 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
-
-      texts.push(
-        [
-          `\u200e**${clan.name} (${clan.tag})**`,
-          '```',
-          'TH  |  COUNT',
-          townHalls.map((th) => `${th.level.toString().padStart(2, ' ')}  |  ${th.total.toString().padStart(2, ' ')}`).join('\n'),
-          `\`\`\` [Total ${clan.members}/50, Avg. ${avg.toFixed(2)}]`,
-          '\u200b'
-        ].join('\n')
-      );
+      const players = clan.memberList.map((mem) => ({ tag: mem.tag, townHallLevel: mem.townHallLevel }));
+      overall.push(...players);
     }
 
-    joinLeaves.sort((a, b) => a.leave - b.leave);
-    joinLeaves.sort((a, b) => b.join - a.join);
+    const customIds = {
+      joinLeave: this.createId({ cmd: this.id, display: 'join-leave' }),
+      clans: this.createId({ cmd: this.id, display: 'clans' })
+    };
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(customIds.joinLeave)
+        .setLabel('Join/Leave Logs')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(args.display === 'join-leave'),
+      new ButtonBuilder()
+        .setCustomId(customIds.clans)
+        .setLabel('Clans and Town Hall')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(args.display === 'clans' || !args.display)
+    );
 
     const nameLen = Math.max(..._clans.map((clan) => clan.name.length)) + 1;
     const tagLen = Math.max(..._clans.map((clan) => clan.tag.length)) + 1;
     const totalMembers = _clans.reduce((p, c) => p + c.members, 0);
 
-    const embeds: EmbedBuilder[] = [
-      new EmbedBuilder()
-        .setColor(this.client.embed(interaction))
-        .setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
-        .setDescription(
-          [
-            _clans
-              .map((clan) => {
-                const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
-                return `\`\u200e${name} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members.toString().padStart(2, ' ')}/50 \u200f\``;
-              })
-              .join('\n')
-          ].join('\n')
-        )
-        .setFooter({ text: `${clans.length} clans, ${totalMembers} members` }),
-      new EmbedBuilder()
+    if (args.display === 'join-leave') {
+      const logs = await this.getJoinLeaveLogs(interaction, _clans);
+      const embed = new EmbedBuilder()
         .setColor(this.client.embed(interaction))
         .setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
         .setDescription(
           [
             `**Join/Leave History (last 30 days)**`,
             `\`\u200e${'#'.padStart(3, ' ')} ${'JOINED'.padStart(5, ' ')} ${'LEFT'.padStart(5, ' ')}  ${'CLAN'.padEnd(nameLen, ' ')} \``,
-            ...joinLeaves.map((clan, i) => {
+            ...logs.map((clan, i) => {
               const nn = `${i + 1}`.padStart(3, ' ');
               const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
               return `\`\u200e${nn}  ${this.fmtNum(clan.join)} ${this.fmtNum(clan.leave)}  ${name} \u200f\``;
             })
           ].join('\n')
         )
-        .setFooter({ text: `${clans.length} clans, ${totalMembers} members` }),
-      new EmbedBuilder()
-        .setColor(this.client.embed(interaction))
-        .setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
-        .setDescription(['**Family Town Hall Compo**', this.compo(allPlayers)].join('\n'))
-        .setFooter({ text: `${clans.length} clans, ${totalMembers} members` })
-    ];
-
-    if (embeds.reduce((prev, acc) => embedLength(acc.toJSON()) + prev, 0) > 6000) {
-      for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
+        .setFooter({ text: `${clans.length} clans, ${totalMembers} members` });
+      return interaction.editReply({ embeds: [embed], components: [row] });
     }
 
-    return interaction.followUp({ embeds });
+    const embed = new EmbedBuilder()
+      .setColor(this.client.embed(interaction))
+      .setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
+      .setDescription(
+        [
+          _clans
+            .map((clan) => {
+              const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
+              return `\`\u200e${name} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members.toString().padStart(2, ' ')}/50 \u200f\``;
+            })
+            .join('\n')
+        ].join('\n')
+      )
+      .addFields({ name: 'Town Hall Levels', value: this.compo(overall) })
+      .setFooter({ text: `${clans.length} clans, ${totalMembers} members` });
+
+    return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
-  private async getJoinLeave(clans: APIClan[]) {
+  private async getJoinLeaveLogs(interaction: CommandInteraction<'cached'>, clans: APIClan[]) {
     const gte = moment().subtract(1, 'month').toDate().toISOString();
     const { aggregations } = await this.client.elastic.search({
       index: 'join_leave_events',
@@ -143,11 +126,16 @@ export default class SummaryClansCommand extends Command {
         return acc;
       }, {});
 
-    return clans.map((clan) => {
+    const logs = clans.map((clan) => {
       const join = clanMap[clan.tag]?.JOINED ?? 0; // eslint-disable-line
       const leave = clanMap[clan.tag]?.LEFT ?? 0; // eslint-disable-line
       return { name: clan.name, tag: clan.tag, join, leave };
     });
+
+    logs.sort((a, b) => b.leave - a.leave);
+    logs.sort((a, b) => b.join - a.join);
+
+    return logs;
   }
 
   private compo(players: { tag: string; townHallLevel: number }[]) {
@@ -156,16 +144,8 @@ export default class SummaryClansCommand extends Command {
       count[townHall] = (count[townHall] || 0) + 1;
       return count;
     }, {});
-    const townHalls = Object.entries(reduced)
-      .map((arr) => ({ level: Number(arr[0]), total: Number(arr[1]) }))
-      .sort((a, b) => b.level - a.level);
 
-    return [
-      '```',
-      'TH  |  COUNT',
-      townHalls.map((th) => `${th.level.toString().padStart(2, ' ')}  |  ${th.total.toString().padEnd(4, ' ')}`).join('\n'),
-      '```'
-    ].join('\n');
+    return fromReduced(reduced, false);
   }
 
   private fmtNum(num: number) {

@@ -69,14 +69,23 @@ export const COLOR_CODES = {
 
 export const enum Collections {
   CLAN_STORES = 'ClanStores',
+  /** @deprecated */
   DONATION_LOGS = 'DonationLogs',
+  /** @deprecated */
   LAST_SEEN_LOGS = 'LastSeenLogs',
+  /** @deprecated */
   CLAN_GAMES_LOGS = 'ClanGamesLogs',
+  /** @deprecated */
   CLAN_EMBED_LOGS = 'ClanEmbedLogs',
+  /** @deprecated */
   CLAN_FEED_LOGS = 'ClanFeedLogs',
+  /** @deprecated */
   JOIN_LEAVE_LOGS = 'JoinLeaveLogs',
+  /** @deprecated */
   CLAN_WAR_LOGS = 'ClanWarLogs',
+  /** @deprecated */
   LEGEND_LOGS = 'LegendLogs',
+  /** @deprecated */
   CAPITAL_LOGS = 'CapitalLogs',
   FLAG_ALERT_LOGS = 'FlagAlertLogs',
   CLAN_LOGS = 'ClanLogs',

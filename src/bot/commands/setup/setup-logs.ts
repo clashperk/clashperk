@@ -1,5 +1,5 @@
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
-import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { ObjectId, UpdateResult } from 'mongodb';
 import { title as toTitle } from 'radash';
 import { Args, Command } from '../../lib/index.js';
@@ -73,6 +73,28 @@ export const logActionsMap = logGroups.reduce<LogMap>((record, group) => {
   return record;
 }, {});
 
+export const DeprecatedLogs = {
+  'war-feed': [
+    ClanLogType.WAR_EMBED_LOG,
+    ClanLogType.WAR_MISSED_ATTACKS_LOG,
+    ClanLogType.CWL_EMBED_LOG,
+    ClanLogType.CWL_MISSED_ATTACKS_LOG
+  ],
+  'last-seen': [ClanLogType.LAST_SEEN_EMBED_LOG],
+  'clan-games': [ClanLogType.CLAN_GAMES_EMBED_LOG],
+  'legend-log': [ClanLogType.LEGEND_ATTACKS_DAILY_SUMMARY_LOG],
+  'capital-log': [ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG],
+  'clan-feed': [
+    ClanLogType.CLAN_ACHIEVEMENTS_LOG,
+    ClanLogType.WAR_PREFERENCE_LOG,
+    ClanLogType.NAME_CHANGE_LOG,
+    ClanLogType.TOWN_HALL_UPGRADE_LOG
+  ],
+  'join-leave': [ClanLogType.MEMBER_JOIN_LEAVE_LOG],
+  'clan-embed': [ClanLogType.CLAN_EMBED_LOG],
+  'donation-log': [ClanLogType.CONTINUOUS_DONATION_LOG]
+};
+
 export default class SetupLogsCommand extends Command {
   public constructor() {
     super('setup-logs', {
@@ -99,24 +121,12 @@ export default class SetupLogsCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { clan: string; action: 'enable-logs' | 'disable-logs'; color?: number }
+    args: { clan: string; action: 'enable-logs' | 'disable-logs' | keyof typeof DeprecatedLogs; color?: number }
   ) {
     const clan = await this.client.resolver.enforceSecurity(interaction, { tag: args.clan, collection: Collections.CLAN_LOGS });
     if (!clan) return;
 
     const disabling = args.action === 'disable-logs';
-
-    const id = await this.client.storage.register(interaction, {
-      op: Flags.SERVER_LINKED,
-      guild: interaction.guild.id,
-      name: clan.name,
-      tag: clan.tag
-    });
-
-    await this.client.rpcHandler.add({
-      tag: clan.tag,
-      guild: interaction.guild.id
-    });
 
     const collection = this.client.db.collection<ClanLogsEntity>(Collections.CLAN_LOGS);
     const logTypes = Object.keys(logActionsMap) as ClanLogType[];
@@ -125,6 +135,64 @@ export default class SetupLogsCommand extends Command {
     const customIds: Record<string, string> = {
       logs: this.client.uuid()
     };
+
+    const onComplete = async (
+      action: StringSelectMenuInteraction<'cached'> | CommandInteraction<'cached'>,
+      selectedLogs: ClanLogType[]
+    ) => {
+      const ops: Promise<UpdateResult<ClanLogsEntity>>[] = [];
+
+      const clanId = await this.client.storage.register(interaction, {
+        op: Flags.SERVER_LINKED,
+        guild: interaction.guild.id,
+        name: clan.name,
+        tag: clan.tag
+      });
+
+      for (const logType of selectedLogs) {
+        const existingLog = _logs.find((log) => log.logType === logType);
+
+        const updateOps = collection.updateOne(
+          { clanTag: clan.tag, guildId: interaction.guildId, logType },
+          {
+            $setOnInsert: {
+              createdAt: new Date()
+            },
+            $set: {
+              clanId: new ObjectId(clanId),
+              isEnabled: !disabling,
+              color: args.color || existingLog?.color,
+              channelId: interaction.channelId,
+              deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME,
+              webhook: existingLog?.channelId === interaction.channelId ? existingLog?.webhook : null,
+              messageId: existingLog?.channelId === interaction.channelId ? existingLog?.messageId : null,
+              updatedAt: new Date()
+            },
+            $min: {
+              lastPostedAt: new Date(Date.now() - 1000 * 60 * 30)
+            }
+          },
+          { upsert: true }
+        );
+        ops.push(updateOps);
+      }
+
+      await Promise.all(ops);
+      await this.client.rpcHandler.add({ guild: interaction.guild.id, tag: clan.tag });
+
+      return action.editReply({
+        content: [
+          `## ${clan.name} (${clan.tag})`,
+          `### The logs have been enabled in <#${interaction.channelId}>`,
+          selectedLogs.map((log) => `- ${title(log)}`).join('\n')
+        ].join('\n'),
+        components: []
+      });
+    };
+
+    if (args.action && args.action in DeprecatedLogs) {
+      return onComplete(interaction, DeprecatedLogs[args.action as keyof typeof DeprecatedLogs]);
+    }
 
     const rows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
     for (const group of logGroups) {
@@ -185,54 +253,23 @@ export default class SetupLogsCommand extends Command {
       message,
       onSelect: async (action) => {
         const selectedLogs = action.values as ClanLogType[];
-        const ops: Promise<UpdateResult<ClanLogsEntity>>[] = [];
-
-        for (const logType of selectedLogs) {
-          const existingLog = _logs.find((log) => log.logType === logType);
-
-          const updateOps = collection.updateOne(
-            { clanTag: clan.tag, guildId: interaction.guildId, logType },
-            {
-              $setOnInsert: {
-                createdAt: new Date()
-              },
-              $set: {
-                clanId: new ObjectId(id),
-                isEnabled: !disabling,
-                color: args.color || existingLog?.color,
-                channelId: interaction.channelId,
-                deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME,
-                webhook: existingLog?.channelId === interaction.channelId ? existingLog?.webhook : null,
-                messageId: existingLog?.channelId === interaction.channelId ? existingLog?.messageId : null,
-                updatedAt: new Date()
-              },
-              $min: {
-                lastPostedAt: new Date(Date.now() - 1000 * 60 * 30)
-              }
-            },
-            { upsert: true }
-          );
-          ops.push(updateOps);
-        }
-
-        await Promise.all(ops);
-
         if (disabling) {
           const logIds = _logs.filter((log) => selectedLogs.includes(log.logType)).map((log) => log._id);
           logIds.forEach((logId) => this.client.rpcHandler.deleteLog(logId.toHexString()));
           await collection.deleteMany({ _id: { $in: logIds } });
-        } else {
-          await this.client.rpcHandler.add({ guild: interaction.guild.id, tag: clan.tag });
+
+          return action.update({
+            content: [
+              `## ${clan.name} (${clan.tag})`,
+              '### The logs have been disabled',
+              selectedLogs.map((log) => `- ${title(log)}`).join('\n')
+            ].join('\n'),
+            components: []
+          });
         }
 
-        return action.update({
-          content: [
-            `## ${clan.name} (${clan.tag})`,
-            disabling ? '### The logs have been disabled' : `### The logs have been enabled in <#${interaction.channelId}>`,
-            selectedLogs.map((log) => `- ${title(log)}`).join('\n')
-          ].join('\n'),
-          components: []
-        });
+        await action.deferUpdate();
+        return onComplete(action, selectedLogs);
       }
     });
   }

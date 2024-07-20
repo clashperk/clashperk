@@ -1,5 +1,6 @@
-import { ClanLogType } from '@app/entities';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { ClanLogType, ClanStoresEntity } from '@app/entities';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { WithId } from 'mongodb';
 import { title as toTitle } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
@@ -16,87 +17,53 @@ export default class SetupListCommand extends Command {
       category: 'setup',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
-      defer: false
+      defer: true,
+      ephemeral: true
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>) {
-    const CUSTOM_ID = {
-      FEATURES: this.client.uuid(interaction.user.id),
-      LIST: this.client.uuid(interaction.user.id),
-      ROLES: this.client.uuid(interaction.user.id)
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; list?: boolean; logs?: boolean }) {
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    if (!clans) return;
+
+    const customIds = {
+      clans: this.createId({ cmd: this.id, list: true, clans: resolvedArgs }),
+      logs: this.createId({ cmd: this.id, logs: true })
     };
-    const row = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.FEATURES).setStyle(ButtonStyle.Primary).setLabel('Enabled Logs'))
-      .addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.LIST).setStyle(ButtonStyle.Primary).setLabel('Clan List'))
-      .addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.ROLES).setStyle(ButtonStyle.Primary).setLabel('Roles Config'));
 
-    await interaction.deferReply({ ephemeral: true });
-    const msg = await interaction.editReply({
-      content: ['Visit <https://docs.clashperk.com/overview/getting-set-up> for a detailed guide about this command.'].join('\n'),
-      components: [row]
-    });
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(customIds.clans).setStyle(ButtonStyle.Primary).setLabel('Linked Clans'),
+      new ButtonBuilder().setCustomId(customIds.logs).setStyle(ButtonStyle.Primary).setLabel('Enabled Logs')
+    );
 
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
-      time: 5 * 60 * 1000
-    });
+    if ((args.clans && clans.length) || args.logs) {
+      const embeds = await this.getFeatures(interaction, clans);
+      if (!embeds.length) return interaction.editReply('No clans are linked.');
 
-    collector.on('collect', async (action) => {
-      if (action.customId === CUSTOM_ID.FEATURES) {
-        row.components[0].setDisabled(true);
-        await action.update({ components: [row] });
-        const embeds = await this.getFeatures(interaction);
-        if (!embeds.length) {
-          await action.followUp({
-            content: this.i18n('common.no_clans_linked', {
-              lng: interaction.locale,
-              command: this.client.commands.SETUP_ENABLE
-            }),
-            ephemeral: true
-          });
-          return;
-        }
+      const chunksGroup = Util.chunk(embeds, 10);
+      await interaction.editReply({ embeds: chunksGroup[0] });
 
-        for (const chunks of Util.chunk(embeds, 10)) {
-          await action.followUp({ embeds: chunks, ephemeral: true });
-        }
+      for (const chunks of chunksGroup.slice(1)) {
+        await interaction.followUp({ embeds: chunks, ephemeral: true });
       }
+      return;
+    }
 
-      if (action.customId === CUSTOM_ID.LIST) {
-        row.components[1].setDisabled(true);
-        await action.update({ components: [row] });
-        const embeds = await this.getClanList(interaction);
-        if (!embeds.length) {
-          await action.followUp({
-            content: this.i18n('common.no_clans_linked', {
-              lng: interaction.locale,
-              command: this.client.commands.SETUP_ENABLE
-            }),
-            ephemeral: true
-          });
-          return;
-        }
+    if (args.list) {
+      const embeds = await this.getClanList(interaction);
+      if (!embeds.length) return interaction.editReply('No clans are linked.');
 
-        await action.followUp({ embeds, ephemeral: true });
-      }
+      return interaction.editReply({ embeds });
+    }
 
-      if (action.customId === CUSTOM_ID.ROLES) {
-        row.components[2].setDisabled(true);
-        await action.deferReply({ ephemeral: true });
-        await action.editReply({ components: [row], message: msg.id });
-
-        const command = this.handler.getCommand('autorole-list');
-        if (!command) throw new Error('Command "autorole-list" not found');
-
-        await command.exec(action, { expand: true });
-        return;
-      }
-    });
-
-    collector.on('end', async (_, reason) => {
-      Object.values(CUSTOM_ID).forEach((id) => this.client.components.delete(id));
-      if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+    const _clans = await this.client.storage.find(interaction.guildId);
+    return interaction.editReply({
+      components: [row],
+      content: [
+        `${_clans.length} clans are linked. Click the buttons below to see **Enabled Features** and **Linked Clans**`,
+        '',
+        `Visit <https://docs.clashperk.com/overview/getting-set-up> for a detailed guide on how to setup the bot.`
+      ].join('\n')
     });
   }
 
@@ -105,12 +72,11 @@ export default class SetupListCommand extends Command {
     const clanList = await this.client.http._getClans(clans);
     if (!clans.length) return [];
 
-    // clanList.sort((a, b) => b.members - a.members);
     const nameLen = Math.max(...clanList.map((clan) => clan.name.length)) + 1;
     const tagLen = Math.max(...clanList.map((clan) => clan.tag.length)) + 1;
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `${interaction.guild!.name} Clans`, iconURL: interaction.guild!.iconURL()! })
+      .setAuthor({ name: 'Linked Clans', iconURL: interaction.guild!.iconURL()! })
       .setDescription(
         clanList
           .map(
@@ -125,8 +91,7 @@ export default class SetupListCommand extends Command {
     return [embed];
   }
 
-  private async getFeatures(interaction: CommandInteraction<'cached'>) {
-    const clans = await this.client.storage.find(interaction.guild.id);
+  private async getFeatures(interaction: CommandInteraction<'cached'>, clans: WithId<ClanStoresEntity>[]) {
     const logTypes = Object.keys(logActionsMap) as ClanLogType[];
     const logs = await this.client.db
       .collection(Collections.CLAN_LOGS)

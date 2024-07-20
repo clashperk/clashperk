@@ -1553,12 +1553,44 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'link-channel'
               },
               {
+                name: 'Logs / Feed (New)',
+                value: 'enable-logs'
+              },
+              {
+                name: 'War Feed',
+                value: 'war-feed'
+              },
+              {
+                name: 'Last Seen',
+                value: 'last-seen'
+              },
+              {
+                name: 'Clan Games',
+                value: 'clan-games'
+              },
+              {
+                name: 'Legend Log',
+                value: 'legend-log'
+              },
+              {
+                name: 'Capital Log',
+                value: 'capital-log'
+              },
+              {
+                name: 'Clan Feed',
+                value: 'clan-feed'
+              },
+              {
+                name: 'Join/Leave Log',
+                value: 'join-leave'
+              },
+              {
                 name: 'Clan Embed',
                 value: 'clan-embed'
               },
               {
-                name: 'Logs / Feed (New)',
-                value: 'enable-logs'
+                name: 'Donation Log',
+                value: 'donation-log'
               }
             ]
           },
@@ -1662,7 +1694,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         name: 'list',
         description: command.setup.list.description,
         description_localizations: translation('command.setup.list.description'),
-        type: ApplicationCommandOptionType.Subcommand
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'clans',
+            description: 'Select the clans to list.',
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
+          }
+        ]
       },
       {
         name: 'utility',
@@ -1748,6 +1788,42 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'Logs / Feed (New)',
                 value: 'disable-logs'
+              },
+              {
+                name: 'War Feed',
+                value: 'war-feed'
+              },
+              {
+                name: 'Last Seen',
+                value: 'last-seen'
+              },
+              {
+                name: 'Clan Games',
+                value: 'clan-games'
+              },
+              {
+                name: 'Legend Log',
+                value: 'legend-log'
+              },
+              {
+                name: 'Capital Log',
+                value: 'capital-log'
+              },
+              {
+                name: 'Clan Feed',
+                value: 'clan-feed'
+              },
+              {
+                name: 'Join/Leave Log',
+                value: 'join-leave'
+              },
+              {
+                name: 'Clan Embed',
+                value: 'clan-embed'
+              },
+              {
+                name: 'Donation Log',
+                value: 'donation-log'
               }
             ]
           },
@@ -3390,6 +3466,20 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       {
         name: 'wars',
         description: 'Shows a summary of current wars.',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'clans',
+            required: false,
+            autocomplete: true,
+            type: ApplicationCommandOptionType.String,
+            description: 'Clan tags or aliases.'
+          }
+        ]
+      },
+      {
+        name: 'compo',
+        description: 'Shows a summary of Town Hall composition.',
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {

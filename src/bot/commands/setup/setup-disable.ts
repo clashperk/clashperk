@@ -1,5 +1,13 @@
+import { Collections } from '@app/constants';
+import { ClanLogType } from '@app/entities';
 import { CommandInteraction, TextChannel } from 'discord.js';
+import { title as toTitle } from 'radash';
 import { Args, Command } from '../../lib/index.js';
+import { DeprecatedLogs, logActionsMap } from './setup-logs.js';
+
+function title(str: string) {
+  return toTitle(str).replace(/cwl/i, 'CWL');
+}
 
 export default class SetupDisableCommand extends Command {
   public constructor() {
@@ -24,7 +32,7 @@ export default class SetupDisableCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { action: 'unlink-channel' | 'delete-clan' | 'disable-logs'; channel: TextChannel; clan: string }
+    args: { action: 'unlink-channel' | 'delete-clan' | 'disable-logs' | keyof typeof DeprecatedLogs; channel: TextChannel; clan: string }
   ) {
     if (args.action === 'disable-logs') {
       const command = this.handler.getCommand('setup-logs')!;
@@ -77,6 +85,28 @@ export default class SetupDisableCommand extends Command {
       );
     }
 
-    throw new Error(`Command "${args.action as string}" not found.`);
+    const logTypes = Object.keys(logActionsMap) as ClanLogType[];
+    const _logs = await this.client.db
+      .collection(Collections.CLAN_LOGS)
+      .find({ logType: { $in: logTypes }, clanTag: data.tag, guildId: interaction.guildId })
+      .toArray();
+
+    const selectedLogs = DeprecatedLogs[args.action];
+    if (!selectedLogs) {
+      throw new Error(`Invalid action: ${args.action}`);
+    }
+
+    const logIds = _logs.filter((log) => selectedLogs.includes(log.logType)).map((log) => log._id);
+    logIds.forEach((logId) => this.client.rpcHandler.deleteLog(logId.toHexString()));
+    await this.client.db.collection(Collections.CLAN_LOGS).deleteMany({ _id: { $in: logIds } });
+
+    return interaction.editReply({
+      content: [
+        `## ${data.name} (${data.tag})`,
+        '### The logs have been disabled',
+        selectedLogs.map((log) => `- ${title(log)}`).join('\n')
+      ].join('\n'),
+      components: []
+    });
   }
 }
