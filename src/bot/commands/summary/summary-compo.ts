@@ -1,7 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/constants.js';
-import { Season, Util } from '../../util/index.js';
+import { padStart } from '../../util/helper.js';
+import { handlePagination } from '../../util/pagination.js';
 
 export default class SummaryCompoCommand extends Command {
   public constructor() {
@@ -9,20 +10,11 @@ export default class SummaryCompoCommand extends Command {
       category: 'none',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
-      defer: true,
-      ephemeral: true
+      defer: true
     });
   }
 
   public async exec(interaction: CommandInteraction<'cached'>) {
-    if (interaction.isCommand()) {
-      return interaction.editReply({
-        content: `This command has been deleted. Use ${this.client.commands.get('/summary clans')} command instead.`
-      });
-    }
-  }
-
-  public async _exec(interaction: CommandInteraction<'cached'>) {
     const clans = await this.client.storage.find(interaction.guildId);
     if (!clans.length) {
       return interaction.editReply(
@@ -32,15 +24,12 @@ export default class SummaryCompoCommand extends Command {
 
     const _clans = await this.client.http._getClans(clans);
 
-    const texts: string[] = [];
-    const allPlayers: { tag: string; townHallLevel: number }[] = [];
-    for (const clan of _clans) {
-      const players = await this.client.db
-        .collection<{ tag: string; townHallLevel: number }>(Collections.PLAYER_SEASONS)
-        .find({ season: Season.ID, tag: { $in: clan.memberList.map((mem) => mem.tag) } }, { projection: { tag: 1, townHallLevel: 1 } })
-        .toArray();
+    const overall: { tag: string; townHallLevel: number }[] = [];
+    const aggregated: { name: string; tag: string; weight: number; compo: Record<string, number> }[] = [];
 
-      allPlayers.push(...players);
+    for (const clan of _clans) {
+      const players = clan.memberList.map((mem) => ({ tag: mem.tag, townHallLevel: mem.townHallLevel }));
+      overall.push(...players);
 
       const reduced = players.reduce<{ [key: string]: number }>((count, member) => {
         const townHall = member.townHallLevel;
@@ -50,22 +39,15 @@ export default class SummaryCompoCommand extends Command {
       const townHalls = Object.entries(reduced)
         .map((arr) => ({ level: Number(arr[0]), total: Number(arr[1]) }))
         .sort((a, b) => b.level - a.level);
-      const avg = townHalls.reduce((p, c) => p + c.total * c.level, 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
+      const weight = townHalls.reduce((p, c) => p + c.level ** c.total, 0);
 
-      texts.push(
-        [
-          `\u200e**${clan.name} (${clan.tag})**`,
-          '```',
-          'TH  |  COUNT',
-          townHalls.map((th) => `${th.level.toString().padStart(2, ' ')}  |  ${th.total.toString().padStart(2, ' ')}`).join('\n'),
-          `\`\`\` [Total ${clan.members}/50, Avg. ${avg.toFixed(2)}]`,
-          '\u200b'
-        ].join('\n')
-      );
+      aggregated.push({ name: clan.name, tag: clan.tag, weight, compo: reduced });
     }
 
+    aggregated.sort((a, b) => b.weight - a.weight);
+
     const embed = new EmbedBuilder();
-    embed.addFields([{ name: 'Overall Family Compo', value: this.compo(allPlayers) }]);
+    embed.addFields([{ name: 'Overall Family Compo', value: this.compo(overall) }]);
 
     const customIds = {
       action: this.client.uuid(),
@@ -83,10 +65,16 @@ export default class SummaryCompoCommand extends Command {
 
     collector.on('collect', async (action) => {
       if (action.customId === customIds.action) {
-        const embed = new EmbedBuilder();
-        const [description] = Util.splitMessage(texts.join('\n'), { maxLength: 4000, char: '\u200b' });
-        embed.setDescription(description);
-        await action.update({ embeds: [embed], components: [] });
+        await action.deferUpdate();
+
+        const embeds = [];
+        for (const clans of cluster(aggregated, 25)) {
+          const embed = new EmbedBuilder().setTitle('Family TownHall Compo');
+          embed.setDescription(clans.map((clan) => `**${clan.name} (${clan.tag})**\n${this.fromReduced(clan.compo)}`).join('\n\n'));
+          embeds.push(embed);
+        }
+
+        return handlePagination(action, embeds);
       }
     });
 
@@ -102,16 +90,23 @@ export default class SummaryCompoCommand extends Command {
       count[townHall] = (count[townHall] || 0) + 1;
       return count;
     }, {});
+
+    return this.fromReduced(reduced);
+  }
+
+  private fromReduced(reduced: Record<string, number>) {
     const townHalls = Object.entries(reduced)
       .map((arr) => ({ level: Number(arr.at(0)), total: Number(arr.at(1)) }))
       .sort((a, b) => b.level - a.level);
-    const avg = townHalls.reduce((p, c) => p + c.total * c.level, 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
+
+    const total = townHalls.reduce((p, c) => p + c.total, 0);
+    const avg = townHalls.reduce((p, c) => p + c.total * c.level, 0) / total || 0;
 
     return [
       '```',
-      'TH  |  COUNT',
-      townHalls.map((th) => `${th.level.toString().padStart(2, ' ')}  |  ${th.total.toString().padStart(2, ' ')}`).join('\n'),
-      `\`\`\`[Total: ${players.length} | Avg. ${avg.toFixed(2)}]`
+      'TH   COUNT',
+      townHalls.map((th) => `${padStart(th.level, 2)}   ${padStart(th.total, 2)}`).join('\n'),
+      `\`\`\`Total: ${total} | Avg. ${avg.toFixed(2)}`
     ].join('\n');
   }
 }
