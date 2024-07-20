@@ -1,22 +1,14 @@
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  Collection,
-  PermissionsString,
-  WebhookClient,
-  WebhookMessageCreateOptions
-} from 'discord.js';
+import { Util } from 'clashofclans.js';
+import { Collection, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/constants.js';
-import { EMOJIS } from '../util/emojis.js';
-import { lastSeenEmbedMaker } from '../util/helper.js';
-import { Util } from '../util/util.js';
+import { clanEmbedMaker } from '../util/helper.js';
 import BaseClanLog from './base-clan-log.js';
+import LastSeenLogV2 from './last-seen-log.js';
 import RPCHandler from './rpc-handler.js';
 
-export default class LastSeenLogV2 extends BaseClanLog {
+export default class ClanEmbedLogV2 extends BaseClanLog {
   public declare cached: Collection<string, Cache>;
   private readonly queued = new Set<string>();
   public refreshRate: number;
@@ -24,8 +16,8 @@ export default class LastSeenLogV2 extends BaseClanLog {
 
   public constructor(private handler: RPCHandler) {
     super(handler.client);
+    this.refreshRate = 30 * 60 * 1000;
     this.client = handler.client;
-    this.refreshRate = 3 * 1000;
   }
 
   public override get collection() {
@@ -45,38 +37,17 @@ export default class LastSeenLogV2 extends BaseClanLog {
     if (!cache.message) {
       const msg = await this.send(cache, webhook, {
         embeds: [embed],
-        threadId: cache.threadId,
-        components: [this._components(cache.tag)]
+        threadId: cache.threadId
       });
-
       return this.updateMessageId(cache, msg);
     }
 
     const msg = await this.edit(cache, webhook, {
       embeds: [embed],
-      threadId: cache.threadId,
-      components: [this._components(cache.tag)]
+      threadId: cache.threadId
     });
 
     return this.updateMessageId(cache, msg);
-  }
-
-  private _components(tag: string) {
-    const row = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Secondary)
-          .setCustomId(JSON.stringify({ cmd: 'lastseen', tag }))
-          .setEmoji(EMOJIS.REFRESH)
-      )
-      .addComponents(
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Primary)
-          .setCustomId(JSON.stringify({ cmd: 'lastseen', tag, score: true }))
-          .setLabel('Scoreboard')
-      );
-
-    return row;
   }
 
   private async send(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
@@ -92,7 +63,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
     try {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: LastSeenLogV2.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanEmbedLogV2.name });
       return null;
     }
   }
@@ -101,7 +72,14 @@ export default class LastSeenLogV2 extends BaseClanLog {
     const clan = await this.client.redis.getClan(cache.tag);
     if (!clan) return null;
 
-    const embed = await lastSeenEmbedMaker(clan, { color: cache.color, scoreView: false });
+    const embed = await clanEmbedMaker(clan, {
+      description: cache.embed.description,
+      accepts: cache.embed?.accepts ?? '',
+      fields: cache.embed?.fields ?? '',
+      bannerImage: cache.embed?.bannerImage ?? '',
+      color: cache.color
+    });
+
     return embed;
   }
 
@@ -114,7 +92,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
         {
           $match: {
             guildId: { $in: guildIds },
-            logType: ClanLogType.LAST_SEEN_EMBED_LOG,
+            logType: ClanLogType.CLAN_EMBED_LOG,
             lastPostedAt: { $lte: new Date(Date.now() - this.refreshRate * 2) }
           }
         },
@@ -136,7 +114,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
         if (this.queued.has(logId)) continue;
 
         this.queued.add(logId);
-        await this.exec(log.clanTag, { logType: ClanLogType.LAST_SEEN_EMBED_LOG, channel: log.channelId } satisfies Feed);
+        await this.exec(log.clanTag, { logType: ClanLogType.CLAN_EMBED_LOG, channel: log.channelId } satisfies Feed);
         this.queued.delete(logId);
         await Util.delay(3000);
       }
@@ -149,7 +127,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
     const guildIds = this.client.guilds.cache.map((guild) => guild.id);
     for await (const data of this.collection.find({
       guildId: { $in: guildIds },
-      logType: ClanLogType.LAST_SEEN_EMBED_LOG,
+      logType: ClanLogType.CLAN_EMBED_LOG,
       isEnabled: true
     })) {
       this.setCache(data);
@@ -162,7 +140,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
   public async add(guildId: string) {
     for await (const data of this.collection.find({
       guildId,
-      logType: ClanLogType.LAST_SEEN_EMBED_LOG,
+      logType: ClanLogType.CLAN_EMBED_LOG,
       isEnabled: true
     })) {
       this.setCache(data);
@@ -179,6 +157,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,
+      embed: data.metadata,
       webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
     });
   }
@@ -203,4 +182,5 @@ interface Cache {
   logType: string;
   deepLink?: string;
   retries: number;
+  embed: any;
 }
