@@ -1557,7 +1557,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'clan-embed'
               },
               {
-                name: 'Logs / Feed',
+                name: 'Logs / Feed (New)',
                 value: 'enable-logs'
               }
             ]
@@ -1746,7 +1746,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'delete-clan'
               },
               {
-                name: 'Logs / Feed',
+                name: 'Logs / Feed (New)',
                 value: 'disable-logs'
               }
             ]

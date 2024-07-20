@@ -307,7 +307,13 @@ export default class CapitalLogV2 extends BaseClanLog {
 
       const logs = await this.collection
         .aggregate<ClanLogsEntity & { _id: ObjectId }>([
-          { $match: { guildId: { $in: guildIds }, lastPostedAt: { $lte: timestamp } } },
+          {
+            $match: {
+              guildId: { $in: guildIds },
+              logType: ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG,
+              lastPostedAt: { $lte: timestamp }
+            }
+          },
           {
             $lookup: {
               from: Collections.CLAN_STORES,

@@ -193,8 +193,14 @@ export default class DonationLogV2 extends BaseClanLog {
       const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
       if (timestamp.getTime() > Date.now()) return;
 
+      const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const logs = await this.collection
-        .find({ isEnabled: true, lastPostedAt: { $lt: timestamp }, logType: ClanLogType.DAILY_DONATION_LOG })
+        .find({
+          isEnabled: true,
+          guildId: { $in: guildIds },
+          lastPostedAt: { $lt: timestamp },
+          logType: ClanLogType.DAILY_DONATION_LOG
+        })
         .toArray();
 
       for (const log of logs) {
@@ -228,8 +234,14 @@ export default class DonationLogV2 extends BaseClanLog {
       const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
       if (timestamp.getTime() > Date.now()) return;
 
+      const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const logs = await this.collection
-        .find({ isEnabled: true, lastPostedAt: { $lt: timestamp }, logType: ClanLogType.WEEKLY_DONATION_LOG })
+        .find({
+          isEnabled: true,
+          guildId: { $in: guildIds },
+          lastPostedAt: { $lt: timestamp },
+          logType: ClanLogType.WEEKLY_DONATION_LOG
+        })
         .toArray();
 
       for (const log of logs) {
@@ -264,8 +276,14 @@ export default class DonationLogV2 extends BaseClanLog {
       const timestamp = new Date(lte.getTime() + 10 * 60 * 1000);
       if (timestamp.getTime() > Date.now()) return;
 
+      const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const logs = await this.collection
-        .find({ isEnabled: true, lastPostedAt: { $lt: timestamp }, logType: ClanLogType.MONTHLY_DONATION_LOG })
+        .find({
+          isEnabled: true,
+          guildId: { $in: guildIds },
+          lastPostedAt: { $lt: timestamp },
+          logType: ClanLogType.MONTHLY_DONATION_LOG
+        })
         .toArray();
 
       for (const log of logs) {
