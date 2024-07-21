@@ -37,13 +37,9 @@ export default class SummaryCompoCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>) {
-    const clans = await this.client.storage.find(interaction.guildId);
-    if (!clans.length) {
-      return interaction.editReply(
-        this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
-      );
-    }
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    if (!clans) return;
 
     const _clans = await this.client.http._getClans(clans);
 

@@ -22,9 +22,8 @@ export default class AliasListCommand extends Command {
         clans
           .map((clan) =>
             [
-              `• **${clan.name} (${clan.tag as string})**`,
-              `\u2002 **Alias:** ${clan.alias || 'None'}`,
-              `\u2002 **Nick:** ${clan.nickname || 'None'}`
+              `- ${clan.name} (${clan.tag as string})`,
+              ` - Alias: ${clan.alias || 'None'}${clan.nickname ? `\n - Nick: ${clan.nickname || 'None'}` : ''}`
             ].join('\n')
           )
           .join('\n\n')
