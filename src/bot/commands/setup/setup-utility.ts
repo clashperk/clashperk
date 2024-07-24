@@ -416,10 +416,7 @@ export default class SetupUtilsCommand extends Command {
     });
   }
 
-  public async handleEvents(
-    interaction: CommandInteraction<'cached'>,
-    { disable, max_duration }: { disable?: boolean; max_duration?: number }
-  ) {
+  public async handleEvents(interaction: CommandInteraction<'cached'>, { disable }: { disable?: boolean }) {
     if (disable) {
       await this.client.db.collection(Collections.GUILD_EVENTS).deleteOne({ guildId: interaction.guild.id });
       return interaction.editReply({ content: 'Successfully disabled automatic events schedular.' });
@@ -453,9 +450,6 @@ export default class SetupUtilsCommand extends Command {
           images: {},
           allowedEvents: [...this.client.guildEvents.eventTypes],
           createdAt: new Date()
-        },
-        $set: {
-          maxDuration: max_duration ?? 30
         }
       },
       { upsert: true, returnDocument: 'after' }

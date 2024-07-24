@@ -11,7 +11,7 @@ export default class GameEvents extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>) {
-    const visibleEvents = this.client.guildEvents.getEvents(interaction.locale);
+    const visibleEvents = this.client.guildEvents.getEvents(interaction.locale, { filtered: true, useGraceTime: false });
 
     const embed = new EmbedBuilder()
       .setAuthor({

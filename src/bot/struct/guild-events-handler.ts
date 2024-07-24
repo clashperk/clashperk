@@ -39,6 +39,8 @@ export const eventsMap: Record<string, string> = {
   raid_week_end: 'Raid Weekend (Ending)'
 };
 
+const maxGraceTime = 30 * 60 * 1000;
+
 export class GuildEventsHandler {
   public constructor(private readonly client: Client) {}
 
@@ -55,24 +57,32 @@ export class GuildEventsHandler {
     ];
   }
 
-  public getEvents(lng: string, filtered = true) {
+  public getEvents(lng: string, { filtered, useGraceTime }: { filtered: boolean; useGraceTime: boolean }) {
     const now = moment().toDate();
+    const graceTime = useGraceTime ? maxGraceTime : 0;
 
     const clanGamesStartTime =
       moment(now).date() > 28 || (moment(now).date() >= 28 && moment(now).hour() >= 8)
         ? moment(now).startOf('month').add(1, 'month').add(21, 'days').add(8, 'hours').toDate()
         : moment(now).startOf('month').add(21, 'days').add(8, 'hours').toDate();
-    const clanGamesEndTime = moment(clanGamesStartTime).add(6, 'days').toDate();
+    const clanGamesEndTime = moment(clanGamesStartTime).add(6, 'days').subtract(graceTime, 'milliseconds').toDate();
 
-    const CWLStartTime =
+    const cwlStartTime =
       moment(now).date() > 10 || (moment(now).date() >= 10 && moment(now).hour() >= 8)
         ? moment(now).startOf('month').add(1, 'month').add(8, 'hour').toDate()
         : moment(now).startOf('month').add(8, 'hours').toDate();
-    const CWLSignupEndTime = moment(CWLStartTime).add(2, 'days').toDate();
-    const CWLEndTime = moment(CWLStartTime).add(9, 'days').toDate();
+    const cwlSignupEndTime = moment(cwlStartTime).add(2, 'days').subtract(graceTime, 'milliseconds').toDate();
+    const cwlEndTime = moment(cwlStartTime).add(9, 'days').subtract(graceTime, 'milliseconds').toDate();
 
-    const seasonEndTime = moment(Season.endTimestamp).toDate();
-    const { raidWeekEndTime, raidWeekStartTime } = Util.geRaidWeekend(now);
+    const seasonEndTime = moment(Season.endTimestamp).subtract(graceTime, 'milliseconds').toDate();
+
+    const { raidWeekEndTime: _raidWeekEndTime, raidWeekStartTime } = Util.geRaidWeekend(now);
+    const raidWeekEndTime = moment(_raidWeekEndTime).subtract(graceTime, 'milliseconds').toDate();
+
+    const getValue = (timestamp: Date) => {
+      timestamp = moment(timestamp).add(graceTime, 'milliseconds').toDate();
+      return `${time(timestamp, 'R')}\n${time(timestamp, 'f')}`;
+    };
 
     const events = [
       {
@@ -87,7 +97,7 @@ export class GuildEventsHandler {
         type: 'clan_games_end',
         name: i18n('common.labels.clan_games_ending', { lng }),
         formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.labels.clan_games_ending', { lng })}`,
-        value: `${time(clanGamesEndTime, 'R')}\n${time(clanGamesEndTime, 'f')}`,
+        value: getValue(clanGamesEndTime),
         timestamp: clanGamesEndTime.getTime(),
         visible: moment(now).isAfter(clanGamesStartTime) && moment(now).isBefore(clanGamesEndTime)
       },
@@ -95,31 +105,31 @@ export class GuildEventsHandler {
         type: 'cwl_start',
         name: i18n('common.labels.cwl', { lng }),
         formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl', { lng })}`,
-        value: `${time(CWLStartTime, 'R')}\n${time(CWLStartTime, 'f')}`,
-        timestamp: CWLStartTime.getTime(),
-        visible: moment(now).isBefore(CWLStartTime)
+        value: `${time(cwlStartTime, 'R')}\n${time(cwlStartTime, 'f')}`,
+        timestamp: cwlStartTime.getTime(),
+        visible: moment(now).isBefore(cwlStartTime)
       },
       {
         type: 'cwl_end',
         name: i18n('common.labels.cwl_end', { lng }),
         formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl_end', { lng })}`,
-        value: `${time(CWLEndTime, 'R')}\n${time(CWLEndTime, 'f')}`,
-        timestamp: CWLEndTime.getTime(),
-        visible: moment(now).isAfter(CWLSignupEndTime)
+        value: getValue(cwlEndTime),
+        timestamp: cwlEndTime.getTime(),
+        visible: moment(now).isAfter(cwlSignupEndTime)
       },
       {
         type: 'cwl_signup_end',
         name: i18n('common.labels.cwl_signup_ending', { lng }),
         formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl_signup_ending', { lng })}`,
-        value: `${time(CWLSignupEndTime, 'R')}\n${time(CWLSignupEndTime, 'f')}`,
-        timestamp: CWLSignupEndTime.getTime(),
-        visible: moment(now).isAfter(CWLStartTime) && moment(now).isBefore(CWLSignupEndTime)
+        value: getValue(cwlSignupEndTime),
+        timestamp: cwlSignupEndTime.getTime(),
+        visible: moment(now).isAfter(cwlStartTime) && moment(now).isBefore(cwlSignupEndTime)
       },
       {
         type: 'season_end',
         name: i18n('common.labels.league_reset', { lng }),
         formattedName: `${EMOJIS.TROPHY} ${i18n('common.labels.league_reset', { lng })} (${moment(seasonEndTime).format('MMM YYYY')})`,
-        value: `${time(seasonEndTime, 'R')}\n${time(seasonEndTime, 'f')}`,
+        value: getValue(seasonEndTime),
         timestamp: seasonEndTime.getTime(),
         visible: true
       },
@@ -135,7 +145,7 @@ export class GuildEventsHandler {
         type: 'raid_week_end',
         name: i18n('common.labels.raid_weekend_ending', { lng }),
         formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.labels.raid_weekend_ending', { lng })}`,
-        value: `${time(raidWeekEndTime, 'R')}\n${time(raidWeekEndTime, 'f')}`,
+        value: getValue(raidWeekEndTime),
         timestamp: raidWeekEndTime.getTime(),
         visible: moment(now).isAfter(raidWeekStartTime) && moment(now).isBefore(raidWeekEndTime)
       }
@@ -148,18 +158,22 @@ export class GuildEventsHandler {
 
   private getMaxDuration(lng: string, event: EventRecord, guildEvent: GuildEventData) {
     if (guildEvent.durationOverrides?.includes(event.type)) {
-      const record = this.getEvents(lng, false).find((ev) => ev.type === event.type.replace(/_start/g, '_end'));
+      const record = this.getEvents(lng, { filtered: false, useGraceTime: false }).find(
+        (ev) => ev.type === event.type.replace(/_start/g, '_end')
+      );
       if (record && record.timestamp > Date.now()) return record.timestamp;
     }
-    return event.timestamp + guildEvent.maxDuration * 60 * 1000;
+    return event.timestamp + maxGraceTime;
   }
 
   public async create(guild: Guild, guildEvent: GuildEventData) {
     if (!guild.members.me?.permissions.has([PermissionFlagsBits.ManageEvents, 1n << 44n])) return null;
 
-    for (const event of this.getEvents(guild.preferredLocale)) {
+    for (const event of this.getEvents(guild.preferredLocale, { filtered: true, useGraceTime: true })) {
       if (guildEvent.allowedEvents && !guildEvent.allowedEvents.includes(event.type)) continue;
-      if (guildEvent.events[event.type] === event.timestamp) continue;
+
+      if (event.timestamp === guildEvent.events[event.type]) continue;
+      if (event.timestamp + maxGraceTime === guildEvent.events[event.type]) continue;
 
       const endTime = this.getMaxDuration(guild.preferredLocale, event, guildEvent);
       await guild.scheduledEvents.create({
@@ -211,7 +225,6 @@ export interface GuildEventData {
   guildId: string;
   enabled: boolean;
   events: Record<string, number>;
-  maxDuration: number;
   allowedEvents?: string[];
   images?: Record<string, string>;
   locations?: Record<string, string | null>;
