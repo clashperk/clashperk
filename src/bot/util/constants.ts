@@ -19,6 +19,8 @@ export const UNRANKED_CAPITAL_LEAGUE_ID = 85000000;
 
 export const LEGEND_LEAGUE_ID = 29000022;
 
+export const DIAMOND_LEAGUE_ID = 44000041;
+
 export const UNRANKED_WAR_LEAGUE_ID = 48000000;
 
 export const ESCAPE_CHAR_REGEX = /[\u200e|\u200f|\u200b|\u2002]+/g;

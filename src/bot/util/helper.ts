@@ -748,6 +748,8 @@ export const getBbLegendRankingEmbedMaker = async ({
     };
   });
 
+  players = players.filter((player) => player.trophies >= 5000);
+
   players.sort((a, b) => b.trophies - a.trophies);
   if (limit) players = players.slice(0, limit);
 
