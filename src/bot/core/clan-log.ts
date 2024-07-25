@@ -396,7 +396,7 @@ export default class ClanLog extends BaseClanLog {
       guild: data.guildId,
       channel: data.channelId,
       tag: data.clanTag,
-      role: data.flagAlertRoleId,
+      role: data.roleId,
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,

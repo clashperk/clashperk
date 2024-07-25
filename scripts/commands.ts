@@ -1624,6 +1624,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: command.setup.enable.options.color.description,
             description_localizations: translation('command.setup.enable.options.color.description'),
             type: ApplicationCommandOptionType.String
+          },
+          {
+            name: 'ping_role',
+            description: '[DEPRECATED] Ping this role in the logs (only for town hall upgrade log)',
+            type: ApplicationCommandOptionType.Role
           }
         ]
       },

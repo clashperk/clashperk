@@ -13,7 +13,7 @@ export class Migrator {
   }
 
   async migrate() {
-    await this.migrateJoinLeaveLog();
+    // await this.migrateJoinLeaveLog();
     // await this.migrateClanFeedLog();
     // await this.migrateDonationLog();
     // await this.migrateClanEmbed();
@@ -33,7 +33,7 @@ export class Migrator {
       for (const logType of [ClanLogType.MEMBER_JOIN_LEAVE_LOG] as ClanLogType[]) {
         const extra: Partial<ClanLogsEntity> = {};
         if (logType === ClanLogType.MEMBER_JOIN_LEAVE_LOG && log.role) {
-          extra.flagAlertRoleId = log.role;
+          extra.roleId = log.role;
         }
 
         ops.push({
@@ -83,8 +83,8 @@ export class Migrator {
         ClanLogType.CLAN_ACHIEVEMENTS_LOG
       ] as ClanLogType[]) {
         const extra: Partial<ClanLogsEntity> = {};
-        if (logType === ClanLogType.MEMBER_JOIN_LEAVE_LOG && log.role) {
-          extra.flagAlertRoleId = log.role;
+        if (logType === ClanLogType.TOWN_HALL_UPGRADE_LOG && log.role) {
+          extra.roleId = log.role;
         }
 
         ops.push({

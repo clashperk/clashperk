@@ -1,5 +1,13 @@
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
-import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
+import {
+  ActionRowBuilder,
+  AnyThreadChannel,
+  CommandInteraction,
+  Role,
+  StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
+  TextChannel
+} from 'discord.js';
 import { ObjectId, UpdateResult } from 'mongodb';
 import { title as toTitle } from 'radash';
 import { Args, Command } from '../../lib/index.js';
@@ -110,18 +118,24 @@ export default class SetupLogsCommand extends Command {
   public args(interaction: CommandInteraction<'cached'>): Args {
     return {
       color: {
-        match: 'COLOR',
-        default: this.client.embed(interaction)
+        match: 'COLOR'
       },
       channel: {
-        match: 'CHANNEL'
+        match: 'CHANNEL',
+        default: interaction.channel
       }
     };
   }
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { clan: string; action: 'enable-logs' | 'disable-logs' | keyof typeof DeprecatedLogs; color?: number }
+    args: {
+      clan: string;
+      action: 'enable-logs' | 'disable-logs' | keyof typeof DeprecatedLogs;
+      color?: number;
+      ping_role?: Role;
+      channel: TextChannel | AnyThreadChannel;
+    }
   ) {
     const clan = await this.client.resolver.enforceSecurity(interaction, { tag: args.clan, collection: Collections.CLAN_LOGS });
     if (!clan) return;
@@ -151,6 +165,11 @@ export default class SetupLogsCommand extends Command {
 
       for (const logType of selectedLogs) {
         const existingLog = _logs.find((log) => log.logType === logType);
+        const colorCode = args.color || existingLog?.color || this.client.embed(interaction);
+
+        const extraSettings: Partial<ClanLogsEntity> = {};
+        if (args.ping_role) extraSettings.roleId = args.ping_role.id;
+        if (args.color) extraSettings.color = colorCode;
 
         const updateOps = collection.updateOne(
           { clanTag: clan.tag, guildId: interaction.guildId, logType },
@@ -161,11 +180,11 @@ export default class SetupLogsCommand extends Command {
             $set: {
               clanId: new ObjectId(clanId),
               isEnabled: !disabling,
-              color: args.color || existingLog?.color,
-              channelId: interaction.channelId,
+              channelId: args.channel.id,
+              ...extraSettings,
               deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME,
-              webhook: existingLog?.channelId === interaction.channelId ? existingLog?.webhook : null,
-              messageId: existingLog?.channelId === interaction.channelId ? existingLog?.messageId : null,
+              webhook: existingLog?.channelId === args.channel.id ? existingLog?.webhook : null,
+              messageId: existingLog?.channelId === args.channel.id ? existingLog?.messageId : null,
               updatedAt: new Date()
             },
             $min: {
@@ -183,7 +202,7 @@ export default class SetupLogsCommand extends Command {
       return action.editReply({
         content: [
           `## ${clan.name} (${clan.tag})`,
-          `### The logs have been enabled in <#${interaction.channelId}>`,
+          `### The logs have been enabled in <#${args.channel.id}>`,
           selectedLogs.map((log) => `- ${title(log)}`).join('\n')
         ].join('\n'),
         components: []
@@ -242,7 +261,7 @@ export default class SetupLogsCommand extends Command {
 
         _logs.map((log) => `- ${logActionsMap[log.logType].label || title(log.logType)} <#${log.channelId}>`).join('\n'),
 
-        disabling ? '### Select the logs you want to disable' : `### Select the logs you want to enable in <#${interaction.channelId}>`
+        disabling ? '### Select the logs you want to disable' : `### Select the logs you want to enable in <#${args.channel.id}>`
       ].join('\n'),
       components: [...rows]
     });

@@ -8,7 +8,7 @@ export interface ClanLogsEntity {
   isEnabled: boolean;
   channelId: string;
   deepLink: string;
-  flagAlertRoleId?: string;
+  roleId?: string;
   webhook: { id: string; token: string } | null;
   messageId: string | null;
   color: number;
