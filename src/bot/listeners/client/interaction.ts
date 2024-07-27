@@ -36,7 +36,7 @@ const getClanQuery = (query: string): QueryDslQueryContainer[] => {
     },
     {
       prefix: {
-        name: query
+        name: query.toLowerCase()
       }
     },
     {
@@ -47,6 +47,11 @@ const getClanQuery = (query: string): QueryDslQueryContainer[] => {
     {
       match: {
         tag: query
+      }
+    },
+    {
+      prefix: {
+        tag: query.toLowerCase()
       }
     }
   ];
@@ -61,12 +66,17 @@ const getPlayerQuery = (query: string): QueryDslQueryContainer[] => {
     },
     {
       prefix: {
-        name: query
+        name: query.toLowerCase()
       }
     },
     {
       match: {
         tag: query
+      }
+    },
+    {
+      prefix: {
+        tag: query.toLowerCase()
       }
     }
   ];
