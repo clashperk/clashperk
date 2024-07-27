@@ -422,7 +422,7 @@ export default class SetupUtilsCommand extends Command {
       return interaction.editReply({ content: 'Successfully disabled automatic events schedular.' });
     }
 
-    if (!interaction.guild.members.me?.permissions.has([PermissionFlagsBits.ManageEvents, 1n << 44n])) {
+    if (!interaction.guild.members.me?.permissions.has([PermissionFlagsBits.ManageEvents, PermissionFlagsBits.CreateEvents])) {
       return interaction.editReply({
         content: "I'm missing **Create Events** and **Manage Events** permissions to execute this command."
       });
@@ -506,31 +506,42 @@ export default class SetupUtilsCommand extends Command {
       new ButtonBuilder().setCustomId(customIds.locations).setLabel('Set Locations').setStyle(ButtonStyle.Secondary)
     );
 
-    const getContent = () => {
-      return [
-        '**Creating automatic events schedular...**',
-        '',
-        '**Enabled Events**',
-        this.client.guildEvents.eventTypes
-          .filter((event) => state.allowedEvents.includes(event))
-          .map((event) => {
-            const eventName = state[imageMaps[event] as unknown as keyof typeof state]
-              ? `[${eventsMap[event]}](<${state[imageMaps[event] as keyof typeof state] as string}>)`
-              : `${eventsMap[event]}`;
-            const location = state[locationsMap[event] as unknown as keyof typeof state]
-              ? `${state[locationsMap[event] as keyof typeof state] as string}`
-              : null;
-            return `- ${eventName}${location ? `\n  - ${location}` : ''}`;
-          })
-          .join('\n'),
+    const getEmbed = (creating = true) => {
+      const embed = new EmbedBuilder();
+      embed.setColor(this.client.embed(interaction));
 
-        '',
-        '- *Click the Confirm button to save the events.*',
-        '- *By default the events last for 30 minutes, you can change this by using the following option.*'
-      ].join('\n');
+      embed.setDescription(
+        [
+          creating ? '**Creating automatic events schedular...**' : '**Successfully created automatic events schedular...**',
+          '',
+          '**Enabled Events**',
+          ...this.client.guildEvents.eventTypes
+            .filter((event) => state.allowedEvents.includes(event))
+            .map((event) => {
+              const eventName = state[imageMaps[event] as unknown as keyof typeof state]
+                ? `[${eventsMap[event]}](<${state[imageMaps[event] as keyof typeof state] as string}>)`
+                : `${eventsMap[event]}`;
+              const location = state[locationsMap[event] as unknown as keyof typeof state]
+                ? `${state[locationsMap[event] as keyof typeof state] as string}`
+                : null;
+              return `- ${eventName}${location ? `\n  - ${location}` : ''}`;
+            })
+        ].join('\n')
+      );
+
+      if (creating) {
+        embed.setFooter({
+          text: [
+            '- Click the Confirm button to save the events.',
+            '- By default the events last for 30 minutes, you can change this by using the following option.'
+          ].join('\n')
+        });
+      }
+
+      return { embeds: [embed] };
     };
 
-    const msg = await interaction.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
+    const msg = await interaction.editReply({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });
     const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
       filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
       time: 10 * 60 * 1000
@@ -574,11 +585,7 @@ export default class SetupUtilsCommand extends Command {
 
         await this.client.guildEvents.create(interaction.guild, value);
 
-        const content = getContent().split('\n');
-        await action.editReply({
-          content: ['**Successfully created automatic events schedular...**', ...content.slice(1, content.length - 1)].join('\n'),
-          components: []
-        });
+        await action.editReply({ ...getEmbed(), components: [] });
       }
 
       if (action.customId === customIds.select && action.isStringSelectMenu()) {
@@ -591,7 +598,7 @@ export default class SetupUtilsCommand extends Command {
             default: state.allowedEvents.includes(id)
           }))
         );
-        await action.update({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
+        await action.update({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });
       }
 
       if (action.customId === customIds.duration && action.isStringSelectMenu()) {
@@ -603,7 +610,7 @@ export default class SetupUtilsCommand extends Command {
             default: state.durationOverrides.includes(id)
           }))
         );
-        await action.update({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
+        await action.update({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });
       }
 
       if (action.customId === customIds.images) {
@@ -671,7 +678,7 @@ export default class SetupUtilsCommand extends Command {
           state.clan_games_image_url = URL_REGEX.test(clan_games_image_url) ? clan_games_image_url : '';
 
           await modalSubmit.deferUpdate();
-          await modalSubmit.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
+          await modalSubmit.editReply({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });
         } catch (e) {
           if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
             throw e;
@@ -743,7 +750,7 @@ export default class SetupUtilsCommand extends Command {
           state.clan_games_location = clan_games_location || null;
 
           await modalSubmit.deferUpdate();
-          await modalSubmit.editReply({ content: getContent(), components: [menuRow, durationRow, buttonRow] });
+          await modalSubmit.editReply({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });
         } catch (e) {
           if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
             throw e;
