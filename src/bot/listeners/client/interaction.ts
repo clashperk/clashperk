@@ -30,27 +30,23 @@ const ranges: Record<string, number> = {
 const getClanQuery = (query: string): QueryDslQueryContainer[] => {
   return [
     {
-      prefix: {
-        alias: {
-          value: `${query}`,
-          case_insensitive: true
-        }
+      match: {
+        name: query
       }
     },
     {
       prefix: {
-        name: {
-          value: `${query}`,
-          case_insensitive: true
-        }
+        name: query
       }
     },
     {
-      wildcard: {
-        tag: {
-          value: `*${query}*`,
-          case_insensitive: true
-        }
+      match: {
+        alias: query
+      }
+    },
+    {
+      match: {
+        tag: query
       }
     }
   ];
@@ -59,19 +55,18 @@ const getClanQuery = (query: string): QueryDslQueryContainer[] => {
 const getPlayerQuery = (query: string): QueryDslQueryContainer[] => {
   return [
     {
-      prefix: {
-        name: {
-          value: `${query}`,
-          case_insensitive: true
-        }
+      match: {
+        name: query
       }
     },
     {
-      wildcard: {
-        tag: {
-          value: `*${query}*`,
-          case_insensitive: true
-        }
+      prefix: {
+        name: query
+      }
+    },
+    {
+      match: {
+        tag: query
       }
     }
   ];
@@ -475,9 +470,10 @@ export default class InteractionListener extends Listener {
             { index: ElasticIndex.USER_LINKED_PLAYERS },
             {
               query: {
-                dis_max: {
-                  queries: getPlayerQuery(query),
-                  tie_breaker: 1
+                bool: {
+                  must: { term: { userId } },
+                  should: getPlayerQuery(query),
+                  minimum_should_match: 1
                 }
               }
             }
