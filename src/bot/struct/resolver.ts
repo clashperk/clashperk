@@ -11,6 +11,7 @@ import {
   DISCORD_MENTION_REGEX,
   ESCAPE_CHAR_REGEX,
   ElasticIndex,
+  PATREON_LINK,
   Settings,
   TAG_REGEX,
   getHttpStatusText
@@ -319,14 +320,14 @@ export default class Resolver {
 
     const memberCount = interaction.guild.memberCount;
     const [features, clans] = await Promise.all([
-      this.client.storage.getEnabledFeatures(interaction.guild.id, collection),
-      this.client.storage.find(interaction.guild.id)
+      this.client.storage.getEnabledFeatures(interaction.guildId),
+      this.client.storage.find(interaction.guildId)
     ]);
 
-    const max = this.client.settings.get<number>(interaction.guild.id, Settings.CLAN_LIMIT, 2);
-    const isPatron = this.client.patreonHandler.get(interaction.guild.id);
-
-    const featuresPerClan = unique(features.map((clan) => clan.tag || clan.clanTag));
+    const max = this.client.settings.get<number>(interaction.guildId, Settings.CLAN_LIMIT, 2);
+    const isPatron = this.client.patreonHandler.get(interaction.guildId);
+    const featuresPerClan = unique(features.map((clan) => clan.clanTag));
+    const allowedClans = clans.filter((clan) => featuresPerClan.includes(clan.tag)).map((clan) => clan.name);
 
     if (
       collection !== Collections.CLAN_STORES &&
@@ -338,11 +339,16 @@ export default class Resolver {
     ) {
       if (isPatron) {
         await interaction.editReply(
-          'You have reached the maximum limit of automation. Please [contact us](https://discord.gg/ppuppun) to increase the limit.'
+          '### You have reached the maximum limit of automation. Please [contact us](https://discord.gg/ppuppun) to increase the limit.'
         );
       } else {
         await interaction.editReply({
-          content: this.client.i18n('common.clan_limit', { lng: interaction.locale, command: this.client.commands.REDEEM })
+          content: [
+            `### The maximum number of clans has been reached. Please consider supporting us through our [Patreon](${PATREON_LINK}) to add more than ${max} clans (${allowedClans.join(', ')})`,
+            '',
+            `### Already subscribed? Use the ${this.client.commands.REDEEM} command.`
+          ].join('\n')
+          // content: this.client.i18n('common.clan_limit', { lng: interaction.locale, command: this.client.commands.REDEEM })
         });
       }
       return null;

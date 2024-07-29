@@ -60,7 +60,7 @@ export default class ReminderListCommand extends Command {
       const timestamp = moment(raidWeekEndTime).subtract(reminder.duration, 'milliseconds').toDate();
 
       const id = `**🔔 Reminder (ID: ${hexToNanoId(reminder._id)})**`;
-      const channel = `Channel** \n<#${reminder.channel}>`;
+      const channel = `**Channel** \n<#${reminder.channel}>`;
       const timeLeft = `**Time Left** \n${label(reminder.duration)}`;
       const clanInfo = `**Clans** \n${clanNames.length ? `${escapeMarkdown(clanNames.join(', '))}` : 'Any'}`;
       const message = `**Message** \n${filtered.length === 1 ? reminder.message : reminder.message.slice(0, 300)}`;

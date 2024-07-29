@@ -326,6 +326,8 @@ export class RolesManager {
       logging,
       reason,
       forced = false,
+      nicknameOnly = false,
+      rolesOnly = false,
       allowNotLinked = true
     }: {
       isDryRun: boolean;
@@ -334,6 +336,8 @@ export class RolesManager {
       userOrRole?: Role | User | null;
       memberTags?: string[];
       allowNotLinked?: boolean;
+      nicknameOnly?: boolean;
+      rolesOnly?: boolean;
       reason?: string;
     }
   ): Promise<RolesChangeLog | null> {
@@ -390,7 +394,7 @@ export class RolesManager {
         reason: `${reason} ${players.length !== links.length ? `(${players.length}/${links.length} links)` : ''}`
       };
 
-      if (roleUpdate.excluded.length || roleUpdate.included.length) {
+      if (!nicknameOnly && (roleUpdate.excluded.length || roleUpdate.included.length)) {
         const existingRoleIds = member.roles.cache.map((role) => role.id);
         const roleIdsToSet = [...existingRoleIds, ...roleUpdate.included].filter((id) => !roleUpdate.excluded.includes(id));
 
@@ -398,22 +402,23 @@ export class RolesManager {
         editOptions.roles = roleIdsToSet;
       }
 
-      if (nickUpdate.action === NickActions.SET_NAME) {
+      if (!rolesOnly && nickUpdate.action === NickActions.SET_NAME) {
         editOptions._updated = true;
         editOptions.nick = nickUpdate.nickname;
         changeLog.nickname = `**+** \`${nickUpdate.nickname}\``;
       }
 
-      if (nickUpdate.action === NickActions.UNSET && member.nickname) {
+      if (!rolesOnly && nickUpdate.action === NickActions.UNSET && member.nickname) {
         editOptions.nick = null;
         editOptions._updated = true;
         changeLog.nickname = `**-** ~~\`${member.nickname}\`~~`;
       }
 
       if (editOptions._updated && !isDryRun) {
-        const _oldNick = member.nickname; // Why? Preserve Emojis in the Nickname
+        const _nickname = member.nickname;
         const editedMember = await member.edit(editOptions);
-        if (nickUpdate.action === NickActions.SET_NAME && _oldNick && _oldNick === editedMember.nickname) {
+
+        if (!rolesOnly && nickUpdate.action === NickActions.SET_NAME && _nickname && _nickname === editedMember.nickname) {
           changeLog.nickname = null;
         }
       }

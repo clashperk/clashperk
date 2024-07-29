@@ -30,7 +30,7 @@ export default class AutoTownHallRoleCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: { is_test_run?: boolean; user_or_role?: User | Role; force_refresh?: boolean }
+    args: { is_test_run?: boolean; user_or_role?: User | Role; force_refresh?: boolean; nickname_only?: boolean }
   ) {
     if (interaction.isButton() || (args.user_or_role && args.user_or_role instanceof User)) {
       args.force_refresh ??= this.client.settings.get<boolean>(interaction.guild, Settings.FORCE_REFRESH_ROLES, false);
@@ -38,7 +38,7 @@ export default class AutoTownHallRoleCommand extends Command {
 
     const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
     if (inProgress) {
-      return interaction.editReply('Role refresh is currently being processed.');
+      return interaction.editReply('Previous refresh is currently being processed.');
     }
 
     if (this.client.rpcHandler.isInMaintenance) {
@@ -54,9 +54,9 @@ export default class AutoTownHallRoleCommand extends Command {
       force: args.force_refresh ? ' [Forced]' : ''
     };
 
-    const embed = new EmbedBuilder()
-      .setColor(this.client.embed(interaction))
-      .setDescription(`### Refreshing Server Roles ${EMOJIS.LOADING}`);
+    const embed = new EmbedBuilder();
+    embed.setColor(this.client.embed(interaction));
+    embed.setDescription(`### Refreshing... ${EMOJIS.LOADING}`);
     embed.setFooter({ text: `Progress: (0%)${labels.test}${labels.force}` });
 
     const message = await interaction.editReply({ embeds: [embed] });
@@ -65,7 +65,7 @@ export default class AutoTownHallRoleCommand extends Command {
       const changes = this.client.rolesManager.getChangeLogs(interaction.guildId);
       if (!changes) return null;
 
-      if (closed) embed.setDescription('### Roles Refreshed Successfully');
+      if (closed) embed.setDescription('### Refresh Completed!');
       const percentage = ((changes.progress / changes.memberCount) * 100).toFixed(2);
       embed.setFooter({
         text: [
@@ -116,12 +116,13 @@ export default class AutoTownHallRoleCommand extends Command {
         userOrRole: interaction.isButton() ? interaction.user : args.user_or_role ?? null,
         logging: true,
         forced: Boolean(args.force_refresh),
+        nicknameOnly: Boolean(args.nickname_only),
         reason: `manually ${args.force_refresh ? 'force ' : ''}updated by ${interaction.user.displayName}`
       });
 
       const roleChanges = this.client.rolesManager.getFilteredChangeLogs(changes);
       if (!roleChanges?.length) {
-        embed.setDescription('### No role changes detected!');
+        embed.setDescription(`### No changes detected!`);
         if (!refreshCounter.attempts) embed.setFooter(null);
 
         if (interaction.isButton()) {

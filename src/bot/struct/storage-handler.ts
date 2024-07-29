@@ -1,3 +1,4 @@
+import { ClanWarRemindersEntity } from '@app/entities';
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
 import { ButtonInteraction, CommandInteraction, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
 import moment from 'moment';
@@ -12,7 +13,6 @@ import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Collections, Settings } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
 import { Client } from './client-module.js';
-import { ClanWarRemindersEntity } from '@app/entities';
 
 export const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
 
@@ -32,14 +32,15 @@ export default class StorageHandler {
     return this.collection.findOne({ guild: params.guildId, tag: params.clanTag });
   }
 
-  public async getEnabledFeatures(guildId: string, collection: Collections) {
+  public async getEnabledFeatures(guildId: string) {
     return this.client.db
-      .collection(collection)
-      .aggregate([
-        { $match: { guild: guildId } },
+      .collection(Collections.CLAN_LOGS)
+      .aggregate<{ clanTag: string }>([
+        { $match: { guildId } },
         { $lookup: { from: Collections.CLAN_STORES, localField: 'clanId', foreignField: '_id', as: 'root' } },
         { $unwind: { path: '$root', preserveNullAndEmptyArrays: true } },
-        { $match: { root: { $exists: true } } }
+        { $match: { root: { $exists: true } } },
+        { $project: { clanTag: 1 } }
       ])
       .toArray();
   }

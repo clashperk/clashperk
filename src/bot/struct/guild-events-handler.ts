@@ -79,8 +79,13 @@ export class GuildEventsHandler {
     const { raidWeekEndTime: _raidWeekEndTime, raidWeekStartTime } = Util.geRaidWeekend(now);
     const raidWeekEndTime = moment(_raidWeekEndTime).subtract(graceTime, 'milliseconds').toDate();
 
-    const getValue = (timestamp: Date) => {
+    const getCorrectedEndTime = (timestamp: Date) => {
       timestamp = moment(timestamp).add(graceTime, 'milliseconds').toDate();
+      return timestamp;
+    };
+
+    const getFormattedValue = (timestamp: Date) => {
+      timestamp = getCorrectedEndTime(timestamp);
       return `${time(timestamp, 'R')}\n${time(timestamp, 'f')}`;
     };
 
@@ -91,13 +96,13 @@ export class GuildEventsHandler {
         formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.labels.clan_games', { lng })}`,
         value: `${time(clanGamesStartTime, 'R')}\n${time(clanGamesStartTime, 'f')}`,
         timestamp: clanGamesStartTime.getTime(),
-        visible: moment(now).isBefore(clanGamesStartTime) || moment(now).isAfter(clanGamesEndTime)
+        visible: moment(now).isBefore(clanGamesStartTime) || moment(now).isAfter(getCorrectedEndTime(clanGamesEndTime))
       },
       {
         type: 'clan_games_end',
         name: i18n('common.labels.clan_games_ending', { lng }),
         formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.labels.clan_games_ending', { lng })}`,
-        value: getValue(clanGamesEndTime),
+        value: getFormattedValue(clanGamesEndTime),
         timestamp: clanGamesEndTime.getTime(),
         visible: moment(now).isAfter(clanGamesStartTime) && moment(now).isBefore(clanGamesEndTime)
       },
@@ -113,7 +118,7 @@ export class GuildEventsHandler {
         type: 'cwl_end',
         name: i18n('common.labels.cwl_end', { lng }),
         formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl_end', { lng })}`,
-        value: getValue(cwlEndTime),
+        value: getFormattedValue(cwlEndTime),
         timestamp: cwlEndTime.getTime(),
         visible: moment(now).isAfter(cwlSignupEndTime)
       },
@@ -121,7 +126,7 @@ export class GuildEventsHandler {
         type: 'cwl_signup_end',
         name: i18n('common.labels.cwl_signup_ending', { lng }),
         formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl_signup_ending', { lng })}`,
-        value: getValue(cwlSignupEndTime),
+        value: getFormattedValue(cwlSignupEndTime),
         timestamp: cwlSignupEndTime.getTime(),
         visible: moment(now).isAfter(cwlStartTime) && moment(now).isBefore(cwlSignupEndTime)
       },
@@ -129,7 +134,7 @@ export class GuildEventsHandler {
         type: 'season_end',
         name: i18n('common.labels.league_reset', { lng }),
         formattedName: `${EMOJIS.TROPHY} ${i18n('common.labels.league_reset', { lng })} (${moment(seasonEndTime).format('MMM YYYY')})`,
-        value: getValue(seasonEndTime),
+        value: getFormattedValue(seasonEndTime),
         timestamp: seasonEndTime.getTime(),
         visible: true
       },
@@ -139,13 +144,13 @@ export class GuildEventsHandler {
         formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.labels.raid_weekend', { lng })}`,
         value: `${time(raidWeekStartTime, 'R')}\n${time(raidWeekStartTime, 'f')}`,
         timestamp: raidWeekStartTime.getTime(),
-        visible: moment(now).isBefore(raidWeekStartTime) || moment(now).isAfter(raidWeekEndTime)
+        visible: moment(now).isBefore(raidWeekStartTime) || moment(now).isAfter(getCorrectedEndTime(raidWeekEndTime))
       },
       {
         type: 'raid_week_end',
         name: i18n('common.labels.raid_weekend_ending', { lng }),
         formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.labels.raid_weekend_ending', { lng })}`,
-        value: getValue(raidWeekEndTime),
+        value: getFormattedValue(raidWeekEndTime),
         timestamp: raidWeekEndTime.getTime(),
         visible: moment(now).isAfter(raidWeekStartTime) && moment(now).isBefore(raidWeekEndTime)
       }
