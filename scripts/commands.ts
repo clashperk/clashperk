@@ -2033,14 +2033,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'max_members',
             min_value: 5,
-            max_value: 65,
+            max_value: 500,
             description: 'Roster size',
             type: ApplicationCommandOptionType.Integer
           },
           {
             name: 'max_accounts_per_user',
             min_value: 1,
-            max_value: 65,
+            max_value: 75,
             description: 'Max accounts per user',
             type: ApplicationCommandOptionType.Integer
           },
@@ -2231,14 +2231,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'max_members',
             description: 'Roster size',
-            max_value: 65,
             min_value: 5,
+            max_value: 500,
             type: ApplicationCommandOptionType.Integer
           },
           {
             name: 'max_accounts_per_user',
             min_value: 1,
-            max_value: 65,
+            max_value: 75,
             description: 'Max accounts per user',
             type: ApplicationCommandOptionType.Integer
           },
