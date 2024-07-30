@@ -173,7 +173,7 @@ export interface IRoster {
   minHeroLevels?: number;
   roleId?: string | null;
   colorCode?: number;
-  clan: {
+  clan?: {
     tag: string;
     name: string;
     league: {
@@ -194,6 +194,11 @@ export interface IRoster {
   allowUnlinked?: boolean;
   allowMultiSignup?: boolean;
   category: 'GENERAL' | 'CWL' | 'WAR' | 'TROPHY' | 'NO_CLAN';
+  webhook?: {
+    id: string;
+    token: string;
+  };
+  logChannelId?: string;
   allowCategorySelection?: boolean;
   lastUpdated: Date;
   createdAt: Date;
@@ -282,10 +287,14 @@ export class RosterManager {
   }
 
   public emit<K extends keyof IRosterEvents>(event: K, ...args: IRosterEvents[K]) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - this is fine
     this._emitter.emit(event, ...args);
   }
 
   public on<K extends keyof IRosterEvents>(event: K, listener: (...args: IRosterEvents[K]) => void) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - this is fine
     this._emitter.on(event, (...args) => listener(...(args as IRosterEvents[K])));
   }
 
@@ -450,8 +459,8 @@ export class RosterManager {
         return {
           success: false,
           message: isOwner
-            ? `You are already signed up for another roster (${dup.clan.name} - ${dup.name})`
-            : `This player is already signed up for another roster (${dup.clan.name} - ${dup.name})`
+            ? `You are already signed up for another roster (${rosterLabel(dup)})`
+            : `This player is already signed up for another roster (${rosterLabel(dup)})`
         };
       }
     }
@@ -472,8 +481,8 @@ export class RosterManager {
         return {
           success: false,
           message: isOwner
-            ? `You are already signed up for another roster (${dup.clan.name} - ${dup.name}) that does not allow multi-signup.`
-            : `This player is already signed up for another roster (${dup.clan.name} - ${dup.name}) that does not allow multi-signup.`
+            ? `You are already signed up for another roster (${rosterLabel(dup)}) that does not allow multi-signup.`
+            : `This player is already signed up for another roster (${rosterLabel(dup)}) that does not allow multi-signup.`
         };
       }
     }
@@ -769,7 +778,7 @@ export class RosterManager {
       ...new Set(members.filter((mem) => mem.clan?.tag).map((mem) => mem.clan!.tag))
     ]);
     const players = await Promise.all(members.map((mem) => this.client.http.getPlayer(mem.tag)));
-    const { body, res } = await this.client.http.getClan(roster.clan.tag);
+    const { body, res } = roster.clan ? await this.client.http.getClan(roster.clan.tag) : { body: null, res: null };
 
     const links = await this.client.db
       .collection(Collections.PLAYER_LINKS)
@@ -777,7 +786,7 @@ export class RosterManager {
       .toArray();
 
     const clan = roster.clan;
-    if (res.ok && body) {
+    if (res?.ok && body && clan) {
       clan.league = { id: body.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID, name: body.warLeague?.name ?? 'Unranked' };
       clan.badgeUrl = body.badgeUrls.large;
     }
@@ -895,20 +904,20 @@ export class RosterManager {
     const embed = new EmbedBuilder();
     if (roster.colorCode) embed.setColor(roster.colorCode);
 
-    if (roster.category !== 'NO_CLAN') {
+    if (roster.clan) {
       embed.setAuthor({
         name: `${roster.clan.name} (${roster.clan.tag})`,
         iconURL: roster.clan.badgeUrl,
         url: this.client.http.getClanURL(roster.clan.tag)
       });
+      embed.setURL(this.client.http.getClanURL(roster.clan.tag));
     }
 
-    if (roster.category === 'CWL' && roster.clan.league?.id) {
+    if (roster.category === 'CWL' && roster.clan?.league?.id) {
       embed.setTitle(`${roster.name} (${roster.clan.league.name})`);
     } else {
       embed.setTitle(`${roster.name}`);
     }
-    embed.setURL(this.client.http.getClanURL(roster.clan.tag));
 
     const groups = membersGroup.map(([categoryId, members]) => {
       const categoryLabel = categoryId === 'none' ? '**Ungrouped**' : `**${categoriesMap[categoryId].displayName}**`;
@@ -1023,14 +1032,18 @@ export class RosterManager {
   }
 
   public getRosterInfoEmbed(roster: IRoster) {
-    const embed = new EmbedBuilder()
-      .setTitle(`${roster.name} ${this.isClosed(roster) ? '[CLOSED]' : ''}`)
-      .setURL(this.client.http.getClanURL(roster.clan.tag))
-      .setAuthor({
+    const embed = new EmbedBuilder();
+    embed.setTitle(`${roster.name} ${this.isClosed(roster) ? '[CLOSED]' : ''}`);
+
+    if (roster.clan) {
+      embed.setURL(this.client.http.getClanURL(roster.clan.tag)).setAuthor({
         name: `${roster.clan.name} (${roster.clan.tag})`,
         iconURL: roster.clan.badgeUrl,
         url: this.client.http.getClanURL(roster.clan.tag)
-      })
+      });
+    }
+
+    embed
       .addFields({
         name: 'Roster Size',
         inline: true,
@@ -1098,6 +1111,15 @@ export class RosterManager {
         inline: true,
         value: `\`${roster.layout ?? DEFAULT_ROSTER_LAYOUT}\``
       });
+
+    if (roster.logChannelId) {
+      embed.addFields({
+        name: 'Log Channel',
+        inline: true,
+        value: `<#${roster.logChannelId}>`
+      });
+    }
+
     if (roster.colorCode) embed.setColor(roster.colorCode);
 
     return embed;
@@ -1487,13 +1509,10 @@ export class RosterManager {
   }: {
     roster: WithId<IRoster>;
     categories: WithId<IRosterCategory>[];
-    clan: APIClan;
+    clan?: APIClan | null;
     name: string;
   }) {
-    const clanMembers = await this.client.rosterManager.getClanMembers(clan.memberList, true);
     const signedUp = roster.members.map((member) => member.tag);
-    clanMembers.sort((a) => (signedUp.includes(a.tag) ? -1 : 1));
-
     const categoriesMap = categories.reduce<Record<string, IRosterCategory>>(
       (prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
       {}
@@ -1511,7 +1530,7 @@ export class RosterManager {
         : {};
 
       sheets.push({
-        title: `${roster.name} - ${roster.clan.name}`,
+        title: `${rosterLabel(roster)}`,
         columns: [
           { name: 'Player Name', align: 'LEFT', width: 160 },
           { name: 'Player Tag', align: 'LEFT', width: 120 },
@@ -1542,10 +1561,11 @@ export class RosterManager {
           const key = member.categoryId?.toHexString();
           const category = key && key in categoriesMap ? categoriesMap[key].displayName : '';
           const cwlMember = cwlMembers[member.tag];
+          const inClan = roster.clan ? (member.clan?.tag === roster.clan.tag ? 'Yes' : 'No') : '';
           return [
             member.name,
             member.tag,
-            member.clan?.tag === roster.clan.tag ? 'Yes' : 'No',
+            inClan,
             member.clan?.name ?? '',
             member.clan?.tag ?? '',
             member.username ?? '',
@@ -1572,35 +1592,40 @@ export class RosterManager {
       });
     }
 
-    sheets.push({
-      title: `${clan.name} (${clan.tag})`,
-      columns: [
-        { name: 'Name', align: 'LEFT', width: 160 },
-        { name: 'Tag', align: 'LEFT', width: 120 },
-        { name: 'Discord', align: 'LEFT', width: 160 },
-        { name: 'War Preference', align: 'LEFT', width: 100 },
-        { name: 'Town Hall', align: 'RIGHT', width: 100 },
-        { name: 'Clan', align: 'LEFT', width: 160 },
-        { name: 'Clan Tag', align: 'LEFT', width: 120 },
-        { name: 'Role', align: 'LEFT', width: 100 },
-        { name: 'Heroes', align: 'RIGHT', width: 100 },
-        { name: 'Signed up?', align: 'LEFT', width: 100 }
-      ],
-      rows: clanMembers.map((member) => {
-        return [
-          member.name,
-          member.tag,
-          member.username ?? '',
-          member.warPreference ?? '',
-          member.townHallLevel,
-          member.clan?.name ?? '',
-          member.clan?.tag ?? '',
-          member.role ? roleNames[member.role] : '',
-          Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
-          signedUp.includes(member.tag) ? 'Yes' : 'No'
-        ];
-      })
-    });
+    if (clan) {
+      const clanMembers = await this.client.rosterManager.getClanMembers(clan.memberList, true);
+      clanMembers.sort((a) => (signedUp.includes(a.tag) ? -1 : 1));
+
+      sheets.push({
+        title: `${clan.name} (${clan.tag})`,
+        columns: [
+          { name: 'Name', align: 'LEFT', width: 160 },
+          { name: 'Tag', align: 'LEFT', width: 120 },
+          { name: 'Discord', align: 'LEFT', width: 160 },
+          { name: 'War Preference', align: 'LEFT', width: 100 },
+          { name: 'Town Hall', align: 'RIGHT', width: 100 },
+          { name: 'Clan', align: 'LEFT', width: 160 },
+          { name: 'Clan Tag', align: 'LEFT', width: 120 },
+          { name: 'Role', align: 'LEFT', width: 100 },
+          { name: 'Heroes', align: 'RIGHT', width: 100 },
+          { name: 'Signed up?', align: 'LEFT', width: 100 }
+        ],
+        rows: clanMembers.map((member) => {
+          return [
+            member.name,
+            member.tag,
+            member.username ?? '',
+            member.warPreference ?? '',
+            member.townHallLevel,
+            member.clan?.name ?? '',
+            member.clan?.tag ?? '',
+            member.role ? roleNames[member.role] : '',
+            Object.values(member.heroes).reduce((acc, num) => acc + num, 0),
+            signedUp.includes(member.tag) ? 'Yes' : 'No'
+          ];
+        })
+      });
+    }
 
     const sheet = roster.sheetId
       ? await updateGoogleSheet(roster.sheetId, sheets, true)
@@ -1783,11 +1808,12 @@ export class RosterManager {
       [RosterLog.CHANGE_ROSTER]: COLOR_CODES.YELLOW
     };
 
-    const embed = new EmbedBuilder()
-      .setColor(colorCodes[action])
-      .setTitle(`${roster.name}`)
-      .setURL(`http://cprk.eu/${roster.clan.tag.slice(1)}`)
-      .setFooter({ text: `${roster.clan.name} (${roster.clan.tag})`, iconURL: roster.clan.badgeUrl });
+    const embed = new EmbedBuilder().setColor(colorCodes[action]).setTitle(`${roster.name}`);
+    if (roster.clan) {
+      embed
+        .setURL(`http://cprk.eu/${roster.clan.tag.slice(1)}`)
+        .setFooter({ text: `${roster.clan.name} (${roster.clan.tag})`, iconURL: roster.clan.badgeUrl });
+    }
 
     embed.setDescription(
       [
@@ -1817,11 +1843,17 @@ export class RosterManager {
 
     embed.addFields({ name: 'User', value: `<@${user.id}>` });
 
-    const config = this.client.settings.get<{ channelId: string; webhook: { token: string; id: string } }>(
+    const rosterLog =
+      roster.logChannelId && roster.webhook
+        ? { channelId: roster.logChannelId, webhook: { token: roster.webhook.token, id: roster.webhook.id } }
+        : null;
+    const defaultConfig = this.client.settings.get<{ channelId: string; webhook: { token: string; id: string } }>(
       roster.guildId,
       Settings.ROSTER_CHANGELOG,
-      null
+      rosterLog
     );
+
+    const config = rosterLog ?? defaultConfig;
     if (!config) return null;
 
     const webhook = new WebhookClient(config.webhook);
@@ -1843,4 +1875,18 @@ export enum RosterLog {
   REMOVE_PLAYER = 'REMOVE_PLAYER',
   CHANGE_GROUP = 'CHANGE_GROUP',
   CHANGE_ROSTER = 'CHANGE_ROSTER'
+}
+
+export function rosterLabel(roster: IRoster) {
+  if (roster.clan) {
+    return `${roster.name} (${roster.clan.name})`;
+  }
+  return `${roster.name}`;
+}
+
+export function rosterClan(roster: IRoster) {
+  if (roster.clan) {
+    return `${roster.clan.name} (${roster.clan.tag})`;
+  }
+  return `All Clans (#00000)`;
 }

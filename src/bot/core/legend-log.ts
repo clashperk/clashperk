@@ -2,7 +2,7 @@ import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
 import { LegendAttacks } from '../types/index.js';
-import { ATTACK_COUNTS, Collections } from '../util/constants.js';
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../util/constants.js';
 import { padStart } from '../util/helper.js';
 import { Season, Util } from '../util/index.js';
 import BaseClanLog from './base-clan-log.js';
@@ -59,7 +59,7 @@ export default class LegendLogV2 extends BaseClanLog {
     const timestamp = new Date(endTime);
     const seasonId = Season.generateID(Season.getLastMondayOfMonth(timestamp.getMonth(), timestamp.getFullYear(), timestamp));
 
-    const raw = await this.client.db
+    const result = await this.client.db
       .collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
       .find({
         tag: {
@@ -68,9 +68,30 @@ export default class LegendLogV2 extends BaseClanLog {
         seasonId
       })
       .toArray();
+    const attackingMembers = result.map((mem) => mem.tag);
+
+    const clanMembers = clan.memberList
+      .filter((mem) => !attackingMembers.includes(mem.tag) && (mem.league?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000))
+      .map(
+        (mem) =>
+          ({
+            name: mem.name,
+            tag: mem.tag,
+            streak: 0,
+            logs: [
+              {
+                timestamp: startTime,
+                start: mem.trophies,
+                inc: 0,
+                end: mem.trophies,
+                type: 'hold'
+              }
+            ]
+          }) satisfies LegendAttacks
+      );
 
     const members = [];
-    for (const legend of raw) {
+    for (const legend of [...result, ...clanMembers]) {
       const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
       if (logs.length === 0) continue;
 

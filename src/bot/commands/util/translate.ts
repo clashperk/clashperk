@@ -50,6 +50,11 @@ export default class TranslateCommand extends Command {
         .setCustomId(this.createId({ cmd: this.id, string_key: 'locale', defer: false }))
     );
 
-    return interaction.reply({ ephemeral: true, content: [`> ${translations}`, `> ${args.url}`].join('\n') });
+    const content = `> ${translations}\n> ${args.message}`;
+
+    return interaction.reply({
+      ephemeral: true,
+      content: content.length > 2000 ? content.slice(0, 2000) : content
+    });
   }
 }

@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';
-import { ATTACK_COUNTS, Collections } from '../../util/constants.js';
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/index.js';
 
@@ -36,7 +36,7 @@ export default class LegendAttacksCommand extends Command {
     if (!clan) return;
 
     const seasonId = Season.ID;
-    const raw = await this.client.db
+    const result = await this.client.db
       .collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
       .find({
         tag: {
@@ -46,14 +46,36 @@ export default class LegendAttacksCommand extends Command {
       })
       .toArray();
 
-    const members = [];
+    const attackingMembers = result.map((mem) => mem.tag);
     const { startTime, endTime, day } = this.getDay(args.day);
-    for (const legend of raw) {
+
+    const clanMembers = clan.memberList
+      .filter((mem) => !attackingMembers.includes(mem.tag) && (mem.league?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000))
+      .map(
+        (mem) =>
+          ({
+            name: mem.name,
+            tag: mem.tag,
+            streak: 0,
+            logs: [
+              {
+                timestamp: startTime,
+                start: mem.trophies,
+                inc: 0,
+                end: mem.trophies,
+                type: 'hold'
+              }
+            ]
+          }) satisfies LegendAttacks
+      );
+
+    const members = [];
+    for (const legend of [...result, ...clanMembers]) {
       const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
       if (logs.length === 0) continue;
 
       const attacks = logs.filter((en) => en.type === 'attack' || en.inc > 0);
-      const defenses = logs.filter((en) => en.type === 'defense' || en.inc <= 0);
+      const defenses = logs.filter((en) => (en.type === 'defense' || en.inc <= 0) && en.type !== 'hold');
 
       const [initial] = logs;
       const [current] = logs.slice(-1);

@@ -9,7 +9,7 @@ import {
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { RosterSortTypes, rosterLayoutMap } from '../../struct/roster-manager.js';
+import { RosterSortTypes, rosterClan, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
 import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/command-options.js';
 import { Settings } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
@@ -148,7 +148,7 @@ export default class RosterEditCommand extends Command {
 
         if (dup)
           return action.reply(
-            `This roster has multiple members signed up for another roster **${dup.clan.name} - ${dup.name}**. Please remove them before opening this roster.`
+            `This roster has multiple members signed up for another roster **${rosterLabel(dup)}**. Please remove them before opening this roster.`
           );
       }
 
@@ -168,7 +168,7 @@ export default class RosterEditCommand extends Command {
       await action.update({
         content: [
           '### Clearing Roster',
-          `- ${roster.clan.name} (${roster.clan.tag}) - ${roster.name}`,
+          `- ${rosterClan(roster)} - ${roster.name}`,
           `- ${roster.members.length} ${Util.plural(roster.members.length, 'player')} will be removed.`,
           '- **This action cannot be undone! Are you sure?**'
         ].join('\n'),
@@ -192,13 +192,12 @@ export default class RosterEditCommand extends Command {
       await interaction.editReply({ embeds: [embed], components: [] });
       await action.update({ content: 'Roster message archived!', components: [] });
 
-      const { res, body: clan } = await this.client.http.getClan(roster.clan.tag);
-      if (!res.ok) return action.reply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
+      const { res, body: clan } = roster.clan ? await this.client.http.getClan(roster.clan.tag) : { res: null, body: null };
 
       const sheet = await this.client.rosterManager.exportSheet({
         name: interaction.guild.name,
         roster,
-        clan,
+        clan: res?.ok && clan ? clan : null,
         categories
       });
 
@@ -225,19 +224,12 @@ export default class RosterEditCommand extends Command {
       const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
       await action.update({ embeds: [embed], components: [row] });
 
-      const { res, body: clan } = await this.client.http.getClan(roster.clan.tag);
-      if (!res.ok) {
-        return action.editReply({
-          content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})`,
-          embeds: [],
-          components: []
-        });
-      }
+      const { res, body: clan } = roster.clan ? await this.client.http.getClan(roster.clan.tag) : { res: null, body: null };
 
       const sheet = await this.client.rosterManager.exportSheet({
         name: interaction.guild.name,
         roster,
-        clan,
+        clan: res?.ok && clan ? clan : null,
         categories
       });
 

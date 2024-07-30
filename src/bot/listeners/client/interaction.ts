@@ -16,7 +16,7 @@ import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/component-handler.js';
 import Google from '../../struct/google.js';
 import { mixpanel } from '../../struct/mixpanel.js';
-import { IRoster, IRosterCategory } from '../../struct/roster-manager.js';
+import { IRoster, IRosterCategory, rosterLabel } from '../../struct/roster-manager.js';
 import { UserInfoModel, UserTimezone } from '../../types/index.js';
 import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex, Settings } from '../../util/constants.js';
 
@@ -349,7 +349,7 @@ export default class InteractionListener extends Listener {
 
     const options = rosters.map((roster) => ({
       value: roster._id.toHexString(),
-      name: `${roster.clan.name} - ${roster.name}`.slice(0, 100)
+      name: `${rosterLabel(roster)}`.slice(0, 100)
     }));
 
     if (allowBulk) {

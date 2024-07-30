@@ -1,7 +1,7 @@
 import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/index.js';
-import { IRoster } from '../../struct/roster-manager.js';
+import { IRoster, rosterLabel } from '../../struct/roster-manager.js';
 import { Settings } from '../../util/constants.js';
 
 export default class RosterListCommand extends Command {
@@ -53,9 +53,9 @@ export default class RosterListCommand extends Command {
       rosterEmbed.setDescription(
         rosters
           .map((roster, i) => {
-            const closed = this.client.rosterManager.isClosed(roster) ? '[CLOSED] ' : '- ';
+            const closed = this.client.rosterManager.isClosed(roster) ? '[CLOSED]' : '';
             const memberCount = `${roster.memberCount}/${roster.maxMembers ?? 50}`;
-            return `**${i + 1}.** ${escapeMarkdown(`\u200e${roster.name} ${closed}${roster.clan.name} (${memberCount})`)}`;
+            return `**${i + 1}.** ${escapeMarkdown(`\u200e${rosterLabel(roster)}${closed} (${memberCount})`)}`;
           })
           .join('\n')
       );
@@ -71,7 +71,7 @@ export default class RosterListCommand extends Command {
               townHallLevel: member.townHallLevel,
               roster: {
                 name: roster.name,
-                clan: roster.clan.name,
+                clan: roster.clan?.name,
                 memberCount: roster.memberCount,
                 maxMembers: roster.maxMembers,
                 isClosed: this.client.rosterManager.isClosed(roster)
@@ -153,7 +153,7 @@ interface Grouped {
   townHallLevel: number;
   roster: {
     name: string;
-    clan: string;
+    clan?: string;
     memberCount: number;
     isClosed: boolean;
     maxMembers?: number;

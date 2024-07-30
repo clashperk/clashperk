@@ -2,7 +2,7 @@ import { CommandInteraction } from 'discord.js';
 import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
-import { IRosterCategory } from '../../struct/roster-manager.js';
+import { IRosterCategory, rosterLabel } from '../../struct/roster-manager.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Util } from '../../util/util.js';
 
@@ -29,7 +29,7 @@ export default class RosterExportCommand extends Command {
     );
 
     const sheets: CreateGoogleSheet[] = rosters.map((roster, idx) => ({
-      title: Util.escapeSheetName(`${roster.name} - ${roster.clan.name} (${idx + 1})`),
+      title: Util.escapeSheetName(`${rosterLabel(roster)} (${idx + 1})`),
       columns: [
         { name: 'Player Name', align: 'LEFT', width: 160 },
         { name: 'Player Tag', align: 'LEFT', width: 120 },
@@ -48,7 +48,7 @@ export default class RosterExportCommand extends Command {
         return [
           member.name,
           member.tag,
-          member.clan?.tag === roster.clan.tag ? 'Yes' : 'No',
+          member.clan?.tag === roster.clan?.tag ? 'Yes' : 'No',
           member.clan?.name ?? '',
           member.clan?.tag ?? '',
           member.username ?? '',
@@ -60,17 +60,20 @@ export default class RosterExportCommand extends Command {
       })
     }));
 
-    const clans = await this.client.redis.getClans(unique(rosters.map((roster) => roster.clan.tag)));
+    const hasDetached = rosters.some((roster) => !roster.clan);
+    const linked = hasDetached ? await this.client.storage.find(interaction.guildId) : [];
+    const tags = unique([
+      ...linked.map((link) => link.tag),
+      ...(rosters.map((roster) => roster.clan?.tag).filter((tag) => tag) as string[])
+    ]);
+    const clans = await this.client.redis.getClans(tags);
 
     const allRosterMembers = rosters.flatMap((roster) =>
       roster.members.map((member) => ({
         ...member,
         roster: {
           name: roster.name,
-          clan: {
-            name: roster.clan.name,
-            tag: roster.clan.tag
-          }
+          clan: roster.clan
         }
       }))
     );
@@ -112,8 +115,8 @@ export default class RosterExportCommand extends Command {
             member.name,
             member.tag,
             member.roster.name,
-            member.roster.clan.name,
-            member.clan?.tag === member.roster.clan.tag ? 'Yes' : 'No',
+            member.roster.clan?.name ?? '',
+            member.clan?.tag === member.roster.clan?.tag ? 'Yes' : 'No',
             member.clan?.name ?? '',
             member.clan?.tag ?? '',
             member.username ?? '',

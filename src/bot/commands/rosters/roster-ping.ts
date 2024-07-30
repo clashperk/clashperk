@@ -29,6 +29,12 @@ export default class RosterPingCommand extends Command {
     const roster = await this.client.rosterManager.get(rosterId);
     if (!roster) return interaction.editReply({ content: 'Roster not found.' });
 
+    if (!roster.clan) {
+      return interaction.editReply({
+        content: `This roster does not have a clan linked to it.`
+      });
+    }
+
     const { body: clan, res } = await this.client.http.getClan(roster.clan.tag);
     if (!res.ok) return interaction.editReply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
 

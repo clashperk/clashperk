@@ -1,17 +1,19 @@
 import {
   ActionRowBuilder,
+  AnyThreadChannel,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
   CommandInteraction,
   Role,
   StringSelectMenuBuilder,
-  StringSelectMenuInteraction
+  StringSelectMenuInteraction,
+  TextChannel
 } from 'discord.js';
 import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
-import { IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/roster-manager.js';
+import { IRoster, RosterSortTypes, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
 import { RosterCommandSortOptions } from '../../util/command-options.js';
 import { Collections, Settings, UNRANKED_WAR_LEAGUE_ID } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
@@ -63,6 +65,7 @@ export default class RosterEditCommand extends Command {
       allow_unlinked?: boolean;
       color_code?: number;
       components_only?: boolean;
+      log_channel?: TextChannel | AnyThreadChannel;
     }
   ) {
     if (args.roster === '*') return this.handleBulk(interaction);
@@ -121,6 +124,17 @@ export default class RosterEditCommand extends Command {
     if (typeof args.color_code === 'number') data.colorCode = args.color_code;
     if (args.category) data.category = args.category;
 
+    if (args.log_channel) {
+      const webhook = await this.client.storage.getWebhook(args.log_channel.isThread() ? args.log_channel.parent! : args.log_channel);
+      if (!webhook) {
+        return interaction.editReply(
+          this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.log_channel.toString() })
+        );
+      }
+      data.logChannelId = args.log_channel.id;
+      data.webhook = { token: webhook.token!, id: webhook.id };
+    }
+
     const selected = {
       layoutIds: [] as string[]
     };
@@ -152,7 +166,7 @@ export default class RosterEditCommand extends Command {
 
       if (dup)
         return interaction.editReply(
-          `This roster has multiple members signed up for another roster ${dup.name} - ${dup.clan.name} (${dup.clan.name}). Please remove them or close the roster before disabling multi-signup.`
+          `This roster has multiple members signed up for another roster ${rosterLabel(dup)}. Please remove them or close the roster before disabling multi-signup.`
         );
     }
 

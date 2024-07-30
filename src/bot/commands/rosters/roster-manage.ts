@@ -20,7 +20,15 @@ import {
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { Command } from '../../lib/index.js';
-import { IRoster, IRosterCategory, PlayerWithLink, ROSTER_MAX_LIMIT, RosterLog } from '../../struct/roster-manager.js';
+import {
+  IRoster,
+  IRosterCategory,
+  PlayerWithLink,
+  ROSTER_MAX_LIMIT,
+  rosterClan,
+  rosterLabel,
+  RosterLog
+} from '../../struct/roster-manager.js';
 import { PlayerModel } from '../../types/index.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -77,7 +85,7 @@ export default class RosterManageCommand extends Command {
       return interaction.respond(
         rosters.map((roster) => ({
           value: roster._id.toHexString(),
-          name: `${roster.clan.name} - ${roster.name}`.slice(0, 100)
+          name: `${rosterLabel(roster)}`.slice(0, 100)
         }))
       );
     }
@@ -709,11 +717,7 @@ export default class RosterManageCommand extends Command {
       const options = getOptions();
       let messageTexts = [...headerTexts, ''];
       if (selected.targetRoster) {
-        messageTexts = [
-          ...messageTexts,
-          '- Roster selected:',
-          `  - **\u200e${selected.targetRoster.clan.name} - ${selected.targetRoster.name}**`
-        ];
+        messageTexts = [...messageTexts, '- Roster selected:', `  - **\u200e${rosterLabel(selected.targetRoster)}**`];
       }
 
       if (selected.targetCategory) {
@@ -857,7 +861,7 @@ export default class RosterManageCommand extends Command {
         .setOptions(
           rosters.slice(0, 25).map((roster) => ({
             label: roster.name,
-            description: `${roster.clan.name} (${roster.clan.tag})`,
+            description: `${rosterClan(roster)}`,
             value: roster._id.toHexString(),
             default: selected.rosterId === roster._id.toHexString()
           }))

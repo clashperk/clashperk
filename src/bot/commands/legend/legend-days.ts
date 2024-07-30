@@ -6,7 +6,8 @@ import { PlayersEntity } from '../../entities/players.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
-import { EMOJIS, TOWN_HALLS } from '../../util/emojis.js';
+import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class LegendDaysCommand extends Command {
@@ -79,7 +80,7 @@ export default class LegendDaysCommand extends Command {
         $set: {
           name: data.name,
           townHallLevel: data.townHallLevel,
-          leagueId: data.league?.id ?? UnrankedLeagueData.id,
+          leagueId: data.league?.id ?? (data.trophies >= 5000 ? LEGEND_LEAGUE_ID : UnrankedLeagueData.id),
           clan: data.clan ? { name: data.clan.name, tag: data.clan.tag } : {}
         }
       },
@@ -195,8 +196,11 @@ export default class LegendDaysCommand extends Command {
           `- ${Math.abs(netTrophies)} trophies ${netTrophies >= 0 ? 'earned' : 'lost'}`,
           `- Streak: ${legend.streak ?? 0}`
         ].join('\n')
-      },
-      {
+      }
+    ]);
+
+    if (globalRank || countryRank) {
+      embed.addFields({
         name: '**Ranking**',
         value: [
           `- Global Rank: ${globalRank ?? 'N/A'}`,
@@ -204,8 +208,8 @@ export default class LegendDaysCommand extends Command {
             countryRank ? `${countryRank.players.rank} (${countryRank.country} :flag_${countryRank.countryCode.toLowerCase()}:)` : 'N/A'
           }`
         ].join('\n')
-      }
-    ]);
+      });
+    }
 
     if (clan && member) {
       embed.addFields([
@@ -218,6 +222,27 @@ export default class LegendDaysCommand extends Command {
           ].join('\n')
         }
       ]);
+    }
+
+    const heroes = data.heroes.filter((hero) => {
+      return hero.equipment?.length && hero.village === 'home';
+    });
+    const equipmentGroup = heroes
+      .map((hero) => {
+        const troops = [hero, ...hero.equipment!].filter((unit) => HOME_TROOPS[unit.name]);
+        return troops.map((unit, idx) => {
+          const unitIcon = HOME_TROOPS[unit.name];
+          const level = padStart(unit.level, 2);
+          return `${unitIcon} \`\u200e${level}\u200f\`${idx === 0 ? ' -' : ''}`;
+        });
+      })
+      .filter((group) => group.length);
+
+    if (equipmentGroup.length && attacks.length && Util.getLegendDay() === day) {
+      embed.addFields({
+        name: 'Equipment Used',
+        value: equipmentGroup.map((group) => group.join(' ')).join('\n')
+      });
     }
 
     embed.addFields([

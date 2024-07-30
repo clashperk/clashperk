@@ -2313,6 +2313,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             name: 'color_code',
             description: 'Hex color code of the roster embed',
             type: ApplicationCommandOptionType.String
+          },
+          {
+            name: 'log_channel',
+            description: 'Channel to log roster changes',
+            type: ApplicationCommandOptionType.Channel
           }
         ]
       },
@@ -4025,6 +4030,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'WAR',
                 value: 'WAR'
+              },
+              {
+                name: 'ESPORTS',
+                value: 'ESPORTS'
               }
             ]
           }
