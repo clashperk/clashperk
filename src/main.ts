@@ -40,18 +40,18 @@ if (process.env.SENTRY && process.env.GIT_SHA) {
 }
 
 client.on('error', (error) => {
-  Sentry.captureException(error);
   console.error(inspect(error, { depth: Infinity }));
+  Sentry.captureException(error);
 });
 
 client.on('warn', (warn) => {
-  Sentry.captureMessage(warn);
   console.error(inspect(warn, { depth: Infinity }));
+  Sentry.captureMessage(warn);
 });
 
 process.on('unhandledRejection', (error: DiscordAPIError) => {
-  Sentry.captureException(error);
   console.error(inspect(error, { depth: Infinity }));
+  Sentry.captureException(error);
 });
 
 process.once('SIGTERM', () => client.close());
