@@ -2317,7 +2317,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'log_channel',
             description: 'Channel to log roster changes',
-            type: ApplicationCommandOptionType.Channel
+            type: ApplicationCommandOptionType.Channel,
+            channel_types: ChannelTypes
           }
         ]
       },
