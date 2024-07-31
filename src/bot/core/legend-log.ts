@@ -95,8 +95,8 @@ export default class LegendLogV2 extends BaseClanLog {
       const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
       if (logs.length === 0) continue;
 
-      const attacks = logs.filter((en) => en.inc > 0);
-      const defenses = logs.filter((en) => en.inc <= 0);
+      const attacks = logs.filter((en) => en.type === 'attack' || en.inc > 0);
+      const defenses = logs.filter((en) => (en.type === 'defense' || en.inc <= 0) && en.type !== 'hold');
 
       const [initial] = logs;
       const [current] = logs.slice(-1);
