@@ -7,6 +7,7 @@ import {
   EmbedBuilder,
   StringSelectMenuBuilder,
   User,
+  escapeMarkdown,
   time
 } from 'discord.js';
 import moment from 'moment';
@@ -15,7 +16,7 @@ import { Command } from '../../lib/index.js';
 import { MembersCommandOptions as options } from '../../util/command-options.js';
 import { UP_ARROW } from '../../util/constants.js';
 import { EMOJIS, HERO_PETS } from '../../util/emojis.js';
-import { padStart } from '../../util/helper.js';
+import { padEnd, padStart } from '../../util/helper.js';
 import { Util } from '../../util/index.js';
 
 const roleIds: { [key: string]: number } = {
@@ -83,17 +84,13 @@ export default class MembersCommand extends Command {
       .setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
       .setDescription(
         [
-          '```',
-          `TH BK AQ GW RC  ${'NAME'}`,
-          members
-            .map((mem) => {
-              const heroes = this.heroes(mem.heroes)
-                .map((hero) => this.padStart(hero.level))
-                .join(' ');
-              return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  \u200e${mem.name}`;
-            })
-            .join('\n'),
-          '```'
+          `\`TH BK AQ GW RC \`  **NAME**`,
+          ...members.map((mem) => {
+            const heroes = this.heroes(mem.heroes)
+              .map((hero) => padStart(hero.level, 2))
+              .join(' ');
+            return `\`${padStart(mem.townHallLevel, 2)} ${heroes} \`  \u200e${escapeMarkdown(mem.name)}`;
+          })
         ].join('\n')
       );
 
@@ -102,10 +99,8 @@ export default class MembersCommand extends Command {
       members.sort((a, b) => b.role.id - a.role.id);
       embed.setDescription(
         [
-          '```',
-          `${'ROLE'}  ${'TAG'.padEnd(10, ' ')}  ${'NAME'}`,
-          members.map((mem) => `${mem.role.name.padEnd(4, ' ')}  ${mem.tag.padEnd(10, ' ')}  \u200e${mem.name}`).join('\n'),
-          '```'
+          `\`${'ROLE'}  ${'TAG'.padEnd(10, ' ')}\`  ${'**NAME**'}`,
+          members.map((mem) => `\`${padEnd(mem.role.name, 4)}  ${padEnd(mem.tag, 4)}\`  \u200e${escapeMarkdown(mem.name)}`).join('\n')
         ].join('\n')
       );
     }
@@ -232,15 +227,11 @@ export default class MembersCommand extends Command {
     if (args.option === options.trophies.id) {
       embed.setDescription(
         [
-          '```',
-          `\u200e # TROPHY  ${'NAME'}`,
-          data.memberList
-            .map((member, index) => {
-              const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-              return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
-            })
-            .join('\n'),
-          '```'
+          `\`\u200e # TROPHY\`  ${'NAME'}`,
+          ...data.memberList.map((member, index) => {
+            const trophies = padStart(member.trophies, 5);
+            return `\`${padStart(index + 1, 2)}  ${trophies} \`  \u200e${escapeMarkdown(member.name)}`;
+          })
         ].join('\n')
       );
     }

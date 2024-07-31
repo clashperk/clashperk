@@ -161,7 +161,8 @@ export default class ClanLog extends BaseClanLog {
         [
           `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
           `${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]}**${player.trophies}**`,
-          `${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
+          `${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`,
+          ['admin', 'leader', 'coLeader'].includes(member.role) ? `(${PLAYER_ROLES_MAP[member.role]})` : ''
         ].join(' ')
       );
     }
@@ -171,11 +172,11 @@ export default class ClanLog extends BaseClanLog {
       const heroes = player.heroes.filter((hero) => hero.village === 'home');
       embed.setDescription(
         [
-          `${TOWN_HALLS[player.townHallLevel]!}**${player.townHallLevel}**`,
+          `${TOWN_HALLS[player.townHallLevel]}**${player.townHallLevel}**`,
           `${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
           `${this.formatHeroes(heroes)}`,
           `${heroes.length >= 2 ? '\n' : ''}${EMOJIS.WAR_STAR}**${player.warStars}**`,
-          `${EMOJIS.TROOPS}${this.remainingUpgrades(player)}% rushed`
+          `${EMOJIS.TROOPS}${this.remainingUpgrades(player)}% Rushed`
         ].join(' ')
       );
 
