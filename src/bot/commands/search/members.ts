@@ -99,8 +99,8 @@ export default class MembersCommand extends Command {
       members.sort((a, b) => b.role.id - a.role.id);
       embed.setDescription(
         [
-          `\`${'ROLE'}  ${'TAG'.padEnd(10, ' ')}\`  ${'**NAME**'}`,
-          members.map((mem) => `\`${padEnd(mem.role.name, 4)}  ${padEnd(mem.tag, 4)}\`  \u200e${escapeMarkdown(mem.name)}`).join('\n')
+          `\`${'ROLE'}  ${'TAG'.padEnd(10, ' ')} \`  ${'**NAME**'}`,
+          members.map((mem) => `\`${padEnd(mem.role.name, 4)}  ${padEnd(mem.tag, 10)} \`  \u200e${escapeMarkdown(mem.name)}`).join('\n')
         ].join('\n')
       );
     }

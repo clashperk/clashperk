@@ -361,23 +361,15 @@ export default class ClanWarLogV2 extends BaseClanLog {
       .setDescription(
         [
           `**War Against ${data.warTag ? `(CWL Round ${data.round})` : ''}**`,
-          `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+          `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+          '',
+          '**Members Added**',
+          ...data.newMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`),
+          '',
+          '**Members Removed**',
+          ...data.oldMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`)
         ].join('\n')
       );
-
-    if (data.newMembers.length) {
-      embed.addFields({
-        name: 'Members Added',
-        value: data.newMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`).join('\n')
-      });
-    }
-
-    if (data.oldMembers.length) {
-      embed.addFields({
-        name: 'Members Removed',
-        value: data.oldMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`).join('\n')
-      });
-    }
 
     return embed;
   }
