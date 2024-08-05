@@ -6,6 +6,7 @@ import moment from 'moment';
 import { Filter } from 'mongodb';
 import ms from 'ms';
 import { nanoid } from 'nanoid';
+import { unique } from 'radash';
 import {
   CAPITAL_RAID_REMINDERS_AUTOCOMPLETE,
   CLAN_GAMES_REMINDERS_AUTOCOMPLETE,
@@ -516,12 +517,11 @@ export default class InteractionListener extends Listener {
       label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
     });
 
-    const players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])
+    let players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])
       .map((res) => res.hits.hits.map((hit) => hit._source!))
       .flat()
-      .filter((player) => player.name && player.tag)
-      .filter((player, index, _players) => _players.findIndex((p) => p.tag === player.tag) === index)
-      .slice(0, 25);
+      .filter((player) => player.name && player.tag);
+    players = unique(players, (player) => player.tag).slice(0, 25);
 
     if (!players.length) {
       if (query && this.isValidQuery(query)) {
@@ -553,6 +553,7 @@ export default class InteractionListener extends Listener {
           searches: [
             { index: ElasticIndex.USER_LINKED_CLANS },
             {
+              size: 10,
               query: {
                 bool: {
                   must: { term: { userId } },
@@ -563,6 +564,7 @@ export default class InteractionListener extends Listener {
             },
             { index: ElasticIndex.GUILD_LINKED_CLANS },
             {
+              size: 100,
               query: {
                 bool: {
                   must: { term: { guildId } },
@@ -577,25 +579,19 @@ export default class InteractionListener extends Listener {
           searches: [
             { index: ElasticIndex.USER_LINKED_CLANS },
             {
+              size: 10,
               query: {
                 bool: { must: { term: { userId } } }
               }
             },
             { index: ElasticIndex.GUILD_LINKED_CLANS },
             {
-              size: 25,
+              size: 100,
               sort: [{ name: 'asc' }],
               query: {
                 bool: { must: { term: { guildId } } }
               }
             }
-            // { index: ElasticIndex.RECENT_CLANS },
-            // {
-            // 	sort: [{ lastSearched: 'desc' }],
-            // 	query: {
-            // 		bool: { must: { term: { userId } } }
-            // 	}
-            // }
           ]
         });
 
@@ -603,11 +599,11 @@ export default class InteractionListener extends Listener {
       label: `${interaction.guild.name}/${interaction.user.displayName}`
     });
 
-    const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
+    let clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
       .map((res) => res.hits.hits.map((hit) => hit._source!))
       .flat()
-      .filter((clan) => clan.name && clan.tag)
-      .filter((clan, index, _clans) => _clans.findIndex((p) => p.tag === clan.tag) === index);
+      .filter((clan) => clan.name && clan.tag);
+    clans = unique(clans, (clan) => clan.tag);
 
     const isValidQuery = this.isValidQuery(query);
     if (!clans.length) {
@@ -648,6 +644,7 @@ export default class InteractionListener extends Listener {
           searches: [
             { index: ElasticIndex.USER_LINKED_CLANS },
             {
+              size: 25,
               query: {
                 bool: {
                   must: { term: { userId } },
@@ -670,6 +667,7 @@ export default class InteractionListener extends Listener {
             },
             { index: ElasticIndex.RECENT_CLANS },
             {
+              size: 25,
               sort: [{ lastSearched: 'desc' }],
               query: {
                 bool: {
@@ -685,6 +683,7 @@ export default class InteractionListener extends Listener {
           searches: [
             { index: ElasticIndex.USER_LINKED_CLANS },
             {
+              size: 25,
               query: {
                 bool: {
                   must: { term: { userId } }
@@ -703,6 +702,7 @@ export default class InteractionListener extends Listener {
             },
             { index: ElasticIndex.RECENT_CLANS },
             {
+              size: 25,
               sort: [{ lastSearched: 'desc' }],
               query: {
                 bool: {
@@ -716,12 +716,11 @@ export default class InteractionListener extends Listener {
       label: `${interaction.guild.name}/${interaction.user.displayName}`
     });
 
-    const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
+    let clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
       .map((res) => res.hits.hits.map((hit) => hit._source!))
       .flat()
-      .filter((clan) => clan.name && clan.tag)
-      .filter((clan, index, _clans) => _clans.findIndex((p) => p.tag === clan.tag) === index)
-      .slice(0, 25);
+      .filter((clan) => clan.name && clan.tag);
+    clans = unique(clans, (clan) => clan.tag).slice(0, 25);
 
     if (!clans.length) {
       if (query && this.isValidQuery(query)) {
