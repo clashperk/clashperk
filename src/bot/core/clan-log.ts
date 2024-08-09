@@ -229,7 +229,7 @@ export default class ClanLog extends BaseClanLog {
     }
 
     if (data.type === LogActions.WAR_LEAGUE_CHANGE) {
-      const isPromoted = this.isPromoted(data.clan.capitalLeague, data.clan.oldCapitalLeague);
+      const isPromoted = this.isPromoted(data.clan.warLeague, data.clan.oldWarLeague);
       embed.setColor(isPromoted ? COLOR_CODES.DARK_GREEN : COLOR_CODES.DARK_RED);
       embed.setDescription(`War League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.warLeague.name}**`);
     }
