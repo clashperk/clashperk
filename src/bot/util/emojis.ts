@@ -59,9 +59,9 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Frozen Arrow': '<:FrozenArrow:1189622209568841748>',
   'Fireball': '<:Fireball:1223332499162398800>',
   'Spiky Ball': '<:SpikeyBall:1234940460070600804>',
-  'Rocket Spear': '<:RocketSpear:1223332521358528695>'
+  'Rocket Spear': '<:RocketSpear:1223332521358528695>',
+  'Magic Mirror': '<:MagicMirror:1252640509403467787>'
   // 'Electro Boots': '<:ElectroBoots:1252640513790705686>',
-  // 'Magic Mirror': '<:MagicMirror:1252640509403467787>',
   // 'Heroic Torch': '<:HeroicTorch:1252640503988486327>'
 };
 
