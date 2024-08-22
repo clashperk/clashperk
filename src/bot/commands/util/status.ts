@@ -49,7 +49,6 @@ export default class StatusCommand extends Command {
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(guild.id))
-      .setTitle('Status')
       .setAuthor({ name: `${this.client.user!.displayName}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
       .addFields({
         name: 'Memory Usage',
@@ -108,6 +107,11 @@ export default class StatusCommand extends Command {
       {
         name: 'Version',
         value: isOwner ? `[${pkg.version}](https://github.com/clashperk/clashperk/commit/${process.env.GIT_SHA!})` : pkg.version,
+        inline: false
+      },
+      {
+        name: 'Status Page',
+        value: 'https://status.clashperk.com',
         inline: false
       }
     );

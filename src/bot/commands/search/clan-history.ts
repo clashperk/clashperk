@@ -16,7 +16,7 @@ export default class ClanHistoryCommand extends Command {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
-    const clans = await this.client.globalDb
+    const clans = await this.client.db
       .collection('global_clan_history')
       .aggregate<GlobalClanHistoryEntity>([
         {
