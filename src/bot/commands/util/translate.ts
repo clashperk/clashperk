@@ -50,7 +50,17 @@ export default class TranslateCommand extends Command {
         .setCustomId(this.createId({ cmd: this.id, string_key: 'locale', defer: false }))
     );
 
-    const content = `> ${translations}\n> ${args.message}`;
+    const translatedText = translations
+      .split('\n')
+      .map((translation) => {
+        return `> ${translation}`;
+      })
+      .join('\n');
+    const sourceText = args.message
+      .split('\n')
+      .map((translation) => `-# ${translation}`)
+      .join('\n');
+    const content = `${translatedText} \n${sourceText}`;
 
     return interaction.reply({
       ephemeral: true,

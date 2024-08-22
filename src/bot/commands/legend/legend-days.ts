@@ -1,7 +1,6 @@
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
-import fetch from 'node-fetch';
 import { PlayersEntity } from '../../entities/players.entity.js';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';

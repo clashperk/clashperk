@@ -3,7 +3,6 @@ import { APIClanWarLeagueGroup } from 'clashofclans.js';
 import { ButtonInteraction, CommandInteraction, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
-import fetch from 'node-fetch';
 import { createHash } from 'node:crypto';
 import { cluster, unique } from 'radash';
 import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';

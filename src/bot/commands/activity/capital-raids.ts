@@ -10,7 +10,6 @@ import {
   User
 } from 'discord.js';
 import moment from 'moment';
-import fetch from 'node-fetch';
 import { Args, Command } from '../../lib/index.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';

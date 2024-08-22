@@ -141,6 +141,7 @@ export default class SetupLogsCommand extends Command {
     if (!clan) return;
 
     const disabling = args.action === 'disable-logs';
+    const channelId = args.channel.id;
 
     const collection = this.client.db.collection<ClanLogsEntity>(Collections.CLAN_LOGS);
     const logTypes = Object.keys(logActionsMap) as ClanLogType[];
@@ -180,11 +181,11 @@ export default class SetupLogsCommand extends Command {
             $set: {
               clanId: new ObjectId(clanId),
               isEnabled: !disabling,
-              channelId: args.channel.id,
+              channelId,
               ...extraSettings,
               deepLink: DEEP_LINK_TYPES.OPEN_IN_GAME,
-              webhook: existingLog?.channelId === args.channel.id ? existingLog?.webhook : null,
-              messageId: existingLog?.channelId === args.channel.id ? existingLog?.messageId : null,
+              webhook: existingLog?.channelId === channelId ? existingLog?.webhook : null,
+              messageId: existingLog?.channelId === channelId ? existingLog?.messageId : null,
               updatedAt: new Date()
             },
             $min: {

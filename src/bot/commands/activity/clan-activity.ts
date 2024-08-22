@@ -1,6 +1,5 @@
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import moment from 'moment';
-import fetch from 'node-fetch';
 import { Command } from '../../lib/index.js';
 import Google from '../../struct/google.js';
 import { UserInfoModel } from '../../types/index.js';

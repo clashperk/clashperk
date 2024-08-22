@@ -1,5 +1,6 @@
 import moment from 'moment';
 import 'moment-duration-format';
+import { cluster } from 'radash';
 import { Season } from './season.js';
 
 const DURATION = {
@@ -274,11 +275,7 @@ export class Util {
   }
 
   public static chunk<T>(items: T[], chunk: number) {
-    const array = [];
-    for (let i = 0; i < items.length; i += chunk) {
-      array.push(items.slice(i, i + chunk));
-    }
-    return array;
+    return cluster(items, chunk);
   }
 
   public static escapeSheetName(name: string) {

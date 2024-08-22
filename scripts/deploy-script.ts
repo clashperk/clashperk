@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import { RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'discord.js';
-import fetch from 'node-fetch';
 import 'reflect-metadata';
 import { inspect } from 'util';
 import { COMMANDS, HIDDEN_COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './commands.js';

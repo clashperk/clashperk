@@ -40,10 +40,10 @@ export default class SetupListCommand extends Command {
       const embeds = await this.getFeatures(interaction, clans);
       if (!embeds.length) return interaction.editReply('No clans are linked.');
 
-      const chunksGroup = Util.chunk(embeds, 10);
-      await interaction.editReply({ embeds: chunksGroup[0] });
+      const [firstChunk, ...chunksGroup] = Util.chunk(embeds, 8);
+      await interaction.editReply({ embeds: firstChunk });
 
-      for (const chunks of chunksGroup.slice(1)) {
+      for (const chunks of chunksGroup) {
         await interaction.followUp({ embeds: chunks, ephemeral: true });
       }
       return;
