@@ -6,7 +6,6 @@ import {
   CommandInteraction,
   EmbedBuilder,
   escapeMarkdown,
-  Guild,
   Message,
   StringSelectMenuBuilder,
   User
@@ -29,7 +28,7 @@ export default class ClanCommand extends Command {
   public constructor() {
     super('clan', {
       category: 'search',
-      channel: 'guild',
+      channel: 'dm',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
@@ -38,7 +37,7 @@ export default class ClanCommand extends Command {
   public async run(message: Message, { tag }: { tag: string }) {
     const { res, body: clan } = await this.client.http.getClan(tag);
     if (!res.ok) return null;
-    const embed = await this.embed(message.guild!, clan);
+    const embed = await this.embed(message.guildId!, clan);
     return message.channel.send({
       embeds: [embed],
       allowedMentions: { repliedUser: false },
@@ -46,11 +45,18 @@ export default class ClanCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; with_options?: boolean }) {
+  public async exec(interaction: CommandInteraction, args: { tag?: string; user?: User; by_player_tag?: string; with_options?: boolean }) {
+    if (args.by_player_tag && !args.tag) {
+      const { res, body: player } = await this.client.http.getPlayer(args.by_player_tag);
+      if (res.ok && player.clan) args.tag = player.clan.tag;
+    }
+
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
-    const embed = await this.embed(interaction.guild, clan);
+    const embed = await this.embed(interaction.guildId, clan);
+
+    if (!interaction.inCachedGuild()) return interaction.editReply({ embeds: [embed] });
 
     const payload = {
       cmd: this.id,
@@ -87,11 +93,11 @@ export default class ClanCommand extends Command {
     return interaction.editReply({ embeds: [embed], components: clanRow ? [row, menuRow, clanRow] : [row, menuRow] });
   }
 
-  private async embed(guild: Guild, clan: APIClan) {
+  private async embed(guildId: string | null, clan: APIClan) {
     const embed = new EmbedBuilder()
       .setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
       .setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
-      .setColor(this.client.embed(guild.id))
+      .setColor(this.client.embed(guildId))
       .setThumbnail(clan.badgeUrls.medium);
 
     const capitalHall = clan.clanCapital.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';

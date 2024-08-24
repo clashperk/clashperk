@@ -54,17 +54,19 @@ export default class Resolver {
     );
   }
 
-  private async clanAlias(guild: string, alias: string) {
+  private async clanAlias(guildId: string | null, alias: string) {
+    if (!guildId) return null;
+
     return this.client.db
       .collection<{ name: string; tag: string }>(Collections.CLAN_STORES)
-      .findOne({ guild, alias }, { collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } });
+      .findOne({ guild: guildId, alias }, { collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } });
   }
 
-  public async resolveClan(interaction: BaseInteraction<'cached'>, args?: string): Promise<APIClan | null> {
+  public async resolveClan(interaction: BaseInteraction, args?: string): Promise<APIClan | null> {
     args = (args?.replace(ESCAPE_CHAR_REGEX, '') ?? '').trim();
     const parsed = await this.parseArgument(interaction, args);
 
-    const clan = await this.clanAlias(interaction.guild.id, args.trim());
+    const clan = await this.clanAlias(interaction.guildId, args.trim());
     if (parsed.isTag) return this.getClan(interaction, clan && !args.startsWith('#') ? clan.tag : args, true);
 
     if (!parsed.user) {
@@ -110,7 +112,7 @@ export default class Resolver {
     if (res.ok) return body;
 
     if (checkAlias && res.status === 404 && !tag.startsWith('#')) {
-      const clan = await this.clanAlias(interaction.guild!.id, tag);
+      const clan = await this.clanAlias(interaction.guildId, tag);
       if (clan) return this.getClan(interaction, clan.tag);
     }
 
@@ -171,11 +173,11 @@ export default class Resolver {
     return { user: null, matched: false, isTag: TAG_REGEX.test(args) };
   }
 
-  private async getLinkedClanTag(interaction: BaseInteraction<'cached'>, userId: string) {
+  private async getLinkedClanTag(interaction: BaseInteraction, userId: string) {
     const [guildLinkedClan, userLinkedClanTag] = await Promise.all([
-      this.client.db
-        .collection<ClanStoresEntity>(Collections.CLAN_STORES)
-        .findOne({ channels: interaction.channelId!, guild: interaction.guildId }),
+      interaction.guildId && interaction.channelId
+        ? this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channelId, guild: interaction.guildId })
+        : null,
       this.getLinkedUserClan(userId, true)
     ]);
 

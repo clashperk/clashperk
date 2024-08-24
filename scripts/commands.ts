@@ -67,7 +67,7 @@ const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[]
   ChannelType.GuildMedia
 ];
 
-const IntegrationTypesContexts = {
+const userInstallable = {
   integration_types: [0, 1],
   contexts: [0, 1, 2]
 };
@@ -103,7 +103,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         required: false
       }
     ],
-    ...IntegrationTypesContexts
+    ...userInstallable
   },
   {
     name: 'units',
@@ -127,7 +127,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         required: false
       }
     ],
-    ...IntegrationTypesContexts
+    ...userInstallable
   },
   {
     name: 'upgrades',
@@ -151,7 +151,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         required: false
       }
     ],
-    ...IntegrationTypesContexts
+    ...userInstallable
   },
   {
     name: 'rushed',
@@ -182,7 +182,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         autocomplete: true
       }
     ],
-    ...IntegrationTypesContexts
+    ...userInstallable
   },
   {
     name: 'profile',
@@ -250,8 +250,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         description_localizations: translation('common.options.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
+      },
+      {
+        name: 'by_player_tag',
+        description: 'Get clan by a player tag.',
+        type: ApplicationCommandOptionType.String,
+        autocomplete: true,
+        required: false
       }
-    ]
+    ],
+    ...userInstallable
   },
   {
     name: 'compo',
@@ -4184,7 +4192,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.String
       }
     ],
-    ...IntegrationTypesContexts
+    ...userInstallable
   },
   {
     name: 'redeem',
@@ -4214,7 +4222,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     description: command.invite.description,
     dm_permission: true,
     description_localizations: translation('command.invite.description'),
-    ...IntegrationTypesContexts
+    ...userInstallable
   },
   {
     name: 'debug',
@@ -4376,7 +4384,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     name: 'translate',
     type: ApplicationCommandType.Message,
     dm_permission: false,
-    ...IntegrationTypesContexts
+    ...userInstallable
   }
 ];
 

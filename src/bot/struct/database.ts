@@ -208,26 +208,6 @@ export class MongoDbClient extends MongoClient {
         }
       ]),
 
-      db.collection(Collections.CLAN_EMBED_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
-          unique: true
-        }
-      ]),
-
-      db.collection(Collections.CLAN_FEED_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
-          unique: true
-        }
-      ]),
-
       db.collection(Collections.CLAN_LOGS).createIndexes([
         {
           key: { guildId: 1, clanTag: 1, logType: 1 },
@@ -245,82 +225,6 @@ export class MongoDbClient extends MongoClient {
       db.collection(Collections.FLAG_ALERT_LOGS).createIndexes([
         {
           key: { guildId: 1 },
-          unique: true
-        }
-      ]),
-
-      db.collection(Collections.JOIN_LEAVE_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
-          unique: true
-        }
-      ]),
-
-      db.collection(Collections.LEGEND_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { lastPosted: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
-          unique: true
-        }
-      ]),
-
-      db.collection(Collections.CAPITAL_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { lastPosted: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
-          unique: true
-        }
-      ]),
-
-      db.collection(Collections.CLAN_GAMES_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
-          unique: true
-        }
-      ]),
-
-      db.collection(Collections.CLAN_WAR_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
-          unique: true
-        }
-      ]),
-
-      db.collection(Collections.LAST_SEEN_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
-          unique: true
-        }
-      ]),
-
-      db.collection(Collections.DONATION_LOGS).createIndexes([
-        {
-          key: { clanId: 1 }
-        },
-        {
-          key: { guild: 1, tag: 1 },
           unique: true
         }
       ]),

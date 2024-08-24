@@ -175,6 +175,7 @@ export const ALL_TROOPS: Record<string, string> = {
 };
 
 export const TOWN_HALLS: Record<string, string> = {
+  0: '<:TownHall1:696304616173993994>',
   1: '<:TownHall1:696304616173993994>',
   2: '<:TownHall2:696304646771179540>',
   3: '<:TownHall3:696304661061173289>',

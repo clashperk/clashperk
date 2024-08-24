@@ -182,8 +182,11 @@ export class Client extends DiscordClient {
     return this.user!.id === '526971716711350273';
   }
 
-  public embed(guild: Message | string | BaseInteraction) {
-    return this.settings.get<number>(typeof guild === 'string' ? guild : guild.guild!, Settings.COLOR, null);
+  public embed(guildRef: Message | string | BaseInteraction | null) {
+    const guildId = typeof guildRef === 'string' ? guildRef : guildRef ? guildRef.guild : null;
+    if (!guildId) return null;
+
+    return this.settings.get<number>(guildId, Settings.COLOR, null);
   }
 
   public uuid(...userIds: string[]) {

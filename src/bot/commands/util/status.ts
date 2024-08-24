@@ -23,11 +23,7 @@ export default class StatusCommand extends Command {
 
   public async run(message: Message<true>) {
     const embed = await this.get(message.guild, this.client.isOwner(message.author));
-    return message.channel.send({
-      embeds: [embed],
-      reply: { messageReference: message.id, failIfNotExists: false },
-      allowedMentions: { repliedUser: false }
-    });
+    return message.channel.send({ embeds: [embed] });
   }
 
   public async exec(interaction: CommandInteraction<'cached'>) {

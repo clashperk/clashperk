@@ -1,7 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { lastSeenEmbedMaker } from '../../util/helper.js';
 
@@ -22,20 +21,11 @@ export default class LastSeenCommand extends Command {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
-    const allowed = await this.client.db.collection(Collections.CLAN_STORES).countDocuments({ guild: interaction.guild.id, tag: clan.tag });
-    if (!allowed && interaction.guild.id !== '509784317598105619') {
+    const isLinked = await this.client.storage.getClan({ guildId: interaction.guild.id, clanTag: clan.tag });
+    if (!isLinked && interaction.guild.id !== '509784317598105619') {
       return interaction.editReply(
-        this.i18n('common.guild_unauthorized', {
-          lng: interaction.locale,
-          clan: `${clan.name} (${clan.tag})`,
-          command: this.client.commands.SETUP_ENABLE
-        })
+        this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
       );
-    }
-
-    const enough = await this.client.db.collection(Collections.PLAYERS).countDocuments({ 'clan.tag': clan.tag });
-    if (!enough) {
-      return interaction.editReply(this.i18n('common.no_clan_data', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
     }
 
     const embed = await lastSeenEmbedMaker(clan, { color: this.client.embed(interaction), scoreView: args.score });

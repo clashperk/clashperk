@@ -11,7 +11,7 @@ export default class InviteCommand extends Command {
     });
   }
 
-  public exec(interaction: CommandInteraction<'raw'>) {
+  public exec(interaction: CommandInteraction) {
     const additionalTexts = [];
 
     if (this.client.isCustom()) {
@@ -40,6 +40,6 @@ export default class InviteCommand extends Command {
           additionalTexts.join('\n')
         ].join('\n')
       );
-    return interaction.reply({ embeds: [embed], ephemeral: true });
+    return interaction.reply({ embeds: [embed], ephemeral: interaction.inCachedGuild() });
   }
 }

@@ -2,6 +2,7 @@ import { CommandInteraction, DMChannel, Interaction, PartialDMChannel, Permissio
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { padEnd, padStart } from '../../util/helper.js';
 import { Util } from '../../util/index.js';
 
 export default class DebugCommand extends Command {
@@ -62,12 +63,12 @@ export default class DebugCommand extends Command {
         '**Shard ID**',
         `[${interaction.guild.shard.id} / ${this.client.shard?.count ?? 1}]`,
         '**Channel ID**',
-        `${interaction.channel!.id}`,
+        `${interaction.channelId}`,
         '',
         '**Channel Permissions**',
         permissions
           .map((perm) => {
-            const hasPerm = channel.permissionsFor(interaction.guild.members.me!)!.has(perm);
+            const hasPerm = channel.permissionsFor(interaction.guild.members.me!).has(perm);
             return `${hasPerm ? emojis.tick : emojis.cross} ${this.fixName(perm)}`;
           })
           .join('\n'),
@@ -88,11 +89,8 @@ export default class DebugCommand extends Command {
           .map((clan) => {
             const lastRan = clan.lastRan ? ms(Date.now() - clan.lastRan.getTime()) : '...';
             const warLog = fetched.find((data) => data.tag === clan.tag)?.isWarLogPublic;
-            const sign = clan.active && !clan.paused && clan.flag > 0 && warLog ? emojis.tick : emojis.cross;
-            return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(
-              3,
-              ' '
-            )} ago \u200f\` \`\u200e ${(warLog ? 'Public' : 'Private').padStart(7, ' ')} \u200f\``;
+            const sign = clan.active && !clan.paused && warLog ? emojis.tick : emojis.cross;
+            return `${sign} \`\u200e ${padEnd(clan.name, 15)} \u200f\` \`\u200e ${padStart(lastRan, 3)} ago \u200f\` \`\u200e ${padStart(warLog ? 'Public' : 'Private', 7)} \u200f\``;
           })
           .join('\n')
       ].join('\n')

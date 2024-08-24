@@ -1,4 +1,4 @@
-import { ButtonInteraction, StringSelectMenuInteraction } from 'discord.js';
+import { MessageComponentInteraction, StringSelectMenuInteraction } from 'discord.js';
 import { i18n } from '../util/i18n.js';
 import { Client } from './client-module.js';
 
@@ -34,7 +34,7 @@ export default class ComponentHandler {
     return { selected: values };
   }
 
-  public async exec(interaction: ButtonInteraction | StringSelectMenuInteraction) {
+  public async exec(interaction: MessageComponentInteraction) {
     const parsed = await this.parseCommandId(interaction.customId);
     if (!parsed) return false;
 

@@ -64,7 +64,7 @@ export default class PlayerCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction | ButtonInteraction<'cached'>, args: { tag?: string; user?: User }) {
+  public async exec(interaction: CommandInteraction | ButtonInteraction, args: { tag?: string; user?: User }) {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
@@ -86,19 +86,6 @@ export default class PlayerCommand extends Command {
       clan: JSON.stringify({ ...payload, cmd: 'clan', tag: data.clan?.tag })
     };
 
-    const clanRows: ActionRowBuilder<ButtonBuilder>[] = [];
-    // if (data.clan) {
-    // 	clanRows.push(
-    // 		new ActionRowBuilder<ButtonBuilder>().addComponents(
-    // 			new ButtonBuilder()
-    // 				.setLabel(`${data.clan.name} (${data.clan.tag})`)
-    // 				.setStyle(ButtonStyle.Secondary)
-    // 				.setEmoji(EMOJIS.CLAN)
-    // 				.setCustomId(customIds.clan)
-    // 		)
-    // 	);
-    // }
-
     const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
     const mainRow = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(refreshButton)
@@ -109,7 +96,7 @@ export default class PlayerCommand extends Command {
     if (interaction.isMessageComponent()) {
       return interaction.editReply({
         embeds: [embed],
-        components: [...clanRows, mainRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
+        components: [mainRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
       });
     }
 
@@ -128,7 +115,7 @@ export default class PlayerCommand extends Command {
 
     return interaction.editReply({
       embeds: [embed],
-      components: options.length > 1 ? [...clanRows, mainRow, menuRow] : [...clanRows, mainRow]
+      components: options.length > 1 ? [mainRow, menuRow] : [mainRow]
     });
   }
 

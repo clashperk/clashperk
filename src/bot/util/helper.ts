@@ -261,7 +261,7 @@ export const clanEmbedMaker = async (
   return embed;
 };
 
-export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { color?: number; scoreView?: boolean }) => {
+export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { color?: number | null; scoreView?: boolean }) => {
   const client = container.resolve(Client);
 
   const db = client.db.collection(Collections.PLAYERS);
@@ -776,7 +776,7 @@ export const getBbLegendRankingEmbedMaker = async ({
   return { embed, players };
 };
 
-export const getMenuFromMessage = (interaction: ButtonInteraction<'cached'>, selected: string, customId: string) => {
+export const getMenuFromMessage = (interaction: ButtonInteraction, selected: string, customId: string) => {
   const _components = interaction.message.components;
   const mainIndex = _components.findIndex(({ components }) => components.length === 4);
   const components = _components.slice(mainIndex + 1);
