@@ -373,7 +373,9 @@ export class RolesManager {
 
       if (!links.length && !allowNotLinked) continue;
 
-      const players = await this.getPlayers(links);
+      const players = await this.getPlayers(links).catch(() => 'blocked' as const);
+      if (players === 'blocked') continue;
+
       const roleUpdate = await this.preRoleUpdateAction({
         forced,
         isDryRun,
@@ -470,6 +472,7 @@ export class RolesManager {
     const verifiedPlayersMap = Object.fromEntries(playerLinks.map((player) => [player.tag, player.verified]));
     const fetched = await parallel(25, playerLinks, async (link) => {
       const { body, res } = await this.client.http.getPlayer(link.tag);
+      if ([500, 503, 429].includes(res.status)) throw new Error('Service Unavailable');
       if (!res.ok || !body) return null;
       return body;
     });

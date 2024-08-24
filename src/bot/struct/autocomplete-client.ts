@@ -23,7 +23,7 @@ export class Autocomplete {
     return command.autocomplete(interaction, args);
   }
 
-  public async commandsAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+  public async commandsAutocomplete(interaction: AutocompleteInteraction, focused: string) {
     const query = interaction.options.getString(focused)?.trim();
     const commands = this.client.commands.entries().map((cmd) => ({ name: cmd, value: cmd.replace(/^\//, '').replace(/\s+/g, '-') }));
 
@@ -38,7 +38,7 @@ export class Autocomplete {
     return interaction.respond(choices);
   }
 
-  public async locationAutoComplete(interaction: AutocompleteInteraction<'cached'>, query?: string) {
+  public async locationAutocomplete(interaction: AutocompleteInteraction, query?: string) {
     if (!query) {
       return interaction.respond(COUNTRIES.slice(0, 25).map((country) => ({ name: country.name, value: country.countryCode! })));
     }

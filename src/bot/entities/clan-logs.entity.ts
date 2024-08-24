@@ -11,7 +11,7 @@ export interface ClanLogsEntity {
   roleId?: string;
   webhook: { id: string; token: string } | null;
   messageId: string | null;
-  color: number;
+  color: number | null;
   metadata: Record<string, any>;
   lastPostedAt: Date;
   updatedAt: Date;

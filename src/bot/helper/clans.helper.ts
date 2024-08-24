@@ -3,10 +3,12 @@ import { container } from 'tsyringe';
 import Client from '../struct/client-module.js';
 
 export const getClanSwitchingMenu = async (
-  interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,
+  interaction: CommandInteraction | MessageComponentInteraction,
   customId: string,
   defaultTag?: string
 ) => {
+  if (!interaction.guildId) return null;
+
   const client = container.resolve(Client);
 
   const clans = await client.storage.find(interaction.guildId);

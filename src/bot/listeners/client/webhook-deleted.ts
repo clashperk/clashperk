@@ -12,19 +12,7 @@ export default class WebhookDeletedListener extends Listener {
   }
 
   public async exec(_guild: Guild) {
-    const collections = [
-      Collections.DONATION_LOGS,
-      Collections.CAPITAL_LOGS,
-      Collections.CLAN_WAR_LOGS,
-      Collections.LAST_SEEN_LOGS,
-      Collections.CLAN_FEED_LOGS,
-      Collections.JOIN_LEAVE_LOGS,
-      Collections.CLAN_GAMES_LOGS,
-      Collections.CLAN_EMBED_LOGS,
-      Collections.REMINDERS,
-      Collections.CG_REMINDERS,
-      Collections.RAID_REMINDERS
-    ];
+    const collections = [Collections.REMINDERS, Collections.CG_REMINDERS, Collections.RAID_REMINDERS];
 
     for (const collection of collections) {
       if (collection) continue;
