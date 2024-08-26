@@ -348,9 +348,12 @@ export class RolesManager {
     const { targetedRoles, warRoles } = this.getTargetedRoles(rolesMap);
     const playersInWarMap = warRoles.length ? await this.getWarRolesMap(rolesMap.warClanTags) : {};
 
-    const { guildMembers, linkedPlayers, linkedUserIds } = userOrRole
-      ? await this.getTargetedGuildMembersForUserOrRole(guild, userOrRole)
-      : await this.getTargetedGuildMembers(guild, memberTags);
+    const isEosRole = userOrRole instanceof Role && rolesMap.eosPushClanRoles.includes(userOrRole.id);
+
+    const { guildMembers, linkedPlayers, linkedUserIds } =
+      userOrRole && !isEosRole
+        ? await this.getTargetedGuildMembersForUserOrRole(guild, userOrRole)
+        : await this.getTargetedGuildMembers(guild, memberTags);
 
     const targetedMembers = guildMembers.filter(
       (m) =>
@@ -383,6 +386,14 @@ export class RolesManager {
         playersInWarMap
       });
       const nickUpdate = this.preNicknameUpdate(players, member, rolesMap);
+
+      // skipping non-eos roles
+      if (isEosRole && !roleUpdate.included.includes(userOrRole.id) && !member.roles.cache.has(userOrRole.id)) {
+        roleUpdate.included = roleUpdate.included.filter((id) => id === userOrRole.id);
+        roleUpdate.excluded = roleUpdate.excluded.filter((id) => id === userOrRole.id);
+        rolesOnly = true;
+        continue;
+      }
 
       const changeLog: RolesChangeLog['changes'][number] = {
         ...roleUpdate,
