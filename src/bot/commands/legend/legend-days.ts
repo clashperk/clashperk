@@ -576,7 +576,7 @@ export default class LegendDaysCommand extends Command {
     >((prev, { startTime, endTime }) => {
       const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
       const attacks = mixedLogs.filter((en) => en.type === 'attack') ?? [];
-      const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+      const defenses = mixedLogs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
 
       const possibleAttackCount = legend?.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
       const possibleDefenseCount = legend?.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;

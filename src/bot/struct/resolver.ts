@@ -198,7 +198,7 @@ export default class Resolver {
     return linkedPlayer?.tag ?? lastSearchedPlayerTag;
   }
 
-  public async getLinkedUserClan(userId: string, withLastSearchedClan = false) {
+  private async getLinkedUserClan(userId: string, withLastSearchedClan = false) {
     const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId });
     return user?.clan?.tag ?? (withLastSearchedClan ? user?.lastSearchedClanTag : null) ?? null;
   }
