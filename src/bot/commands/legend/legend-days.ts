@@ -152,8 +152,8 @@ export default class LegendDaysCommand extends Command {
 
     const { startTime, endTime, day } = this.getDay(_day);
     const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
-    const attacks = logs.filter((en) => en.inc > 0) ?? [];
-    const defenses = logs.filter((en) => en.inc <= 0) ?? [];
+    const attacks = logs.filter((en) => en.type === 'attack') ?? [];
+    const defenses = logs.filter((en) => en.type === 'defense') ?? [];
 
     const member = (clan?.memberList ?? []).find((en) => en.tag === data.tag);
     const clanRank = member?.clanRank ?? 0;
@@ -578,11 +578,15 @@ export default class LegendDaysCommand extends Command {
       { attackCount: number; defenseCount: number; gain: number; loss: number; final: number; initial: number }[]
     >((prev, { startTime, endTime }) => {
       const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
-      const attacks = mixedLogs.filter((en) => en.inc > 0) ?? [];
-      const defenses = mixedLogs.filter((en) => en.inc <= 0) ?? [];
+      const attacks = mixedLogs.filter((en) => en.type === 'attack') ?? [];
+      const defenses = mixedLogs.filter((en) => en.type === 'defense') ?? [];
 
-      const attackCount = attacks.length;
-      const defenseCount = defenses.length;
+      const possibleAttackCount = legend?.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
+      const possibleDefenseCount = legend?.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
+
+      const attackCount = Math.max(attacks.length, possibleAttackCount);
+      const defenseCount = Math.max(defenses.length, possibleDefenseCount);
+
       const [final] = mixedLogs.slice(-1);
       const [initial] = mixedLogs;
 
@@ -601,8 +605,8 @@ export default class LegendDaysCommand extends Command {
             'DAY   ATK    DEF   +/-   INIT  FINAL ',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
-              const def = this.pad(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(9, day.defenseCount)]}`, 5);
-              const atk = this.pad(`+${day.gain}${ATTACK_COUNTS[Math.min(9, day.attackCount)]}`, 5);
+              const def = this.pad(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
+              const atk = this.pad(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
               const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
               const final = this.pad(day.final, 4);
               const init = this.pad(day.initial, 5);
@@ -615,8 +619,8 @@ export default class LegendDaysCommand extends Command {
             '`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
-              const def = this.pad(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(9, day.defenseCount)]}`, 5);
-              const atk = this.pad(`+${day.gain}${ATTACK_COUNTS[Math.min(9, day.attackCount)]}`, 5);
+              const def = this.pad(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
+              const atk = this.pad(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
               const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
               const final = this.pad(day.final, 4);
               const init = this.pad(day.initial, 5);
