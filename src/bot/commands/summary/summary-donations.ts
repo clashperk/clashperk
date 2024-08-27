@@ -292,7 +292,7 @@ export default class DonationSummaryCommand extends Command {
     const orders = [];
     for (const key of sortBy ?? ['donations']) orders.push({ $sort: { [key]: orderBy === 'asc' ? 1 : -1 } });
 
-    const members = await this.client.db
+    let members = await this.client.db
       .collection(Collections.PLAYER_SEASONS)
       .aggregate<{
         name: string;
@@ -358,10 +358,13 @@ export default class DonationSummaryCommand extends Command {
         },
         ...orders,
         {
-          $limit: 100
+          $limit: 150
         }
       ])
       .toArray();
+
+    const playerTags = clans.flatMap((clan) => clan.memberList.map((m) => m.tag));
+    members = members.filter((m) => playerTags.includes(m.tag)).slice(0, 100);
 
     const [memDp, memRp] = [
       this.predict(Math.max(...members.map((m) => m.donations))),
