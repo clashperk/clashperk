@@ -80,7 +80,7 @@ export default class LegendAttacksCommand extends Command {
       if (logs.length === 0) continue;
 
       const attacks = logs.filter((en) => en.type === 'attack');
-      const defenses = logs.filter((en) => en.type === 'defense');
+      const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
 
       const [initial] = logs;
       const [current] = logs.slice(-1);

@@ -35,10 +35,7 @@ export default class LegendDaysCommand extends Command {
     return { ...days[num - 1], day };
   }
 
-  public async exec(
-    interaction: CommandInteraction<'cached'>,
-    args: { tag?: string; user?: User; prev?: boolean; day?: number; graph?: boolean }
-  ) {
+  public async exec(interaction: CommandInteraction, args: { tag?: string; user?: User; prev?: boolean; day?: number; graph?: boolean }) {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
@@ -147,13 +144,13 @@ export default class LegendDaysCommand extends Command {
     };
   }
 
-  private async embed(interaction: CommandInteraction<'cached'>, data: APIPlayer, legend: LegendAttacks, _day?: number) {
+  private async embed(interaction: CommandInteraction, data: APIPlayer, legend: LegendAttacks, _day?: number) {
     const clan = data.clan ? await this.client.redis.getClan(data.clan.tag) : null;
 
     const { startTime, endTime, day } = this.getDay(_day);
     const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
     const attacks = logs.filter((en) => en.type === 'attack') ?? [];
-    const defenses = logs.filter((en) => en.type === 'defense') ?? [];
+    const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
 
     const member = (clan?.memberList ?? []).find((en) => en.tag === data.tag);
     const clanRank = member?.clanRank ?? 0;
@@ -579,7 +576,7 @@ export default class LegendDaysCommand extends Command {
     >((prev, { startTime, endTime }) => {
       const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
       const attacks = mixedLogs.filter((en) => en.type === 'attack') ?? [];
-      const defenses = mixedLogs.filter((en) => en.type === 'defense') ?? [];
+      const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
 
       const possibleAttackCount = legend?.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
       const possibleDefenseCount = legend?.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
