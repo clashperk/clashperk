@@ -3259,7 +3259,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
-            name: 'clan_tag',
+            name: 'clans',
             description: 'Enter a tag or pick one form the autocomplete list.',
             type: ApplicationCommandOptionType.String,
             required: false,
@@ -3329,6 +3329,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.Number,
             max_value: 100,
             min_value: 3
+          },
+          {
+            name: 'season',
+            description: 'Season of the leaderboard',
+            type: ApplicationCommandOptionType.String,
+            choices: getSeasonIds()
           },
           {
             name: 'enable_auto_updating',

@@ -139,18 +139,15 @@ export default class LegendLogV2 extends BaseClanLog {
     embed.setDescription(
       [
         '**Legend League Attacks**',
-        '```',
-        '\u200e GAIN  LOSS FINAL NAME',
-        ...members.map(
-          (mem) =>
-            `${padStart(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`, 5)} ${padStart(
-              `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`,
-              5
-            )}  ${padStart(mem.current.end, 4)} ${escapeMarkdown(mem.name)}`
-        ),
-        '```'
+        `\`GAIN  LOSS  FINAL \` **NAME**`,
+        ...members.slice(0, 99).map((mem) => {
+          const attacks = padStart(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`, 5);
+          const defense = padStart(`-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`, 5);
+          return `\`${attacks} ${defense}  ${padStart(mem.current.end, 4)} \` \u200e${escapeMarkdown(mem.name)}`;
+        })
       ].join('\n')
     );
+
     embed.setFooter({ text: `End of Day ${Util.getPreviousLegendDay()} (${seasonId})` });
 
     if (!members.length) return null;

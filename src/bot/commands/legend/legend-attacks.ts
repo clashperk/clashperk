@@ -1,9 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import moment from 'moment';
+import { LegendAttacksEntity } from '../../entities/legend-attacks.entity.js';
 import { Args, Command } from '../../lib/index.js';
-import { LegendAttacks } from '../../types/index.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class LegendAttacksCommand extends Command {
@@ -32,26 +33,52 @@ export default class LegendAttacksCommand extends Command {
     return { ...days[num - 1], day };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; day?: number }) {
-    const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
+  private async getClans(interaction: CommandInteraction<'cached'>, args: { clans?: string; tag?: string; user?: User }) {
+    if (args.clans) {
+      const { resolvedArgs, clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+      if (!clans) return;
+
+      const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
+      if (_clans.length) return { clans: _clans, resolvedArgs };
+    }
+
+    const clan = await this.client.resolver.resolveClan(interaction, args?.clans ?? args.tag ?? args.user?.id);
     if (!clan) return;
 
+    return { clans: [clan], resolvedArgs: null };
+  }
+
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: {
+      clans?: string;
+      user?: User;
+      day?: number;
+      /** @deprecated */
+      tag?: string;
+    }
+  ) {
+    const resolved = await this.getClans(interaction, args);
+    if (!resolved) return;
+
+    const { clans, resolvedArgs } = resolved;
     const seasonId = Season.ID;
+
+    const legendMembers = clans
+      .flatMap((clan) => clan.memberList)
+      .filter((member) => member.trophies >= 5000 || member.league?.id === LEGEND_LEAGUE_ID);
+    const playerTags = legendMembers.map((member) => member.tag);
+
     const result = await this.client.db
-      .collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
-      .find({
-        tag: {
-          $in: clan.memberList.map((mem) => mem.tag)
-        },
-        seasonId
-      })
+      .collection(Collections.LEGEND_ATTACKS)
+      .find({ tag: { $in: playerTags }, seasonId })
       .toArray();
 
     const attackingMembers = result.map((mem) => mem.tag);
     const { startTime, endTime, day } = this.getDay(args.day);
 
-    const clanMembers: LegendAttacks[] = clan.memberList
-      .filter((mem) => !attackingMembers.includes(mem.tag) && (mem.league?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000))
+    const clanMembers: LegendAttacksEntity[] = legendMembers
+      .filter((mem) => !attackingMembers.includes(mem.tag))
       .map((mem) => ({
         name: mem.name,
         tag: mem.tag,
@@ -112,24 +139,25 @@ export default class LegendAttacksCommand extends Command {
     }
     members.sort((a, b) => b.current.end - a.current.end);
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
-      .setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
-      .setColor(this.client.embed(interaction));
+    const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+
+    if (clans.length === 1) {
+      const [clan] = clans;
+      embed.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`);
+      embed.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`);
+    } else {
+      embed.setAuthor({ name: `Legend League Attacks (${seasonId})`, iconURL: interaction.guild.iconURL()! });
+    }
 
     embed.setDescription(
       [
-        '**Legend League Attacks**',
-        '```',
-        '\u200e GAIN  LOSS FINAL NAME',
-        ...members.map(
-          (mem) =>
-            `\u200e${this.pad(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`, 5)} ${this.pad(
-              `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`,
-              5
-            )}  ${this.pad(mem.current.end)} ${escapeMarkdown(mem.name)}`
-        ),
-        '```'
+        clans.length === 1 ? '**Legend League Attacks**' : '',
+        `\`GAIN  LOSS  FINAL \` **NAME**`,
+        ...members.slice(0, 99).map((mem) => {
+          const attacks = padStart(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`, 5);
+          const defense = padStart(`-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`, 5);
+          return `\`${attacks} ${defense}  ${padStart(mem.current.end, 4)} \` \u200e${escapeMarkdown(mem.name)}`;
+        })
       ].join('\n')
     );
 
@@ -138,13 +166,9 @@ export default class LegendAttacksCommand extends Command {
       new ButtonBuilder()
         .setEmoji(EMOJIS.REFRESH)
         .setStyle(ButtonStyle.Secondary)
-        .setCustomId(JSON.stringify({ cmd: this.id, tag: args.tag }))
+        .setCustomId(JSON.stringify({ cmd: this.id, clans: resolvedArgs, tag: args.tag }))
     );
     const currDay = Util.getLegendDay();
     return interaction.editReply({ embeds: [embed], components: currDay === day ? [row] : [] });
-  }
-
-  private pad(num: number | string, padding = 4) {
-    return num.toString().padStart(padding, ' ');
   }
 }
