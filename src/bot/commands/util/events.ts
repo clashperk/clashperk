@@ -6,7 +6,8 @@ export default class GameEvents extends Command {
   public constructor() {
     super('events', {
       category: 'search',
-      defer: true
+      defer: true,
+      channel: 'dm'
     });
   }
 

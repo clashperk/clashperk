@@ -11,7 +11,7 @@ import {
 
 function isEphemeral(interaction: CommandInteraction | MessageComponentInteraction) {
   if (!interaction.inGuild()) return false;
-  if (!interaction.inCachedGuild()) return true;
+  if (!interaction.inCachedGuild()) return false;
 
   if (interaction.channel?.isThread()) {
     return !interaction.appPermissions.has([PermissionFlagsBits.SendMessagesInThreads]);

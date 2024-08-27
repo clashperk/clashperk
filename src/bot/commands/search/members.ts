@@ -227,7 +227,7 @@ export default class MembersCommand extends Command {
     if (args.option === options.trophies.id) {
       embed.setDescription(
         [
-          `\`\u200e # TROPHY\`  ${'NAME'}`,
+          `\`\u200e # TROPHY \`  ${'NAME'}`,
           ...data.memberList.map((member, index) => {
             const trophies = padStart(member.trophies, 5);
             return `\`${padStart(index + 1, 2)}  ${trophies} \`  \u200e${escapeMarkdown(member.name)}`;

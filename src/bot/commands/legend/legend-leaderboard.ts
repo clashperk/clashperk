@@ -71,7 +71,7 @@ export default class LegendLeaderboardCommand extends Command {
 
     if (players.length && args.enable_auto_updating && this.client.util.isManager(interaction.member)) {
       await this.client.storage.makeAutoBoard({
-        channelId: interaction.channel!.id,
+        channelId: interaction.channelId,
         boardType: args.enable_auto_updating,
         guild: interaction.guild,
         props: { limit: args.limit }

@@ -67,9 +67,20 @@ const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[]
   ChannelType.GuildMedia
 ];
 
+const IntegrationTypes = {
+  GUILD_INSTALL: 0,
+  USER_INSTALL: 1
+} as const;
+
+const ContextTypes = {
+  GUILD: 0,
+  BOT_DM: 1,
+  PRIVATE_CHANNEL: 2
+} as const;
+
 const userInstallable = {
-  integration_types: [0, 1],
-  contexts: [0, 1, 2]
+  integration_types: [IntegrationTypes.GUILD_INSTALL, IntegrationTypes.USER_INSTALL],
+  contexts: [ContextTypes.GUILD, ContextTypes.BOT_DM, ContextTypes.PRIVATE_CHANNEL]
 };
 
 export const translation = (text: TranslationKey): Record<string, string> => {
@@ -3336,6 +3347,20 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           }
         ]
       }
+      // {
+      //   name: 'streaks',
+      //   description: 'Shows legend attack streak leaderboard.',
+      //   type: ApplicationCommandOptionType.Subcommand,
+      //   options: [
+      //     {
+      //       name: 'clans',
+      //       autocomplete: true,
+      //       description: 'Enter a tag or pick one form the autocomplete list.',
+      //       type: ApplicationCommandOptionType.String,
+      //       required: false
+      //     }
+      //   ]
+      // }
     ]
   },
   {

@@ -293,7 +293,7 @@ export default class ProfileCommand extends Command {
     });
   }
 
-  private async getUserByTag(interaction: CommandInteraction<'cached'>, playerTag: string) {
+  private async getUserByTag(interaction: CommandInteraction, playerTag: string) {
     playerTag = this.client.http.fixTag(playerTag);
     const [link, externalLink] = await Promise.all([
       this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: playerTag }),

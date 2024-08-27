@@ -52,6 +52,7 @@ jobs:
           images: ${{ steps.ecr-login.outputs.registry }}/clashperk-bot
           tags: |
             type=raw,value=latest
+            type=sha,value=${{ github.sha }}
 
       - name: Docker Build, Tag and Push to ECR
         uses: docker/build-push-action@v5

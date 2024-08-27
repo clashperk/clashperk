@@ -9,5 +9,9 @@ export interface LegendAttacksEntity {
     end: number;
     inc: number;
     timestamp: number;
+    type?: string;
   }[];
+  streak: number;
+  attackLogs?: Record<string, number>;
+  defenseLogs?: Record<string, number>;
 }

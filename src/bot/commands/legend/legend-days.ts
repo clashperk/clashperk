@@ -102,6 +102,8 @@ export default class LegendDaysCommand extends Command {
       return interaction.editReply({ content: url, embeds: [], components: [row] });
     }
 
+    legend.streak = Math.max(legend.streak, await this.getStreak(data.tag));
+
     const embed = args.prev
       ? (await this.logs(data)).setColor(this.client.embed(interaction))
       : (await this.embed(interaction, data, legend, args.day)).setColor(this.client.embed(interaction));
@@ -160,8 +162,11 @@ export default class LegendDaysCommand extends Command {
     const [initial] = logs;
     const [current] = logs.slice(-1);
 
-    const attackCount = attacks.length;
-    const defenseCount = defenses.length;
+    const possibleAttackCount = legend.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
+    const possibleDefenseCount = legend.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
+
+    const attackCount = Math.max(attacks.length, possibleAttackCount);
+    const defenseCount = Math.max(defenses.length, possibleDefenseCount);
 
     const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
     const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);
@@ -263,6 +268,102 @@ export default class LegendDaysCommand extends Command {
 
     embed.setFooter({ text: `Day ${day} (${Season.ID})` });
     return embed;
+  }
+
+  private async getStreak(tag: string) {
+    const [legend] = await this.client.db
+      .collection(Collections.LEGEND_ATTACKS)
+      .aggregate<{ name: string; tag: string; streak: number }>([
+        {
+          $match: {
+            seasonId: {
+              $in: Util.getSeasonIds().slice(0, 3)
+            },
+            tag
+          }
+        },
+        {
+          $unwind: '$logs'
+        },
+        {
+          $match: {
+            'logs.type': 'attack'
+          }
+        },
+        {
+          $sort: {
+            'logs.timestamp': 1
+          }
+        },
+        {
+          $group: {
+            _id: '$tag',
+            name: {
+              $last: '$name'
+            },
+            logs: {
+              $push: '$logs.inc'
+            }
+          }
+        },
+        {
+          $set: {
+            streaks: {
+              $reduce: {
+                input: '$logs',
+                initialValue: {
+                  currentStreak: 0,
+                  maxStreak: 0
+                },
+                in: {
+                  $cond: [
+                    {
+                      $eq: ['$$this', 40]
+                    },
+                    {
+                      currentStreak: {
+                        $add: ['$$value.currentStreak', 1]
+                      },
+                      maxStreak: {
+                        $max: [
+                          '$$value.maxStreak',
+                          {
+                            $add: ['$$value.currentStreak', 1]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      currentStreak: 0,
+                      maxStreak: 0
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            tag: '$_id',
+            name: '$name',
+            streak: {
+              $max: '$streaks.maxStreak'
+            }
+          }
+        },
+        {
+          $sort: {
+            streak: -1
+          }
+        },
+        {
+          $limit: 99
+        }
+      ])
+      .toArray();
+    return legend?.streak ?? 0;
   }
 
   private async graph(data: APIPlayer) {

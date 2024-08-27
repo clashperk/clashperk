@@ -152,8 +152,6 @@ export const handlePagination = async (
   });
 
   collector.on('end', async (_, reason) => {
-    collector.off('collect', () => null);
-    collector.off('end', () => null);
     Object.values(customIds).forEach((id) => client.components.delete(id));
     if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
   });
@@ -244,8 +242,6 @@ export const handleMessagePagination = async (
   });
 
   collector.on('end', async (_, reason) => {
-    collector.off('collect', () => null);
-    collector.off('end', () => null);
     Object.values(customIds).forEach((id) => client.components.delete(id));
     if (!/delete/i.test(reason)) await message.edit({ components: [] });
   });
@@ -293,8 +289,6 @@ export const createInteractionCollector = ({
 
   collector.on('end', async (_, reason) => {
     onClose?.();
-    collector.off('collect', () => null);
-    collector.off('end', () => null);
     Object.values(customIds).forEach((id) => client.components.delete(id));
     if (!/delete/i.test(reason) && clear) await interaction.editReply({ components: [] });
   });

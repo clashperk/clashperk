@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 
 export const achievements = {
@@ -279,15 +280,4 @@ export interface CallerCollection {
   >;
 }
 
-export interface LegendAttacks {
-  name: string;
-  tag: string;
-  streak: number;
-  logs: {
-    start: number;
-    end: number;
-    timestamp: number;
-    inc: number;
-    type?: string;
-  }[];
-}
+export interface LegendAttacks extends LegendAttacksEntity {}

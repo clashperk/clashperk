@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
+import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
 import { LegendAttacks } from '../../types/index.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
@@ -49,39 +50,46 @@ export default class LegendAttacksCommand extends Command {
     const attackingMembers = result.map((mem) => mem.tag);
     const { startTime, endTime, day } = this.getDay(args.day);
 
-    const clanMembers = clan.memberList
+    const clanMembers: LegendAttacks[] = clan.memberList
       .filter((mem) => !attackingMembers.includes(mem.tag) && (mem.league?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000))
-      .map(
-        (mem) =>
-          ({
-            name: mem.name,
-            tag: mem.tag,
-            streak: 0,
-            logs: [
-              {
-                timestamp: startTime,
-                start: mem.trophies,
-                inc: 0,
-                end: mem.trophies,
-                type: 'hold'
-              }
-            ]
-          }) satisfies LegendAttacks
-      );
+      .map((mem) => ({
+        name: mem.name,
+        tag: mem.tag,
+        streak: 0,
+        logs: [
+          {
+            timestamp: startTime,
+            start: mem.trophies,
+            inc: 0,
+            end: mem.trophies,
+            type: 'hold'
+          }
+        ],
+
+        // not confirmed
+        initial: mem.trophies,
+        seasonId,
+        trophies: mem.trophies,
+        attackLogs: {},
+        defenseLogs: {}
+      }));
 
     const members = [];
     for (const legend of [...result, ...clanMembers]) {
       const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
       if (logs.length === 0) continue;
 
-      const attacks = logs.filter((en) => en.type === 'attack' || en.inc > 0);
-      const defenses = logs.filter((en) => (en.type === 'defense' || en.inc <= 0) && en.type !== 'hold');
+      const attacks = logs.filter((en) => en.type === 'attack');
+      const defenses = logs.filter((en) => en.type === 'defense');
 
       const [initial] = logs;
       const [current] = logs.slice(-1);
 
-      const attackCount = Math.min(attacks.length);
-      const defenseCount = Math.min(defenses.length);
+      const possibleAttackCount = legend.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
+      const possibleDefenseCount = legend.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
+
+      const attackCount = Math.max(attacks.length, possibleAttackCount);
+      const defenseCount = Math.max(defenses.length, possibleDefenseCount);
 
       const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
       const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);
@@ -116,8 +124,8 @@ export default class LegendAttacksCommand extends Command {
         '\u200e GAIN  LOSS FINAL NAME',
         ...members.map(
           (mem) =>
-            `\u200e${this.pad(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
-              `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(9, mem.defenseCount)]}`,
+            `\u200e${this.pad(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`, 5)} ${this.pad(
+              `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`,
               5
             )}  ${this.pad(mem.current.end)} ${escapeMarkdown(mem.name)}`
         ),
