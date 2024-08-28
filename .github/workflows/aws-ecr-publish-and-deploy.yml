@@ -55,7 +55,6 @@ jobs:
           tags: |
             type=raw,value=latest
             type=ref,event=tag
-            type=sha,value=${{ github.sha }}
 
       - name: Docker Build, Tag and Push to ECR
         uses: docker/build-push-action@v5
