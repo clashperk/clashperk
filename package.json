@@ -16,6 +16,7 @@
     "postbuild": "node -r dotenv/config dist/locales/export.js",
     "start": "npm run build && node -r dotenv/config --enable-source-maps dist/src/index.js",
     "test": "eslint --ext .ts --ignore-path .gitignore .",
+    "release": "./scripts/release.sh",
     "lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
     "dev": "node -r dotenv/config --enable-source-maps dist/src/index.js",
     "crowdin": "tsx -r dotenv/config locales/crowdin.ts",
