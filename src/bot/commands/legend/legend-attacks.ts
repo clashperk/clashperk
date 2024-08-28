@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import moment from 'moment';
 import { LegendAttacksEntity } from '../../entities/legend-attacks.entity.js';
-import { Args, Command } from '../../lib/index.js';
+import { Command } from '../../lib/index.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
@@ -15,37 +15,6 @@ export default class LegendAttacksCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
-  }
-
-  public args(): Args {
-    return {
-      clan_tag: {
-        id: 'tag',
-        match: 'STRING'
-      }
-    };
-  }
-
-  private getDay(day?: number) {
-    if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
-    const days = Util.getLegendDays();
-    const num = Math.min(days.length, Math.max(day, 1));
-    return { ...days[num - 1], day };
-  }
-
-  private async getClans(interaction: CommandInteraction<'cached'>, args: { clans?: string; tag?: string; user?: User }) {
-    if (args.clans) {
-      const { resolvedArgs, clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
-      if (!clans) return;
-
-      const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
-      if (_clans.length) return { clans: _clans, resolvedArgs };
-    }
-
-    const clan = await this.client.resolver.resolveClan(interaction, args?.clans ?? args.tag ?? args.user?.id);
-    if (!clan) return;
-
-    return { clans: [clan], resolvedArgs: null };
   }
 
   public async exec(
@@ -170,5 +139,29 @@ export default class LegendAttacksCommand extends Command {
     );
     const currDay = Util.getLegendDay();
     return interaction.editReply({ embeds: [embed], components: currDay === day ? [row] : [] });
+  }
+
+  private getDay(day?: number) {
+    if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
+    const days = Util.getLegendDays();
+    const num = Math.min(days.length, Math.max(day, 1));
+    return { ...days[num - 1], day };
+  }
+
+  private async getClans(interaction: CommandInteraction<'cached'>, args: { clans?: string; tag?: string; user?: User }) {
+    const isSingleTag = args.clans && this.client.http.isValidTag(this.client.http.fixTag(args.clans));
+
+    if (args.clans && !isSingleTag) {
+      const { resolvedArgs, clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+      if (!clans) return;
+
+      const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
+      if (_clans.length) return { clans: _clans, resolvedArgs };
+    }
+
+    const clan = await this.client.resolver.resolveClan(interaction, args?.clans ?? args.tag ?? args.user?.id);
+    if (!clan) return;
+
+    return { clans: [clan], resolvedArgs: null };
   }
 }
