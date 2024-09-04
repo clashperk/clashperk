@@ -2907,6 +2907,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: '0'
               },
               {
+                name: '1h',
+                value: '1h'
+              },
+              {
+                name: '2h',
+                value: '2h'
+              },
+              {
                 name: '4h',
                 value: '4h'
               },
@@ -2960,6 +2968,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               {
                 name: 'Off',
                 value: '0'
+              },
+              {
+                name: '1h',
+                value: '1h'
+              },
+              {
+                name: '2h',
+                value: '2h'
               },
               {
                 name: '4h',
