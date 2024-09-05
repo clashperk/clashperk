@@ -1,3 +1,4 @@
+import { PlayersEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -29,7 +30,6 @@ import {
   rosterLabel,
   RosterLog
 } from '../../struct/roster-manager.js';
-import { PlayerModel } from '../../types/index.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
@@ -148,7 +148,7 @@ export default class RosterManageCommand extends Command {
     const [clans, roster] = await Promise.all([this.client.storage.find(interaction.guild.id), this.client.rosterManager.get(rosterId)]);
     if (!roster) return interaction.respond([{ name: 'Roster was deleted.', value: '0' }]);
 
-    const query: Filter<PlayerModel> = {
+    const query: Filter<PlayersEntity> = {
       'clan.tag': { $in: clans.map((clan) => clan.tag) }
     };
 
@@ -162,7 +162,7 @@ export default class RosterManageCommand extends Command {
     }
 
     const signedUp = roster.members.map((member) => member.tag);
-    const cursor = this.client.db.collection<PlayerModel>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
+    const cursor = this.client.db.collection<PlayersEntity>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
     if (!args.player_tag) cursor.sort({ lastSeen: -1 });
     const players = await cursor.limit(24).toArray();
     if (!players.length) return interaction.respond([{ name: 'No players found.', value: '0' }]);

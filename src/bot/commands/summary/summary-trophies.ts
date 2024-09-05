@@ -1,6 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { PlayerSeasonModel } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/index.js';
@@ -87,7 +86,7 @@ export default class SummaryTrophiesCommand extends Command {
       }
     } else if (args.builder_base) {
       const result = await this.client.db
-        .collection<PlayerSeasonModel>(Collections.PLAYER_SEASONS)
+        .collection(Collections.PLAYER_SEASONS)
         .find({ tag: { $in: memberTags }, season: Season.ID })
         .toArray();
       const players = result

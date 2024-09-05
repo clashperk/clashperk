@@ -34,7 +34,7 @@ const main = (): void => {
   // write contents to the index file
   const indexPath = path.join(process.cwd(), argv.d, INDEX_FILE_NAME);
   console.log(`-> Writing to: ${indexPath}`);
-  fs.writeFileSync(indexPath, indexFileContents, { flag: 'w' });
+  fs.writeFileSync(indexPath, `${indexFileContents}\n`, { flag: 'w' });
   console.log('-> Success!');
 };
 

@@ -1,8 +1,8 @@
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
+import { CapitalContributionsEntity } from '../../entities/capital-contributions.entity.js';
 import { Command } from '../../lib/index.js';
-import { ClanCapitalGoldModel } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
@@ -30,7 +30,7 @@ export default class CapitalContributionCommand extends Command {
 
     const contributions = await this.client.db
       .collection(Collections.CAPITAL_CONTRIBUTIONS)
-      .aggregate<ClanCapitalGoldModel & { total: number }>([
+      .aggregate<CapitalContributionsEntity & { total: number }>([
         {
           $match: {
             'clan.tag': clan.tag
@@ -101,7 +101,7 @@ export default class CapitalContributionCommand extends Command {
     clan: APIClan;
     weekId: string;
     locale: string;
-    contributions: (ClanCapitalGoldModel & { total: number })[];
+    contributions: (CapitalContributionsEntity & { total: number })[];
   }) {
     const members: { name: string; raids: number }[] = [];
     clan.memberList.forEach((member) => {

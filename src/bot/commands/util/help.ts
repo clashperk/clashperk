@@ -1,3 +1,4 @@
+import { CommandCategories } from '@app/constants';
 import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
@@ -29,22 +30,22 @@ const getTranslation = (key: string): string | null => {
 };
 
 const categoryMap: Record<string, string> = {
-  search: 'Player and Clan',
-  activity: 'Player and Clan',
+  [CommandCategories.SEARCH]: 'Player and Clan',
+  [CommandCategories.ACTIVITY]: 'Player and Clan',
 
-  war: 'War, CWL and Rosters',
-  roster: 'War, CWL and Rosters',
+  [CommandCategories.WAR]: 'War, CWL and Rosters',
+  [CommandCategories.ROSTER]: 'War, CWL and Rosters',
 
-  summary: 'Exports, Summary, History',
-  export: 'Exports, Summary, History',
+  [CommandCategories.SUMMARY]: 'Exports, Summary, History',
+  [CommandCategories.EXPORT]: 'Exports, Summary, History',
 
-  link: 'Player Links and Flags',
-  flag: 'Player Links and Flags',
-  profile: 'Player Links and Flags',
+  [CommandCategories.LINK]: 'Player Links and Flags',
+  [CommandCategories.FLAG]: 'Player Links and Flags',
+  [CommandCategories.PROFILE]: 'Player Links and Flags',
 
-  reminders: 'Server Settings',
-  config: 'Server Settings',
-  setup: 'Server Settings'
+  [CommandCategories.REMINDERS]: 'Server Settings',
+  [CommandCategories.CONFIG]: 'Server Settings',
+  [CommandCategories.SETUP]: 'Server Settings'
 };
 
 interface CommandInfo {

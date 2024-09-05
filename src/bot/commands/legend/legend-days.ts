@@ -1,9 +1,9 @@
+import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import { PlayersEntity } from '../../entities/players.entity.js';
 import { Args, Command } from '../../lib/index.js';
-import { LegendAttacks } from '../../types/index.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
@@ -64,7 +64,7 @@ export default class LegendDaysCommand extends Command {
     }
 
     const seasonId = Season.ID;
-    const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
+    const legend = await this.client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
 
     // Updating the players DB
     await this.client.db.collection<PlayersEntity>(Collections.PLAYERS).updateOne(
@@ -144,7 +144,7 @@ export default class LegendDaysCommand extends Command {
     };
   }
 
-  private async embed(interaction: CommandInteraction, data: APIPlayer, legend: LegendAttacks, _day?: number) {
+  private async embed(interaction: CommandInteraction, data: APIPlayer, legend: LegendAttacksEntity, _day?: number) {
     const clan = data.clan ? await this.client.redis.getClan(data.clan.tag) : null;
 
     const { startTime, endTime, day } = this.getDay(_day);
@@ -565,7 +565,7 @@ export default class LegendDaysCommand extends Command {
 
   private async logs(data: APIPlayer) {
     const seasonId = Season.ID;
-    const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
+    const legend = await this.client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
 
     const logs = legend?.logs ?? [];
 

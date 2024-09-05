@@ -11,7 +11,6 @@ import {
   TextInputStyle
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 
@@ -55,13 +54,13 @@ export default class LinkAddCommand extends Command {
     }
 
     await this.client.db
-      .collection<UserInfoModel>(Collections.USERS)
+      .collection(Collections.USERS)
       .updateOne(
         { userId: member.id },
         { $set: { username: member.user.username, displayName: member.user.displayName, discriminator: member.user.discriminator } }
       );
 
-    await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
+    await this.client.db.collection(Collections.PLAYER_LINKS).updateOne(
       { tag: player.tag },
       {
         $set: {
@@ -163,7 +162,7 @@ export default class LinkAddCommand extends Command {
       return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
     }
 
-    const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
+    const collection = this.client.db.collection(Collections.PLAYER_LINKS);
     await collection.deleteOne({ userId: { $ne: interaction.user.id }, tag: data.tag });
     const lastAccount = await collection.findOne({ userId: interaction.user.id }, { sort: { order: -1 } });
     await collection.updateOne(
@@ -197,7 +196,7 @@ export default class LinkAddCommand extends Command {
   }
 
   private async getPlayer(tag: string, userId: string) {
-    const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
+    const collection = this.client.db.collection(Collections.PLAYER_LINKS);
     return Promise.all([collection.findOne({ tag }), collection.find({ userId }).toArray()]);
   }
 

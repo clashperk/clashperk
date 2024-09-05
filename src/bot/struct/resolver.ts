@@ -4,7 +4,6 @@ import { ObjectId } from 'mongodb';
 import { unique } from 'radash';
 import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
 import { PlayerLinksEntity } from '../entities/player-links.entity.js';
-import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import {
   Collections,
   DISCORD_ID_REGEX,
@@ -120,7 +119,7 @@ export default class Resolver {
   }
 
   private async updateLastSearchedPlayer(user: User, player: APIPlayer) {
-    await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+    await this.client.db.collection(Collections.USERS).updateOne(
       { userId: user.id },
       {
         $set: {
@@ -136,7 +135,7 @@ export default class Resolver {
   }
 
   private async updateLastSearchedClan(user: User, clan: APIClan) {
-    await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+    await this.client.db.collection(Collections.USERS).updateOne(
       { userId: user.id },
       {
         $set: {
@@ -199,18 +198,18 @@ export default class Resolver {
   }
 
   private async getLinkedUserClan(userId: string, withLastSearchedClan = false) {
-    const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId });
+    const user = await this.client.db.collection(Collections.USERS).findOne({ userId });
     return user?.clan?.tag ?? (withLastSearchedClan ? user?.lastSearchedClanTag : null) ?? null;
   }
 
   private async getLastSearchedPlayerTag(userId: string) {
-    const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId });
+    const user = await this.client.db.collection(Collections.USERS).findOne({ userId });
     return user?.lastSearchedPlayerTag ?? null;
   }
 
   public async getLinkedPlayerTags(userId: string) {
     const [players, others] = await Promise.all([
-      this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),
+      this.client.db.collection(Collections.PLAYER_LINKS).find({ userId }).toArray(),
       this.client.http.getPlayerTags(userId)
     ]);
     return Array.from(new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]));
@@ -254,14 +253,14 @@ export default class Resolver {
   }
 
   public async getUser(playerTag: string) {
-    const link = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: playerTag });
+    const link = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag: playerTag });
     if (!link) return null;
     return this.client.users.fetch(link.userId).catch(() => null);
   }
 
   public async getPlayers(userId: string, limit = 25): Promise<(APIPlayer & { verified: boolean })[]> {
     const [players, others] = await Promise.all([
-      this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).sort({ order: 1 }).toArray(),
+      this.client.db.collection(Collections.PLAYER_LINKS).find({ userId }).sort({ order: 1 }).toArray(),
       this.client.http.getPlayerTags(userId)
     ]);
 
@@ -356,7 +355,7 @@ export default class Resolver {
       return null;
     }
 
-    const links = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId: interaction.user.id }).toArray();
+    const links = await this.client.db.collection(Collections.PLAYER_LINKS).find({ userId: interaction.user.id }).toArray();
     const count = await this.client.db
       .collection(Collections.CLAN_STORES)
       .countDocuments({ tag: data.tag, guild: { $ne: interaction.guildId } });

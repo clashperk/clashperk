@@ -1,5 +1,6 @@
 import { MsearchMultiSearchItem, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types.js';
 
+import { UserTimezone } from '@app/entities';
 import { addBreadcrumb } from '@sentry/node';
 import { AutocompleteInteraction, ChannelType, Interaction, InteractionType } from 'discord.js';
 import moment from 'moment';
@@ -17,7 +18,6 @@ import { Listener } from '../../lib/index.js';
 import Google from '../../struct/google.js';
 import { mixpanel } from '../../struct/mixpanel.js';
 import { IRoster, IRosterCategory, rosterLabel } from '../../struct/roster-manager.js';
-import { UserInfoModel, UserTimezone } from '../../types/index.js';
 import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex } from '../../util/constants.js';
 
 const ranges: Record<string, number> = {
@@ -248,7 +248,7 @@ export default class AutocompleteInteractionListener extends Listener {
       }
     };
 
-    const collection = this.client.db.collection<UserInfoModel>(Collections.USERS);
+    const collection = this.client.db.collection(Collections.USERS);
     const cursor = collection.aggregate<{ _id: string; timezone: UserTimezone }>([
       {
         $match: {

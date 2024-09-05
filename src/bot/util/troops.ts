@@ -96,3 +96,40 @@ export const ARMY_CAPACITY = [
     spells: 11
   }
 ];
+
+export interface TroopJSON {
+  [key: string]: {
+    id: number;
+    name: string;
+    village: string;
+    category: string;
+    subCategory: string;
+    unlock: {
+      hall: number;
+      cost: number;
+      time: number;
+      resource: string;
+      building: string;
+      buildingLevel: number;
+    };
+    upgrade: {
+      cost: number[];
+      time: number[];
+      resource: string;
+      resources: { resource: string; cost: number }[][];
+    };
+    allowedCharacters: string[];
+    minLevel?: number | null;
+    seasonal: boolean;
+    levels: number[];
+  }[];
+}
+
+export interface TroopInfo {
+  type: string;
+  village: string;
+  name: string;
+  level: number;
+  hallMaxLevel: number;
+  maxLevel: number;
+}

@@ -1,8 +1,7 @@
-import { ClanLogsEntity, ClanLogType } from '@app/entities';
+import { ClanLogsEntity, ClanLogType, LegendAttacksEntity } from '@app/entities';
 import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
-import { LegendAttacks } from '../types/index.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../util/constants.js';
 import { padStart } from '../util/helper.js';
 import { Season, Util } from '../util/index.js';
@@ -61,7 +60,7 @@ export default class LegendLogV2 extends BaseClanLog {
     const seasonId = Season.generateID(Season.getLastMondayOfMonth(timestamp.getMonth(), timestamp.getFullYear(), timestamp));
 
     const result = await this.client.db
-      .collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
+      .collection(Collections.LEGEND_ATTACKS)
       .find({
         tag: {
           $in: clan.memberList.map((mem) => mem.tag)
@@ -71,7 +70,7 @@ export default class LegendLogV2 extends BaseClanLog {
       .toArray();
     const attackingMembers = result.map((mem) => mem.tag);
 
-    const clanMembers: LegendAttacks[] = clan.memberList
+    const clanMembers: LegendAttacksEntity[] = clan.memberList
       .filter((mem) => !attackingMembers.includes(mem.tag) && (mem.league?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000))
       .map((mem) => ({
         name: mem.name,

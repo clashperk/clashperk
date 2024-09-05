@@ -1,10 +1,10 @@
+import { PlayersEntity } from '@app/entities';
 import { AutocompleteInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { sift, unique } from 'radash';
 import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { FlagsEntity } from '../entities/flags.entity.js';
-import { PlayerModel, UserInfoModel } from '../types/index.js';
 import { Collections } from '../util/constants.js';
 import { COUNTRIES } from '../util/countries.js';
 import Client from './client-module.js';
@@ -83,7 +83,7 @@ export class Autocomplete {
 
   public async globalClanAutoComplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {
     const clans = await this.client.storage.find(interaction.guildId);
-    const query: Filter<PlayerModel> = {
+    const query: Filter<PlayersEntity> = {
       'clan.tag': { $in: clans.map((clan) => clan.tag) }
     };
 
@@ -92,7 +92,7 @@ export class Autocomplete {
       query.$or = [{ name: { $regex: `.*${text}.*`, $options: 'i' } }, { tag: { $regex: `.*${text}.*`, $options: 'i' } }];
     }
 
-    const cursor = this.client.db.collection<PlayerModel>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
+    const cursor = this.client.db.collection<PlayersEntity>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
     if (!args.player_tag) cursor.sort({ lastSeen: -1 });
     const players = await cursor.limit(24).toArray();
 
@@ -160,7 +160,7 @@ export class Autocomplete {
   }
 
   private async getUserLinkedClan(userId: string) {
-    const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId });
+    const user = await this.client.db.collection(Collections.USERS).findOne({ userId });
     if (!user?.clan) return [];
     return [{ name: user.clan.name ?? 'Unknown', tag: user.clan.tag }];
   }

@@ -13,7 +13,6 @@ import {
 } from 'discord.js';
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
-import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage } from '../../util/helper.js';
@@ -310,7 +309,7 @@ export default class PlayerCommand extends Command {
   }
 
   private async getLinkedFromDb(tag: string) {
-    const data = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag });
+    const data = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag });
     if (!data) return Promise.reject(0);
     return data;
   }

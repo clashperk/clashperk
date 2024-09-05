@@ -1,7 +1,7 @@
+import { ClanGamesEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { ClanGamesModel } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { clanGamesEmbedMaker, clanGamesSortingAlgorithm } from '../../util/helper.js';
@@ -90,7 +90,7 @@ export default class ClanGamesCommand extends Command {
   }
 
   private query(clanTag: string, _clan: APIClan, seasonId: string) {
-    const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesModel>([
+    const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesEntity>([
       {
         $match: { __clans: clanTag, season: seasonId }
       },
@@ -102,7 +102,7 @@ export default class ClanGamesCommand extends Command {
     return cursor.toArray();
   }
 
-  private filter(dbMembers: ClanGamesModel[], clanMembers: Member[], seasonId: string) {
+  private filter(dbMembers: ClanGamesEntity[], clanMembers: Member[], seasonId: string) {
     if (seasonId !== this.latestSeason) {
       return dbMembers
         .map((m) => ({

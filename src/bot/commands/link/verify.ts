@@ -1,6 +1,5 @@
 import { CommandInteraction } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 
@@ -33,7 +32,7 @@ export default class VerifyPlayerCommand extends Command {
       return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
     }
 
-    const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
+    const collection = this.client.db.collection(Collections.PLAYER_LINKS);
     await collection.deleteOne({ userId: { $ne: interaction.user.id }, tag: data.tag });
     const lastAccount = await collection.findOne({ userId: interaction.user.id }, { sort: { order: -1 } });
     await collection.updateOne(

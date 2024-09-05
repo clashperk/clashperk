@@ -2,7 +2,6 @@ import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import Google from '../../struct/google.js';
-import { UserInfoModel } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { Util } from '../../util/index.js';
 
@@ -22,7 +21,7 @@ export default class TimezoneCommand extends Command {
     if (!raw) return interaction.editReply(this.i18n('command.timezone.no_result', { lng: interaction.locale }));
 
     const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
-    await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+    await this.client.db.collection(Collections.USERS).updateOne(
       { userId: interaction.user.id },
       {
         $set: {

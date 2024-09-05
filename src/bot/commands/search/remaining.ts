@@ -1,10 +1,10 @@
+import { CapitalRaidSeasonsEntity, ClanGamesEntity } from '@app/entities';
 import { APIClanWar, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { group } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CustomIdProps } from '../../struct/component-handler.js';
-import { ClanCapitalRaidAttackData, ClanGamesModel } from '../../types/index.js';
 import { Collections, Settings, WarType } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/index.js';
@@ -289,7 +289,7 @@ export default class RemainingCommand extends Command {
 
     const raids = await this.client.db
       .collection(Collections.CAPITAL_RAID_SEASONS)
-      .aggregate<ClanCapitalRaidAttackData>([
+      .aggregate<CapitalRaidSeasonsEntity>([
         {
           $match: { weekId, 'members.tag': { $in: playerTags } }
         }
@@ -369,7 +369,7 @@ export default class RemainingCommand extends Command {
 
     const members = await this.client.db
       .collection(Collections.CLAN_GAMES_POINTS)
-      .aggregate<ClanGamesModel>([
+      .aggregate<ClanGamesEntity>([
         {
           $match: { season: seasonId, tag: { $in: playerTags } }
         }

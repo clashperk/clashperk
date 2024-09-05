@@ -1,7 +1,6 @@
 import { CommandInteraction, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
-import { LegendAttacks } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Season, Util } from '../../util/index.js';
@@ -57,7 +56,7 @@ export default class LegendAttacksHistoryCommand extends Command {
   private async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
     const seasonId = Season.ID;
     const players = await this.client.db
-      .collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
+      .collection(Collections.LEGEND_ATTACKS)
       .find({
         tag: { $in: playerTags },
         seasonId

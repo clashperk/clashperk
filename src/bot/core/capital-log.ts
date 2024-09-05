@@ -3,7 +3,7 @@ import { APIClan } from 'clashofclans.js';
 import { AttachmentBuilder, Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
-import { ClanCapitalGoldModel, ClanCapitalRaidAttackData } from '../types/index.js';
+import { CapitalContributionsEntity } from '../entities/capital-contributions.entity.js';
 import { Collections } from '../util/constants.js';
 import { padStart } from '../util/helper.js';
 import { Season, Util } from '../util/index.js';
@@ -98,7 +98,7 @@ export default class CapitalLogV2 extends BaseClanLog {
     if (!raid?.members) return null;
 
     const season = await this.client.db
-      .collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
+      .collection(Collections.CAPITAL_RAID_SEASONS)
       .findOne({ weekId: moment(raid.startTime).format('YYYY-MM-DD'), tag: clan.tag });
 
     const members = raid.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
@@ -206,7 +206,7 @@ export default class CapitalLogV2 extends BaseClanLog {
 
     const contributions = await this.client.db
       .collection(Collections.CAPITAL_CONTRIBUTIONS)
-      .aggregate<ClanCapitalGoldModel & { total: number }>([
+      .aggregate<CapitalContributionsEntity & { total: number }>([
         {
           $match: {
             'clan.tag': clan.tag
@@ -265,7 +265,7 @@ export default class CapitalLogV2 extends BaseClanLog {
   }: {
     clan: APIClan;
     weekend: string;
-    contributions: (ClanCapitalGoldModel & { total: number })[];
+    contributions: (CapitalContributionsEntity & { total: number })[];
   }) {
     const members: { name: string; raids: number }[] = [];
     clan.memberList.forEach((member) => {

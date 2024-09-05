@@ -256,6 +256,10 @@ export enum CommandCategories {
   ACTIVITY = 'activity',
   SUMMARY = 'summary',
   EXPORT = 'export',
+  LINK = 'link',
+  FLAG = 'flag',
+  PROFILE = 'profile',
+  REMINDERS = 'reminders',
   HISTORY = 'history'
 }
 
@@ -383,7 +387,6 @@ export const WAR_FEED_LOG_TYPES = {
   CWL_WAR_EMBED: 'CWL_WAR_EMBED',
   FRIENDLY_WAR_EMBED: 'FRIENDLY_WAR_EMBED'
 } as const;
-
 export const enum DonationLogFrequencyTypes {
   INSTANT = 'INSTANT',
   DAILY = 'DAILY',

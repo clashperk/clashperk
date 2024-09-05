@@ -1,3 +1,4 @@
+import { PlayerSeasonsEntity } from '@app/entities';
 import { APIClan, APIPlayer, APIPlayerClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -16,7 +17,6 @@ import { title } from 'radash';
 import { container } from 'tsyringe';
 import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
 import Client from '../struct/client-module.js';
-import { PlayerLinks, PlayerSeasonModel } from '../types/index.js';
 import { ClanEmbedFields } from './command-options.js';
 import { Collections, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './constants.js';
 import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './emojis.js';
@@ -154,7 +154,7 @@ export const clanEmbedMaker = async (
   const leaders = clan.memberList.filter((m) => m.role === 'leader');
   if (leaders.length && fields?.includes(ClanEmbedFields.CLAN_LEADER)) {
     const users = await client.db
-      .collection<PlayerLinks>(Collections.PLAYER_LINKS)
+      .collection(Collections.PLAYER_LINKS)
       .find({ tag: { $in: leaders.map(({ tag }) => tag) } })
       .toArray();
 
@@ -434,7 +434,7 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
   const client = container.resolve(Client);
   const memberTags = await client.http.getDiscordLinks(clan.memberList);
   const dbMembers = await client.db
-    .collection<PlayerLinks>(Collections.PLAYER_LINKS)
+    .collection(Collections.PLAYER_LINKS)
     .find({ tag: { $in: clan.memberList.map((m) => m.tag) } })
     .toArray();
 
@@ -893,7 +893,7 @@ export const recoverDonations = async (clan: APIClan) => {
     .find({ tag: { $in: tags } })
     .project({ tag: 1, clans: 1, _id: 1, season: Season.ID });
 
-  const ops: AnyBulkWriteOperation<PlayerSeasonModel>[] = [];
+  const ops: AnyBulkWriteOperation<PlayerSeasonsEntity>[] = [];
   for await (const player of cursor) {
     if (!player.clans?.[clan.tag]) continue;
 
@@ -915,7 +915,7 @@ export const recoverDonations = async (clan: APIClan) => {
   }
 
   if (ops.length) {
-    await client.db.collection<PlayerSeasonModel>(Collections.PLAYER_SEASONS).bulkWrite(ops);
+    await client.db.collection<PlayerSeasonsEntity>(Collections.PLAYER_SEASONS).bulkWrite(ops);
   }
 
   return client.redis.set(`RECOVERY:${clan.tag}`, '-0-', 60 * 60 * 24 * 3);

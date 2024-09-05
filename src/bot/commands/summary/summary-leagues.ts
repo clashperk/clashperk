@@ -1,7 +1,7 @@
+import { CapitalRaidSeasonsEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import {
   CAPITAL_LEAGUE_MAP,
   Collections,
@@ -117,7 +117,7 @@ export default class SummaryLeaguesCommand extends Command {
     );
 
     const leagues = await this.client.db
-      .collection<Required<ClanCapitalRaidAttackData>>(Collections.CAPITAL_RAID_SEASONS)
+      .collection<Required<CapitalRaidSeasonsEntity>>(Collections.CAPITAL_RAID_SEASONS)
       .find({ tag: { $in: clans.map((clan) => clan.tag) }, weekId: this.getLastWeekId() })
       .toArray();
 

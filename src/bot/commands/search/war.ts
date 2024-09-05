@@ -12,9 +12,9 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
+import { CallersEntity } from '../../entities/callers.entity.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
-import { CallerCollection } from '../../types/index.js';
 import { WarCommandOptionValues, WarCommandOptions } from '../../util/command-options.js';
 import { Collections, WarType } from '../../util/constants.js';
 import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/emojis.js';
@@ -540,7 +540,7 @@ export default class WarCommand extends Command {
       .filter((m) => m.isOpen);
 
     const callerData = await this.client.db
-      .collection<CallerCollection>(Collections.WAR_BASE_CALLS)
+      .collection<CallersEntity>(Collections.WAR_BASE_CALLS)
       .findOne({ warId: this.createWarId(body), guild: interaction.guildId });
     const caller = callerData?.caller ?? {};
 

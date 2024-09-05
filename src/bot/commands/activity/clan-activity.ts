@@ -2,7 +2,6 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Comman
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import Google from '../../struct/google.js';
-import { UserInfoModel } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 
 export default class ClanActivityCommand extends Command {
@@ -96,7 +95,7 @@ export default class ClanActivityCommand extends Command {
     const zone = location ? moment.tz.zone(location) : null;
     if (zone) return { offset: zone.utcOffset(Date.now()) * 60 * -1, name: zone.name };
 
-    const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
+    const user = await this.client.db.collection(Collections.USERS).findOne({ userId: interaction.user.id });
     if (!location) {
       if (!user?.timezone?.id) return { offset: 0, name: 'UTC' };
       return { offset: moment.tz.zone(user.timezone.id)!.utcOffset(Date.now()) * 60 * -1, name: user.timezone.name };
@@ -107,7 +106,7 @@ export default class ClanActivityCommand extends Command {
 
     const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
     if (!user?.timezone) {
-      await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+      await this.client.db.collection(Collections.USERS).updateOne(
         { userId: interaction.user.id },
         {
           $set: {

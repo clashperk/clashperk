@@ -1,16 +1,23 @@
-import { ClanLogsEntity, ClanStoresEntity, ClanWarRemindersEntity, PlayerLinksEntity } from '@app/entities';
+import {
+  CapitalRaidSeasonsEntity,
+  CapitalRanksEntity,
+  ClanLogsEntity,
+  ClanRanksEntity,
+  ClanStoresEntity,
+  ClanWarRemindersEntity,
+  LegendAttacksEntity,
+  PlayerLinksEntity,
+  PlayerRanksEntity,
+  PlayerSeasonsEntity,
+  PlayersEntity,
+  UsersEntity
+} from '@app/entities';
 import { Db, MongoClient } from 'mongodb';
-import { CapitalRanksEntity } from '../entities/capital-ranks.entity.js';
-import { ClanRanksEntity } from '../entities/clan-ranks.entity.js';
-import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
-import { PlayerRanksEntity } from '../entities/player-ranks.entity.js';
-import { PlayersEntity } from '../entities/players.entity.js';
-import { PlayerSeasonModel } from '../types/index.js';
 import { Collections } from '../util/constants.js';
 
 interface CollectionsMap {
   [Collections.CLAN_STORES]: ClanStoresEntity;
-  [Collections.PLAYER_SEASONS]: PlayerSeasonModel; // TODO: Fix this
+  [Collections.PLAYER_SEASONS]: PlayerSeasonsEntity;
   [Collections.PLAYERS]: PlayersEntity;
   [Collections.PLAYER_LINKS]: PlayerLinksEntity;
   [Collections.CLAN_LOGS]: ClanLogsEntity;
@@ -19,6 +26,8 @@ interface CollectionsMap {
   [Collections.PLAYER_RANKS]: PlayerRanksEntity;
   [Collections.CAPITAL_RANKS]: CapitalRanksEntity;
   [Collections.LEGEND_ATTACKS]: LegendAttacksEntity;
+  [Collections.USERS]: UsersEntity;
+  [Collections.CAPITAL_RAID_SEASONS]: CapitalRaidSeasonsEntity;
 }
 
 declare module 'mongodb' {

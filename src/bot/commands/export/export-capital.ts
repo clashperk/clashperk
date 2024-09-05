@@ -1,7 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
-import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { Collections, UNRANKED_CAPITAL_LEAGUE_ID } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
 
@@ -22,7 +21,7 @@ export default class ExportCapital extends Command {
     const chunks = [];
     for (const { tag, name } of clans) {
       const weekends = await this.client.db
-        .collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
+        .collection(Collections.CAPITAL_RAID_SEASONS)
         .find({ tag })
         .sort({ _id: -1 })
         .limit(10)

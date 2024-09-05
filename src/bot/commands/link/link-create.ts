@@ -1,7 +1,6 @@
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections, FeatureFlags, Settings } from '../../util/constants.js';
 
 export default class LinkCreateCommand extends Command {
@@ -157,13 +156,13 @@ export default class LinkCreateCommand extends Command {
     }
 
     await this.client.db
-      .collection<UserInfoModel>(Collections.USERS)
+      .collection(Collections.USERS)
       .updateOne(
         { userId: member.id },
         { $set: { username: member.user.username, displayName: member.user.displayName, discriminator: member.user.discriminator } }
       );
 
-    await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
+    await this.client.db.collection(Collections.PLAYER_LINKS).updateOne(
       { tag: player.tag },
       {
         $set: {
@@ -202,7 +201,7 @@ export default class LinkCreateCommand extends Command {
   }
 
   private async getPlayer(tag: string, userId: string) {
-    const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
+    const collection = this.client.db.collection(Collections.PLAYER_LINKS);
     return Promise.all([collection.findOne({ tag }), collection.find({ userId }).toArray()]);
   }
 

@@ -1,4 +1,4 @@
-import { ClanGamesRemindersEntity, ClanGamesSchedulersEntity } from '@app/entities';
+import { ClanGamesEntity, ClanGamesRemindersEntity, ClanGamesSchedulersEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import {
   APIMessage,
@@ -13,7 +13,6 @@ import {
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
-import { ClanGamesModel } from '../types/index.js';
 import { Collections, Settings } from '../util/constants.js';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
 import { ClanGamesConfig, Util } from '../util/index.js';
@@ -168,7 +167,7 @@ export default class ClanGamesScheduler {
 
     const dbMembers = await this.client.db
       .collection(Collections.CLAN_GAMES_POINTS)
-      .aggregate<ClanGamesModel>([
+      .aggregate<ClanGamesEntity>([
         {
           $match: { tag: { $in: clan.memberList.map((mem) => mem.tag) }, season: this.getSeasonId() }
         },

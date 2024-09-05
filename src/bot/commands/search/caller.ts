@@ -1,8 +1,8 @@
 import { APIClanWar } from 'clashofclans.js';
 import { CommandInteraction, User } from 'discord.js';
 import moment from 'moment';
+import { CallersEntity } from '../../entities/callers.entity.js';
 import { Command } from '../../lib/index.js';
-import { CallerCollection } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 
 export default class TargetCommand extends Command {
@@ -43,7 +43,7 @@ export default class TargetCommand extends Command {
     }
 
     if (args.command === 'clear') {
-      await this.client.db.collection<CallerCollection>(Collections.WAR_BASE_CALLS).updateOne(
+      await this.client.db.collection<CallersEntity>(Collections.WAR_BASE_CALLS).updateOne(
         { warId, guild: interaction.guildId },
         {
           $unset: {
@@ -64,7 +64,7 @@ export default class TargetCommand extends Command {
     const member = war.clan.members.find((m) => m.tag === offense)!;
     const opponent = war.opponent.members.find((m) => m.tag === defense)!;
 
-    await this.client.db.collection<CallerCollection>(Collections.WAR_BASE_CALLS).updateOne(
+    await this.client.db.collection<CallersEntity>(Collections.WAR_BASE_CALLS).updateOne(
       { warId, guild: interaction.guildId },
       {
         $set: {

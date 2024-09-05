@@ -1,9 +1,9 @@
+import { achievements, PlayerSeasonsEntity } from '@app/entities';
 import { APIClan, APIClanMember } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { sum } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
-import { PlayerSeasonModel, achievements } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Season } from '../../util/index.js';
@@ -186,7 +186,7 @@ export default class ExportSeason extends Command {
   }
 }
 
-type PlayerSeasonModelAggregated = PlayerSeasonModel & {
+type PlayerSeasonModelAggregated = PlayerSeasonsEntity & {
   score?: number;
   clanTag: string;
   displayName?: string;

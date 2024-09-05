@@ -18,7 +18,6 @@ import moment from 'moment-timezone';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { EventEmitter } from 'node:events';
 import { parallel, unique } from 'radash';
-import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { RosterCommandSortOptions } from '../util/command-options.js';
 import {
   COLOR_CODES,
@@ -1362,7 +1361,7 @@ export class RosterManager {
     const zone = location ? moment.tz.zone(location) : null;
     if (zone) return zone.name;
 
-    const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
+    const user = await this.client.db.collection(Collections.USERS).findOne({ userId: interaction.user.id });
     if (!location) {
       if (!user?.timezone) return 'UTC';
       return user.timezone.id;
@@ -1373,7 +1372,7 @@ export class RosterManager {
 
     const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
     if (!user?.timezone) {
-      await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+      await this.client.db.collection(Collections.USERS).updateOne(
         { userId: interaction.user.id },
         {
           $set: {
@@ -1445,7 +1444,7 @@ export class RosterManager {
 
   public async getClanMembers(memberList: APIClanMember[], allowUnlinked = false) {
     const links = await this.client.db
-      .collection<PlayerLinks>(Collections.PLAYER_LINKS)
+      .collection(Collections.PLAYER_LINKS)
       .find({ tag: { $in: memberList.map((mem) => mem.tag) } })
       .toArray();
 
@@ -1483,7 +1482,7 @@ export class RosterManager {
 
   public async getClanMemberLinks(memberList: { tag: string }[], allowUnlinked = false) {
     const links = await this.client.db
-      .collection<PlayerLinks>(Collections.PLAYER_LINKS)
+      .collection(Collections.PLAYER_LINKS)
       .find({ tag: { $in: memberList.map((mem) => mem.tag) } })
       .toArray();
     const players = await this.client.http._getPlayers(memberList);

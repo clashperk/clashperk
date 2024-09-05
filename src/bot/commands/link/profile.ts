@@ -1,3 +1,4 @@
+import { PlayerLinksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -11,10 +12,8 @@ import {
   User
 } from 'discord.js';
 import { cluster, diff } from 'radash';
-import { PlayerLinksEntity } from '../../entities/player-links.entity.js';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/google.js';
-import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 import { Collections, DOT, FeatureFlags, Settings } from '../../util/constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';
 import { getExportComponents, sumHeroes } from '../../util/helper.js';
@@ -60,9 +59,9 @@ export default class ProfileCommand extends Command {
         : args.user ?? interaction.user;
 
     const [data, players] = await Promise.all([
-      this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: user.id }),
+      this.client.db.collection(Collections.USERS).findOne({ userId: user.id }),
       this.client.db
-        .collection<PlayerLinks>(Collections.PLAYER_LINKS)
+        .collection(Collections.PLAYER_LINKS)
         .find({ userId: user.id }, { sort: { order: 1 } })
         .toArray()
     ]);
@@ -229,16 +228,12 @@ export default class ProfileCommand extends Command {
     const changeDefaultAccount = async (action: StringSelectMenuInteraction<'cached'>) => {
       await action.deferUpdate();
 
-      const firstAccount = await this.client.db
-        .collection<PlayerLinks>(Collections.PLAYER_LINKS)
-        .findOne({ userId: user.id }, { sort: { order: 1 } });
+      const firstAccount = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ userId: user.id }, { sort: { order: 1 } });
 
       const order = (firstAccount?.order ?? 0) - 1;
       const [playerTag] = action.values;
 
-      await this.client.db
-        .collection<PlayerLinks>(Collections.PLAYER_LINKS)
-        .updateOne({ userId: user.id, tag: playerTag }, { $set: { order } });
+      await this.client.db.collection(Collections.PLAYER_LINKS).updateOne({ userId: user.id, tag: playerTag }, { $set: { order } });
 
       return this.handler.exec(action, this, args);
     };
@@ -296,7 +291,7 @@ export default class ProfileCommand extends Command {
   private async getUserByTag(interaction: CommandInteraction, playerTag: string) {
     playerTag = this.client.http.fixTag(playerTag);
     const [link, externalLink] = await Promise.all([
-      this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: playerTag }),
+      this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag: playerTag }),
       this.client.http.getLinkedUser(playerTag)
     ]);
 
@@ -344,11 +339,11 @@ export default class ProfileCommand extends Command {
     });
   }
 
-  private isLinked(players: PlayerLinks[], tag: string) {
+  private isLinked(players: PlayerLinksEntity[], tag: string) {
     return Boolean(players.find((en) => en.tag === tag));
   }
 
-  private isVerified(players: PlayerLinks[], tag: string) {
+  private isVerified(players: PlayerLinksEntity[], tag: string) {
     return Boolean(players.find((en) => en.tag === tag && en.verified));
   }
 

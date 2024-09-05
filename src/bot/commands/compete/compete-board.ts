@@ -11,7 +11,6 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { CompeteBoardsEntity } from '../../entities/compete-boards.entity.js';
-import { LegendAttacks } from '../../types/index.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
@@ -143,7 +142,7 @@ export default class CompeteCommand extends Command {
 
   public async getLegendEmbed(interaction: CommandInteraction<'cached'>, args: { seasonId: string; playerTags: string[]; layout: string }) {
     const raw = await this.client.db
-      .collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
+      .collection(Collections.LEGEND_ATTACKS)
       .find({
         tag: { $in: args.playerTags },
         seasonId: args.seasonId

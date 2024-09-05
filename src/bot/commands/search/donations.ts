@@ -1,10 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { PlayerSeasonModel } from '../../types/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { recoverDonations } from '../../util/helper.js';
 import { Season, Util } from '../../util/index.js';
+import { PlayerSeasonsEntity } from '@app/entities';
 
 export default class DonationsCommand extends Command {
   public constructor() {
@@ -53,7 +53,7 @@ export default class DonationsCommand extends Command {
 
     await Promise.allSettled([recoverDonations(clan)]);
     const dbMembers = await this.client.db
-      .collection<Pick<PlayerSeasonModel, 'tag' | 'clans' | 'townHallLevel'>>(Collections.PLAYER_SEASONS)
+      .collection<Pick<PlayerSeasonsEntity, 'tag' | 'clans' | 'townHallLevel'>>(Collections.PLAYER_SEASONS)
       .find(
         { season, __clans: clan.tag, tag: { $in: clan.memberList.map((m) => m.tag) } },
         { projection: { tag: 1, clans: 1, townHallLevel: 1 } }
