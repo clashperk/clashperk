@@ -67,7 +67,7 @@ export default class SetupUtilsCommand extends Command {
     if (args.option === 'flag-alert-log') return this.flagAlertLog(interaction, args);
     if (args.option === 'roster-changelog') return this.rosterChangeLog(interaction, args);
     if (args.option === 'reminder-ping-exclusion') return this.reminderPingExclusion(interaction, args);
-    if (args.option === 'maintenance-notification-channel') return this.maintenanceNotificationChannel(interaction, args);
+    if (args.option === 'maintenance-break-log') return this.maintenanceNotificationChannel(interaction, args);
 
     throw new Error(`Command "${args.option}" not found.`);
   }

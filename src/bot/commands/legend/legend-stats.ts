@@ -14,8 +14,8 @@ export default class LegendStatsCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { is_live?: boolean }) {
-    const threshold = await this.getLegendThreshold(!!args.is_live);
+  public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { is_eod?: boolean }) {
+    const threshold = await this.getLegendThreshold(!!args.is_eod);
     if (!threshold?.thresholds?.length) return interaction.editReply('No data available.');
 
     const embed = new EmbedBuilder();
@@ -32,29 +32,31 @@ export default class LegendStatsCommand extends Command {
           return `\`${padStart(rank.toLocaleString(), 6)} \` \` ${minTrophies} \``;
         }),
         '',
-        args.is_live ? `${time(new Date(), 'f')}` : `${time(moment(threshold.timestamp).toDate(), 'f')}`
+        args.is_eod
+          ? `**Last EOD Ranks** \n${time(moment(threshold.timestamp).toDate(), 'f')}`
+          : `**Live Ranks** \n${time(moment().toDate(), 'f')}`
       ].join('\n')
     );
 
     const customIds = {
-      toggle: this.createId({ cmd: this.id, is_live: !args.is_live }),
-      refresh: this.createId({ cmd: this.id, is_live: args.is_live })
+      toggle: this.createId({ cmd: this.id, is_eod: !args.is_eod }),
+      refresh: this.createId({ cmd: this.id, is_eod: args.is_eod })
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
       new ButtonBuilder()
-        .setLabel(args.is_live ? 'Last EOD' : 'Live')
-        .setStyle(args.is_live ? ButtonStyle.Primary : ButtonStyle.Success)
+        .setLabel(!args.is_eod ? 'Last EOD Ranks' : 'Live Ranks')
+        .setStyle(ButtonStyle.Primary)
         .setCustomId(customIds.toggle)
     );
 
     return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
-  private async getLegendThreshold(isLive: boolean) {
+  private async getLegendThreshold(isEod: boolean) {
     const eodThresholds = await this.client.redis.getLegendThreshold('RAW:LEGEND-TROPHY-THRESHOLD');
-    if (isLive) {
+    if (!isEod) {
       const res = await fetch('https://api.clashperk.com/tasks/legend-trophy-threshold', {
         method: 'GET',
         headers: {

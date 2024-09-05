@@ -5,7 +5,7 @@ import { title as toTitle } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { Util } from '../../util/index.js';
-import { logActionsMap } from './setup-logs.js';
+import { logActionsMap } from './setup-clan-logs.js';
 
 function title(str: string) {
   return toTitle(str).replace(/cwl/i, 'CWL');

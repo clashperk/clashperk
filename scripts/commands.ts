@@ -1550,6 +1550,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     dm_permission: false,
     description_localizations: translation('command.setup.description'),
     options: [
+      // enable
       {
         name: 'enable',
         description: command.setup.enable.description,
@@ -1651,69 +1652,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           }
         ]
       },
-      //
-      // {
-      //   name: 'clan',
-      //   description: 'Setup a clan or link a clan to a channel.',
-      //   type: ApplicationCommandOptionType.Subcommand,
-      //   options: [
-      //     {
-      //       name: 'clan',
-      //       description: 'Select the clan to setup.',
-      //       type: ApplicationCommandOptionType.String,
-      //       autocomplete: true,
-      //       required: true
-      //     },
-      //     {
-      //       name: 'channel',
-      //       description: 'Enter the channel to link the clan.',
-      //       type: ApplicationCommandOptionType.Channel,
-      //       channel_types: ChannelTypes
-      //     },
-      //     {
-      //       name: 'category',
-      //       description: 'Enter the category of the clan.',
-      //       type: ApplicationCommandOptionType.String,
-      //       autocomplete: true
-      //     },
-      //     {
-      //       name: 'clan_alias',
-      //       description: 'Enter the alias of the clan.',
-      //       type: ApplicationCommandOptionType.String
-      //     }
-      //   ]
-      // },
-      // {
-      //   name: 'logs',
-      //   description: 'Setup logs for a clan.',
-      //   type: ApplicationCommandOptionType.Subcommand,
-      //   options: [
-      //     {
-      //       name: 'action',
-      //       description: 'Select the action for the logs.',
-      //       type: ApplicationCommandOptionType.String,
-      //       required: true,
-      //       choices: [
-      //         {
-      //           name: 'Enable',
-      //           value: 'enable-logs'
-      //         },
-      //         {
-      //           name: 'Disable',
-      //           value: 'disable-logs'
-      //         }
-      //       ]
-      //     },
-      //     {
-      //       name: 'clan',
-      //       description: 'Select the clan for the logs.',
-      //       type: ApplicationCommandOptionType.String,
-      //       required: true,
-      //       autocomplete: true
-      //     }
-      //   ]
-      // },
-      //
+      // list
       {
         name: 'list',
         description: command.setup.list.description,
@@ -1728,6 +1667,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           }
         ]
       },
+      // utility
       {
         name: 'utility',
         description: 'Setup some other utility features.',
@@ -1766,7 +1706,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               },
               {
                 name: 'Maintenance Notification Channel',
-                value: 'maintenance-notification-channel'
+                value: 'maintenance-break-log'
               }
             ]
           },
@@ -1788,6 +1728,167 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           }
         ]
       },
+      // buttons
+      {
+        name: 'buttons',
+        description: 'Setup buttons for the server.',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'button_type',
+            required: true,
+            description: 'Select the button type to setup.',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: 'Link Button',
+                value: 'link-button'
+              },
+              {
+                name: 'Role Refresh Button',
+                value: 'role-refresh-button'
+              }
+            ]
+          },
+          {
+            name: 'disable',
+            description: 'Disable the events schedular.',
+            type: ApplicationCommandOptionType.String,
+            required: false,
+            choices: [
+              {
+                name: 'Yes',
+                value: 'true'
+              },
+              {
+                name: 'No',
+                value: 'false'
+              }
+            ]
+          }
+        ]
+      },
+      // events
+      {
+        name: 'events',
+        description: 'Setup automatic events for the server.',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'disable',
+            description: 'Disable the events schedular.',
+            type: ApplicationCommandOptionType.String,
+            required: false,
+            choices: [
+              {
+                name: 'Yes',
+                value: 'true'
+              },
+              {
+                name: 'No',
+                value: 'false'
+              }
+            ]
+          }
+        ]
+      },
+      // server-logs
+      {
+        name: 'server-logs',
+        description: 'Setup automatic logs for the server.',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'log_type',
+            required: true,
+            description: 'Select the log type to setup.',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: 'Flag Alert Log',
+                value: 'flag-alert-log'
+              },
+              {
+                name: 'Roster Change Log',
+                value: 'roster-changelog'
+              },
+              {
+                name: 'Maintenance Break Log',
+                value: 'maintenance-break-log'
+              }
+            ]
+          },
+          {
+            name: 'disable',
+            description: 'Disable the events schedular.',
+            type: ApplicationCommandOptionType.String,
+            required: false,
+            choices: [
+              {
+                name: 'Yes',
+                value: 'true'
+              },
+              {
+                name: 'No',
+                value: 'false'
+              }
+            ]
+          }
+        ]
+      },
+      // clan-logs
+      {
+        name: 'clan-logs',
+        description: 'Setup automatic logs for the clan.',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'clan',
+            description: 'Select the clan to setup logs.',
+            required: true,
+            autocomplete: true,
+            type: ApplicationCommandOptionType.String
+          },
+          {
+            name: 'action',
+            description: 'What logs to enable or disable.',
+            type: ApplicationCommandOptionType.String,
+            required: false,
+            choices: [
+              {
+                name: 'Enable',
+                value: 'enable-logs'
+              },
+              {
+                name: 'Disable',
+                value: 'disable-logs'
+              }
+            ]
+          },
+          {
+            name: 'channel',
+            description: command.setup.enable.options.channel.description,
+            description_localizations: translation('command.setup.enable.options.channel.description'),
+            type: ApplicationCommandOptionType.Channel,
+            channel_types: ChannelTypes
+          },
+          {
+            name: 'color',
+            name_localizations: {
+              'en-GB': 'colour'
+            },
+            description: command.setup.enable.options.color.description,
+            description_localizations: translation('command.setup.enable.options.color.description'),
+            type: ApplicationCommandOptionType.String
+          },
+          {
+            name: 'ping_role',
+            description: '[DEPRECATED] Ping this role in the logs (only for town hall upgrade log)',
+            type: ApplicationCommandOptionType.Role
+          }
+        ]
+      },
+      // disable
       {
         name: 'disable',
         description: command.setup.disable.description,
@@ -4313,41 +4414,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Integer,
         max_value: 8,
         min_value: 3
-      },
-      {
-        name: 'maintenance_notification_channel',
-        description: '[DEPRECATED] This option has been moved to "/setup utility" command.',
-        type: ApplicationCommandOptionType.String
-      },
-      {
-        name: 'auto_update_roles',
-        type: ApplicationCommandOptionType.String,
-        description: '[DEPRECATED] This option has been moved to /autorole config command.'
-      },
-      {
-        name: 'role_removal_delays',
-        description: '[DEPRECATED] This option has been moved to /autorole config command.',
-        type: ApplicationCommandOptionType.String
-      },
-      {
-        name: 'role_addition_delays',
-        description: '[DEPRECATED] This option has been moved to /autorole config command.',
-        type: ApplicationCommandOptionType.String
-      },
-      {
-        name: 'always_force_refresh_roles',
-        description: '[DEPRECATED] This option has been moved to /autorole config command.',
-        type: ApplicationCommandOptionType.Boolean
-      },
-      {
-        name: 'autorole_allow_not_linked',
-        description: '[DEPRECATED] This option has been moved to /autorole config command.',
-        type: ApplicationCommandOptionType.Boolean
-      },
-      {
-        name: 'verified_only_clan_roles',
-        description: '[DEPRECATED] This option has been moved to /autorole config command.',
-        type: ApplicationCommandOptionType.String
       }
     ]
   },

@@ -3,7 +3,7 @@ import { ClanLogType } from '@app/entities';
 import { CommandInteraction, TextChannel } from 'discord.js';
 import { title as toTitle } from 'radash';
 import { Args, Command } from '../../lib/index.js';
-import { DeprecatedLogs, logActionsMap } from './setup-logs.js';
+import { DeprecatedLogs, logActionsMap } from './setup-clan-logs.js';
 
 function title(str: string) {
   return toTitle(str).replace(/cwl/i, 'CWL');

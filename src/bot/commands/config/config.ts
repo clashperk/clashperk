@@ -62,21 +62,6 @@ export default class ConfigCommand extends Command {
       roster_manager_role?: Role;
       flags_manager_role?: Role;
       links_manager_role?: Role;
-
-      /** @deprecated */
-      auto_update_roles?: boolean;
-      /** @deprecated */
-      verified_only_clan_roles?: boolean;
-      /** @deprecated */
-      role_removal_delays?: string;
-      /** @deprecated */
-      role_addition_delays?: string;
-      /** @deprecated */
-      always_force_refresh_roles?: boolean;
-      /** @deprecated */
-      maintenance_notification_channel?: string;
-      /** @deprecated */
-      autorole_allow_not_linked?: boolean;
     }
   ) {
     if (args.color_code) {
@@ -102,21 +87,6 @@ export default class ConfigCommand extends Command {
 
     if (args.links_manager_role) {
       await this.client.settings.push(interaction.guild, Settings.LINKS_MANAGER_ROLE, [args.links_manager_role.id]);
-    }
-
-    if (args.maintenance_notification_channel) {
-      return interaction.editReply(`This option has been moved to ${this.client.commands.get('/setup utility')} command.`);
-    }
-
-    if (
-      typeof args.verified_only_clan_roles === 'boolean' ||
-      typeof args.auto_update_roles === 'boolean' ||
-      typeof args.always_force_refresh_roles === 'boolean' ||
-      typeof args.autorole_allow_not_linked === 'boolean' ||
-      args.role_removal_delays ||
-      args.role_addition_delays
-    ) {
-      return interaction.editReply(`This option has been moved to ${this.client.commands.get('/autorole config')} command.`);
     }
 
     const validOptions = this.getOptions();

@@ -51,9 +51,16 @@ export default class SetupButtonsCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { option: string; channel: TextChannel | AnyThreadChannel; disable?: boolean }
+    args: {
+      /** @deprecated - To be deleted soon */
+      option: string;
+      button_type: string;
+      channel: TextChannel | AnyThreadChannel;
+      disable?: boolean;
+    }
   ) {
-    if (args.option === 'role-refresh-button') return this.selfRefresh(interaction, args);
+    const buttonType = args.option || args.button_type;
+    if (buttonType === 'role-refresh-button') return this.selfRefresh(interaction, args);
 
     const customIds = {
       embed: this.client.uuid(),

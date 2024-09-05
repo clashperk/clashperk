@@ -106,6 +106,7 @@ export const DeprecatedLogs = {
 export default class SetupLogsCommand extends Command {
   public constructor() {
     super('setup-logs', {
+      aliases: ['setup-clan-logs'],
       category: 'none',
       channel: 'guild',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
