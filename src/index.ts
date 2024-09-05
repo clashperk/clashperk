@@ -60,6 +60,7 @@ const server = createServer((req, res) => {
   res.end(JSON.stringify({ isReady }));
 });
 
-server.listen(process.env.PORT || 8080, () => {
-  manager.log('Listening on http://localhost:8080');
+const port = process.env.PORT || 8080;
+server.listen(port, () => {
+  manager.log(`Listening on http://localhost:${port}`);
 });

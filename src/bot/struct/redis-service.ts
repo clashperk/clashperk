@@ -25,6 +25,16 @@ class RedisService {
     return this.connection.set(key, value, { EX });
   }
 
+  public async getLegendThreshold(key: string) {
+    try {
+      const raw = await this.connection.get(key);
+      if (!raw) return null;
+      return JSON.parse(raw) as { timestamp: string; thresholds: { rank: number; minTrophies: number }[] };
+    } catch {
+      return null;
+    }
+  }
+
   public async mGet(keys: string[]) {
     try {
       if (!keys.length) return [];

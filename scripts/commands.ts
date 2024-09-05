@@ -3368,21 +3368,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           }
         ]
+      },
+      {
+        name: 'stats',
+        description: 'Shows statistics of legend ranks and trophies.',
+        type: ApplicationCommandOptionType.Subcommand
       }
-      // {
-      //   name: 'streaks',
-      //   description: 'Shows legend attack streak leaderboard.',
-      //   type: ApplicationCommandOptionType.Subcommand,
-      //   options: [
-      //     {
-      //       name: 'clans',
-      //       autocomplete: true,
-      //       description: 'Enter a tag or pick one form the autocomplete list.',
-      //       type: ApplicationCommandOptionType.String,
-      //       required: false
-      //     }
-      //   ]
-      // }
     ]
   },
   {

@@ -36,24 +36,23 @@ export default class LinkDeleteCommand extends Command {
       return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${playerTag}**` }));
     }
 
+    const isTrustedGuild = await this.isTrustedGuild(interaction);
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
     const linkedByUserIds = isManager ? [interaction.user.id, 'bot'] : [interaction.user.id];
 
     if (!(interaction.user.id === member.id || linkedByUserIds.includes(member.linkedBy)) && !this.client.isOwner(interaction.user.id)) {
       const players = await this.client.db
-        .collection<PlayerLinks>(Collections.PLAYER_LINKS)
+        .collection(Collections.PLAYER_LINKS)
         .find({ userId: interaction.user.id, verified: true })
         .toArray();
       const playerTags = players.map((player) => player.tag);
 
-      // The user should have at least a verified account;
+      // The user should have at least a verified account linked;
       if (!players.length) {
         return interaction.editReply(
           this.i18n('command.link.delete.no_access', { lng: interaction.locale, command: this.client.commands.VERIFY })
         );
       }
-
-      const isTrustedGuild = await this.isTrustedGuild(interaction);
 
       const { body: data } = await this.client.http.getPlayer(playerTag);
       // The player should be in the clan;
@@ -116,12 +115,11 @@ export default class LinkDeleteCommand extends Command {
   private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
     const isTrustedFlag = await this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
 
-    const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
-    if (!isTrusted) return false;
-
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
     if (!isManager) return false;
 
-    return true;
+    const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+
+    return isTrusted;
   }
 }

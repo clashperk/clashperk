@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, Guild, User } from 'discord.js';
 import moment from 'moment';
 import { LegendAttacksEntity } from '../../entities/legend-attacks.entity.js';
 import { Command } from '../../lib/index.js';
@@ -38,13 +38,48 @@ export default class LegendAttacksCommand extends Command {
       .filter((member) => member.trophies >= 5000 || member.league?.id === LEGEND_LEAGUE_ID);
     const playerTags = legendMembers.map((member) => member.tag);
 
+    const embed = await this.getAttackLog({
+      clans,
+      guild: interaction.guild,
+      leagueDay: args.day,
+      legendMembers,
+      playerTags,
+      seasonId
+    });
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(JSON.stringify({ cmd: this.id, clans: resolvedArgs, tag: args.tag }))
+    );
+
+    const isCurrentDay = Util.getLegendDay() === this.getDay(args.day).day;
+    return interaction.editReply({ embeds: [embed], components: isCurrentDay ? [row] : [] });
+  }
+
+  private async getAttackLog({
+    seasonId,
+    playerTags,
+    legendMembers,
+    leagueDay,
+    clans,
+    guild
+  }: {
+    seasonId: string;
+    playerTags: string[];
+    legendMembers: { name: string; tag: string; trophies: number }[];
+    leagueDay?: number;
+    clans: { tag: string; name: string }[];
+    guild: Guild;
+  }) {
     const result = await this.client.db
       .collection(Collections.LEGEND_ATTACKS)
       .find({ tag: { $in: playerTags }, seasonId })
       .toArray();
 
     const attackingMembers = result.map((mem) => mem.tag);
-    const { startTime, endTime, day } = this.getDay(args.day);
+    const { startTime, endTime, day } = this.getDay(leagueDay);
 
     const clanMembers: LegendAttacksEntity[] = legendMembers
       .filter((mem) => !attackingMembers.includes(mem.tag))
@@ -108,14 +143,14 @@ export default class LegendAttacksCommand extends Command {
     }
     members.sort((a, b) => b.current.end - a.current.end);
 
-    const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+    const embed = new EmbedBuilder().setColor(this.client.embed(guild.id));
 
     if (clans.length === 1) {
       const [clan] = clans;
       embed.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`);
       embed.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`);
     } else {
-      embed.setAuthor({ name: `Legend League Attacks (${seasonId})`, iconURL: interaction.guild.iconURL()! });
+      embed.setAuthor({ name: `Legend League Attacks (${seasonId})`, iconURL: guild.iconURL()! });
     }
 
     embed.setDescription(
@@ -131,14 +166,7 @@ export default class LegendAttacksCommand extends Command {
     );
 
     embed.setFooter({ text: `Day ${day} (${Season.ID})` });
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setEmoji(EMOJIS.REFRESH)
-        .setStyle(ButtonStyle.Secondary)
-        .setCustomId(JSON.stringify({ cmd: this.id, clans: resolvedArgs, tag: args.tag }))
-    );
-    const currDay = Util.getLegendDay();
-    return interaction.editReply({ embeds: [embed], components: currDay === day ? [row] : [] });
+    return embed;
   }
 
   private getDay(day?: number) {
@@ -148,7 +176,10 @@ export default class LegendAttacksCommand extends Command {
     return { ...days[num - 1], day };
   }
 
-  private async getClans(interaction: CommandInteraction<'cached'>, args: { clans?: string; tag?: string; user?: User }) {
+  private async getClans(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; tag?: string; user?: User; location?: string }
+  ) {
     const isSingleTag = args.clans && this.client.http.isValidTag(this.client.http.fixTag(args.clans));
 
     if (args.clans && !isSingleTag) {

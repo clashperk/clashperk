@@ -235,42 +235,38 @@ export default class StorageHandler {
   }
 
   public async getWebhookWorkloads(guildId: string) {
-    const logs = [Collections.CLAN_LOGS];
-
-    const facet = logs.reduce<Record<string, any[]>>((record, log) => {
-      record[log] = [
-        {
-          $lookup: {
-            from: log,
-            localField: '_id',
-            foreignField: 'clanId',
-            as: 'webhook',
-            pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
-          }
-        },
-        {
-          $unwind: '$webhook'
-        },
-        {
-          $project: {
-            tag: 1,
-            name: 1,
-            webhook: 1
-          }
-        }
-      ];
-      return record;
-    }, {});
-
-    const result = await this.client.db
+    const [result] = await this.client.db
       .collection(Collections.CLAN_STORES)
       .aggregate<Record<string, { name: string; tag: string; webhook: { id: string; token: string } }[]>>([
         { $match: { guild: guildId } },
-        { $facet: facet }
+        {
+          $facet: {
+            [Collections.CLAN_LOGS]: [
+              {
+                $lookup: {
+                  from: Collections.CLAN_LOGS,
+                  localField: '_id',
+                  foreignField: 'clanId',
+                  as: 'webhook'
+                }
+              },
+              {
+                $unwind: '$webhook'
+              },
+              {
+                $project: {
+                  tag: 1,
+                  name: 1,
+                  webhook: 1
+                }
+              }
+            ]
+          }
+        }
       ])
       .toArray();
 
-    return result.length ? Object.values(result.at(0)!).flat() : [];
+    return Object.values(result ?? {}).flat();
   }
 
   public async getWebhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | MediaChannel) {
