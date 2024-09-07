@@ -107,6 +107,7 @@ export default class RPCHandler {
             await this.clanLog.exec(data.clan.tag, data);
             break;
           case Flags.CAPITAL_LOG:
+            await this.clanLog.exec(data.tag, data);
             break;
           default:
             break;

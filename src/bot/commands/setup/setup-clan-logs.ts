@@ -19,17 +19,15 @@ function title(str: string) {
   return toTitle(str).replace(/cwl/i, 'CWL');
 }
 
-type LogMap = Record<string, { label?: string }>;
+type LogMap = Record<string, { label?: string; description?: string }>;
 
 export const logGroups: { name: string; logs: LogMap }[] = [
   {
     name: 'Clan Logs',
     logs: {
-      [ClanLogType.MEMBER_JOIN_LEAVE_LOG]: {
-        label: 'Member Join/Leave Log'
+      [ClanLogType.CLAN_ACHIEVEMENTS_LOG]: {
+        description: 'e.g. Clan Level up, War/Capital League Promotion/Demotion, etc'
       },
-      [ClanLogType.ROLE_CHANGE_LOG]: {},
-      [ClanLogType.CLAN_ACHIEVEMENTS_LOG]: {},
 
       [ClanLogType.CONTINUOUS_DONATION_LOG]: {
         label: 'Donation Log (Instant)'
@@ -38,29 +36,43 @@ export const logGroups: { name: string; logs: LogMap }[] = [
         label: 'Donation Log (Daily)'
       },
       [ClanLogType.WEEKLY_DONATION_LOG]: {
-        label: 'Donation Log (Weekly)'
+        label: 'Donation Log (Weekly)',
+        description: 'Recurring every Monday'
       },
       [ClanLogType.MONTHLY_DONATION_LOG]: {
-        label: 'Donation Log (Monthly)'
+        label: 'Donation Log (Monthly)',
+        description: 'Recurring every last Monday of the month'
       },
 
-      [ClanLogType.CLAN_GAMES_EMBED_LOG]: {},
-      [ClanLogType.LAST_SEEN_EMBED_LOG]: {},
+      [ClanLogType.CLAN_GAMES_EMBED_LOG]: {
+        description: 'Self-updating and Posted for every Clan Games'
+      },
+      [ClanLogType.LAST_SEEN_EMBED_LOG]: {
+        description: 'Self-updating every 30 minutes'
+      },
       [ClanLogType.LEGEND_ATTACKS_DAILY_SUMMARY_LOG]: {}
     }
   },
   {
     name: 'Capital Logs',
     logs: {
-      [ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG]: {}
+      [ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG]: {
+        description: 'Posted every Monday after the Capital Raid ends'
+      },
+      [ClanLogType.CLAN_CAPITAL_CONTRIBUTION_LOG]: {},
+      [ClanLogType.CLAN_CAPITAL_RAID_LOG]: {}
     }
   },
   {
     name: 'War Logs',
     logs: {
-      [ClanLogType.WAR_EMBED_LOG]: {},
+      [ClanLogType.WAR_EMBED_LOG]: {
+        description: 'Self-updating and Posted for every War'
+      },
       [ClanLogType.WAR_MISSED_ATTACKS_LOG]: {},
-      [ClanLogType.CWL_EMBED_LOG]: {},
+      [ClanLogType.CWL_EMBED_LOG]: {
+        description: 'Self-updating and Posted for every CWL Round'
+      },
       [ClanLogType.CWL_MISSED_ATTACKS_LOG]: {},
       [ClanLogType.CWL_LINEUP_CHANGE_LOG]: {},
       [ClanLogType.CWL_MONTHLY_SUMMARY_LOG]: {}
@@ -69,6 +81,12 @@ export const logGroups: { name: string; logs: LogMap }[] = [
   {
     name: 'Player Logs',
     logs: {
+      [ClanLogType.MEMBER_JOIN_LEAVE_LOG]: {
+        label: 'Join/Leave Log'
+      },
+      [ClanLogType.ROLE_CHANGE_LOG]: {
+        description: 'e.g. In-game Promotion/Demotion Log'
+      },
       [ClanLogType.NAME_CHANGE_LOG]: {},
       [ClanLogType.TOWN_HALL_UPGRADE_LOG]: {},
       [ClanLogType.WAR_PREFERENCE_LOG]: {}
@@ -224,6 +242,7 @@ export default class SetupLogsCommand extends Command {
         .setOptions(
           logs.map((log) => ({
             label: logActionsMap[log].label || title(log),
+            description: logActionsMap[log].description,
             emoji: EMOJIS.HASH,
             value: log
           }))
@@ -241,6 +260,7 @@ export default class SetupLogsCommand extends Command {
         menu.setOptions(
           logTypes.map((log) => ({
             label: logActionsMap[log].label || title(log),
+            description: logActionsMap[log].description,
             emoji: EMOJIS.HASH,
             value: log
           }))

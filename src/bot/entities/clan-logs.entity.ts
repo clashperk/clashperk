@@ -62,8 +62,8 @@ export enum ClanLogType {
   // CLAN
   CLAN_ACHIEVEMENTS_LOG = 'clan_achievements_log',
 
-  CLAN_CAPITAL_DONATION_LOG = 'clan_capital_donation_log',
-  CLAN_CAPITAL_ATTACKS_LOG = 'clan_capital_attacks_log',
+  CLAN_CAPITAL_CONTRIBUTION_LOG = 'clan_capital_contribution_log',
+  CLAN_CAPITAL_RAID_LOG = 'clan_capital_raid_log',
   CLAN_CAPITAL_WEEKLY_IMAGE_LOG = 'clan_capital_weekly_image_log',
   CLAN_CAPITAL_WEEKLY_SUMMARY_LOG = 'clan_capital_weekly_summary_log',
 

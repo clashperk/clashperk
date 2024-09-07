@@ -19,7 +19,9 @@ const COLOR_MAPS: { [key: string]: number } = {
   [LogActions.DEMOTED]: COLOR_CODES.RED,
   [LogActions.WAR_PREF_CHANGE]: COLOR_CODES.CYAN,
   [LogActions.JOINED]: COLOR_CODES.GREEN,
-  [LogActions.LEFT]: COLOR_CODES.RED
+  [LogActions.LEFT]: COLOR_CODES.RED,
+  [LogActions.CAPITAL_GOLD_CONTRIBUTION]: COLOR_CODES.DARK_GREEN,
+  [LogActions.CAPITAL_GOLD_RAID]: COLOR_CODES.RED
 };
 
 const logActionsMap: Record<string, LogAction[]> = {
@@ -33,7 +35,9 @@ const logActionsMap: Record<string, LogAction[]> = {
     LogActions.CAPITAL_HALL_LEVEL_UP,
     LogActions.CLAN_LEVEL_UP,
     LogActions.CAPITAL_LEAGUE_CHANGE
-  ]
+  ],
+  [ClanLogType.CLAN_CAPITAL_CONTRIBUTION_LOG]: [LogActions.CAPITAL_GOLD_CONTRIBUTION],
+  [ClanLogType.CLAN_CAPITAL_RAID_LOG]: [LogActions.CAPITAL_GOLD_RAID]
 };
 
 export default class ClanLog extends BaseClanLog {
@@ -98,7 +102,7 @@ export default class ClanLog extends BaseClanLog {
     let content: string | undefined;
 
     const embed = new EmbedBuilder();
-    embed.setColor(COLOR_MAPS[member.op]);
+    if (COLOR_MAPS[member.op]) embed.setColor(COLOR_MAPS[member.op]);
     embed.setTitle(`\u200e${player.name} (${player.tag})`);
     embed.setTimestamp();
 
@@ -145,6 +149,18 @@ export default class ClanLog extends BaseClanLog {
         embed.setDescription(`**Opted out** of clan wars.`);
         embed.setColor(COLOR_CODES.DARK_RED);
       }
+    }
+
+    if (member.op === LogActions.CAPITAL_GOLD_CONTRIBUTION) {
+      embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badgeUrl });
+      embed.setDescription(`${EMOJIS.CAPITAL_GOLD} Contributed **${member.contributed.toLocaleString()}** Capital Gold`);
+    }
+
+    if (member.op === LogActions.CAPITAL_GOLD_RAID) {
+      embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badgeUrl });
+      embed.setDescription(
+        `${EMOJIS.CAPITAL_RAID} Raided **${member.looted.toLocaleString()}** Capital Gold (${member.attacks}/${member.attackLimit})`
+      );
     }
 
     if (member.op === LogActions.LEFT) {
@@ -360,7 +376,9 @@ export default class ClanLog extends BaseClanLog {
           ClanLogType.NAME_CHANGE_LOG,
           ClanLogType.HERO_UPGRADE_LOG,
           ClanLogType.CONTINUOUS_DONATION_LOG,
-          ClanLogType.CLAN_ACHIEVEMENTS_LOG
+          ClanLogType.CLAN_ACHIEVEMENTS_LOG,
+          ClanLogType.CLAN_CAPITAL_CONTRIBUTION_LOG,
+          ClanLogType.CLAN_CAPITAL_RAID_LOG
         ]
       },
       guildId: { $in: guildIds }
@@ -383,7 +401,9 @@ export default class ClanLog extends BaseClanLog {
           ClanLogType.NAME_CHANGE_LOG,
           ClanLogType.HERO_UPGRADE_LOG,
           ClanLogType.CONTINUOUS_DONATION_LOG,
-          ClanLogType.CLAN_ACHIEVEMENTS_LOG
+          ClanLogType.CLAN_ACHIEVEMENTS_LOG,
+          ClanLogType.CLAN_CAPITAL_CONTRIBUTION_LOG,
+          ClanLogType.CLAN_CAPITAL_RAID_LOG
         ]
       }
     })) {
@@ -415,6 +435,10 @@ interface Member {
   townHallLevel: number;
   donations: number;
   donationsReceived: number;
+  contributed: number;
+  looted: number;
+  attacks: number;
+  attackLimit: number;
   logType: string;
 }
 
