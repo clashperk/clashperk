@@ -17,7 +17,7 @@ import { Collections, Settings } from '../util/constants.js';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
 import { Util } from '../util/index.js';
 import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
-import { Client } from './client-module.js';
+import { Client } from './client.js';
 
 export default class ClanWarScheduler {
   protected schedulers!: Collection<ClanWarSchedulersEntity>;

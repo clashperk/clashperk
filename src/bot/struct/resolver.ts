@@ -16,7 +16,7 @@ import {
   getHttpStatusText
 } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';
-import Client from './client-module.js';
+import Client from './client.js';
 import { ElasticIndexer } from './indexer.js';
 
 export default class Resolver {

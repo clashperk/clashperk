@@ -3,7 +3,7 @@ import { Collection, WithId } from 'mongodb';
 import TimeoutSignal from 'timeout-signal';
 import { PatreonMembersEntity } from '../entities/patrons.entity.js';
 import { Collections, Settings } from '../util/constants.js';
-import { Client } from './client-module.js';
+import { Client } from './client.js';
 
 export const rewards = {
   bronze: '3705318',

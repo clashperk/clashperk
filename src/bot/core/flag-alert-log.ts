@@ -14,7 +14,7 @@ import {
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { FlagsEntity } from '../entities/flags.entity.js';
-import { Client } from '../struct/client-module.js';
+import { Client } from '../struct/client.js';
 import { Collections } from '../util/constants.js';
 import { HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/emojis.js';
 import { Util } from '../util/index.js';

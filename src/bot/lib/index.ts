@@ -23,7 +23,7 @@ import { extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import readdirp from 'readdirp';
 import { container } from 'tsyringe';
-import { Client } from '../struct/client-module.js';
+import { Client } from '../struct/client.js';
 import { CustomIdProps } from '../struct/component-handler.js';
 import { Settings } from '../util/constants.js';
 import { i18n } from '../util/i18n.js';

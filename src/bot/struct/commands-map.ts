@@ -1,4 +1,4 @@
-import Client from './client-module.js';
+import Client from './client.js';
 
 export class CommandsMap {
   private nameMappings: Map<string, string>;

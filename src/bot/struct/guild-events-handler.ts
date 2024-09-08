@@ -4,7 +4,7 @@ import { Collections, FeatureFlags } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { i18n } from '../util/i18n.js';
 import { Season, Util } from '../util/index.js';
-import Client from './client-module.js';
+import Client from './client.js';
 
 export const imageMaps: Record<string, string> = {
   clan_games_start: 'clan_games_image_url',

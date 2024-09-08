@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import moment from 'moment';
 import util from 'node:util';
-import { Client } from '../struct/client-module.js';
+import { Client } from '../struct/client.js';
 
 const COLORS: Record<string, string> = {
   debug: 'yellow',

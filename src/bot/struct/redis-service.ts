@@ -1,7 +1,7 @@
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { nanoid } from 'nanoid';
 import { createClient } from 'redis';
-import Client from './client-module.js';
+import Client from './client.js';
 import { CustomIdProps } from './component-handler.js';
 
 export declare type RedisJSON = null | boolean | number | string | Date;

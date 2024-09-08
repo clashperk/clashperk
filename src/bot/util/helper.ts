@@ -16,7 +16,7 @@ import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title } from 'radash';
 import { container } from 'tsyringe';
 import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
-import Client from '../struct/client-module.js';
+import Client from '../struct/client.js';
 import { ClanEmbedFields } from './command-options.js';
 import { Collections, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './constants.js';
 import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './emojis.js';

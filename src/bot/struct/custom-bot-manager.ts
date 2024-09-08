@@ -17,7 +17,7 @@ import { COMMANDS } from '../../../scripts/commands.js';
 import { CustomBotsEntity } from '../entities/custom-bot.entity.js';
 import { PatreonMembersEntity } from '../entities/patrons.entity.js';
 import { Collections, Settings } from '../util/constants.js';
-import Client from './client-module.js';
+import Client from './client.js';
 
 export class CustomBotManager {
   private readonly client: Client;

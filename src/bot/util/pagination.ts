@@ -13,7 +13,7 @@ import {
   UserSelectMenuInteraction
 } from 'discord.js';
 import { container } from 'tsyringe';
-import Client from '../struct/client-module.js';
+import Client from '../struct/client.js';
 import { CustomIdProps } from '../struct/component-handler.js';
 import { EMOJIS } from './emojis.js';
 

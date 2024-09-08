@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { inspect } from 'node:util';
 import 'reflect-metadata';
 import { defaultOptions } from '../locales/config.js';
-import { Client } from './bot/struct/client-module.js';
+import { Client } from './bot/struct/client.js';
 import { Backend } from './bot/util/backend.js';
 
 const client = new Client();

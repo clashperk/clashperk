@@ -7,7 +7,7 @@ import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
 import { FlagsEntity } from '../entities/flags.entity.js';
 import { Collections } from '../util/constants.js';
 import { COUNTRIES } from '../util/countries.js';
-import Client from './client-module.js';
+import Client from './client.js';
 
 export class Autocomplete {
   public constructor(private readonly client: Client) {}

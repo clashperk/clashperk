@@ -2,7 +2,7 @@ import { Collections } from '@app/constants';
 import { EmbedBuilder, escapeMarkdown, Guild, time } from 'discord.js';
 import { container } from 'tsyringe';
 import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
-import Client from '../struct/client-module.js';
+import Client from '../struct/client.js';
 import { Season } from '../util/season.js';
 import { Util } from '../util/util.js';
 

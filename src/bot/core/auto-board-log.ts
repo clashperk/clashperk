@@ -15,7 +15,7 @@ import {
   WebhookMessageCreateOptions
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Client } from '../struct/client-module.js';
+import { Client } from '../struct/client.js';
 import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/helper.js';

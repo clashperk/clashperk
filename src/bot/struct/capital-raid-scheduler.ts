@@ -15,7 +15,7 @@ import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/constants.js';
 import { Util } from '../util/index.js';
-import { Client } from './client-module.js';
+import { Client } from './client.js';
 
 export const ReminderDeleteReasons = {
   REMINDER_NOT_FOUND: 'reminder_not_found',

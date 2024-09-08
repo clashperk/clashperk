@@ -10,7 +10,7 @@ import {
   TextChannel
 } from 'discord.js';
 import jwt from 'jsonwebtoken';
-import Client from '../struct/client-module.js';
+import Client from '../struct/client.js';
 import { Settings } from './constants.js';
 
 export class ClientUtil {
