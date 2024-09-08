@@ -181,7 +181,7 @@ export interface IRoster {
       name: string;
     };
     badgeUrl: string;
-  };
+  } | null;
   members: IRosterMember[];
   layout?: string;
   sheetId?: string;

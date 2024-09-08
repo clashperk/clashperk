@@ -1,6 +1,7 @@
 import {
   ActivityType,
   ChannelType,
+  CommandInteraction,
   ForumChannel,
   GuildMember,
   MediaChannel,
@@ -11,7 +12,7 @@ import {
 } from 'discord.js';
 import jwt from 'jsonwebtoken';
 import Client from '../struct/client.js';
-import { Settings } from './constants.js';
+import { FeatureFlags, Settings } from './constants.js';
 
 export class ClientUtil {
   public constructor(private readonly client: Client) {}
@@ -116,5 +117,16 @@ export class ClientUtil {
 
   public hasWebhookPermission(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel) {
     return channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks', 'ViewChannel']);
+  }
+
+  public async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
+    const isTrustedFlag = await this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
+
+    const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
+    if (!isManager) return false;
+
+    const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+
+    return isTrusted;
   }
 }

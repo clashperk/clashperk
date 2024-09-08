@@ -2344,6 +2344,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String
           },
           {
+            name: 'detach_clan',
+            description: 'Detach the clan from the roster',
+            type: ApplicationCommandOptionType.Boolean
+          },
+          {
             name: 'allow_unlinked',
             description: 'Whether to allow unlinked members',
             type: ApplicationCommandOptionType.Boolean

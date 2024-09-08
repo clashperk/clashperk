@@ -54,21 +54,22 @@ export default class RosterCreateCommand extends Command {
     // Create default categories
     this.client.rosterManager.createDefaultGroups(interaction.guild.id);
 
-    const clan = await this.client.resolver.resolveClan(interaction, args.clan);
-    if (!clan) return;
+    const clan = args.clan ? await this.client.resolver.resolveClan(interaction, args.clan) : null;
 
     const defaultSettings = this.client.rosterManager.getDefaultSettings(interaction.guild.id);
     const data: IRoster = {
       name: args.name,
-      clan: {
-        name: clan.name,
-        tag: clan.tag,
-        badgeUrl: clan.badgeUrls.large,
-        league: {
-          id: clan.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID,
-          name: clan.warLeague?.name ?? 'Unranked'
-        }
-      },
+      clan: clan
+        ? {
+            name: clan.name,
+            tag: clan.tag,
+            badgeUrl: clan.badgeUrls.large,
+            league: {
+              id: clan.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID,
+              name: clan.warLeague?.name ?? 'Unranked'
+            }
+          }
+        : null,
       guildId: interaction.guild.id,
       closed: false,
       category: args.category || 'GENERAL',
@@ -144,7 +145,7 @@ export default class RosterCreateCommand extends Command {
     const roster = await this.client.rosterManager.create(data);
     this.client.rosterManager.setDefaultSettings(interaction.guild.id, roster);
 
-    if (args.import_members) this.client.rosterManager.importMembers(roster, clan.memberList);
+    if (args.import_members && clan) this.client.rosterManager.importMembers(roster, clan.memberList);
 
     const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
     embed.setDescription(

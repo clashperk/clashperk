@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections, FeatureFlags, Settings } from '../../util/constants.js';
+import { Collections, Settings } from '../../util/constants.js';
 
 export default class LinkDeleteCommand extends Command {
   public constructor() {
@@ -35,7 +35,7 @@ export default class LinkDeleteCommand extends Command {
       return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${playerTag}**` }));
     }
 
-    const isTrustedGuild = await this.isTrustedGuild(interaction);
+    const isTrustedGuild = await this.client.util.isTrustedGuild(interaction);
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
     const linkedByUserIds = isManager ? [interaction.user.id, 'bot'] : [interaction.user.id];
 
@@ -109,16 +109,5 @@ export default class LinkDeleteCommand extends Command {
       : link
         ? { id: link.userId, linkedBy: link.userId }
         : null;
-  }
-
-  private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-    const isTrustedFlag = await this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
-
-    const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
-    if (!isManager) return false;
-
-    const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
-
-    return isTrusted;
   }
 }

@@ -43,6 +43,7 @@ export default class RosterEditCommand extends Command {
     args: {
       roster: string;
       clan?: string;
+      detach_clan?: boolean;
       name?: string;
       category?: IRoster['category'];
       max_members?: number;
@@ -79,6 +80,10 @@ export default class RosterEditCommand extends Command {
     if (args.delete_roster) {
       await this.client.rosterManager.delete(rosterId);
       return interaction.followUp({ content: 'Roster deleted successfully.', ephemeral: true });
+    }
+
+    if (args.clan && args.detach_clan) {
+      return interaction.editReply({ content: 'You cannot detach and attach a clan at the same time in a single command.' });
     }
 
     const clan = args.clan ? await this.client.resolver.resolveClan(interaction, args.clan) : null;
@@ -123,6 +128,7 @@ export default class RosterEditCommand extends Command {
     if (typeof args.allow_unlinked === 'boolean') data.allowUnlinked = args.allow_unlinked;
     if (typeof args.color_code === 'number') data.colorCode = args.color_code;
     if (args.category) data.category = args.category;
+    if (args.detach_clan) data.clan = null;
 
     if (args.log_channel) {
       const webhook = await this.client.storage.getWebhook(args.log_channel.isThread() ? args.log_channel.parent! : args.log_channel);

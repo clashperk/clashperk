@@ -14,7 +14,7 @@ import {
 import { cluster, diff } from 'radash';
 import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/google.js';
-import { Collections, DOT, FeatureFlags, Settings } from '../../util/constants.js';
+import { Collections, DOT, Settings } from '../../util/constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';
 import { getExportComponents, sumHeroes } from '../../util/helper.js';
 import { createInteractionCollector, handlePagination } from '../../util/pagination.js';
@@ -249,7 +249,7 @@ export default class ProfileCommand extends Command {
           return this.export(action, links, user);
         }
 
-        const isTrustedGuild = await this.isTrustedGuild(interaction);
+        const isTrustedGuild = await this.client.util.isTrustedGuild(interaction);
         if (action.customId === customIds.change) {
           const isMember = action.user.id === user.id ? action.member : await action.guild.members.fetch(user.id).catch(() => null);
           if (
@@ -403,18 +403,6 @@ export default class ProfileCommand extends Command {
 
   private playerShortUrl(tag: string) {
     return `http://cprk.eu/p/${tag.replace('#', '')}`;
-  }
-
-  private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-    const isTrustedFlag = await this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
-
-    const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
-    if (!isTrusted) return false;
-
-    const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
-    if (!isManager) return false;
-
-    return true;
   }
 }
 
