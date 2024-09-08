@@ -13,19 +13,17 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc && tsc-alias",
-    "postbuild": "node -r dotenv/config dist/scripts/export-locale.js",
+    "postbuild": "node -r dotenv/config dist/scripts/export_locale_script.js",
     "start": "npm run build && node -r dotenv/config --enable-source-maps dist/src/index.js",
-    "test": "eslint --ext .ts --ignore-path .gitignore .",
-    "release": "./scripts/release.sh",
-    "lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
     "dev": "node -r dotenv/config --enable-source-maps dist/src/index.js",
-    "crowdin": "tsx -r dotenv/config scripts/crowdin.ts",
-    "deploy": "tsx -r dotenv/config scripts/deploy-script.ts",
-    "patrons": "tsx -r dotenv/config scripts/patreon-status-script.ts",
+    "test": "eslint --ext .ts --ignore-path .gitignore .",
+    "lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
+    "release": "./scripts/release.sh",
+    "deploy": "tsx -r dotenv/config scripts/update_commands_script.ts",
+    "crowdin": "tsx -r dotenv/config scripts/update_crowdin_script.ts",
+    "patrons": "tsx -r dotenv/config scripts/check_patreon_status_script.ts",
     "pull": "git submodule init && git submodule update --remote",
-    "task:index": "tsx -r dotenv/config scripts/entry-maker-script.ts",
-    "task:rename": "tsx -r dotenv/config scripts/rename-files.ts",
-    "build:sentry": "sentry-cli sourcemaps inject --org suvajit --project clashperk_bot ./dist && sentry-cli sourcemaps upload --org suvajit --project clashperk_bot ./dist --release=$(git rev-parse HEAD)"
+    "entry": "tsx -r dotenv/config scripts/entry_maker_script.ts"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^8.6.0",
