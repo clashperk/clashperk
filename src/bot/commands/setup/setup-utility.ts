@@ -27,7 +27,7 @@ import { createInteractionCollector } from '../../util/pagination.js';
 export default class SetupUtilsCommand extends Command {
   public constructor() {
     super('setup-utility', {
-      category: 'none',
+      category: 'setup',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: [

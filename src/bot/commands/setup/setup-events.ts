@@ -20,7 +20,7 @@ import { Collections, URL_REGEX } from '../../util/constants.js';
 export default class SetupEventsCommand extends Command {
   public constructor() {
     super('setup-events', {
-      category: 'none',
+      category: 'setup',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: [

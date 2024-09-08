@@ -23,7 +23,7 @@ import { EMOJIS } from '../../util/emojis.js';
 export default class SetupButtonsCommand extends Command {
   public constructor() {
     super('setup-buttons', {
-      category: 'none',
+      category: 'setup',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: [

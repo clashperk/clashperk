@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 export default class SetupEnableCommand extends Command {
   public constructor() {
     super('setup-enable', {
-      category: 'none',
+      category: 'setup',
       channel: 'guild',
       defer: false,
       userPermissions: ['ManageGuild']

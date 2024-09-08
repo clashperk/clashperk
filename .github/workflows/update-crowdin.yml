@@ -1,0 +1,34 @@
+name: update-crowdin
+
+on:
+  push:
+    paths:
+      - locales
+      - locales/**
+      - locales/**/**
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: update-crowdin
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Init Submodule
+        run: git submodule init && git submodule update --remote
+
+      - name: NPM Install
+        run: npm i
+
+      - name: Update Crowdin
+        run: npm run crowdin
+        env:
+          CROWDIN_API: ${{ secrets.CROWDIN_API }}

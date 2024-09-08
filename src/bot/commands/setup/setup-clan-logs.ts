@@ -125,7 +125,7 @@ export default class SetupLogsCommand extends Command {
   public constructor() {
     super('setup-logs', {
       aliases: ['setup-clan-logs'],
-      category: 'none',
+      category: 'setup',
       channel: 'guild',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       userPermissions: ['ManageGuild'],

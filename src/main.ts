@@ -6,7 +6,7 @@ import 'moment-duration-format';
 import { fileURLToPath } from 'node:url';
 import { inspect } from 'node:util';
 import 'reflect-metadata';
-import { defaultOptions } from '../locales/index.js';
+import { defaultOptions } from '../locales/config.js';
 import { Client } from './bot/struct/client-module.js';
 import { Backend } from './bot/util/backend.js';
 

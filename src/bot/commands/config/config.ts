@@ -14,7 +14,7 @@ import {
 } from 'discord.js';
 import ms from 'ms';
 import { title, unique } from 'radash';
-import { command } from '../../../../locales/en.js';
+import { command } from '../../../../locales/locales.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';

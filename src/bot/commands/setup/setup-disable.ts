@@ -12,7 +12,7 @@ function title(str: string) {
 export default class SetupDisableCommand extends Command {
   public constructor() {
     super('setup-disable', {
-      category: 'none',
+      category: 'setup',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
       userPermissions: ['ManageGuild'],

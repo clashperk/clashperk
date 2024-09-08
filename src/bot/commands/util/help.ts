@@ -10,7 +10,7 @@ import {
   StringSelectMenuBuilder
 } from 'discord.js';
 import i18next from 'i18next';
-import { command as commandMap } from '../../../../locales/en.js';
+import { command as commandMap } from '../../../../locales/locales.js';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/emojis.js';
 

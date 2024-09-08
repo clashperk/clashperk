@@ -9,8 +9,8 @@ import i18next from 'i18next';
 import moment from 'moment';
 import { fileURLToPath } from 'node:url';
 import { title } from 'radash';
-import { command, common } from '../locales/en.js';
-import { defaultOptions, fallbackLng } from '../locales/index.js';
+import { defaultOptions, fallbackLng } from '../locales/config.js';
+import { command, common } from '../locales/locales.js';
 import { Backend } from '../src/bot/util/backend.js';
 import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/bot/util/command-options.js';
 import {
@@ -1123,7 +1123,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'roster',
-        description: 'CWL Roster',
+        description: command.cwl.roster.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -1144,7 +1144,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'round',
-        description: 'CWL Round',
+        description: command.cwl.round.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -1172,7 +1172,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'lineup',
-        description: 'CWL Lineup',
+        description: command.cwl.lineup.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -1193,7 +1193,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'stars',
-        description: 'CWL Stars',
+        description: command.cwl.stars.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -1221,7 +1221,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'attacks',
-        description: 'CWL Attacks',
+        description: command.cwl.attacks.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -1249,7 +1249,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'stats',
-        description: 'CWL Stats',
+        description: command.cwl.stats.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -1277,7 +1277,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'members',
-        description: 'CWL Members',
+        description: command.cwl.members.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -2958,7 +2958,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'refresh',
-        description: 'Refresh automatic clan roles.',
+        description: command.autorole.refresh.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
