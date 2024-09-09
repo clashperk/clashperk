@@ -17,6 +17,9 @@ COPY package*.json ./
 
 RUN npm install --omit=dev
 
+COPY /locales /app/locales
+COPY /src /app/src
+
 COPY --from=deps /app/dist ./dist
 
 ARG GIT_SHA
