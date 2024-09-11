@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { inspect } from 'node:util';
 import 'reflect-metadata';
 import { defaultOptions } from '../locales/config.js';
-import { Client } from './bot/struct/client.js';
-import { Backend } from './bot/util/backend.js';
+import { Client } from './struct/client.js';
+import { Backend } from './util/backend.js';
 
 const client = new Client();
 
@@ -57,4 +57,4 @@ process.on('unhandledRejection', (error: DiscordAPIError) => {
 process.once('SIGTERM', () => client.close());
 process.once('SIGINT', () => client.close());
 
-client.init(process.env.TOKEN!);
+await client.init(process.env.TOKEN!);

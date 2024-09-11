@@ -1,4 +1,11 @@
 import {
+  BUILDER_BASE_LEAGUE_NAMES,
+  BUILDER_HALL_LEVELS_FOR_ROLES,
+  MAX_TOWN_HALL_LEVEL,
+  PLAYER_LEAGUE_NAMES,
+  TOWN_HALL_LEVELS_FOR_ROLES
+} from '@app/constants';
+import {
   APIApplicationCommandBasicOption,
   ApplicationCommandOptionType,
   ApplicationCommandType,
@@ -11,17 +18,10 @@ import { fileURLToPath } from 'node:url';
 import { title } from 'radash';
 import { defaultOptions, fallbackLng } from '../locales/config.js';
 import { command, common } from '../locales/locales.js';
-import { Backend } from '../src/bot/util/backend.js';
-import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/bot/util/command-options.js';
-import {
-  BUILDER_BASE_LEAGUE_NAMES,
-  BUILDER_HALL_LEVELS_FOR_ROLES,
-  MAX_TOWN_HALL_LEVEL,
-  PLAYER_LEAGUE_NAMES,
-  TOWN_HALL_LEVELS_FOR_ROLES
-} from '../src/bot/util/constants.js';
-import { TranslationKey } from '../src/bot/util/i18n.js';
-import { Season } from '../src/bot/util/index.js';
+import { Backend } from '../src/util/backend.js';
+import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/util/command-options.js';
+import { TranslationKey } from '../src/util/i18n.js';
+import { Season } from '../src/util/index.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
@@ -85,8 +85,7 @@ const userInstallable = {
 
 export const translation = (text: TranslationKey): Record<string, string> => {
   return Object.keys(fallbackLng).reduce<Record<string, string>>((record, lang) => {
-    const locale = i18next.t(text, { lng: lang, escapeValue: false });
-    record[lang] = locale;
+    record[lang] = i18next.t(text, { lng: lang, escapeValue: false });
     return record;
   }, {});
 };
@@ -4260,12 +4259,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   },
   {
     name: 'nickname',
-    description: 'Server nickname management system.',
+    description: command.nickname.description,
     dm_permission: false,
     options: [
       {
         name: 'config',
-        description: 'Configure server nickname settings.',
+        description: command.nickname.config.description,
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {

@@ -1,7 +1,7 @@
-import { PatreonMembersEntity } from '../src/bot/entities/patrons.entity.js';
-import { mongoClient } from '../src/bot/struct/database.js';
-import { Included, Member } from '../src/bot/struct/patreon-handler.js';
-import { Collections } from '../src/bot/util/constants.js';
+import { PatreonMembersEntity } from '@app/entities';
+import { mongoClient } from '../src/struct/database.js';
+import { Included, Member } from '../src/struct/patreon-handler.js';
+import { Collections } from '@app/constants';
 
 (async () => {
   await mongoClient.connect().then(() => console.log('MongoDB Connected!'));

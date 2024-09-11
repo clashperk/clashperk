@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { DiscordjsErrorCodes, ShardingManager } from 'discord.js';
 import { createServer } from 'node:http';
 import { URL, fileURLToPath } from 'node:url';
-import Logger from './bot/util/logger.js';
+import Logger from './util/logger.js';
 
 class Manager extends ShardingManager {
   private _retry = 0;
@@ -54,7 +54,7 @@ process.on('unhandledRejection', (error) => {
 
 manager.init();
 
-const server = createServer((req, res) => {
+const server = createServer((_, res) => {
   const isReady = manager.isReady();
   res.writeHead(isReady ? 200 : 500, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ isReady }));

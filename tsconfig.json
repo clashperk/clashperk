@@ -48,10 +48,10 @@
     "allowSyntheticDefaultImports": true,
 
     "paths": {
-      "@app/constants": ["./src/bot/util/constants.ts"],
-      "@app/entities": ["./src/bot/entities/index.ts"],
-      "@lib/constants": ["./src/bot/lib/util.ts"],
-      "@lib/core": ["./src/bot/lib/index.ts"]
+      "@app/constants": ["./src/util/constants.ts"],
+      "@app/entities": ["./src/entities/index.ts"],
+      "@lib/constants": ["./src/lib/util.ts"],
+      "@lib/core": ["./src/lib/index.ts"]
     }
   },
   "include": ["src", "test", "scripts", "locales", "locales/**/*.json"]

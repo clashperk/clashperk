@@ -16,7 +16,7 @@ const argv = yargs(process.argv.slice(2))
   })
   .help().argv;
 
-const main = (): void => {
+const main = () => {
   if ('then' in argv) {
     throw new Error('Expected argv to be an object but got Promise instead, exiting');
   }
