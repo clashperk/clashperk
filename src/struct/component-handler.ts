@@ -6,33 +6,18 @@ export interface CustomIdProps {
   cmd: string;
   ephemeral?: boolean;
   /** It defaults to `true` */
-  defer?: boolean;
+  defer?: false;
   array_key?: string;
   string_key?: string;
-  [key: string]: unknown;
   user_id?: string;
   is_locked?: boolean;
+  [key: string]: unknown;
 }
 
 const deferredDisallowed = ['link-add'];
 
 export default class ComponentHandler {
   public constructor(private readonly client: Client) {}
-
-  private async parseCommandId(customId: string): Promise<CustomIdProps | null> {
-    if (/^{.*}$/.test(customId)) return JSON.parse(customId);
-    if (/^CMD/.test(customId)) {
-      return this.client.redis.getCustomId<CustomIdProps>(customId);
-    }
-    return null;
-  }
-
-  public parseStringSelectMenu(interaction: StringSelectMenuInteraction, parsed: CustomIdProps) {
-    const values = interaction.values;
-    if (parsed.array_key) return { [parsed.array_key]: values };
-    if (parsed.string_key) return { [parsed.string_key]: values.at(0) };
-    return { selected: values };
-  }
 
   public async exec(interaction: MessageComponentInteraction) {
     const parsed = await this.parseCommandId(interaction.customId);
@@ -62,8 +47,23 @@ export default class ComponentHandler {
       parsed.user = await this.client.users.fetch(parsed.user_id as string).catch(() => null);
     }
 
-    const selected = interaction.isStringSelectMenu() ? this.parseStringSelectMenu(interaction, parsed) : {};
+    const selected = interaction.isStringSelectMenu() ? this.resolveMenu(interaction, parsed) : {};
     await this.client.commandHandler.exec(interaction, command, { ...parsed, ...selected });
     return true;
+  }
+
+  private resolveMenu(interaction: StringSelectMenuInteraction, parsed: CustomIdProps) {
+    const values = interaction.values;
+    if (parsed.array_key) return { [parsed.array_key]: values };
+    if (parsed.string_key) return { [parsed.string_key]: values.at(0) };
+    return { selected: values };
+  }
+
+  private async parseCommandId(customId: string): Promise<CustomIdProps | null> {
+    if (/^{.*}$/.test(customId)) return JSON.parse(customId);
+    if (/^CMD/.test(customId)) {
+      return this.client.redis.getCustomId<CustomIdProps>(customId);
+    }
+    return null;
   }
 }

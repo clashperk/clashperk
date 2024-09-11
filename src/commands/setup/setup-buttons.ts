@@ -252,7 +252,7 @@ export default class SetupButtonsCommand extends Command {
     embed.setThumbnail(state.thumbnail_url || null);
     embed.setImage(state.image_url || null);
 
-    const customId = this.createId({ cmd: 'autorole-refresh', defer: true, ephemeral: true });
+    const customId = this.createId({ cmd: 'autorole-refresh', ephemeral: true });
     const refreshButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setLabel('Refresh Roles').setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Primary)
     );
