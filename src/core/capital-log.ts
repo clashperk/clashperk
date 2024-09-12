@@ -6,7 +6,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { CapitalContributionsEntity } from '../entities/capital-contributions.entity.js';
 import { Collections } from '../util/constants.js';
 import { padStart } from '../util/helper.js';
-import { Season, Util } from '../util/index.js';
+import { Season, Util } from '../util/toolkit.js';
 import BaseClanLog from './base-clan-log.js';
 import RPCHandler from './rpc-handler.js';
 

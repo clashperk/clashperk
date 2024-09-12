@@ -7,7 +7,7 @@ import { FlagsEntity } from '../entities/flags.entity.js';
 import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings } from '../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALLS } from '../util/emojis.js';
 import { unitsFlatten } from '../util/helper.js';
-import { Util } from '../util/index.js';
+import { Util } from '../util/toolkit.js';
 import { RAW_TROOPS_FILTERED } from '../util/troops.js';
 import BaseClanLog from './base-clan-log.js';
 import RPCHandler from './rpc-handler.js';

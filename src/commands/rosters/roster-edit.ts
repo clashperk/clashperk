@@ -14,7 +14,7 @@ import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
 import { IRoster, RosterSortTypes, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
-import { RosterCommandSortOptions } from '../../util/command-options.js';
+import { RosterCommandSortOptions } from '../../util/command.options.js';
 import { Collections, Settings, UNRANKED_WAR_LEAGUE_ID } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 

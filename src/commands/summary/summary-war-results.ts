@@ -2,7 +2,7 @@ import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS, WHITE_NUMBERS } from '../../util/emojis.js';
-import { Season } from '../../util/index.js';
+import { Season } from '../../util/toolkit.js';
 
 export default class SummaryClansCommand extends Command {
   public constructor() {

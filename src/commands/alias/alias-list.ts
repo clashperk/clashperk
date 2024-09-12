@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class AliasListCommand extends Command {
   public constructor() {

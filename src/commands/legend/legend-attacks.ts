@@ -5,7 +5,7 @@ import { Command } from '../../lib/index.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
-import { Season, Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class LegendAttacksCommand extends Command {
   public constructor() {

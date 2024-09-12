@@ -32,8 +32,8 @@ import {
 } from '../../struct/roster-manager.js';
 import { Collections, Settings, TAG_REGEX } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Util } from '../../util/index.js';
 import { createInteractionCollector } from '../../util/pagination.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class RosterManageCommand extends Command {
   public constructor() {

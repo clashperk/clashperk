@@ -11,7 +11,7 @@ import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class DebugCommand extends Command {
   public constructor() {

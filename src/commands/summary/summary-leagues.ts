@@ -10,7 +10,7 @@ import {
   WAR_LEAGUE_MAP
 } from '../../util/constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class SummaryLeaguesCommand extends Command {
   public constructor() {

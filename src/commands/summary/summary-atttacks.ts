@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Season } from '../../util/index.js';
+import { Season } from '../../util/toolkit.js';
 
 export default class SummaryAttacksCommand extends Command {
   public constructor() {

@@ -3,7 +3,7 @@ import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 const states: Record<string, string> = {
   inWar: '**End time:**',

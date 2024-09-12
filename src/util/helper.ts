@@ -17,10 +17,10 @@ import { title } from 'radash';
 import { container } from 'tsyringe';
 import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
 import Client from '../struct/client.js';
-import { ClanEmbedFields } from './command-options.js';
+import { ClanEmbedFields } from './command.options.js';
 import { Collections, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './constants.js';
 import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './emojis.js';
-import { Season, Util } from './index.js';
+import { Season, Util } from './toolkit.js';
 
 export const hexToNanoId = (hex: ObjectId) => {
   return hex.toHexString().slice(-5).toUpperCase();

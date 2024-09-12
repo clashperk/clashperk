@@ -8,7 +8,7 @@ import { inspect } from 'node:util';
 import 'reflect-metadata';
 import { defaultOptions } from '../locales/config.js';
 import { Client } from './struct/client.js';
-import { Backend } from './util/backend.js';
+import { Backend } from './util/i18n.backend.js';
 
 const client = new Client();
 

@@ -5,7 +5,7 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
-import { Season, Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class ExportCwlLineup extends Command {
   public constructor() {

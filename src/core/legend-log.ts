@@ -4,7 +4,7 @@ import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../util/constants.js';
 import { padStart } from '../util/helper.js';
-import { Season, Util } from '../util/index.js';
+import { Season, Util } from '../util/toolkit.js';
 import BaseClanLog from './base-clan-log.js';
 import RPCHandler from './rpc-handler.js';
 

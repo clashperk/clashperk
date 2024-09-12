@@ -12,7 +12,7 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { getBbLegendRankingEmbedMaker, getExportComponents, getLegendRankingEmbedMaker } from '../../util/helper.js';
-import { Season } from '../../util/index.js';
+import { Season } from '../../util/toolkit.js';
 
 export default class LegendLeaderboardCommand extends Command {
   public constructor() {

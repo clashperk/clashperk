@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Season, Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class SummaryCapitalContributionCommand extends Command {
   public constructor() {

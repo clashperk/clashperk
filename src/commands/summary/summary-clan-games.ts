@@ -13,7 +13,7 @@ import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/helper.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class SummaryClanGamesCommand extends Command {
   public constructor() {

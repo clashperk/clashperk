@@ -18,7 +18,7 @@ import moment from 'moment-timezone';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { EventEmitter } from 'node:events';
 import { parallel, unique } from 'radash';
-import { RosterCommandSortOptions } from '../util/command-options.js';
+import { RosterCommandSortOptions } from '../util/command.options.js';
 import {
   COLOR_CODES,
   Collections,
@@ -29,7 +29,7 @@ import {
   WarType
 } from '../util/constants.js';
 import { EMOJIS, TOWN_HALLS } from '../util/emojis.js';
-import { Util } from '../util/index.js';
+import { Util } from '../util/toolkit.js';
 import Client from './client.js';
 import Google, { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from './google.js';
 

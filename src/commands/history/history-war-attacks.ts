@@ -6,8 +6,8 @@ import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections, WarType } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { getExportComponents } from '../../util/helper.js';
-import { Util } from '../../util/index.js';
 import { handlePagination } from '../../util/pagination.js';
+import { Util } from '../../util/toolkit.js';
 
 const stars: Record<string, string> = {
   0: '☆☆☆',

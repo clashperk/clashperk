@@ -4,8 +4,8 @@ import { Command } from '../../lib/index.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
-import { Util } from '../../util/index.js';
 import { handlePagination } from '../../util/pagination.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class LootHistoryCommand extends Command {
   public constructor() {

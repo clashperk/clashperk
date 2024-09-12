@@ -18,10 +18,10 @@ import { fileURLToPath } from 'node:url';
 import { title } from 'radash';
 import { defaultOptions, fallbackLng } from '../locales/config.js';
 import { command, common } from '../locales/locales.js';
-import { Backend } from '../src/util/backend.js';
-import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/util/command-options.js';
+import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/util/command.options.js';
+import { Backend } from '../src/util/i18n.backend.js';
 import { TranslationKey } from '../src/util/i18n.js';
-import { Season } from '../src/util/index.js';
+import { Season } from '../src/util/toolkit.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({

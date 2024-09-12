@@ -13,7 +13,7 @@ import {
 import { Args, Command } from '../../lib/index.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/helper.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 import { RAW_TROOPS_WITH_ICONS, TroopJSON } from '../../util/troops.js';
 
 export const EN_ESCAPE = '\u2002';

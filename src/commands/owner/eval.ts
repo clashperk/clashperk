@@ -1,7 +1,7 @@
-import util from 'node:util';
 import { CommandInteraction } from 'discord.js';
+import util from 'node:util';
 import { Args, Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class EvalCommand extends Command {
   private readonly _replaceToken!: string;
@@ -36,7 +36,7 @@ export default class EvalCommand extends Command {
     let evaled;
     try {
       const hrStart = process.hrtime();
-			evaled = await (shard ? this.client.shard!.broadcastEval((client, code) => eval(code), { context: code }) : eval(code)); // eslint-disable-line
+      evaled = await (shard ? this.client.shard!.broadcastEval((client, code) => eval(code), { context: code }) : eval(code)); // eslint-disable-line
       hrDiff = process.hrtime(hrStart);
     } catch (error) {
       return interaction.followUp({ content: `*Error while evaluating!*\`\`\`js\n${error as string}\`\`\``, ephemeral: true });

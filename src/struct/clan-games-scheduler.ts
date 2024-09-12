@@ -15,7 +15,7 @@ import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { Collections, Settings } from '../util/constants.js';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
-import { Util } from '../util/index.js';
+import { Util } from '../util/toolkit.js';
 import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
 import { Client } from './client.js';
 

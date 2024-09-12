@@ -3,7 +3,7 @@ import { getEodAttacksEmbedMaker, getEodDay } from '../../helper/legend-eod.help
 import { Command } from '../../lib/index.js';
 import { Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Season, Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class LegendEodFinishersCommand extends Command {
   public constructor() {

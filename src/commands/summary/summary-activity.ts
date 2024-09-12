@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
-import { Season, Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 // TODO: Per season activity
 export default class SummaryCommand extends Command {

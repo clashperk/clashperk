@@ -1,7 +1,7 @@
 import { APIPlayer } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, escapeInlineCode, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class CWLMembersCommand extends Command {
   public constructor() {

@@ -5,7 +5,7 @@ import { RaidRemindersEntity } from '../../../entities/capital-raid-reminders.en
 import { Command } from '../../../lib/index.js';
 import { Collections } from '../../../util/constants.js';
 import { hexToNanoId } from '../../../util/helper.js';
-import { Util } from '../../../util/index.js';
+import { Util } from '../../../util/toolkit.js';
 
 const roles: Record<string, string> = {
   member: 'Member',

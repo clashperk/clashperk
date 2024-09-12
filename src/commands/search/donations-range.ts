@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { padStart } from '../../util/helper.js';
-import { Season, Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class DonationsCommand extends Command {
   public constructor() {

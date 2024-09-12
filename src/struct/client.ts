@@ -9,7 +9,7 @@ import { PostHog } from 'posthog-node';
 import { container } from 'tsyringe';
 import { RolesManager } from '../core/roles-manager.js';
 import RPCHandler from '../core/rpc-handler.js';
-import { ClientUtil } from '../util/client-util.js';
+import { ClientUtil } from '../util/client.util.js';
 import { i18n } from '../util/i18n.js';
 import Logger from '../util/logger.js';
 import { Autocomplete } from './autocomplete-client.js';

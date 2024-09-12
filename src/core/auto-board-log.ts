@@ -19,7 +19,7 @@ import { Client } from '../struct/client.js';
 import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/helper.js';
-import { Season, Util } from '../util/index.js';
+import { Season, Util } from '../util/toolkit.js';
 import RPCHandler from './rpc-handler.js';
 
 export default class AutoBoardLog {

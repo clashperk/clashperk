@@ -7,7 +7,7 @@ import { Command } from '../../lib/index.js';
 import { CustomIdProps } from '../../struct/component-handler.js';
 import { Collections, Settings, WarType } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 const RemainingType = {
   WAR_ATTACKS: 'war-attacks',

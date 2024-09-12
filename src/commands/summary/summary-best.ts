@@ -13,7 +13,7 @@ import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
-import { Season, Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 interface AggregatedValue {
   name: string;

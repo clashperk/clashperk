@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Collections, FeatureFlags } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { i18n } from '../util/i18n.js';
-import { Season, Util } from '../util/index.js';
+import { Season, Util } from '../util/toolkit.js';
 import Client from './client.js';
 
 export const imageMaps: Record<string, string> = {

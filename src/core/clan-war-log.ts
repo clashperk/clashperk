@@ -20,7 +20,7 @@ import { aggregateRoundsForRanking, calculateLeagueRanking } from '../helper/cwl
 import { getCWLSummaryImage } from '../struct/image-helper.js';
 import { Collections, calculateCWLMedals } from '../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/emojis.js';
-import { Season, Util } from '../util/index.js';
+import { Season, Util } from '../util/toolkit.js';
 import BaseClanLog from './base-clan-log.js';
 import RPCHandler from './rpc-handler.js';
 

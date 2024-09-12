@@ -8,7 +8,7 @@ import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { getCWLSummaryImage } from '../../struct/image-helper.js';
 import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class CWLStatsCommand extends Command {
   public constructor() {

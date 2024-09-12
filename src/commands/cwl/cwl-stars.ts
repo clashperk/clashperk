@@ -16,7 +16,7 @@ import { Command } from '../../lib/index.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class CWLStarsCommand extends Command {
   public constructor() {

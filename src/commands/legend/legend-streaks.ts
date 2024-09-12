@@ -13,8 +13,7 @@ import { LegendAttacksEntity } from '../../entities/legend-attacks.entity.js';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
-import { Season } from '../../util/index.js';
-import { Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class LegendStreaksCommand extends Command {
   public constructor() {

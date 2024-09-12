@@ -15,8 +15,7 @@ import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constan
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
 import { createInteractionCollector } from '../../util/pagination.js';
-import { Season } from '../../util/index.js';
-import { Util } from '../../util/index.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class CompeteCommand extends Command {
   public constructor() {

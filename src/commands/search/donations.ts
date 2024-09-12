@@ -1,10 +1,10 @@
+import { PlayerSeasonsEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { recoverDonations } from '../../util/helper.js';
-import { Season, Util } from '../../util/index.js';
-import { PlayerSeasonsEntity } from '@app/entities';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class DonationsCommand extends Command {
   public constructor() {

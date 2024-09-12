@@ -4,7 +4,7 @@ import { WithId } from 'mongodb';
 import { title as toTitle } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 import { logActionsMap } from './setup-clan-logs.js';
 
 function title(str: string) {

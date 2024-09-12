@@ -13,10 +13,10 @@ import {
 import { cluster } from 'radash';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/index.js';
-import { MembersCommandOptions } from '../../util/command-options.js';
+import { MembersCommandOptions } from '../../util/command.options.js';
 import { Collections } from '../../util/constants.js';
 import { CLAN_LABELS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
-import { Season } from '../../util/index.js';
+import { Season } from '../../util/toolkit.js';
 
 const clanTypes: Record<string, string> = {
   inviteOnly: 'Invite Only',

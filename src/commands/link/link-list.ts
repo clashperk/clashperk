@@ -12,11 +12,11 @@ import {
 } from 'discord.js';
 import { title } from 'radash';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
-import { MembersCommandOptions } from '../../util/command-options.js';
+import { MembersCommandOptions } from '../../util/command.options.js';
 import { Settings } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 const SortingKey = {
   NAME: '_name',

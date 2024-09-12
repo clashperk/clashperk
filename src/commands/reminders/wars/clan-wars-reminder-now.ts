@@ -10,7 +10,7 @@ import {
 import { Command } from '../../../lib/index.js';
 import { MAX_TOWN_HALL_LEVEL } from '../../../util/constants.js';
 import { EMOJIS } from '../../../util/emojis.js';
-import { Util } from '../../../util/index.js';
+import { Util } from '../../../util/toolkit.js';
 
 export default class ReminderNowCommand extends Command {
   public constructor() {

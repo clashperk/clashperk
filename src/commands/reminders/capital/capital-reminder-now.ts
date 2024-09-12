@@ -9,7 +9,7 @@ import {
 } from 'discord.js';
 import { Command } from '../../../lib/index.js';
 import { EMOJIS } from '../../../util/emojis.js';
-import { Util } from '../../../util/index.js';
+import { Util } from '../../../util/toolkit.js';
 
 export default class CapitalReminderNowCommand extends Command {
   public constructor() {

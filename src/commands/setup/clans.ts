@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Util } from '../../util/index.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class ClansCommand extends Command {
   public constructor() {
