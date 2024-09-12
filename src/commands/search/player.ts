@@ -52,7 +52,7 @@ export default class PlayerCommand extends Command {
     };
   }
 
-  public async run(message: Message, { tag }: { tag: string }) {
+  public async run(message: Message<true>, { tag }: { tag: string }) {
     const { body, res } = await this.client.http.getPlayer(tag);
     if (!res.ok) return null;
     const embed = (await this.embed(body)).setColor(this.client.embed(message));

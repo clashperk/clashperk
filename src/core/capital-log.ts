@@ -202,7 +202,8 @@ export default class CapitalLogV2 extends BaseClanLog {
     const { body: clan, res } = await this.client.http.getClan(cache.tag);
     if (!res.ok) return null;
 
-    const { endTime, prevWeekEndTime } = Util.getRaidWeekEndTimestamp();
+    const { endTime, startTime } = Util.getRaidWeekEndTimestamp();
+    const lastMonday = moment(startTime).subtract(4, 'days').toDate();
 
     const contributions = await this.client.db
       .collection(Collections.CAPITAL_CONTRIBUTIONS)
@@ -210,13 +211,12 @@ export default class CapitalLogV2 extends BaseClanLog {
         {
           $match: {
             'clan.tag': clan.tag
-            // 'tag': { $in: clan.memberList.map((clan) => clan.tag) }
           }
         },
         {
           $match: {
             createdAt: {
-              $gt: prevWeekEndTime,
+              $gt: lastMonday,
               $lt: endTime
             }
           }
@@ -252,7 +252,7 @@ export default class CapitalLogV2 extends BaseClanLog {
 
     const embed = this.getCapitalContributionsEmbed({
       clan,
-      weekend: Util.raidWeekDateFormat(moment(prevWeekEndTime).toDate(), moment(endTime).toDate()),
+      weekend: Util.raidWeekDateFormat(lastMonday, endTime),
       contributions
     });
     return embed;

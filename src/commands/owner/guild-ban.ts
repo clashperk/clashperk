@@ -24,7 +24,7 @@ export default class GuildBanCommand extends Command {
     return { id, name: id };
   }
 
-  public run(message: Message, { id }: { id: string }) {
+  public run(message: Message<true>, { id }: { id: string }) {
     const guild = this.getGuild(id);
     if (!guild) return message.reply('Invalid guildId.');
 

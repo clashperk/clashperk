@@ -79,7 +79,7 @@ export default class ExportSeason extends Command {
           { name: 'War-Stars Gained', width: 100, align: 'RIGHT' },
           { name: 'CWL-Stars Gained', width: 100, align: 'RIGHT' },
           { name: 'Gold Looted', width: 100, align: 'RIGHT' },
-          { name: 'Elixir Lotted', width: 100, align: 'RIGHT' },
+          { name: 'Elixir Looted', width: 100, align: 'RIGHT' },
           { name: 'Dark Elixir Looted', width: 100, align: 'RIGHT' },
           { name: 'Clan Games', width: 100, align: 'RIGHT' },
           { name: 'Capital Gold Looted', width: 100, align: 'RIGHT' },

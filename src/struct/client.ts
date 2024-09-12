@@ -131,11 +131,7 @@ export class Client extends DiscordClient {
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - this is fine
     this.publisher.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - this is fine
     this.subscriber.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
 
     this.logger = new Logger(this);

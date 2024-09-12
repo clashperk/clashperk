@@ -1,10 +1,8 @@
-import { PlayersEntity } from '@app/entities';
+import { ClanCategoriesEntity, FlagsEntity, PlayersEntity } from '@app/entities';
 import { AutocompleteInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { sift, unique } from 'radash';
-import { ClanCategoriesEntity } from '../entities/clan-categories.entity.js';
-import { FlagsEntity } from '../entities/flags.entity.js';
 import { Collections } from '../util/constants.js';
 import { COUNTRIES } from '../util/countries.js';
 import Client from './client.js';

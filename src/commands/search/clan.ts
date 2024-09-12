@@ -34,7 +34,7 @@ export default class ClanCommand extends Command {
     });
   }
 
-  public async run(message: Message, { tag }: { tag: string }) {
+  public async run(message: Message<true>, { tag }: { tag: string }) {
     const { res, body: clan } = await this.client.http.getClan(tag);
     if (!res.ok) return null;
     const embed = await this.embed(message.guildId!, clan);

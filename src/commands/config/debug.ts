@@ -1,4 +1,12 @@
-import { CommandInteraction, DMChannel, Interaction, PartialDMChannel, PermissionsString, TextBasedChannel } from 'discord.js';
+import {
+  CommandInteraction,
+  DMChannel,
+  Interaction,
+  PartialDMChannel,
+  PartialGroupDMChannel,
+  PermissionsString,
+  TextBasedChannel
+} from 'discord.js';
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -25,7 +33,7 @@ export default class DebugCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    { channel }: { channel: Exclude<TextBasedChannel, DMChannel | PartialDMChannel> }
+    { channel }: { channel: Exclude<TextBasedChannel, DMChannel | PartialDMChannel | PartialGroupDMChannel> }
   ) {
     const permissions: PermissionsString[] = [
       'ViewChannel',

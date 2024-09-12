@@ -1,10 +1,9 @@
 import { Collections } from '@app/constants';
+import { LegendAttacksEntity } from '@app/entities';
 import { EmbedBuilder, escapeMarkdown, Guild, time } from 'discord.js';
 import { container } from 'tsyringe';
-import { LegendAttacksEntity } from '@app/entities';
 import Client from '../struct/client.js';
-import { Season } from '../util/season.js';
-import { Util } from '../util/util.js';
+import { Season, Util } from '../util/index.js';
 
 export async function getEodAttacksEmbedMaker({
   seasonId,

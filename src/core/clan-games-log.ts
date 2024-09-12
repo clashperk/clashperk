@@ -11,10 +11,9 @@ import {
   WebhookMessageCreateOptions
 } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
-import { Collections } from '../util/constants.js';
+import { CLAN_GAMES_STARTING_DATE, Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { clanGamesEmbedMaker } from '../util/helper.js';
-import { ClanGamesConfig } from '../util/index.js';
 import BaseClanLog from './base-clan-log.js';
 import RPCHandler from './rpc-handler.js';
 
@@ -38,7 +37,7 @@ export default class ClanGamesLogV2 extends BaseClanLog {
   }
 
   public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
-    if (cache.message && new Date().getDate() === ClanGamesConfig.STARTING_DATE) {
+    if (cache.message && new Date().getDate() === CLAN_GAMES_STARTING_DATE) {
       const lastMonthIndex = new Date(Number(SnowflakeUtil.deconstruct(cache.message).timestamp)).getMonth();
       if (lastMonthIndex < new Date().getMonth()) delete cache.message;
     }
@@ -109,8 +108,20 @@ export default class ClanGamesLogV2 extends BaseClanLog {
     return embed;
   }
 
+  private didStart() {
+    const startTime = new Date();
+    startTime.setDate(CLAN_GAMES_STARTING_DATE);
+    startTime.setHours(6, 0, 0, 0);
+
+    const endTime = new Date();
+    endTime.setDate(CLAN_GAMES_STARTING_DATE + 6);
+    endTime.setHours(10, 0, 0, 0);
+
+    return new Date() >= startTime && new Date() <= endTime;
+  }
+
   public async init() {
-    if (ClanGamesConfig.Started) {
+    if (this.didStart()) {
       this._flush();
       return this._init();
     }
@@ -118,7 +129,7 @@ export default class ClanGamesLogV2 extends BaseClanLog {
     clearInterval(this.intervalId);
     this.intervalId = setInterval(
       async () => {
-        if (ClanGamesConfig.Started) {
+        if (this.didStart()) {
           this._flush();
           await this._init();
           clearInterval(this.intervalId);
@@ -129,7 +140,7 @@ export default class ClanGamesLogV2 extends BaseClanLog {
   }
 
   private async flush(intervalId: NodeJS.Timeout) {
-    if (ClanGamesConfig.Started) return null;
+    if (this.didStart()) return null;
     await this.init();
     clearInterval(intervalId);
     return this.cached.clear();

@@ -19,7 +19,7 @@ export default class BlacklistCommand extends Command {
     };
   }
 
-  public async run(message: Message, { id }: { id: string }) {
+  public async run(message: Message<true>, { id }: { id: string }) {
     const user = id ? await this.client.users.fetch(id).catch(() => null) : null;
     if (!user) return message.reply('Invalid userId.');
 

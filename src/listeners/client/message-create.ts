@@ -31,7 +31,7 @@ export default class MessageCreateListener extends Listener {
     if (!message.guild) return;
     if (message.author.bot) return;
 
-    if (message.channel.type === ChannelType.DM) return;
+    if (message.channel.type === ChannelType.DM || message.channel.type === ChannelType.GroupDM) return;
     if (this.inhibitor(message)) return;
 
     if (message.channel.isThread() && !message.channel.permissionsFor(this.client.user!)?.has(PermissionFlagsBits.SendMessagesInThreads))

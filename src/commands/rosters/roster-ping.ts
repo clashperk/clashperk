@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/constants.js';
 import { nullsLastSortAlgo } from '../../util/helper.js';
 import { createInteractionCollector } from '../../util/pagination.js';
-import { Util } from '../../util/util.js';
+import { Util } from '../../util/index.js';
 
 export default class RosterPingCommand extends Command {
   public constructor() {

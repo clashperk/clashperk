@@ -127,7 +127,7 @@ export default class SummaryCapitalContributionCommand extends Command {
     }
 
     if (week) {
-      embed.setFooter({ text: `Week ${Util.dateRangeFormat(startWeek, endWeek)}` });
+      embed.setFooter({ text: `Week ${Util.raidWeekDateFormat(startWeek, endWeek)}` });
     } else {
       embed.setFooter({ text: `Season ${season}` });
     }

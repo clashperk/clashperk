@@ -13,7 +13,7 @@ import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/helper.js';
-import { ClanGamesConfig, Util } from '../../util/index.js';
+import { Util } from '../../util/index.js';
 
 export default class SummaryClanGamesCommand extends Command {
   public constructor() {
@@ -209,8 +209,8 @@ export default class SummaryClanGamesCommand extends Command {
   }
 
   private get MAX() {
-    const now = new Date();
-    return now.getDate() >= 22 && ClanGamesConfig.isSpecial ? 5000 : 4000;
+    if (new Date().getDate() >= 22) return Util.getClanGamesMaxPoints();
+    return 4000;
   }
 
   private padStart(num: number) {

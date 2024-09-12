@@ -4,7 +4,7 @@ import { cluster } from 'radash';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/constants.js';
 import { dynamicPagination } from '../../util/pagination.js';
-import { Season } from '../../util/season.js';
+import { Season } from '../../util/index.js';
 
 export default class LeaderboardCapitalCommand extends Command {
   public constructor() {

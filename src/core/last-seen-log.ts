@@ -12,7 +12,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { lastSeenEmbedMaker } from '../util/helper.js';
-import { Util } from '../util/util.js';
+import { Util } from '../util/index.js';
 import BaseClanLog from './base-clan-log.js';
 import RPCHandler from './rpc-handler.js';
 

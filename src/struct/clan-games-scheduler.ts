@@ -15,7 +15,7 @@ import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { Collections, Settings } from '../util/constants.js';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
-import { ClanGamesConfig, Util } from '../util/index.js';
+import { Util } from '../util/index.js';
 import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
 import { Client } from './client.js';
 
@@ -204,7 +204,7 @@ export default class ClanGamesScheduler {
 
     const members = clanMembers
       .filter((mem) => {
-        return mem.points < (reminder.minPoints === 0 ? ClanGamesConfig.MAX_POINT : reminder.minPoints);
+        return mem.points < (reminder.minPoints === 0 ? Util.getClanGamesMaxPoints() : reminder.minPoints);
       })
       .filter((m) => (reminder.allMembers ? m.points >= 0 : m.points >= 1))
       .filter((mem) => (maxParticipants >= 50 ? mem.points >= 1 : true))
@@ -263,7 +263,7 @@ export default class ClanGamesScheduler {
           members
             .map((mem, i) => {
               const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
-              const hits = ` (${mem.points}/${reminder.minPoints === 0 ? ClanGamesConfig.MAX_POINT : reminder.minPoints})`;
+              const hits = ` (${mem.points}/${reminder.minPoints === 0 ? Util.getClanGamesMaxPoints() : reminder.minPoints})`;
               const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
               return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]} ${ping} ${escapeMarkdown(mem.name)}${hits}`;
             })
