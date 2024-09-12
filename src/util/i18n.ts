@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import Locale from '../../locales/locales.js';
+import locales from '../../locales/locales.js';
 
 // type DeepKeys<T, S extends string> = T extends object
 // 	? S extends `${infer I1}.${infer I2}`
@@ -51,11 +51,11 @@ type CheckDictString<T extends string, O> = T extends `${infer A}.${infer B}`
     ? T
     : never;
 
-export function i18n<K extends Leaves<typeof Locale>, I extends Record<Keys<GetDictValue<K, typeof Locale>>[number], string>>(
-  key: CheckDictString<K, typeof Locale>,
+export function i18n<K extends Leaves<typeof locales>, I extends Record<Keys<GetDictValue<K, typeof locales>>[number], string>>(
+  key: CheckDictString<K, typeof locales>,
   args: I & { lng: string }
-): Interpolate<GetDictValue<K, typeof Locale>, I> {
-  return i18next.t(key, { ...args, interpolation: { escapeValue: false } }); // .replace(/[^\S\r\n]+$/gm, '');
+): Interpolate<GetDictValue<K, typeof locales>, I> {
+  return i18next.t(key, { ...args, interpolation: { escapeValue: false } });
 }
 
-export type TranslationKey = CheckDictString<Leaves<typeof Locale>, typeof Locale>;
+export type TranslationKey = CheckDictString<Leaves<typeof locales>, typeof locales>;

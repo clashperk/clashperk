@@ -188,7 +188,7 @@ export default class CWLStarsCommand extends Command {
       );
     }
 
-    embed.setFooter({ text: `CWL ${moment(body.season).format('MMM YYYY')} | Projected Bonuses: ${bonuses}` });
+    embed.setFooter({ text: `CWL ${moment(body.season).format('MMM YYYY')} | ${bonuses} Bonuses Assignable` });
 
     const payload = {
       cmd: this.id,

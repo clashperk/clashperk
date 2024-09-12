@@ -29,7 +29,7 @@ await i18next.use(Backend).init({
   backend: { paths: [fileURLToPath(locales)] }
 });
 
-export function getSeasonIds() {
+function getSeasonIds() {
   return Array(Math.min(18))
     .fill(0)
     .map((_, m) => {
@@ -46,7 +46,7 @@ export function getSeasonIds() {
 
 const SEASON_SINCE_CHOICES = getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }));
 
-export function getWeekIds() {
+function getWeekIds() {
   const weekIds: { name: string; value: string }[] = [];
   const friday = moment().endOf('month').day('Friday').startOf('day');
   while (weekIds.length < 6) {
@@ -83,7 +83,7 @@ const userInstallable = {
   contexts: [ContextTypes.GUILD, ContextTypes.BOT_DM, ContextTypes.PRIVATE_CHANNEL]
 };
 
-export const translation = (text: TranslationKey): Record<string, string> => {
+const translation = (text: TranslationKey): Record<string, string> => {
   return Object.keys(fallbackLng).reduce<Record<string, string>>((record, lang) => {
     record[lang] = i18next.t(text, { lng: lang, escapeValue: false });
     return record;
