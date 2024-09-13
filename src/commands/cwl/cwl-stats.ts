@@ -1,4 +1,4 @@
-import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
+import { calculateCWLMedals, UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 import { APIClan, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
@@ -8,6 +8,7 @@ import { Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { getCWLSummaryImage } from '../../struct/image-helper.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
+import { padEnd } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class CWLStatsCommand extends Command {
@@ -85,11 +86,14 @@ export default class CWLStatsCommand extends Command {
       }
     > = {};
     let activeRounds = 0;
+    let warsWon = 0;
 
     for (const data of body.wars) {
       if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
         const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
         const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
+        if (this.winner(clan, opponent)) warsWon += 1;
+
         if (data.state === 'warEnded') {
           stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
           destruction += clan.destructionPercentage * data.teamSize;
@@ -227,6 +231,8 @@ export default class CWLStatsCommand extends Command {
       .setColor(this.client.embed(interaction))
       .setTitle(`Clan War League Ranking (${moment(body.season).format('MMM YYYY')})`);
 
+    const bonuses = WAR_LEAGUE_PROMOTION_MAP[clan.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID].bonuses + warsWon;
+
     const medals = leagueId ? calculateCWLMedals(leagueId.toString(), 8, rankIndex + 1) : 0;
     if (leagueId) {
       embed.setDescription(
@@ -248,9 +254,8 @@ export default class CWLStatsCommand extends Command {
             })
             .join('\n'),
           '',
-          `Rank #${rankIndex + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}% ${
-            EMOJIS.CWL_MEDAL
-          } (Max. ${medals})`
+          `${EMOJIS.HASH} Rank ${rankIndex + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`,
+          `${EMOJIS.CWL_MEDAL} Max. ${medals} | ${bonuses} Bonuses Assignable`
         ].join('\n')
       );
     } else {
@@ -259,7 +264,7 @@ export default class CWLStatsCommand extends Command {
           `${EMOJIS.HASH} **\`\u200eSTAR DEST%${''.padEnd(padding - 3, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
           ranks
             .map((clan, i) => {
-              return `${BLUE_NUMBERS[++i]} \`\u200e ${clan.stars.toString().padEnd(3, ' ')} ${this.dest(
+              return `${BLUE_NUMBERS[++i]} \`\u200e ${padEnd(clan.stars, 3)} ${this.dest(
                 clan.destruction,
                 padding
               )}  ${Util.escapeBackTick(clan.name).padEnd(15, ' ')}\``;

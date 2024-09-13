@@ -15,7 +15,7 @@ import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { padEnd, padStart } from '../../util/helper.js';
+import { padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class CWLStarsCommand extends Command {
@@ -158,13 +158,13 @@ export default class CWLStarsCommand extends Command {
       embed.setDescription(
         [
           `**Clan War League Stars (${body.season})**`,
-          `\`\u200e # STR GAIN TH \` **NAME**`,
+          `**\`\u200e # STR GAIN TH \`NAME**`,
           ...leaderboard
             .filter((m) => m.of > 0)
             .map((m, i) => {
               const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-              const name = padEnd(escapeMarkdown(m.name), 15);
-              return `\`\u200e${padStart(++i, 2)} ${padStart(m.stars, 2)}  ${padStart(gained, 3)}  ${padStart(m.townhallLevel, 2)} \` ${name}`;
+              const name = escapeMarkdown(m.name);
+              return `\`\u200e${padStart(++i, 2)} ${padStart(m.stars, 2)}  ${padStart(gained, 3)}  ${padStart(m.townhallLevel, 2)} \`${name}`;
             })
         ].join('\n')
       );
@@ -172,7 +172,7 @@ export default class CWLStarsCommand extends Command {
       embed.setDescription(
         [
           `**Clan War League Stars (${body.season})**`,
-          `\u200e\` # STR DEST HIT TH \` **NAME**`,
+          `**\`\u200e # STR DEST HIT TH \`NAME**`,
           ...leaderboard
             .filter((m) => m.of > 0)
             .map((m, i) => {
@@ -180,9 +180,9 @@ export default class CWLStarsCommand extends Command {
               const stars = padStart(m.stars, 3);
               const dest = padStart(`${Math.floor(m.dest)}%`, 4);
               const hit = [m.attacks, m.of].join('/');
-              const name = padEnd(escapeMarkdown(m.name), 15);
               const th = padStart(m.townhallLevel, 2);
-              return `\u200e\`${idx} ${stars} ${dest} ${hit} ${th} \` ${name}`;
+              const name = escapeMarkdown(m.name);
+              return `\u200e\`${idx} ${stars} ${dest} ${hit} ${th} \`${name}`;
             })
         ].join('\n')
       );
