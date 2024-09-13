@@ -56,8 +56,13 @@ export default class ErrorListener extends Listener {
     setContext('command_errored', context);
     captureException(error);
 
+    const content =
+      interaction.inCachedGuild() && !interaction.channel
+        ? 'Something went wrong while executing this command. (most likely the bot is missing **View Channel** permission in this channel)'
+        : `${this.i18n('common.something_went_wrong', { lng: interaction.locale })}`;
+
     const message = {
-      content: `${this.i18n('common.something_went_wrong', { lng: interaction.locale })}`,
+      content,
       components: [
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()

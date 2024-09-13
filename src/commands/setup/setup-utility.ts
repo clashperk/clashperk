@@ -424,7 +424,7 @@ export default class SetupUtilsCommand extends Command {
 
     if (!interaction.guild.members.me?.permissions.has([PermissionFlagsBits.ManageEvents, PermissionFlagsBits.CreateEvents])) {
       return interaction.editReply({
-        content: "I'm missing **Create Events** and **Manage Events** permissions to execute this command."
+        content: 'The bot is missing **Create Events** and **Manage Events** permissions to execute this command.'
       });
     }
 
