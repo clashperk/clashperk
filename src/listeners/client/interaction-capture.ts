@@ -1,5 +1,5 @@
 import { Interaction } from 'discord.js';
-import { Listener } from '../../lib/index.js';
+import { Listener } from '../../lib/handlers.js';
 
 export default class InteractionCaptureListener extends Listener {
   public constructor() {

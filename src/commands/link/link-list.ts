@@ -1,4 +1,3 @@
-import { Command } from '@lib/core';
 import { APIClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -12,6 +11,7 @@ import {
 } from 'discord.js';
 import { title } from 'radash';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
+import { Command } from '../../lib/handlers.js';
 import { MembersCommandOptions } from '../../util/command.options.js';
 import { Settings } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';

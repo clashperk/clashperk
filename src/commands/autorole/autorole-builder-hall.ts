@@ -1,5 +1,5 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { BUILDER_HALL_LEVELS_FOR_ROLES, Settings } from '../../util/constants.js';
 import { ORANGE_NUMBERS } from '../../util/emojis.js';
 

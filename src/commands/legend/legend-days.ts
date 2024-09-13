@@ -3,7 +3,7 @@ import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import { PlayersEntity } from '../../entities/players.entity.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';

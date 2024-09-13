@@ -13,7 +13,7 @@ import {
   TextInputBuilder,
   TextInputStyle
 } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/guild-events-handler.js';
 import { Collections, URL_REGEX } from '../../util/constants.js';
 

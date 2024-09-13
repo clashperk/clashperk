@@ -12,7 +12,7 @@ import {
   TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../../lib/index.js';
+import { Command } from '../../../lib/handlers.js';
 import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../../util/constants.js';
 import { hexToNanoId } from '../../../util/helper.js';
 

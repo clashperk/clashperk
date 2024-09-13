@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';

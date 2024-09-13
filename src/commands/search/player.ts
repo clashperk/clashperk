@@ -12,7 +12,7 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import ms from 'ms';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage } from '../../util/helper.js';

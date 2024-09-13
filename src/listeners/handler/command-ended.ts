@@ -1,5 +1,5 @@
 import { Interaction } from 'discord.js';
-import { Command, Listener } from '../../lib/index.js';
+import { Command, Listener } from '../../lib/handlers.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 
 export default class CommandEndedListener extends Listener {

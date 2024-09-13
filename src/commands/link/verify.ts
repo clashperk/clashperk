@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 

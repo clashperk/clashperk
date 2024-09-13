@@ -1,7 +1,7 @@
 import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Collections } from '../../util/constants.js';
 import { dynamicPagination } from '../../util/pagination.js';
 import { Season } from '../../util/toolkit.js';

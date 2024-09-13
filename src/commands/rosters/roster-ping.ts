@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Settings } from '../../util/constants.js';
 import { nullsLastSortAlgo } from '../../util/helper.js';
 import { createInteractionCollector } from '../../util/pagination.js';

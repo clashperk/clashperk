@@ -1,6 +1,6 @@
 import { ActionRowBuilder, CommandInteraction, EmbedBuilder, Guild, Role, RoleSelectMenuBuilder } from 'discord.js';
 import { unique } from 'radash';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Settings } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 

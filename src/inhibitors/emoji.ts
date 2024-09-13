@@ -1,5 +1,5 @@
 import { Interaction, PermissionFlagsBits } from 'discord.js';
-import { Command, Inhibitor } from '../lib/index.js';
+import { Command, Inhibitor } from '../lib/handlers.js';
 
 export default class ExternalEmojiInhibitor extends Inhibitor {
   public constructor() {

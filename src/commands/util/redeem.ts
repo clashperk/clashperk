@@ -9,7 +9,7 @@ import {
   WebhookMessageEditOptions
 } from 'discord.js';
 import { WithId } from 'mongodb';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Included, Patron, guildLimits } from '../../struct/patreon-handler.js';
 import { Collections, Settings } from '../../util/constants.js';
 

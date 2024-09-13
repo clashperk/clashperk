@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { diff } from 'radash';
-import { Listener } from '../../lib/index.js';
+import { Listener } from '../../lib/handlers.js';
 
 export default class MessageUpdateListener extends Listener {
   public constructor() {

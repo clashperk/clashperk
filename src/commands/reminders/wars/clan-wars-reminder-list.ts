@@ -2,7 +2,7 @@ import { ClanWarRemindersEntity } from '@app/entities';
 import { AnyThreadChannel, CommandInteraction, EmbedBuilder, Interaction, TextChannel, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Filter } from 'mongodb';
-import { Command } from '../../../lib/index.js';
+import { Command } from '../../../lib/handlers.js';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/constants.js';
 import { hexToNanoId } from '../../../util/helper.js';
 import { Util } from '../../../util/toolkit.js';

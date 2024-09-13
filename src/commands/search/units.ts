@@ -10,7 +10,7 @@ import {
   User
 } from 'discord.js';
 import { unique } from 'radash';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/helper.js';
 import { RAW_SUPER_TROOPS, RAW_TROOPS_WITH_ICONS, TroopInfo, TroopJSON } from '../../util/troops.js';

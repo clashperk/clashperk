@@ -20,7 +20,7 @@ import {
 } from 'discord.js';
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import {
   IRoster,
   IRosterCategory,

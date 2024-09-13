@@ -2,7 +2,7 @@ import { AnyThreadChannel, CommandInteraction, EmbedBuilder, Interaction, TextCh
 import moment from 'moment';
 import { Filter } from 'mongodb';
 import { RaidRemindersEntity } from '../../../entities/capital-raid-reminders.entity.js';
-import { Command } from '../../../lib/index.js';
+import { Command } from '../../../lib/handlers.js';
 import { Collections } from '../../../util/constants.js';
 import { hexToNanoId } from '../../../util/helper.js';
 import { Util } from '../../../util/toolkit.js';

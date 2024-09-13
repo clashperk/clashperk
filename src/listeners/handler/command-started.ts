@@ -1,6 +1,6 @@
 import { addBreadcrumb, setContext } from '@sentry/node';
 import { BaseInteraction, ChannelType, Interaction, InteractionType } from 'discord.js';
-import { Command, Listener } from '../../lib/index.js';
+import { Command, Listener } from '../../lib/handlers.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 import { mixpanel } from '../../struct/mixpanel.js';
 

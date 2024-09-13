@@ -1,6 +1,6 @@
 import { APIClan, APIClanWarLeagueGroup, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 

@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, User } from 'discord.js';
 import { getEodAttacksEmbedMaker, getEodDay } from '../../helper/legend-eod.helper.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/toolkit.js';

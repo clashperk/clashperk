@@ -11,7 +11,7 @@ import {
   RoleSelectMenuBuilder,
   TextChannel
 } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Collections, Settings, missingPermissions } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 

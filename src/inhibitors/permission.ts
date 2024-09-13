@@ -1,5 +1,5 @@
 import { Interaction, PermissionFlagsBits } from 'discord.js';
-import { Command, Inhibitor } from '@lib/core';
+import { Command, Inhibitor } from '../lib/handlers.js';
 
 export default class PermissionInhibitor extends Inhibitor {
   public constructor() {

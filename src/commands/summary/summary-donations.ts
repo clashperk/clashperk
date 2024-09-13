@@ -11,7 +11,7 @@ import {
   embedLength
 } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Collections } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/emojis.js';
 import { recoverDonations } from '../../util/helper.js';

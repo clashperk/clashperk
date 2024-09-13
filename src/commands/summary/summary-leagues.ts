@@ -1,7 +1,7 @@
 import { CapitalRaidSeasonsEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import {
   CAPITAL_LEAGUE_MAP,
   Collections,

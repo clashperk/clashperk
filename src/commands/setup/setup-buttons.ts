@@ -16,7 +16,7 @@ import {
   TextInputBuilder,
   TextInputStyle
 } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { DiscordErrorCodes, Settings, URL_REGEX } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 

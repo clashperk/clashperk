@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { cluster } from 'radash';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { padEnd, padStart } from '../../util/helper.js';
 import { handlePagination } from '../../util/pagination.js';
 

@@ -1,6 +1,6 @@
 import { APIUser } from 'discord.js';
 import { toggle } from 'radash';
-import { Listener } from '../../lib/index.js';
+import { Listener } from '../../lib/handlers.js';
 import { Settings } from '../../util/constants.js';
 
 export default class GuildMemberUpdateListener extends Listener {

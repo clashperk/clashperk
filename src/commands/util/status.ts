@@ -4,7 +4,7 @@ import 'moment-duration-format';
 import { readFile } from 'node:fs/promises';
 import os from 'os';
 import { URL, fileURLToPath } from 'url';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Collections } from '../../util/constants.js';
 
 const pkgPath = fileURLToPath(new URL('../../../../package.json', import.meta.url).href);

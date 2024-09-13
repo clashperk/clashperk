@@ -1,5 +1,5 @@
 import { AnyThreadChannel, CommandInteraction, TextChannel } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Collections, Flags } from '../../util/constants.js';
 
 export default class ServerLinkCommand extends Command {

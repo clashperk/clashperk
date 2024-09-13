@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { inspect } from 'util';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { FeatureFlags } from '../../util/constants.js';
 
 export default class FeatureFlagsCommand extends Command {

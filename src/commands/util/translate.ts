@@ -1,6 +1,6 @@
 import { v2 } from '@google-cloud/translate';
 import { ActionRowBuilder, CommandInteraction, Locale, StringSelectMenuBuilder } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 
 const translate = new v2.Translate({
   key: process.env.GOOGLE_TRANSLATION_KEY

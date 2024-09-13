@@ -1,5 +1,5 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Collections } from '../../util/constants.js';
 import { EMOJIS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { Season } from '../../util/toolkit.js';

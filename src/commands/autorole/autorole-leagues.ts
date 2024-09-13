@@ -1,5 +1,5 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { PLAYER_LEAGUE_NAMES, Settings } from '../../util/constants.js';
 
 export interface IArgs {

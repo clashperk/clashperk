@@ -10,7 +10,7 @@ import {
   InteractionType
 } from 'discord.js';
 import { inspect } from 'node:util';
-import { Command, Listener } from '../../lib/index.js';
+import { Command, Listener } from '../../lib/handlers.js';
 
 export default class ErrorListener extends Listener {
   public constructor() {

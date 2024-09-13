@@ -3,7 +3,7 @@ import { APIClanWar, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { group } from 'radash';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { CustomIdProps } from '../../struct/component-handler.js';
 import { Collections, Settings, WarType } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';

@@ -1,5 +1,5 @@
 import { ChannelType, EmbedBuilder, Message } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class SuggestionsCommand extends Command {
   public constructor() {

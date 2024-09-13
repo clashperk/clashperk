@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { MembersCommandOptions as options } from '../../util/command.options.js';
 import { UP_ARROW } from '../../util/constants.js';
 import { EMOJIS, HERO_PETS } from '../../util/emojis.js';

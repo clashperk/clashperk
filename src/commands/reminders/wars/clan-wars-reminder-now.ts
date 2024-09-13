@@ -7,7 +7,7 @@ import {
   ComponentType,
   StringSelectMenuBuilder
 } from 'discord.js';
-import { Command } from '../../../lib/index.js';
+import { Command } from '../../../lib/handlers.js';
 import { MAX_TOWN_HALL_LEVEL } from '../../../util/constants.js';
 import { EMOJIS } from '../../../util/emojis.js';
 import { Util } from '../../../util/toolkit.js';

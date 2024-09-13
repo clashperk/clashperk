@@ -8,7 +8,7 @@ import {
   MessageType,
   StringSelectMenuBuilder
 } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { getBbLegendRankingEmbedMaker, getExportComponents, getLegendRankingEmbedMaker } from '../../util/helper.js';

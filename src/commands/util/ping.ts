@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class PingCommand extends Command {
   public constructor() {

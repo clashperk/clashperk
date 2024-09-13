@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { IRoster } from '../../struct/roster-manager.js';
 import { Settings } from '../../util/constants.js';
 

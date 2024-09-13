@@ -1,7 +1,7 @@
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 

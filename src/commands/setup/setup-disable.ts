@@ -2,7 +2,7 @@ import { Collections } from '@app/constants';
 import { ClanLogType } from '@app/entities';
 import { CommandInteraction, TextChannel } from 'discord.js';
 import { title as toTitle } from 'radash';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { DeprecatedLogs, logActionsMap } from './setup-clan-logs.js';
 
 function title(str: string) {

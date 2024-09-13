@@ -8,7 +8,7 @@ import {
   StringSelectMenuInteraction
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { RosterSortTypes, rosterClan, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
 import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/command.options.js';
 import { Settings } from '../../util/constants.js';

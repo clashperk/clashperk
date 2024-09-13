@@ -10,7 +10,7 @@ import {
   User,
   embedLength
 } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';

@@ -1,7 +1,7 @@
 import { ButtonInteraction, CommandInteraction, EmbedBuilder, Role, User } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Settings } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { handleMessagePagination } from '../../util/pagination.js';

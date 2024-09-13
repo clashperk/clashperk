@@ -12,7 +12,7 @@ import {
   User
 } from 'discord.js';
 import { cluster, diff } from 'radash';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/google.js';
 import { Collections, DOT, Settings } from '../../util/constants.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';

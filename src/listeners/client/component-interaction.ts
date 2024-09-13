@@ -1,5 +1,5 @@
 import { Interaction, MessageComponentInteraction } from 'discord.js';
-import { Listener } from '../../lib/index.js';
+import { Listener } from '../../lib/handlers.js';
 import ComponentHandler from '../../struct/component-handler.js';
 import { Settings } from '../../util/constants.js';
 

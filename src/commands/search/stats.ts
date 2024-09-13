@@ -1,7 +1,7 @@
 import { APIClanWar, APIClanWarAttack } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Collections, MAX_TOWN_HALL_LEVEL, WarType } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';

@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Collections } from '../../util/constants.js';
 import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';

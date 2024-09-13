@@ -1,6 +1,5 @@
 import { FeatureFlags, Settings } from '@app/constants';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
-import { CommandHandler, InhibitorHandler, ListenerHandler } from '@lib/core';
 import { BaseInteraction, Client as DiscordClient, GatewayIntentBits, Message, Options, User } from 'discord.js';
 import { Db } from 'mongodb';
 import { nanoid } from 'nanoid';
@@ -9,6 +8,7 @@ import { PostHog } from 'posthog-node';
 import { container } from 'tsyringe';
 import { RolesManager } from '../core/roles-manager.js';
 import RPCHandler from '../core/rpc-handler.js';
+import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/handlers.js';
 import { ClientUtil } from '../util/client.util.js';
 import { i18n } from '../util/i18n.js';
 import Logger from '../util/logger.js';

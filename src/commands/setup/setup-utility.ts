@@ -19,7 +19,7 @@ import {
   TextInputBuilder,
   TextInputStyle
 } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/guild-events-handler.js';
 import { Collections, Settings, URL_REGEX, missingPermissions } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';

@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Collections } from '../../util/constants.js';
 
 export default class CategoryDeleteCommand extends Command {

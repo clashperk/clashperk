@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder, User, time } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Collections, WarType } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 

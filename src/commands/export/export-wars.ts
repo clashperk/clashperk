@@ -1,6 +1,6 @@
 import { APIClanWarAttack, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';

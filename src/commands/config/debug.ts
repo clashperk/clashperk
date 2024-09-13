@@ -8,7 +8,7 @@ import {
   TextBasedChannel
 } from 'discord.js';
 import ms from 'ms';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';

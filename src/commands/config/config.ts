@@ -15,7 +15,7 @@ import {
 import ms from 'ms';
 import { title, unique } from 'radash';
 import { command } from '../../../locales/locales.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Settings } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 

@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import { title } from 'radash';
 import { NicknamingAccountPreference } from '../../core/roles-manager.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Settings } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 

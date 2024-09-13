@@ -11,7 +11,7 @@ import {
 } from 'discord.js';
 import i18next from 'i18next';
 import { command as commandMap } from '../../../locales/locales.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 
 const getTranslation = (key: string): string | null => {

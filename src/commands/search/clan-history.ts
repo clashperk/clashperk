@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder, time, User } from 'discord.js';
 import ms from 'ms';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class ClanHistoryCommand extends Command {
   public constructor() {

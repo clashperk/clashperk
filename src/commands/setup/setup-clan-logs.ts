@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { ObjectId, UpdateResult } from 'mongodb';
 import { title as toTitle } from 'radash';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Collections, DEEP_LINK_TYPES, Flags } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';

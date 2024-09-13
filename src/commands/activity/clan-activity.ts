@@ -1,6 +1,6 @@
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import Google from '../../struct/google.js';
 import { Collections } from '../../util/constants.js';
 

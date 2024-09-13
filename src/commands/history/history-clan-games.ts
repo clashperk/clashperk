@@ -1,6 +1,6 @@
 import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { Collections, Settings } from '../../util/constants.js';
 import { getExportComponents, padStart } from '../../util/helper.js';

@@ -11,7 +11,7 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';

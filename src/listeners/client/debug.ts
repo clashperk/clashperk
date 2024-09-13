@@ -1,4 +1,4 @@
-import { Listener } from '../../lib/index.js';
+import { Listener } from '../../lib/handlers.js';
 
 export default class DebugListener extends Listener {
   public constructor() {

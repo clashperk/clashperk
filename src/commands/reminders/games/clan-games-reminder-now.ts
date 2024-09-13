@@ -7,7 +7,7 @@ import {
   ComponentType,
   StringSelectMenuBuilder
 } from 'discord.js';
-import { Command } from '../../../lib/index.js';
+import { Command } from '../../../lib/handlers.js';
 import { CLAN_GAMES_MINIMUM_POINTS } from '../../../util/constants.js';
 import { EMOJIS } from '../../../util/emojis.js';
 import { Util } from '../../../util/toolkit.js';

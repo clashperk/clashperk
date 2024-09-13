@@ -1,4 +1,3 @@
-import { Command } from '@lib/core';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,6 +10,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { CompeteBoardsEntity } from '../../entities/compete-boards.entity.js';
+import { Command } from '../../lib/handlers.js';
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';

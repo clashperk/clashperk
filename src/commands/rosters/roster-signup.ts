@@ -2,7 +2,7 @@ import { APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { RosterLog } from '../../struct/roster-manager.js';
 import { TOWN_HALLS } from '../../util/emojis.js';
 import { sumHeroes } from '../../util/helper.js';

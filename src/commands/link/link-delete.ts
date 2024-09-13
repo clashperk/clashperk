@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { Collections, Settings } from '../../util/constants.js';
 
 export default class LinkDeleteCommand extends Command {

@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import { Command } from '../../../lib/index.js';
+import { Command } from '../../../lib/handlers.js';
 import { Collections } from '../../../util/constants.js';
 import { hexToNanoId } from '../../../util/helper.js';
 import { Util } from '../../../util/toolkit.js';

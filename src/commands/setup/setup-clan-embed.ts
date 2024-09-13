@@ -20,7 +20,7 @@ import {
   WebhookClient
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { ClanEmbedFieldOptions, ClanEmbedFieldValues } from '../../util/command.options.js';
 import { Collections, DEEP_LINK_TYPES, Flags, missingPermissions, URL_REGEX } from '../../util/constants.js';
 import { clanEmbedMaker } from '../../util/helper.js';

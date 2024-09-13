@@ -1,5 +1,5 @@
-import { EmbedBuilder, CommandInteraction } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class ClanSearchCommand extends Command {
   public constructor() {

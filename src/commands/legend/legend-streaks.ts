@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { LegendAttacksEntity } from '../../entities/legend-attacks.entity.js';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';

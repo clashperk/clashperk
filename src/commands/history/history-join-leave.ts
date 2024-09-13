@@ -1,6 +1,6 @@
 import { ButtonInteraction, CommandInteraction, User } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 

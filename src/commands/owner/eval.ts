@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import util from 'node:util';
-import { Args, Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class EvalCommand extends Command {
