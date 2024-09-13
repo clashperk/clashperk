@@ -1,8 +1,8 @@
+import { Collections, Settings } from '@app/constants';
+import { FlagsEntity } from '@app/entities';
 import { AutocompleteInteraction, cleanContent, CommandInteraction, EmbedBuilder, time } from 'discord.js';
 import moment from 'moment';
-import { FlagsEntity } from '../../entities/flags.entity.js';
 import { Command } from '../../lib/handlers.js';
-import { Collections, Settings } from '../../util/constants.js';
 
 export default class FlagCreateCommand extends Command {
   public constructor() {

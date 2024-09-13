@@ -1,7 +1,7 @@
+import { Settings } from '@app/constants';
 import { CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
-import { Settings } from '../../util/constants.js';
 import { dynamicPagination } from '../../util/pagination.js';
 
 export default class RosterPostCommand extends Command {

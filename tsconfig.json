@@ -49,9 +49,7 @@
 
     "paths": {
       "@app/constants": ["./src/util/constants.ts"],
-      "@app/entities": ["./src/entities/index.ts"],
-      "@lib/constants": ["./src/lib/util.ts"],
-      "@lib/core": ["./src/lib/handlers.ts"]
+      "@app/entities": ["./src/entities/index.ts"]
     }
   },
   "include": ["src", "test", "scripts", "locales", "locales/**/*.json"]

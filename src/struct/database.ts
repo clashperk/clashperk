@@ -1,3 +1,4 @@
+import { Collections } from '@app/constants';
 import {
   CapitalRaidSeasonsEntity,
   CapitalRanksEntity,
@@ -13,7 +14,6 @@ import {
   UsersEntity
 } from '@app/entities';
 import { Db, MongoClient } from 'mongodb';
-import { Collections } from '../util/constants.js';
 
 interface CollectionsMap {
   [Collections.CLAN_STORES]: ClanStoresEntity;

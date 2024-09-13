@@ -1,7 +1,7 @@
 // import type { LegendAttacksAggregated } from '../commands/legend/LegendDays.js';
 
+import { WAR_LEAGUE_MAP } from '@app/constants';
 import { CWLRankCard } from '../helper/cwl-helper.js';
-import { WAR_LEAGUE_MAP } from '../util/constants.js';
 
 // function formatNumber(num: number) {
 //   return `${num > 0 ? '+' : ''}${num.toFixed(0)}`;

@@ -1,10 +1,9 @@
+import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings } from '@app/constants';
+import { ClanLogType, ClanLogsEntity, FlagsEntity, LogAction, LogActions } from '@app/entities';
 import { APIPlayer, APIPlayerItem } from 'clashofclans.js';
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions, parseEmoji } from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
-import { ClanLogType, ClanLogsEntity, LogAction, LogActions } from '../entities/clan-logs.entity.js';
-import { FlagsEntity } from '../entities/flags.entity.js';
-import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings } from '../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALLS } from '../util/emojis.js';
 import { unitsFlatten } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';

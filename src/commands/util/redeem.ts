@@ -1,3 +1,4 @@
+import { Collections, Settings } from '@app/constants';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,7 +12,6 @@ import {
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
 import { Included, Patron, guildLimits } from '../../struct/patreon-handler.js';
-import { Collections, Settings } from '../../util/constants.js';
 
 export default class RedeemCommand extends Command {
   public constructor() {

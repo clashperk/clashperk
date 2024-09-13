@@ -1,8 +1,8 @@
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
+import { LegendAttacksEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, Guild, User } from 'discord.js';
 import moment from 'moment';
-import { LegendAttacksEntity } from '../../entities/legend-attacks.entity.js';
 import { Command } from '../../lib/handlers.js';
-import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';

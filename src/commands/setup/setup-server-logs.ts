@@ -1,3 +1,4 @@
+import { Collections, Settings, missingPermissions } from '@app/constants';
 import {
   ActionRowBuilder,
   AnyThreadChannel,
@@ -12,7 +13,6 @@ import {
   TextChannel
 } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
-import { Collections, Settings, missingPermissions } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
 export default class SetupUtilsCommand extends Command {

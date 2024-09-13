@@ -1,3 +1,5 @@
+import { Collections, missingPermissions } from '@app/constants';
+import { RaidRemindersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
   AnyThreadChannel,
@@ -16,9 +18,7 @@ import {
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import ms from 'ms';
-import { RaidRemindersEntity } from '../../../entities/capital-raid-reminders.entity.js';
 import { Args, Command } from '../../../lib/handlers.js';
-import { Collections, missingPermissions } from '../../../util/constants.js';
 
 export default class ReminderCreateCommand extends Command {
   public constructor() {

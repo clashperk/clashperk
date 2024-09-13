@@ -1,4 +1,5 @@
 import { Collections } from '@app/constants';
+import { LegendAttacksEntity } from '@app/entities';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -9,7 +10,6 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
-import { LegendAttacksEntity } from '../../entities/legend-attacks.entity.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';

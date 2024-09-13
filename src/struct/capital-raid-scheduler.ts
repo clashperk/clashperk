@@ -1,3 +1,4 @@
+import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '@app/constants';
 import { RaidRemindersEntity, RaidSchedulersEntity } from '@app/entities';
 import { APICapitalRaidSeason } from 'clashofclans.js';
 import {
@@ -13,7 +14,6 @@ import {
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
-import { Collections, MAX_TOWN_HALL_LEVEL, Settings } from '../util/constants.js';
 import { Util } from '../util/toolkit.js';
 import { Client } from './client.js';
 

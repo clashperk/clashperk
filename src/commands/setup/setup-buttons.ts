@@ -1,3 +1,4 @@
+import { DiscordErrorCodes, Settings, URL_REGEX } from '@app/constants';
 import {
   ActionRowBuilder,
   AnyThreadChannel,
@@ -17,7 +18,6 @@ import {
   TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
-import { DiscordErrorCodes, Settings, URL_REGEX } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 
 export default class SetupButtonsCommand extends Command {

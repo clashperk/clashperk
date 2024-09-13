@@ -1,3 +1,4 @@
+import { Collections } from '@app/constants';
 import {
   APIMessage,
   ActionRowBuilder,
@@ -16,7 +17,6 @@ import {
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/client.js';
-import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/helper.js';
 import { Season, Util } from '../util/toolkit.js';

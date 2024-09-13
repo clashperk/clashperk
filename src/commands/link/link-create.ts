@@ -1,7 +1,7 @@
+import { Collections, FeatureFlags, Settings } from '@app/constants';
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
-import { Collections, FeatureFlags, Settings } from '../../util/constants.js';
 
 export default class LinkCreateCommand extends Command {
   public constructor() {

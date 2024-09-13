@@ -1,8 +1,8 @@
+import { Settings } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import ms from 'ms';
 import { title } from 'radash';
 import { Command } from '../../lib/handlers.js';
-import { Settings } from '../../util/constants.js';
 
 export const _rolesMap: Record<string, string> = {
   admin: 'elder',

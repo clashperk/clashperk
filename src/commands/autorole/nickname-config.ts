@@ -1,3 +1,4 @@
+import { Settings } from '@app/constants';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -14,7 +15,6 @@ import {
 import { title } from 'radash';
 import { NicknamingAccountPreference } from '../../core/roles-manager.js';
 import { Command } from '../../lib/handlers.js';
-import { Settings } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
 // {NAME} | {PLAYER_NAME}

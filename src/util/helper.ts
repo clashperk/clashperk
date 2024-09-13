@@ -1,4 +1,4 @@
-import { PlayerSeasonsEntity } from '@app/entities';
+import { LegendAttacksEntity, PlayerSeasonsEntity } from '@app/entities';
 import { APIClan, APIPlayer, APIPlayerClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -15,7 +15,6 @@ import moment from 'moment';
 import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title } from 'radash';
 import { container } from 'tsyringe';
-import { LegendAttacksEntity } from '../entities/legend-attacks.entity.js';
 import Client from '../struct/client.js';
 import { ClanEmbedFields } from './command.options.js';
 import { Collections, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './constants.js';

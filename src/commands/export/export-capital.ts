@@ -1,7 +1,7 @@
+import { Collections, UNRANKED_CAPITAL_LEAGUE_ID } from '@app/constants';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
-import { Collections, UNRANKED_CAPITAL_LEAGUE_ID } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
 
 export default class ExportCapital extends Command {

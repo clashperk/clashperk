@@ -1,9 +1,9 @@
+import { Collections } from '@app/constants';
+import { CapitalContributionsEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
-import { CapitalContributionsEntity } from '../../entities/capital-contributions.entity.js';
 import { Command } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 

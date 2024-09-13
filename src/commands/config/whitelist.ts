@@ -1,6 +1,6 @@
+import { FeatureFlags, Settings } from '@app/constants';
 import { CommandInteraction, Role, User } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { FeatureFlags, Settings } from '../../util/constants.js';
 
 export default class WhitelistCommand extends Command {
   public constructor() {

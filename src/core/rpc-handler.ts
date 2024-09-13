@@ -1,9 +1,9 @@
+import { Collections, Flags } from '@app/constants';
 import { captureException } from '@sentry/node';
 import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
 import { Client } from '../struct/client.js';
 import Queue from '../struct/queue.js';
-import { Collections, Flags } from '../util/constants.js';
 import AutoBoardLog from './auto-board-log.js';
 import CapitalLog from './capital-log.js';
 import ClanEmbedLog from './clan-embed-log.js';

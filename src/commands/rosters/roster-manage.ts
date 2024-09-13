@@ -1,3 +1,4 @@
+import { Collections, Settings, TAG_REGEX } from '@app/constants';
 import { PlayersEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import {
@@ -30,7 +31,6 @@ import {
   rosterLabel,
   RosterLog
 } from '../../struct/roster-manager.js';
-import { Collections, Settings, TAG_REGEX } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 import { Util } from '../../util/toolkit.js';

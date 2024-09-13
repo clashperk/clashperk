@@ -1,9 +1,3 @@
-import { APIClan, APIPlayer } from 'clashofclans.js';
-import { BaseInteraction, CommandInteraction, User } from 'discord.js';
-import { ObjectId } from 'mongodb';
-import { unique } from 'radash';
-import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
-import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import {
   Collections,
   DISCORD_ID_REGEX,
@@ -14,7 +8,12 @@ import {
   Settings,
   TAG_REGEX,
   getHttpStatusText
-} from '../util/constants.js';
+} from '@app/constants';
+import { ClanStoresEntity, PlayerLinksEntity } from '@app/entities';
+import { APIClan, APIPlayer } from 'clashofclans.js';
+import { BaseInteraction, CommandInteraction, User } from 'discord.js';
+import { ObjectId } from 'mongodb';
+import { unique } from 'radash';
 import { i18n } from '../util/i18n.js';
 import Client from './client.js';
 import { ElasticIndexer } from './indexer.js';

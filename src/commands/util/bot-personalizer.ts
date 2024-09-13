@@ -1,3 +1,4 @@
+import { getInviteLink } from '@app/constants';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -14,7 +15,6 @@ import moment from 'moment';
 import { WithId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 import { Patron, rewards } from '../../struct/patreon-handler.js';
-import { getInviteLink } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 

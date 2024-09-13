@@ -1,9 +1,9 @@
+import { Collections } from '@app/constants';
 import { ClanLogType, ClanStoresEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { WithId } from 'mongodb';
 import { title as toTitle } from 'radash';
 import { Command } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 import { Util } from '../../util/toolkit.js';
 import { logActionsMap } from './setup-clan-logs.js';
 

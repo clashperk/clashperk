@@ -1,3 +1,4 @@
+import { CLAN_GAMES_STARTING_DATE, Collections } from '@app/constants';
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import {
@@ -11,7 +12,6 @@ import {
   WebhookMessageCreateOptions
 } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
-import { CLAN_GAMES_STARTING_DATE, Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { clanGamesEmbedMaker } from '../util/helper.js';
 import BaseClanLog from './base-clan-log.js';

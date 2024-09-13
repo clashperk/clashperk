@@ -1,6 +1,6 @@
+import { Collections } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/toolkit.js';
 

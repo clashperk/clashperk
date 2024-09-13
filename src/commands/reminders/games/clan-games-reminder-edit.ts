@@ -1,3 +1,4 @@
+import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '@app/constants';
 import { ClanGamesRemindersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -13,7 +14,6 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../../lib/handlers.js';
-import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../../util/constants.js';
 import { hexToNanoId } from '../../../util/helper.js';
 
 export default class ReminderEditCommand extends Command {

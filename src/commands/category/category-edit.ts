@@ -1,8 +1,8 @@
+import { Collections } from '@app/constants';
 import { ClanCategoriesEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 
 export default class CategoryEditCommand extends Command {
   public constructor() {

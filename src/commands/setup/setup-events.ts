@@ -1,3 +1,4 @@
+import { Collections, URL_REGEX } from '@app/constants';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -15,7 +16,6 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/guild-events-handler.js';
-import { Collections, URL_REGEX } from '../../util/constants.js';
 
 export default class SetupEventsCommand extends Command {
   public constructor() {

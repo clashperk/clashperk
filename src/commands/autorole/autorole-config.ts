@@ -1,7 +1,7 @@
+import { Settings } from '@app/constants';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
-import { Settings } from '../../util/constants.js';
 
 export default class AutoRoleConfigCommand extends Command {
   public constructor() {

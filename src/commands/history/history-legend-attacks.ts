@@ -1,7 +1,7 @@
+import { Collections } from '@app/constants';
 import { CommandInteraction, User } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
-import { Collections } from '../../util/constants.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 

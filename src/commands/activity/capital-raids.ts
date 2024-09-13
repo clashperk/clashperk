@@ -1,3 +1,4 @@
+import { Collections } from '@app/constants';
 import { APICapitalRaidSeason, APIClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -11,7 +12,6 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/toolkit.js';
 

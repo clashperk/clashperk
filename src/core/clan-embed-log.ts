@@ -1,8 +1,8 @@
+import { Collections } from '@app/constants';
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import { Util } from 'clashofclans.js';
 import { Collection, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
-import { Collections } from '../util/constants.js';
 import { clanEmbedMaker } from '../util/helper.js';
 import BaseClanLog from './base-clan-log.js';
 import LastSeenLogV2 from './last-seen-log.js';

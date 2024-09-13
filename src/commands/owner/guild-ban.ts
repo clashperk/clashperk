@@ -1,6 +1,6 @@
+import { Settings } from '@app/constants';
 import { Message } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
-import { Settings } from '../../util/constants.js';
 
 export default class GuildBanCommand extends Command {
   public constructor() {

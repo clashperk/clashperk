@@ -1,3 +1,4 @@
+import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 import { APIClan, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
@@ -6,7 +7,6 @@ import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/
 import { Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
 import { getCWLSummaryImage } from '../../struct/image-helper.js';
-import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '../../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 

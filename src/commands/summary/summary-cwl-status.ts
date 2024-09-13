@@ -1,7 +1,7 @@
+import { UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_MAP } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { group, parallel } from 'radash';
 import { Command } from '../../lib/handlers.js';
-import { UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_MAP } from '../../util/constants.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
 
 enum SpinStatus {

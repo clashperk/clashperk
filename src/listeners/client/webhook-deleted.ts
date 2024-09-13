@@ -1,6 +1,6 @@
+import { Collections } from '@app/constants';
 import { Guild } from 'discord.js';
 import { Listener } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 
 export default class WebhookDeletedListener extends Listener {
   public constructor() {

@@ -1,6 +1,6 @@
+import { Settings } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, Guild, Role } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { Settings } from '../../util/constants.js';
 
 export interface IArgs {
   command?: 'refresh' | 'disable' | null;

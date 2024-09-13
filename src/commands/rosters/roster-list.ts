@@ -1,8 +1,8 @@
+import { Settings } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 import { IRoster, rosterLabel } from '../../struct/roster-manager.js';
-import { Settings } from '../../util/constants.js';
 
 export default class RosterListCommand extends Command {
   public constructor() {

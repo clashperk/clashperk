@@ -1,3 +1,4 @@
+import { Collections, DEEP_LINK_TYPES, Flags } from '@app/constants';
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -11,7 +12,6 @@ import {
 import { ObjectId, UpdateResult } from 'mongodb';
 import { title as toTitle } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
-import { Collections, DEEP_LINK_TYPES, Flags } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 

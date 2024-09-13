@@ -1,7 +1,7 @@
+import { Settings } from '@app/constants';
 import { Interaction, MessageComponentInteraction } from 'discord.js';
 import { Listener } from '../../lib/handlers.js';
 import ComponentHandler from '../../struct/component-handler.js';
-import { Settings } from '../../util/constants.js';
 
 export default class ComponentInteractionListener extends Listener {
   private readonly componentHandler: ComponentHandler;

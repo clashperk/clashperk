@@ -1,8 +1,8 @@
+import { Collections } from '@app/constants';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import Chart from '../../struct/chart-handler.js';
-import { Collections } from '../../util/constants.js';
 
 export default class UsageCommand extends Command {
   public constructor() {

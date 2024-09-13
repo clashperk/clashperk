@@ -1,6 +1,6 @@
+import { Settings } from '@app/constants';
 import { GuildMember } from 'discord.js';
 import { Listener } from '../../lib/handlers.js';
-import { Settings } from '../../util/constants.js';
 
 export default class GuildMemberAddListener extends Listener {
   public constructor() {

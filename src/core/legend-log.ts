@@ -1,8 +1,8 @@
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
 import { ClanLogsEntity, ClanLogType, LegendAttacksEntity } from '@app/entities';
 import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
-import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '../util/constants.js';
 import { padStart } from '../util/helper.js';
 import { Season, Util } from '../util/toolkit.js';
 import BaseClanLog from './base-clan-log.js';

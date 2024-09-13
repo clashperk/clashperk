@@ -1,6 +1,6 @@
+import { Settings } from '@app/constants';
 import { CommandInteraction, Role } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { Settings } from '../../util/constants.js';
 
 interface RosterGroupCreateProps {
   command: 'create';

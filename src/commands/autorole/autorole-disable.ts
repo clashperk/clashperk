@@ -1,7 +1,7 @@
+import { Collections, Settings } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Message, MessageComponentInteraction } from 'discord.js';
 import { title } from 'radash';
 import { Command } from '../../lib/handlers.js';
-import { Collections, Settings } from '../../util/constants.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
 export default class AutoRoleDisableCommand extends Command {

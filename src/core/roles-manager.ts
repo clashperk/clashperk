@@ -1,11 +1,9 @@
 import { BUILDER_BASE_LEAGUE_MAPS, Collections, LEGEND_LEAGUE_ID, PLAYER_LEAGUE_MAPS, Settings, SUPER_SCRIPTS } from '@app/constants';
+import { AutoRoleDelaysEntity, ClanStoresEntity, PlayerLinksEntity } from '@app/entities';
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits, Role, User } from 'discord.js';
 import { UpdateFilter, WithId } from 'mongodb';
 import { parallel, sift, unique } from 'radash';
-import { AutoRoleDelaysEntity } from '../entities/auto-role-delays.entity.js';
-import { ClanStoresEntity } from '../entities/clan-stores.entity.js';
-import { PlayerLinksEntity } from '../entities/player-links.entity.js';
 import { Client } from '../struct/client.js';
 import { makeAbbr, sumHeroes } from '../util/helper.js';
 

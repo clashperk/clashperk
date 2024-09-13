@@ -1,3 +1,4 @@
+import { Collections, MAX_TOWN_HALL_LEVEL } from '@app/constants';
 import { ClanWarRemindersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -13,7 +14,6 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../../lib/handlers.js';
-import { Collections, MAX_TOWN_HALL_LEVEL } from '../../../util/constants.js';
 import { hexToNanoId } from '../../../util/helper.js';
 
 export default class ReminderEditCommand extends Command {

@@ -1,14 +1,8 @@
+import { CAPITAL_LEAGUE_MAP, Collections, UNRANKED_CAPITAL_LEAGUE_ID, UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_MAP } from '@app/constants';
 import { CapitalRaidSeasonsEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import {
-  CAPITAL_LEAGUE_MAP,
-  Collections,
-  UNRANKED_CAPITAL_LEAGUE_ID,
-  UNRANKED_WAR_LEAGUE_ID,
-  WAR_LEAGUE_MAP
-} from '../../util/constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 

@@ -1,7 +1,7 @@
+import { Collections } from '@app/constants';
+import { ClanStoresEntity } from '@app/entities';
 import { CommandInteraction } from 'discord.js';
-import { ClanStoresEntity } from '../../entities/clan-stores.entity.js';
 import { Command } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 
 export default class AliasCreateCommand extends Command {
   public constructor() {

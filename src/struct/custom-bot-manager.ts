@@ -1,3 +1,5 @@
+import { Collections, Settings } from '@app/constants';
+import { CustomBotsEntity, PatreonMembersEntity } from '@app/entities';
 import { captureException } from '@sentry/node';
 import {
   APIApplication,
@@ -14,9 +16,6 @@ import {
 import { Collection } from 'mongodb';
 import { container } from 'tsyringe';
 import { COMMANDS } from '../../scripts/commands.js';
-import { CustomBotsEntity } from '../entities/custom-bot.entity.js';
-import { PatreonMembersEntity } from '../entities/patrons.entity.js';
-import { Collections, Settings } from '../util/constants.js';
 import Client from './client.js';
 
 export class CustomBotManager {

@@ -1,9 +1,9 @@
+import { Collections } from '@app/constants';
+import { CallersEntity } from '@app/entities';
 import { APIClanWar } from 'clashofclans.js';
 import { CommandInteraction, User } from 'discord.js';
 import moment from 'moment';
-import { CallersEntity } from '../../entities/callers.entity.js';
 import { Command } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 
 export default class TargetCommand extends Command {
   public constructor() {

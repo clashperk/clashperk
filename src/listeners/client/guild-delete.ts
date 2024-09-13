@@ -1,7 +1,7 @@
+import { Collections, Settings } from '@app/constants';
 import { EmbedBuilder, Guild, WebhookClient } from 'discord.js';
 import { Listener } from '../../lib/handlers.js';
 import { mixpanel } from '../../struct/mixpanel.js';
-import { Collections, Settings } from '../../util/constants.js';
 import { EMOJIS } from '../../util/emojis.js';
 
 export default class GuildDeleteListener extends Listener {

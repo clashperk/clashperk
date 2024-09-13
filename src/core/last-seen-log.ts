@@ -1,3 +1,4 @@
+import { Collections } from '@app/constants';
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -9,7 +10,6 @@ import {
   WebhookMessageCreateOptions
 } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
-import { Collections } from '../util/constants.js';
 import { EMOJIS } from '../util/emojis.js';
 import { lastSeenEmbedMaker } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';

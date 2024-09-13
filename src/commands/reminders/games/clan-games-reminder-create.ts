@@ -1,3 +1,4 @@
+import { CLAN_GAMES_MINIMUM_POINTS, Collections, missingPermissions } from '@app/constants';
 import { ClanGamesRemindersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -18,7 +19,6 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import ms from 'ms';
 import { Args, Command } from '../../../lib/handlers.js';
-import { CLAN_GAMES_MINIMUM_POINTS, Collections, missingPermissions } from '../../../util/constants.js';
 
 export default class ReminderCreateCommand extends Command {
   public constructor() {

@@ -1,3 +1,4 @@
+import { Collections, calculateCWLMedals } from '@app/constants';
 import { ClanLogType, ClanLogsEntity } from '@app/entities';
 import { APIClanWar, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import {
@@ -18,7 +19,6 @@ import { ObjectId, UpdateFilter, WithId } from 'mongodb';
 import { cluster } from 'radash';
 import { aggregateRoundsForRanking, calculateLeagueRanking } from '../helper/cwl-helper.js';
 import { getCWLSummaryImage } from '../struct/image-helper.js';
-import { Collections, calculateCWLMedals } from '../util/constants.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/emojis.js';
 import { Season, Util } from '../util/toolkit.js';
 import BaseClanLog from './base-clan-log.js';

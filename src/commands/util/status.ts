@@ -1,3 +1,4 @@
+import { Collections } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, Guild, Message } from 'discord.js';
 import moment from 'moment';
 import 'moment-duration-format';
@@ -5,7 +6,6 @@ import { readFile } from 'node:fs/promises';
 import os from 'os';
 import { URL, fileURLToPath } from 'url';
 import { Command } from '../../lib/handlers.js';
-import { Collections } from '../../util/constants.js';
 
 const pkgPath = fileURLToPath(new URL('../../../../package.json', import.meta.url).href);
 const pkg = JSON.parse((await readFile(pkgPath)).toString()) as { version: string };
