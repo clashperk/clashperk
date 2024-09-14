@@ -50,7 +50,6 @@ export default class LinkListCommand extends Command {
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     args: { tag?: string; sort_by?: string; user?: User; links?: boolean; with_options?: boolean }
   ) {
-    console.log(args);
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
     if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));

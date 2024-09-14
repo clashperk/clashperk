@@ -1,17 +1,32 @@
 import 'reflect-metadata';
 
 (async () => {
-  const response = await fetch('https://api.crowdin.com/api/v2/projects/522390/strings?fileId=18&limit=500', {
-    headers: {
-      'Authorization': `Bearer ${process.env.CROWDIN_API}`,
-      'Content-Type': 'application/json'
-    },
-    method: 'GET'
-  });
-  const result = await response.json();
-  if (!response.ok) console.log(JSON.stringify(result));
+  const limit = 250;
+  let [hasMore, offset] = [true, 0];
+  const strings: { data: { id: string; identifier: string; maxLength: number; text: string } }[] = [];
 
-  for (const item of (result as any).data ?? []) {
+  while (hasMore) {
+    const response = await fetch(`https://api.crowdin.com/api/v2/projects/522390/strings?fileId=18&limit=${limit}&offset=${offset}`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.CROWDIN_API}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'GET'
+    });
+
+    const result = (await response.json()) as {
+      data: { data: { id: string; identifier: string; maxLength: number; text: string } }[];
+      pagination: { limit: number; offset: number };
+    };
+
+    strings.push(...(result.data ?? []));
+    hasMore = result.data.length === limit;
+    offset = limit + offset;
+
+    console.log(`${strings.length} strings fetched.`);
+  }
+
+  for (const item of strings) {
     if (item.data.identifier.endsWith('.description') && item.data.maxLength === 0) {
       if (item.data.text.length > 100) {
         console.log(`${item.data.identifier as string} is too long.`);

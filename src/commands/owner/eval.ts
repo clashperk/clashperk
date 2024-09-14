@@ -30,8 +30,6 @@ export default class EvalCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction, { code, depth, shard }: { code: string; depth?: number; shard?: boolean }) {
-    console.log({ code, depth, shard });
-
     let hrDiff;
     let evaled;
     try {

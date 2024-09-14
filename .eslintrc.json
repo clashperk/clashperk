@@ -16,6 +16,7 @@
   "parser": "@typescript-eslint/parser",
   "rules": {
     "no-process-env": 0,
+    "no-console": "off",
     "no-inline-comments": 0,
     "no-warning-comments": 0,
     "comma-dangle": ["error", "never"],

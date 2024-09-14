@@ -1,4 +1,3 @@
-import { captureException } from '@sentry/node';
 import { Command } from '../../lib/handlers.js';
 
 export default class ErrorCommand extends Command {
@@ -12,12 +11,7 @@ export default class ErrorCommand extends Command {
   }
 
   public run() {
-    try {
-      // @ts-expect-error - test error
-      foo(`Hello from Sentry [${Math.random().toFixed(2)}]`);
-    } catch (e) {
-      console.log(e);
-      captureException(e);
-    }
+    // @ts-expect-error - test error
+    foo(`Hello from Sentry [${Math.random().toFixed(2)}]`);
   }
 }
