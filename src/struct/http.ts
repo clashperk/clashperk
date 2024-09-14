@@ -14,7 +14,7 @@ import { request } from 'undici';
 import { isWinner } from '../helper/cwl-helper.js';
 import Client from './client.js';
 
-export function timeoutSignal(timeout: number) {
+export function timeoutSignal(timeout: number, path: string) {
   if (!Number.isInteger(timeout)) {
     throw new TypeError('Expected an integer for the timeout');
   }
@@ -23,7 +23,8 @@ export function timeoutSignal(timeout: number) {
 
   if (timeout > 0) {
     const timeoutId = setTimeout(() => {
-      controller.abort();
+      controller.abort(path);
+      console.log(`${path} timed out`);
     }, timeout);
 
     timeoutId.unref();
@@ -272,7 +273,7 @@ export default class Http extends ClashOfClansClient {
         username: process.env.DISCORD_LINK_USERNAME,
         password: process.env.DISCORD_LINK_PASSWORD
       }),
-      signal: timeoutSignal(10_000)
+      signal: timeoutSignal(10_000, 'POST /login')
     }).catch(() => null);
     const data = (await res?.body.json().catch(() => null)) as { token?: string } | null;
 
@@ -288,7 +289,7 @@ export default class Http extends ClashOfClansClient {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ playerTag, discordId }),
-      signal: timeoutSignal(10_000)
+      signal: timeoutSignal(10_000, 'POST /links')
     }).catch(() => null);
 
     return Promise.resolve(res?.statusCode === 200);
@@ -301,7 +302,7 @@ export default class Http extends ClashOfClansClient {
         'Authorization': `Bearer ${this.bearerToken}`,
         'Content-Type': 'application/json'
       },
-      signal: timeoutSignal(10_000)
+      signal: timeoutSignal(10_000, 'DELETE /links/:playerTag')
     }).catch(() => null);
 
     return Promise.resolve(res?.statusCode === 200);
@@ -314,7 +315,7 @@ export default class Http extends ClashOfClansClient {
         'Authorization': `Bearer ${this.bearerToken}`,
         'Content-Type': 'application/json'
       },
-      signal: timeoutSignal(10_000)
+      signal: timeoutSignal(10_000, 'GET /links/:user')
     }).catch(() => null);
     const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 
@@ -329,7 +330,7 @@ export default class Http extends ClashOfClansClient {
         'Authorization': `Bearer ${this.bearerToken}`,
         'Content-Type': 'application/json'
       },
-      signal: timeoutSignal(10_000)
+      signal: timeoutSignal(10_000, 'GET /links/:tag')
     }).catch(() => null);
     const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 
@@ -346,7 +347,7 @@ export default class Http extends ClashOfClansClient {
         'Authorization': `Bearer ${this.bearerToken}`,
         'Content-Type': 'application/json'
       },
-      signal: timeoutSignal(10_000),
+      signal: timeoutSignal(10_000, 'POST /batch'),
       body: JSON.stringify(players.map((mem) => mem.tag))
     }).catch(() => null);
     const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];

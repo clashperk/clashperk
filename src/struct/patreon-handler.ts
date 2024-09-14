@@ -221,7 +221,7 @@ export class PatreonHandler {
 
     const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
       headers: { authorization: `Bearer ${process.env.PATREON_API!}` },
-      signal: timeoutSignal(10_000)
+      signal: timeoutSignal(10_000, 'GET /campaigns/:id/members')
     })
       .then((res) => res.json())
       .catch(() => null)) as { data: Member[]; included: Included[] } | null;
