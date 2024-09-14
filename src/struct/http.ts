@@ -269,7 +269,7 @@ export default class Http extends ClashOfClansClient {
         username: process.env.DISCORD_LINK_USERNAME,
         password: process.env.DISCORD_LINK_PASSWORD
       }),
-      signal: timeoutSignal(100, 'POST /login')
+      signal: timeoutSignal(10_000, 'POST /login')
     }).catch(() => null);
     const data = (await res?.json()) as { token?: string } | null;
 
