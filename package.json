@@ -1,6 +1,6 @@
 {
   "name": "clashperk",
-  "version": "3.7.11",
+  "version": "3.7.12",
   "author": "",
   "license": "UNLICENSED",
   "description": "Clash of Clans Discord Bot",
@@ -52,7 +52,6 @@
     "readdirp": "^3.6.0",
     "redis": "^4.6.14",
     "reflect-metadata": "^0.1.13",
-    "timeout-signal": "^2.0.0",
     "tsyringe": "^4.6.0",
     "undici": "^6.9.0"
   },

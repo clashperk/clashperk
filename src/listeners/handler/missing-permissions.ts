@@ -1,4 +1,4 @@
-import { BOT_MANAGER_HYPERLINK, missingPermissions } from '@app/constants';
+import { BOT_MANAGER_HYPERLINK, mapMissingPermissions, missingPermissions } from '@app/constants';
 import { AutocompleteInteraction, Interaction, PermissionsString, TextChannel, User } from 'discord.js';
 import { Command, Listener } from '../../lib/handlers.js';
 
@@ -19,7 +19,7 @@ export default class MissingPermissionsListener extends Listener {
   ) {
     const text = {
       client: () => {
-        const name = this.missingPermissions(interaction.channel as TextChannel, this.client.user!, missing);
+        const name = mapMissingPermissions(missing).missingPerms;
         return `The bot is missing ${name} to execute this command.`;
       },
       user: () => {

@@ -2,8 +2,8 @@ import { Collections, Settings } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
 import { BaseInteraction } from 'discord.js';
 import { Collection, WithId } from 'mongodb';
-import TimeoutSignal from 'timeout-signal';
 import { Client } from './client.js';
+import { timeoutSignal } from './http.js';
 
 export const rewards = {
   bronze: '3705318',
@@ -221,7 +221,7 @@ export class PatreonHandler {
 
     const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
       headers: { authorization: `Bearer ${process.env.PATREON_API!}` },
-      signal: TimeoutSignal(10_000)
+      signal: timeoutSignal(10_000)
     })
       .then((res) => res.json())
       .catch(() => null)) as { data: Member[]; included: Included[] } | null;

@@ -1,6 +1,6 @@
 import { Collections, Settings } from '@app/constants';
 import { FlagsEntity } from '@app/entities';
-import { AutocompleteInteraction, cleanContent, CommandInteraction, EmbedBuilder, time } from 'discord.js';
+import { AutocompleteInteraction, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 
@@ -63,7 +63,7 @@ export default class FlagCreateCommand extends Command {
         tag: player.tag,
         name: player.name,
         flagImpact: args.flag_impact ?? 1,
-        reason: cleanContent(args.reason, interaction.channel!),
+        reason: escapeMarkdown(args.reason),
         expiresAt: args.flag_expiry_days ? moment().add(args.flag_expiry_days, 'days').toDate() : null,
         createdAt: new Date()
       });

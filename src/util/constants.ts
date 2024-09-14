@@ -729,20 +729,19 @@ export const getInviteLink = (id: string, guildId?: string, noPermissions = fals
 };
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
-  const missingPerms = channel
-    .permissionsFor(member)!
-    .missing(permissions)
-    .map((str) => {
-      if (str === 'ViewChannel') return '**Read Messages**';
-      if (str === 'SendTTSMessages') return '**Send TTS Messages**';
-      if (str === 'UseVAD') return '**Use VAD**';
-      if (str === 'ManageGuild') return '**Manage Server**';
-      return `**${str
-        .replace(/([A-Z])/g, ' $1')
-        .toLowerCase()
-        .trim()
-        .replace(/\b(\w)/g, (char) => char.toUpperCase())}**`;
-    });
+  const missingPerms = channel.permissionsFor(member)!.missing(permissions);
+  return mapMissingPermissions(missingPerms);
+}
+
+export function mapMissingPermissions(missing: PermissionsString[]) {
+  const missingPerms = missing.map((str) => {
+    if (str === 'ManageGuild') return '**Manage Server**';
+    return `**${str
+      .replace(/([A-Z])/g, ' $1')
+      .toLowerCase()
+      .trim()
+      .replace(/\b(\w)/g, (char) => char.toUpperCase())}**`;
+  });
 
   return {
     missing: Boolean(missingPerms.length > 0),
