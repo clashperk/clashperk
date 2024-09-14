@@ -148,7 +148,9 @@ export default class CWLStarsCommand extends Command {
 
     const comparisonMode = args.list_view === 'GAINED';
     const listView = comparisonMode ? 'GAINED' : 'TOTAL';
-    const bonuses = WAR_LEAGUE_PROMOTION_MAP[clan.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID].bonuses + warsWon;
+
+    const leagueId = body.leagues?.[clan.tag];
+    const bonuses = WAR_LEAGUE_PROMOTION_MAP[(leagueId || clan.warLeague?.id) ?? UNRANKED_WAR_LEAGUE_ID].bonuses + warsWon;
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))

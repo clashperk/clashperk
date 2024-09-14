@@ -363,6 +363,7 @@ export default class LegendDaysCommand extends Command {
   }
 
   private async graph(data: APIPlayer) {
+    const lastDayEnd = Util.getCurrentLegendTimestamp().startTime;
     const seasonIds = Array(Math.min(3))
       .fill(0)
       .map((_, m) => {
@@ -373,7 +374,7 @@ export default class LegendDaysCommand extends Command {
       })
       .reverse();
     const [, seasonStart, seasonEnd] = seasonIds;
-    const [prevSeasonStart, prevSeasonEnd] = seasonIds;
+    const [lastSeasonStart, lastSeasonEnd] = seasonIds;
 
     const result = await this.client.db
       .collection(Collections.LEGEND_ATTACKS)
@@ -465,6 +466,9 @@ export default class LegendDaysCommand extends Command {
             },
             defense: {
               $sum: '$defense'
+            },
+            count: {
+              $sum: 1
             }
           }
         },
@@ -479,18 +483,53 @@ export default class LegendDaysCommand extends Command {
             logs: {
               $push: {
                 timestamp: '$_id',
-                trophies: '$trophies'
+                trophies: '$trophies',
+                defense: '$defense',
+                offense: '$offense',
+                gain: '$gain',
+                count: '$count'
               }
-            },
-            avgGain: {
-              $avg: '$gain'
+            }
+          }
+        },
+        {
+          $set: {
+            filtered_logs: {
+              $filter: {
+                input: '$logs',
+                as: 'log',
+                cond: {
+                  $or: [
+                    {
+                      $lt: [
+                        '$$log.timestamp',
+                        {
+                          $toDate: lastDayEnd
+                        }
+                      ]
+                    },
+                    {
+                      $gte: ['$$log.count', 16]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          $project: {
+            avgOffense: {
+              $avg: '$filtered_logs.offense'
             },
             avgDefense: {
-              $avg: '$defense'
+              $avg: '$filtered_logs.defense'
             },
-            avgOffense: {
-              $avg: '$offense'
-            }
+            avgGain: {
+              $avg: '$filtered_logs.gain'
+            },
+            logs: 1,
+            _id: 1
           }
         },
         {
@@ -503,8 +542,8 @@ export default class LegendDaysCommand extends Command {
     if (!result.length) return null;
 
     const season = result.at(0)!;
-    const prevSeason = result.at(1);
-    const prevFinalTrophies = prevSeason?.logs.at(-1)?.trophies ?? '';
+    const lastSeason = result.at(1);
+    const prevFinalTrophies = lastSeason?.logs.at(-1)?.trophies ?? '';
 
     if (season._id !== Season.ID) return null;
 
@@ -512,8 +551,8 @@ export default class LegendDaysCommand extends Command {
       moment(seasonStart).add(i, 'days').toDate()
     );
 
-    const prevLabels = Array.from({ length: moment(prevSeasonEnd).diff(prevSeasonStart, 'days') + 1 }, (_, i) =>
-      moment(prevSeasonStart).add(i, 'days').toDate()
+    const prevLabels = Array.from({ length: moment(lastSeasonEnd).diff(lastSeasonStart, 'days') + 1 }, (_, i) =>
+      moment(lastSeasonStart).add(i, 'days').toDate()
     );
 
     for (const label of labels) {
@@ -522,14 +561,14 @@ export default class LegendDaysCommand extends Command {
     }
     season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-    if (prevSeason) {
+    if (lastSeason) {
       for (const label of prevLabels) {
-        const log = prevSeason.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
-        if (!log) prevSeason.logs.push({ timestamp: label, trophies: null });
+        const log = lastSeason.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
+        if (!log) lastSeason.logs.push({ timestamp: label, trophies: null });
       }
-      prevSeason.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-      // if (prevSeason.logs.length > season.logs.length) {
-      // 	prevSeason.logs = randomlySelectItems(prevSeason.logs, season.logs.length);
+      lastSeason.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      // if (lastSeason.logs.length > season.logs.length) {
+      // 	lastSeason.logs = randomlySelectItems(lastSeason.logs, season.logs.length);
       // }
     }
 
@@ -545,12 +584,12 @@ export default class LegendDaysCommand extends Command {
         avgNetGain: this.formatNumber(season.avgGain),
         avgOffense: this.formatNumber(season.avgOffense),
         avgDefense: this.formatNumber(season.avgDefense),
-        prevAvgNetGain: prevSeason ? this.formatNumber(prevSeason.avgGain) : '',
-        prevAvgOffense: prevSeason ? this.formatNumber(prevSeason.avgOffense) : '',
-        prevAvgDefense: prevSeason ? this.formatNumber(prevSeason.avgDefense) : '',
+        prevAvgNetGain: lastSeason ? this.formatNumber(lastSeason.avgGain) : '',
+        prevAvgOffense: lastSeason ? this.formatNumber(lastSeason.avgOffense) : '',
+        prevAvgDefense: lastSeason ? this.formatNumber(lastSeason.avgDefense) : '',
         townHall: data.townHallLevel.toString(),
         prevFinalTrophies,
-        prevSeason: prevSeason ? `${moment(prevSeason._id).format('MMM')}` : '',
+        prevSeason: lastSeason ? `${moment(lastSeason._id).format('MMM')}` : '',
         currentTrophies: data.trophies.toFixed(0),
         clanName: data.clan?.name,
         clanBadgeURL: data.clan?.badgeUrls.large,

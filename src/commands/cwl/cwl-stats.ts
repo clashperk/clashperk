@@ -1,4 +1,4 @@
-import { calculateCWLMedals, UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
+import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 import { APIClan, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
@@ -231,10 +231,9 @@ export default class CWLStatsCommand extends Command {
       .setColor(this.client.embed(interaction))
       .setTitle(`Clan War League Ranking (${moment(body.season).format('MMM YYYY')})`);
 
-    const bonuses = WAR_LEAGUE_PROMOTION_MAP[clan.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID].bonuses + warsWon;
-
     const medals = leagueId ? calculateCWLMedals(leagueId.toString(), 8, rankIndex + 1) : 0;
     if (leagueId) {
+      const bonuses = WAR_LEAGUE_PROMOTION_MAP[leagueId].bonuses + warsWon;
       embed.setDescription(
         [
           `${EMOJIS.GAP}${EMOJIS.HASH} **\`\u200eSTAR DEST%${''.padEnd(padding - 3, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
