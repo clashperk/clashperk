@@ -10,7 +10,6 @@ import {
   RequestHandler
 } from 'clashofclans.js';
 import moment from 'moment';
-import { request } from 'undici';
 import { isWinner } from '../helper/cwl-helper.js';
 import Client from './client.js';
 
@@ -21,14 +20,11 @@ export function timeoutSignal(timeout: number, path: string) {
 
   const controller = new AbortController();
 
-  if (timeout > 0) {
-    const timeoutId = setTimeout(() => {
-      controller.abort(path);
-      console.log(`${path} timed out`);
-    }, timeout);
+  const timeoutId = setTimeout(() => {
+    controller.abort(path);
+  }, timeout);
 
-    timeoutId.unref();
-  }
+  timeoutId.unref();
 
   return controller.signal;
 }
@@ -264,7 +260,7 @@ export default class Http extends ClashOfClansClient {
   }
 
   private async _login() {
-    const res = await request('https://cocdiscord.link/login', {
+    const res = await fetch('https://cocdiscord.link/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -273,16 +269,16 @@ export default class Http extends ClashOfClansClient {
         username: process.env.DISCORD_LINK_USERNAME,
         password: process.env.DISCORD_LINK_PASSWORD
       }),
-      signal: timeoutSignal(10_000, 'POST /login')
+      signal: timeoutSignal(100, 'POST /login')
     }).catch(() => null);
-    const data = (await res?.body.json().catch(() => null)) as { token?: string } | null;
+    const data = (await res?.json()) as { token?: string } | null;
 
     if (data?.token) this.bearerToken = data.token;
-    return res?.statusCode === 200 && this.bearerToken;
+    return res?.status === 200 && this.bearerToken;
   }
 
   public async linkPlayerTag(discordId: string, playerTag: string) {
-    const res = await request('https://cocdiscord.link/links', {
+    const res = await fetch('https://cocdiscord.link/links', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -292,11 +288,11 @@ export default class Http extends ClashOfClansClient {
       signal: timeoutSignal(10_000, 'POST /links')
     }).catch(() => null);
 
-    return Promise.resolve(res?.statusCode === 200);
+    return Promise.resolve(res?.status === 200);
   }
 
   public async unlinkPlayerTag(playerTag: string) {
-    const res = await request(`https://cocdiscord.link/links/${encodeURIComponent(playerTag)}`, {
+    const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(playerTag)}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -305,11 +301,11 @@ export default class Http extends ClashOfClansClient {
       signal: timeoutSignal(10_000, 'DELETE /links/:playerTag')
     }).catch(() => null);
 
-    return Promise.resolve(res?.statusCode === 200);
+    return Promise.resolve(res?.status === 200);
   }
 
   public async getPlayerTags(user: string) {
-    const res = await request(`https://cocdiscord.link/links/${user}`, {
+    const res = await fetch(`https://cocdiscord.link/links/${user}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -317,14 +313,14 @@ export default class Http extends ClashOfClansClient {
       },
       signal: timeoutSignal(10_000, 'GET /links/:user')
     }).catch(() => null);
-    const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];
+    const data = (await res?.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 
     if (!Array.isArray(data)) return [];
     return data.filter((en) => TAG_REGEX.test(en.playerTag)).map((en) => this.fixTag(en.playerTag));
   }
 
   public async getLinkedUser(tag: string) {
-    const res = await request(`https://cocdiscord.link/links/${encodeURIComponent(tag)}`, {
+    const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(tag)}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -332,7 +328,7 @@ export default class Http extends ClashOfClansClient {
       },
       signal: timeoutSignal(10_000, 'GET /links/:tag')
     }).catch(() => null);
-    const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];
+    const data = (await res?.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 
     if (!Array.isArray(data)) return null;
     return data.map((en) => ({ userId: en.discordId, tag }))[0] ?? null;
@@ -341,7 +337,7 @@ export default class Http extends ClashOfClansClient {
   public async getDiscordLinks(players: { tag: string }[]) {
     if (!players.length) return [];
 
-    const res = await request('https://cocdiscord.link/batch', {
+    const res = await fetch('https://cocdiscord.link/batch', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -350,7 +346,7 @@ export default class Http extends ClashOfClansClient {
       signal: timeoutSignal(10_000, 'POST /batch'),
       body: JSON.stringify(players.map((mem) => mem.tag))
     }).catch(() => null);
-    const data = (await res?.body.json().catch(() => [])) as { playerTag: string; discordId: string }[];
+    const data = (await res?.json().catch(() => [])) as { playerTag: string; discordId: string }[];
     if (!Array.isArray(data)) return [];
     return data
       .filter((en) => TAG_REGEX.test(en.playerTag) && DISCORD_ID_REGEX.test(en.discordId))
