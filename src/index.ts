@@ -6,7 +6,6 @@ import { URL, fileURLToPath } from 'node:url';
 import Logger from './util/logger.js';
 
 class Manager extends ShardingManager {
-  private _retry = 0;
   private _readyShards = 0;
 
   private logger = new Logger(null);
@@ -30,13 +29,8 @@ class Manager extends ShardingManager {
     } catch (error: any) {
       this.logger.error(error, { label: ShardingManager.name.toString() });
 
-      if (error.code === DiscordjsErrorCodes.ShardingAlreadySpawned) {
-        this._retry = 0;
-      } else if (error.code === DiscordjsErrorCodes.TokenInvalid) {
+      if (error.code === DiscordjsErrorCodes.TokenInvalid) {
         process.exit(1);
-      } else {
-        this._retry++;
-        setTimeout(() => this.init(), this._retry * 5500);
       }
     }
   }
