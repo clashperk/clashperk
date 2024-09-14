@@ -23,7 +23,7 @@ class Manager extends ShardingManager {
 
   public async init() {
     try {
-      await this.spawn();
+      await this.spawn({ timeout: 1000 * 60 });
       this._readyShards = this.shards.size;
       this.log(`All Shards (${this.shards.size}) Ready`);
     } catch (error: any) {
