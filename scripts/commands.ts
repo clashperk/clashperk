@@ -685,6 +685,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           },
           {
+            name: 'filter_farm_hits',
+            description: 'Filter out farm hits (1 star and < 50% destruction)',
+            type: ApplicationCommandOptionType.Boolean
+          },
+          {
             name: 'clan_only',
             description: "Only include the specified clan's war attacks.",
             type: ApplicationCommandOptionType.Boolean,
@@ -945,9 +950,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     description_localizations: translation('command.remaining.description'),
     options: [
       {
-        name: 'tag',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        name: 'clan',
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -972,17 +977,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         ]
       },
       {
-        name: 'user',
-        description: 'Remaining attacks of a linked user.',
-        type: ApplicationCommandOptionType.User,
-        required: false
-      },
-      {
-        name: 'player_tag',
+        name: 'player',
         description: 'Remaining attacks of a player.',
         type: ApplicationCommandOptionType.String,
         required: false,
         autocomplete: true
+      },
+      {
+        name: 'user',
+        description: 'Remaining attacks of a linked user.',
+        type: ApplicationCommandOptionType.User,
+        required: false
       },
       {
         name: 'war_id',
@@ -1356,9 +1361,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
-            name: 'tag',
-            description: command.link.list.options.tag.description,
-            description_localizations: translation('command.link.list.options.tag.description'),
+            name: 'clan',
+            description: command.link.list.options.clan.description,
+            description_localizations: translation('command.link.list.options.clan.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true
           }

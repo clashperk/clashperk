@@ -156,7 +156,7 @@ export default class AutocompleteInteractionListener extends Listener {
       }
     });
 
-    if (['player', 'units', 'upgrades', 'rushed'].includes(interaction.commandName) && ['player_tag', 'tag'].includes(focused)) {
+    if (['player', 'units', 'upgrades', 'rushed'].includes(interaction.commandName) && ['player_tag', 'tag', 'player'].includes(focused)) {
       return this.playerTagAutocomplete(interaction, focused);
     }
     if (!interaction.inCachedGuild()) return null;
@@ -181,6 +181,7 @@ export default class AutocompleteInteractionListener extends Listener {
 
         return this.clanTagAutocomplete(interaction, focused);
       }
+      case 'player':
       case 'by_player_tag':
       case 'player_tag': {
         const subCommand = interaction.options.getSubcommand(false);

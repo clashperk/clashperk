@@ -4,7 +4,7 @@ import { APIClanWar, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { group } from 'radash';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { CustomIdProps } from '../../struct/component-handler.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
@@ -32,6 +32,19 @@ export default class RemainingCommand extends Command {
       clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      },
+      player: {
+        id: 'player_tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: CommandArgs) {

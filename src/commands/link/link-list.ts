@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import { title } from 'radash';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { MembersCommandOptions } from '../../util/command.options.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
@@ -37,10 +37,20 @@ export default class LinkListCommand extends Command {
     });
   }
 
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
+  }
+
   public async exec(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     args: { tag?: string; sort_by?: string; user?: User; links?: boolean; with_options?: boolean }
   ) {
+    console.log(args);
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
     if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));

@@ -106,6 +106,7 @@ export default class StatsCommand extends Command {
       stars: string;
       season: string;
       attempt?: string;
+      filter_farm_hits?: boolean;
       user?: User;
       days?: number;
       wars?: number;
@@ -184,6 +185,7 @@ export default class StatsCommand extends Command {
           .filter((m) => m.attacks?.length)
           .map((m) => m.attacks!)
           .flat();
+
         for (const m of clan.members) {
           if (m.tag !== playerTag) continue;
 
@@ -200,6 +202,8 @@ export default class StatsCommand extends Command {
           const member = members[m.tag];
 
           for (const attack of mode === 'attacks' ? m.attacks ?? [] : []) {
+            if (args.filter_farm_hits && attack.stars === 1 && attack.destructionPercentage < 50) continue;
+
             member.attacks += 1;
             member.stars += attack.stars;
 
@@ -285,7 +289,7 @@ export default class StatsCommand extends Command {
         [
           `**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
           '',
-          `${EMOJIS.HASH}${EMOJIS.TOWN_HALL} \`RATE%  HITS  ${'NAME'.padEnd(15, ' ')}\u200f\``,
+          `${EMOJIS.HASH}${EMOJIS.TOWN_HALL} \`RATE%   HITS  ${'NAME'.padEnd(15, ' ')}\u200f\``,
           stats
             .map((m, i) => {
               const percentage = this._padStart(m.rate.toFixed(1), 5);
@@ -344,6 +348,7 @@ export default class StatsCommand extends Command {
       stars: args.stars,
       season: args.season,
       attempt: args.attempt,
+      filter_farm_hits: args.filter_farm_hits,
       days: args.days,
       wars: args.wars,
       user_id: args.user?.id,
