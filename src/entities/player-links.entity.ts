@@ -10,4 +10,5 @@ export interface PlayerLinksEntity {
   source: 'bot' | 'web' | 'api';
   linkedBy: string;
   createdAt: Date;
+  deleted?: boolean;
 }

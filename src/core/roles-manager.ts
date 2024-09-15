@@ -493,10 +493,11 @@ export class RolesManager {
       .sort({ order: 1 })
       .toArray();
 
-    return players.reduce<Record<string, PlayerLinksEntity[]>>((prev, curr) => {
-      prev[curr.userId] ??= [];
-      prev[curr.userId].push(curr);
-      return prev;
+    return players.reduce<Record<string, PlayerLinksEntity[]>>((record, link) => {
+      if (link.deleted) return record;
+      record[link.userId] ??= [];
+      record[link.userId].push(link);
+      return record;
     }, {});
   }
 
@@ -531,10 +532,11 @@ export class RolesManager {
       ])
       .toArray();
 
-    return players.reduce<Record<string, PlayerLinksEntity[]>>((prev, curr) => {
-      prev[curr.userId] ??= [];
-      prev[curr.userId].push(curr);
-      return prev;
+    return players.reduce<Record<string, PlayerLinksEntity[]>>((record, link) => {
+      if (link.deleted) return record;
+      record[link.userId] ??= [];
+      record[link.userId].push(link);
+      return record;
     }, {});
   }
 
