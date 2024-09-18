@@ -798,7 +798,7 @@ export const getMenuFromMessage = (interaction: ButtonInteraction, selected: str
 export const recoverDonations = async (clan: APIClan) => {
   const client = container.resolve(Client);
 
-  if (Date.now() >= new Date('2024-05-24T05:00').getTime()) return;
+  if (Date.now() >= new Date('2024-09-30T05:00').getTime()) return;
 
   const inserted = await client.redis.connection.get(`RECOVERY:${clan.tag}`);
   if (inserted) return;
@@ -815,7 +815,7 @@ export const recoverDonations = async (clan: APIClan) => {
           {
             range: {
               created_at: {
-                gte: '2024-04-29T05:00'
+                gte: '2024-08-26T05:00'
               }
             }
           }

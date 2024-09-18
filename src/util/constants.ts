@@ -708,6 +708,11 @@ export const BUILDER_BASE_LEAGUES = [
   }
 ];
 
+export const BUILDER_BASE_LEAGUES_MAP = BUILDER_BASE_LEAGUES.reduce<Record<string, string>>((record, league) => {
+  record[league.id] = league.name;
+  return record;
+}, {});
+
 export const calculateCWLMedals = (leagueId: string, stars: number, rank: number) => {
   const percentage = MEDALS_PERCENTAGE_MAP[Math.min(8, stars)];
   const ranks = MEDALS_RANKING_MAP[leagueId];

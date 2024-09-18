@@ -1,6 +1,7 @@
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { nanoid } from 'nanoid';
 import { createClient } from 'redis';
+import { mapToPlayerInterface } from '../helper/cache-mapper.helper.js';
 import Client from './client.js';
 import { CustomIdProps } from './component-handler.js';
 
@@ -63,15 +64,24 @@ class RedisService {
     const raw = await this.mGet(playerTags.map((tag) => `PLAYER:${tag}`));
     return raw
       .flat()
-      .filter((value) => value)
-      .map((value) => JSON.parse(value!)) as unknown as APIPlayer[];
+      .map((value) => (value ? this.mapToStructure(value) : null))
+      .filter((value): value is APIPlayer => Boolean(value));
   }
 
   public async getPlayer(playerTag: string) {
     const raw = await this.connection.get(`PLAYER:${playerTag}`).catch(() => null);
     if (!raw) return null;
 
-    return JSON.parse(raw) as unknown as APIPlayer;
+    return this.mapToStructure(raw);
+  }
+
+  private mapToStructure(raw: string) {
+    try {
+      const record = JSON.parse(raw);
+      return mapToPlayerInterface(record);
+    } catch {
+      return null;
+    }
   }
 
   public async getRaidMembers(playerTags: string[]) {
