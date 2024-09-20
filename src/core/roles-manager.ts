@@ -111,7 +111,6 @@ export class RolesManager {
 
     const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, false);
     const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
-
     const townHallRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.TOWN_HALL_ROLES, {});
     const builderHallRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.BUILDER_HALL_ROLES, {});
     const leagueRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.LEAGUE_ROLES, {});
@@ -344,7 +343,7 @@ export class RolesManager {
 
     const rolesMap = await this.getGuildRolesMap(guildId);
     const { targetedRoles, warRoles } = this.getTargetedRoles(rolesMap);
-    const playersInWarMap = warRoles.length ? await this.getWarRolesMap(rolesMap.warClanTags) : {};
+    const inWarMap = warRoles.length ? await this.getWarRolesMap(rolesMap.warClanTags) : {};
 
     const isEosRole = userOrRole instanceof Role && rolesMap.eosPushClanRoles.includes(userOrRole.id);
 
@@ -371,17 +370,18 @@ export class RolesManager {
     for (const member of targetedMembers.values()) {
       if (this.client.rpcHandler.isInMaintenance) continue;
       const links = linkedPlayers[member.id] ?? [];
-
       if (!links.length && !allowNotLinked) continue;
 
-      const players = await this.getPlayers(links);
+      const [players, hasFailed] = await this.getPlayers(links);
+      if (hasFailed) continue;
+
       const roleUpdate = await this.preRoleUpdateAction({
         forced,
         isDryRun,
         member,
         rolesMap,
         players,
-        playersInWarMap
+        inWarMap
       });
       const nickUpdate = this.preNicknameUpdate(players, member, rolesMap);
 
@@ -479,11 +479,14 @@ export class RolesManager {
     const verifiedPlayersMap = Object.fromEntries(playerLinks.map((player) => [player.tag, player.verified]));
     const fetched = await parallel(25, playerLinks, async (link) => {
       const { body, res } = await this.client.http.getPlayer(link.tag);
-      if (!res.ok || !body) return null;
-      return body;
+      return res.status === 404 ? 'deleted' : !res.ok || !body ? 'failed' : body;
     });
-    const players = fetched.filter((_) => _) as APIPlayer[];
-    return players.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
+
+    const filtered = fetched.filter((result): result is APIPlayer => result !== 'deleted' && result !== 'failed');
+    const players = filtered.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
+    const hasFailed = fetched.some((result) => result === 'failed');
+
+    return [players, hasFailed] as const;
   }
 
   private async getLinkedPlayersByUserId(userIds: string[]) {
@@ -545,14 +548,14 @@ export class RolesManager {
     forced,
     member,
     rolesMap,
-    playersInWarMap,
+    inWarMap,
     players
   }: {
     isDryRun: boolean;
     forced: boolean;
     member: GuildMember;
     rolesMap: GuildRolesDto;
-    playersInWarMap: Record<string, string[]>;
+    inWarMap: Record<string, string[]>;
     players: (APIPlayer & { verified: boolean })[];
   }) {
     const playerList = players.map(
@@ -569,7 +572,7 @@ export class RolesManager {
           clanTag: player.clan?.tag ?? null,
           trophies: player.trophies,
           isVerified: player.verified,
-          warClanTags: playersInWarMap[player.tag] ?? []
+          warClanTags: inWarMap[player.tag] ?? []
         }) satisfies PlayerRolesInput
     );
 

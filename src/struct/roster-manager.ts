@@ -991,28 +991,28 @@ export class RosterManager {
     );
 
     const total = `Total ${roster.members.length}/${roster.maxMembers || 65}`;
+    const minTownHall = roster.minTownHall ? ` | Min. TH${roster.minTownHall}` : '';
+    const maxTownHall = roster.maxTownHall ? ` | Max. TH${roster.maxTownHall}` : '';
+    const rosterRole = roster.roleId ? `Role <@&${roster.roleId}>\n` : '';
+    const footer = `${rosterRole}${total}${minTownHall}${maxTownHall}`;
+
     if (roster.startTime && roster.startTime > new Date()) {
       embed.addFields({
         name: '\u200e',
-        value: [`${total}`, `Signup opens on ${time(roster.startTime)}`].join('\n')
+        value: [`${footer}`, `Signup opens on ${time(roster.startTime)}`].join('\n')
       });
     } else if (roster.endTime) {
       embed.addFields({
         name: '\u200e',
-        value: [`${total}`, `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`].join('\n')
+        value: [`${footer}`, `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`].join('\n')
       });
     } else if (roster.closed) {
       embed.addFields({
         name: '\u200e',
-        value: [`${total}`, 'Signup is **closed**'].join('\n')
+        value: [`${footer}`, 'Signup is **closed**'].join('\n')
       });
     } else {
-      const minTownHall = roster.minTownHall ? ` | Min. TH${roster.minTownHall}` : '';
-      const maxTownHall = roster.maxTownHall ? ` | Max. TH${roster.maxTownHall}` : '';
-      embed.addFields({
-        name: '\u200e',
-        value: `${total}${minTownHall}${maxTownHall}`
-      });
+      embed.addFields({ name: '\u200e', value: `${footer}` });
     }
 
     embed.setDescription(description);
