@@ -520,13 +520,37 @@ export default class LegendDaysCommand extends Command {
         {
           $project: {
             avgOffense: {
-              $avg: '$filtered_logs.offense'
+              $avg: {
+                $cond: {
+                  if: {
+                    $gt: [{ $size: '$filtered_logs' }, 0]
+                  },
+                  then: '$filtered_logs.offense',
+                  else: '$logs.offense'
+                }
+              }
             },
             avgDefense: {
-              $avg: '$filtered_logs.defense'
+              $avg: {
+                $cond: {
+                  if: {
+                    $gt: [{ $size: '$filtered_logs' }, 0]
+                  },
+                  then: '$filtered_logs.defense',
+                  else: '$logs.defense'
+                }
+              }
             },
             avgGain: {
-              $avg: '$filtered_logs.gain'
+              $avg: {
+                $cond: {
+                  if: {
+                    $gt: [{ $size: '$filtered_logs' }, 0]
+                  },
+                  then: '$filtered_logs.gain',
+                  else: '$logs.gain'
+                }
+              }
             },
             logs: 1,
             _id: 1
@@ -572,7 +596,7 @@ export default class LegendDaysCommand extends Command {
       // }
     }
 
-    const res = await fetch(`${process.env.ASSET_API_BACKEND!}/legends/graph`, {
+    const res = await fetch(`${process.env.ASSET_API_BACKEND}/legends/graph`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -598,7 +622,7 @@ export default class LegendDaysCommand extends Command {
         )})`
       })
     }).then((res) => res.json());
-    return `${process.env.ASSET_API_BACKEND!}/${(res as any).id as string}`;
+    return `${process.env.ASSET_API_BACKEND}/${(res as any).id as string}`;
   }
 
   private async logs(data: APIPlayer) {
