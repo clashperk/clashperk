@@ -8,6 +8,7 @@ export interface ClanWarRemindersEntity {
   duration: number;
   disabled: boolean;
   webhook?: { id: string; token: string } | null;
+  randomLimit?: number | null;
   threadId?: string;
   roles: string[];
   townHalls: number[];

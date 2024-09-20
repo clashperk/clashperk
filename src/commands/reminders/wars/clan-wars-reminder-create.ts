@@ -1,4 +1,4 @@
-import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '@app/constants';
+import { Collections, FeatureFlags, MAX_TOWN_HALL_LEVEL, missingPermissions } from '@app/constants';
 import { ClanWarRemindersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -120,6 +120,10 @@ export default class ClanWarsReminderCreateCommand extends Command {
       modalMessage: this.client.uuid(interaction.user.id)
     };
 
+    const randomDonators = (await this.client.isFeatureEnabled(FeatureFlags.RANDOM_DONATOR, interaction.guild.id))
+      ? ['1-d', '2-d', '3-d', '5-d', '10-d']
+      : [];
+
     const state = {
       remaining: ['1', '2'],
       townHalls: Array(MAX_TOWN_HALL_LEVEL - 1)
@@ -130,7 +134,8 @@ export default class ClanWarsReminderCreateCommand extends Command {
       roles: ['leader', 'coLeader', 'admin', 'member'],
       warTypes: ['cwl', 'normal', 'friendly'],
       clans: clans.map((clan) => clan.tag),
-      message: args.message
+      message: args.message,
+      randomDonators: null as number | null
     };
     if (state.silent) state.remaining = [];
 
@@ -204,7 +209,12 @@ export default class ClanWarsReminderCreateCommand extends Command {
               label: 'Message Only (No Ping)',
               value: 'silent',
               default: state.silent
-            }
+            },
+            ...randomDonators.map((num) => ({
+              label: `${num} Donators`,
+              value: num,
+              default: state.randomDonators === +num.replace('-d', '')
+            }))
           ])
           .setDisabled(disable)
       );
@@ -298,13 +308,18 @@ export default class ClanWarsReminderCreateCommand extends Command {
       }
 
       if (action.customId === customIds.remaining && action.isStringSelectMenu()) {
-        state.remaining = action.values.filter((v) => !['smartSkip', 'silent'].includes(v));
+        state.remaining = action.values.filter((v) => !['smartSkip', 'silent', ...randomDonators].includes(v));
         state.smartSkip = action.values.includes('smartSkip');
         state.silent = action.values.includes('silent');
+        state.randomDonators = randomDonators.reduce((num, v) => {
+          if (!action.values.includes(v)) return num;
+          return Math.max(num, +v.replace('-d', ''));
+        }, 0);
 
         if (state.silent) {
           state.remaining = [];
           state.smartSkip = false;
+          state.randomDonators = null;
         } else if (!state.remaining.some((x) => ['1', '2'].includes(x))) {
           state.remaining = ['1', '2'];
         }
@@ -356,7 +371,7 @@ export default class ClanWarsReminderCreateCommand extends Command {
 
       if (action.customId === customIds.save && action.isButton()) {
         await action.deferUpdate();
-        const reminder = {
+        const reminder: ClanWarRemindersEntity = {
           _id: new ObjectId(),
           guild: interaction.guild.id,
           channel: args.channel.id,
@@ -364,6 +379,7 @@ export default class ClanWarsReminderCreateCommand extends Command {
           remaining: state.remaining.map((num) => Number(num)),
           townHalls: state.townHalls.map((num) => Number(num)),
           roles: state.roles,
+          randomLimit: state.randomDonators,
           clans: state.clans,
           silent: state.silent,
           smartSkip: state.smartSkip,
@@ -374,7 +390,7 @@ export default class ClanWarsReminderCreateCommand extends Command {
           createdAt: new Date()
         };
 
-        const { insertedId } = await this.client.db.collection<ClanWarRemindersEntity>(Collections.REMINDERS).insertOne(reminder);
+        const { insertedId } = await this.client.db.collection(Collections.REMINDERS).insertOne(reminder);
         this.client.warScheduler.create({ ...reminder, _id: insertedId });
         await action.editReply({
           components: mutate(true),

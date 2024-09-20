@@ -147,8 +147,37 @@ export default class ClanWarScheduler {
     return Math.abs(ms) <= 60 * 1000;
   }
 
+  private async randomUsers({ limit, userIds, clanTag }: { limit: number; userIds: string[]; clanTag: string }) {
+    if (!limit) return [];
+
+    const redisKey = `RANDOM_SELECTION:${clanTag}`;
+    const previouslyMentioned: string[] = await this.client.redis.connection.sMembers(redisKey);
+    const eligibleMembers = userIds.filter((id) => !previouslyMentioned.includes(id));
+
+    for (let i = eligibleMembers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [eligibleMembers[i], eligibleMembers[j]] = [eligibleMembers[j], eligibleMembers[i]];
+    }
+
+    const randomUserIds = eligibleMembers.slice(0, limit);
+
+    if (randomUserIds.length) {
+      await this.client.redis.connection
+        .multi()
+        .del(redisKey)
+        .sAdd(redisKey, randomUserIds)
+        .expire(redisKey, 60 * 60 * 24 * 3)
+        .exec();
+    }
+
+    return randomUserIds;
+  }
+
   public async getReminderText(
-    reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly'>,
+    reminder: Pick<
+      ClanWarRemindersEntity,
+      'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly' | 'randomLimit'
+    >,
     schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
     data: APIClanWar
   ): Promise<[string | null, string[]]> {
@@ -197,11 +226,19 @@ export default class ClanWarScheduler {
     const userIds = unique(mentions.map((m) => m.id).filter((id) => id !== '0x'));
     mentions.sort((a, b) => a.position - b.position);
 
+    const randomUserIds = await this.randomUsers({
+      clanTag: schedule.warTag || clan.tag,
+      userIds,
+      limit: reminder.randomLimit ?? 0
+    });
+
     const users = Object.entries(
-      mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-        acc[cur.mention] ??= []; // eslint-disable-line
-        acc[cur.mention].push(cur);
-        return acc;
+      mentions.reduce<{ [key: string]: UserMention[] }>((record, cur) => {
+        if (randomUserIds.length && !randomUserIds.includes(cur.id)) return record;
+
+        record[cur.mention] ??= [];
+        record[cur.mention].push(cur);
+        return record;
       }, {})
     );
 

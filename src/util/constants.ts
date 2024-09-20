@@ -220,7 +220,9 @@ export enum FeatureFlags {
 
   NO_PERMISSION_MESSAGE = 'no-permission-message',
 
-  TRUSTED_GUILD = 'trusted-guild'
+  TRUSTED_GUILD = 'trusted-guild',
+
+  RANDOM_DONATOR = 'random-donator'
 }
 
 export const enum Flags {
