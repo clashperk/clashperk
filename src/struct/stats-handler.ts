@@ -40,8 +40,8 @@ export default class StatsHandler {
       })
     });
 
-    const body = await res.json();
     if (!res.ok) {
+      const body = await res.json().catch(() => res.statusText);
       this.client.logger.error(body, { label: 'TOP.GG' });
     }
   }
