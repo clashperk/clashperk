@@ -1863,7 +1863,8 @@ export class RosterManager {
     const webhook = new WebhookClient(config.webhook);
 
     try {
-      return await webhook.send({ embeds: [embed], threadId: roster.logChannelId });
+      const isThread = this.client.util.getTextBasedChannel(config.channelId)?.isThread();
+      return await webhook.send(isThread ? { embeds: [embed], threadId: config.channelId } : { embeds: [embed] });
     } catch (error) {
       if ([DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)) {
         await this.client.settings.delete(roster.guildId, Settings.ROSTER_CHANGELOG);

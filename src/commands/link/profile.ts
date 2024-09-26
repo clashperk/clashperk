@@ -58,12 +58,13 @@ export default class ProfileCommand extends Command {
         ? await this.getUserByTag(interaction, args.player_tag)
         : args.user ?? interaction.user;
 
-    const [data, players] = await Promise.all([
+    const [data, players, otherTags] = await Promise.all([
       this.client.db.collection(Collections.USERS).findOne({ userId: user.id }),
       this.client.db
         .collection(Collections.PLAYER_LINKS)
         .find({ userId: user.id }, { sort: { order: 1 } })
-        .toArray()
+        .toArray(),
+      this.client.http.getPlayerTags(user.id)
     ]);
 
     const embed = new EmbedBuilder()
@@ -93,7 +94,14 @@ export default class ProfileCommand extends Command {
       embed.setDescription([embed.data.description, '\u200b'].join('\n'));
     }
 
-    const [otherTags, otherLinks] = await Promise.all([this.client.http.getPlayerTags(user.id), this.client.http.getDiscordLinks(players)]);
+    const [_otherLinks, _otherDbLinks] = await Promise.all([
+      this.client.http.getDiscordLinks(players),
+      this.client.db
+        .collection(Collections.PLAYER_LINKS)
+        .find({ userId: { $ne: user.id }, tag: { $in: otherTags } })
+        .toArray()
+    ]);
+    const otherLinks = _otherLinks.concat(_otherDbLinks);
 
     // JUST FOR LOGGING
     const hasExtraAccount = diff(
@@ -138,6 +146,7 @@ export default class ProfileCommand extends Command {
     playerLinks.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
     const links: LinkData[] = playerLinks.map((player) => {
+      const duplicate = this.isDuplicate(otherLinks, player.tag, user.id);
       return {
         name: player.name,
         tag: player.tag,
@@ -148,7 +157,8 @@ export default class ProfileCommand extends Command {
         },
         townHallLevel: player.townHallLevel,
         role: player.role,
-        internal: this.isLinked(players, player.tag) ? 'Yes' : 'No'
+        internal: this.isLinked(players, player.tag) ? 'Yes' : 'No',
+        duplicate: duplicate ? `${duplicate.userId}` : 'No'
       };
     });
 
@@ -156,7 +166,11 @@ export default class ProfileCommand extends Command {
       const tag = player.tag;
       const isDefault = defaultPlayerTag === tag;
 
-      const signature = this.isVerified(players, tag) ? '**✓**' : this.isLinked(players, tag) ? '' : '⚠️';
+      const signature = this.isVerified(players, tag)
+        ? '**✓**'
+        : this.isDuplicate(otherLinks, tag, user.id) || !this.isLinked(players, tag)
+          ? '⚠️'
+          : '';
       const weaponLevel = player.townHallWeaponLevel ? weaponLevels[player.townHallWeaponLevel] : '';
       const townHall = `${TOWN_HALLS[player.townHallLevel]} ${player.townHallLevel}${weaponLevel}`;
       const defMark = isDefault ? '**(Default)**' : '';
@@ -316,7 +330,8 @@ export default class ProfileCommand extends Command {
           { name: 'Clan Tag', width: 100, align: 'LEFT' },
           { name: 'Clan Role', width: 100, align: 'LEFT' },
           { name: 'Verified', width: 100, align: 'LEFT' },
-          { name: 'Internal', width: 100, align: 'LEFT' }
+          { name: 'Internal', width: 100, align: 'LEFT' },
+          { name: 'Duplicate', width: 160, align: 'LEFT' }
         ],
         rows: players.map((player) => [
           player.name,
@@ -326,7 +341,8 @@ export default class ProfileCommand extends Command {
           player.clan?.tag ? createHyperlink(this.client.http.getClanURL(player.clan.tag), player.clan.tag) : '',
           roles[player.role!],
           player.verified,
-          player.internal
+          player.internal,
+          player.duplicate
         ]),
         title: 'Accounts'
       }
@@ -341,6 +357,17 @@ export default class ProfileCommand extends Command {
 
   private isLinked(players: PlayerLinksEntity[], tag: string) {
     return Boolean(players.find((en) => en.tag === tag));
+  }
+
+  private isDuplicate(
+    players: {
+      tag: string;
+      userId: string;
+    }[],
+    tag: string,
+    userId: string
+  ) {
+    return players.find((en) => en.tag === tag && en.userId !== userId);
   }
 
   private isVerified(players: PlayerLinksEntity[], tag: string) {
@@ -414,4 +441,5 @@ interface LinkData {
   role?: string;
   verified: string;
   internal: string;
+  duplicate: string;
 }
