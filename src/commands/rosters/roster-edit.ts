@@ -65,6 +65,7 @@ export default class RosterEditCommand extends Command {
       delete_roster?: boolean;
       allow_unlinked?: boolean;
       color_code?: number;
+      roster_image?: string;
       components_only?: boolean;
       log_channel?: TextChannel | AnyThreadChannel;
     }
@@ -113,6 +114,7 @@ export default class RosterEditCommand extends Command {
     if (args.min_hero_level) data.minHeroLevels = args.min_hero_level;
     if (args.roster_role) data.roleId = args.roster_role.id;
     if (args.delete_role) data.roleId = null;
+    if (args.roster_image) data.rosterImage = args.roster_image;
     if (typeof args.allow_multi_signup === 'boolean') data.allowMultiSignup = args.allow_multi_signup;
     if (typeof args.allow_group_selection === 'boolean') data.allowCategorySelection = args.allow_group_selection;
     if (args.clear_members) data.members = [];

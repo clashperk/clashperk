@@ -88,6 +88,7 @@ export default class StorageHandler {
     { args, required }: { args?: string; required?: boolean }
   ) {
     const tags = args === '*' ? [] : await this.client.resolver.resolveArgs(args);
+    const isTotal = args === '*' || !args;
 
     if (!args && required) {
       await interaction.editReply(i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE }));
@@ -101,15 +102,15 @@ export default class StorageHandler {
 
     if (!clans.length && tags.length) {
       await interaction.editReply(i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE }));
-      return { clans: null };
+      return { clans: null, isTotal };
     }
 
     if (!clans.length) {
       await interaction.editReply(i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE }));
-      return { clans: null };
+      return { clans: null, isTotal };
     }
 
-    return { clans, resolvedArgs: args === '*' ? '*' : tags.join(',') };
+    return { clans, isTotal, resolvedArgs: args === '*' ? '*' : tags.join(',') };
   }
 
   public formatCategoryName(name: string) {

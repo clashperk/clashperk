@@ -191,6 +191,7 @@ export interface IRoster {
   sortBy?: RosterSortTypes;
   useClanAlias?: boolean;
   maxAccountsPerUser?: number | null;
+  rosterImage?: string | null;
   allowUnlinked?: boolean;
   allowMultiSignup?: boolean;
   category: 'GENERAL' | 'CWL' | 'WAR' | 'TROPHY' | 'NO_CLAN';
@@ -1016,6 +1017,7 @@ export class RosterManager {
     }
 
     embed.setDescription(description);
+    if (roster.rosterImage) embed.setImage(roster.rosterImage);
 
     const embeds: EmbedBuilder[] = [embed];
     if (rest.length && roster.members.length <= ROSTER_MAX_LIMIT) {
@@ -1024,7 +1026,9 @@ export class RosterManager {
       }
     } else {
       rest.forEach((value) => {
-        embeds.push(new EmbedBuilder(embed.toJSON()).setDescription(value));
+        const _embed = new EmbedBuilder(embed.toJSON()).setDescription(value);
+        if (roster.rosterImage) _embed.setImage(roster.rosterImage);
+        embeds.push(_embed);
       });
     }
 

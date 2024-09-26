@@ -2231,6 +2231,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.Boolean
           },
           {
+            name: 'roster_image',
+            description: 'Image to be used in the roster embed',
+            type: ApplicationCommandOptionType.Attachment
+          },
+          {
             name: 'color_code',
             description: 'Hex color code of the roster embed',
             type: ApplicationCommandOptionType.String
@@ -2437,6 +2442,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             name: 'use_clan_alias',
             description: 'Whether to use clan alias in the roster (created by /alias command)',
             type: ApplicationCommandOptionType.Boolean
+          },
+          {
+            name: 'roster_image',
+            description: 'Image to be used in the roster embed',
+            type: ApplicationCommandOptionType.Attachment
           },
           {
             name: 'color_code',
@@ -4012,6 +4022,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description_localizations: translation('command.export.options.season.description'),
             type: ApplicationCommandOptionType.String,
             choices: getSeasonIds()
+          }
+        ]
+      },
+      {
+        name: 'users',
+        description: 'Export Discord members',
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'role',
+            description: 'Role to filter users.',
+            type: ApplicationCommandOptionType.Role
           }
         ]
       },

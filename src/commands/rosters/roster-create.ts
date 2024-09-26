@@ -48,6 +48,7 @@ export default class RosterCreateCommand extends Command {
       use_clan_alias?: boolean;
       allow_unlinked?: boolean;
       color_code?: number;
+      roster_image?: string;
       category?: IRoster['category'];
     }
   ) {
@@ -84,6 +85,7 @@ export default class RosterCreateCommand extends Command {
       maxTownHall: args.max_town_hall ?? defaultSettings.maxTownHall,
       useClanAlias: args.use_clan_alias ?? defaultSettings.useClanAlias,
       maxAccountsPerUser: args.max_accounts_per_user ?? null,
+      rosterImage: args.roster_image ?? null,
       roleId: args.roster_role?.id ?? null,
       colorCode: args.color_code ?? defaultSettings.colorCode,
       members: [],

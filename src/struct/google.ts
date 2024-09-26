@@ -39,7 +39,7 @@ export type SchemaRequest = sheets_v4.Schema$Request;
 
 const allowedFormulas = ['=HYPERLINK(', '=IMAGE(', '=SUM('];
 
-export const getSheetValue = (value?: string | number | boolean | Date) => {
+export const getSheetValue = (value?: string | number | boolean | Date | null) => {
   if (typeof value === 'string' && allowedFormulas.some((formula) => value.startsWith(formula))) {
     return { formulaValue: value };
   }
@@ -51,7 +51,7 @@ export const getSheetValue = (value?: string | number | boolean | Date) => {
   return {};
 };
 
-const getUserEnteredFormat = (value?: string | number | boolean | Date) => {
+const getUserEnteredFormat = (value?: string | number | boolean | Date | null) => {
   if (value instanceof Date) return { numberFormat: { type: 'DATE_TIME' } };
   if (typeof value === 'string' && allowedFormulas.some((formula) => value.startsWith(formula))) {
     return { hyperlinkDisplayType: 'LINKED' };
@@ -348,5 +348,5 @@ export default {
 export interface CreateGoogleSheet {
   title: string;
   columns: { align: string; width: number; name: string }[];
-  rows: (string | number | Date | boolean | undefined)[][];
+  rows: (string | number | Date | boolean | undefined | null)[][];
 }
