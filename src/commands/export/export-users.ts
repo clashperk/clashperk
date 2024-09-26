@@ -103,7 +103,7 @@ export default class ExportUsersCommand extends Command {
       {
         title: 'Discord Members',
         columns: [
-          { name: 'Displayname', width: 160, align: 'LEFT' },
+          { name: 'DisplayName', width: 160, align: 'LEFT' },
           { name: 'Username', width: 160, align: 'LEFT' },
           { name: 'ID', width: 160, align: 'LEFT' },
           { name: 'Name', width: 160, align: 'LEFT' },
