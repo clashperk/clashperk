@@ -1,4 +1,4 @@
-import { Settings, UNRANKED_WAR_LEAGUE_ID } from '@app/constants';
+import { Settings, UNRANKED_WAR_LEAGUE_ID, URL_REGEX } from '@app/constants';
 import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Args, Command } from '../../lib/handlers.js';
@@ -48,7 +48,7 @@ export default class RosterCreateCommand extends Command {
       use_clan_alias?: boolean;
       allow_unlinked?: boolean;
       color_code?: number;
-      roster_image?: string;
+      roster_image_url?: string;
       category?: IRoster['category'];
     }
   ) {
@@ -85,7 +85,7 @@ export default class RosterCreateCommand extends Command {
       maxTownHall: args.max_town_hall ?? defaultSettings.maxTownHall,
       useClanAlias: args.use_clan_alias ?? defaultSettings.useClanAlias,
       maxAccountsPerUser: args.max_accounts_per_user ?? null,
-      rosterImage: args.roster_image ?? null,
+      rosterImage: args.roster_image_url && URL_REGEX.test(args.roster_image_url) ? args.roster_image_url : null,
       roleId: args.roster_role?.id ?? null,
       colorCode: args.color_code ?? defaultSettings.colorCode,
       members: [],

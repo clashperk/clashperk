@@ -2231,9 +2231,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.Boolean
           },
           {
-            name: 'roster_image',
+            name: 'roster_image_url',
             description: 'Image to be used in the roster embed',
-            type: ApplicationCommandOptionType.Attachment
+            type: ApplicationCommandOptionType.String
           },
           {
             name: 'color_code',
@@ -2444,9 +2444,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.Boolean
           },
           {
-            name: 'roster_image',
+            name: 'roster_image_url',
             description: 'Image to be used in the roster embed',
-            type: ApplicationCommandOptionType.Attachment
+            type: ApplicationCommandOptionType.String
           },
           {
             name: 'color_code',

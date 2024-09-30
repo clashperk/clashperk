@@ -1,5 +1,4 @@
 import { Collections } from '@app/constants';
-import { PlayerLinksEntity } from '@app/entities';
 import { CommandInteraction, Role } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
@@ -44,7 +43,9 @@ export default class ExportUsersCommand extends Command {
 
     let guildMembers = await interaction.guild.members.fetch();
     if (args.role) {
-      guildMembers = guildMembers.filter((member) => member.roles.cache.has(args.role!.id));
+      guildMembers = guildMembers.filter((member) => !member.user.bot && member.roles.cache.has(args.role!.id));
+    } else {
+      guildMembers = guildMembers.filter((member) => !member.user.bot);
     }
 
     if (!guildMembers.size) {
@@ -53,7 +54,7 @@ export default class ExportUsersCommand extends Command {
 
     const links = await this.client.db
       .collection(Collections.PLAYER_LINKS)
-      .aggregate<PlayerLinksEntity>([{ $match: { userId: { $in: guildMembers.map((m) => m.id) } } }])
+      .find({ userId: { $in: guildMembers.map((m) => m.id) } })
       .toArray();
 
     const usersMap = links.reduce<Record<string, PlayersReduced[]>>((record, user) => {
