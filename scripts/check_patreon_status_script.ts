@@ -1,12 +1,9 @@
+import { Collections } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
 import { mongoClient } from '../src/struct/database.js';
-import { Included, Member } from '../src/struct/patreon-handler.js';
-import { Collections } from '@app/constants';
+import { PatreonMember, PatreonUser } from '../src/struct/patreon-handler.js';
 
-(async () => {
-  await mongoClient.connect().then(() => console.log('MongoDB Connected!'));
-  const collection = mongoClient.db('clashperk').collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
-
+const getSubscribers = async () => {
   const query = new URLSearchParams({
     'page[size]': '1000',
     'fields[tier]': 'amount_cents,created_at',
@@ -16,32 +13,40 @@ import { Collections } from '@app/constants';
       'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,lifetime_support_cents'
   }).toString();
 
-  const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
-    headers: { authorization: `Bearer ${process.env.PATREON_API!}` }
-  })
-    .then((res) => res.json())
-    .catch(() => null)) as { data: Member[]; included: Included[] };
+  const res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
+    headers: { authorization: `Bearer ${process.env.PATREON_API}` }
+  });
+
+  return (await res.json()) as { data: PatreonMember[]; included: PatreonUser[] };
+};
+
+(async () => {
+  await mongoClient.connect().then(() => console.log('MongoDB Connected!'));
+  const collection = mongoClient.db('clashperk').collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
+
+  const result = await getSubscribers();
 
   const members = await collection.find({ active: true }).toArray();
+
   console.log('\n========= DELETED MEMBERS ========');
   members.forEach((patron) => {
-    const f = data.data.find((entry) => entry.relationships.user.data.id === patron.id);
-    if (!f) console.log(patron.name, patron.userId);
+    const member = result.data.find((m) => m.relationships.user.data.id === patron.id);
+    if (!member) console.log(patron.name, patron.userId);
   });
 
   console.log('\n========= PENDING MEMBERS ========');
-  data.included.forEach((entry: any) => {
-    const d = members.find((p) => p.id === entry?.id);
-    const pledge = data.data.find((en) => en.relationships.user.data.id === entry.id);
-    if (!d && pledge?.attributes.patron_status === 'active_patron')
-      console.log(entry?.attributes.full_name, entry?.attributes.email, entry.id);
+  result.included.forEach((user) => {
+    const patron = members.find((m) => m.id === user?.id);
+    const pledge = result.data.find((m) => m.relationships.user.data.id === user.id);
+    if (!patron && pledge?.attributes.patron_status === 'active_patron')
+      console.log(user?.attributes.full_name, user?.attributes.email, user.id);
   });
 
   console.log('\n========= DECLINED MEMBERS ========');
-  data.included.forEach((entry: any) => {
-    const d = members.find((p) => p.id === entry?.id);
-    const pledge = data.data.find((en: any) => en?.relationships?.patron?.data?.id === entry.id);
-    if (d && pledge?.attributes.patron_status === 'declined_patron') console.log(entry?.attributes.full_name, entry?.id);
+  result.included.forEach((user) => {
+    const patron = members.find((p) => p.id === user?.id);
+    const pledge = result.data.find((m) => m.relationships.user.data.id === user.id);
+    if (patron && pledge?.attributes.patron_status === 'declined_patron') console.log(user?.attributes.full_name, user?.id);
   });
 
   return mongoClient.close();

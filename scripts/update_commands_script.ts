@@ -1,6 +1,5 @@
-import crypto from 'crypto';
+import { createDecipheriv } from 'crypto';
 import { RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'discord.js';
-import 'reflect-metadata';
 import { inspect } from 'util';
 import { COMMANDS, HIDDEN_COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './commands.js';
 
@@ -9,12 +8,10 @@ const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64'
 const CUSTOM_BOT_SERVER_ID = '1130572457175175293';
 const SUPPORT_SERVER_ID = '509784317598105619';
 
-console.log(new Date().toISOString());
-
-export const decrypt = (value: string) => {
+const decrypt = (value: string) => {
   const key = Buffer.from(process.env.CRYPTO_KEY!, 'hex');
   const iv = Buffer.from(process.env.CRYPTO_IV!, 'hex');
-  const decipher = crypto.createDecipheriv('aes256', key, iv);
+  const decipher = createDecipheriv('aes256', key, iv);
   return Buffer.concat([decipher.update(Buffer.from(value, 'hex')), decipher.final()]).toString();
 };
 

@@ -1,7 +1,7 @@
 import { Collections, Settings } from '@app/constants';
+import { PatreonMembersEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
-import { Patron } from '../../struct/patreon-handler.js';
 
 export default class PatreonCommand extends Command {
   public constructor() {
@@ -92,7 +92,7 @@ export default class PatreonCommand extends Command {
   }
 
   private patrons() {
-    return this.client.db.collection<Patron>(Collections.PATREON_MEMBERS).find().sort({ createdAt: 1 }).toArray();
+    return this.client.db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS).find().sort({ createdAt: 1 }).toArray();
   }
 
   private async add(guild: string) {

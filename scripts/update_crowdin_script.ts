@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-
 (async () => {
   const limit = 250;
   let [hasMore, offset] = [true, 0];

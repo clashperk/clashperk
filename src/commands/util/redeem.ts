@@ -1,4 +1,5 @@
 import { Collections, Settings } from '@app/constants';
+import { PatreonMembersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,7 +12,7 @@ import {
 } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
-import { Included, Patron, guildLimits } from '../../struct/patreon-handler.js';
+import { PatreonUser, guildLimits } from '../../struct/patreon-handler.js';
 
 export default class RedeemCommand extends Command {
   public constructor() {
@@ -61,7 +62,7 @@ export default class RedeemCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     }
 
-    const collection = this.client.db.collection<Patron>(Collections.PATREON_MEMBERS);
+    const collection = this.client.db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
     const user = await collection.findOne({ id: patron.id });
 
     if (disable) {
@@ -177,9 +178,9 @@ export default class RedeemCommand extends Command {
 
   private async disableRedemption(
     interaction: CommandInteraction,
-    { message, user, select }: { message: WebhookMessageEditOptions; user: WithId<Patron>; select: boolean }
+    { message, user, select }: { message: WebhookMessageEditOptions; user: WithId<PatreonMembersEntity>; select: boolean }
   ) {
-    const collection = this.client.db.collection<Patron>(Collections.PATREON_MEMBERS);
+    const collection = this.client.db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
     const customIds = {
       button: this.client.uuid(interaction.user.id),
       menu: this.client.uuid(interaction.user.id)
@@ -225,7 +226,7 @@ export default class RedeemCommand extends Command {
     });
   }
 
-  private isNew(user: Patron, interaction: CommandInteraction, patron: Included) {
+  private isNew(user: PatreonMembersEntity, interaction: CommandInteraction, patron: PatreonUser) {
     if (user.userId !== interaction.user.id) {
       this.client.db.collection(Collections.PATREON_MEMBERS).updateOne(
         { id: patron.id },
@@ -249,7 +250,7 @@ export default class RedeemCommand extends Command {
     }
   }
 
-  private redeemed(user: Patron) {
+  private redeemed(user: PatreonMembersEntity) {
     if (user.rewardId in guildLimits && user.guilds.length >= guildLimits[user.rewardId]) return true;
     return false;
   }

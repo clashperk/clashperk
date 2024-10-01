@@ -20,7 +20,7 @@ export const guildLimits: Record<string, number> = {
 };
 
 export class PatreonHandler {
-  private readonly collection: Collection<Patron>;
+  private readonly collection: Collection<PatreonMembersEntity>;
   private readonly patrons = new Set<string>();
 
   public constructor(private readonly client: Client) {
@@ -97,7 +97,7 @@ export class PatreonHandler {
     }
   }
 
-  public async resyncPatron(patron: WithId<Patron>, pledge: Member | null) {
+  public async resyncPatron(patron: WithId<PatreonMembersEntity>, pledge: PatreonMember | null) {
     const rewardId: string | null = pledge?.relationships.currently_entitled_tiers.data[0]?.id ?? null;
     if (rewardId && patron.rewardId !== rewardId && guildLimits[rewardId]) {
       await this.collection.updateOne({ _id: patron._id }, { $set: { rewardId } });
@@ -220,19 +220,17 @@ export class PatreonHandler {
     }).toString();
 
     const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
-      headers: { authorization: `Bearer ${process.env.PATREON_API!}` },
+      headers: { authorization: `Bearer ${process.env.PATREON_API}` },
       signal: timeoutSignal(10_000, 'GET /campaigns/:id/members')
     })
       .then((res) => res.json())
-      .catch(() => null)) as { data: Member[]; included: Included[] } | null;
+      .catch(() => null)) as { data: PatreonMember[]; included: PatreonUser[] } | null;
 
     return data?.data ? data : null;
   }
 }
 
-export interface Patron extends PatreonMembersEntity {}
-
-export interface Member {
+export interface PatreonMember {
   attributes: {
     email: string;
     last_charge_date: string;
@@ -260,7 +258,7 @@ export interface Member {
   type: string;
 }
 
-export interface Included {
+export interface PatreonUser {
   attributes: {
     full_name: string;
     image_url: string;
@@ -269,6 +267,7 @@ export interface Included {
         user_id?: string;
       };
     };
+    email: string;
   };
   id: string;
   type: string;

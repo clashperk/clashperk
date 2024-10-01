@@ -40,8 +40,8 @@ export const padEnd = (str: string | number, length: number) => {
   return `${str}`.padEnd(length, ' ');
 };
 
-export const sanitizeName = (name: string) => {
-  return Util.escapeBackTick(name);
+export const escapeBackTick = (text: string) => {
+  return text.replace(/`/g, '');
 };
 
 const localeSort = (a: string, b: string) => {
@@ -468,7 +468,7 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
       `${EMOJIS.DISCORD} **Players on Discord: ${onDiscord.length}**`,
       onDiscord
         .map((mem) => {
-          const name = sanitizeName(mem.name).padEnd(15, ' ');
+          const name = escapeBackTick(mem.name).padEnd(15, ' ');
           const member = clan.memberList.find((m) => m.tag === mem.tag)!;
           const user = showTag ? member.tag.padStart(12, ' ') : guildMembers.get(mem.userId)!.displayName.slice(0, 12).padStart(12, ' ');
           return { name, user, verified: mem.verified };
@@ -481,7 +481,7 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
       notInDiscord.length ? `\n${EMOJIS.WRONG} **Players not on Discord: ${notInDiscord.length}**` : '',
       notInDiscord
         .map((mem) => {
-          const name = sanitizeName(mem.name).padEnd(15, ' ');
+          const name = escapeBackTick(mem.name).padEnd(15, ' ');
           const member = clan.memberList.find((m) => m.tag === mem.tag)!;
           const user: string = member.tag.padStart(12, ' ');
           return { name, user, verified: mem.verified };
@@ -495,7 +495,7 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
       notLinked
         .sort((a, b) => localeSort(a.name, b.name))
         .map((mem) => {
-          const name = sanitizeName(mem.name).padEnd(15, ' ');
+          const name = escapeBackTick(mem.name).padEnd(15, ' ');
           return `✘ \`\u200e${name}\u200f\` \u200e \` ${mem.tag.padStart(12, ' ')} \u200f\``;
         })
         .join('\n')

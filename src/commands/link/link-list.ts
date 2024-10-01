@@ -15,7 +15,7 @@ import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { MembersCommandOptions } from '../../util/command.options.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { padStart } from '../../util/helper.js';
+import { escapeBackTick, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 const SortingKey = {
@@ -82,12 +82,12 @@ export default class LinkListCommand extends Command {
     }
 
     const users = await this.client.resolver.getLinkedUsersMap(clan.memberList);
-    const members: { name: string; tag: string; userId: string; verified: boolean }[] = [];
+    const members: { name: string; tag: string; userId: string; verified: boolean; displayName: string }[] = [];
 
     for (const mem of clan.memberList) {
       if (mem.tag in users) {
         const user = users[mem.tag];
-        members.push({ tag: mem.tag, userId: user.userId, name: mem.name, verified: user.verified });
+        members.push({ tag: mem.tag, userId: user.userId, name: mem.name, verified: user.verified, displayName: user.displayName });
       }
     }
 
@@ -95,14 +95,15 @@ export default class LinkListCommand extends Command {
 
     const clanMembers = clan.memberList.map((member) => {
       const link = members.find((mem) => mem.tag === member.tag);
-      const username = link ? guildMembers.get(link.userId)?.displayName.slice(0, 14) : member.tag;
+      const username = link ? (guildMembers.get(link.userId)?.displayName || link.displayName).slice(0, 14) : member.tag;
+
       return {
-        name: this.parseName(member.name),
+        name: padStart(escapeBackTick(member.name), 15),
         _name: member.name,
         tag: padStart(member.tag, 14),
         _tag: member.tag,
         isVerified: Boolean(link?.verified),
-        username: padStart(args.sort_by === SortingKey.TAG ? member.tag : username ?? member.tag, 14),
+        username: padStart(args.sort_by === SortingKey.TAG ? member.tag : escapeBackTick(username) ?? member.tag, 14),
         _username: username || '',
         townHallLevel: member.townHallLevel,
         _townHallLevel: member.townHallLevel,
@@ -229,13 +230,9 @@ export default class LinkListCommand extends Command {
     return embed;
   }
 
-  private parseName(name: string) {
-    return Util.escapeBackTick(name).padEnd(15, ' ');
-    // return name.replace(/[^\x00-\xF7]+/g, ' ').trim().padEnd(15, ' ');
-  }
-
   private localeSort(a: string, b: string) {
-    // return a.localeCompare(b);
+    // a.localeCompare(b);
+    // name.replace(/[^\x00-\xF7]+/g, ' ').trim();
     return a.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.replace(/[^\x00-\xF7]+/g, ''));
   }
 
