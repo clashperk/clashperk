@@ -64,7 +64,7 @@ export default class ProfileCommand extends Command {
         .collection(Collections.PLAYER_LINKS)
         .find({ userId: user.id }, { sort: { order: 1 } })
         .toArray(),
-      this.client.http.getPlayerTags(user.id)
+      this.client.coc.getPlayerTags(user.id)
     ]);
 
     const embed = new EmbedBuilder()
@@ -73,7 +73,7 @@ export default class ProfileCommand extends Command {
       .setDescription(['**Username**', `${user.username}`].join('\n'));
 
     if (data?.clan?.tag) {
-      const { res, body: clan } = await this.client.http.getClan(data.clan.tag);
+      const { res, body: clan } = await this.client.coc.getClan(data.clan.tag);
       if (res.ok) {
         embed.setDescription(
           [
@@ -95,7 +95,7 @@ export default class ProfileCommand extends Command {
     }
 
     const [_otherLinks, _otherDbLinks] = await Promise.all([
-      this.client.http.getDiscordLinks(players),
+      this.client.coc.getDiscordLinks(players),
       this.client.db
         .collection(Collections.PLAYER_LINKS)
         .find({ userId: { $ne: user.id }, tag: { $in: otherTags } })
@@ -119,7 +119,7 @@ export default class ProfileCommand extends Command {
 
     const _fields: { field: string; values: string[] }[] = [];
     const playerTags = [...new Set([...players.map((en) => en.tag), ...otherTags])];
-    const _players = await Promise.all(playerTags.map((tag) => this.client.http.getPlayer(tag)));
+    const _players = await Promise.all(playerTags.map((tag) => this.client.coc.getPlayer(tag)));
     const playerLinks = _players.filter(({ res }) => res.ok).map(({ body }) => body);
     const defaultPlayerTag = playerLinks[0]?.tag;
 
@@ -303,10 +303,10 @@ export default class ProfileCommand extends Command {
   }
 
   private async getUserByTag(interaction: CommandInteraction, playerTag: string) {
-    playerTag = this.client.http.fixTag(playerTag);
+    playerTag = this.client.coc.fixTag(playerTag);
     const [link, externalLink] = await Promise.all([
       this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag: playerTag }),
-      this.client.http.getLinkedUser(playerTag)
+      this.client.coc.getLinkedUser(playerTag)
     ]);
 
     const userId = link?.userId ?? externalLink?.userId;
@@ -335,10 +335,10 @@ export default class ProfileCommand extends Command {
         ],
         rows: players.map((player) => [
           player.name,
-          createHyperlink(this.client.http.getPlayerURL(player.tag), player.tag),
+          createHyperlink(this.client.coc.getPlayerURL(player.tag), player.tag),
           player.townHallLevel,
           player.clan?.name,
-          player.clan?.tag ? createHyperlink(this.client.http.getClanURL(player.clan.tag), player.clan.tag) : '',
+          player.clan?.tag ? createHyperlink(this.client.coc.getClanURL(player.clan.tag), player.clan.tag) : '',
           roles[player.role!],
           player.verified,
           player.internal,
@@ -414,7 +414,7 @@ export default class ProfileCommand extends Command {
   }
 
   private deleteBanned(userId: string, tag: string) {
-    this.client.http.unlinkPlayerTag(tag);
+    this.client.coc.unlinkPlayerTag(tag);
     return this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS).deleteOne({ userId, tag });
   }
 
@@ -422,7 +422,7 @@ export default class ProfileCommand extends Command {
     if (!user.bot) return null;
 
     for (const tag of playerTags) {
-      await this.client.http.unlinkPlayerTag(tag);
+      await this.client.coc.unlinkPlayerTag(tag);
     }
 
     return this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS).deleteOne({ userId: user.id });

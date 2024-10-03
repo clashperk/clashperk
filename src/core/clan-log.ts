@@ -95,7 +95,7 @@ export class ClanLog extends RootLog {
     const actions = logActionsMap[cache.logType] ?? [];
     if (!actions.includes(LogActions[member.op as LogAction])) return null;
 
-    const { body: player, res } = await this.client.http.getPlayer(member.tag);
+    const { body: player, res } = await this.client.coc.getPlayer(member.tag);
     if (!res.ok) return null;
 
     let content: string | undefined;

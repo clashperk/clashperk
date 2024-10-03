@@ -26,7 +26,7 @@ export default class TargetCommand extends Command {
       return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
     }
 
-    const { res, body: war } = await this.client.http.getCurrentWar(clan.tag);
+    const { res, body: war } = await this.client.coc.getCurrentWar(clan.tag);
     if (!res.ok) {
       return interaction.editReply('There is no war going on.');
     }

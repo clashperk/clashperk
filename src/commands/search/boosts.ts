@@ -26,7 +26,7 @@ export default class BoostsCommand extends Command {
       });
     }
 
-    const members = await this.client.http._getPlayers(clan.memberList);
+    const members = await this.client.coc._getPlayers(clan.memberList);
     const players = members.filter((mem) => mem.troops.filter((en) => en.superTroopIsActive).length);
     if (!players.length)
       return interaction.followUp({ content: this.i18n('command.boosts.no_boosts', { lng: interaction.locale }), ephemeral: true });

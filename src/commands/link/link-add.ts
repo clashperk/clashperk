@@ -138,7 +138,7 @@ export default class LinkAddCommand extends Command {
           const token = token_field === 'hidden' ? null : modalSubmit.fields.getTextInputValue(customIds.token);
           await modalSubmit.deferReply({ ephemeral: true });
 
-          const { body: data, res } = await this.client.http.getPlayer(tag);
+          const { body: data, res } = await this.client.coc.getPlayer(tag);
           if (!res.ok) {
             return modalSubmit.editReply({ content: 'Invalid player tag was provided.' });
           }
@@ -157,7 +157,7 @@ export default class LinkAddCommand extends Command {
   }
 
   private async verify(interaction: ModalSubmitInteraction<'cached'>, data: APIPlayer, token: string) {
-    const { body } = await this.client.http.verifyPlayerToken(data.tag, token);
+    const { body } = await this.client.coc.verifyPlayerToken(data.tag, token);
     if (body.status !== 'ok') {
       return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
     }
@@ -201,7 +201,7 @@ export default class LinkAddCommand extends Command {
   }
 
   private async resetLinkAPI(user: string, tag: string) {
-    await this.client.http.unlinkPlayerTag(tag);
-    await this.client.http.linkPlayerTag(user, tag);
+    await this.client.coc.unlinkPlayerTag(tag);
+    await this.client.coc.linkPlayerTag(user, tag);
   }
 }

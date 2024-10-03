@@ -23,7 +23,7 @@ export default class CWLLineupCommand extends Command {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
-    const { body, res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+    const { body, res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.editReply(
         this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
@@ -55,7 +55,7 @@ export default class CWLLineupCommand extends Command {
     const chunks: { state: string; clan: APIWarClan; opponent: APIWarClan; round: number }[] = [];
     for (const { warTags } of rounds.slice(-2)) {
       for (const warTag of warTags) {
-        const { body, res } = await this.client.http.getClanWarLeagueRound(warTag);
+        const { body, res } = await this.client.coc.getClanWarLeagueRound(warTag);
         if (!res.ok) continue;
 
         if (body.clan.tag === clanTag || body.opponent.tag === clanTag) {
@@ -121,7 +121,7 @@ export default class CWLLineupCommand extends Command {
   }
 
   private async rosters(clanMembers: APIClanWarMember[], opponentMembers: APIClanWarMember[]) {
-    const clanPlayers = await this.client.http._getPlayers(clanMembers);
+    const clanPlayers = await this.client.coc._getPlayers(clanMembers);
     const a = clanPlayers.map((data, i) => {
       const heroes = data.heroes.filter((en) => en.village === 'home');
       const pets = data.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
@@ -135,7 +135,7 @@ export default class CWLLineupCommand extends Command {
       };
     });
 
-    const opponentPlayers = await this.client.http._getPlayers(opponentMembers as any);
+    const opponentPlayers = await this.client.coc._getPlayers(opponentMembers as any);
     const b = opponentPlayers.map((data, i) => {
       const heroes = data.heroes.filter((en) => en.village === 'home');
       const pets = data.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);

@@ -180,7 +180,7 @@ export default class LegendAttacksCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { clans?: string; tag?: string; user?: User; location?: string }
   ) {
-    const isSingleTag = args.clans && this.client.http.isValidTag(this.client.http.fixTag(args.clans));
+    const isSingleTag = args.clans && this.client.coc.isValidTag(this.client.coc.fixTag(args.clans));
 
     if (args.clans && !isSingleTag) {
       const { resolvedArgs, clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });

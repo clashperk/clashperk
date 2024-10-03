@@ -2,8 +2,8 @@ import { Collections, Settings } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
 import { BaseInteraction } from 'discord.js';
 import { Collection, WithId } from 'mongodb';
+import { timeoutSignal } from './clash-client.js';
 import { Client } from './client.js';
-import { timeoutSignal } from './http.js';
 
 export const rewards = {
   bronze: '3705318',

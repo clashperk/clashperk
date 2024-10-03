@@ -46,7 +46,7 @@ export default class DebugCommand extends Command {
     ];
 
     const clans = await this.client.storage.find(interaction.guild.id);
-    const fetched = await this.client.http._getClans(clans);
+    const fetched = await this.client.coc._getClans(clans);
 
     const cycle = await this.client.redis.connection.hGetAll('cycle').then((data) => ({
       clans: Number(data.CLAN_LOOP || 0),

@@ -25,7 +25,7 @@ export default class ExportUsersCommand extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, {});
     if (!clans) return;
 
-    const _clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.coc._getClans(clans);
     const membersMap = new Map<string, AggregatedMember>();
 
     for (const clan of _clans) {

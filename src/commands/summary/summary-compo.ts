@@ -41,7 +41,7 @@ export default class SummaryCompoCommand extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const _clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.coc._getClans(clans);
 
     const overall: { tag: string; townHallLevel: number }[] = [];
     const aggregated: { name: string; tag: string; weight: number; compo: Record<string, number> }[] = [];

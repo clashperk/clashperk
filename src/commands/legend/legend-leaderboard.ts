@@ -44,8 +44,8 @@ export default class LegendLeaderboardCommand extends Command {
 
     const isDefaultMessage = interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
     if (isDefaultMessage) {
-      const currentSeasonEnd = this.client.http.util.getSeasonEnd(new Date()).toISOString();
-      const messageSentAt = this.client.http.util.getSeasonEnd(interaction.message.createdAt).toISOString();
+      const currentSeasonEnd = this.client.coc.util.getSeasonEnd(new Date()).toISOString();
+      const messageSentAt = this.client.coc.util.getSeasonEnd(interaction.message.createdAt).toISOString();
       if (currentSeasonEnd !== messageSentAt) seasonId = messageSentAt.slice(0, 7);
     }
 

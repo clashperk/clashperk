@@ -53,7 +53,7 @@ export default class LinkDeleteCommand extends Command {
         );
       }
 
-      const { body: data } = await this.client.http.getPlayer(playerTag);
+      const { body: data } = await this.client.coc.getPlayer(playerTag);
       // The player should be in the clan;
       if (!data.clan && !isTrustedGuild) {
         return interaction.editReply(
@@ -62,7 +62,7 @@ export default class LinkDeleteCommand extends Command {
       }
 
       if (data.clan) {
-        const { body: clan } = await this.client.http.getClan(data.clan.tag);
+        const { body: clan } = await this.client.coc.getClan(data.clan.tag);
         const authorIsInClan = clan.memberList.find((mem) => ['leader', 'coLeader'].includes(mem.role) && playerTags.includes(mem.tag));
 
         // The user should be a co/leader of the same clan;
@@ -79,7 +79,7 @@ export default class LinkDeleteCommand extends Command {
   }
 
   private async unlinkPlayer(userId: string, tag: string) {
-    const link = await this.client.http.unlinkPlayerTag(tag);
+    const link = await this.client.coc.unlinkPlayerTag(tag);
     const value = await this.client.db.collection(Collections.PLAYER_LINKS).findOneAndDelete({ userId, tag });
     return value ? tag : link ? tag : null;
   }
@@ -92,12 +92,12 @@ export default class LinkDeleteCommand extends Command {
   }
 
   private parseTag(tag?: string) {
-    return tag ? this.client.http.fixTag(tag) : null;
+    return tag ? this.client.coc.fixTag(tag) : null;
   }
 
   private async getMember(tag: string, interaction: CommandInteraction<'cached'>) {
     const target = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag });
-    const link = await this.client.http.getLinkedUser(tag);
+    const link = await this.client.coc.getLinkedUser(tag);
 
     // if our db and link db do not match
     if (target && link && link.userId !== target.userId && [link.userId, target.userId].includes(interaction.user.id)) {

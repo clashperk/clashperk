@@ -27,7 +27,7 @@ export default class ExportCWL extends Command {
 
     const chunks = [];
     for (const clan of clans) {
-      const result = season ? null : await this.client.http.getClanWarLeagueGroup(clan.tag);
+      const result = season ? null : await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (!result?.res.ok || result.body.state === 'notInWar') {
         const data = await this.client.storage.getWarTags(clan.tag, season);
         if (!data) continue;
@@ -254,7 +254,7 @@ export default class ExportCWL extends Command {
       for (const warTag of warTags) {
         const data = season
           ? await this.client.db.collection<APIClanWar>(Collections.CLAN_WARS).findOne({ warTag })
-          : await this.client.http.getCWLRoundWithWarTag(warTag);
+          : await this.client.coc.getCWLRoundWithWarTag(warTag);
         if (!data) continue;
         if (data.state === 'notInWar' && !season) continue;
 
@@ -269,7 +269,7 @@ export default class ExportCWL extends Command {
         const clan = ranking[data.clan.tag];
 
         clan.stars += data.clan.stars;
-        if (data.state === 'warEnded' && this.client.http.isWinner(data.clan, data.opponent)) {
+        if (data.state === 'warEnded' && this.client.coc.isWinner(data.clan, data.opponent)) {
           clan.stars += 10;
         }
         clan.attacks += data.clan.attacks;
@@ -286,7 +286,7 @@ export default class ExportCWL extends Command {
         const opponent = ranking[data.opponent.tag];
 
         opponent.stars += data.opponent.stars;
-        if (data.state === 'warEnded' && this.client.http.isWinner(data.opponent, data.clan)) {
+        if (data.state === 'warEnded' && this.client.coc.isWinner(data.opponent, data.clan)) {
           opponent.stars += 10;
         }
         opponent.attacks += data.opponent.attacks;

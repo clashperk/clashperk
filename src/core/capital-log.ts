@@ -87,10 +87,10 @@ export class CapitalLog extends RootLog {
   }
 
   private async capitalAttacks(cache: Cache) {
-    const { body: clan, res: _res } = await this.client.http.getClan(cache.tag);
+    const { body: clan, res: _res } = await this.client.coc.getClan(cache.tag);
     if (!_res.ok) return null;
 
-    const { body: data, res } = await this.client.http.getRaidSeasons(clan.tag, 1);
+    const { body: data, res } = await this.client.coc.getRaidSeasons(clan.tag, 1);
     if (!res.ok) return null;
     if (!data.items.length) return null;
     const raid = data.items.at(0);
@@ -142,8 +142,8 @@ export class CapitalLog extends RootLog {
       ].join('\n')
     );
 
-    const offensiveReward = this.client.http.calcRaidMedals(raid);
-    const raidsCompleted = this.client.http.calcRaidCompleted(raid.attackLog);
+    const offensiveReward = this.client.coc.calcRaidMedals(raid);
+    const raidsCompleted = this.client.coc.calcRaidCompleted(raid.attackLog);
 
     const query = new URLSearchParams({
       clanName: clan.name,
@@ -198,7 +198,7 @@ export class CapitalLog extends RootLog {
   }
 
   private async capitalDonations(cache: Cache) {
-    const { body: clan, res } = await this.client.http.getClan(cache.tag);
+    const { body: clan, res } = await this.client.coc.getClan(cache.tag);
     if (!res.ok) return null;
 
     const { endTime, startTime } = Util.getRaidWeekEndTimestamp();

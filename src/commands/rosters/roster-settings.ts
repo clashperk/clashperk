@@ -192,7 +192,7 @@ export default class RosterEditCommand extends Command {
       await interaction.editReply({ embeds: [embed], components: [] });
       await action.update({ content: 'Roster message archived!', components: [] });
 
-      const { res, body: clan } = roster.clan ? await this.client.http.getClan(roster.clan.tag) : { res: null, body: null };
+      const { res, body: clan } = roster.clan ? await this.client.coc.getClan(roster.clan.tag) : { res: null, body: null };
 
       const sheet = await this.client.rosterManager.exportSheet({
         name: interaction.guild.name,
@@ -224,7 +224,7 @@ export default class RosterEditCommand extends Command {
       const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
       await action.update({ embeds: [embed], components: [row] });
 
-      const { res, body: clan } = roster.clan ? await this.client.http.getClan(roster.clan.tag) : { res: null, body: null };
+      const { res, body: clan } = roster.clan ? await this.client.coc.getClan(roster.clan.tag) : { res: null, body: null };
 
       const sheet = await this.client.rosterManager.exportSheet({
         name: interaction.guild.name,

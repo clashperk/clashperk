@@ -336,7 +336,7 @@ export default class StorageHandler {
 
     for (const round of rounds) {
       for (const warTag of round.warTags) {
-        const { body: data, res } = await this.client.http.getClanWarLeagueRound(warTag);
+        const { body: data, res } = await this.client.coc.getClanWarLeagueRound(warTag);
         if (!res.ok) continue;
         if (!warTags[data.clan.tag].includes(warTag)) warTags[data.clan.tag]!.push(warTag);
         if (!warTags[data.opponent.tag].includes(warTag)) warTags[data.opponent.tag]!.push(warTag);
@@ -417,7 +417,7 @@ export default class StorageHandler {
   }
 
   private async leagueIds(clanTag: string, seasonId: string) {
-    const group = await this.client.http.getDataFromArchive(clanTag, seasonId);
+    const group = await this.client.coc.getDataFromArchive(clanTag, seasonId);
     if (!group) return null;
 
     const leagues: Record<string, number> = {};
@@ -490,7 +490,7 @@ export default class StorageHandler {
 
     const clans = await this.find(guildId);
     for (const clan of clans) {
-      const { res, body: data } = await this.client.http.getClan(clan.tag);
+      const { res, body: data } = await this.client.coc.getClan(clan.tag);
       if (!res.ok) continue;
 
       const result = await this.updatePlayerLinks(data.memberList);
@@ -510,17 +510,17 @@ export default class StorageHandler {
 
     const collection = this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS);
     const _links = await collection.find({ tag: { $in: players.map((mem) => mem.tag) } }).toArray();
-    const _discordLinks = await this.client.http.getDiscordLinks(players);
+    const _discordLinks = await this.client.coc.getDiscordLinks(players);
 
     const userIds = unique([..._links.map((link) => link.userId), ..._discordLinks.map((link) => link.userId)]);
     const links = await collection.find({ userId: { $in: userIds } }).toArray();
-    const discordLinks = await this.client.http.getDiscordLinks(userIds.map((id) => ({ tag: id })));
+    const discordLinks = await this.client.coc.getDiscordLinks(userIds.map((id) => ({ tag: id })));
 
     for (const { userId, tag } of discordLinks) {
       if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
       const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
 
-      const player = players.find((mem) => mem.tag === tag && mem.name) ?? (await this.client.http.getPlayer(tag).then(({ body }) => body));
+      const player = players.find((mem) => mem.tag === tag && mem.name) ?? (await this.client.coc.getPlayer(tag).then(({ body }) => body));
       if (!player?.name) continue;
 
       const user = await this.client.users.fetch(userId).catch(() => null);

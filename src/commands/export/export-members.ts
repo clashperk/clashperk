@@ -47,7 +47,7 @@ export default class ExportClanMembersCommand extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const _clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.coc._getClans(clans);
 
     const members: {
       name: string;
@@ -87,7 +87,7 @@ export default class ExportClanMembersCommand extends Command {
 
     for (const clan of _clans) {
       clan.memberList.sort((a, b) => b.clanRank - a.clanRank);
-      const players = await this.client.http._getPlayers(clan.memberList);
+      const players = await this.client.coc._getPlayers(clan.memberList);
 
       players.forEach((player, n) => {
         const troopsMap = [...player.heroes, ...player.troops, ...player.spells]

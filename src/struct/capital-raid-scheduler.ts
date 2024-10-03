@@ -93,7 +93,7 @@ export default class CapitalRaidScheduler {
   }
 
   public async getLastRaidSeason(tag: string) {
-    const { body: data, res } = await this.client.http.getRaidSeasons(tag, 1);
+    const { body: data, res } = await this.client.coc.getRaidSeasons(tag, 1);
     if (!res.ok || !data.items.length) return null;
     if (!data.items[0].members) return null;
     return data.items[0] as Required<APICapitalRaidSeason>;
@@ -108,7 +108,7 @@ export default class CapitalRaidScheduler {
       const data = await this.getLastRaidSeason(tag);
       if (!data) continue;
 
-      const { body: clan, res } = await this.client.http.getClan(tag);
+      const { body: clan, res } = await this.client.coc.getClan(tag);
       if (!res.ok) continue;
 
       const rand = Math.random();
@@ -177,7 +177,7 @@ export default class CapitalRaidScheduler {
     schedule: Pick<RaidSchedulersEntity, 'tag'>,
     data: Required<APICapitalRaidSeason>
   ): Promise<[string | null, string[]]> {
-    const { body: clan, res } = await this.client.http.getClan(schedule.tag);
+    const { body: clan, res } = await this.client.coc.getClan(schedule.tag);
     if (res.status === 503) throw new Error('MaintenanceBreak');
     if (!res.ok) return [null, []];
     const unwantedMembers = reminder.allMembers
@@ -186,7 +186,7 @@ export default class CapitalRaidScheduler {
 
     const currentMemberTags = clan.memberList.map((m) => m.tag);
     const missingMembers = data.members.filter((m) => !currentMemberTags.includes(m.tag));
-    const players = await this.client.http._getPlayers(clan.memberList);
+    const players = await this.client.coc._getPlayers(clan.memberList);
     const clanMembers = players
       .map((player) => {
         const clanMember = clan.memberList.find((mem) => mem.tag === player.tag)!;

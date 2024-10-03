@@ -79,7 +79,7 @@ export default class ClanWarScheduler {
 
   public async create(reminder: ClanWarRemindersEntity) {
     for (const tag of reminder.clans) {
-      const wars = await this.client.http.getCurrentWars(tag);
+      const wars = await this.client.coc.getCurrentWars(tag);
       const rand = Math.random();
       for (const data of wars) {
         if (['notInWar', 'warEnded'].includes(data.state)) continue;
@@ -134,7 +134,7 @@ export default class ClanWarScheduler {
   }
 
   private async getClanMembers(tag: string) {
-    const { body, res } = await this.client.http.getClan(tag);
+    const { body, res } = await this.client.coc.getClan(tag);
     return res.ok ? body.memberList : [];
   }
 
@@ -321,8 +321,8 @@ export default class ClanWarScheduler {
         return await this.delete(schedule, ReminderDeleteReasons.INVALID_WAR_TYPE);
 
       const { body: data, res } = schedule.warTag
-        ? await this.client.http.getClanWarLeagueRound(schedule.warTag)
-        : await this.client.http.getCurrentWar(schedule.tag);
+        ? await this.client.coc.getClanWarLeagueRound(schedule.warTag)
+        : await this.client.coc.getCurrentWar(schedule.tag);
       if (!res.ok) return this.clear(id);
 
       if (data.state === 'notInWar') return await this.delete(schedule, ReminderDeleteReasons.NOT_IN_WAR);

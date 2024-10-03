@@ -5,7 +5,7 @@ import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/cwl-helper.js';
 import { Command } from '../../lib/handlers.js';
-import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { getCWLSummaryImage } from '../../struct/image-helper.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { padEnd } from '../../util/helper.js';
@@ -25,7 +25,7 @@ export default class CWLStatsCommand extends Command {
     if (!clan) return;
 
     const [{ body, res }, group] = await Promise.all([
-      this.client.http.getClanWarLeagueGroup(clan.tag),
+      this.client.coc.getClanWarLeagueGroup(clan.tag),
       this.client.storage.getWarTags(clan.tag, args.season)
     ]);
     if (res.status === 504 || body.state === 'notInWar') {
@@ -46,7 +46,7 @@ export default class CWLStatsCommand extends Command {
       });
     }
 
-    const aggregated = await this.client.http.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
+    const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
     if (!aggregated) {
       return interaction.followUp({
         ephemeral: true,
@@ -317,6 +317,6 @@ export default class CWLStatsCommand extends Command {
   }
 
   private winner(clan: APIWarClan, opponent: APIWarClan) {
-    return this.client.http.isWinner(clan, opponent);
+    return this.client.coc.isWinner(clan, opponent);
   }
 }

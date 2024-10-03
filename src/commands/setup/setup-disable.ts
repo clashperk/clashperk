@@ -39,7 +39,7 @@ export default class SetupDisableCommand extends Command {
       return this.handler.continue(interaction, command);
     }
 
-    args.clan = this.client.http.fixTag(args.clan);
+    args.clan = this.client.coc.fixTag(args.clan);
     if (args.action === 'unlink-channel') {
       const value = await this.client.storage.collection.findOneAndUpdate(
         { channels: args.channel.id, guild: interaction.guildId },

@@ -470,7 +470,7 @@ export class ClanWarLog extends RootLog {
     const leagueGroup = await this.client.storage.getWarTags(clanTag, Season.ID);
     if (!leagueGroup) return null;
 
-    const body = await this.client.http.aggregateClanWarLeague(clanTag, leagueGroup, true);
+    const body = await this.client.coc.aggregateClanWarLeague(clanTag, leagueGroup, true);
     if (!body) return null;
 
     const leagueId = body.leagues?.[clanTag];

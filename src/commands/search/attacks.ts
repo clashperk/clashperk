@@ -113,7 +113,7 @@ export default class ClanAttacksCommand extends Command {
       .toArray();
 
     if (!fetched.length && !seasonId) {
-      const players = await this.client.http._getPlayers(memberList);
+      const players = await this.client.coc._getPlayers(memberList);
       return players;
     }
 

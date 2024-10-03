@@ -106,7 +106,7 @@ export default class ClanGamesScheduler {
     if (!(Date.now() >= startTime && Date.now() <= endTime)) return;
 
     for (const tag of reminder.clans) {
-      const { res, body: clan } = await this.client.http.getClan(tag);
+      const { res, body: clan } = await this.client.coc.getClan(tag);
       if (!res.ok) continue;
       const rand = Math.random();
 
@@ -159,7 +159,7 @@ export default class ClanGamesScheduler {
   }
 
   private async query(clan: APIClan) {
-    const fetched = await this.client.http._getPlayers(clan.memberList);
+    const fetched = await this.client.coc._getPlayers(clan.memberList);
     const clanMembers = fetched.map((data) => {
       const value = data.achievements.find((a) => a.name === 'Games Champion')?.value ?? 0;
       return { tag: data.tag, name: data.name, points: value, role: data.role, townHallLevel: data.townHallLevel };
@@ -195,7 +195,7 @@ export default class ClanGamesScheduler {
     reminder: Pick<ClanGamesRemindersEntity, 'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers' | 'linkedOnly'>,
     schedule: Pick<ClanGamesSchedulersEntity, 'tag'>
   ): Promise<[string | null, string[]]> {
-    const { res, body: clan } = await this.client.http.getClan(schedule.tag);
+    const { res, body: clan } = await this.client.coc.getClan(schedule.tag);
     if (res.status === 503) throw new Error('MaintenanceBreak');
     if (!res.ok) return [null, []];
 

@@ -35,7 +35,7 @@ export default class ClanCommand extends Command {
   }
 
   public async run(message: Message<true>, { tag }: { tag: string }) {
-    const { res, body: clan } = await this.client.http.getClan(tag);
+    const { res, body: clan } = await this.client.coc.getClan(tag);
     if (!res.ok) return null;
     const embed = await this.embed(message.guildId!, clan);
     return message.channel.send({
@@ -47,7 +47,7 @@ export default class ClanCommand extends Command {
 
   public async exec(interaction: CommandInteraction, args: { tag?: string; user?: User; by_player_tag?: string; with_options?: boolean }) {
     if (args.by_player_tag && !args.tag) {
-      const { res, body: player } = await this.client.http.getPlayer(args.by_player_tag);
+      const { res, body: player } = await this.client.coc.getPlayer(args.by_player_tag);
       if (res.ok && player.clan) args.tag = player.clan.tag;
     }
 
@@ -217,7 +217,7 @@ export default class ClanCommand extends Command {
 
   private async clanRank(tag: string, clanPoints: number) {
     if (clanPoints >= 50000) {
-      const { res, body: clanRank } = await this.client.http.getClanRanks('global');
+      const { res, body: clanRank } = await this.client.coc.getClanRanks('global');
       if (!res.ok) return null;
       const clan = clanRank.items.find((clan) => clan.tag === tag);
       if (!clan) return null;

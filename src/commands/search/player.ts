@@ -53,7 +53,7 @@ export default class PlayerCommand extends Command {
   }
 
   public async run(message: Message<true>, { tag }: { tag: string }) {
-    const { body, res } = await this.client.http.getPlayer(tag);
+    const { body, res } = await this.client.coc.getPlayer(tag);
     if (!res.ok) return null;
     const embed = (await this.embed(body)).setColor(this.client.embed(message));
     return message.channel.send({
@@ -148,7 +148,7 @@ export default class PlayerCommand extends Command {
     const weaponLevel = data.townHallWeaponLevel ? weaponLevels[data.townHallWeaponLevel] : '';
     const embed = new EmbedBuilder()
       .setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
-      .setURL(this.client.http.getPlayerURL(data.tag))
+      .setURL(this.client.coc.getPlayerURL(data.tag))
       .setThumbnail(data.league?.iconUrls.small ?? `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`)
       .setDescription(
         [
@@ -302,7 +302,7 @@ export default class PlayerCommand extends Command {
   }
 
   private async getLinkedUser(tag: string) {
-    const data = await Promise.any([this.getLinkedFromDb(tag), this.client.http.getLinkedUser(tag)]);
+    const data = await Promise.any([this.getLinkedFromDb(tag), this.client.coc.getLinkedUser(tag)]);
     if (!data) return null;
 
     return { mention: `<@${data.userId}>`, userId: data.userId };

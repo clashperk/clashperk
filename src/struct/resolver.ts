@@ -95,7 +95,7 @@ export default class Resolver {
   }
 
   public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(APIPlayer & { user?: User }) | null> {
-    const { body, res } = await this.client.http.getPlayer(tag);
+    const { body, res } = await this.client.coc.getPlayer(tag);
     if (res.ok) this.updateLastSearchedPlayer(interaction.user, body);
 
     if (res.ok) return { ...body, user };
@@ -104,7 +104,7 @@ export default class Resolver {
   }
 
   public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<APIClan | null> {
-    const { body, res } = await this.client.http.getClan(tag);
+    const { body, res } = await this.client.coc.getClan(tag);
     if (res.ok) this.updateLastSearchedClan(interaction.user, body);
 
     if (res.ok) return body;
@@ -189,7 +189,7 @@ export default class Resolver {
     ]);
 
     if (!linkedPlayer) {
-      const externalLinks = await this.client.http.getPlayerTags(userId);
+      const externalLinks = await this.client.coc.getPlayerTags(userId);
       return externalLinks.at(0) ?? lastSearchedPlayerTag;
     }
 
@@ -209,14 +209,14 @@ export default class Resolver {
   public async getLinkedPlayerTags(userId: string) {
     const [players, others] = await Promise.all([
       this.client.db.collection(Collections.PLAYER_LINKS).find({ userId }).toArray(),
-      this.client.http.getPlayerTags(userId)
+      this.client.coc.getPlayerTags(userId)
     ]);
     return Array.from(new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]));
   }
 
   public async getLinkedUsersMap(players: { tag: string }[]) {
     const fetched = await Promise.all([
-      this.client.http.getDiscordLinks(players),
+      this.client.coc.getDiscordLinks(players),
       this.client.db
         .collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
         .find({ tag: { $in: players.map((player) => player.tag) } })
@@ -260,7 +260,7 @@ export default class Resolver {
   public async getPlayers(userId: string, limit = 25): Promise<(APIPlayer & { verified: boolean })[]> {
     const [players, others] = await Promise.all([
       this.client.db.collection(Collections.PLAYER_LINKS).find({ userId }).sort({ order: 1 }).toArray(),
-      this.client.http.getPlayerTags(userId)
+      this.client.coc.getPlayerTags(userId)
     ]);
 
     const verifiedPlayersMap = players.reduce<Record<string, boolean>>((prev, curr) => {
@@ -271,7 +271,7 @@ export default class Resolver {
     const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
     const playerTags = Array.from(playerTagSet)
       .slice(0, limit)
-      .map((tag) => this.client.http.getPlayer(tag));
+      .map((tag) => this.client.coc.getPlayer(tag));
 
     const result = (await Promise.all(playerTags)).filter(({ res }) => res.ok).map(({ body }) => body);
     return result.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
@@ -290,7 +290,7 @@ export default class Resolver {
 
     if (/^ARGS/.test(args)) {
       const tags = await this.client.redis.connection.get(args);
-      if (tags) return tags.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.http.fixTag(tag) : tag));
+      if (tags) return tags.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.coc.fixTag(tag) : tag));
     }
 
     if (/^CATEGORY:/.test(args)) {
@@ -298,7 +298,7 @@ export default class Resolver {
       return this.getClansFromCategory(guildId, categoryId);
     }
 
-    return args.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.http.fixTag(tag) : tag));
+    return args.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.coc.fixTag(tag) : tag));
   }
 
   public async enforceSecurity(

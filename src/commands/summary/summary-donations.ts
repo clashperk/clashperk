@@ -36,7 +36,7 @@ export default class DonationSummaryCommand extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const fetched = await this.client.http._getClans(clans);
+    const fetched = await this.client.coc._getClans(clans);
     if (!fetched.length) {
       return interaction.editReply(this.i18n('common.fetch_failed', { lng: interaction.locale }));
     }

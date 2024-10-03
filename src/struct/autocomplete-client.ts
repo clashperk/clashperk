@@ -59,8 +59,8 @@ export class Autocomplete {
 
     if (args.player_tag) {
       const text = args.player_tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      if (this.client.http.isValidTag(text)) {
-        filter.$or = [{ tag: this.client.http.fixTag(text) }, { name: { $regex: `.*${text}.*`, $options: 'i' } }];
+      if (this.client.coc.isValidTag(text)) {
+        filter.$or = [{ tag: this.client.coc.fixTag(text) }, { name: { $regex: `.*${text}.*`, $options: 'i' } }];
       } else {
         filter.name = { $regex: `.*${text}.*`, $options: 'i' };
       }

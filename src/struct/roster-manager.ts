@@ -778,8 +778,8 @@ export class RosterManager {
     const aliases = await this.getClanAliases(roster.guildId, [
       ...new Set(members.filter((mem) => mem.clan?.tag).map((mem) => mem.clan!.tag))
     ]);
-    const players = await Promise.all(members.map((mem) => this.client.http.getPlayer(mem.tag)));
-    const { body, res } = roster.clan ? await this.client.http.getClan(roster.clan.tag) : { body: null, res: null };
+    const players = await Promise.all(members.map((mem) => this.client.coc.getPlayer(mem.tag)));
+    const { body, res } = roster.clan ? await this.client.coc.getClan(roster.clan.tag) : { body: null, res: null };
 
     const links = await this.client.db
       .collection(Collections.PLAYER_LINKS)
@@ -909,9 +909,9 @@ export class RosterManager {
       embed.setAuthor({
         name: `${roster.clan.name} (${roster.clan.tag})`,
         iconURL: roster.clan.badgeUrl,
-        url: this.client.http.getClanURL(roster.clan.tag)
+        url: this.client.coc.getClanURL(roster.clan.tag)
       });
-      embed.setURL(this.client.http.getClanURL(roster.clan.tag));
+      embed.setURL(this.client.coc.getClanURL(roster.clan.tag));
     }
 
     if (roster.category === 'CWL' && roster.clan?.league?.id) {
@@ -1040,10 +1040,10 @@ export class RosterManager {
     embed.setTitle(`${roster.name} ${this.isClosed(roster) ? '[CLOSED]' : ''}`);
 
     if (roster.clan) {
-      embed.setURL(this.client.http.getClanURL(roster.clan.tag)).setAuthor({
+      embed.setURL(this.client.coc.getClanURL(roster.clan.tag)).setAuthor({
         name: `${roster.clan.name} (${roster.clan.tag})`,
         iconURL: roster.clan.badgeUrl,
-        url: this.client.http.getClanURL(roster.clan.tag)
+        url: this.client.coc.getClanURL(roster.clan.tag)
       });
     }
 
@@ -1453,7 +1453,7 @@ export class RosterManager {
       .toArray();
 
     const fetched = await parallel(25, memberList, async (member) => {
-      const { body, res } = await this.client.http.getPlayer(member.tag);
+      const { body, res } = await this.client.coc.getPlayer(member.tag);
       if (!res.ok || !body) return null;
       return body;
     });
@@ -1489,7 +1489,7 @@ export class RosterManager {
       .collection(Collections.PLAYER_LINKS)
       .find({ tag: { $in: memberList.map((mem) => mem.tag) } })
       .toArray();
-    const players = await this.client.http._getPlayers(memberList);
+    const players = await this.client.coc._getPlayers(memberList);
 
     const members: PlayerWithLink[] = [];
     players.forEach((player) => {

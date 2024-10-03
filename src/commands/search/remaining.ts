@@ -67,7 +67,7 @@ export default class RemainingCommand extends Command {
       .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
     if (!clan.isWarLogPublic) {
-      const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+      const { res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
         return this.handler.exec(interaction, this.handler.getCommand('cwl-attacks')!, { tag: clan.tag });
       }
@@ -76,13 +76,13 @@ export default class RemainingCommand extends Command {
     }
 
     if (!body) {
-      const { body: war, res } = await this.client.http.getCurrentWar(clan.tag);
+      const { body: war, res } = await this.client.coc.getCurrentWar(clan.tag);
       if (!res.ok) return interaction.editReply('**504 Request Timeout!**');
       body = war;
     }
 
     if (body.state === 'notInWar') {
-      const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+      const { res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
         return this.handler.exec(interaction, this.handler.getCommand('cwl-attacks')!, { tag: clan.tag });
       }

@@ -19,7 +19,7 @@ export default class SummaryClansCommand extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const _clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.coc._getClans(clans);
     _clans.sort((a, b) => a.name.localeCompare(b.name));
 
     const overall: { tag: string; townHallLevel: number }[] = [];

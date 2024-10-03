@@ -69,7 +69,7 @@ export default class CapitalRaidsCommand extends Command {
     const currentWeekId = this.raidWeek().weekId;
     const weekId = args.week ?? currentWeekId;
 
-    const { res, body: raid } = await this.client.http.getRaidSeasons(clan.tag, 6);
+    const { res, body: raid } = await this.client.coc.getRaidSeasons(clan.tag, 6);
     if (!res.ok || !raid.items.length) {
       return interaction.followUp({
         content: `Raid weekend info isn't available for ${clan.name} (${clan.tag})`
@@ -86,8 +86,8 @@ export default class CapitalRaidsCommand extends Command {
         });
       }
 
-      const offensiveReward = this.client.http.calcRaidMedals(data);
-      const raidsCompleted = this.client.http.calcRaidCompleted(data.attackLog);
+      const offensiveReward = this.client.coc.calcRaidMedals(data);
+      const raidsCompleted = this.client.coc.calcRaidCompleted(data.attackLog);
 
       const hasTrophyCard = Boolean(
         season?.clanCapitalPoints && season._clanCapitalPoints && season._clanCapitalPoints !== season.clanCapitalPoints

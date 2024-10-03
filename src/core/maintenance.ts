@@ -18,7 +18,7 @@ export class MaintenanceHandler {
   public async init() {
     setTimeout(this.init.bind(this), 30000).unref();
 
-    const { res } = await this.client.http.getClans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
+    const { res } = await this.client.coc.getClans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
     if (res.status === 503 && !this.isMaintenance) {
       this.isMaintenance = Boolean(true);
       this.client.enqueuer.flush();

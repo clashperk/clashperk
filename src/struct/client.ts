@@ -16,11 +16,11 @@ import { Autocomplete } from './autocomplete-client.js';
 import CapitalRaidScheduler from './capital-raid-scheduler.js';
 import ClanGamesScheduler from './clan-games-scheduler.js';
 import ClanWarScheduler from './clan-war-scheduler.js';
+import { ClashClient } from './clash-client.js';
 import { CommandsMap } from './commands-map.js';
 import { CustomBotManager } from './custom-bot-manager.js';
 import { mongoClient } from './database.js';
 import { GuildEventsHandler } from './guild-events-handler.js';
-import Http from './http.js';
 import { PatreonHandler } from './patreon-handler.js';
 import RedisService from './redis-service.js';
 import Resolver from './resolver.js';
@@ -46,7 +46,7 @@ export class Client extends DiscordClient {
   public db!: Db;
   public util: ClientUtil;
   public settings!: SettingsProvider;
-  public http: Http;
+  public coc: ClashClient;
   public stats!: StatsHandler;
   public customBotManager!: CustomBotManager;
   public storage!: StorageHandler;
@@ -136,7 +136,7 @@ export class Client extends DiscordClient {
 
     this.logger = new Logger(this);
     this.util = new ClientUtil(this);
-    this.http = new Http(this);
+    this.coc = new ClashClient(this);
 
     this.postHog = new PostHog(process.env.POSTHOG_API_KEY!, {
       host: 'https://us.i.posthog.com',
@@ -192,8 +192,8 @@ export class Client extends DiscordClient {
   }
 
   private run() {
-    this.patreonHandler.init();
     this.enqueuer.init();
+    this.patreonHandler.init();
     this.clanGamesScheduler.init();
     this.capitalRaidScheduler.init();
     this.clanWarScheduler.init();
@@ -232,7 +232,7 @@ export class Client extends DiscordClient {
     this.autocomplete = new Autocomplete(this);
     this.customBotManager = new CustomBotManager();
 
-    await this.http.autoLogin();
+    await this.coc.autoLogin();
 
     this.once('ready', () => {
       if (process.env.NODE_ENV === 'production') return this.run();

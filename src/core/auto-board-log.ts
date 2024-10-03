@@ -66,10 +66,10 @@ export class AutoBoardLog {
   }
 
   public async handleMessage(cache: Cache, webhook: WebhookClient) {
-    const endOfSeason = this.client.http.util.getSeasonEnd(new Date());
+    const endOfSeason = this.client.coc.util.getSeasonEnd(new Date());
 
     if (cache.messageId && this.isEndOfSeason(endOfSeason)) {
-      const lastMessageTimestamp = this.client.http.util
+      const lastMessageTimestamp = this.client.coc.util
         .getSeasonEnd(new Date(Number(SnowflakeUtil.deconstruct(cache.messageId).timestamp)))
         .getTime();
       if (lastMessageTimestamp !== endOfSeason.getTime()) delete cache.messageId;

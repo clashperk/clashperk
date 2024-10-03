@@ -52,7 +52,7 @@ export class LegendLog extends RootLog {
   }
 
   private async embed(cache: Cache) {
-    const { body: clan, res } = await this.client.http.getClan(cache.tag);
+    const { body: clan, res } = await this.client.coc.getClan(cache.tag);
     if (!res.ok) return null;
 
     const { startTime, endTime } = Util.getPreviousLegendTimestamp();

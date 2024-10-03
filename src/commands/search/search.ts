@@ -16,7 +16,7 @@ export default class ClanSearchCommand extends Command {
     if (!name) {
       return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
     }
-    const { body, res } = await this.client.http.getClans({ name, limit: 10 });
+    const { body, res } = await this.client.coc.getClans({ name, limit: 10 });
     if (!(res.ok && body.items.length)) {
       return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
     }

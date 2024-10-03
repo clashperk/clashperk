@@ -206,8 +206,8 @@ export default class LinkCreateCommand extends Command {
   }
 
   private async resetLinkAPI(user: string, tag: string) {
-    await this.client.http.unlinkPlayerTag(tag);
-    await this.client.http.linkPlayerTag(user, tag);
+    await this.client.coc.unlinkPlayerTag(tag);
+    await this.client.coc.linkPlayerTag(user, tag);
   }
 
   private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {

@@ -27,7 +27,7 @@ export default class VerifyPlayerCommand extends Command {
     const data = await this.client.resolver.resolvePlayer(interaction, tag);
     if (!data) return;
 
-    const { body } = await this.client.http.verifyPlayerToken(data.tag, token);
+    const { body } = await this.client.coc.verifyPlayerToken(data.tag, token);
     if (body.status !== 'ok') {
       return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
     }
@@ -67,7 +67,7 @@ export default class VerifyPlayerCommand extends Command {
   }
 
   private async resetLinkAPI(userId: string, tag: string) {
-    await this.client.http.unlinkPlayerTag(tag);
-    await this.client.http.linkPlayerTag(userId, tag);
+    await this.client.coc.unlinkPlayerTag(tag);
+    await this.client.coc.linkPlayerTag(userId, tag);
   }
 }

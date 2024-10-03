@@ -23,7 +23,7 @@ export default class FlagCreateCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { reason?: string; player_tag?: string; flag_type: 'ban' | 'strike'; flag_expiry_days?: number; flag_impact?: number }
   ) {
-    const tags = (await this.client.resolver.resolveArgs(args.player_tag)).filter((tag) => this.client.http.isValidTag(tag));
+    const tags = (await this.client.resolver.resolveArgs(args.player_tag)).filter((tag) => this.client.coc.isValidTag(tag));
     if (!tags.length) return interaction.editReply('No players were found against this query.');
 
     if (!args.reason) return interaction.editReply('You must provide a reason to flag.');
@@ -47,7 +47,7 @@ export default class FlagCreateCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     }
 
-    const players = await this.client.http._getPlayers(tags.map((tag) => ({ tag })));
+    const players = await this.client.coc._getPlayers(tags.map((tag) => ({ tag })));
     if (!players.length) return interaction.editReply('No players were found against this query.');
 
     const newFlags: FlagsEntity[] = [];

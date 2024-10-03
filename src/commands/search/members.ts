@@ -58,7 +58,7 @@ export default class MembersCommand extends Command {
     if (!data) return;
     if (!data.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
 
-    const fetched = await this.client.http._getPlayers(data.memberList);
+    const fetched = await this.client.coc._getPlayers(data.memberList);
     const members = fetched.map((m) => ({
       name: m.name,
       tag: m.tag,

@@ -431,7 +431,7 @@ export const clanGamesEmbedMaker = (
 
 export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APIClan; guild: Guild; showTag?: boolean }) => {
   const client = container.resolve(Client);
-  const memberTags = await client.http.getDiscordLinks(clan.memberList);
+  const memberTags = await client.coc.getDiscordLinks(clan.memberList);
   const dbMembers = await client.db
     .collection(Collections.PLAYER_LINKS)
     .find({ tag: { $in: clan.memberList.map((m) => m.tag) } })
@@ -527,7 +527,7 @@ export const attacksEmbedMaker = async ({
 }) => {
   const client = container.resolve(Client);
 
-  const fetched = await client.http._getPlayers(clan.memberList);
+  const fetched = await client.coc._getPlayers(clan.memberList);
   const members = fetched.map((data) => ({
     name: data.name,
     tag: data.tag,

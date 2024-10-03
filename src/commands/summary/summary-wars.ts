@@ -64,20 +64,20 @@ export default class SummaryWarsCommand extends Command {
 
   private async getWAR(clanTag: string) {
     if (this.onGoingCWL) return this.getCWL(clanTag);
-    const { res, body } = await this.client.http.getCurrentWar(clanTag);
+    const { res, body } = await this.client.coc.getCurrentWar(clanTag);
     return res.ok ? [{ ...body, round: 0 }] : [];
   }
 
   private async getCWL(clanTag: string) {
-    const { res, body: group } = await this.client.http.getClanWarLeagueGroup(clanTag);
+    const { res, body: group } = await this.client.coc.getClanWarLeagueGroup(clanTag);
 
     if (res.status === 504 || group.state === 'notInWar') return [];
     if (!res.ok) {
-      const { res, body } = await this.client.http.getCurrentWar(clanTag);
+      const { res, body } = await this.client.coc.getCurrentWar(clanTag);
       return res.ok ? [{ ...body, round: 0 }] : [];
     }
 
-    const chunks = await this.client.http._clanWarLeagueRounds(clanTag, group);
+    const chunks = await this.client.coc._clanWarLeagueRounds(clanTag, group);
     const war =
       chunks.find((data) => data.state === 'inWar') ??
       chunks.find((data) => data.state === 'preparation') ??

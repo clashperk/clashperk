@@ -35,7 +35,7 @@ export default class RosterPingCommand extends Command {
       });
     }
 
-    const { body: clan, res } = await this.client.http.getClan(roster.clan.tag);
+    const { body: clan, res } = await this.client.coc.getClan(roster.clan.tag);
     if (!res.ok) return interaction.editReply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
 
     const updated = await this.client.rosterManager.updateMembers(roster, roster.members);

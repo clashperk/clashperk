@@ -29,7 +29,7 @@ export default class LineupCommand extends Command {
       .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
     if (!clan.isWarLogPublic) {
-      const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+      const { res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
         // TODO: Fix
         return this.handler.exec(interaction, this.handler.getCommand('cwl-lineup')!, { tag: clan.tag });
@@ -38,11 +38,11 @@ export default class LineupCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     }
 
-    const { body, res } = await this.client.http.getCurrentWar(clan.tag);
+    const { body, res } = await this.client.coc.getCurrentWar(clan.tag);
     if (!res.ok) return interaction.editReply('**504 Request Timeout!');
 
     if (body.state === 'notInWar') {
-      const { res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+      const { res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
         // TODO: Fix
         return this.handler.exec(interaction, this.handler.getCommand('cwl-lineup')!, { tag: clan.tag });
@@ -85,7 +85,7 @@ export default class LineupCommand extends Command {
   }
 
   private async rosters(clanMembers: APIClanWarMember[], opponentMembers: APIClanWarMember[]) {
-    const clanPlayers = await this.client.http._getPlayers(clanMembers);
+    const clanPlayers = await this.client.coc._getPlayers(clanMembers);
     const a = clanPlayers.map((m, i) => {
       const heroes = m.heroes.filter((en) => en.village === 'home');
       const pets = m.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);
@@ -99,7 +99,7 @@ export default class LineupCommand extends Command {
       };
     });
 
-    const opponentPlayers = await this.client.http._getPlayers(opponentMembers);
+    const opponentPlayers = await this.client.coc._getPlayers(opponentMembers);
     const b = opponentPlayers.map((m, i) => {
       const heroes = m.heroes.filter((en) => en.village === 'home');
       const pets = m.troops.filter((en) => en.village === 'home' && en.name in HERO_PETS);

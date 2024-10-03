@@ -166,7 +166,7 @@ export class FlagAlertLog {
     );
     if (!flag) return null;
 
-    const { body: player, res } = await this.client.http.getPlayer(member.tag);
+    const { body: player, res } = await this.client.coc.getPlayer(member.tag);
     if (!res.ok) return null;
 
     embed.setTitle(`\u200e${player.name} (${player.tag})`);

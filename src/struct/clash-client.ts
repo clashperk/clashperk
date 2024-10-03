@@ -1,14 +1,6 @@
-// import { Result } from '@sapphire/result';
 import { DISCORD_ID_REGEX, TAG_REGEX } from '@app/constants';
 import { ClanWarLeagueGroupsEntity } from '@app/entities';
-import {
-  APICapitalRaidSeason,
-  APIClanWar,
-  APIClanWarLeagueGroup,
-  APIWarClan,
-  RESTManager as ClashOfClansClient,
-  RequestHandler
-} from 'clashofclans.js';
+import { APICapitalRaidSeason, APIClanWar, APIClanWarLeagueGroup, APIWarClan, RESTManager, RequestHandler } from 'clashofclans.js';
 import moment from 'moment';
 import { isWinner } from '../helper/cwl-helper.js';
 import Client from './client.js';
@@ -29,7 +21,7 @@ export function timeoutSignal(timeout: number, path: string) {
   return controller.signal;
 }
 
-export default class Http extends ClashOfClansClient {
+export class ClashClient extends RESTManager {
   private bearerToken!: string;
 
   public constructor(private readonly client: Client) {
@@ -165,7 +157,6 @@ export default class Http extends ClashOfClansClient {
   }
 
   public getRaidSeasons(tag: string, limit = 1) {
-    // Result.fromAsync(() => super.getCapitalRaidSeasons(tag, { limit }));
     return super.getCapitalRaidSeasons(tag, { limit });
   }
 

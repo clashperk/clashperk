@@ -154,7 +154,7 @@ export default class CompeteCommand extends Command {
       return acc;
     }, {});
 
-    const players = await this.client.http._getPlayers(args.playerTags.map((tag) => ({ tag })));
+    const players = await this.client.coc._getPlayers(args.playerTags.map((tag) => ({ tag })));
     const playerClansMap = players.reduce<Record<string, string>>((acc, cur) => {
       acc[cur.tag] = clansMap[cur.clan?.tag ?? '#'] ?? cur.clan?.name ?? '-';
       return acc;

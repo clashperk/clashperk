@@ -19,7 +19,7 @@ export default class CWLRosterCommand extends Command {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
-    const { body, res } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+    const { body, res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.editReply(
         this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
@@ -34,7 +34,7 @@ export default class CWLRosterCommand extends Command {
   }
 
   private async fetch(warTag: string) {
-    const { body, res } = await this.client.http.getClanWarLeagueRound(warTag);
+    const { body, res } = await this.client.coc.getClanWarLeagueRound(warTag);
     return { warTag, ...body, ...res };
   }
 
@@ -247,6 +247,6 @@ export default class CWLRosterCommand extends Command {
   }
 
   private winner(clan: APIWarClan, opponent: APIWarClan) {
-    return this.client.http.isWinner(clan, opponent);
+    return this.client.coc.isWinner(clan, opponent);
   }
 }

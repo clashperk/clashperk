@@ -45,7 +45,7 @@ export default class WarLogCommand extends Command {
       .limit(20)
       .toArray();
 
-    const { body, res } = await this.client.http.getClanWarLog(data.tag, { limit: 10 });
+    const { body, res } = await this.client.coc.getClanWarLog(data.tag, { limit: 10 });
     if (!res.ok) {
       return interaction.editReply('**504 Request Timeout!**');
     }

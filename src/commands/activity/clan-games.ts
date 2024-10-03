@@ -44,7 +44,7 @@ export default class ClanGamesCommand extends Command {
       );
     }
 
-    const fetched = await this.client.http._getPlayers(clan.memberList);
+    const fetched = await this.client.coc._getPlayers(clan.memberList);
     const memberList = fetched.map((player) => {
       const value = player.achievements.find((a) => a.name === 'Games Champion')?.value ?? 0;
       return { tag: player.tag, name: player.name, points: value };

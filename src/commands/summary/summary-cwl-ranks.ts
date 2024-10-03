@@ -2,7 +2,7 @@ import { WAR_LEAGUE_MAP, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/toolkit.js';
 
@@ -27,19 +27,19 @@ export default class SummaryCWLRanks extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const _clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.coc._getClans(clans);
 
     const chunks = [];
     for (const clan of _clans) {
       const [lastLeagueGroup, leagueGroup] = await Promise.all([
-        this.client.http.getClanWarLeagueGroup(clan.tag),
+        this.client.coc.getClanWarLeagueGroup(clan.tag),
         this.client.storage.getWarTags(clan.tag, season)
       ]);
       if (!leagueGroup?.leagues?.[clan.tag] || leagueGroup.season !== season) continue;
 
       const isApiData = !(!lastLeagueGroup.res.ok || lastLeagueGroup.body.state === 'notInWar' || lastLeagueGroup.body.season !== season);
 
-      const aggregated = await this.client.http.aggregateClanWarLeague(clan.tag, leagueGroup, isApiData);
+      const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, leagueGroup, isApiData);
       if (!aggregated) continue;
 
       const ranking = await this.rounds({ body: aggregated, clan });
@@ -125,7 +125,7 @@ export default class SummaryCWLRanks extends Command {
       const clan = ranking[data.clan.tag];
 
       clan.stars += data.clan.stars;
-      if (data.state === 'warEnded' && this.client.http.isWinner(data.clan, data.opponent)) {
+      if (data.state === 'warEnded' && this.client.coc.isWinner(data.clan, data.opponent)) {
         clan.stars += 10;
       }
       clan.attacks += data.clan.attacks;
@@ -141,7 +141,7 @@ export default class SummaryCWLRanks extends Command {
       const opponent = ranking[data.opponent.tag];
 
       opponent.stars += data.opponent.stars;
-      if (data.state === 'warEnded' && this.client.http.isWinner(data.opponent, data.clan)) {
+      if (data.state === 'warEnded' && this.client.coc.isWinner(data.opponent, data.clan)) {
         opponent.stars += 10;
       }
       opponent.attacks += data.opponent.attacks;

@@ -25,7 +25,7 @@ export default class LastWarsExport extends Command {
 
     let num = Number(args.limit ?? 25);
     num = Math.min(100, num);
-    const clanList = await this.client.http._getClans(clans);
+    const clanList = await this.client.coc._getClans(clans);
     const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
     const query: Record<string, any> = args.season ? { preparationStartTime: { $gte: new Date(args.season) } } : {};

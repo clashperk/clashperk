@@ -2,7 +2,7 @@ import { APIClan, APIClanWarMember } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
-import { ClanWarLeagueGroupAggregated } from '../../struct/http.js';
+import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 
@@ -22,7 +22,7 @@ export default class CWLRoundCommand extends Command {
     if (!clan) return;
 
     const [{ body, res }, group] = await Promise.all([
-      this.client.http.getClanWarLeagueGroup(clan.tag),
+      this.client.coc.getClanWarLeagueGroup(clan.tag),
       this.client.storage.getWarTags(clan.tag, args.season)
     ]);
     if (res.status === 504 || body.state === 'notInWar') {
@@ -39,7 +39,7 @@ export default class CWLRoundCommand extends Command {
       return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
     }
 
-    const aggregated = await this.client.http.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
+    const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
 
     if (!aggregated) {
       return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));

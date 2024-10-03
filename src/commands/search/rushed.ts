@@ -200,7 +200,7 @@ export default class RushedCommand extends Command {
       return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
     }
 
-    const fetched = await this.client.http._getPlayers(data.memberList);
+    const fetched = await this.client.coc._getPlayers(data.memberList);
     const members = [];
     for (const obj of fetched) {
       members.push({ name: obj.name, rushed: this.reduce(obj), townHallLevel: obj.townHallLevel });

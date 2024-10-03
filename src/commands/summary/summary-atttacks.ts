@@ -19,7 +19,7 @@ export default class SummaryAttacksCommand extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const allClans = await this.client.http._getClans(clans);
+    const allClans = await this.client.coc._getClans(clans);
     const members: { name: string; tag: string; attackWins: number; clan: { name: string; tag: string } }[] = [];
 
     for (const clan of allClans) {

@@ -23,7 +23,7 @@ export default class ExportCwlLineup extends Command {
 
     const chunks = [];
     for (const clan of clans) {
-      const result = season ? null : await this.client.http.getClanWarLeagueGroup(clan.tag);
+      const result = season ? null : await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (!result?.res.ok || result.body.state === 'notInWar') {
         const data = await this.client.storage.getWarTags(clan.tag, season);
         if (!data) continue;
@@ -104,7 +104,7 @@ export default class ExportCwlLineup extends Command {
       for (const warTag of warTags) {
         const data = season
           ? await this.client.db.collection<APIClanWar>(Collections.CLAN_WARS).findOne({ warTag })
-          : await this.client.http.getCWLRoundWithWarTag(warTag);
+          : await this.client.coc.getCWLRoundWithWarTag(warTag);
         if (!data) continue;
         if (data.state === 'notInWar' && !season) continue;
 

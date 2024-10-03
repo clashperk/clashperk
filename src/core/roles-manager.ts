@@ -7,7 +7,7 @@ import { parallel, sift, unique } from 'radash';
 import { Client } from '../struct/client.js';
 import { makeAbbr, sumHeroes } from '../util/helper.js';
 
-export const roles: { [key: string]: number } = {
+const roles: { [key: string]: number } = {
   member: 1,
   admin: 2,
   coLeader: 3,
@@ -48,8 +48,6 @@ const OpTypes = [
 ];
 
 const EMPTY_GUILD_MEMBER_COLLECTION = new Collection<string, GuildMember>();
-
-export type Mentionable = { target: User; isUser: true } | { target: Role; isUser: false };
 
 export class RolesManager {
   private queues = new Map<string, string[]>();
@@ -457,7 +455,7 @@ export class RolesManager {
   }
 
   private async getWarRolesMap(clanTags: string[]) {
-    const result = await Promise.all(clanTags.map((clanTag) => this.client.http.getCurrentWars(clanTag)));
+    const result = await Promise.all(clanTags.map((clanTag) => this.client.coc.getCurrentWars(clanTag)));
     const membersMap: Record<string, string[]> = {};
 
     for (const war of result.flat()) {
@@ -478,7 +476,7 @@ export class RolesManager {
   private async getPlayers(playerLinks: PlayerLinksEntity[]) {
     const verifiedPlayersMap = Object.fromEntries(playerLinks.map((player) => [player.tag, player.verified]));
     const fetched = await parallel(25, playerLinks, async (link) => {
-      const { body, res } = await this.client.http.getPlayer(link.tag);
+      const { body, res } = await this.client.coc.getPlayer(link.tag);
       return res.status === 404 ? 'deleted' : !res.ok || !body ? 'failed' : body;
     });
 

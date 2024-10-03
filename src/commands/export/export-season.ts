@@ -24,7 +24,7 @@ export default class ExportSeason extends Command {
 
     const season = args.season ?? Season.ID;
     const _clanTags = clans.map((clan) => clan.tag);
-    const _clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.coc._getClans(clans);
     const _members = _clans.reduce<(APIClanMember & { clanTag: string })[]>((previous, current) => {
       previous.push(...current.memberList.map((mem) => ({ ...mem, clanTag: current.tag })));
       return previous;

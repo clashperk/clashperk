@@ -235,7 +235,7 @@ export default class ReminderNowCommand extends Command {
     const texts: string[] = [];
     const userIds: string[] = [];
     for (const tag of reminder.clans) {
-      const currentWars = await this.client.http.getCurrentWars(tag);
+      const currentWars = await this.client.coc.getCurrentWars(tag);
       for (const data of currentWars) {
         if (['notInWar', 'warEnded', 'preparation'].includes(data.state)) continue;
 

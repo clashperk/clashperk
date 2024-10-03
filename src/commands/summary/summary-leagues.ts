@@ -20,7 +20,7 @@ export default class SummaryLeaguesCommand extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const _clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.coc._getClans(clans);
     const embed = args.is_capital
       ? await this.getCapitalLeagueGroups(interaction.guild, _clans)
       : this.getWarLeagueGroups(interaction.guild, _clans);

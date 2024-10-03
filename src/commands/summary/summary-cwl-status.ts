@@ -27,10 +27,10 @@ export default class SummaryCWLStatus extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const _clans = await this.client.http._getClans(clans);
+    const _clans = await this.client.coc._getClans(clans);
 
     const result = await parallel(50, _clans, async (clan) => {
-      const { res, body } = await this.client.http.getClanWarLeagueGroup(clan.tag);
+      const { res, body } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       return { clan, res, body };
     });
 
