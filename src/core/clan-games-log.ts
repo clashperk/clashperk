@@ -12,8 +12,8 @@ import {
   WebhookMessageCreateOptions
 } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
+import { clanGamesEmbedMaker } from '../helper/clan-games.helper.js';
 import { EMOJIS } from '../util/emojis.js';
-import { clanGamesEmbedMaker } from '../util/helper.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 

@@ -1,9 +1,9 @@
 import { Collections, Settings } from '@app/constants';
 import { ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, WebhookClient } from 'discord.js';
+import { welcomeEmbedMaker } from '../../helper/welcome.helper.js';
 import { Listener } from '../../lib/handlers.js';
 import { mixpanel } from '../../struct/mixpanel.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { welcomeEmbedMaker } from '../../util/helper.js';
 
 export default class GuildCreateListener extends Listener {
   private webhook: WebhookClient | null = null;

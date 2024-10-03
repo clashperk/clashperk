@@ -8,10 +8,11 @@ import {
   MessageType,
   StringSelectMenuBuilder
 } from 'discord.js';
+import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../../helper/leaderboard.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { getBbLegendRankingEmbedMaker, getExportComponents, getLegendRankingEmbedMaker } from '../../util/helper.js';
+import { getExportComponents } from '../../util/helper.js';
 import { Season } from '../../util/toolkit.js';
 
 export default class LegendLeaderboardCommand extends Command {

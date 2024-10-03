@@ -14,7 +14,7 @@ import {
   CLAN_GAMES_REMINDERS_AUTOCOMPLETE,
   DEFAULT_REMINDERS_AUTOCOMPLETE,
   WAR_REMINDERS_AUTOCOMPLETE
-} from '../../helper/reminders-autocomplete-helper.js';
+} from '../../helper/reminders.helper.js';
 import { Listener } from '../../lib/handlers.js';
 import Google from '../../struct/google.js';
 import { mixpanel } from '../../struct/mixpanel.js';

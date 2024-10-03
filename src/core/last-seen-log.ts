@@ -10,8 +10,8 @@ import {
   WebhookMessageCreateOptions
 } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
+import { lastSeenEmbedMaker } from '../helper/last-seen.helper.js';
 import { EMOJIS } from '../util/emojis.js';
-import { lastSeenEmbedMaker } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';

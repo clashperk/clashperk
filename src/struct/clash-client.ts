@@ -2,7 +2,7 @@ import { DISCORD_ID_REGEX, TAG_REGEX } from '@app/constants';
 import { ClanWarLeagueGroupsEntity } from '@app/entities';
 import { APICapitalRaidSeason, APIClanWar, APIClanWarLeagueGroup, APIWarClan, RESTManager, RequestHandler } from 'clashofclans.js';
 import moment from 'moment';
-import { isWinner } from '../helper/cwl-helper.js';
+import { isWinner } from '../helper/cwl.helper.js';
 import { Client } from './client.js';
 
 export function timeoutSignal(timeout: number, path: string) {

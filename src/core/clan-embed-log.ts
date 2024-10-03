@@ -3,7 +3,7 @@ import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import { Util } from 'clashofclans.js';
 import { Collection, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
-import { clanEmbedMaker } from '../util/helper.js';
+import { clanEmbedMaker } from '../helper/clan-embed.helper.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 

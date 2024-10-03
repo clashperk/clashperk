@@ -3,7 +3,7 @@ import { APIClan, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
-import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/cwl-helper.js';
+import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/cwl.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { getCWLSummaryImage } from '../../struct/image-helper.js';
