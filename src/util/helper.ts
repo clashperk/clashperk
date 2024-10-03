@@ -15,7 +15,7 @@ import moment from 'moment';
 import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title } from 'radash';
 import { container } from 'tsyringe';
-import Client from '../struct/client.js';
+import { Client } from '../struct/client.js';
 import { ClanEmbedFields } from './command.options.js';
 import { Collections, Settings, UNRANKED_CAPITAL_LEAGUE_ID } from './constants.js';
 import { BLUE_NUMBERS, CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './emojis.js';
@@ -70,23 +70,15 @@ export const sumHeroes = (player: APIPlayer) => {
 };
 
 export const nullsLastSortAlgo = (a: unknown, b: unknown) => {
-  // Compare null values
   if (isNullish(a) && isNullish(b)) {
     return 0;
   } else if (isNullish(a)) {
-    return 1; // Move null values to the end
+    return 1;
   } else if (isNullish(b)) {
-    return -1; // Move null values to the end
+    return -1;
   }
 
   return 10;
-
-  // Compare non-null values
-  // if (typeof a === 'number' && typeof b === 'number') {
-  // 	return a - b; // Numeric comparison
-  // } else {
-  // 	return String(a).localeCompare(String(b)); // String comparison for non-numeric values
-  // }
 };
 
 export const clanGamesSortingAlgorithm = (a: number, b: number) => {
@@ -94,7 +86,6 @@ export const clanGamesSortingAlgorithm = (a: number, b: number) => {
   if (a === 0) return 1;
   if (b === 0) return -1;
   return a - b;
-  // return a === 0 ? 1 : b === 0 ? -1 : a - b;
 };
 
 export const clanGamesLatestSeasonId = () => {

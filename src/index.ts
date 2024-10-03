@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/node';
 import { DiscordjsErrorCodes, ShardingManager } from 'discord.js';
 import { createServer } from 'node:http';
 import { URL, fileURLToPath } from 'node:url';
-import Logger from './util/logger.js';
+import { Logger } from './util/logger.js';
 import { sentryConfig } from './util/sentry.js';
 
 if (process.env.SENTRY) {

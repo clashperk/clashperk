@@ -17,7 +17,7 @@ import { Client } from './client.js';
 
 export const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
 
-export default class StorageHandler {
+export class StorageHandler {
   public collection: Collection<ClanStoresEntity>;
 
   public constructor(private readonly client: Client) {

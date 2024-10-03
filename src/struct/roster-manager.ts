@@ -30,7 +30,7 @@ import { parallel, unique } from 'radash';
 import { RosterCommandSortOptions } from '../util/command.options.js';
 import { EMOJIS, TOWN_HALLS } from '../util/emojis.js';
 import { Util } from '../util/toolkit.js';
-import Client from './client.js';
+import { Client } from './client.js';
 import Google, { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from './google.js';
 
 export type RosterSortTypes = (typeof RosterCommandSortOptions)[number]['value'];

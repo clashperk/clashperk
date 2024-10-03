@@ -4,7 +4,7 @@ import moment from 'moment';
 import { EMOJIS } from '../util/emojis.js';
 import { i18n } from '../util/i18n.js';
 import { Season, Util } from '../util/toolkit.js';
-import Client from './client.js';
+import { Client } from './client.js';
 
 export const imageMaps: Record<string, string> = {
   clan_games_start: 'clan_games_image_url',

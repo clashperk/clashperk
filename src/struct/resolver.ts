@@ -15,10 +15,10 @@ import { BaseInteraction, CommandInteraction, User } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { unique } from 'radash';
 import { i18n } from '../util/i18n.js';
-import Client from './client.js';
+import { Client } from './client.js';
 import { ElasticIndexer } from './indexer.js';
 
-export default class Resolver {
+export class Resolver {
   private readonly indexer: ElasticIndexer;
 
   public constructor(private readonly client: Client) {

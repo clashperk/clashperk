@@ -31,7 +31,7 @@ export const ReminderDeleteReasons = {
   WAR_ENDED: 'war_ended'
 } as const;
 
-export default class CapitalRaidScheduler {
+export class CapitalRaidScheduler {
   protected schedulers!: Collection<RaidSchedulersEntity>;
   protected reminders!: Collection<RaidRemindersEntity>;
   private readonly refreshRate: number;

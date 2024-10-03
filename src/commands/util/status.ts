@@ -1,7 +1,6 @@
 import { Collections } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, Guild, Message } from 'discord.js';
 import moment from 'moment';
-import 'moment-duration-format';
 import { readFile } from 'node:fs/promises';
 import os from 'os';
 import { URL, fileURLToPath } from 'url';

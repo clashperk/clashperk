@@ -5,7 +5,7 @@ import { Filter } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { sift, unique } from 'radash';
 import { COUNTRIES } from '../util/countries.js';
-import Client from './client.js';
+import { Client } from './client.js';
 
 export class Autocomplete {
   public constructor(private readonly client: Client) {}

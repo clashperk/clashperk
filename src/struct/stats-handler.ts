@@ -2,7 +2,7 @@ import { Collections } from '@app/constants';
 import { BaseInteraction, Guild } from 'discord.js';
 import { Client } from './client.js';
 
-export default class StatsHandler {
+export class StatsHandler {
   public messages = new Map<string, NodeJS.Timeout>();
 
   public constructor(private readonly client: Client) {}

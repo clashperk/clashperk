@@ -11,7 +11,7 @@ import {
   TextChannel
 } from 'discord.js';
 import jwt from 'jsonwebtoken';
-import Client from '../struct/client.js';
+import { Client } from '../struct/client.js';
 import { FeatureFlags, Settings } from './constants.js';
 
 export class ClientUtil {

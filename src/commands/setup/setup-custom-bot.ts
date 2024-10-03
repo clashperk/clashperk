@@ -1,4 +1,5 @@
 import { getInviteLink } from '@app/constants';
+import { PatreonMembersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -17,11 +18,11 @@ import { Command } from '../../lib/handlers.js';
 import { rewards } from '../../struct/patreon-handler.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
-import { PatreonMembersEntity } from '@app/entities';
 
-export default class BotPersonalizerCommand extends Command {
+export default class SetupCustomBotCommand extends Command {
   public constructor() {
     super('bot-personalizer', {
+      aliases: ['setup-custom-bot'],
       category: 'setup',
       clientPermissions: ['EmbedLinks', 'AttachFiles'],
       defer: true,

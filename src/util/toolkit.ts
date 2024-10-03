@@ -1,5 +1,4 @@
 import moment from 'moment';
-import 'moment-duration-format';
 import { cluster } from 'radash';
 
 const DURATION = {

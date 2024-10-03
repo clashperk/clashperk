@@ -77,7 +77,7 @@ export default class PatreonCommand extends Command {
       if (action.customId === customId) {
         const embed = new EmbedBuilder();
         embed.setDescription(
-          [`**Our Current Members (${patrons.length})**`, patrons.map((patron) => `• ${patron.username}`).join('\n')].join('\n')
+          [`**Our Current Members (${patrons.length})**`, ...patrons.map((patron) => `0. ${patron.username}`)].join('\n')
         );
 
         await action.reply({ embeds: [embed], ephemeral: true });

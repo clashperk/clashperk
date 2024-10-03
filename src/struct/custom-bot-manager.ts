@@ -16,7 +16,7 @@ import {
 import { Collection } from 'mongodb';
 import { container } from 'tsyringe';
 import { COMMANDS } from '../../scripts/commands.js';
-import Client from './client.js';
+import { Client } from './client.js';
 
 export class CustomBotManager {
   private readonly client: Client;

@@ -20,7 +20,7 @@ import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
 import { Client } from './client.js';
 
 // fetch links from our db
-export default class ClanGamesScheduler {
+export class ClanGamesScheduler {
   protected schedulers!: Collection<ClanGamesSchedulersEntity>;
   protected reminders!: Collection<ClanGamesRemindersEntity>;
   private readonly refreshRate: number;

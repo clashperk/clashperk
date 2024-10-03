@@ -3,7 +3,7 @@ import { Guild } from 'discord.js';
 import { Collection, Db } from 'mongodb';
 import { unique } from 'radash';
 
-export default class SettingsProvider {
+export class SettingsProvider {
   protected db: Collection<Settings>;
   private readonly settings = new Map();
 

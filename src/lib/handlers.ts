@@ -1,3 +1,4 @@
+import { Settings } from '@app/constants';
 import {
   ApplicationCommandOptionType,
   AutocompleteInteraction,
@@ -25,7 +26,6 @@ import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { CustomIdProps } from '../struct/component-handler.js';
-import { Settings } from '@app/constants';
 import { i18n } from '../util/i18n.js';
 import './modifier.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor, WSEvents } from './util.js';

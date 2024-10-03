@@ -14,34 +14,34 @@ import { DonationLog } from './donation-log.js';
 import { FlagAlertLog } from './flag-alert-log.js';
 import { LastSeenLog } from './last-seen-log.js';
 import { LegendLog } from './legend-log.js';
-import { MaintenanceHandler } from './maintenance.js';
+import { MaintenanceLog } from './maintenance-log.js';
 
 export class Enqueuer {
   public cached = new Collection<string, Cached[]>();
 
   private paused = Boolean(false);
   private queue = new Queue();
-  private api: MaintenanceHandler;
 
-  private autoBoard = new AutoBoardLog(this);
   public flagAlertLog = new FlagAlertLog(this);
 
-  public capitalLog = new CapitalLog(this);
-  public clanEmbedLog = new ClanEmbedLog(this);
-  public clanGamesLog = new ClanGamesLog(this);
-  public clanLog = new ClanLog(this);
-  public clanWarLog = new ClanWarLog(this);
-  public donationLog = new DonationLog(this);
-  public lastSeenLog = new LastSeenLog(this);
-  public legendLog = new LegendLog(this);
+  private autoBoardLog = new AutoBoardLog(this);
+  private maintenanceLog = new MaintenanceLog(this);
 
-  public get isInMaintenance() {
-    return this.api.isMaintenance;
+  private capitalLog = new CapitalLog(this);
+  private clanEmbedLog = new ClanEmbedLog(this);
+  private clanGamesLog = new ClanGamesLog(this);
+  private clanLog = new ClanLog(this);
+  private clanWarLog = new ClanWarLog(this);
+  private donationLog = new DonationLog(this);
+  private lastSeenLog = new LastSeenLog(this);
+  private legendLog = new LegendLog(this);
+
+  public get inMaintenance() {
+    return this.maintenanceLog.inMaintenance;
   }
 
   public constructor(public readonly client: Client) {
-    this.api = new MaintenanceHandler(this.client);
-    this.api.init();
+    this.maintenanceLog.init();
     this.paused = Boolean(false);
   }
 
@@ -139,7 +139,7 @@ export class Enqueuer {
   }
 
   public async init() {
-    if (this.api.isMaintenance) return;
+    if (this.maintenanceLog.inMaintenance) return;
 
     await this._loadClans();
 
@@ -152,7 +152,7 @@ export class Enqueuer {
     await this.clanLog.init();
     await this.legendLog.init();
 
-    await this.autoBoard.init();
+    await this.autoBoardLog.init();
     await this.flagAlertLog.init();
 
     await this.broadcast();
@@ -260,15 +260,15 @@ export class Enqueuer {
   }
 
   public async addAutoBoard(id: string) {
-    return this.autoBoard.add(id);
+    return this.autoBoardLog.add(id);
   }
 
   public async delAutoBoard(id: string) {
-    return this.autoBoard.del(id);
+    return this.autoBoardLog.del(id);
   }
 
   public async flush() {
-    this.autoBoard.cached.clear();
+    this.autoBoardLog.cached.clear();
     this.flagAlertLog.cached.clear();
 
     this.capitalLog.cached.clear();

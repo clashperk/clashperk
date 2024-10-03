@@ -17,7 +17,7 @@ const TAGS: Record<string, string> = {
   error: '[ERROR]'
 };
 
-export default class Logger {
+export class Logger {
   public constructor(private readonly client: Client | null) {}
 
   public debug(message: string | unknown, { label }: { label?: string }) {

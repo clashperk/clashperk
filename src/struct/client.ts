@@ -11,23 +11,23 @@ import { RolesManager } from '../core/roles-manager.js';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/handlers.js';
 import { ClientUtil } from '../util/client.util.js';
 import { i18n } from '../util/i18n.js';
-import Logger from '../util/logger.js';
+import { Logger } from '../util/logger.js';
 import { Autocomplete } from './autocomplete-client.js';
-import CapitalRaidScheduler from './capital-raid-scheduler.js';
-import ClanGamesScheduler from './clan-games-scheduler.js';
-import ClanWarScheduler from './clan-war-scheduler.js';
+import { CapitalRaidScheduler } from './capital-raid-scheduler.js';
+import { ClanGamesScheduler } from './clan-games-scheduler.js';
+import { ClanWarScheduler } from './clan-war-scheduler.js';
 import { ClashClient } from './clash-client.js';
 import { CommandsMap } from './commands-map.js';
 import { CustomBotManager } from './custom-bot-manager.js';
 import { mongoClient } from './database.js';
 import { GuildEventsHandler } from './guild-events-handler.js';
 import { PatreonHandler } from './patreon-handler.js';
-import RedisService from './redis-service.js';
-import Resolver from './resolver.js';
+import { RedisService } from './redis-service.js';
+import { Resolver } from './resolver.js';
 import { RosterManager } from './roster-manager.js';
-import SettingsProvider from './settings-provider.js';
-import StatsHandler from './stats-handler.js';
-import StorageHandler from './storage-handler.js';
+import { SettingsProvider } from './settings-provider.js';
+import { StatsHandler } from './stats-handler.js';
+import { StorageHandler } from './storage-handler.js';
 
 export class Client extends DiscordClient {
   public commandHandler = new CommandHandler(this, {
@@ -254,5 +254,3 @@ export class Client extends DiscordClient {
     }
   }
 }
-
-export default Client;

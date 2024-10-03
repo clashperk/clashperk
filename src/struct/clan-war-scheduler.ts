@@ -19,7 +19,7 @@ import { Util } from '../util/toolkit.js';
 import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
 import { Client } from './client.js';
 
-export default class ClanWarScheduler {
+export class ClanWarScheduler {
   protected schedulers!: Collection<ClanWarSchedulersEntity>;
   protected reminders!: Collection<ClanWarRemindersEntity>;
   private readonly refreshRate: number;

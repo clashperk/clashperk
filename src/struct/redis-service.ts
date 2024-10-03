@@ -2,12 +2,12 @@ import { APIClan, APIPlayer } from 'clashofclans.js';
 import { nanoid } from 'nanoid';
 import { createClient } from 'redis';
 import { mapToPlayerInterface } from '../helper/cache-mapper.helper.js';
-import Client from './client.js';
+import { Client } from './client.js';
 import { CustomIdProps } from './component-handler.js';
 
 export declare type RedisJSON = null | boolean | number | string | Date;
 
-class RedisService {
+export class RedisService {
   public connection = createClient({
     url: process.env.REDIS_URL,
     database: 1,
@@ -88,8 +88,8 @@ class RedisService {
     const raw = await this.mGet(playerTags.map((tag) => `RAID_MEMBER:${tag}`));
     return raw
       .flat()
-      .filter((value) => value)
-      .map((value) => JSON.parse(value!)) as unknown as { tag: string; weekId: string; clan: { tag: string } }[];
+      .filter((value): value is string => !!value)
+      .map((value) => JSON.parse(value)) as unknown as { tag: string; weekId: string; clan: { tag: string } }[];
   }
 
   public createCustomId(payload: CustomIdProps) {
@@ -130,5 +130,3 @@ class RedisService {
     return this.connection.expire(customId, 60, 'XX');
   }
 }
-
-export default RedisService;
