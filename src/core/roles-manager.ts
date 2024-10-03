@@ -368,7 +368,7 @@ export class RolesManager {
     }
 
     for (const member of targetedMembers.values()) {
-      if (this.client.rpcHandler.isInMaintenance) continue;
+      if (this.client.enqueuer.isInMaintenance) continue;
       const links = linkedPlayers[member.id] ?? [];
       if (!links.length && !allowNotLinked) continue;
 

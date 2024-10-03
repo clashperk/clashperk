@@ -185,14 +185,14 @@ export class PatreonHandler {
           (client, data) => {
             if (client.guilds.cache.has(data.guild)) {
               // @ts-expect-error it exists
-              client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
+              client.enqueuer.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
             }
           },
           { context: data }
         );
       } catch {
         if (this.client.guilds.cache.has(data.guild)) {
-          await this.client.rpcHandler.add({ tag: data.tag, guild: data.guild });
+          await this.client.enqueuer.add({ tag: data.tag, guild: data.guild });
         }
       }
     }
@@ -205,7 +205,7 @@ export class PatreonHandler {
     const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: guildId }).skip(2).toArray();
     for (const data of clans) {
       await this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
-      await this.client.rpcHandler.delete({ tag: data.tag, guild: guildId });
+      await this.client.enqueuer.delete({ tag: data.tag, guild: guildId });
     }
   }
 

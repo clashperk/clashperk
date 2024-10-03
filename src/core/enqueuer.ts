@@ -3,37 +3,20 @@ import { captureException } from '@sentry/node';
 import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
 import { Client } from '../struct/client.js';
-import Queue from '../struct/queue.js';
-import AutoBoardLog from './auto-board-log.js';
-import CapitalLog from './capital-log.js';
-import ClanEmbedLog from './clan-embed-log.js';
-import ClanGamesLog from './clan-games-log.js';
-import ClanLog from './clan-log.js';
-import ClanWarLog from './clan-war-log.js';
-import DonationLog from './donation-log.js';
-import FlagAlertLog from './flag-alert-log.js';
-import LastSeenLog from './last-seen-log.js';
-import LegendLog from './legend-log.js';
-import MaintenanceHandler from './maintenance.js';
+import { Queue } from '../struct/queue.js';
+import { AutoBoardLog } from './auto-board-log.js';
+import { CapitalLog } from './capital-log.js';
+import { ClanEmbedLog } from './clan-embed-log.js';
+import { ClanGamesLog } from './clan-games-log.js';
+import { ClanLog } from './clan-log.js';
+import { ClanWarLog } from './clan-war-log.js';
+import { DonationLog } from './donation-log.js';
+import { FlagAlertLog } from './flag-alert-log.js';
+import { LastSeenLog } from './last-seen-log.js';
+import { LegendLog } from './legend-log.js';
+import { MaintenanceHandler } from './maintenance.js';
 
-interface Cached {
-  _id: string;
-  guild: string;
-  tag: string;
-}
-
-interface AggregatedResult {
-  _id: string;
-  clans: [
-    {
-      _id: string;
-      tag: string;
-      guild: string;
-    }
-  ];
-}
-
-export default class RPCHandler {
+export class Enqueuer {
   public cached = new Collection<string, Cached[]>();
 
   private paused = Boolean(false);
@@ -300,4 +283,21 @@ export default class RPCHandler {
     await this.client.subscriber.unsubscribe('channel');
     return this.client.publisher.publish('FLUSH', '{}');
   }
+}
+
+interface Cached {
+  _id: string;
+  guild: string;
+  tag: string;
+}
+
+interface AggregatedResult {
+  _id: string;
+  clans: [
+    {
+      _id: string;
+      tag: string;
+      guild: string;
+    }
+  ];
 }

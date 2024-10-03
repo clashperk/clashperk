@@ -8,8 +8,8 @@ import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALL
 import { unitsFlatten } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';
 import { RAW_TROOPS_FILTERED } from '../util/troops.js';
-import BaseClanLog from './base-clan-log.js';
-import RPCHandler from './rpc-handler.js';
+import { Enqueuer } from './enqueuer.js';
+import { RootLog } from './root-log.js';
 
 const COLOR_MAPS: { [key: string]: number } = {
   [LogActions.NAME_CHANGE]: COLOR_CODES.PEACH,
@@ -39,12 +39,12 @@ const logActionsMap: Record<string, LogAction[]> = {
   [ClanLogType.CLAN_CAPITAL_RAID_LOG]: [LogActions.CAPITAL_GOLD_RAID]
 };
 
-export default class ClanLog extends BaseClanLog {
+export class ClanLog extends RootLog {
   public declare cached: Collection<string, Cache>;
 
-  public constructor(private handler: RPCHandler) {
-    super(handler.client);
-    this.client = handler.client;
+  public constructor(private enqueuer: Enqueuer) {
+    super(enqueuer.client);
+    this.client = enqueuer.client;
   }
 
   public override get permissions(): PermissionsString[] {

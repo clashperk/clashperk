@@ -72,10 +72,10 @@ export default class SetupDisableCommand extends Command {
 
     const clanId = data._id.toHexString();
     if (args.action === 'delete-clan') {
-      await this.client.rpcHandler.delete({ tag: data.tag, guild: interaction.guildId });
+      await this.client.enqueuer.delete({ tag: data.tag, guild: interaction.guildId });
       await this.client.storage.deleteReminders(data.tag, interaction.guildId);
       await this.client.storage.delete(clanId);
-      await this.client.rpcHandler.delete({ tag: data.tag, guild: interaction.guildId });
+      await this.client.enqueuer.delete({ tag: data.tag, guild: interaction.guildId });
 
       return interaction.editReply(
         this.i18n('command.setup.disable.clan_deleted', {
@@ -97,7 +97,7 @@ export default class SetupDisableCommand extends Command {
     }
 
     const logIds = _logs.filter((log) => selectedLogs.includes(log.logType)).map((log) => log._id);
-    logIds.forEach((logId) => this.client.rpcHandler.deleteLog(logId.toHexString()));
+    logIds.forEach((logId) => this.client.enqueuer.deleteLog(logId.toHexString()));
     await this.client.db.collection(Collections.CLAN_LOGS).deleteMany({ _id: { $in: logIds } });
 
     return interaction.editReply({

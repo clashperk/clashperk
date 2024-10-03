@@ -18,14 +18,14 @@ import { ObjectId } from 'mongodb';
 import { Client } from '../struct/client.js';
 import { HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/emojis.js';
 import { Util } from '../util/toolkit.js';
-import RPCHandler from './rpc-handler.js';
+import { Enqueuer } from './enqueuer.js';
 
-export default class FlagAlertLog {
+export class FlagAlertLog {
   public cached: Collection<string, Cache> = new Collection();
   private client: Client;
 
-  public constructor(private handler: RPCHandler) {
-    this.client = handler.client;
+  public constructor(private enqueuer: Enqueuer) {
+    this.client = enqueuer.client;
   }
 
   public get collection() {
@@ -40,7 +40,7 @@ export default class FlagAlertLog {
     const members = payload.members.filter((mem) => mem.op === 'JOINED');
     if (!members.length) return null;
 
-    const clans = this.handler.cached.get(tag) ?? [];
+    const clans = this.enqueuer.cached.get(tag) ?? [];
     for (const clan of clans) {
       const cache = this.cached.get(clan.guild);
 

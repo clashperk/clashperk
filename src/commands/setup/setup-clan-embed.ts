@@ -246,7 +246,7 @@ export default class ClanEmbedCommand extends Command {
         { upsert: true }
       );
 
-      this.client.rpcHandler.add({
+      this.client.enqueuer.add({
         guild: interaction.guild.id,
         tag: data.tag
       });

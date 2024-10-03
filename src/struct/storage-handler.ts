@@ -482,7 +482,7 @@ export default class StorageHandler {
       { returnDocument: 'after', upsert: true }
     );
 
-    return this.client.rpcHandler.addAutoBoard(value!._id.toHexString());
+    return this.client.enqueuer.addAutoBoard(value!._id.toHexString());
   }
 
   public async updateClanLinks(guildId: string) {

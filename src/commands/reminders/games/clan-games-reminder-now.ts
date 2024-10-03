@@ -196,10 +196,10 @@ export default class ClanGamesNowCommand extends Command {
     }
   ) {
     const texts: string[] = [];
-    const { endTime, startTime } = this.client.cgScheduler.timings();
+    const { endTime, startTime } = this.client.clanGamesScheduler.timings();
     if (!(Date.now() >= startTime && Date.now() <= endTime)) return [];
     for (const tag of reminder.clans) {
-      const [text] = await this.client.cgScheduler.getReminderText(
+      const [text] = await this.client.clanGamesScheduler.getReminderText(
         { ...reminder, guild: interaction.guild.id, linkedOnly: false },
         { tag }
       );

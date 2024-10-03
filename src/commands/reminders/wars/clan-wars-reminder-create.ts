@@ -391,7 +391,7 @@ export default class ClanWarsReminderCreateCommand extends Command {
         };
 
         const { insertedId } = await this.client.db.collection(Collections.REMINDERS).insertOne(reminder);
-        this.client.warScheduler.create({ ...reminder, _id: insertedId });
+        this.client.clanWarScheduler.create({ ...reminder, _id: insertedId });
         await action.editReply({
           components: mutate(true),
           content: this.i18n('command.reminders.create.success', { lng: interaction.locale })

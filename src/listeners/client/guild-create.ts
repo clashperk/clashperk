@@ -118,7 +118,7 @@ export default class GuildCreateListener extends Listener {
     const db = this.client.db.collection(Collections.CLAN_STORES);
 
     for await (const data of db.find({ guild: guild.id, active: true })) {
-      this.client.rpcHandler.add({ tag: data.tag, guild: guild.id });
+      this.client.enqueuer.add({ tag: data.tag, guild: guild.id });
     }
 
     await db.updateMany({ guild: guild.id }, { $set: { paused: false } });

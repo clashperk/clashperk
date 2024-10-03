@@ -45,7 +45,7 @@ export default class RateLimitListener extends Listener {
 
   public exec({ limit, method, route, global, hash, majorParameter, timeToReset, url }: RateLimitData) {
     this.count += 1;
-    if (this.count >= 5) return this.client.rpcHandler.pause(true);
+    if (this.count >= 5) return this.client.enqueuer.pause(true);
     this.client.logger.warn({ timeToReset, limit, method, url, route, global, hash, majorParameter }, { label: 'RATE_LIMIT' });
 
     const webhook = this.getWebhook();

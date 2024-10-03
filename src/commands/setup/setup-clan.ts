@@ -61,7 +61,7 @@ export default class ServerLinkCommand extends Command {
       categoryId: categoryId || clan?.categoryId
     });
 
-    await this.client.rpcHandler.add({
+    await this.client.enqueuer.add({
       tag: data.tag,
       guild: interaction.guild.id
     });

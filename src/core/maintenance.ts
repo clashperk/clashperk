@@ -6,7 +6,7 @@ import { i18n } from '../util/i18n.js';
 
 const SUPPORT_SERVER_GENERAL_CHANNEL_ID = '609074828707758150';
 
-export default class MaintenanceHandler {
+export class MaintenanceHandler {
   public isMaintenance: boolean;
   public startTime: Date | null;
 
@@ -21,7 +21,7 @@ export default class MaintenanceHandler {
     const { res } = await this.client.http.getClans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
     if (res.status === 503 && !this.isMaintenance) {
       this.isMaintenance = Boolean(true);
-      this.client.rpcHandler.flush();
+      this.client.enqueuer.flush();
       this.startTime = new Date();
       this.sendMessages();
       this.client.inMaintenance = Boolean(true);
@@ -34,7 +34,7 @@ export default class MaintenanceHandler {
         this.isMaintenance = Boolean(false);
         this.startTime = null;
         this.sendMessages(duration);
-        this.client.rpcHandler.init();
+        this.client.enqueuer.init();
         this.client.inMaintenance = Boolean(false);
         this.client.util.setMaintenanceBreak(true);
       }

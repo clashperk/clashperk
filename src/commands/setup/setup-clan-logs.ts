@@ -217,7 +217,7 @@ export default class SetupLogsCommand extends Command {
       }
 
       await Promise.all(ops);
-      await this.client.rpcHandler.add({ guild: interaction.guild.id, tag: clan.tag });
+      await this.client.enqueuer.add({ guild: interaction.guild.id, tag: clan.tag });
 
       return action.editReply({
         content: [
@@ -296,7 +296,7 @@ export default class SetupLogsCommand extends Command {
         const selectedLogs = action.values as ClanLogType[];
         if (disabling) {
           const logIds = _logs.filter((log) => selectedLogs.includes(log.logType)).map((log) => log._id);
-          logIds.forEach((logId) => this.client.rpcHandler.deleteLog(logId.toHexString()));
+          logIds.forEach((logId) => this.client.enqueuer.deleteLog(logId.toHexString()));
           await collection.deleteMany({ _id: { $in: logIds } });
 
           return action.update({

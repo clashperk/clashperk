@@ -129,7 +129,7 @@ export default class SetupUtilsCommand extends Command {
 
     if (args.disable) {
       await this.client.db.collection(Collections.FLAG_ALERT_LOGS).deleteOne({ guildId: interaction.guildId });
-      this.client.rpcHandler.flagAlertLog.del(interaction.guildId);
+      this.client.enqueuer.flagAlertLog.del(interaction.guildId);
 
       return interaction.editReply('Successfully disabled.');
     }
@@ -210,7 +210,7 @@ export default class SetupUtilsCommand extends Command {
         { upsert: true }
       );
 
-      return this.client.rpcHandler.flagAlertLog.add(interaction.guildId);
+      return this.client.enqueuer.flagAlertLog.add(interaction.guildId);
     };
 
     createInteractionCollector({

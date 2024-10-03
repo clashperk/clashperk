@@ -1,4 +1,4 @@
-export default class Queue {
+export class Queue {
   public promises: any[];
 
   public constructor() {

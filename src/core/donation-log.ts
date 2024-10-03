@@ -6,10 +6,10 @@ import { ObjectId, WithId } from 'mongodb';
 import { title } from 'radash';
 import { padStart } from '../util/helper.js';
 import { Season, Util } from '../util/toolkit.js';
-import BaseClanLog from './base-clan-log.js';
-import RPCHandler from './rpc-handler.js';
+import { Enqueuer } from './enqueuer.js';
+import { RootLog } from './root-log.js';
 
-export default class DonationLogV2 extends BaseClanLog {
+export class DonationLog extends RootLog {
   public declare cached: Collection<string, Cache>;
   private readonly queued = new Set<string>();
   private readonly refreshRate: number;
@@ -19,9 +19,9 @@ export default class DonationLogV2 extends BaseClanLog {
     monthly?: NodeJS.Timeout;
   };
 
-  public constructor(private handler: RPCHandler) {
-    super(handler.client);
-    this.client = handler.client;
+  public constructor(private enqueuer: Enqueuer) {
+    super(enqueuer.client);
+    this.client = enqueuer.client;
     this.refreshRate = 30 * 60 * 1000;
     this.timeouts = {};
   }
@@ -52,7 +52,7 @@ export default class DonationLogV2 extends BaseClanLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: DonationLogV2.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: DonationLog.name });
       return null;
     }
   }

@@ -14,17 +14,17 @@ import {
 import { ObjectId, WithId } from 'mongodb';
 import { EMOJIS } from '../util/emojis.js';
 import { clanGamesEmbedMaker } from '../util/helper.js';
-import BaseClanLog from './base-clan-log.js';
-import RPCHandler from './rpc-handler.js';
+import { Enqueuer } from './enqueuer.js';
+import { RootLog } from './root-log.js';
 
-export default class ClanGamesLogV2 extends BaseClanLog {
+export class ClanGamesLog extends RootLog {
   public declare cached: Collection<string, Cache>;
   public refreshRate: number;
   public intervalId!: NodeJS.Timeout;
 
-  public constructor(private handler: RPCHandler) {
-    super(handler.client);
-    this.client = handler.client;
+  public constructor(private enqueuer: Enqueuer) {
+    super(enqueuer.client);
+    this.client = enqueuer.client;
     this.refreshRate = 30 * 60 * 1000;
   }
 
@@ -89,7 +89,7 @@ export default class ClanGamesLogV2 extends BaseClanLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanGamesLogV2.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanGamesLog.name });
       return null;
     }
   }
@@ -98,7 +98,7 @@ export default class ClanGamesLogV2 extends BaseClanLog {
     try {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanGamesLogV2.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanGamesLog.name });
       return null;
     }
   }

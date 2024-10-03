@@ -246,7 +246,7 @@ export default class RedeemCommand extends Command {
     const collection = this.client.db.collection(Collections.CLAN_STORES);
     await collection.updateMany({ guild }, { $set: { active: true, patron: true } });
     for await (const data of collection.find({ guild })) {
-      this.client.rpcHandler.add({ tag: data.tag, guild: data.guild });
+      this.client.enqueuer.add({ tag: data.tag, guild: data.guild });
     }
   }
 

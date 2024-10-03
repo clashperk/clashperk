@@ -21,8 +21,8 @@ import { aggregateRoundsForRanking, calculateLeagueRanking } from '../helper/cwl
 import { getCWLSummaryImage } from '../struct/image-helper.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/emojis.js';
 import { Season, Util } from '../util/toolkit.js';
-import BaseClanLog from './base-clan-log.js';
-import RPCHandler from './rpc-handler.js';
+import { Enqueuer } from './enqueuer.js';
+import { RootLog } from './root-log.js';
 
 const states: { [key: string]: number } = {
   preparation: 16745216,
@@ -35,12 +35,12 @@ const results: { [key: string]: number } = {
   tied: 5861569
 };
 
-export default class ClanWarLogV2 extends BaseClanLog {
+export class ClanWarLog extends RootLog {
   public declare cached: Collection<string, Cache>;
 
-  public constructor(private handler: RPCHandler) {
-    super(handler.client);
-    this.client = handler.client;
+  public constructor(private enqueuer: Enqueuer) {
+    super(enqueuer.client);
+    this.client = enqueuer.client;
   }
 
   public override get collection() {
@@ -123,7 +123,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLogV2.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLog.name });
       console.log(error);
       return null;
     }
@@ -133,7 +133,7 @@ export default class ClanWarLogV2 extends BaseClanLog {
     try {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLogV2.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLog.name });
       console.log(error);
       return null;
     }

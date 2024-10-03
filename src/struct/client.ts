@@ -6,8 +6,8 @@ import { nanoid } from 'nanoid';
 import { URL, fileURLToPath } from 'node:url';
 import { PostHog } from 'posthog-node';
 import { container } from 'tsyringe';
+import { Enqueuer } from '../core/enqueuer.js';
 import { RolesManager } from '../core/roles-manager.js';
-import RPCHandler from '../core/rpc-handler.js';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/handlers.js';
 import { ClientUtil } from '../util/client.util.js';
 import { i18n } from '../util/i18n.js';
@@ -50,9 +50,9 @@ export class Client extends DiscordClient {
   public stats!: StatsHandler;
   public customBotManager!: CustomBotManager;
   public storage!: StorageHandler;
-  public warScheduler!: ClanWarScheduler;
-  public raidScheduler!: CapitalRaidScheduler;
-  public cgScheduler!: ClanGamesScheduler;
+  public clanWarScheduler!: ClanWarScheduler;
+  public capitalRaidScheduler!: CapitalRaidScheduler;
+  public clanGamesScheduler!: ClanGamesScheduler;
   public i18n = i18n;
   public guildEvents!: GuildEventsHandler;
   public inMaintenance = Boolean(false);
@@ -73,7 +73,7 @@ export class Client extends DiscordClient {
   public subscriber = this.redis.connection.duplicate();
   public publisher = this.redis.connection.duplicate();
 
-  public rpcHandler!: RPCHandler;
+  public enqueuer!: Enqueuer;
   public patreonHandler!: PatreonHandler;
   public components = new Map<string, string[]>();
   public resolver!: Resolver;
@@ -193,10 +193,10 @@ export class Client extends DiscordClient {
 
   private run() {
     this.patreonHandler.init();
-    this.rpcHandler.init();
-    this.cgScheduler.init();
-    this.raidScheduler.init();
-    this.warScheduler.init();
+    this.enqueuer.init();
+    this.clanGamesScheduler.init();
+    this.capitalRaidScheduler.init();
+    this.clanWarScheduler.init();
     this.guildEvents.init();
     this.rosterManager.init();
   }
@@ -216,16 +216,16 @@ export class Client extends DiscordClient {
     await Promise.all([this.subscriber.connect(), this.publisher.connect()]);
 
     this.storage = new StorageHandler(this);
-    this.rpcHandler = new RPCHandler(this);
+    this.enqueuer = new Enqueuer(this);
 
     this.patreonHandler = new PatreonHandler(this);
     await this.patreonHandler.refresh();
 
     this.stats = new StatsHandler(this);
     this.resolver = new Resolver(this);
-    this.warScheduler = new ClanWarScheduler(this);
-    this.raidScheduler = new CapitalRaidScheduler(this);
-    this.cgScheduler = new ClanGamesScheduler(this);
+    this.clanWarScheduler = new ClanWarScheduler(this);
+    this.capitalRaidScheduler = new CapitalRaidScheduler(this);
+    this.clanGamesScheduler = new ClanGamesScheduler(this);
     this.commands = new CommandsMap(this);
     this.guildEvents = new GuildEventsHandler(this);
     this.rosterManager = new RosterManager(this);

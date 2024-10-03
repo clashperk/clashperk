@@ -20,17 +20,17 @@ import { Client } from '../struct/client.js';
 import { EMOJIS } from '../util/emojis.js';
 import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../util/helper.js';
 import { Season, Util } from '../util/toolkit.js';
-import RPCHandler from './rpc-handler.js';
+import { Enqueuer } from './enqueuer.js';
 
-export default class AutoBoardLog {
+export class AutoBoardLog {
   public cached: Collection<string, Cache> = new Collection();
   private readonly queued = new Set<string>();
   public refreshRate: number;
   private timeout!: NodeJS.Timeout | null;
   private client: Client;
 
-  public constructor(private handler: RPCHandler) {
-    this.client = handler.client;
+  public constructor(enqueuer: Enqueuer) {
+    this.client = enqueuer.client;
     this.refreshRate = 15 * 60 * 1000;
   }
 

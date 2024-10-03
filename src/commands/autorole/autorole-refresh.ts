@@ -41,7 +41,7 @@ export default class AutoTownHallRoleCommand extends Command {
       return interaction.editReply('Previous refresh is currently being processed.');
     }
 
-    if (this.client.rpcHandler.isInMaintenance) {
+    if (this.client.enqueuer.isInMaintenance) {
       return interaction.editReply('Command is blocked due to ongoing maintenance break.');
     }
 

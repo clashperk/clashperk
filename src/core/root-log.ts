@@ -16,7 +16,7 @@ import { Client } from '../struct/client.js';
 
 const WEBHOOK_RETRY_THRESHOLD = 3;
 
-export default class BaseClanLog {
+export class RootLog {
   public cached: Collection<string, Cache>;
 
   public constructor(public client: Client) {

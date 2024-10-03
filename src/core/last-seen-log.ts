@@ -13,18 +13,18 @@ import { ObjectId, WithId } from 'mongodb';
 import { EMOJIS } from '../util/emojis.js';
 import { lastSeenEmbedMaker } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';
-import BaseClanLog from './base-clan-log.js';
-import RPCHandler from './rpc-handler.js';
+import { Enqueuer } from './enqueuer.js';
+import { RootLog } from './root-log.js';
 
-export default class LastSeenLogV2 extends BaseClanLog {
+export class LastSeenLog extends RootLog {
   public declare cached: Collection<string, Cache>;
   private readonly queued = new Set<string>();
   public refreshRate: number;
   private timeout!: NodeJS.Timeout | null;
 
-  public constructor(private handler: RPCHandler) {
-    super(handler.client);
-    this.client = handler.client;
+  public constructor(private enqueuer: Enqueuer) {
+    super(enqueuer.client);
+    this.client = enqueuer.client;
     this.refreshRate = 30 * 60 * 1000;
   }
 
@@ -83,7 +83,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: LastSeenLogV2.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: LastSeenLog.name });
       return null;
     }
   }
@@ -92,7 +92,7 @@ export default class LastSeenLogV2 extends BaseClanLog {
     try {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: LastSeenLogV2.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: LastSeenLog.name });
       return null;
     }
   }
