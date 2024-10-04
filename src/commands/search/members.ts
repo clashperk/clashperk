@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { MembersCommandOptions as options } from '../../util/command.options.js';
 import { EMOJIS, HERO_PETS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
@@ -48,6 +48,15 @@ export default class MembersCommand extends Command {
       clientPermissions: ['EmbedLinks', 'AttachFiles'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; option?: string }) {
