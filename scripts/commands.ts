@@ -208,7 +208,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         required: false
       },
       {
-        name: 'player_tag',
+        name: 'player',
         description: common.options.player.tag.description,
         type: ApplicationCommandOptionType.String,
         required: false

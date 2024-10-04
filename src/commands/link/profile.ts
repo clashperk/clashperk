@@ -13,7 +13,7 @@ import {
   User
 } from 'discord.js';
 import { cluster, diff } from 'radash';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/google.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';
 import { getExportComponents, sumHeroes } from '../../util/helper.js';
@@ -43,6 +43,15 @@ export default class ProfileCommand extends Command {
       clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      player: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player_tag?: string }) {
