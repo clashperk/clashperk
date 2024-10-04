@@ -2840,7 +2840,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.Role
           },
           {
-            name: 'clan_tag',
+            name: 'clan',
             required: true,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,

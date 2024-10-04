@@ -1,6 +1,6 @@
 import { Collections } from '@app/constants';
 import { CommandInteraction, Guild, Role } from 'discord.js';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 
 export default class AutoClanRoleCommand extends Command {
   public constructor() {
@@ -13,6 +13,15 @@ export default class AutoClanRoleCommand extends Command {
       defer: true,
       ephemeral: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { role: Role; clan_tag: string }) {
