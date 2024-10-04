@@ -1107,7 +1107,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.String
       },
       {
-        name: 'player_tag',
+        name: 'player',
         autocomplete: true,
         description: 'Select a player for the history.',
         type: ApplicationCommandOptionType.String
