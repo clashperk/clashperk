@@ -1,7 +1,7 @@
 import { Settings } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import { Filter, WithId } from 'mongodb';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { IRoster, rosterLabel } from '../../struct/roster-manager.js';
 
 export default class RosterListCommand extends Command {
@@ -14,6 +14,15 @@ export default class RosterListCommand extends Command {
       defer: true,
       ephemeral: true
     });
+  }
+
+  public args(): Args {
+    return {
+      player: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player_tag?: string; name?: string; clan?: string }) {

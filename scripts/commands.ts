@@ -2292,7 +2292,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.User
           },
           {
-            name: 'player_tag',
+            name: 'player',
             description: 'Search rosters by player',
             type: ApplicationCommandOptionType.String,
             autocomplete: true
