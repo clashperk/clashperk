@@ -98,7 +98,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     description_localizations: translation('command.player.description'),
     options: [
       {
-        name: 'player_tag',
+        name: 'player',
         description: common.options.player.tag.description,
         description_localizations: translation('common.options.player.tag.description'),
         required: false,
