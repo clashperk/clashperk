@@ -14,7 +14,7 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { WarCommandOptionValues, WarCommandOptions } from '../../util/command.options.js';
 import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/emojis.js';
@@ -36,6 +36,14 @@ export default class WarCommand extends Command {
       clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
       defer: true
     });
+  }
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(
