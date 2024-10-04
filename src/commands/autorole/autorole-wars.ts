@@ -1,6 +1,6 @@
 import { Collections } from '@app/constants';
 import { CommandInteraction, Guild, Role } from 'discord.js';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class AutoClanRoleCommand extends Command {
   public constructor() {
@@ -15,19 +15,10 @@ export default class AutoClanRoleCommand extends Command {
     });
   }
 
-  public args(): Args {
-    return {
-      clan: {
-        id: 'tag',
-        match: 'STRING'
-      }
-    };
-  }
-
-  public async exec(interaction: CommandInteraction<'cached'>, args: { role: Role; clan_tag: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { role: Role; clan: string }) {
     const clan = await this.client.db
       .collection(Collections.CLAN_STORES)
-      .findOne({ guild: interaction.guild.id, tag: this.client.coc.fixTag(args.clan_tag) });
+      .findOne({ guild: interaction.guild.id, tag: this.client.coc.fixTag(args.clan) });
     if (!clan) {
       return interaction.editReply(
         this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })

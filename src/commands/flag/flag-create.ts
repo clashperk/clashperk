@@ -2,7 +2,7 @@ import { Collections, Settings } from '@app/constants';
 import { FlagsEntity } from '@app/entities';
 import { AutocompleteInteraction, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class FlagCreateCommand extends Command {
   public constructor() {
@@ -15,24 +15,15 @@ export default class FlagCreateCommand extends Command {
     });
   }
 
-  public args(): Args {
-    return {
-      player: {
-        id: 'tag',
-        match: 'STRING'
-      }
-    };
-  }
-
-  public autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {
-    return this.client.autocomplete.globalClanAutoComplete(interaction, args);
+  public autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player?: string }) {
+    return this.client.autocomplete.globalPlayersAutocomplete(interaction, args);
   }
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { reason?: string; player_tag?: string; flag_type: 'ban' | 'strike'; flag_expiry_days?: number; flag_impact?: number }
+    args: { reason?: string; player?: string; flag_type: 'ban' | 'strike'; flag_expiry_days?: number; flag_impact?: number }
   ) {
-    const tags = (await this.client.resolver.resolveArgs(args.player_tag)).filter((tag) => this.client.coc.isValidTag(tag));
+    const tags = (await this.client.resolver.resolveArgs(args.player)).filter((tag) => this.client.coc.isValidTag(tag));
     if (!tags.length) return interaction.editReply('No players were found against this query.');
 
     if (!args.reason) return interaction.editReply('You must provide a reason to flag.');

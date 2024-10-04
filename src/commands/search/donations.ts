@@ -26,10 +26,6 @@ export default class DonationsCommand extends Command {
       clan: {
         id: 'tag',
         match: 'STRING'
-      },
-      player: {
-        id: 'tag',
-        match: 'STRING'
       }
     };
   }
@@ -42,13 +38,8 @@ export default class DonationsCommand extends Command {
       sort_by?: SortKey[];
       order_by?: OrderKey;
       user?: User;
-      player_tag?: string;
     }
   ) {
-    if ((args.user || args.player_tag) && !interaction.isButton()) {
-      return interaction.editReply(`This command option has been replaced with the ${this.client.commands.get('/history')} command.`);
-    }
-
     const { sort_by: sortBy, order_by: orderBy } = args;
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;

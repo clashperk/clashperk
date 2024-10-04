@@ -840,13 +840,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         required: false
       },
       {
-        name: 'player',
-        description: 'Donation history of a player.',
-        type: ApplicationCommandOptionType.String,
-        required: false,
-        autocomplete: true
-      },
-      {
         name: 'season',
         description: command.donations.options.season.description,
         description_localizations: translation('command.donations.options.season.description'),

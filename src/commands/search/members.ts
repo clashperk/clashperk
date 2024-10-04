@@ -38,8 +38,6 @@ const PETS = Object.keys(HERO_PETS).reduce<Record<string, number>>((prev, curr, 
   return prev;
 }, {});
 
-// type MemberCommandOption = (typeof MemberCommandOptions)[keyof typeof MemberCommandOptions]['id'];
-
 export default class MembersCommand extends Command {
   public constructor() {
     super('members', {

@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class HistoryCommand extends Command {
   public constructor() {
@@ -9,15 +9,6 @@ export default class HistoryCommand extends Command {
       clientPermissions: ['EmbedLinks'],
       defer: false
     });
-  }
-
-  public args(): Args {
-    return {
-      player: {
-        id: 'tag',
-        match: 'STRING'
-      }
-    };
   }
 
   public exec(interaction: CommandInteraction, args: { option: string }) {
