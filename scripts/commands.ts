@@ -2512,13 +2512,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           },
           {
-            name: 'player_tag',
+            name: 'player',
             autocomplete: true,
             description: 'Select a player to manage',
             type: ApplicationCommandOptionType.String
           },
           {
-            name: 'clan_tag',
+            name: 'clan',
             autocomplete: true,
             description: 'Select a clan to add players from',
             type: ApplicationCommandOptionType.String

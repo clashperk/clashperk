@@ -21,7 +21,7 @@ import {
 } from 'discord.js';
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import {
   IRoster,
   IRosterCategory,
@@ -45,6 +45,19 @@ export default class RosterManageCommand extends Command {
       defer: true,
       ephemeral: true
     });
+  }
+
+  public args(): Args {
+    return {
+      player: {
+        id: 'tag',
+        match: 'STRING'
+      },
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async autocomplete(
