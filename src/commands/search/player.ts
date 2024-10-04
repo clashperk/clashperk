@@ -45,7 +45,7 @@ export default class PlayerCommand extends Command {
 
   public args(): Args {
     return {
-      player: {
+      tag: {
         id: 'tag',
         match: 'STRING'
       }
