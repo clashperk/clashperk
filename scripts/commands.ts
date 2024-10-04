@@ -438,7 +438,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
-            name: 'clan_tag',
+            name: 'clan',
             description: common.options.tag.description,
             description_localizations: translation('common.options.tag.description'),
             type: ApplicationCommandOptionType.String,
