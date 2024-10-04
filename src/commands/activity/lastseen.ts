@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { lastSeenEmbedMaker } from '../../helper/last-seen.helper.js';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 
 export default class LastSeenCommand extends Command {
@@ -12,6 +12,15 @@ export default class LastSeenCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(
