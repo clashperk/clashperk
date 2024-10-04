@@ -3424,7 +3424,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
-            name: 'player_tag',
+            name: 'player',
             description: 'Enter a tag or pick one form the autocomplete list.',
             type: ApplicationCommandOptionType.String,
             required: false,
