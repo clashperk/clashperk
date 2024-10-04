@@ -27,7 +27,11 @@ export default class RushedCommand extends Command {
 
   public args(): Args {
     return {
-      player_tag: {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      },
+      player: {
         id: 'tag',
         match: 'STRING'
       }
