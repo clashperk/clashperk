@@ -16,11 +16,11 @@ export default class RosterListCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player_tag?: string; name?: string; clan?: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player?: string; name?: string; clan?: string }) {
     const query: Filter<IRoster> = { guildId: interaction.guild.id };
 
     if (args.user) query['members.userId'] = args.user.id;
-    else if (args.player_tag) query['members.tag'] = args.player_tag;
+    else if (args.player) query['members.tag'] = args.player;
 
     if (args.name) {
       const text = args.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -31,8 +31,8 @@ export default class RosterListCommand extends Command {
     const isQuery = Object.keys(query).length > 1;
     const filter = args.user
       ? { $filter: { input: '$members', as: 'member', cond: { $eq: ['$$member.userId', args.user.id] } } }
-      : args.player_tag
-        ? { $filter: { input: '$members', as: 'member', cond: { $eq: ['$$member.tag', args.player_tag] } } }
+      : args.player
+        ? { $filter: { input: '$members', as: 'member', cond: { $eq: ['$$member.tag', args.player] } } }
         : null;
 
     const cursor = this.client.rosterManager.rosters.aggregate<WithId<IRoster & { memberCount: number }>>([

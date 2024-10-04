@@ -15,15 +15,15 @@ export default class FlagCreateCommand extends Command {
     });
   }
 
-  public autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {
-    return this.client.autocomplete.globalClanAutoComplete(interaction, args);
+  public autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player?: string }) {
+    return this.client.autocomplete.globalPlayersAutocomplete(interaction, args);
   }
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { reason?: string; player_tag?: string; flag_type: 'ban' | 'strike'; flag_expiry_days?: number; flag_impact?: number }
+    args: { reason?: string; player?: string; flag_type: 'ban' | 'strike'; flag_expiry_days?: number; flag_impact?: number }
   ) {
-    const tags = (await this.client.resolver.resolveArgs(args.player_tag)).filter((tag) => this.client.coc.isValidTag(tag));
+    const tags = (await this.client.resolver.resolveArgs(args.player)).filter((tag) => this.client.coc.isValidTag(tag));
     if (!tags.length) return interaction.editReply('No players were found against this query.');
 
     if (!args.reason) return interaction.editReply('You must provide a reason to flag.');

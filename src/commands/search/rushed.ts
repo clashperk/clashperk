@@ -27,16 +27,16 @@ export default class RushedCommand extends Command {
 
   public args(): Args {
     return {
-      player_tag: {
+      player: {
         id: 'tag',
         match: 'STRING'
       }
     };
   }
 
-  public async exec(interaction: CommandInteraction | ButtonInteraction<'cached'>, args: { clan_tag?: string; tag?: string; user?: User }) {
-    if (args.clan_tag && interaction.inCachedGuild()) {
-      const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
+  public async exec(interaction: CommandInteraction | ButtonInteraction<'cached'>, args: { clan?: string; tag?: string; user?: User }) {
+    if (args.clan && interaction.inCachedGuild()) {
+      const clan = await this.client.resolver.resolveClan(interaction, args.clan);
       if (!clan) return null;
       return this.clan(interaction, clan);
     }

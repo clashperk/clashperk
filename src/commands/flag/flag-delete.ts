@@ -18,13 +18,13 @@ export default class FlagDeleteCommand extends Command {
 
   public async autocomplete(
     interaction: AutocompleteInteraction<'cached'>,
-    args: { player_tag?: string; flag_ref?: string; flag_type?: 'ban' | 'strike' }
+    args: { player?: string; flag_ref?: string; flag_type?: 'ban' | 'strike' }
   ) {
     const focused = interaction.options.getFocused(true);
     if (focused.name === 'flag_ref') {
-      if (!args.player_tag) return interaction.respond([{ name: 'Select a player first!', value: '0' }]);
+      if (!args.player) return interaction.respond([{ name: 'Select a player first!', value: '0' }]);
 
-      const playerTag = this.client.coc.fixTag(args.player_tag);
+      const playerTag = this.client.coc.fixTag(args.player);
       const flags = await this.client.db
         .collection<FlagsEntity>(Collections.FLAGS)
         .find({
@@ -52,12 +52,9 @@ export default class FlagDeleteCommand extends Command {
     return this.client.autocomplete.flagSearchAutoComplete(interaction, args);
   }
 
-  public async exec(
-    interaction: CommandInteraction<'cached'>,
-    args: { player_tag: string; flag_type: 'ban' | 'strike'; flag_ref?: string }
-  ) {
-    if (!args.player_tag) return interaction.editReply(this.i18n('command.flag.delete.no_tag', { lng: interaction.locale }));
-    const playerTag = this.client.coc.fixTag(args.player_tag);
+  public async exec(interaction: CommandInteraction<'cached'>, args: { player: string; flag_type: 'ban' | 'strike'; flag_ref?: string }) {
+    if (!args.player) return interaction.editReply(this.i18n('command.flag.delete.no_tag', { lng: interaction.locale }));
+    const playerTag = this.client.coc.fixTag(args.player);
 
     const filter: Filter<FlagsEntity> = {
       guild: interaction.guild.id,

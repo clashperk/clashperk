@@ -51,7 +51,7 @@ export default class RosterManageCommand extends Command {
     interaction: AutocompleteInteraction<'cached'>,
     args: {
       roster: string;
-      player_tag?: string;
+      player?: string;
       action?: 'add-user' | 'del-user' | 'change-roster' | 'change-category';
       target_roster?: string;
       target_group?: string;
@@ -98,7 +98,7 @@ export default class RosterManageCommand extends Command {
         guildId: interaction.guild.id
       };
 
-      const playerTag = args.player_tag ? this.client.coc.fixTag(args.player_tag) : null;
+      const playerTag = args.player ? this.client.coc.fixTag(args.player) : null;
 
       const categoryId = roster.members.find((member) => member.tag === playerTag)?.categoryId;
       if (categoryId && args.action === 'change-category') filter._id = { $ne: categoryId };
@@ -133,8 +133,8 @@ export default class RosterManageCommand extends Command {
           value: member.tag
         }))
         .filter((member) => {
-          if (!args.player_tag) return true;
-          const query = args.player_tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          if (!args.player) return true;
+          const query = args.player.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           return new RegExp(`.*${query}.*`, 'i').test(`${member.query}`);
         })
         .map((member) => ({
@@ -156,14 +156,14 @@ export default class RosterManageCommand extends Command {
       // query.tag = { $nin: roster.members.map((member) => member.tag) };
     }
 
-    if (args.player_tag) {
-      const text = args.player_tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (args.player) {
+      const text = args.player.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [{ name: { $regex: `.*${text}.*`, $options: 'i' } }, { tag: { $regex: `.*${text}.*`, $options: 'i' } }];
     }
 
     const signedUp = roster.members.map((member) => member.tag);
     const cursor = this.client.db.collection<PlayersEntity>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
-    if (!args.player_tag) cursor.sort({ lastSeen: -1 });
+    if (!args.player) cursor.sort({ lastSeen: -1 });
     const players = await cursor.limit(24).toArray();
     if (!players.length) return interaction.respond([{ name: 'No players found.', value: '0' }]);
 
@@ -178,8 +178,8 @@ export default class RosterManageCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: {
       roster: string;
-      player_tag?: string;
-      clan_tag?: string;
+      player?: string;
+      clan?: string;
       user?: User;
       target_group?: string;
       target_roster?: string;
@@ -193,28 +193,28 @@ export default class RosterManageCommand extends Command {
     if (!roster) return interaction.editReply({ content: 'Roster was deleted.' });
 
     if (args.action === 'del-user') {
-      if (!args.player_tag) {
+      if (!args.player) {
         return this.delUsers(interaction, { roster, user: args.user });
       }
 
-      const updated = await this.client.rosterManager.optOut(roster, args.player_tag);
+      const updated = await this.client.rosterManager.optOut(roster, args.player);
       if (!updated) return interaction.editReply({ content: 'Roster was deleted.' });
 
       return interaction.editReply({ content: 'Player removed successfully.' });
     }
 
     if (args.action === 'add-user') {
-      if (args.clan_tag) {
-        const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
+      if (args.clan) {
+        const clan = await this.client.resolver.resolveClan(interaction, args.clan);
         if (!clan) return;
         return this.addUsers(interaction, { roster, clan, categoryId: args.target_group });
       }
 
-      if (!args.player_tag) {
+      if (!args.player) {
         return this.addUsers(interaction, { roster, user: args.user, categoryId: args.target_group });
       }
 
-      const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+      const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return;
       const user = await this.client.resolver.getUser(player.tag);
 
@@ -231,16 +231,16 @@ export default class RosterManageCommand extends Command {
     }
 
     if (args.action === 'change-roster') {
-      if (!args.player_tag || !args.target_roster) {
+      if (!args.player || !args.target_roster) {
         return this.changeRoster(interaction, {
           roster,
-          playerTag: args.player_tag,
+          playerTag: args.player,
           user: args.user,
           rosterId: args.target_roster,
           categoryId: args.target_group
         });
       }
-      const playerTag = this.client.coc.fixTag(args.player_tag);
+      const playerTag = this.client.coc.fixTag(args.player);
 
       if (!ObjectId.isValid(args.target_roster)) return interaction.editReply({ content: 'Invalid target roster ID.' });
       const newRosterId = new ObjectId(args.target_roster);
@@ -262,10 +262,10 @@ export default class RosterManageCommand extends Command {
         return interaction.editReply({ content: 'You cannot move a user to the same roster.' });
       }
 
-      const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+      const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return;
 
-      const user = await this.client.resolver.getUser(args.player_tag);
+      const user = await this.client.resolver.getUser(args.player);
 
       const swapped = await this.client.rosterManager.swapRoster({
         oldRoster: roster,
@@ -280,15 +280,15 @@ export default class RosterManageCommand extends Command {
     }
 
     if (args.action === 'change-category') {
-      if (!args.player_tag || !args.target_group) {
+      if (!args.player || !args.target_group) {
         return this.changeCategory(interaction, {
           roster,
-          playerTag: args.player_tag,
+          playerTag: args.player,
           categoryId: args.target_group,
           user: args.user
         });
       }
-      const playerTag = this.client.coc.fixTag(args.player_tag);
+      const playerTag = this.client.coc.fixTag(args.player);
 
       const player = await this.client.resolver.resolvePlayer(interaction, playerTag);
       if (!player) return;

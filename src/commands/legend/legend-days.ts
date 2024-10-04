@@ -20,7 +20,7 @@ export default class LegendDaysCommand extends Command {
 
   public args(): Args {
     return {
-      player_tag: {
+      player: {
         id: 'tag',
         match: 'STRING'
       }
