@@ -222,7 +222,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     description_localizations: translation('command.verify.description'),
     options: [
       {
-        name: 'player_tag',
+        name: 'player',
         required: true,
         autocomplete: true,
         description: command.verify.options.tag.description,
