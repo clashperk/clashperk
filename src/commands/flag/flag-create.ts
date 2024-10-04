@@ -2,7 +2,7 @@ import { Collections, Settings } from '@app/constants';
 import { FlagsEntity } from '@app/entities';
 import { AutocompleteInteraction, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 
 export default class FlagCreateCommand extends Command {
   public constructor() {
@@ -13,6 +13,15 @@ export default class FlagCreateCommand extends Command {
       defer: true,
       roleKey: Settings.FLAGS_MANAGER_ROLE
     });
+  }
+
+  public args(): Args {
+    return {
+      player: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {

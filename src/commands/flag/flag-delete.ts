@@ -2,7 +2,7 @@ import { Collections, Settings } from '@app/constants';
 import { FlagsEntity } from '@app/entities';
 import { AutocompleteInteraction, CommandInteraction } from 'discord.js';
 import { Filter, ObjectId } from 'mongodb';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { hexToNanoId } from '../../util/helper.js';
 
 export default class FlagDeleteCommand extends Command {
@@ -14,6 +14,15 @@ export default class FlagDeleteCommand extends Command {
       defer: true,
       roleKey: Settings.FLAGS_MANAGER_ROLE
     });
+  }
+
+  public args(): Args {
+    return {
+      player: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async autocomplete(

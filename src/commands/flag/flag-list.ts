@@ -29,6 +29,10 @@ export default class FlagListCommand extends Command {
     return {
       export: {
         match: 'BOOLEAN'
+      },
+      player: {
+        id: 'tag',
+        match: 'STRING'
       }
     };
   }

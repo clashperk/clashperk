@@ -1437,7 +1437,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           },
           {
-            name: 'player_tag',
+            name: 'player',
             description: command.flag.create.options.tag.description,
             description_localizations: translation('command.flag.create.options.tag.description'),
             required: true,
@@ -1492,7 +1492,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           },
           {
-            name: 'player_tag',
+            name: 'player',
             description: 'Show all flags against a player',
             autocomplete: true,
             max_length: 100,
@@ -1530,7 +1530,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           },
           {
-            name: 'player_tag',
+            name: 'player',
             description: command.flag.delete.options.tag.description,
             description_localizations: translation('command.flag.delete.options.tag.description'),
             type: ApplicationCommandOptionType.String,
