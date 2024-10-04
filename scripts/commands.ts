@@ -826,7 +826,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     description_localizations: translation('command.donations.description'),
     options: [
       {
-        name: 'tag',
+        name: 'clan',
         description: common.options.tag.description,
         description_localizations: translation('common.options.tag.description'),
         type: ApplicationCommandOptionType.String,
@@ -840,7 +840,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         required: false
       },
       {
-        name: 'player_tag',
+        name: 'player',
         description: 'Donation history of a player.',
         type: ApplicationCommandOptionType.String,
         required: false,

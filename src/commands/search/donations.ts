@@ -22,6 +22,14 @@ export default class DonationsCommand extends Command {
         match: 'ENUM',
         enums: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
         default: Season.ID
+      },
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      },
+      player: {
+        id: 'tag',
+        match: 'STRING'
       }
     };
   }
