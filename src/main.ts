@@ -6,9 +6,9 @@ import i18next from 'i18next';
 import 'moment-duration-format';
 import { fileURLToPath } from 'node:url';
 import { inspect } from 'node:util';
-import { defaultOptions } from '../locales/config.js';
 import { Client } from './struct/client.js';
 import { Backend } from './util/i18n.backend.js';
+import { defaultOptions } from './util/i18n.config.js';
 import { sentryConfig } from './util/sentry.js';
 
 const client = new Client();

@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
-import { unique } from 'radash';
+import { shuffle, unique } from 'radash';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
 import { Util } from '../util/toolkit.js';
 import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
@@ -153,13 +153,7 @@ export class ClanWarScheduler {
     const redisKey = `RANDOM_SELECTION:${clanTag}`;
     const previouslyMentioned: string[] = await this.client.redis.connection.sMembers(redisKey);
     const eligibleMembers = userIds.filter((id) => !previouslyMentioned.includes(id));
-
-    for (let i = eligibleMembers.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [eligibleMembers[i], eligibleMembers[j]] = [eligibleMembers[j], eligibleMembers[i]];
-    }
-
-    const randomUserIds = eligibleMembers.slice(0, limit);
+    const randomUserIds = shuffle(eligibleMembers).slice(0, limit);
 
     if (randomUserIds.length) {
       await this.client.redis.connection
@@ -227,7 +221,7 @@ export class ClanWarScheduler {
     mentions.sort((a, b) => a.position - b.position);
 
     const randomUserIds = await this.randomUsers({
-      clanTag: schedule.warTag || clan.tag,
+      clanTag: clan.tag,
       userIds,
       limit: reminder.randomLimit ?? 0
     });

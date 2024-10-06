@@ -16,10 +16,10 @@ import i18next from 'i18next';
 import moment from 'moment';
 import { fileURLToPath } from 'node:url';
 import { title } from 'radash';
-import { defaultOptions, fallbackLng } from '../locales/config.js';
 import { command, common } from '../locales/locales.js';
 import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/util/command.options.js';
 import { Backend } from '../src/util/i18n.backend.js';
+import { defaultOptions, fallbackLng } from '../src/util/i18n.config.js';
 import { TranslationKey } from '../src/util/i18n.js';
 import { Season } from '../src/util/toolkit.js';
 
