@@ -237,6 +237,7 @@ export default class CWLStatsCommand extends Command {
         .setDescription(description)
     ];
     const embed = new EmbedBuilder()
+      .setTimestamp()
       .setColor(this.client.embed(interaction))
       .setTitle(`Clan War League Ranking (${moment(body.season).format('MMM YYYY')})`);
 

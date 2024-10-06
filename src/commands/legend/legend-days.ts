@@ -262,7 +262,7 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    embed.setFooter({ text: `Day ${day} (${Season.ID})` });
+    embed.setFooter({ text: `Day ${day} (${Season.ID})` }).setTimestamp();
     return embed;
   }
 

@@ -85,17 +85,15 @@ export default class LinkListCommand extends Command {
     const members: { name: string; tag: string; userId: string; verified: boolean; displayName: string }[] = [];
 
     for (const mem of clan.memberList) {
-      if (mem.tag in users) {
-        const user = users[mem.tag];
-        members.push({ tag: mem.tag, userId: user.userId, name: mem.name, verified: user.verified, displayName: user.displayName });
-      }
+      const user = users[mem.tag];
+      if (user) members.push({ tag: mem.tag, userId: user.userId, name: mem.name, verified: user.verified, displayName: user.displayName });
     }
 
     const guildMembers = await interaction.guild.members.fetch();
 
     const clanMembers = clan.memberList.map((member) => {
       const link = members.find((mem) => mem.tag === member.tag);
-      const username = link ? (guildMembers.get(link.userId)?.displayName || link.displayName).slice(0, 14) : member.tag;
+      const username = link ? (guildMembers.get(link.userId)?.displayName || link.displayName)?.slice(0, 14) : member.tag;
 
       return {
         name: padStart(escapeBackTick(member.name), 15),
