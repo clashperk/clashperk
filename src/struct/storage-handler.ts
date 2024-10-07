@@ -218,8 +218,8 @@ export class StorageHandler {
         scheduler: Collections.RAID_SCHEDULERS
       },
       {
-        reminder: Collections.CG_REMINDERS,
-        scheduler: Collections.CG_SCHEDULERS
+        reminder: Collections.CLAN_GAMES_REMINDERS,
+        scheduler: Collections.CLAN_GAMES_SCHEDULERS
       }
     ];
 

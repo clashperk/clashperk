@@ -93,8 +93,8 @@ export const enum Collections {
   REMINDERS = 'Reminders',
   SCHEDULERS = 'Schedulers',
   RAID_REMINDERS = 'RaidReminders',
-  CG_REMINDERS = 'ClanGamesReminders',
-  CG_SCHEDULERS = 'ClanGamesSchedulers',
+  CLAN_GAMES_REMINDERS = 'ClanGamesReminders',
+  CLAN_GAMES_SCHEDULERS = 'ClanGamesSchedulers',
   RAID_SCHEDULERS = 'RaidSchedulers',
 
   WAR_BASE_CALLS = 'WarBaseCalls',

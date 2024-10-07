@@ -3244,6 +3244,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: true,
             description: 'Reminder ID',
             type: ApplicationCommandOptionType.String
+          },
+          {
+            name: 'duration',
+            description: 'Remaining duration to mention members (e.g. 6h, 12h, 1d, 2d)',
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
           }
         ]
       },

@@ -132,6 +132,11 @@ export class CapitalRaidScheduler {
     }
   }
 
+  public async reSchedule(reminder: RaidRemindersEntity) {
+    await this.schedulers.deleteMany({ reminderId: reminder._id });
+    return this.create(reminder);
+  }
+
   private queue(schedule: RaidSchedulersEntity) {
     if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
     if (!this.client.guilds.cache.has(schedule.guild)) return;

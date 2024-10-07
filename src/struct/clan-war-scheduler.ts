@@ -108,6 +108,11 @@ export class ClanWarScheduler {
     }
   }
 
+  public async reSchedule(reminder: ClanWarRemindersEntity) {
+    await this.schedulers.deleteMany({ reminderId: reminder._id });
+    return this.create(reminder);
+  }
+
   private queue(schedule: ClanWarSchedulersEntity) {
     if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
     if (!this.client.guilds.cache.has(schedule.guild)) return;

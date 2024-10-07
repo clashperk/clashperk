@@ -28,8 +28,8 @@ export class ClanGamesScheduler {
 
   public constructor(private readonly client: Client) {
     this.refreshRate = 5 * 60 * 1000;
-    this.schedulers = this.client.db.collection(Collections.CG_SCHEDULERS);
-    this.reminders = this.client.db.collection(Collections.CG_REMINDERS);
+    this.schedulers = this.client.db.collection(Collections.CLAN_GAMES_SCHEDULERS);
+    this.reminders = this.client.db.collection(Collections.CLAN_GAMES_REMINDERS);
   }
 
   public timings() {
@@ -126,6 +126,11 @@ export class ClanGamesScheduler {
         createdAt: new Date()
       });
     }
+  }
+
+  public async reSchedule(reminder: ClanGamesRemindersEntity) {
+    await this.schedulers.deleteMany({ reminderId: reminder._id });
+    return this.create(reminder);
   }
 
   private queue(schedule: ClanGamesSchedulersEntity) {

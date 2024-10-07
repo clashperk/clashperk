@@ -40,7 +40,7 @@ export default class ReminderListCommand extends Command {
     if (args.channel) filter.channel = args.channel.id;
     if (tags.length) filter.clans = { $in: tags };
 
-    const reminders = await this.client.db.collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS).find(filter).toArray();
+    const reminders = await this.client.db.collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS).find(filter).toArray();
     const filtered = reminders.filter((rem) => (args.reminder_id ? hexToNanoId(rem._id) === args.reminder_id.toUpperCase() : true));
 
     if (!filtered.length && (args.channel || tags.length || args.reminder_id)) {
