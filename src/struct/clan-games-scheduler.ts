@@ -307,7 +307,7 @@ export class ClanGamesScheduler {
         if (channel.isThread) reminder.threadId = channel.channel.id;
         const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
 
-        for (const content of Util.splitMessage(text)) {
+        for (const content of Util.splitMessage(`${text}\n\u200b`)) {
           if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
         }
       } else {

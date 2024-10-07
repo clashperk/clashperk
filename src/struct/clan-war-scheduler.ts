@@ -261,18 +261,16 @@ export class ClanWarScheduler {
       `\u200e🔔 **${clanNick} (${label})**`,
       `📨 ${reminder.message}`,
       '',
-      users
-        .map(([mention, members]) =>
-          members
-            .map((mem, i) => {
-              const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
-              const hits = data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
-              const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
-              return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
-            })
-            .join('\n')
-        )
-        .join('\n')
+      ...users.map(([mention, members]) =>
+        members
+          .map((mem, i) => {
+            const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
+            const hits = data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
+            const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
+            return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
+          })
+          .join('\n')
+      )
     ].join('\n');
 
     return [text, userIds];
@@ -357,7 +355,7 @@ export class ClanWarScheduler {
         if (channel.isThread) reminder.threadId = channel.channel.id;
         const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
 
-        for (const content of Util.splitMessage(text)) {
+        for (const content of Util.splitMessage(`${text}\n\u200b`)) {
           if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
         }
       } else {
