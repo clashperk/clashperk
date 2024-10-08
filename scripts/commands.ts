@@ -249,8 +249,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'tag',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -281,8 +281,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -320,8 +320,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         required: false,
         autocomplete: true
@@ -405,8 +405,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -442,8 +442,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true,
             required: false
@@ -473,8 +473,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true,
             required: false
@@ -506,8 +506,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -537,8 +537,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -573,8 +573,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true
           },
@@ -724,8 +724,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -852,8 +852,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -883,8 +883,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -1039,8 +1039,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -1062,8 +1062,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         autocomplete: true,
         type: ApplicationCommandOptionType.String
       },
@@ -1182,8 +1182,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1204,8 +1204,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1234,8 +1234,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1256,8 +1256,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1286,8 +1286,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1316,8 +1316,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1346,8 +1346,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },

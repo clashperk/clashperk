@@ -47,9 +47,6 @@ export const common = {
   },
   color_code: 'Color Code',
   options: {
-    tag: {
-      description: 'Clan tag or name or alias.'
-    },
     clan: {
       tag: {
         description: 'Clan tag or name or alias.'
