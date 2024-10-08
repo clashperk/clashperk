@@ -23,9 +23,9 @@ export default class CWLHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player_tag?: string; user?: User }) {
-    if (args.player_tag) {
-      const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+    if (args.player) {
+      const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return null;
       const playerTags = [player.tag];
       return this.getHistory(interaction, playerTags);
