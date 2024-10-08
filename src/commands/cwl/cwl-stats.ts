@@ -4,7 +4,7 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Comman
 import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/cwl.helper.js';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { getCWLSummaryImage } from '../../struct/image-helper.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
@@ -18,6 +18,15 @@ export default class CWLStatsCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; season?: string }) {
@@ -228,6 +237,7 @@ export default class CWLStatsCommand extends Command {
         .setDescription(description)
     ];
     const embed = new EmbedBuilder()
+      .setTimestamp()
       .setColor(this.client.embed(interaction))
       .setTitle(`Clan War League Ranking (${moment(body.season).format('MMM YYYY')})`);
 

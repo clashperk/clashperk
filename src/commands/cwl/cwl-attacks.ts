@@ -11,7 +11,7 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
@@ -37,6 +37,15 @@ export default class CWLAttacksCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; season?: string }) {

@@ -38,7 +38,7 @@ export default class UpgradesCommand extends Command {
 
   public args(): Args {
     return {
-      player_tag: {
+      player: {
         id: 'tag',
         match: 'STRING'
       }

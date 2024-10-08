@@ -132,6 +132,11 @@ export class CapitalRaidScheduler {
     }
   }
 
+  public async reSchedule(reminder: RaidRemindersEntity) {
+    await this.schedulers.deleteMany({ reminderId: reminder._id });
+    return this.create(reminder);
+  }
+
   private queue(schedule: RaidSchedulersEntity) {
     if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
     if (!this.client.guilds.cache.has(schedule.guild)) return;
@@ -332,7 +337,7 @@ export class CapitalRaidScheduler {
         if (channel.isThread) reminder.threadId = channel.channel.id;
         const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
 
-        for (const content of Util.splitMessage(text)) {
+        for (const content of Util.splitMessage(`${text}\n\u200b`)) {
           if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
         }
       } else {

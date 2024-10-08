@@ -17,7 +17,7 @@ export default class DonationsHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player_tag?: string; user?: User }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
     const tags = await this.client.resolver.resolveArgs(args.clans);
     const clans = tags.length
       ? await this.client.storage.search(interaction.guildId, tags)
@@ -35,8 +35,8 @@ export default class DonationsHistoryCommand extends Command {
       return handlePagination(interaction, embeds, (action) => this.export(action, result, includedClans));
     }
 
-    if (args.player_tag) {
-      const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+    if (args.player) {
+      const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return null;
       const playerTags = [player.tag];
       const { embeds, result } = await this.getHistory(interaction, playerTags, includedClans);

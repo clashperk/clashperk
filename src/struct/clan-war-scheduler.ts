@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
-import { unique } from 'radash';
+import { shuffle, unique } from 'radash';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
 import { Util } from '../util/toolkit.js';
 import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
@@ -108,6 +108,11 @@ export class ClanWarScheduler {
     }
   }
 
+  public async reSchedule(reminder: ClanWarRemindersEntity) {
+    await this.schedulers.deleteMany({ reminderId: reminder._id });
+    return this.create(reminder);
+  }
+
   private queue(schedule: ClanWarSchedulersEntity) {
     if (this.client.settings.hasCustomBot(schedule.guild) && !this.client.isCustom()) return;
     if (!this.client.guilds.cache.has(schedule.guild)) return;
@@ -153,13 +158,7 @@ export class ClanWarScheduler {
     const redisKey = `RANDOM_SELECTION:${clanTag}`;
     const previouslyMentioned: string[] = await this.client.redis.connection.sMembers(redisKey);
     const eligibleMembers = userIds.filter((id) => !previouslyMentioned.includes(id));
-
-    for (let i = eligibleMembers.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [eligibleMembers[i], eligibleMembers[j]] = [eligibleMembers[j], eligibleMembers[i]];
-    }
-
-    const randomUserIds = eligibleMembers.slice(0, limit);
+    const randomUserIds = shuffle(eligibleMembers).slice(0, limit);
 
     if (randomUserIds.length) {
       await this.client.redis.connection
@@ -227,7 +226,7 @@ export class ClanWarScheduler {
     mentions.sort((a, b) => a.position - b.position);
 
     const randomUserIds = await this.randomUsers({
-      clanTag: schedule.warTag || clan.tag,
+      clanTag: clan.tag,
       userIds,
       limit: reminder.randomLimit ?? 0
     });
@@ -262,18 +261,16 @@ export class ClanWarScheduler {
       `\u200e🔔 **${clanNick} (${label})**`,
       `📨 ${reminder.message}`,
       '',
-      users
-        .map(([mention, members]) =>
-          members
-            .map((mem, i) => {
-              const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
-              const hits = data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
-              const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
-              return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
-            })
-            .join('\n')
-        )
-        .join('\n')
+      ...users.map(([mention, members]) =>
+        members
+          .map((mem, i) => {
+            const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
+            const hits = data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
+            const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
+            return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
+          })
+          .join('\n')
+      )
     ].join('\n');
 
     return [text, userIds];
@@ -358,7 +355,7 @@ export class ClanWarScheduler {
         if (channel.isThread) reminder.threadId = channel.channel.id;
         const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
 
-        for (const content of Util.splitMessage(text)) {
+        for (const content of Util.splitMessage(`${text}\n\u200b`)) {
           if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
         }
       } else {

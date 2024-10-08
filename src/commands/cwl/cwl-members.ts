@@ -1,6 +1,6 @@
 import { APIPlayer } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, escapeInlineCode, User } from 'discord.js';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class CWLMembersCommand extends Command {
@@ -10,6 +10,15 @@ export default class CWLMembersCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {

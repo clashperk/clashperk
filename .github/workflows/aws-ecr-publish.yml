@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    environment: production
     name: aws-ecr-publish
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
 

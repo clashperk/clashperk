@@ -224,7 +224,13 @@ export class Resolver {
     ]);
 
     const result = fetched.flat().map((link) => {
-      return { tag: link.tag, userId: link.userId, verified: link.verified, displayName: link.displayName, username: link.username };
+      return {
+        tag: link.tag,
+        userId: link.userId,
+        verified: link.verified,
+        username: link.username,
+        displayName: link.displayName || link.username
+      };
     });
 
     return result.reduce<Record<string, { userId: string; tag: string; verified: boolean; displayName: string; username: string }>>(

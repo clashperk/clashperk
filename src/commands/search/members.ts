@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { MembersCommandOptions as options } from '../../util/command.options.js';
 import { EMOJIS, HERO_PETS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
@@ -38,8 +38,6 @@ const PETS = Object.keys(HERO_PETS).reduce<Record<string, number>>((prev, curr, 
   return prev;
 }, {});
 
-// type MemberCommandOption = (typeof MemberCommandOptions)[keyof typeof MemberCommandOptions]['id'];
-
 export default class MembersCommand extends Command {
   public constructor() {
     super('members', {
@@ -48,6 +46,15 @@ export default class MembersCommand extends Command {
       clientPermissions: ['EmbedLinks', 'AttachFiles'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; option?: string }) {

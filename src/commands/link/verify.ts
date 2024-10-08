@@ -16,7 +16,7 @@ export default class VerifyPlayerCommand extends Command {
 
   public args(): Args {
     return {
-      player_tag: {
+      player: {
         id: 'tag',
         match: 'STRING'
       }

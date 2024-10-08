@@ -36,10 +36,6 @@ export class Enqueuer {
   private lastSeenLog = new LastSeenLog(this);
   private legendLog = new LegendLog(this);
 
-  public get inMaintenance() {
-    return this.maintenanceLog.inMaintenance;
-  }
-
   public constructor(public readonly client: Client) {
     this.maintenanceLog.init();
     this.paused = Boolean(false);

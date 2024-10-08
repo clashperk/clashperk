@@ -1,7 +1,7 @@
 import { Collections } from '@app/constants';
 import { APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS, SUPER_TROOPS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 import { RAW_SUPER_TROOPS } from '../../util/troops.js';
@@ -14,6 +14,15 @@ export default class BoostsCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; unit?: string; recent?: boolean; user?: User }) {

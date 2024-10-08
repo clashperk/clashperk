@@ -45,17 +45,17 @@ export default class ProfileCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player_tag?: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player?: string }) {
     const whitelist = this.client.settings.get<string[]>('global', 'whitelist', []);
 
-    if (args.player_tag && !whitelist.includes(interaction.user.id)) {
+    if (args.player && !whitelist.includes(interaction.user.id)) {
       const command = this.handler.getCommand('player')!;
-      return command.exec(interaction, { tag: args.player_tag });
+      return command.exec(interaction, { tag: args.player });
     }
 
     const user =
-      args.player_tag && whitelist.includes(interaction.user.id)
-        ? await this.getUserByTag(interaction, args.player_tag)
+      args.player && whitelist.includes(interaction.user.id)
+        ? await this.getUserByTag(interaction, args.player)
         : args.user ?? interaction.user;
 
     const [data, players, otherTags] = await Promise.all([

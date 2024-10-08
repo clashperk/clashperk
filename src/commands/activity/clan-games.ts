@@ -19,7 +19,7 @@ export default class ClanGamesCommand extends Command {
 
   public args(): Args {
     return {
-      clan_tag: {
+      clan: {
         id: 'tag',
         match: 'STRING'
       }

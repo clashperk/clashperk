@@ -1,7 +1,7 @@
 import { APIClan, APIClanWar, APIClanWarLeagueGroup, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 
@@ -13,6 +13,15 @@ export default class CWLRosterCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {

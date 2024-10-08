@@ -20,7 +20,7 @@ export default class LegendDaysCommand extends Command {
 
   public args(): Args {
     return {
-      player_tag: {
+      player: {
         id: 'tag',
         match: 'STRING'
       }
@@ -262,7 +262,7 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    embed.setFooter({ text: `Day ${day} (${Season.ID})` });
+    embed.setFooter({ text: `Day ${day} (${Season.ID})` }).setTimestamp();
     return embed;
   }
 

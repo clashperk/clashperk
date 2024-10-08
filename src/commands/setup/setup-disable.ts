@@ -88,13 +88,11 @@ export default class SetupDisableCommand extends Command {
     const logTypes = Object.keys(logActionsMap) as ClanLogType[];
     const _logs = await this.client.db
       .collection(Collections.CLAN_LOGS)
-      .find({ logType: { $in: logTypes }, clanTag: data.tag, guildId: interaction.guildId })
+      .find({ logType: { $in: [...logTypes, ClanLogType.CLAN_EMBED_LOG] }, clanTag: data.tag, guildId: interaction.guildId })
       .toArray();
 
     const selectedLogs = DeprecatedLogs[args.action];
-    if (!selectedLogs) {
-      throw new Error(`Invalid action: ${args.action}`);
-    }
+    if (!selectedLogs) throw new Error(`Invalid action: ${args.action}`);
 
     const logIds = _logs.filter((log) => selectedLogs.includes(log.logType)).map((log) => log._id);
     logIds.forEach((logId) => this.client.enqueuer.deleteLog(logId.toHexString()));

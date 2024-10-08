@@ -13,7 +13,7 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import ms from 'ms';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage } from '../../util/helper.js';
 import { Season } from '../../util/toolkit.js';
@@ -41,15 +41,6 @@ export default class PlayerCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
-  }
-
-  public args(): Args {
-    return {
-      player_tag: {
-        id: 'tag',
-        match: 'STRING'
-      }
-    };
   }
 
   public async run(message: Message<true>, { tag }: { tag: string }) {

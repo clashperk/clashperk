@@ -13,6 +13,7 @@ import {
   TextInputStyle
 } from 'discord.js';
 import moment from 'moment';
+import ms from 'ms';
 import { Command } from '../../../lib/handlers.js';
 import { hexToNanoId } from '../../../util/helper.js';
 
@@ -29,11 +30,12 @@ export default class ReminderCreateCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { id: string }) {
-    const reminders = await this.client.db
-      .collection<RaidRemindersEntity>(Collections.RAID_REMINDERS)
-      .find({ guild: interaction.guild.id })
-      .toArray();
+  private get collection() {
+    return this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS);
+  }
+
+  public async exec(interaction: CommandInteraction<'cached'>, args: { id: string; duration?: string }) {
+    const reminders = await this.collection.find({ guild: interaction.guild.id }).toArray();
     if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
 
     const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id.toUpperCase())?._id;
@@ -41,9 +43,23 @@ export default class ReminderCreateCommand extends Command {
       return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
     }
 
-    const reminder = await this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS).findOne({ _id: reminderId });
+    const reminder = await this.collection.findOne({ _id: reminderId });
     if (!reminder) {
       return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
+    }
+
+    let duration = reminder.duration;
+
+    if (args.duration) {
+      if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
+        return interaction.editReply(this.i18n('command.reminders.create.invalid_duration_format', { lng: interaction.locale }));
+      }
+
+      duration = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
+      if (duration < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
+      if (duration > 3 * 24 * 60 * 60 * 1000) {
+        return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
+      }
     }
 
     const customIds = {
@@ -68,11 +84,9 @@ export default class ReminderCreateCommand extends Command {
     const embed = new EmbedBuilder();
     const mutate = (disable = false) => {
       embed.setDescription(
-        [
-          `**Edit Raid Attack Reminder (${this.getStatic(reminder.duration)} remaining)** <#${reminder.channel}>`,
-          '',
-          `${reminder.message}`
-        ].join('\n')
+        [`**Edit Raid Attack Reminder (${this.getStatic(duration)} remaining)** <#${reminder.channel}>`, '', `${reminder.message}`].join(
+          '\n'
+        )
       );
       embed.setFooter({
         text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
@@ -224,18 +238,24 @@ export default class ReminderCreateCommand extends Command {
 
       if (action.customId === customIds.save && action.isButton()) {
         await action.deferUpdate();
-        await this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS).updateOne(
+        const updated = await this.collection.findOneAndUpdate(
           { _id: reminder._id },
           {
             $set: {
               remaining: state.remaining.map((num) => Number(num)),
               roles: state.roles,
               allMembers: state.allMembers,
-              message: state.message.trim()
+              message: state.message.trim(),
+              duration
             }
           },
-          { upsert: true }
+          { returnDocument: 'after' }
         );
+
+        if (updated && reminder.duration !== duration) {
+          this.client.capitalRaidScheduler.reSchedule(updated);
+        }
+
         await action.editReply({
           components: mutate(true),
           content: this.i18n('command.reminders.create.success', { lng: interaction.locale })

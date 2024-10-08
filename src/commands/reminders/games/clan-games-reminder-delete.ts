@@ -36,7 +36,7 @@ export default class CapitalReminderDeleteCommand extends Command {
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { id?: string }) {
     const reminders = await this.client.db
-      .collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS)
+      .collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS)
       .find({ guild: interaction.guild.id })
       .toArray();
     if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
@@ -45,8 +45,8 @@ export default class CapitalReminderDeleteCommand extends Command {
       const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id?.toUpperCase())?._id;
       if (!reminderId)
         return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
-      await this.client.db.collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS).deleteOne({ _id: reminderId });
-      await this.client.db.collection<ClanGamesSchedulersEntity>(Collections.CG_SCHEDULERS).deleteMany({ reminderId });
+      await this.client.db.collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS).deleteOne({ _id: reminderId });
+      await this.client.db.collection<ClanGamesSchedulersEntity>(Collections.CLAN_GAMES_SCHEDULERS).deleteMany({ reminderId });
       return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id }));
     }
 
@@ -165,10 +165,10 @@ export default class CapitalReminderDeleteCommand extends Command {
         state.reminders.delete(state.selected!);
 
         await this.client.db
-          .collection<ClanGamesRemindersEntity>(Collections.CG_REMINDERS)
+          .collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS)
           .deleteOne({ _id: new ObjectId(state.selected!) });
         await this.client.db
-          .collection<ClanGamesSchedulersEntity>(Collections.CG_SCHEDULERS)
+          .collection<ClanGamesSchedulersEntity>(Collections.CLAN_GAMES_SCHEDULERS)
           .deleteMany({ reminderId: new ObjectId(state.selected!) });
 
         const rems = reminders.filter((rem) => state.reminders.has(rem._id.toHexString()));

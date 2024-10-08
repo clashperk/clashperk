@@ -17,7 +17,7 @@ export default class ClanGamesHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player_tag?: string; user?: User }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { embeds, result } = await this.getHistory(interaction, playerTags);
@@ -27,8 +27,8 @@ export default class ClanGamesHistoryCommand extends Command {
       return handlePagination(interaction, embeds, (action) => this.export(action, result));
     }
 
-    if (args.player_tag) {
-      const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+    if (args.player) {
+      const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return null;
       const playerTags = [player.tag];
       const { embeds, result } = await this.getHistory(interaction, playerTags);

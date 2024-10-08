@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
-import { Command } from '../../lib/handlers.js';
+import { Args, Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
@@ -25,6 +25,15 @@ export default class CWLStarsCommand extends Command {
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
+  }
+
+  public args(): Args {
+    return {
+      clan: {
+        id: 'tag',
+        match: 'STRING'
+      }
+    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; season?: string }) {

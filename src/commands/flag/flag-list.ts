@@ -33,19 +33,13 @@ export default class FlagListCommand extends Command {
     };
   }
 
-  public autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {
+  public autocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player?: string }) {
     return this.client.autocomplete.flagSearchAutoComplete(interaction, args);
-  }
-
-  private async resolveTags(guildId: string, clans?: string) {
-    if (!clans) return [];
-    if (clans === '*') return this.client.storage.find(guildId);
-    return this.client.storage.search(guildId, await this.client.resolver.resolveArgs(clans));
   }
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { flag_type: 'strike' | 'ban'; player_tag?: string; clans?: string; group_by_players?: boolean; page?: number }
+    args: { flag_type: 'strike' | 'ban'; player?: string; clans?: string; group_by_players?: boolean; page?: number }
   ) {
     // Delete expired flags.
     this.deleteExpiredFlags(interaction.guildId);
@@ -54,13 +48,13 @@ export default class FlagListCommand extends Command {
     const _clans = _clanTags.length ? await this.client.redis.getClans(_clanTags) : [];
     const playerTags = _clans.map((clan) => clan.memberList.map((mem) => mem.tag)).flat();
 
-    if (args.player_tag) return this.filterByPlayerTag(interaction, args);
+    if (args.player) return this.filterByPlayerTag(interaction, args);
 
     if (args.group_by_players) return this.groupByPlayerTag(interaction, { ...args, playerTags, clans: _clanTags });
     return this.flagList(interaction, { ...args, playerTags, clans: _clanTags });
   }
 
-  public async flagList(
+  private async flagList(
     interaction: CommandInteraction<'cached'>,
     args: { flag_type: 'strike' | 'ban'; playerTags: string[]; group_by_players?: boolean; page?: number; clans: string[] }
   ) {
@@ -196,8 +190,8 @@ export default class FlagListCommand extends Command {
     return this.dynamicPagination(interaction, embeds, args);
   }
 
-  private async filterByPlayerTag(interaction: CommandInteraction<'cached'>, args: { player_tag?: string; flag_type: 'ban' | 'strike' }) {
-    const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+  private async filterByPlayerTag(interaction: CommandInteraction<'cached'>, args: { player?: string; flag_type: 'ban' | 'strike' }) {
+    const player = await this.client.resolver.resolvePlayer(interaction, args.player);
     if (!player) return;
 
     const flag = await this.client.db
@@ -327,5 +321,11 @@ export default class FlagListCommand extends Command {
     );
 
     return interaction.editReply({ embeds: [embeds[pageIndex]], components: [row, pagingRow] });
+  }
+
+  private async resolveTags(guildId: string, clans?: string) {
+    if (!clans) return [];
+    if (clans === '*') return this.client.storage.find(guildId);
+    return this.client.storage.search(guildId, await this.client.resolver.resolveArgs(clans));
   }
 }

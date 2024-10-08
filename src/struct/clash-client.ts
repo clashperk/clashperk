@@ -119,7 +119,8 @@ export class ClashClient extends RESTManager {
     if (totalMedals !== 0) {
       totalMedals = Math.ceil(totalMedals / attacksDone) * 6;
     }
-    return Math.max(totalMedals, raidSeason.offensiveReward * 6);
+
+    return Math.min(1620, Math.max(totalMedals, raidSeason.offensiveReward * 6));
   }
 
   public calcRaidCompleted(attackLog: APICapitalRaidSeason['attackLog']) {
@@ -235,7 +236,12 @@ export class ClashClient extends RESTManager {
 
   public async getDataFromArchive(clanTag: string, season: string, group?: ClanWarLeagueGroupsEntity) {
     const res = await fetch(
-      `https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clanTag)}/cwl/seasons/${season}`
+      `https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clanTag)}/cwl/seasons/${season}`,
+      {
+        headers: {
+          'x-api-key': process.env.INTERNAL_API_KEY!
+        }
+      }
     );
     if (!res.ok) return null;
 

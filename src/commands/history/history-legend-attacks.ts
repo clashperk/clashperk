@@ -15,7 +15,7 @@ export default class LegendAttacksHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player_tag?: string; user?: User }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { result } = await this.getHistory(interaction, playerTags);
@@ -26,8 +26,8 @@ export default class LegendAttacksHistoryCommand extends Command {
       return this.export(interaction, result);
     }
 
-    if (args.player_tag) {
-      const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+    if (args.player) {
+      const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return null;
       const playerTags = [player.tag];
       const { result } = await this.getHistory(interaction, playerTags);

@@ -93,8 +93,8 @@ export const enum Collections {
   REMINDERS = 'Reminders',
   SCHEDULERS = 'Schedulers',
   RAID_REMINDERS = 'RaidReminders',
-  CG_REMINDERS = 'ClanGamesReminders',
-  CG_SCHEDULERS = 'ClanGamesSchedulers',
+  CLAN_GAMES_REMINDERS = 'ClanGamesReminders',
+  CLAN_GAMES_SCHEDULERS = 'ClanGamesSchedulers',
   RAID_SCHEDULERS = 'RaidSchedulers',
 
   WAR_BASE_CALLS = 'WarBaseCalls',
@@ -222,7 +222,9 @@ export enum FeatureFlags {
 
   TRUSTED_GUILD = 'trusted-guild',
 
-  RANDOM_DONATOR = 'random-donator'
+  RANDOM_DONATOR = 'random-donator',
+
+  ALLOW_NO_MISSED_ATTACKS_LOG = 'allow-no-missed-attacks-log'
 }
 
 export const enum Flags {

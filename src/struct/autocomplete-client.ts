@@ -49,7 +49,7 @@ export class Autocomplete {
 
   public async flagSearchAutoComplete(
     interaction: AutocompleteInteraction<'cached'>,
-    args: { player_tag?: string; flag_type?: 'ban' | 'strike' }
+    args: { player?: string; flag_type?: 'ban' | 'strike' }
   ) {
     const filter: Filter<FlagsEntity> = {
       guild: interaction.guild.id,
@@ -57,8 +57,8 @@ export class Autocomplete {
     };
     if (args.flag_type) filter.flagType = args.flag_type;
 
-    if (args.player_tag) {
-      const text = args.player_tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (args.player) {
+      const text = args.player.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       if (this.client.coc.isValidTag(text)) {
         filter.$or = [{ tag: this.client.coc.fixTag(text) }, { name: { $regex: `.*${text}.*`, $options: 'i' } }];
       } else {
@@ -67,7 +67,7 @@ export class Autocomplete {
     }
 
     const cursor = this.client.db.collection<FlagsEntity>(Collections.FLAGS).find(filter);
-    if (!args.player_tag) cursor.sort({ _id: -1 });
+    if (!args.player) cursor.sort({ _id: -1 });
 
     const flags = await cursor.limit(24).toArray();
     const players = flags.filter((flag, index) => flags.findIndex((f) => f.tag === flag.tag) === index);
@@ -79,23 +79,23 @@ export class Autocomplete {
     return interaction.respond(categories.slice(0, 25));
   }
 
-  public async globalClanAutoComplete(interaction: AutocompleteInteraction<'cached'>, args: { player_tag?: string }) {
+  public async globalPlayersAutocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player?: string }) {
     const clans = await this.client.storage.find(interaction.guildId);
     const query: Filter<PlayersEntity> = {
       'clan.tag': { $in: clans.map((clan) => clan.tag) }
     };
 
-    if (args.player_tag) {
-      const text = args.player_tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (args.player) {
+      const text = args.player.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [{ name: { $regex: `.*${text}.*`, $options: 'i' } }, { tag: { $regex: `.*${text}.*`, $options: 'i' } }];
     }
 
     const cursor = this.client.db.collection<PlayersEntity>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
-    if (!args.player_tag) cursor.sort({ lastSeen: -1 });
+    if (!args.player) cursor.sort({ lastSeen: -1 });
     const players = await cursor.limit(24).toArray();
 
-    if (!players.length && args.player_tag) {
-      const text = args.player_tag.slice(0, 100).trim();
+    if (!players.length && args.player) {
+      const text = args.player.slice(0, 100).trim();
       return interaction.respond([{ name: text, value: text }]);
     }
     if (!players.length) return interaction.respond([{ name: 'No players found.', value: '0' }]);

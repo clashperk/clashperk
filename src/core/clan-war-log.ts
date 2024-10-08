@@ -1,4 +1,4 @@
-import { Collections, calculateCWLMedals } from '@app/constants';
+import { Collections, FeatureFlags, calculateCWLMedals } from '@app/constants';
 import { ClanLogType, ClanLogsEntity } from '@app/entities';
 import { APIClanWar, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import {
@@ -74,17 +74,14 @@ export class ClanWarLog extends RootLog {
     }
 
     // MISSED ATTACK LOG
-    if (
-      data.remaining.length &&
-      data.state === 'warEnded' &&
-      [ClanLogType.WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(cache.logType)
-    ) {
+    if (data.state === 'warEnded' && [ClanLogType.WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(cache.logType)) {
       if (data.warTag && cache.logType !== ClanLogType.CWL_MISSED_ATTACKS_LOG) return null;
       if (!data.warTag && cache.logType !== ClanLogType.WAR_MISSED_ATTACKS_LOG) return null;
 
-      const embed = this.getRemaining(data);
-      if (!embed) return null;
+      const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.ALLOW_NO_MISSED_ATTACKS_LOG, cache.guild);
+      if (!isEnabled && !data.remaining.length) return null;
 
+      const embed = this.getRemaining(data);
       return this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
     }
 
@@ -325,7 +322,9 @@ export class ClanWarLog extends RootLog {
       .setDescription(
         [
           `**War Against ${data.warTag ? `(CWL Round ${data.round})` : ''}**`,
-          `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+          `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+          '',
+          data.remaining.length ? '' : 'No Missed Attacks'
         ].join('\n')
       );
 
@@ -349,8 +348,7 @@ export class ClanWarLog extends RootLog {
       embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? '1 Missed Attacks' : '\u200b', value: chunk })));
     }
 
-    if ((oneRem.length && !friendly) || twoRem.length) return embed;
-    return null;
+    return embed;
   }
 
   private getLineupChangeEmbed(data: Feed) {

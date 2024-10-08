@@ -345,7 +345,7 @@ export class MongoDbClient extends MongoClient {
         }
       ]),
 
-      db.collection(Collections.CG_REMINDERS).createIndexes([
+      db.collection(Collections.CLAN_GAMES_REMINDERS).createIndexes([
         {
           key: { guild: 1 }
         },
@@ -386,7 +386,7 @@ export class MongoDbClient extends MongoClient {
         }
       ]),
 
-      db.collection(Collections.CG_SCHEDULERS).createIndexes([
+      db.collection(Collections.CLAN_GAMES_SCHEDULERS).createIndexes([
         {
           key: { tag: 1 }
         },
