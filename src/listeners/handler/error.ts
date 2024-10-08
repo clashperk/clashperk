@@ -67,7 +67,7 @@ export default class ErrorListener extends Listener {
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
             .setStyle(ButtonStyle.Link)
-            .setLabel(this.i18n('common.buttons.contact_support', { lng: interaction.locale }))
+            .setLabel(this.i18n('component.button.contact_support', { lng: interaction.locale }))
             .setURL('https://discord.gg//ppuppun')
         )
       ],
