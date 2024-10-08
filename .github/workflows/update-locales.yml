@@ -1,16 +1,12 @@
 name: update-locales
 
-permissions:
-  contents: write
-  pull-requests: write
-
 on:
   workflow_dispatch:
   push:
     branches:
       - main
     paths:
-      - src/util/locales.ts
+      - 'src/**/locales.ts'
 
 jobs:
   build:
@@ -22,14 +18,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Checkout tools repo
+        uses: actions/checkout@v4
+        with:
+          repository: clashperk/locales
+          path: locales
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Init Submodule
-        run: |
-          git submodule init && git submodule update --remote
 
       - name: NPM Install
         run: npm i
@@ -37,20 +35,36 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check for changes in locales
+      - name: Create PR in locales Repo
+        uses: peter-evans/create-pull-request@v3
+        id: cpr
+        with:
+          token: ${{ secrets.PR_ACTION_GITHUB_PAT }}
+          commit-message: 'chore: update locales'
+          title: 'chore: update locales'
+          branch: chore/update-locales
+          base: main
+          path: locales
+          delete-branch: true
+          committer: GitHub <noreply@github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+      - name: Approve and Merge PR
         run: |
           cd locales
-          git checkout main
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git diff --quiet || git commit -am "chore: update translations" && git push
+          gh pr merge --squash --auto ${{steps.cpr.outputs.pull-request-number }}
+          gh pr review --approve ${{steps.cpr.outputs.pull-request-number }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_PAT }}
 
-      - name: Check for changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git diff --quiet || git commit -am "chore: update locales" && git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create PR in main Repo
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.PR_ACTION_GITHUB_PAT }}
+          commit-message: 'chore: update submodules'
+          title: 'chore: update submodules'
+          branch: chore/update-submodules
+          base: main
+          delete-branch: true
+          committer: GitHub <noreply@github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
