@@ -57,6 +57,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_PAT }}
 
+      - name: Pull
+        run: |
+          cd locales
+          git checkout main
+          git pull
+
       - name: Create PR in main Repo
         uses: peter-evans/create-pull-request@v3
         with:
