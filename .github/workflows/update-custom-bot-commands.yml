@@ -12,6 +12,7 @@ on:
 
 jobs:
   build:
+    environment: production
     name: update-custom-bot-commands
     runs-on: ubuntu-latest
 
@@ -38,5 +39,5 @@ jobs:
         env:
           CRYPTO_KEY: ${{ secrets.CRYPTO_KEY }}
           CRYPTO_IV: ${{ secrets.CRYPTO_IV }}
-          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
           SERVICE_API_URL: ${{ secrets.SERVICE_API_URL }}
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}

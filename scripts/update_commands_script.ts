@@ -44,10 +44,10 @@ const applicationCommands = async (token: string, commands: RESTPostAPIApplicati
 };
 
 const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
-  const res = await fetch(`${process.env.SERVICE_API_URL!}/applications`, {
+  const res = await fetch(`${process.env.SERVICE_API_URL}/auth/applications`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${process.env.SERVICE_API_KEY!}`,
+      'Authorization': `Bearer ${process.env.SERVICE_API_KEY}`,
       'Content-Type': 'application/json'
     }
   });

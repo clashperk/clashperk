@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+    environment: production
     name: aws-ecr-publish-and-deploy
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
 
@@ -67,6 +68,7 @@ jobs:
 
   deploy-main-bot:
     needs: build
+    environment: production
     name: deploy-main-bot
     runs-on: ubuntu-latest
 
@@ -85,11 +87,12 @@ jobs:
 
   deploy-custom-bot:
     needs: build
+    environment: production
     name: deploy-custom-bot
     runs-on: ubuntu-latest
 
     steps:
       - name: Deploy
         run: |
-          curl --fail --location --request POST 'http://${{ secrets.AUTO_DEPLOYMENT_SERVICE_HOST }}/github-webhook' \
-            --header 'x-api-key: ${{ secrets.AUTO_DEPLOYMENT_SERVICE_API_KEY }}'
+          curl --fail --location --request POST 'http://${{ secrets.CUSTOM_BOT_SERVICE }}/github-webhook' \
+            --header 'x-api-key: ${{ secrets.CUSTOM_BOT_SERVICE_TOKEN }}'
