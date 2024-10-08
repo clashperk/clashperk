@@ -15,8 +15,8 @@ import {
 } from 'discord.js';
 import ms from 'ms';
 import { title, unique } from 'radash';
-import { command } from '../../../locales/locales.js';
 import { Command } from '../../lib/handlers.js';
+import { command } from '../../util/locales.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
 const options = [

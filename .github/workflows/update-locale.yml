@@ -1,0 +1,50 @@
+name: update-crowdin
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - src/util/locales.ts
+
+jobs:
+  build:
+    environment: production
+    name: update-crowdin
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Init Submodule
+        run: git submodule init && git submodule update --remote
+
+      - name: NPM Install
+        run: npm i
+
+      - name: Update Crowdin
+        run: npm run build
+
+      - name: Check for changes in locales
+        run: |
+          cd locales
+          git diff --quiet || git commit -am "chore: update translations" && git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for changes
+        run: |
+          git diff --quiet || git commit -am "chore: update locales" && git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

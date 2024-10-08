@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import locale from '../locales/locales.js';
+import locale from '../src/util/locales.js';
 
 (() => {
   const data = JSON.stringify(locale, null, 2);

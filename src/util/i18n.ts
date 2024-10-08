@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import locales from '../../locales/locales.js';
+import locales from './locales.js';
 
 // type DeepKeys<T, S extends string> = T extends object
 // 	? S extends `${infer I1}.${infer I2}`

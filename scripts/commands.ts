@@ -16,11 +16,11 @@ import i18next from 'i18next';
 import moment from 'moment';
 import { fileURLToPath } from 'node:url';
 import { title } from 'radash';
-import { command, common } from '../locales/locales.js';
 import { MembersCommandOptions, RosterCommandSortOptions, RosterManageActions } from '../src/util/command.options.js';
 import { Backend } from '../src/util/i18n.backend.js';
 import { defaultOptions, fallbackLng } from '../src/util/i18n.config.js';
 import { TranslationKey } from '../src/util/i18n.js';
+import { command, common } from '../src/util/locales.js';
 import { Season } from '../src/util/toolkit.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
