@@ -55,9 +55,6 @@ export const common = {
         description: 'Clan by @user mention or ID.'
       }
     },
-    user: {
-      description: 'Clan by @user mention or ID.'
-    },
     player: {
       tag: {
         description: 'Player tag or name.'

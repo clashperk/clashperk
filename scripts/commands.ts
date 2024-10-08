@@ -257,8 +257,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -289,8 +289,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       }
@@ -328,8 +328,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       }
@@ -413,8 +413,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -450,8 +450,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -481,8 +481,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -514,8 +514,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -545,8 +545,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -580,8 +580,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -731,8 +731,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -891,8 +891,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -1047,8 +1047,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       }
@@ -1069,8 +1069,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       }
@@ -1189,8 +1189,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1219,8 +1219,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1241,8 +1241,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1271,8 +1271,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1301,8 +1301,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1331,8 +1331,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1353,8 +1353,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -3767,8 +3767,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
