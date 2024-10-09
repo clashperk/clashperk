@@ -5,7 +5,7 @@ import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title } from 'radash';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
-import { Collections, Settings } from './constants.js';
+import { Collections, FeatureFlags, Settings } from './constants.js';
 import { Season, Util } from './toolkit.js';
 
 export const hexToNanoId = (hex: ObjectId) => {
@@ -121,11 +121,16 @@ export const getMenuFromMessage = (interaction: ButtonInteraction, selected: str
 
 export const recoverDonations = async (clan: APIClan) => {
   const client = container.resolve(Client);
+  const { endTime, startTime } = client.coc.util.getSeason();
 
-  if (Date.now() >= new Date('2024-09-30T05:00').getTime()) return;
+  const isEnabled = await client.isFeatureEnabled(FeatureFlags.DONATIONS_RECOVERY, 'global');
+  if (!isEnabled) return;
+  if (Date.now() >= endTime.getTime()) return;
 
   const inserted = await client.redis.connection.get(`RECOVERY:${clan.tag}`);
   if (inserted) return;
+
+  client.logger.debug(`Recovering donations for ${clan.tag}...`, { label: 'DonationRecovery' });
 
   const { aggregations } = await client.elastic.search({
     query: {
@@ -139,7 +144,7 @@ export const recoverDonations = async (clan: APIClan) => {
           {
             range: {
               created_at: {
-                gte: '2024-08-26T05:00'
+                gte: startTime.toISOString()
               }
             }
           }
@@ -241,7 +246,7 @@ export const recoverDonations = async (clan: APIClan) => {
     await client.db.collection<PlayerSeasonsEntity>(Collections.PLAYER_SEASONS).bulkWrite(ops);
   }
 
-  return client.redis.set(`RECOVERY:${clan.tag}`, '-0-', 60 * 60 * 24 * 3);
+  return client.redis.set(`RECOVERY:${clan.tag}`, '-0-', Math.round(endTime.getTime() - Date.now() / 1000));
 };
 
 export const unitsFlatten = (data: APIPlayer) => {

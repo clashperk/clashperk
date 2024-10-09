@@ -1484,7 +1484,7 @@ export const command = {
     description: 'Shows the next in-game events.'
   },
   whitelist: {
-    description: '[Experimental] Whitelist a role or user to use specific commands.',
+    description: 'Whitelist a role or user to use specific commands.',
     options: {
       user_or_role: {
         description: 'User or role to whitelist.'

@@ -3047,8 +3047,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'builder-leagues',
-        description: command.autorole.builder_hall.description,
-        description_localizations: translation('command.autorole.builder_hall.description'),
+        description: command.autorole.builder_leagues.description,
+        description_localizations: translation('command.autorole.builder_leagues.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           ...BUILDER_BASE_LEAGUE_NAMES.map(

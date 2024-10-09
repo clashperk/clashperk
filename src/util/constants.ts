@@ -224,7 +224,9 @@ export enum FeatureFlags {
 
   RANDOM_DONATOR = 'random-donator',
 
-  ALLOW_NO_MISSED_ATTACKS_LOG = 'allow-no-missed-attacks-log'
+  ALLOW_NO_MISSED_ATTACKS_LOG = 'allow-no-missed-attacks-log',
+
+  DONATIONS_RECOVERY = 'donations-recovery'
 }
 
 export const enum Flags {
