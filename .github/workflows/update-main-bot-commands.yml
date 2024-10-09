@@ -20,11 +20,17 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Switch to latest Tag
+        if: github.event_name == 'schedule'
+        run: git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
 
       - name: Init Submodule
         run: git submodule init && git submodule update
