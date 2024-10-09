@@ -36,7 +36,7 @@ export default class ReminderCreateCommand extends Command {
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { id: string; duration?: string }) {
     const reminders = await this.collection.find({ guild: interaction.guild.id }).toArray();
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
 
     const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id.toUpperCase())?._id;
     if (!reminderId) {

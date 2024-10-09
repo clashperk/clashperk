@@ -38,7 +38,7 @@ export default class ReminderDeleteCommand extends Command {
       .collection<ClanWarRemindersEntity>(Collections.REMINDERS)
       .find({ guild: interaction.guild.id })
       .toArray();
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
 
     if (args.id) {
       const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id?.toUpperCase())?._id;

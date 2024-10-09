@@ -47,7 +47,7 @@ export default class ReminderListCommand extends Command {
       return interaction.editReply('No reminders were found for the specified channel or clans or reminder_id.');
     }
 
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.list.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
     const clans = await this.client.storage.find(interaction.guildId);
 
     const label = (duration: number) => moment.duration(duration).format('H[h], m[m]', { trim: 'both mid' });

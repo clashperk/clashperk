@@ -193,38 +193,36 @@ export const command = {
   },
   leaderboard: {
     description: 'Leaderboard of the top clans and players.',
-    options: {
-      clans: {
-        description: 'Top clans leaderboard.',
-        options: {
-          location: {
-            description: 'Location of the leaderboard'
-          },
-          season: {
-            description: 'Season of the leaderboard'
-          }
+    clans: {
+      description: 'Top clans leaderboard.',
+      options: {
+        location: {
+          description: 'Location of the leaderboard'
+        },
+        season: {
+          description: 'Season of the leaderboard'
         }
-      },
-      players: {
-        description: 'Top players leaderboard.',
-        options: {
-          location: {
-            description: 'Location of the leaderboard'
-          },
-          season: {
-            description: 'Season of the leaderboard'
-          }
+      }
+    },
+    players: {
+      description: 'Top players leaderboard.',
+      options: {
+        location: {
+          description: 'Location of the leaderboard'
+        },
+        season: {
+          description: 'Season of the leaderboard'
         }
-      },
-      capital: {
-        description: 'Top capital leaderboard.',
-        options: {
-          location: {
-            description: 'Location of the leaderboard'
-          },
-          season: {
-            description: 'Season of the leaderboard'
-          }
+      }
+    },
+    capital: {
+      description: 'Top capital leaderboard.',
+      options: {
+        location: {
+          description: 'Location of the leaderboard'
+        },
+        season: {
+          description: 'Season of the leaderboard'
         }
       }
     }
@@ -283,9 +281,6 @@ export const command = {
     options: {
       color_code: {
         description: 'Hex color code (e.g #ed4245)'
-      },
-      maintenance_notification_channel: {
-        description: 'In-game maintenance break notification channel.'
       },
       manager_role: {
         description: 'Role that can manage the bot.'
@@ -367,253 +362,237 @@ export const command = {
   },
   roster: {
     description: 'Comprehensive roster management system',
-    options: {
-      create: {
-        description: 'Create a roster',
-        options: {
-          clan: {
-            description: 'Clan of the roster'
-          },
-          name: {
-            description: 'Name of the roster'
-          },
-          category: {
-            description: 'Category of the roster',
-            choices: {
-              cwl: 'CWL',
-              war: 'WAR',
-              esports: 'ESPORTS',
-              trophy: 'TROPHY'
-            }
-          },
-          import_members: {
-            description: 'Whether to import members from the clan'
-          },
-          allow_unlinked: {
-            description: 'Whether to allow unlinked members'
-          },
-          max_members: {
-            description: 'Roster size'
-          },
-          max_accounts_per_user: {
-            description: 'Max accounts per user'
-          },
-          min_town_hall: {
-            description: 'Minimum Town Hall level'
-          },
-          max_town_hall: {
-            description: 'Maximum Town Hall level'
-          },
-          min_hero_level: {
-            description: 'Minimum combined Hero level'
-          },
-          roster_role: {
-            description: 'Roster role'
-          },
-          sort_by: {
-            description: 'Sorting order of the roster member list'
-          },
-          start_time: {
-            description: 'Roster start time (YYYY-MM-DD HH:mm, in 24 hours format)'
-          },
-          end_time: {
-            description: 'Roster end time (YYYY-MM-DD HH:mm, in 24 hours format)'
-          },
-          timezone: {
-            description: 'Search timezone by city or country (e.g. London, Singapore, India, Sydney)'
-          },
-          allow_group_selection: {
-            description: 'Whether to allow members to select group'
-          },
-          allow_multi_signup: {
-            description: 'Whether to allow multiple roster signups'
-          },
-          use_clan_alias: {
-            description: 'Whether to use clan alias in the roster (created by /alias command)'
-          },
-          roster_image_url: {
-            description: 'Image to be used in the roster embed'
-          },
-          color_code: {
-            description: 'Hex color code of the roster embed'
+    create: {
+      description: 'Create a roster',
+      options: {
+        clan: {
+          description: 'Clan of the roster'
+        },
+        name: {
+          description: 'Name of the roster'
+        },
+        category: {
+          description: 'Category of the roster',
+          choices: {
+            cwl: 'CWL',
+            war: 'WAR',
+            esports: 'ESPORTS',
+            trophy: 'TROPHY'
           }
+        },
+        import_members: {
+          description: 'Whether to import members from the clan'
+        },
+        allow_unlinked: {
+          description: 'Whether to allow unlinked members'
+        },
+        max_members: {
+          description: 'Roster size'
+        },
+        max_accounts_per_user: {
+          description: 'Max accounts per user'
+        },
+        min_town_hall: {
+          description: 'Minimum Town Hall level'
+        },
+        max_town_hall: {
+          description: 'Maximum Town Hall level'
+        },
+        min_hero_level: {
+          description: 'Minimum combined Hero level'
+        },
+        roster_role: {
+          description: 'Roster role'
+        },
+        sort_by: {
+          description: 'Sorting order of the roster member list'
+        },
+        start_time: {
+          description: 'Roster start time (YYYY-MM-DD HH:mm, in 24 hours format)'
+        },
+        end_time: {
+          description: 'Roster end time (YYYY-MM-DD HH:mm, in 24 hours format)'
+        },
+        timezone: {
+          description: 'Search timezone by city or country (e.g. London, Singapore, India, Sydney)'
+        },
+        allow_group_selection: {
+          description: 'Whether to allow members to select group'
+        },
+        allow_multi_signup: {
+          description: 'Whether to allow multiple roster signups'
+        },
+        use_clan_alias: {
+          description: 'Whether to use clan alias in the roster (created by /alias command)'
+        },
+        roster_image_url: {
+          description: 'Image to be used in the roster embed'
+        },
+        color_code: {
+          description: 'Hex color code of the roster embed'
         }
-      },
-      post: {
-        description: 'Post a roster to signup or view members',
-        options: {
-          roster: {
-            description: 'Select a roster to post'
+      }
+    },
+    post: {
+      description: 'Post a roster to signup or view members',
+      options: {
+        roster: {
+          description: 'Select a roster to post'
+        }
+      }
+    },
+    clone: {
+      description: 'Clone a roster to create a new one',
+      options: {
+        roster: {
+          description: 'Select a roster to clone'
+        },
+        name: {
+          description: 'Name of the cloned roster'
+        }
+      }
+    },
+    list: {
+      description: 'Search rosters or list all rosters and groups',
+      options: {
+        name: {
+          description: 'Search rosters by name'
+        },
+        user: {
+          description: 'Search rosters by user'
+        },
+        player: {
+          description: 'Search rosters by player'
+        },
+        clan: {
+          description: 'Search rosters by clan'
+        }
+      }
+    },
+    edit: {
+      description: 'Edit a roster',
+      options: {
+        roster: {
+          description: 'Select a roster to edit'
+        },
+        detach_clan: {
+          description: 'Detach clan from the roster'
+        },
+        delete_role: {
+          description: 'Whether to delete the roster role'
+        },
+        log_channel: {
+          description: 'Channel to log roster changes'
+        }
+      }
+    },
+    delete: {
+      description: 'Permanently delete a roster.',
+      options: {
+        roster: {
+          description: 'Select a roster to delete'
+        }
+      }
+    },
+    manage: {
+      description: 'Add or remove users or change their group or roster',
+      options: {
+        roster: {
+          description: 'Select a roster to manage'
+        },
+        action: {
+          description: 'Select an action to perform',
+          choices: {
+            add_user: 'Add',
+            remove_user: 'Remove',
+            change_roster: 'Change roster',
+            change_group: 'Change group'
           }
+        },
+        player: {
+          description: 'Select a player to manage'
+        },
+        clan: {
+          description: 'Select a clan to add players from'
+        },
+        user: {
+          description: 'Select a user to manage'
+        },
+        target_group: {
+          description: 'Group of the user to move to'
+        },
+        target_roster: {
+          description: 'Roster of the user to move to'
         }
-      },
-      clone: {
-        description: 'Clone a roster to create a new one',
-        options: {
-          roster: {
-            description: 'Select a roster to clone'
-          },
-          name: {
-            description: 'Name of the cloned roster'
-          }
-        }
-      },
-      list: {
-        description: 'Search rosters or list all rosters and groups',
-        options: {
-          name: {
-            description: 'Search rosters by name'
-          },
-          user: {
-            description: 'Search rosters by user'
-          },
-          player: {
-            description: 'Search rosters by player'
-          },
-          clan: {
-            description: 'Search rosters by clan'
-          }
-        }
-      },
-      edit: {
-        description: 'Edit a roster',
-        options: {
-          roster: {
-            description: 'Select a roster to edit'
-          },
-          detach_clan: {
-            description: 'Detach clan from the roster'
-          },
-          delete_role: {
-            description: 'Whether to delete the roster role'
-          },
-          log_channel: {
-            description: 'Channel to log roster changes'
-          }
-        }
-      },
-      delete: {
-        description: 'Permanently delete a roster.',
-        options: {
-          roster: {
-            description: 'Select a roster to delete'
-          }
-        }
-      },
-      manage: {
-        description: 'Add or remove users or change their group or roster',
-        options: {
-          roster: {
-            description: 'Select a roster to manage'
-          },
-          action: {
-            description: 'Select an action to perform',
-            choices: {
-              add_user: 'Add',
-              remove_user: 'Remove',
-              change_roster: 'Change roster',
-              change_group: 'Change group'
-            }
-          },
-          player: {
-            description: 'Select a player to manage'
-          },
-          clan: {
-            description: 'Select a clan to add players from'
-          },
-          user: {
-            description: 'Select a user to manage'
-          },
-          target_group: {
-            description: 'Group of the user to move to'
-          },
-          target_roster: {
-            description: 'Roster of the user to move to'
-          }
-        }
-      },
-      groups: {
-        description: 'Manage groups of the rosters',
-        options: {
-          create: {
-            description: 'Create a group',
-            options: {
-              name: {
-                description: 'Name of the group'
-              },
-              group_role: {
-                description: 'Role of the group'
-              },
-              selectable: {
-                description: 'Whether to allow members to select this group'
-              }
-            }
-          },
-          modify: {
-            description: 'Modify or delete a group',
-            options: {
-              group: {
-                description: 'Select a group to modify'
-              },
-              name: {
-                description: 'Name of the group'
-              },
-              order: {
-                description: 'Order of the group'
-              },
-              selectable: {
-                description: 'Whether to allow members to select this group'
-              },
-              delete_role: {
-                description: 'Whether to delete the role of the group'
-              },
-              delete_group: {
-                description: 'Whether to delete the group'
-              }
+      }
+    },
+    groups: {
+      description: 'Manage groups of the rosters',
+      options: {
+        create: {
+          description: 'Create a group',
+          options: {
+            name: {
+              description: 'Name of the group'
+            },
+            group_role: {
+              description: 'Role of the group'
+            },
+            selectable: {
+              description: 'Whether to allow members to select this group'
             }
           }
-        }
-      },
-      ping: {
-        description: 'Ping members in the roster',
-        options: {
-          roster: {
-            description: 'Select a roster to ping'
-          },
-          message: {
-            description: 'Message for the members'
-          },
-          ping_options: {
-            choices: {
-              unregistered: "Unregistered (didn't signup, but in the clan)",
-              missing: 'Missing (opted-in, but not in the clan)',
-              everyone: 'Everyone (all opted-in members)'
+        },
+        modify: {
+          description: 'Modify or delete a group',
+          options: {
+            group: {
+              description: 'Select a group to modify'
+            },
+            name: {
+              description: 'Name of the group'
+            },
+            order: {
+              description: 'Order of the group'
+            },
+            selectable: {
+              description: 'Whether to allow members to select this group'
+            },
+            delete_role: {
+              description: 'Whether to delete the role of the group'
+            },
+            delete_group: {
+              description: 'Whether to delete the group'
             }
-          },
-          group: {
-            description: 'Select a group to ping (Overwrites ping options)'
           }
         }
       }
-    }
-  },
-  round: {
-    description: 'CWL summary for the current round.',
-    options: {
-      tag: {
-        description: 'Clan tag or alias or @user mention.'
-      },
-      round: {
-        description: 'Round number to show.'
+    },
+    ping: {
+      description: 'Ping members in the roster',
+      options: {
+        roster: {
+          description: 'Select a roster to ping'
+        },
+        message: {
+          description: 'Message for the members'
+        },
+        ping_options: {
+          choices: {
+            unregistered: "Unregistered (didn't signup, but in the clan)",
+            missing: 'Missing (opted-in, but not in the clan)',
+            everyone: 'Everyone (all opted-in members)'
+          }
+        },
+        group: {
+          description: 'Select a group to ping (Overwrites ping options)'
+        }
       }
     }
   },
   export: {
     description: 'Export war/season/clan stats to Excel.',
     options: {
-      option: {
-        description: 'Select an option.'
-      },
       season: {
         description: 'Retrieve data since the specified season.'
       },
@@ -948,7 +927,6 @@ export const command = {
           description: 'Whether to clear all reminders.'
         }
       },
-      no_reminders: 'You have no reminders.',
       cleared: 'Successfully cleared all reminders.',
       not_found: 'No reminder was found with the ID {{id}}.',
       success: 'Successfully deleted the reminder with the ID {{id}}.',
@@ -956,7 +934,6 @@ export const command = {
     },
     list: {
       description: 'List all war reminders for clan wars, capital raids or clan games.',
-      no_reminders: 'You have no reminders.',
       options: {
         compact_list: {
           description: 'Show a compact list of the reminders and disable ephemeral.'
@@ -978,7 +955,9 @@ export const command = {
       },
       no_message: 'You must specify a message to execute this command.',
       no_match: 'There are no wars or no members that are matching with the selected options.'
-    }
+    },
+    //
+    no_reminders: 'You have no reminders.'
   },
   history: {
     description: 'Clan Games, Capital Raids, Donations, and CWL attacks history.',
@@ -1105,30 +1084,28 @@ export const command = {
   },
   caller: {
     description: 'Manage the war base caller.',
-    options: {
-      assign: {
-        description: 'Set a target for a player in the current war.',
-        options: {
-          defense_target: {
-            description: 'The base target # of your opponent.'
-          },
-          offense_target: {
-            description: 'The base target # of your clan.'
-          },
-          notes: {
-            description: 'Notes to add to the target.'
-          },
-          hours: {
-            description: 'The number of hours to set the target for.'
-          }
+    assign: {
+      description: 'Set a target for a player in the current war.',
+      options: {
+        defense_target: {
+          description: 'The base target # of your opponent.'
+        },
+        offense_target: {
+          description: 'The base target # of your clan.'
+        },
+        notes: {
+          description: 'Notes to add to the target.'
+        },
+        hours: {
+          description: 'The number of hours to set the target for.'
         }
-      },
-      clear: {
-        description: 'Clear the target for a player in the current war.',
-        options: {
-          defense_target: {
-            description: 'The base target # of your opponent.'
-          }
+      }
+    },
+    clear: {
+      description: 'Clear the target for a player in the current war.',
+      options: {
+        defense_target: {
+          description: 'The base target # of your opponent.'
         }
       }
     }
@@ -1306,29 +1283,31 @@ export const command = {
   },
   setup: {
     description: 'Enable/disable features on the server or add/remove clans.',
+    options: {
+      action: {
+        choices: {
+          server_link: 'Server Link',
+          channel_link: 'Channel Link',
+          delete_clan: 'Delete clan',
+          logs_or_feed: 'Logs / Feed (New)',
+          war_feed: 'War Feed',
+          last_seen: 'Last Seen',
+          clan_games: 'Clan Games',
+          legend_log: 'Legend Log',
+          capital_log: 'Capital Log',
+          clan_feed: 'Clan Feed',
+          join_leave: 'Join/Leave Log',
+          clan_embed: 'Clan Embed',
+          donation_log: 'Donation Log'
+        }
+      }
+    },
     enable: {
       description: 'Enable a feature on the server or add a clan.',
       description_long:
         'Enable a feature on the server (War Feed, Last Seen, Clan Games, Legend Log, Capital Log, Clan Feed, Join/Leave Log, Clan Embed, Donation Log) or add a clan or link a clan to a channel.',
       options: {
-        option: {
-          description: 'Select an option.',
-          choices: {
-            link_clan: 'Server Link',
-            link_channel: 'Channel Link',
-            enable_logs: 'Logs / Feed (New)',
-            war_feed: 'War Feed',
-            last_seen: 'Last Seen',
-            clan_games: 'Clan Games',
-            legend_log: 'Legend Log',
-            capital_log: 'Capital Log',
-            clan_feed: 'Clan Feed',
-            join_leave: 'Join/Leave Log',
-            clan_embed: 'Clan Embed',
-            donation_log: 'Donation Log'
-          }
-        },
-        tag: {
+        clan: {
           description: 'Tag of the clan.'
         },
         channel: {
@@ -1359,23 +1338,6 @@ export const command = {
     disable: {
       description: 'Disable a feature on the server or remove a clan.',
       options: {
-        option: {
-          description: 'Select an option.',
-          choices: {
-            unlink_channel: 'Channel link',
-            delete_clan: 'Delete clan',
-            disable_logs: 'Logs / Feed (New)',
-            war_feed: 'War feed',
-            last_seen: 'Last seen',
-            clan_games: 'Clan games',
-            legend_log: 'Legend log',
-            capital_log: 'Capital log',
-            clan_feed: 'Clan feed',
-            join_leave: 'Join/Leave log',
-            clan_embed: 'Clan embed',
-            donation_log: 'Donation log'
-          }
-        },
         tag: {
           description: 'Tag of the clan.'
         },
@@ -1398,7 +1360,7 @@ export const command = {
       }
     },
     utils: {
-      description: 'Setup other utility features (link button, events schedular)',
+      description: '[DEPRECATED] Setup other utility features (link button, events schedular)',
       options: {
         option: {
           choices: {
@@ -1425,9 +1387,6 @@ export const command = {
             link_button: 'Link button',
             role_refresh_button: 'Role refresh button'
           }
-        },
-        disable: {
-          description: 'Disable the events schedular'
         }
       }
     },
@@ -1474,36 +1433,24 @@ export const command = {
   category: {
     description: 'Manage clan categories or groups.',
     options: {
-      create: {
-        description: 'Create a new clan category.',
-        options: {
-          category_name: {
-            description: 'Name of the clan category.'
-          }
-        }
+      category_name: {
+        description: 'Name of the clan category.'
       },
-      list: {
-        description: 'List all clan categories.'
-      },
-      edit: {
-        description: 'Edit a clan category.',
-        options: {
-          category: {
-            description: 'Select a clan category.'
-          },
-          category_name: {
-            description: 'Name of the clan category.'
-          }
-        }
-      },
-      delete: {
-        description: 'Delete a clan category.',
-        options: {
-          category: {
-            description: 'Select a clan category.'
-          }
-        }
+      category: {
+        description: 'Select a clan category.'
       }
+    },
+    create: {
+      description: 'Create a new clan category.'
+    },
+    list: {
+      description: 'List all clan categories.'
+    },
+    edit: {
+      description: 'Edit a clan category.'
+    },
+    delete: {
+      description: 'Delete a clan category.'
     }
   },
   autorole: {
@@ -1679,97 +1626,6 @@ export const command = {
   summary: {
     description: 'Shows summary of the clan family.',
     options: {
-      best: {
-        description: 'Shows a summary of best members.',
-        options: {
-          clans: {
-            description: 'Clan tags or aliases.'
-          },
-          limit: {
-            description: 'Number of members to show (Default: 5)'
-          },
-          order: {
-            description: 'Order of the list.',
-            choices: {
-              desc: 'Descending',
-              asc: 'Ascending'
-            }
-          }
-        }
-      },
-      wars: {
-        description: 'Shows a summary of current wars.',
-        options: {
-          clans: {
-            description: 'Clan tags or aliases.'
-          }
-        }
-      },
-      compo: {
-        description: 'Shows a summary of Town Hall composition.',
-        options: {
-          clans: {
-            description: 'Clan tags or aliases.'
-          }
-        }
-      },
-      cwl_ranks: {
-        description: 'Shows a summary of CWL ranks.'
-      },
-      cwl_status: {
-        description: 'Shows a summary of CWL spin status.'
-      },
-      leagues: {
-        description: 'Shows a summary of clan leagues.'
-      },
-      donations: {
-        description: 'Shows a summary of donations.'
-      },
-      attacks: {
-        description: 'Shows a summary of multiplayer attacks and defenses.'
-      },
-      trophies: {
-        description: 'Shows a summary of trophies.',
-        options: {
-          limit: {
-            description: 'Limit the number of members.'
-          }
-        }
-      },
-      war_results: {
-        description: 'Shows a summary of seasonal war results.'
-      },
-      missed_wars: {
-        description: 'Shows a summary of missed wars.'
-      },
-      capital_raids: {
-        description: 'Shows information about capital raids.',
-        options: {
-          week: {
-            description: 'The week to show raids for.'
-          }
-        }
-      },
-      capital_contribution: {
-        description: 'Shows a summary of capital contributions.',
-        options: {
-          week: {
-            description: 'The week to show capital contributions for.'
-          }
-        }
-      },
-      activity: {
-        description: 'Shows a summary of clan activity (last seen).'
-      },
-      clan_games: {
-        description: 'Shows a summary of clan games scores.'
-      },
-      clans: {
-        description: 'Shows a summary of family clans.'
-      },
-      option: {
-        description: 'Select an option.'
-      },
       season_since: {
         description: 'Retrieve data since the specified season.'
       },
@@ -1777,53 +1633,93 @@ export const command = {
         description: 'Retrieve data for the specified season.'
       }
     },
-    compo: {
-      description: 'Shows a summary of family Town Hall composition.'
+    best: {
+      description: 'Shows a summary of best members.',
+      options: {
+        clans: {
+          description: 'Clan tags or aliases.'
+        },
+        limit: {
+          description: 'Number of members to show (Default: 5)'
+        },
+        order: {
+          description: 'Order of the list.',
+          choices: {
+            desc: 'Descending',
+            asc: 'Ascending'
+          }
+        }
+      }
     },
-    clans: {
-      description: 'Shows a summary of family clans.'
+    wars: {
+      description: 'Shows a summary of current wars.',
+      options: {
+        clans: {
+          description: 'Clan tags or aliases.'
+        }
+      }
+    },
+    compo: {
+      description: 'Shows a summary of Town Hall composition.',
+      options: {
+        clans: {
+          description: 'Clan tags or aliases.'
+        }
+      }
+    },
+    cwl_ranks: {
+      description: 'Shows a summary of CWL ranks.'
+    },
+    cwl_status: {
+      description: 'Shows a summary of CWL spin status.'
+    },
+    leagues: {
+      description: 'Shows a summary of clan leagues.'
     },
     donations: {
       description: 'Shows a summary of donations.'
     },
+    attacks: {
+      description: 'Shows a summary of multiplayer attacks and defenses.'
+    },
     trophies: {
-      description: 'Shows a summary of players sorted by trophies.'
-    },
-    wars: {
-      description: 'Shows a summary of current wars.'
-    },
-    clan_games: {
-      description: 'Shows a summary of clan games scores.',
-      min_clan_size: 'You must have a minimum of {{clans}} clans on your server to use this command.',
-      scoreboard: 'Based on the highest scores and completion times.',
-      performance: 'Based on completing maximum points.'
+      description: 'Shows a summary of trophies.',
+      options: {
+        limit: {
+          description: 'Limit the number of members.'
+        }
+      }
     },
     war_results: {
       description: 'Shows a summary of seasonal war results.'
-    },
-    best: {
-      description: 'Shows a summary of best members.'
-    },
-    attacks: {
-      description: 'Shows a summary of best attackers.'
     },
     missed_wars: {
       description: 'Shows a summary of missed wars.'
     },
     capital_raids: {
-      description: 'Shows a summary of clan capital raids.'
+      description: 'Shows information about capital raids.',
+      options: {
+        week: {
+          description: 'The week to show raids for.'
+        }
+      }
     },
     capital_contribution: {
-      description: 'Shows a summary of clan capital contribution.'
+      description: 'Shows a summary of capital contributions.',
+      options: {
+        week: {
+          description: 'The week to show capital contributions for.'
+        }
+      }
     },
     activity: {
-      description: 'Shows a summary of clan activity (last seen)'
+      description: 'Shows a summary of clan activity (last seen).'
     },
-    cwl_ranks: {
-      description: 'Shows a summary of CWL ranks.'
+    clan_games: {
+      description: 'Shows a summary of clan games scores.'
     },
-    leagues: {
-      description: 'Shows a summary of clan leagues (CWL & Clan Capital)'
+    clans: {
+      description: 'Shows a summary of family clans.'
     }
   },
   help: {
