@@ -19,6 +19,7 @@
     "test": "eslint --ext .ts --ignore-path .gitignore .",
     "lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
     "release": "./scripts/release.sh",
+    "check:locales": "tsx -r dotenv/config scripts/check_duplicate_locales.ts",
     "deploy": "tsx -r dotenv/config scripts/update_commands_script.ts",
     "crowdin": "tsx -r dotenv/config scripts/update_crowdin_script.ts",
     "patrons": "tsx -r dotenv/config scripts/check_patreon_status_script.ts",

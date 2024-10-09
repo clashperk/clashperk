@@ -82,6 +82,7 @@ export const common = {
     esports: 'ESPORTS',
     war: 'WAR',
     cwl: 'CWL',
+
     clan_games: 'Clan Games',
     league_reset: 'League Reset',
     season_end: 'Season End',

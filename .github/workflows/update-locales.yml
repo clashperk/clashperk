@@ -32,6 +32,9 @@ jobs:
       - name: NPM Install
         run: npm i
 
+      - name: Check Duplicates
+        run: npm run check:locales
+
       - name: Build
         run: npm run build
 
@@ -66,7 +69,7 @@ jobs:
       - name: Create PR in main Repo
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.PR_ACTION_GITHUB_PAT }}
+          token: ${{ secrets.ORG_GITHUB_PAT }}
           commit-message: 'chore: update submodules'
           title: 'chore: update submodules'
           branch: chore/update-submodules
