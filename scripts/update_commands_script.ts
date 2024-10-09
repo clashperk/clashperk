@@ -15,6 +15,28 @@ const decrypt = (value: string) => {
   return Buffer.concat([decipher.update(Buffer.from(value, 'hex')), decipher.final()]).toString();
 };
 
+function commandStructureValidationCheck(obj: Record<string, any>) {
+  if (obj.name_localizations) {
+    for (const [locale, name] of Object.entries(obj.name_localizations as Record<string, string>)) {
+      if (name.length) {
+        console.log(`Locale: ${locale}, Name: ${name}, Length: ${name.length}`);
+      }
+    }
+  }
+
+  if (obj.description_localizations) {
+    for (const [locale, description] of Object.entries(obj.description_localizations as Record<string, string>)) {
+      if (description.length > 100) {
+        console.log(`Locale: ${locale}, Description: ${description}, Length: ${description.length}`);
+      }
+    }
+  }
+
+  if (obj.options) {
+    obj.options.map(commandStructureValidationCheck);
+  }
+}
+
 const applicationGuildCommands = async (token: string, guildId: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
   console.log(`Building guild application commands for ${guildId}`);
   const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
@@ -39,7 +61,15 @@ const applicationCommands = async (token: string, commands: RESTPostAPIApplicati
     },
     body: JSON.stringify(commands)
   });
-  await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
+  const data = await res.json();
+
+  if (res.ok) {
+    console.log(JSON.stringify(data));
+  } else {
+    console.log(inspect(data, { depth: Infinity }));
+    commands.map(commandStructureValidationCheck);
+  }
+
   console.log(`Updated ${commands.length} Application Commands`);
 };
 
