@@ -21,10 +21,10 @@ import {
   WebhookClient
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
+import { clanEmbedMaker } from '../../helper/clan-embed.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { ClanEmbedFieldOptions, ClanEmbedFieldValues } from '../../util/command.options.js';
 import { createInteractionCollector } from '../../util/pagination.js';
-import { clanEmbedMaker } from '../../helper/clan-embed.helper.js';
 
 export default class ClanEmbedCommand extends Command {
   public constructor() {
@@ -256,7 +256,7 @@ export default class ClanEmbedCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-        this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
+        this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
       );
     }
 

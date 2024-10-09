@@ -24,7 +24,7 @@ export default class ClanGamesNowCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
-    if (!args.message) return interaction.editReply(this.i18n('command.reminders.now.no_message', { lng: interaction.locale }));
+    if (!args.message) return interaction.editReply(this.i18n('command.reminders.no_message', { lng: interaction.locale }));
 
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
     if (!clans) return;

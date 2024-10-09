@@ -58,7 +58,7 @@ export default class RemainingCommand extends Command {
     let body: APIClanWar | null = null;
     if (args.war_id) {
       const war = await this.getWar(args.war_id, clan.tag);
-      if (!war) return interaction.editReply(this.i18n('command.remaining.no_war_id', { lng: interaction.locale }));
+      if (!war) return interaction.editReply(this.i18n('command.war.no_war_id', { lng: interaction.locale }));
       body = war;
     }
 

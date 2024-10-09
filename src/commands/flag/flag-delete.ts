@@ -66,7 +66,7 @@ export default class FlagDeleteCommand extends Command {
     const collection = this.client.db.collection<FlagsEntity>(Collections.FLAGS);
     const flags = await collection.find(filter).sort({ _id: -1 }).toArray();
     if (!flags.length) {
-      return interaction.editReply(this.i18n('command.flag.delete.no_result', { lng: interaction.locale, tag: playerTag }));
+      return interaction.editReply(this.i18n('common.no_match_found', { lng: interaction.locale, tag: playerTag }));
     }
 
     if (args.flag_ref && args.flag_ref !== '*') {

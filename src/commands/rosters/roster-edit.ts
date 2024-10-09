@@ -136,7 +136,7 @@ export default class RosterEditCommand extends Command {
       const webhook = await this.client.storage.getWebhook(args.log_channel.isThread() ? args.log_channel.parent! : args.log_channel);
       if (!webhook) {
         return interaction.editReply(
-          this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.log_channel.toString() })
+          this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: args.log_channel.toString() })
         );
       }
       data.logChannelId = args.log_channel.id;

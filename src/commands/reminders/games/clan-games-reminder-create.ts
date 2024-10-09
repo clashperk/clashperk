@@ -72,7 +72,7 @@ export default class ReminderCreateCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-        this.i18n('command.reminders.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+        this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
       );
     }
 
@@ -87,7 +87,7 @@ export default class ReminderCreateCommand extends Command {
     }
 
     const dur = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
-    if (!args.message) return interaction.editReply(this.i18n('command.reminders.create.no_message', { lng: interaction.locale }));
+    if (!args.message) return interaction.editReply(this.i18n('command.reminders.no_message', { lng: interaction.locale }));
 
     if (dur < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 6 days.');
     if (dur > 6 * 24 * 60 * 60 * 1000) {

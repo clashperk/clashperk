@@ -25,14 +25,14 @@ export default class LinkDeleteCommand extends Command {
       if (unlinked) {
         return interaction.editReply(this.i18n('command.link.delete.success', { lng: interaction.locale, tag: `**${clanTag}**` }));
       }
-      return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${clanTag}**` }));
+      return interaction.editReply(this.i18n('common.no_match_found', { lng: interaction.locale, tag: `**${clanTag}**` }));
     }
 
     if (!playerTag) return null;
 
     const member = await this.getMember(playerTag, interaction);
     if (!member) {
-      return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${playerTag}**` }));
+      return interaction.editReply(this.i18n('common.no_match_found', { lng: interaction.locale, tag: `**${playerTag}**` }));
     }
 
     const isTrustedGuild = await this.client.util.isTrustedGuild(interaction);

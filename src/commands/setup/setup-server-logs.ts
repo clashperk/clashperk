@@ -75,7 +75,7 @@ export default class SetupUtilsCommand extends Command {
     if (!webhook) {
       return interaction.editReply(
         // eslint-disable-next-line
-        this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+        this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
       );
     }
 

@@ -92,64 +92,64 @@ export class GuildEventsHandler {
     const events = [
       {
         type: 'clan_games_start',
-        name: i18n('common.labels.clan_games', { lng }),
-        formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.labels.clan_games', { lng })}`,
+        name: i18n('common.choices.clan_games', { lng }),
+        formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.choices.clan_games', { lng })}`,
         value: `${time(clanGamesStartTime, 'R')}\n${time(clanGamesStartTime, 'f')}`,
         timestamp: clanGamesStartTime.getTime(),
         visible: moment(now).isBefore(clanGamesStartTime) || moment(now).isAfter(getCorrectedEndTime(clanGamesEndTime))
       },
       {
         type: 'clan_games_end',
-        name: i18n('common.labels.clan_games_ending', { lng }),
-        formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.labels.clan_games_ending', { lng })}`,
+        name: i18n('common.choices.clan_games_ending', { lng }),
+        formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.choices.clan_games_ending', { lng })}`,
         value: getFormattedValue(clanGamesEndTime),
         timestamp: clanGamesEndTime.getTime(),
         visible: moment(now).isAfter(clanGamesStartTime) && moment(now).isBefore(clanGamesEndTime)
       },
       {
         type: 'cwl_start',
-        name: i18n('common.labels.cwl', { lng }),
-        formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl', { lng })}`,
+        name: i18n('common.choices.cwl', { lng }),
+        formattedName: `${EMOJIS.CWL} ${i18n('common.choices.cwl', { lng })}`,
         value: `${time(cwlStartTime, 'R')}\n${time(cwlStartTime, 'f')}`,
         timestamp: cwlStartTime.getTime(),
         visible: moment(now).isBefore(cwlStartTime)
       },
       {
         type: 'cwl_end',
-        name: i18n('common.labels.cwl_end', { lng }),
-        formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl_end', { lng })}`,
+        name: i18n('common.choices.cwl_end', { lng }),
+        formattedName: `${EMOJIS.CWL} ${i18n('common.choices.cwl_end', { lng })}`,
         value: getFormattedValue(cwlEndTime),
         timestamp: cwlEndTime.getTime(),
         visible: moment(now).isAfter(cwlSignupEndTime)
       },
       {
         type: 'cwl_signup_end',
-        name: i18n('common.labels.cwl_signup_ending', { lng }),
-        formattedName: `${EMOJIS.CWL} ${i18n('common.labels.cwl_signup_ending', { lng })}`,
+        name: i18n('common.choices.cwl_signup_ending', { lng }),
+        formattedName: `${EMOJIS.CWL} ${i18n('common.choices.cwl_signup_ending', { lng })}`,
         value: getFormattedValue(cwlSignupEndTime),
         timestamp: cwlSignupEndTime.getTime(),
         visible: moment(now).isAfter(cwlStartTime) && moment(now).isBefore(cwlSignupEndTime)
       },
       {
         type: 'season_end',
-        name: i18n('common.labels.league_reset', { lng }),
-        formattedName: `${EMOJIS.TROPHY} ${i18n('common.labels.league_reset', { lng })} (${moment(seasonEndTime).format('MMM YYYY')})`,
+        name: i18n('common.choices.league_reset', { lng }),
+        formattedName: `${EMOJIS.TROPHY} ${i18n('common.choices.league_reset', { lng })} (${moment(seasonEndTime).format('MMM YYYY')})`,
         value: getFormattedValue(seasonEndTime),
         timestamp: seasonEndTime.getTime(),
         visible: true
       },
       {
         type: 'raid_week_start',
-        name: i18n('common.labels.raid_weekend', { lng }),
-        formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.labels.raid_weekend', { lng })}`,
+        name: i18n('common.choices.raid_weekend', { lng }),
+        formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.choices.raid_weekend', { lng })}`,
         value: `${time(raidWeekStartTime, 'R')}\n${time(raidWeekStartTime, 'f')}`,
         timestamp: raidWeekStartTime.getTime(),
         visible: moment(now).isBefore(raidWeekStartTime) || moment(now).isAfter(getCorrectedEndTime(raidWeekEndTime))
       },
       {
         type: 'raid_week_end',
-        name: i18n('common.labels.raid_weekend_ending', { lng }),
-        formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.labels.raid_weekend_ending', { lng })}`,
+        name: i18n('common.choices.raid_weekend_ending', { lng }),
+        formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.choices.raid_weekend_ending', { lng })}`,
         value: getFormattedValue(raidWeekEndTime),
         timestamp: raidWeekEndTime.getTime(),
         visible: moment(now).isAfter(raidWeekStartTime) && moment(now).isBefore(raidWeekEndTime)
