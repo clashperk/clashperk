@@ -960,7 +960,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'defense_target',
             description: command.caller.options.clear.options.defense_target.description,
-            name_localizations: translation('command.caller.options.clear.options.defense_target.description'),
+            description_localizations: translation('command.caller.options.clear.options.defense_target.description'),
             type: ApplicationCommandOptionType.Number,
             required: true,
             min_value: 1,
@@ -1567,7 +1567,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'player',
             description: command.flag.list.options.player.description,
-            name_localizations: translation('command.flag.list.options.player.description'),
+            description_localizations: translation('command.flag.list.options.player.description'),
             autocomplete: true,
             max_length: 100,
             type: ApplicationCommandOptionType.String
@@ -1816,7 +1816,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'disable',
             description: command.setup.utils.options.disable.description,
-            name_localizations: translation('command.setup.utils.options.disable.description'),
+            description_localizations: translation('command.setup.utils.options.disable.description'),
             type: ApplicationCommandOptionType.String,
             required: false,
             choices: [
