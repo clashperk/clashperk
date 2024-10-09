@@ -304,8 +304,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: command.boosts.options.tag.description,
-        description_localizations: translation('command.boosts.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -1424,8 +1424,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: command.link.list.options.clan.description,
-            description_localizations: translation('command.link.list.options.clan.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true
           }
@@ -2901,8 +2901,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             name: 'clans',
             required: true,
             autocomplete: true,
-            description: command.autorole.clan_roles.options.clans.description,
-            description_localizations: translation('command.autorole.clan_roles.options.clans.description'),
+            description: common.options.clans.description,
+            description_localizations: translation('common.options.clans.description'),
             type: ApplicationCommandOptionType.String
           },
           {
@@ -3474,8 +3474,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             name: 'clans',
             required: true,
             autocomplete: true,
-            description: command.reminders.create.options.clans.description,
-            description_localizations: translation('command.reminders.create.options.clans.description'),
+            description: common.options.clans.description,
+            description_localizations: translation('common.options.clans.description'),
             type: ApplicationCommandOptionType.String
           },
           {
@@ -3586,8 +3586,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           {
             name: 'clans',
             autocomplete: true,
-            description: command.reminders.create.options.clans.description,
-            description_localizations: translation('command.reminders.create.options.clans.description'),
+            description: common.options.clans.description,
+            description_localizations: translation('common.options.clans.description'),
             type: ApplicationCommandOptionType.String
           },
           {
@@ -3684,8 +3684,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             name: 'clans',
             required: true,
             autocomplete: true,
-            description: command.reminders.now.options.clans.description,
-            description_localizations: translation('command.reminders.now.options.clans.description'),
+            description: common.options.clans.description,
+            description_localizations: translation('common.options.clans.description'),
             type: ApplicationCommandOptionType.String
           }
         ]

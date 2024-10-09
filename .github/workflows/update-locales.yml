@@ -52,8 +52,8 @@ jobs:
       - name: Approve and Merge PR
         run: |
           cd locales
-          gh pr merge --squash --auto ${{steps.cpr.outputs.pull-request-number }}
           gh pr review --approve ${{steps.cpr.outputs.pull-request-number }}
+          gh pr merge --squash ${{steps.cpr.outputs.pull-request-number }}
         env:
           GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_PAT }}
 
