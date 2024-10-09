@@ -47,9 +47,6 @@ export const common = {
   },
   color_code: 'Color Code',
   options: {
-    tag: {
-      description: 'Clan tag or name or alias.'
-    },
     clan: {
       tag: {
         description: 'Clan tag or name or alias.'
@@ -57,9 +54,6 @@ export const common = {
       user: {
         description: 'Clan by @user mention or ID.'
       }
-    },
-    user: {
-      description: 'Clan by @user mention or ID.'
     },
     player: {
       tag: {
@@ -188,8 +182,49 @@ export const command = {
         enable_auto_updating: {
           description: 'Enable auto updating (every 30-60 mins)',
           choices: {
-            legend_leaderboard: 'Legend Leaderboard',
-            bb_legend_leaderboard: 'Legend Attacks'
+            legend_leaderboard: 'Legend Trophies',
+            bb_legend_leaderboard: 'Builder Trophies'
+          }
+        }
+      }
+    },
+    stats: {
+      description: 'Shows statistics of legend ranks and trophies.'
+    }
+  },
+  leaderboard: {
+    description: 'Leaderboard of the top clans and players.',
+    options: {
+      clans: {
+        description: 'Top clans leaderboard.',
+        options: {
+          location: {
+            description: 'Location of the leaderboard'
+          },
+          season: {
+            description: 'Season of the leaderboard'
+          }
+        }
+      },
+      players: {
+        description: 'Top players leaderboard.',
+        options: {
+          location: {
+            description: 'Location of the leaderboard'
+          },
+          season: {
+            description: 'Season of the leaderboard'
+          }
+        }
+      },
+      capital: {
+        description: 'Top capital leaderboard.',
+        options: {
+          location: {
+            description: 'Location of the leaderboard'
+          },
+          season: {
+            description: 'Season of the leaderboard'
           }
         }
       }
@@ -269,6 +304,9 @@ export const command = {
       },
       links_manager_role: {
         description: 'Role that can manage the Discord links.'
+      },
+      webhook_limit: {
+        description: 'The maximum number of webhooks that can be created in a channel.'
       }
     },
     no_text_channel: 'You must specify a text channel to enable this event log.',
@@ -603,15 +641,29 @@ export const command = {
       }
     },
     cwl: {
-      description: 'Export CWL stats to Excel.',
-      description_long: 'Export CWL stats to Excel.'
+      description: 'Export CWL wars stats.',
+      description_long: 'Export CWL stats to Excel.',
+      options: {
+        lineup_only: {
+          description: 'Export only the lineup.'
+        }
+      }
     },
     last_wars: {
       description: 'Export participation history (last played wars)',
-      description_long: 'Export participation history (last played wars)'
+      description_long: 'Export participation history (last played wars)',
+      options: {
+        war_type: {
+          description: 'Regular or CWL',
+          choices: {
+            regular: 'Regular',
+            cwl: 'CWL'
+          }
+        }
+      }
     },
     members: {
-      description: 'Export a comprehensive version of clan member stats.',
+      description: 'Export clan members.',
       description_long: 'Export a comprehensive version of clan member stats.'
     },
     missed: {
@@ -619,12 +671,61 @@ export const command = {
       description_long: 'Export missed attack history.'
     },
     season: {
-      description: 'Export comprehensive seasonal stats of clan members.',
+      description: 'Export season stats of the clan family.',
       description_long: 'Export comprehensive seasonal stats of clan members.'
     },
     wars: {
-      description: 'Export War stats to Excel.',
-      description_long: 'Export War stats to Excel.'
+      description: 'Export war stats.',
+      description_long: 'Export War stats to Excel.',
+      options: {
+        war_type: {
+          description: 'Regular or friendly wars (defaults to Regular)',
+          choices: {
+            regular: 'Regular',
+            friendly: 'Friendly'
+          }
+        }
+      }
+    },
+    user: {
+      description: 'Export Discord members',
+      options: {
+        role: {
+          description: 'Role to filter users.'
+        }
+      }
+    },
+    attack_log: {
+      description: 'Export war attack history.',
+      options: {
+        war_type: {
+          description: 'CWL or Regular wars (default to Regular and CWL)',
+          choices: {
+            regular: 'Regular',
+            cwl: 'CWL',
+            friendly: 'Friendly'
+          }
+        }
+      }
+    },
+    capital_raids: {
+      description: '[Experimental] Export capital raid attack stats.'
+    },
+    capital: {
+      description: 'Export clan capital weekends.'
+    },
+    rosters: {
+      description: 'Export all rosters.',
+      options: {
+        category: {
+          description: 'Roster category.',
+          choices: {
+            cwl: 'CWL',
+            war: 'WAR',
+            esports: 'ESPORTS'
+          }
+        }
+      }
     }
   },
   flag: {
@@ -801,7 +902,26 @@ export const command = {
     description: 'Configure automatic server nickname settings.',
     config: {
       description: 'Configure automatic server nickname settings.',
-      description_long: 'Configure automatic server nickname settings.'
+      description_long: 'Configure automatic server nickname settings.',
+      options: {
+        family_nickname_format: {
+          description: 'Set family nickname format (e.g. {CLAN} | {ALIAS} | {TH} | {ROLE} | {NAME})'
+        },
+        non_family_nickname_format: {
+          description: 'Set non-family nickname format (e.g. {NAME} | {TH})'
+        },
+        change_nicknames: {
+          description: 'Whether to update nicknames automatically.'
+        },
+        account_preference_for_naming: {
+          description: 'Whether to use the default account or the best account in the family.',
+          choices: {
+            default_account: 'Default Account',
+            best_account: 'Best Account',
+            default_or_best_account: 'Default or Best Account'
+          }
+        }
+      }
     }
   },
   reminders: {
@@ -940,6 +1060,18 @@ export const command = {
       },
       name: {
         description: 'An optional name for this army.'
+      },
+      equipment: {
+        description: 'Hero equipment (type anything)'
+      },
+      pets: {
+        description: 'Hero pets (type anything)'
+      },
+      clan_castle: {
+        description: 'Clan castle (type anything)'
+      },
+      tips: {
+        description: 'Some tips (type anything)'
       }
     }
   },
@@ -1605,8 +1737,96 @@ export const command = {
     }
   },
   summary: {
-    description: 'Shows summary of wars, clans, players, clan games, etc.',
+    description: 'Shows summary of the clan family.',
     options: {
+      best: {
+        description: 'Shows a summary of best members.',
+        options: {
+          clans: {
+            description: 'Clan tags or aliases.'
+          },
+          limit: {
+            description: 'Number of members to show (Default: 5)'
+          },
+          order: {
+            description: 'Order of the list.',
+            choices: {
+              desc: 'Descending',
+              asc: 'Ascending'
+            }
+          }
+        }
+      },
+      wars: {
+        description: 'Shows a summary of current wars.',
+        options: {
+          clans: {
+            description: 'Clan tags or aliases.'
+          }
+        }
+      },
+      compo: {
+        description: 'Shows a summary of Town Hall composition.',
+        options: {
+          clans: {
+            description: 'Clan tags or aliases.'
+          }
+        }
+      },
+      cwl_ranks: {
+        description: 'Shows a summary of CWL ranks.'
+      },
+      cwl_status: {
+        description: 'Shows a summary of CWL spin status.'
+      },
+      leagues: {
+        description: 'Shows a summary of clan leagues.'
+      },
+      donations: {
+        description: 'Shows a summary of donations.'
+      },
+      attacks: {
+        description: 'Shows a summary of multiplayer attacks and defenses.'
+      },
+      trophies: {
+        description: 'Shows a summary of trophies.',
+        options: {
+          limit: {
+            description: 'Limit the number of members.'
+          }
+        }
+      },
+      war_results: {
+        description: 'Shows a summary of seasonal war results.'
+      },
+      missed_wars: {
+        description: 'Shows a summary of missed wars.'
+      },
+      capital_raids: {
+        description: 'Shows information about capital raids.',
+        options: {
+          week: {
+            description: 'The week to show raids for.'
+          }
+        }
+      },
+      capital_contribution: {
+        description: 'Shows a summary of capital contributions.',
+        options: {
+          week: {
+            description: 'The week to show capital contributions for.'
+          }
+        }
+      },
+      activity: {
+        description: 'Shows a summary of clan activity (last seen).'
+      },
+      clan_games: {
+        description: 'Shows a summary of clan games scores.'
+      },
+      clans: {
+        description: 'Shows a summary of family clans.'
+      },
       option: {
         description: 'Select an option.'
       },
@@ -1699,7 +1919,58 @@ export const command = {
   },
   redeem: {
     description: 'Redeem or manage a Patreon subscription. (if you wish to support us)',
-    description_long: 'Redeem or manage a Patreon subscription. (if you wish to support us)'
+    description_long: 'Redeem or manage a Patreon subscription. (if you wish to support us)',
+    options: {
+      disable: {
+        description: 'Disable subscription for a server (if subscribed)'
+      }
+    }
+  },
+  events: {
+    description: 'Shows the next in-game events.'
+  },
+  whitelist: {
+    description: '[Experimental] Whitelist a role or user to use specific commands.',
+    options: {
+      user_or_role: {
+        description: 'User or role to whitelist.'
+      },
+      command: {
+        description: 'Command to whitelist.'
+      },
+      clear: {
+        description: 'Clear the whitelist.'
+      },
+      list: {
+        description: 'List all whitelisted users and roles.'
+      }
+    }
+  },
+  clans: {
+    description: 'Show all linked clans.'
+  },
+  layout: {
+    description: 'Post a village layout.',
+    description_long: 'Post a village layout.',
+    options: {
+      screenshot: {
+        description: 'Screenshot of the layout.'
+      },
+      layout_link: {
+        description: 'Shareable link of the layout.'
+      },
+      title: {
+        description: 'Title of the layout.'
+      }
+    }
+  },
+  bot_personalizer: {
+    description: 'Build your own Discord bot!',
+    options: {
+      opt_out: {
+        description: 'Opt-out from the custom bot and delete related services.'
+      }
+    }
   }
 } as const;
 

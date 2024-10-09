@@ -249,16 +249,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'tag',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -281,16 +281,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       }
@@ -320,16 +320,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         required: false,
         autocomplete: true
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       }
@@ -405,16 +405,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -442,16 +442,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true,
             required: false
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -473,16 +473,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true,
             required: false
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -506,16 +506,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -537,16 +537,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -573,15 +573,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -724,15 +724,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -852,8 +852,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
@@ -883,16 +883,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       },
@@ -1039,16 +1039,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true,
         required: false
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       }
@@ -1062,15 +1062,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'clan',
-        description: common.options.tag.description,
-        description_localizations: translation('common.options.tag.description'),
+        description: common.options.clan.tag.description,
+        description_localizations: translation('common.options.clan.tag.description'),
         autocomplete: true,
         type: ApplicationCommandOptionType.String
       },
       {
         name: 'user',
-        description: common.options.user.description,
-        description_localizations: translation('common.options.user.description'),
+        description: common.options.clan.user.description,
+        description_localizations: translation('common.options.clan.user.description'),
         type: ApplicationCommandOptionType.User,
         required: false
       }
@@ -1182,15 +1182,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1204,8 +1204,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1219,8 +1219,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1234,15 +1234,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1256,8 +1256,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1271,8 +1271,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1286,8 +1286,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1301,8 +1301,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1316,8 +1316,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
@@ -1331,8 +1331,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -1346,15 +1346,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         options: [
           {
             name: 'clan',
-            description: common.options.tag.description,
-            description_localizations: translation('common.options.tag.description'),
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           }
@@ -3767,8 +3767,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'user',
-            description: common.options.user.description,
-            description_localizations: translation('common.options.user.description'),
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
             required: false
           },
@@ -3785,40 +3785,47 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'leaderboard',
-        description: 'Shows legend leaderboard.',
+        description: command.legend.leaderboard.description,
+        description_localizations: translation('command.legend.leaderboard.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
             name: 'clans',
             autocomplete: true,
-            description: 'Enter a tag or pick one form the autocomplete list.',
+            description: command.legend.leaderboard.options.clans.description,
+            description_localizations: translation('command.legend.leaderboard.options.clans.description'),
             type: ApplicationCommandOptionType.String,
             required: false
           },
           {
             name: 'limit',
-            description: 'Limit the number of results.',
+            description: command.legend.leaderboard.options.limit.description,
+            description_localizations: translation('command.legend.leaderboard.options.limit.description'),
             type: ApplicationCommandOptionType.Number,
             max_value: 100,
             min_value: 3
           },
           {
             name: 'season',
-            description: 'Season of the leaderboard',
+            description: command.legend.leaderboard.options.season.description,
+            description_localizations: translation('command.legend.leaderboard.options.season.description'),
             type: ApplicationCommandOptionType.String,
             choices: getSeasonIds()
           },
           {
             name: 'enable_auto_updating',
-            description: 'Enable auto updating (every 30-60 mins)',
+            description: command.legend.leaderboard.options.enable_auto_updating.description,
+            description_localizations: translation('command.legend.leaderboard.options.enable_auto_updating.description'),
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: 'Legend Trophies',
+                name: command.legend.leaderboard.options.enable_auto_updating.choices.legend_leaderboard,
+                name_localizations: translation('command.legend.leaderboard.options.enable_auto_updating.choices.legend_leaderboard'),
                 value: 'legend-leaderboard'
               },
               {
-                name: 'Builder Trophies (Experimental)',
+                name: command.legend.leaderboard.options.enable_auto_updating.choices.bb_legend_leaderboard,
+                name_localizations: translation('command.legend.leaderboard.options.enable_auto_updating.choices.bb_legend_leaderboard'),
                 value: 'bb-legend-leaderboard'
               }
             ]
@@ -3827,30 +3834,35 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'stats',
-        description: 'Shows statistics of legend ranks and trophies.',
+        description: command.legend.stats.description,
+        description_localizations: translation('command.legend.stats.description'),
         type: ApplicationCommandOptionType.Subcommand
       }
     ]
   },
   {
     name: 'leaderboard',
-    description: 'Leaderboard of the top clans and players.',
+    description: command.leaderboard.description,
+    description_localizations: translation('command.leaderboard.description'),
     dm_permission: false,
     options: [
       {
         name: 'clans',
-        description: 'Top clans leaderboard',
+        description: command.leaderboard.options.clans.description,
+        description_localizations: translation('command.leaderboard.options.clans.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
             name: 'location',
-            description: 'Location of the leaderboard',
+            description: command.leaderboard.options.clans.options.location.description,
+            description_localizations: translation('command.leaderboard.options.clans.options.location.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true
           },
           {
             name: 'season',
-            description: 'Season of the leaderboard',
+            description: command.leaderboard.options.clans.options.season.description,
+            description_localizations: translation('command.leaderboard.options.clans.options.season.description'),
             type: ApplicationCommandOptionType.String,
             choices: getSeasonIds()
           }
@@ -3858,18 +3870,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'players',
-        description: 'Top players leaderboard',
+        description: command.leaderboard.options.players.description,
+        description_localizations: translation('command.leaderboard.options.players.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
             name: 'location',
-            description: 'Location of the leaderboard',
+            description: command.leaderboard.options.players.options.location.description,
+            description_localizations: translation('command.leaderboard.options.players.options.location.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true
           },
           {
             name: 'season',
-            description: 'Season of the leaderboard',
+            description: command.leaderboard.options.players.options.season.description,
+            description_localizations: translation('command.leaderboard.options.players.options.season.description'),
             type: ApplicationCommandOptionType.String,
             choices: getSeasonIds()
           }
@@ -3877,18 +3892,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'capital',
-        description: 'Top capital leaderboard',
+        description: command.leaderboard.options.capital.description,
+        description_localizations: translation('command.leaderboard.options.capital.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
             name: 'location',
-            description: 'Location of the leaderboard',
+            description: command.leaderboard.options.capital.options.location.description,
+            description_localizations: translation('command.leaderboard.options.capital.options.location.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true
           },
           {
             name: 'season',
-            description: 'Season of the leaderboard',
+            description: command.leaderboard.options.capital.options.season.description,
+            description_localizations: translation('command.leaderboard.options.capital.options.season.description'),
             type: ApplicationCommandOptionType.String,
             choices: getSeasonIds()
           }
@@ -3898,12 +3916,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   },
   {
     name: 'summary',
-    description: 'Shows summary of the clan family.',
+    description: command.summary.description,
+    description_localizations: translation('command.summary.description'),
     dm_permission: false,
     options: [
       {
         name: 'best',
-        description: 'Shows a summary of best members.',
+        description: command.summary.options.best.description,
+        description_localizations: translation('command.summary.options.best.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -3911,7 +3931,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           },
           {
             name: 'season',
@@ -3924,7 +3945,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             name: 'limit',
             required: false,
             type: ApplicationCommandOptionType.Integer,
-            description: 'Number of members to show (Default: 5)',
+            description: command.summary.options.best.options.limit.description,
+            description_localizations: translation('command.summary.options.best.options.limit.description'),
             min_value: 3,
             max_value: 10
           },
@@ -3932,14 +3954,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             name: 'order',
             required: false,
             type: ApplicationCommandOptionType.String,
-            description: 'Order of the list.',
+            description: command.summary.options.best.options.order.description,
+            description_localizations: translation('command.summary.options.best.options.order.description'),
             choices: [
               {
-                name: 'Descending',
+                name: command.summary.options.best.options.order.choices.desc,
+                name_localizations: translation('command.summary.options.best.options.order.choices.desc'),
                 value: 'desc'
               },
               {
-                name: 'Ascending',
+                name: command.summary.options.best.options.order.choices.asc,
+                name_localizations: translation('command.summary.options.best.options.order.choices.asc'),
                 value: 'asc'
               }
             ]
@@ -3948,7 +3973,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'wars',
-        description: 'Shows a summary of current wars.',
+        description: command.summary.options.wars.description,
+        description_localizations: translation('command.summary.options.wars.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -3956,13 +3982,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           }
         ]
       },
       {
         name: 'compo',
-        description: 'Shows a summary of Town Hall composition.',
+        description: command.summary.options.compo.description,
+        description_localizations: translation('command.summary.options.compo.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -3970,13 +3998,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           }
         ]
       },
       {
         name: 'cwl-ranks',
-        description: 'Shows a summary of CWL ranks.',
+        description: command.summary.options.cwl_ranks.description,
+        description_localizations: translation('command.summary.options.cwl_ranks.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -3991,13 +4021,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           }
         ]
       },
       {
         name: 'cwl-status',
-        description: 'Shows a summary of CWL spin status.',
+        description: command.summary.options.cwl_status.description,
+        description_localizations: translation('command.summary.options.cwl_status.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4005,13 +4037,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           }
         ]
       },
       {
         name: 'leagues',
-        description: 'Shows a summary of clan leagues.',
+        description: command.summary.options.leagues.description,
+        description_localizations: translation('command.summary.options.leagues.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4019,13 +4053,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           }
         ]
       },
       {
         name: 'donations',
-        description: 'Shows a summary of donations.',
+        description: command.summary.options.donations.description,
+        description_localizations: translation('command.summary.options.donations.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4040,13 +4076,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases to filter clans.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           }
         ]
       },
       {
         name: 'clans',
-        description: 'Shows a summary of family clans.',
+        description: command.summary.options.clans.description,
+        description_localizations: translation('command.summary.options.clans.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4054,13 +4092,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           }
         ]
       },
       {
         name: 'attacks',
-        description: 'Shows a summary of multiplayer attacks and defenses.',
+        description: command.summary.options.attacks.description,
+        description_localizations: translation('command.summary.options.attacks.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4068,7 +4108,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           },
           {
             name: 'season',
@@ -4081,7 +4122,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'trophies',
-        description: 'Shows a summary of trophies.',
+        description: command.summary.options.trophies.description,
+        description_localizations: translation('command.summary.options.trophies.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4089,19 +4131,22 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           },
           {
             name: 'limit',
             required: false,
             type: ApplicationCommandOptionType.Integer,
-            description: 'Limit the number of members.'
+            description: command.summary.options.trophies.options.limit.description,
+            description_localizations: translation('command.summary.options.trophies.options.limit.description')
           }
         ]
       },
       {
         name: 'war-results',
-        description: 'Shows a summary of war results.',
+        description: command.summary.options.war_results.description,
+        description_localizations: translation('command.summary.options.war_results.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4109,7 +4154,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           },
           {
             name: 'season',
@@ -4122,7 +4168,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'missed-wars',
-        description: 'Shows a summary of missed wars.',
+        description: command.summary.options.missed_wars.description,
+        description_localizations: translation('command.summary.options.missed_wars.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4130,7 +4177,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           },
           {
             name: 'season',
@@ -4144,7 +4192,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'capital-raids',
-        description: 'Shows information about capital raids.',
+        description: command.summary.options.capital_raids.description,
+        description_localizations: translation('command.summary.options.capital_raids.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4152,20 +4201,23 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           },
           {
             name: 'week',
             required: false,
             type: ApplicationCommandOptionType.String,
-            description: 'The week to show raids for.',
+            description: command.summary.options.capital_raids.options.week.description,
+            description_localizations: translation('command.summary.options.capital_raids.options.week.description'),
             choices: getWeekIds()
           }
         ]
       },
       {
         name: 'capital-contribution',
-        description: 'Shows a summary of capital contributions.',
+        description: command.summary.options.capital_contribution.description,
+        description_localizations: translation('command.summary.options.capital_contribution.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4173,7 +4225,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           },
           {
             name: 'season',
@@ -4184,7 +4237,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'week',
-            description: 'The week to show capital contributions for.',
+            description: command.summary.options.capital_contribution.options.week.description,
+            description_localizations: translation('command.summary.options.capital_contribution.options.week.description'),
             type: ApplicationCommandOptionType.String,
             required: false,
             choices: getWeekIds()
@@ -4193,7 +4247,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'activity',
-        description: 'Shows a summary of clan activities (last seen).',
+        description: command.summary.options.activity.description,
+        description_localizations: translation('command.summary.options.activity.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4201,7 +4256,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           },
           {
             name: 'season',
@@ -4214,7 +4270,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'clan-games',
-        description: 'Shows a summary of clan games scores.',
+        description: command.summary.options.clan_games.description,
+        description_localizations: translation('command.summary.options.clan_games.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4229,7 +4286,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             autocomplete: true,
             type: ApplicationCommandOptionType.String,
-            description: 'Clan tags or aliases to filter clans.'
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description')
           }
         ]
       }
@@ -4243,7 +4301,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     options: [
       {
         name: 'wars',
-        description: 'Export war stats.',
+        description: command.export.options.wars.description,
+        description_localizations: translation('command.export.options.wars.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4259,11 +4318,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: 'Regular',
+                name: command.export.wars.options.war_type.choices.regular,
+                name_localizations: translation('command.export.wars.options.war_type.choices.regular'),
                 value: 'regular'
               },
               {
-                name: 'Friendly',
+                name: command.export.wars.options.war_type.choices.friendly,
+                name_localizations: translation('command.export.wars.options.war_type.choices.friendly'),
                 value: 'friendly'
               }
             ]
@@ -4287,7 +4348,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'cwl',
-        description: 'Export CWL wars stats.',
+        description: command.export.cwl.description,
+        description_localizations: translation('command.export.cwl.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4314,14 +4376,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'lineup_only',
-            description: 'Export only the lineup.',
+            description: command.export.cwl.options.lineup_only.description,
+            description_localizations: translation('command.export.cwl.options.lineup_only.description'),
             type: ApplicationCommandOptionType.Boolean
           }
         ]
       },
       {
         name: 'season',
-        description: 'Export season stats of the clan family.',
+        description: command.export.season.description,
+        description_localizations: translation('command.export.season.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4342,7 +4406,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'members',
-        description: 'Export clan members.',
+        description: command.export.members.description,
+        description_localizations: translation('command.export.members.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4363,19 +4428,22 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'users',
-        description: 'Export Discord members',
+        description: command.export.user.description,
+        description_localizations: translation('command.export.user.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
             name: 'role',
-            description: 'Role to filter users.',
+            description: command.export.user.options.role.description,
+            description_localizations: translation('command.export.user.options.role.description'),
             type: ApplicationCommandOptionType.Role
           }
         ]
       },
       {
         name: 'attack-log',
-        description: 'Export war attack history.',
+        description: command.export.attack_log.description,
+        description_localizations: translation('command.export.attack_log.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4387,19 +4455,23 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'war_type',
-            description: 'CWL or Regular wars (default to Regular and CWL)',
+            description: command.export.wars.options.war_type.description,
+            description_localizations: translation('command.export.wars.options.war_type.description'),
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: 'Regular',
+                name: command.export.wars.options.war_type.choices.regular,
+                name_localizations: translation('command.export.wars.options.war_type.choices.regular'),
                 value: 'regular'
               },
               {
-                name: 'CWL',
+                name: command.export.attack_log.options.war_type.choices.cwl,
+                name_localizations: translation('command.export.attack_log.options.war_type.choices.cwl'),
                 value: 'cwl'
               },
               {
-                name: 'Friendly',
+                name: command.export.attack_log.options.war_type.choices.friendly,
+                name_localizations: translation('command.export.attack_log.options.war_type.choices.friendly'),
                 value: 'friendly'
               }
             ]
@@ -4416,7 +4488,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'missed',
-        description: 'Export missed attack history.',
+        description: command.export.missed.description,
+        description_localizations: translation('command.export.missed.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4445,7 +4518,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'capital-raids',
-        description: '[Experimental] Export capital raid attack stats.',
+        description: command.export.capital_raids.description,
+        description_localizations: translation('command.export.capital_raids.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4474,7 +4548,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'last-wars',
-        description: 'Export participation history (last played wars)',
+        description: command.export.last_wars.description,
+        description_localizations: translation('command.export.last_wars.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4486,15 +4561,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'war_type',
-            description: 'Regular or CWL',
+            description: command.export.last_wars.options.war_type.description,
+            description_localizations: translation('command.export.last_wars.options.war_type.description'),
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: 'Regular',
+                name: command.export.last_wars.options.war_type.choices.regular,
+                name_localizations: translation('command.export.last_wars.options.war_type.choices.regular'),
                 value: 'regular'
               },
               {
-                name: 'CWL',
+                name: command.export.last_wars.options.war_type.choices.cwl,
+                name_localizations: translation('command.export.last_wars.options.war_type.choices.cwl'),
                 value: 'cwl'
               }
             ]
@@ -4516,7 +4594,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'capital',
-        description: 'Export clan capital weekends.',
+        description: command.export.capital.description,
+        description_localizations: translation('command.export.capital.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
@@ -4530,24 +4609,29 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'rosters',
-        description: 'Export all rosters.',
+        description: command.export.rosters.description,
+        description_localizations: translation('command.export.rosters.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
             name: 'category',
-            description: 'Roster category.',
+            description: command.export.rosters.options.category.description,
+            description_localizations: translation('command.export.rosters.options.category.description'),
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: 'CWL',
+                name: command.export.rosters.options.category.choices.cwl,
+                name_localizations: translation('command.export.rosters.options.category.choices.cwl'),
                 value: 'CWL'
               },
               {
-                name: 'WAR',
+                name: command.export.rosters.options.category.choices.war,
+                name_localizations: translation('command.export.rosters.options.category.choices.war'),
                 value: 'WAR'
               },
               {
-                name: 'ESPORTS',
+                name: command.export.rosters.options.category.choices.esports,
+                name_localizations: translation('command.export.rosters.options.category.choices.esports'),
                 value: 'ESPORTS'
               }
             ]
@@ -4592,28 +4676,32 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'equipment',
-        description: 'Hero equipment (type anything)',
+        description: command.army.options.equipment.description,
+        description_localizations: translation('command.army.options.equipment.description'),
         type: ApplicationCommandOptionType.String,
         max_length: 600,
         required: false
       },
       {
         name: 'pets',
-        description: 'Hero pets (type anything)',
+        description: command.army.options.pets.description,
+        description_localizations: translation('command.army.options.pets.description'),
         type: ApplicationCommandOptionType.String,
         max_length: 600,
         required: false
       },
       {
         name: 'clan_castle',
-        description: 'Clan castle (type anything)',
+        description: command.army.options.clan_castle.description,
+        description_localizations: translation('command.army.options.clan_castle.description'),
         type: ApplicationCommandOptionType.String,
         max_length: 600,
         required: false
       },
       {
         name: 'tips',
-        description: 'Some tips (type anything)',
+        description: command.army.options.tips.description,
+        description_localizations: translation('command.army.options.tips.description'),
         type: ApplicationCommandOptionType.String,
         max_length: 600,
         required: false
@@ -4623,53 +4711,66 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   {
     name: 'nickname',
     description: command.nickname.description,
+    description_localizations: translation('command.nickname.description'),
     dm_permission: false,
     options: [
       {
         name: 'config',
         description: command.nickname.config.description,
+        description_localizations: translation('command.nickname.config.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
             name: 'family_nickname_format',
-            description: 'Set family nickname format (e.g. {CLAN} | {ALIAS} | {TH} | {ROLE} | {NAME})',
+            description: command.nickname.config.options.family_nickname_format.description,
+            description_localizations: translation('command.nickname.config.options.family_nickname_format.description'),
             type: ApplicationCommandOptionType.String
           },
           {
             name: 'non_family_nickname_format',
-            description: 'Set non-family nickname format (e.g. {NAME} | {TH})',
+            description: command.nickname.config.options.non_family_nickname_format.description,
+            description_localizations: translation('command.nickname.config.options.non_family_nickname_format.description'),
             type: ApplicationCommandOptionType.String
           },
           {
             name: 'change_nicknames',
-            description: 'Whether to update nicknames automatically.',
+            description: command.nickname.config.options.change_nicknames.description,
+            description_localizations: translation('command.nickname.config.options.change_nicknames.description'),
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: 'Yes',
+                name: common.choices.yes,
+                name_localizations: translation('common.choices.yes'),
                 value: 'true'
               },
               {
-                name: 'No',
+                name: common.choices.no,
+                name_localizations: translation('common.choices.no'),
                 value: 'false'
               }
             ]
           },
           {
             name: 'account_preference_for_naming',
-            description: 'Whether to use the default account or the best account in the family.',
+            description: command.nickname.config.options.account_preference_for_naming.description,
+            description_localizations: translation('command.nickname.config.options.account_preference_for_naming.description'),
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: 'Default Account',
+                name: command.nickname.config.options.account_preference_for_naming.choices.default_account,
+                name_localizations: translation('command.nickname.config.options.account_preference_for_naming.choices.default_account'),
                 value: 'default-account'
               },
               {
-                name: 'Best Account',
+                name: command.nickname.config.options.account_preference_for_naming.choices.best_account,
+                name_localizations: translation('command.nickname.config.options.account_preference_for_naming.choices.best_account'),
                 value: 'best-account'
               },
               {
-                name: 'Default or Best Account',
+                name: command.nickname.config.options.account_preference_for_naming.choices.default_or_best_account,
+                name_localizations: translation(
+                  'command.nickname.config.options.account_preference_for_naming.choices.default_or_best_account'
+                ),
                 value: 'default-or-best-account'
               }
             ]
@@ -4680,7 +4781,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   },
   {
     name: 'events',
-    description: 'Shows the next in-game events.',
+    description: command.events.description,
+    description_localizations: translation('command.events.description'),
     dm_permission: true
   },
 
@@ -4703,25 +4805,28 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   {
     name: 'redeem',
     description: command.redeem.description,
+    description_localizations: translation('command.redeem.description'),
     dm_permission: false,
     options: [
       {
         name: 'disable',
-        description: 'Disable subscription for a server (if subscribed)',
+        description: command.redeem.options.disable.description,
+        description_localizations: translation('command.redeem.options.disable.description'),
         type: ApplicationCommandOptionType.String,
         choices: [
           {
-            name: 'Yes',
+            name: common.choices.yes,
+            name_localizations: translation('common.choices.yes'),
             value: 'true'
           },
           {
-            name: 'No',
+            name: common.choices.no,
+            name_localizations: translation('common.choices.no'),
             value: 'false'
           }
         ]
       }
-    ],
-    description_localizations: translation('command.redeem.description')
+    ]
   },
   {
     name: 'invite',
@@ -4777,7 +4882,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'webhook_limit',
-        description: 'The maximum number of webhooks that can be created in a channel.',
+        description: command.config.options.webhook_limit.description,
+        description_localizations: translation('command.config.options.webhook_limit.description'),
         type: ApplicationCommandOptionType.Integer,
         max_value: 8,
         min_value: 3
@@ -4786,58 +4892,68 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   },
   {
     name: 'whitelist',
-    description: '[Experimental] Whitelist a role or user to use specific commands.',
+    description: command.whitelist.description,
+    description_localizations: translation('command.whitelist.description'),
     dm_permission: false,
     options: [
       {
         name: 'user_or_role',
-        description: 'User or role to whitelist.',
+        description: command.whitelist.options.user_or_role.description,
+        description_localizations: translation('command.whitelist.options.user_or_role.description'),
         type: ApplicationCommandOptionType.Mentionable
       },
       {
         name: 'command',
-        description: 'Command to whitelist.',
+        description: command.whitelist.options.command.description,
+        description_localizations: translation('command.whitelist.options.command.description'),
         type: ApplicationCommandOptionType.String,
         autocomplete: true
       },
       {
         name: 'clear',
-        description: 'Clear the whitelist.',
+        description: command.whitelist.options.clear.description,
+        description_localizations: translation('command.whitelist.options.clear.description'),
         type: ApplicationCommandOptionType.Boolean
       },
       {
         name: 'list',
-        description: 'List all whitelisted users and roles.',
+        description: command.whitelist.options.list.description,
+        description_localizations: translation('command.whitelist.options.list.description'),
         type: ApplicationCommandOptionType.Boolean
       }
     ]
   },
   {
     name: 'clans',
-    description: 'Show all linked clans.',
+    description: command.clans.description,
+    description_localizations: translation('command.clans.description'),
     dm_permission: false
   },
   {
     name: 'layout',
-    description: 'Post a village layout.',
+    description: command.layout.description,
+    description_localizations: translation('command.layout.description'),
     dm_permission: false,
     options: [
       {
         name: 'screenshot',
-        description: 'Screenshot of the layout.',
+        description: command.layout.options.screenshot.description,
+        description_localizations: translation('command.layout.options.screenshot.description'),
         required: true,
         type: ApplicationCommandOptionType.Attachment
       },
       {
         name: 'layout_link',
-        description: 'Shareable link of the layout.',
+        description: command.layout.options.layout_link.description,
+        description_localizations: translation('command.layout.options.layout_link.description'),
         required: true,
         max_length: 100,
         type: ApplicationCommandOptionType.String
       },
       {
         name: 'title',
-        description: 'Title of the layout.',
+        description: command.layout.options.title.description,
+        description_localizations: translation('command.layout.options.title.description'),
         max_length: 2000,
         type: ApplicationCommandOptionType.String
       }
@@ -4863,11 +4979,13 @@ export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = 
   {
     name: 'bot-personalizer',
     dm_permission: false,
-    description: 'Build your own Discord bot!',
+    description: command.bot_personalizer.description,
+    description_localizations: translation('command.bot_personalizer.description'),
     options: [
       {
         name: 'opt_out',
-        description: 'Opt-out from the custom bot and delete related services.',
+        description: command.bot_personalizer.options.opt_out.description,
+        description_localizations: translation('command.bot_personalizer.options.opt_out.description'),
         type: ApplicationCommandOptionType.Boolean
       }
     ]
