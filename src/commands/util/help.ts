@@ -12,22 +12,6 @@ import {
 import i18next from 'i18next';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { command as commandMap } from '../../util/locales.js';
-
-const getTranslation = (key: string): string | null => {
-  const [cmd, ...keys] = key.split('.');
-
-  // @ts-expect-error why?
-  let result = (commandMap as unknown)[cmd];
-  if (!result) return null;
-
-  for (const k of keys) {
-    if (!result[k]) return null;
-    result = result[k];
-  }
-
-  return result;
-};
 
 const categoryMap: Record<string, string> = {
   [CommandCategories.SEARCH]: 'Player and Clan',
@@ -56,7 +40,6 @@ interface CommandInfo {
   category: string;
   isRestricted?: number;
   translationKey: string;
-  descriptionLong: string | null;
 }
 
 export default class HelpCommand extends Command {
@@ -84,7 +67,7 @@ export default class HelpCommand extends Command {
         [
           `## </${command.name}:${command.id}> ${command.isRestricted ? EMOJIS.OWNER : ''}`,
           '\u200b',
-          `${command.descriptionLong ? this.translate(command.translationKey, interaction.locale) : command.description}`
+          `${this.translate(command.translationKey, interaction.locale) || command.description}`
         ].join('\n')
       );
 
@@ -140,9 +123,7 @@ export default class HelpCommand extends Command {
           commandGroups
             .map((commands) => {
               const _commands = commands.map((command) => {
-                const description = command.descriptionLong
-                  ? this.translate(command.translationKey, interaction.locale)
-                  : command.description;
+                const description = this.translate(command.translationKey, interaction.locale) || command.description;
                 const icon = ` ${command.isRestricted ? EMOJIS.OWNER : ''}`;
                 return `### </${command.name}:${command.id}>${icon}\n${description}`;
               });
@@ -202,7 +183,7 @@ export default class HelpCommand extends Command {
             if (option.type === ApplicationCommandOptionType.SubcommandGroup && option.options?.length) {
               return option.options.map((subOption) => {
                 const _name = `${command.name} ${option.name} ${subOption.name}`;
-                const _translationKey = `${_name}.description_long`.replace(/ /g, '.').replace(/-/g, '_');
+                const _translationKey = this.formatKey(_name);
                 const _root = this.client.commandHandler.getCommand(command.name);
                 const _cmd = this.client.commandHandler.getCommand(`${command.name}-${option.name}-${subOption.name}`);
 
@@ -211,15 +192,14 @@ export default class HelpCommand extends Command {
                   name: _name,
                   rootName: command.name,
                   description: subOption.description,
-                  category: _root?.category ?? _cmd?.category ?? 'search',
+                  category: _root?.category ?? _cmd?.category ?? CommandCategories.SEARCH,
                   isRestricted: _cmd?.userPermissions?.length,
-                  translationKey: `command.${_translationKey}`,
-                  descriptionLong: getTranslation(_translationKey)
+                  translationKey: _translationKey
                 };
               });
             }
             const _name = `${command.name} ${option.name}`;
-            const _translationKey = `${_name}.description_long`.replace(/ /g, '.').replace(/-/g, '_');
+            const _translationKey = this.formatKey(_name);
             const _root = this.client.commandHandler.getCommand(command.name);
             const _cmd = this.client.commandHandler.getCommand(`${command.name}-${option.name}`);
 
@@ -228,15 +208,14 @@ export default class HelpCommand extends Command {
               name: _name,
               rootName: command.name,
               description: option.description,
-              category: _root?.category ?? _cmd?.category ?? 'search',
+              category: _root?.category ?? _cmd?.category ?? CommandCategories.SEARCH,
               isRestricted: _cmd?.userPermissions?.length,
-              translationKey: `command.${_translationKey}`,
-              descriptionLong: getTranslation(_translationKey)
+              translationKey: _translationKey
             };
           });
         if (subCommandGroups.length) return [...subCommandGroups];
 
-        const _translationKey = `${command.name.replace(/ /g, '_').replace(/-/g, '_')}.description_long`;
+        const _translationKey = this.formatKey(command.name);
         const _root = this.client.commandHandler.getCommand(command.name);
 
         return [
@@ -244,11 +223,10 @@ export default class HelpCommand extends Command {
             id: command.id,
             name: command.name,
             rootName: command.name,
-            category: _root?.category ?? 'search',
+            category: _root?.category ?? CommandCategories.SEARCH,
             isRestricted: _root?.userPermissions?.length,
             description: command.description,
-            translationKey: `command.${_translationKey}`,
-            descriptionLong: getTranslation(_translationKey)
+            translationKey: _translationKey
           }
         ];
       });
@@ -257,6 +235,20 @@ export default class HelpCommand extends Command {
   }
 
   private translate(key: string, lng: string) {
-    return i18next.t(key, { lng, interpolation: { escapeValue: false } });
+    const longKey = `command.${key}.description_long`;
+    const shortKey = `command.${key}.description`;
+
+    if (i18next.exists(longKey)) {
+      return i18next.t(longKey, { lng, interpolation: { escapeValue: false } });
+    }
+    if (i18next.exists(shortKey)) {
+      return i18next.t(shortKey, { lng, interpolation: { escapeValue: false } });
+    }
+
+    return null;
+  }
+
+  private formatKey(str: string) {
+    return str.replace(/ /g, '.').replace(/-/g, '_');
   }
 }

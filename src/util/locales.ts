@@ -65,23 +65,27 @@ export const common = {
     }
   },
   labels: {
-    clan_games: 'Clan Games',
     clan_games_ending: 'Clan Games (Ending)',
-    cwl: 'CWL',
     cwl_end: 'CWL (Ending)',
     cwl_signup_ending: 'CWL Signup (Ending)',
+    raid_weekend_ending: 'Raid Weekend (Ending)',
+
+    cwl: 'CWL',
+    clan_games: 'Clan Games',
     league_reset: 'League Reset',
     season_end: 'Season End',
     raid_weekend: 'Raid Weekend',
-    raid_weekend_ending: 'Raid Weekend (Ending)'
+    capital_raids: 'Capital Raids'
   },
-  contact_support: 'Contact Support'
+
+  contact_support: 'Contact Support',
+  select_an_option: 'Select an option',
+  ending: 'Ending'
 } as const;
 
 export const command = {
   activity: {
     description: 'Shows a graph of hourly-active clan members.',
-    description_long: 'Shows a graph of hourly-active clan members.',
     title: 'Hourly-active Clan Members',
     options: {
       clans: {
@@ -97,7 +101,6 @@ export const command = {
   },
   clan_games: {
     description: 'Clan games scoreboard of clan members.',
-    description_long: 'Clan games scoreboard of clan members.',
     title: 'Clan Games Scoreboard',
     options: {
       tag: {
@@ -111,8 +114,7 @@ export const command = {
   capital: {
     description: 'Shows clan capital contributions and raids.',
     contribution: {
-      description: 'Shows clan capital contributions.',
-      description_long: 'Shows clan capital contribution of clan members.',
+      description: 'Shows clan capital contribution of clan members.',
       title: 'Clan Capital Contributions',
       options: {
         tag: {
@@ -127,8 +129,7 @@ export const command = {
       }
     },
     raids: {
-      description: 'Shows clan capital raids.',
-      description_long: 'Shows raid weekend scores of clan members.',
+      description: 'Shows raid weekend scores of clan members.',
       title: 'Clan Capital Raids',
       options: {
         tag: {
@@ -148,7 +149,6 @@ export const command = {
     description: 'Shows legend logs for a player.',
     attacks: {
       description: 'Shows per-day legend attacks for a clan.',
-      description_long: 'Shows per-day legend stats for a clan.',
       options: {
         clans: {
           description: 'Enter a tag or pick one form the autocomplete list.'
@@ -160,7 +160,6 @@ export const command = {
     },
     days: {
       description: 'Shows per-day legend attacks for a player.',
-      description_long: 'Shows per-day legend stats for a player or an user.',
       options: {
         player: {
           description: 'Enter a tag or pick one form the autocomplete list.'
@@ -232,7 +231,6 @@ export const command = {
   },
   lastseen: {
     description: 'The last seen time and activities of clan members.',
-    description_long: 'The last seen time and activities of clan members.',
     title_lastseen: 'Last seen and activity scores (last 24h)',
     title_activity: 'Clan member activities (last 30d)',
     options: {
@@ -245,7 +243,6 @@ export const command = {
     description: 'Create, delete or view clan aliases.',
     create: {
       description: 'Creates a clan alias (short code or abbreviation) or clan nickname.',
-      description_long: 'Creates a clan alias (short code or abbreviation) or clan nickname.',
       options: {
         alias_name: {
           description: 'Name of the alias.'
@@ -267,7 +264,6 @@ export const command = {
     },
     delete: {
       description: 'Deletes a clan alias.',
-      description_long: 'Deletes a clan alias.',
       options: {
         name: {
           description: 'Tag of a clan or name of an alias'
@@ -279,13 +275,11 @@ export const command = {
     },
     list: {
       description: 'List all clan aliases.',
-      description_long: 'List all clan aliases.',
       title: 'Clan Aliases'
     }
   },
   config: {
     description: 'Configure server settings.',
-    description_long: 'Configure general server settings (color_code, events_channel, webhook_limit)',
     options: {
       color_code: {
         description: 'Hex color code (e.g #ed4245)'
@@ -314,8 +308,7 @@ export const command = {
     maintenance_notification_channel: 'Maintenance Break Notification Channel'
   },
   debug: {
-    description: 'Displays some basic debug information.',
-    description_long: 'Displays some basic debug information.'
+    description: 'Displays some basic debug information.'
   },
   cwl: {
     description: 'CWL season summary and overview.',
@@ -332,24 +325,19 @@ export const command = {
     no_rounds: 'No CWL rounds have been played yet, try again after some time.',
     no_season_data: 'No CWL stats are available for the season {{season}}.',
     attacks: {
-      description: 'Shows an overview of attacks for different CWL rounds.',
-      description_long: 'Shows an overview of attacks for different CWL rounds.'
+      description: 'Shows an overview of attacks for different CWL rounds.'
     },
     lineup: {
-      description: 'Shows CWL lineup for a round (sorted by town hall and heroes).',
-      description_long: 'Shows CWL lineup for a round (sorted by town hall and heroes).'
+      description: 'Shows CWL lineup for a round (sorted by town hall and heroes).'
     },
     members: {
-      description: 'Shows a list of all CWL participants.',
-      description_long: 'Shows a list of all CWL participants.'
+      description: 'Shows a list of all CWL participants.'
     },
     history: {
-      description: 'Shows CWL history of a player or user.',
-      description_long: 'Shows CWL history of a player or user.'
+      description: 'Shows CWL history of a player or user.'
     },
     roster: {
       description: 'CWL roster and town hall distribution.',
-      description_long: 'Shows entire roster of Town halls for a CWL group.',
       options: {
         tag: {
           description: 'Clan tag or alias or @user mention.'
@@ -358,7 +346,6 @@ export const command = {
     },
     round: {
       description: 'CWL summary for the current round.',
-      description_long: 'Shows an overview of a CWL round.',
       options: {
         tag: {
           description: 'Clan tag or alias or @user mention.'
@@ -372,12 +359,10 @@ export const command = {
       }
     },
     stars: {
-      description: 'Shows CWL member ranking by stars.',
-      description_long: 'Shows CWL member ranking by stars.'
+      description: 'Shows CWL member ranking by stars.'
     },
     stats: {
-      description: 'Shows an overview of all CWL rounds and group standings.',
-      description_long: 'Shows an overview of all CWL rounds and group standings.'
+      description: 'Shows an overview of all CWL rounds and group standings.'
     }
   },
   roster: {
@@ -614,7 +599,6 @@ export const command = {
   },
   round: {
     description: 'CWL summary for the current round.',
-    description_long: 'Shows an overview of a CWL round.',
     options: {
       tag: {
         description: 'Clan tag or alias or @user mention.'
@@ -641,8 +625,7 @@ export const command = {
       }
     },
     cwl: {
-      description: 'Export CWL wars stats.',
-      description_long: 'Export CWL stats to Excel.',
+      description: 'Export CWL stats to Excel.',
       options: {
         lineup_only: {
           description: 'Export only the lineup.'
@@ -651,7 +634,6 @@ export const command = {
     },
     last_wars: {
       description: 'Export participation history (last played wars)',
-      description_long: 'Export participation history (last played wars)',
       options: {
         war_type: {
           description: 'Regular or CWL',
@@ -663,20 +645,16 @@ export const command = {
       }
     },
     members: {
-      description: 'Export clan members.',
-      description_long: 'Export a comprehensive version of clan member stats.'
+      description: 'Export a comprehensive version of clan member stats.'
     },
     missed: {
-      description: 'Export missed attack history.',
-      description_long: 'Export missed attack history.'
+      description: 'Export missed attack history.'
     },
     season: {
-      description: 'Export season stats of the clan family.',
-      description_long: 'Export comprehensive seasonal stats of clan members.'
+      description: 'Export comprehensive seasonal stats of clan members.'
     },
     wars: {
-      description: 'Export war stats.',
-      description_long: 'Export War stats to Excel.',
+      description: 'Export War stats to Excel.',
       options: {
         war_type: {
           description: 'Regular or friendly wars (defaults to Regular)',
@@ -731,8 +709,7 @@ export const command = {
   flag: {
     description: 'Create, delete or search player flags.',
     create: {
-      description: 'Create a player flag.',
-      description_long: 'Create a player flag to mark the player as banned or flagged.',
+      description: 'Create a player flag to mark the player as banned or flagged.',
       options: {
         flag_type: {
           description: 'The type of the flag (ban or strike)'
@@ -760,7 +737,6 @@ export const command = {
     },
     delete: {
       description: 'Delete a player flag.',
-      description_long: 'Delete a player flag.',
       options: {
         tag: {
           description: 'The tag of a player to delete.'
@@ -775,7 +751,6 @@ export const command = {
     },
     list: {
       description: 'List all player flags.',
-      description_long: 'List all player flags.',
       options: {
         flag_type: {
           description: 'The type of the flag (ban or strike)',
@@ -795,7 +770,6 @@ export const command = {
     },
     search: {
       description: 'Search for a player flag.',
-      description_long: 'Search for a player flag.',
       options: {
         tag: {
           description: 'The tag of a player to search.'
@@ -809,7 +783,6 @@ export const command = {
     no_tag: 'You must specify a player/clan tag to execute this command.',
     create: {
       description: 'Links a player account/clan to a Discord account.',
-      description_long: 'Links a player account/clan to a Discord account.',
       options: {
         tag: {
           description: 'Tag of a player or clan.'
@@ -837,7 +810,6 @@ export const command = {
     },
     delete: {
       description: 'Deletes a player account/clan from a Discord account.',
-      description_long: 'Deletes a player account/clan from a Discord account.',
       options: {
         player_tag: {
           description: 'The player tag to unlink.'
@@ -855,8 +827,7 @@ export const command = {
         'This player should be in your clan and you must be a "Verified" Co/Leader to perform this action. Use {{command}} to verify your account.'
     },
     list: {
-      description: 'List all player links.',
-      description_long: 'List all player links of a clan.',
+      description: 'List all player links of a clan.',
       options: {
         clan: {
           description: 'Clan tag or alias or @user mention.'
@@ -865,8 +836,7 @@ export const command = {
     }
   },
   verify: {
-    description: 'Verify and link a player using an API token.',
-    description_long: 'Verify and link a player account using an API token.',
+    description: 'Verify and link a player account using an API token.',
     options: {
       tag: {
         description: 'Tag of the player to verify.'
@@ -879,8 +849,7 @@ export const command = {
     invalid_token: 'You must provide a valid API Token that can be found in the game settings. \nhttps://i.imgur.com/8dsoUB8.jpg'
   },
   timezone: {
-    description: 'Set your timezone offset.',
-    description_long: 'Set your timezone offset for /activity command.',
+    description: 'Set your timezone offset for /activity command.',
     options: {
       location: {
         description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)'
@@ -890,8 +859,7 @@ export const command = {
     no_result: 'Make your search more specific and try again.'
   },
   profile: {
-    description: 'Shows user info and linked accounts.',
-    description_long: 'Shows linked accounts and clan of a user.',
+    description: 'Shows linked accounts and clan of a user.',
     options: {
       user: {
         description: 'User ID or @user mention.'
@@ -899,10 +867,9 @@ export const command = {
     }
   },
   nickname: {
-    description: 'Configure automatic server nickname settings.',
+    description: 'Manage automatic nickname settings.',
     config: {
       description: 'Configure automatic server nickname settings.',
-      description_long: 'Configure automatic server nickname settings.',
       options: {
         family_nickname_format: {
           description: 'Set family nickname format (e.g. {CLAN} | {ALIAS} | {TH} | {ROLE} | {NAME})'
@@ -928,7 +895,6 @@ export const command = {
     description: 'Setup reminders for clan wars, capital raids.',
     create: {
       description: 'Create reminders for clan wars, capital raids or clan games.',
-      description_long: 'Create reminders for clan wars, capital raids or clan games.',
       options: {
         type: {
           description: 'Type of the reminder.',
@@ -966,7 +932,6 @@ export const command = {
     },
     edit: {
       description: 'Edit a reminder by ID (do /reminders list to get the ID)',
-      description_long: 'Edit a reminder by ID (do */reminders list* to get the ID)',
       options: {
         id: {
           description: 'Reminder ID.'
@@ -975,7 +940,6 @@ export const command = {
     },
     delete: {
       description: 'Delete a reminder by ID (do /reminders list to get the ID)',
-      description_long: 'Delete a reminder by ID (do */reminders list* to get the ID)',
       options: {
         id: {
           description: 'Reminder ID.'
@@ -991,8 +955,7 @@ export const command = {
       too_many_reminders: 'If you have too many reminders, please provide a reminder ID.'
     },
     list: {
-      description: 'List all reminders.',
-      description_long: 'List all war reminders for clan wars, capital raids or clan games.',
+      description: 'List all war reminders for clan wars, capital raids or clan games.',
       no_reminders: 'You have no reminders.',
       options: {
         compact_list: {
@@ -1005,7 +968,6 @@ export const command = {
     },
     now: {
       description: 'Create an instant reminder to notify members.',
-      description_long: 'Create an instant reminder to notify members.',
       options: {
         message: {
           description: 'Reminder message for the notification.'
@@ -1050,7 +1012,6 @@ export const command = {
   },
   army: {
     description: 'Parse an army composition link.',
-    description_long: 'Parse an army composition link.',
     no_link: 'You must provide a valid army composition link.',
     invalid_link: 'This army composition link is invalid.',
     possibly_invalid_link: 'This link is invalid and may not work.',
@@ -1076,8 +1037,7 @@ export const command = {
     }
   },
   attacks: {
-    description: 'Attack and defense scoreboard of clan members.',
-    description_long: 'Displays attack and defense info of clan members.',
+    description: 'Displays attack and defense info of clan members.',
     options: {
       tag: {
         description: 'Clan tag or alias or @user mention.'
@@ -1095,8 +1055,7 @@ export const command = {
     }
   },
   boosts: {
-    description: 'Clan members with active super troops.',
-    description_long: 'Displays active super troops of clan members.',
+    description: 'Displays active super troops of clan members.',
     no_boosts: 'No members are boosting in this clan.',
     no_recent_boosts: 'No recently active members are boosting in this clan.',
     no_unit_boosts: 'No members are boosting {{unit}} in this clan.',
@@ -1108,8 +1067,7 @@ export const command = {
     }
   },
   clan: {
-    description: 'Shows clan summary and overview.',
-    description_long: 'Shows comprehensive overview of a clan.',
+    description: 'Shows comprehensive overview of a clan.',
     options: {
       tag: {
         description: 'Clan tag or alias or @user mention.'
@@ -1120,8 +1078,7 @@ export const command = {
     }
   },
   compo: {
-    description: 'Displays Town Hall composition of a clan.',
-    description_long: 'Shows Town Hall composition of a clan.',
+    description: 'Shows Town Hall composition of a clan.',
     options: {
       tag: {
         description: 'Clan tag or alias or @user mention.'
@@ -1129,8 +1086,7 @@ export const command = {
     }
   },
   donations: {
-    description: 'Displays donations of clan members.',
-    description_long: 'Displays donation/received of clan members.',
+    description: 'Shows donations and donations received of clan members.',
     no_season_data: 'No data was found for the season {{season}}.',
     options: {
       tag: {
@@ -1178,8 +1134,7 @@ export const command = {
     }
   },
   lineup: {
-    description: 'War line-up of a clan.',
-    description_long: 'Displays war line-up of a clan.',
+    description: 'Displays war line-up of a clan.',
     not_in_war: 'The clan is not in a war.',
     options: {
       tag: {
@@ -1210,8 +1165,7 @@ export const command = {
     }
   },
   remaining: {
-    description: 'Remaining or missed attacks of a clan.',
-    description_long: 'Shows remaining or missed war hits of a clan.',
+    description: 'Shows remaining or missed war hits of a clan.',
     not_in_war: 'Clan is not in a war.',
     no_war_id: 'No war was found for the specified war ID.',
     options: {
@@ -1238,8 +1192,7 @@ export const command = {
     }
   },
   rushed: {
-    description: 'Rushed units of a player or clan members.',
-    description_long: 'Rushed units and rushed % of a player or clan members.',
+    description: 'Rushed units and rushed % of a player or clan members.',
     no_rushed: 'No rushed units for Town Hall {{townhall}}.',
     options: {
       tag: {
@@ -1252,7 +1205,6 @@ export const command = {
   },
   search: {
     description: 'Search clans by name.',
-    description_long: 'Search clans by name.',
     no_results: 'No results were found.',
     searching: "Clans with the name '{{name}}'.",
     options: {
@@ -1309,17 +1261,14 @@ export const command = {
       }
     },
     attacks: {
-      description: 'Shows attack success rates of clan members.',
-      description_long: 'Shows attack success rates of clan members.'
+      description: 'Shows attack success rates of clan members.'
     },
     defense: {
-      description: 'Shows defense failure rates of clan members.',
-      description_long: 'Shows defense failure rates of clan members.'
+      description: 'Shows defense failure rates of clan members.'
     }
   },
   units: {
-    description: 'Shows units of a player with max/min levels.',
-    description_long: 'Shows home village and builder base units of a player (with max/min levels)',
+    description: 'Shows home village and builder base units of a player (with max/min levels)',
     options: {
       tag: {
         description: 'Player tag or @user mention.'
@@ -1328,7 +1277,6 @@ export const command = {
   },
   upgrades: {
     description: 'Remaining upgrades of a player with upgrading cost.',
-    description_long: 'Remaining upgrades of a player with upgrading cost.',
     options: {
       tag: {
         description: 'Clan tag or alias or @user mention.'
@@ -1336,8 +1284,7 @@ export const command = {
     }
   },
   war: {
-    description: 'Shows war summary and overview.',
-    description_long: 'Shows war overview of a clan.',
+    description: 'Shows war summary and overview of a clan.',
     no_war_id: 'No war was found for the specified war ID.',
     not_in_war: 'Clan is not in a war.',
     options: {
@@ -1351,7 +1298,6 @@ export const command = {
   },
   warlog: {
     description: 'Shows the last 10 clan war logs.',
-    description_long: 'Shows last 10 war logs of a clan.',
     options: {
       tag: {
         description: 'Clan tag or alias or @user mention.'
@@ -1412,7 +1358,6 @@ export const command = {
     },
     disable: {
       description: 'Disable a feature on the server or remove a clan.',
-      description_long: 'Disable a feature on the server or remove a clan.',
       options: {
         option: {
           description: 'Select an option.',
@@ -1446,7 +1391,6 @@ export const command = {
     },
     list: {
       description: 'List all enabled features and clans.',
-      description_long: 'List all enabled features and clans.',
       options: {
         clans: {
           description: 'Select the clans to list.'
@@ -1455,7 +1399,6 @@ export const command = {
     },
     utils: {
       description: 'Setup other utility features (link button, events schedular)',
-      description_long: 'Setup other utility features (link button, events schedular)',
       options: {
         option: {
           choices: {
@@ -1574,8 +1517,7 @@ export const command = {
     clan_not_linked: 'The clan must be linked to the server to enable auto-role.',
     success_with_count: 'Successfully enabled auto-role for {{count}} clan(s). \n{{clans}}',
     clan_roles: {
-      description: 'Enable automatic clan roles.',
-      description_long: 'Manage automatic role management for clan roles.',
+      description: 'Manage automatic role management for clan roles.',
       options: {
         member: {
           description: 'The Member role (below Elder)'
@@ -1601,15 +1543,13 @@ export const command = {
       }
     },
     leagues: {
-      description: 'Set leagues roles.',
-      description_long: 'Manage automatic role management for leagues.'
+      description: 'Manage automatic role management for leagues.'
     },
     builder_leagues: {
       description: 'Set builder base league roles.'
     },
     town_hall: {
-      description: 'Manage automatic Town Hall roles.',
-      description_long: 'Manage automatic role management for town hall levels.',
+      description: 'Manage automatic role management for town hall levels.',
       options: {
         allow_non_family_accounts: {
           description: 'Whether to give roles to the members that are not in the family clans.'
@@ -1696,7 +1636,7 @@ export const command = {
     },
     refresh: {
       description: 'Refresh roles manually.',
-      description_long: 'Refresh roles manually. (Use this command if roles are not updated automatically)',
+      description_long: 'Refresh roles manually. (Use this command if the roles are not updated automatically)',
       options: {
         user_or_role: {
           description: 'Refresh an individual user or a role.'
@@ -1838,75 +1778,56 @@ export const command = {
       }
     },
     compo: {
-      description: 'Shows a summary of family Town Hall composition.',
-      description_long: 'Shows a summary of family Town Hall composition.'
+      description: 'Shows a summary of family Town Hall composition.'
     },
     clans: {
-      description: 'Shows a summary of family clans.',
-      description_long: 'Shows a summary of family clans.'
-    },
-    players: {
-      description: 'No description.'
+      description: 'Shows a summary of family clans.'
     },
     donations: {
-      description: 'Shows a summary of donations.',
-      description_long: 'Shows a summary of donations.'
+      description: 'Shows a summary of donations.'
     },
     trophies: {
-      description: 'Shows a summary of players sorted by trophies.',
-      description_long: 'Shows a summary of players sorted by trophies.'
+      description: 'Shows a summary of players sorted by trophies.'
     },
     wars: {
-      description: 'Shows a summary of current wars.',
-      description_long: 'Shows a summary of current wars.'
+      description: 'Shows a summary of current wars.'
     },
     clan_games: {
       description: 'Shows a summary of clan games scores.',
-      description_long: 'Shows a summary of clan games scores.',
       min_clan_size: 'You must have a minimum of {{clans}} clans on your server to use this command.',
       scoreboard: 'Based on the highest scores and completion times.',
       performance: 'Based on completing maximum points.'
     },
     war_results: {
-      description: 'Shows a summary of seasonal war results.',
-      description_long: 'Shows a summary of seasonal war results.'
+      description: 'Shows a summary of seasonal war results.'
     },
     best: {
-      description: 'Shows a summary of best members.',
-      description_long: 'Shows a summary of best members.'
+      description: 'Shows a summary of best members.'
     },
     attacks: {
-      description: 'Shows a summary of best attackers.',
-      description_long: 'Shows a summary of best attackers.'
+      description: 'Shows a summary of best attackers.'
     },
     missed_wars: {
-      description: 'Shows a summary of missed wars.',
-      description_long: 'Shows a summary of missed wars.'
+      description: 'Shows a summary of missed wars.'
     },
     capital_raids: {
-      description: 'Shows a summary of clan capital raids.',
-      description_long: 'Shows a summary of clan capital raids.'
+      description: 'Shows a summary of clan capital raids.'
     },
     capital_contribution: {
-      description: 'Shows a summary of clan capital contribution.',
-      description_long: 'Shows a summary of clan capital contribution.'
+      description: 'Shows a summary of clan capital contribution.'
     },
     activity: {
-      description: 'Shows a summary of clan activity (last seen)',
-      description_long: 'Shows a summary of clan activity (last seen)'
+      description: 'Shows a summary of clan activity (last seen)'
     },
     cwl_ranks: {
-      description: 'Shows a summary of CWL ranks.',
-      description_long: 'Shows a summary of CWL ranks.'
+      description: 'Shows a summary of CWL ranks.'
     },
     leagues: {
-      description: 'Shows a summary of clan leagues (CWL & Clan Capital)',
-      description_long: 'Shows a summary of clan leagues (CWL & Clan Capital)'
+      description: 'Shows a summary of clan leagues (CWL & Clan Capital)'
     }
   },
   help: {
     description: 'Get a list of commands or info about a specific command.',
-    description_long: 'Get a list of commands or info about a specific command.',
     options: {
       name: {
         description: 'Name of the command.'
@@ -1914,12 +1835,10 @@ export const command = {
     }
   },
   invite: {
-    description: 'Get the bot invite and support server link.',
-    description_long: 'Get the bot invite and support server link.'
+    description: 'Get the bot invite and support server link.'
   },
   redeem: {
     description: 'Redeem or manage a Patreon subscription. (if you wish to support us)',
-    description_long: 'Redeem or manage a Patreon subscription. (if you wish to support us)',
     options: {
       disable: {
         description: 'Disable subscription for a server (if subscribed)'
@@ -1951,7 +1870,6 @@ export const command = {
   },
   layout: {
     description: 'Post a village layout.',
-    description_long: 'Post a village layout.',
     options: {
       screenshot: {
         description: 'Screenshot of the layout.'
