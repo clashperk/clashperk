@@ -11,11 +11,12 @@ export default class ReadyListener extends Listener {
   }
 
   public async exec() {
-    this.client.util.setPresence();
     this.client.logger.info(
       `${this.client.user!.displayName} (${this.client.user!.id}) [${(process.env.NODE_ENV ?? 'development').toUpperCase()}]`,
       { label: 'READY' }
     );
+
+    this.client.util.setPresence();
 
     const applicationCommands = await this.client.application?.commands.fetch();
     const commands = applicationCommands!

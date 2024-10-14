@@ -268,7 +268,7 @@ export default class StatsCommand extends Command {
     const stats = Object.values(members)
       .filter((m) => m.total > 0 && playerTags.includes(m.tag) && (attempt ? m.success > 0 : true))
       .map((mem) => ({ ...mem, rate: (mem.success * 100) / mem.total }))
-      .sort((a, b) => b.success - a.success)
+      .sort((a, b) => b.stars - a.stars)
       .sort((a, b) => b.rate - a.rate);
     if (!stats.length) {
       return interaction.editReply(this.i18n('command.stats.no_stats', { lng: interaction.locale }));

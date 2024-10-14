@@ -114,7 +114,10 @@ export default class RosterEditCommand extends Command {
     if (args.min_hero_level) data.minHeroLevels = args.min_hero_level;
     if (args.roster_role) data.roleId = args.roster_role.id;
     if (args.delete_role) data.roleId = null;
+
     if (args.roster_image_url && URL_REGEX.test(args.roster_image_url)) data.rosterImage = args.roster_image_url;
+    if (args.roster_image_url && !/^none$/i.test(args.roster_image_url)) data.rosterImage = null;
+
     if (typeof args.allow_multi_signup === 'boolean') data.allowMultiSignup = args.allow_multi_signup;
     if (typeof args.allow_group_selection === 'boolean') data.allowCategorySelection = args.allow_group_selection;
     if (args.clear_members) data.members = [];
