@@ -184,6 +184,7 @@ export class ClanGamesLog extends RootLog {
       channel: data.channelId,
       message: data.messageId,
       tag: data.clanTag,
+      color: data.color,
       deepLink: data.deepLink,
       logType: data.logType,
       retries: 0,
@@ -207,7 +208,7 @@ interface Cache {
   channel: string;
   message?: string | null;
   guild: string;
-  color?: number;
+  color?: number | null;
   threadId?: string;
   logType: string;
   deepLink?: string;

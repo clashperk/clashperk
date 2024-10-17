@@ -211,6 +211,7 @@ export class LegendLog extends RootLog {
       tag: data.clanTag,
       deepLink: data.deepLink,
       logType: data.logType,
+      color: data.color,
       retries: 0,
       webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
     });
@@ -230,7 +231,7 @@ interface Cache {
   role?: string;
   channel: string;
   guild: string;
-  color?: number;
+  color?: number | null;
   threadId?: string;
   logType: string;
   deepLink?: string;

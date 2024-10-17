@@ -17,7 +17,7 @@ export const clanEmbedMaker = async (
   }: {
     description?: string;
     accepts?: string;
-    color?: number;
+    color?: number | null;
     bannerImage?: string;
     isDryRun?: boolean;
     fields?: string[];

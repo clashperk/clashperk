@@ -11,7 +11,7 @@ export const clanGamesEmbedMaker = (
     members,
     filters
   }: {
-    color?: number;
+    color?: number | null;
     seasonId: string;
     filters?: { maxPoints?: boolean; minPoints?: boolean };
     members: { name: string; points: number }[];
