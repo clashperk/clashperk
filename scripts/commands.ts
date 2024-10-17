@@ -641,18 +641,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'friendly'
               },
               {
-                name: command.stats.options.type.choices.noFriendly,
-                name_localizations: translation('command.stats.options.type.choices.noFriendly'),
+                name: common.choices.stats.no_friendly,
+                name_localizations: translation('common.choices.stats.no_friendly'),
                 value: 'noFriendly'
               },
               {
-                name: command.stats.options.type.choices.noCWL,
-                name_localizations: translation('command.stats.options.type.choices.noCWL'),
+                name: common.choices.stats.no_cwl,
+                name_localizations: translation('common.choices.stats.no_cwl'),
                 value: 'noCWL'
               },
               {
-                name: command.stats.options.type.choices.all,
-                name_localizations: translation('command.stats.options.type.choices.all'),
+                name: common.choices.stats.all,
+                name_localizations: translation('common.choices.stats.all'),
                 value: 'all'
               }
             ]
@@ -687,13 +687,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.stats.options.attempt.choices.fresh,
-                name_localizations: translation('command.stats.options.attempt.choices.fresh'),
+                name: common.choices.stats.fresh,
+                name_localizations: translation('common.choices.stats.fresh'),
                 value: 'fresh'
               },
               {
-                name: command.stats.options.attempt.choices.cleanup,
-                name_localizations: translation('command.stats.options.attempt.choices.cleanup'),
+                name: common.choices.stats.cleanup,
+                name_localizations: translation('common.choices.stats.cleanup'),
                 value: 'cleanup'
               }
             ]
@@ -792,18 +792,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'friendly'
               },
               {
-                name: command.stats.options.type.choices.noFriendly,
-                name_localizations: translation('command.stats.options.type.choices.noFriendly'),
+                name: common.choices.stats.no_friendly,
+                name_localizations: translation('common.choices.stats.no_friendly'),
                 value: 'noFriendly'
               },
               {
-                name: command.stats.options.type.choices.noCWL,
-                name_localizations: translation('command.stats.options.type.choices.noCWL'),
+                name: common.choices.stats.no_cwl,
+                name_localizations: translation('common.choices.stats.no_cwl'),
                 value: 'noCWL'
               },
               {
-                name: command.stats.options.type.choices.all,
-                name_localizations: translation('command.stats.options.type.choices.all'),
+                name: common.choices.stats.all,
+                name_localizations: translation('common.choices.stats.all'),
                 value: 'all'
               }
             ]
@@ -822,13 +822,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.stats.options.attempt.choices.fresh,
-                name_localizations: translation('command.stats.options.attempt.choices.fresh'),
+                name: common.choices.stats.fresh,
+                name_localizations: translation('common.choices.stats.fresh'),
                 value: 'fresh'
               },
               {
-                name: command.stats.options.attempt.choices.cleanup,
-                name_localizations: translation('command.stats.options.attempt.choices.cleanup'),
+                name: common.choices.stats.cleanup,
+                name_localizations: translation('common.choices.stats.cleanup'),
                 value: 'cleanup'
               }
             ]
@@ -1100,13 +1100,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             value: 'capital-raids'
           },
           {
-            name: command.history.options.option.choices.capital_contribution,
-            name_localizations: translation('command.history.options.option.choices.capital_contribution'),
+            name: common.choices.history.capital_contribution,
+            name_localizations: translation('common.choices.history.capital_contribution'),
             value: 'capital-contribution'
           },
           {
-            name: command.history.options.option.choices.cwl_attacks,
-            name_localizations: translation('command.history.options.option.choices.cwl_attacks'),
+            name: common.choices.history.cwl_attacks,
+            name_localizations: translation('common.choices.history.cwl_attacks'),
             value: 'cwl-attacks'
           },
           {
@@ -1115,33 +1115,33 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             value: 'war-attacks'
           },
           {
-            name: command.history.options.option.choices.donations,
-            name_localizations: translation('command.history.options.option.choices.donations'),
+            name: common.choices.history.donations,
+            name_localizations: translation('common.choices.history.donations'),
             value: 'donations'
           },
           {
-            name: command.history.options.option.choices.attacks,
-            name_localizations: translation('command.history.options.option.choices.attacks'),
+            name: common.choices.history.attacks,
+            name_localizations: translation('common.choices.history.attacks'),
             value: 'attacks'
           },
           {
-            name: command.history.options.option.choices.loot,
-            name_localizations: translation('command.history.options.option.choices.loot'),
+            name: common.choices.history.loot,
+            name_localizations: translation('common.choices.history.loot'),
             value: 'loot'
           },
           {
-            name: command.history.options.option.choices.join_leave,
-            name_localizations: translation('command.history.options.option.choices.join_leave'),
+            name: common.choices.history.join_leave,
+            name_localizations: translation('common.choices.history.join_leave'),
             value: 'join-leave'
           },
           {
-            name: command.history.options.option.choices.legend_attacks,
-            name_localizations: translation('command.history.options.option.choices.legend_attacks'),
+            name: common.choices.history.legend_attacks,
+            name_localizations: translation('common.choices.history.legend_attacks'),
             value: 'legend-attacks'
           },
           {
-            name: command.history.options.option.choices.eos_trophies,
-            name_localizations: translation('command.history.options.option.choices.eos_trophies'),
+            name: common.choices.history.eos_trophies,
+            name_localizations: translation('common.choices.history.eos_trophies'),
             value: 'eos-trophies'
           }
         ]
@@ -1493,13 +1493,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.flag.options.flag_type.choices.ban,
-                name_localizations: translation('command.flag.options.flag_type.choices.ban'),
+                name: common.choices.flag.ban,
+                name_localizations: translation('common.choices.flag.ban'),
                 value: 'ban'
               },
               {
-                name: command.flag.options.flag_type.choices.strike,
-                name_localizations: translation('command.flag.options.flag_type.choices.strike'),
+                name: common.choices.flag.strike,
+                name_localizations: translation('common.choices.flag.strike'),
                 value: 'strike'
               }
             ]
@@ -1553,13 +1553,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: true,
             choices: [
               {
-                name: command.flag.options.flag_type.choices.ban,
-                name_localizations: translation('command.flag.options.flag_type.choices.ban'),
+                name: common.choices.flag.ban,
+                name_localizations: translation('common.choices.flag.ban'),
                 value: 'ban'
               },
               {
-                name: command.flag.options.flag_type.choices.strike,
-                name_localizations: translation('command.flag.options.flag_type.choices.strike'),
+                name: common.choices.flag.strike,
+                name_localizations: translation('common.choices.flag.strike'),
                 value: 'strike'
               }
             ]
@@ -1594,13 +1594,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: true,
             choices: [
               {
-                name: command.flag.options.flag_type.choices.ban,
-                name_localizations: translation('command.flag.options.flag_type.choices.ban'),
+                name: common.choices.flag.ban,
+                name_localizations: translation('common.choices.flag.ban'),
                 value: 'ban'
               },
               {
-                name: command.flag.options.flag_type.choices.strike,
-                name_localizations: translation('command.flag.options.flag_type.choices.strike'),
+                name: common.choices.flag.strike,
+                name_localizations: translation('common.choices.flag.strike'),
                 value: 'strike'
               }
             ]
@@ -1646,28 +1646,28 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: true,
             choices: [
               {
-                name: command.setup.options.action.choices.server_link,
-                name_localizations: translation('command.setup.options.action.choices.server_link'),
+                name: common.choices.setup.server_link,
+                name_localizations: translation('common.choices.setup.server_link'),
                 value: 'link-clan'
               },
               {
-                name: command.setup.options.action.choices.channel_link,
-                name_localizations: translation('command.setup.options.action.choices.channel_link'),
+                name: common.choices.setup.channel_link,
+                name_localizations: translation('common.choices.setup.channel_link'),
                 value: 'link-channel'
               },
               {
-                name: command.setup.options.action.choices.logs_or_feed,
-                name_localizations: translation('command.setup.options.action.choices.logs_or_feed'),
+                name: common.choices.setup.logs_or_feed,
+                name_localizations: translation('common.choices.setup.logs_or_feed'),
                 value: 'enable-logs'
               },
               {
-                name: command.setup.options.action.choices.war_feed,
-                name_localizations: translation('command.setup.options.action.choices.war_feed'),
+                name: common.choices.setup.war_feed,
+                name_localizations: translation('common.choices.setup.war_feed'),
                 value: 'war-feed'
               },
               {
-                name: command.setup.options.action.choices.last_seen,
-                name_localizations: translation('command.setup.options.action.choices.last_seen'),
+                name: common.choices.setup.last_seen,
+                name_localizations: translation('common.choices.setup.last_seen'),
                 value: 'last-seen'
               },
               {
@@ -1676,33 +1676,33 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'clan-games'
               },
               {
-                name: command.setup.options.action.choices.legend_log,
-                name_localizations: translation('command.setup.options.action.choices.legend_log'),
+                name: common.choices.setup.legend_log,
+                name_localizations: translation('common.choices.setup.legend_log'),
                 value: 'legend-log'
               },
               {
-                name: command.setup.options.action.choices.capital_log,
-                name_localizations: translation('command.setup.options.action.choices.capital_log'),
+                name: common.choices.setup.capital_log,
+                name_localizations: translation('common.choices.setup.capital_log'),
                 value: 'capital-log'
               },
               {
-                name: command.setup.options.action.choices.clan_feed,
-                name_localizations: translation('command.setup.options.action.choices.clan_feed'),
+                name: common.choices.setup.clan_feed,
+                name_localizations: translation('common.choices.setup.clan_feed'),
                 value: 'clan-feed'
               },
               {
-                name: command.setup.options.action.choices.join_leave,
-                name_localizations: translation('command.setup.options.action.choices.join_leave'),
+                name: common.choices.setup.join_leave,
+                name_localizations: translation('common.choices.setup.join_leave'),
                 value: 'join-leave'
               },
               {
-                name: command.setup.options.action.choices.clan_embed,
-                name_localizations: translation('command.setup.options.action.choices.clan_embed'),
+                name: common.choices.setup.clan_embed,
+                name_localizations: translation('common.choices.setup.clan_embed'),
                 value: 'clan-embed'
               },
               {
-                name: command.setup.options.action.choices.donation_log,
-                name_localizations: translation('command.setup.options.action.choices.donation_log'),
+                name: common.choices.setup.donation_log,
+                name_localizations: translation('common.choices.setup.donation_log'),
                 value: 'donation-log'
               }
             ]
@@ -1787,8 +1787,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'role-refresh-button'
               },
               {
-                name: command.setup.utils.options.option.choices.events_schedular,
-                name_localizations: translation('command.setup.utils.options.option.choices.events_schedular'),
+                name: common.choices.events_schedular,
+                name_localizations: translation('common.choices.events_schedular'),
                 value: 'events-schedular'
               },
               {
@@ -1802,8 +1802,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'roster-changelog'
               },
               {
-                name: command.setup.utils.options.option.choices.reminder_ping_exclusion,
-                name_localizations: translation('command.setup.utils.options.option.choices.reminder_ping_exclusion'),
+                name: common.choices.reminder_ping_exclusion,
+                name_localizations: translation('common.choices.reminder_ping_exclusion'),
                 value: 'reminder-ping-exclusion'
               },
               {
@@ -1965,13 +1965,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false,
             choices: [
               {
-                name: command.setup.clan_logs.options.action.choices.enable_logs,
-                name_localizations: translation('command.setup.clan_logs.options.action.choices.enable_logs'),
+                name: common.choices.enable,
+                name_localizations: translation('common.choices.enable'),
                 value: 'enable-logs'
               },
               {
-                name: command.setup.clan_logs.options.action.choices.disable_logs,
-                name_localizations: translation('command.setup.clan_logs.options.action.choices.disable_logs'),
+                name: common.choices.disable,
+                name_localizations: translation('common.choices.disable'),
                 value: 'disable-logs'
               }
             ]
@@ -2014,28 +2014,28 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.setup.options.action.choices.channel_link,
-                name_localizations: translation('command.setup.options.action.choices.channel_link'),
+                name: common.choices.setup.channel_link,
+                name_localizations: translation('common.choices.setup.channel_link'),
                 value: 'unlink-channel'
               },
               {
-                name: command.setup.options.action.choices.delete_clan,
-                name_localizations: translation('command.setup.options.action.choices.delete_clan'),
+                name: common.choices.setup.delete_clan,
+                name_localizations: translation('common.choices.setup.delete_clan'),
                 value: 'delete-clan'
               },
               {
-                name: command.setup.options.action.choices.logs_or_feed,
-                name_localizations: translation('command.setup.options.action.choices.logs_or_feed'),
+                name: common.choices.setup.logs_or_feed,
+                name_localizations: translation('common.choices.setup.logs_or_feed'),
                 value: 'disable-logs'
               },
               {
-                name: command.setup.options.action.choices.war_feed,
-                name_localizations: translation('command.setup.options.action.choices.war_feed'),
+                name: common.choices.setup.war_feed,
+                name_localizations: translation('common.choices.setup.war_feed'),
                 value: 'war-feed'
               },
               {
-                name: command.setup.options.action.choices.last_seen,
-                name_localizations: translation('command.setup.options.action.choices.last_seen'),
+                name: common.choices.setup.last_seen,
+                name_localizations: translation('common.choices.setup.last_seen'),
                 value: 'last-seen'
               },
               {
@@ -2044,33 +2044,33 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'clan-games'
               },
               {
-                name: command.setup.options.action.choices.legend_log,
-                name_localizations: translation('command.setup.options.action.choices.legend_log'),
+                name: common.choices.setup.legend_log,
+                name_localizations: translation('common.choices.setup.legend_log'),
                 value: 'legend-log'
               },
               {
-                name: command.setup.options.action.choices.capital_log,
-                name_localizations: translation('command.setup.options.action.choices.capital_log'),
+                name: common.choices.setup.capital_log,
+                name_localizations: translation('common.choices.setup.capital_log'),
                 value: 'capital-log'
               },
               {
-                name: command.setup.options.action.choices.clan_feed,
-                name_localizations: translation('command.setup.options.action.choices.clan_feed'),
+                name: common.choices.setup.clan_feed,
+                name_localizations: translation('common.choices.setup.clan_feed'),
                 value: 'clan-feed'
               },
               {
-                name: command.setup.options.action.choices.join_leave,
-                name_localizations: translation('command.setup.options.action.choices.join_leave'),
+                name: common.choices.setup.join_leave,
+                name_localizations: translation('common.choices.setup.join_leave'),
                 value: 'join-leave'
               },
               {
-                name: command.setup.options.action.choices.clan_embed,
-                name_localizations: translation('command.setup.options.action.choices.clan_embed'),
+                name: common.choices.setup.clan_embed,
+                name_localizations: translation('common.choices.setup.clan_embed'),
                 value: 'clan-embed'
               },
               {
-                name: command.setup.options.action.choices.donation_log,
-                name_localizations: translation('command.setup.options.action.choices.donation_log'),
+                name: common.choices.setup.donation_log,
+                name_localizations: translation('common.choices.setup.donation_log'),
                 value: 'donation-log'
               }
             ]
@@ -2270,13 +2270,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'WAR'
               },
               {
-                name: common.choices.esports,
-                name_localizations: translation('common.choices.esports'),
+                name: common.choices.e_sports,
+                name_localizations: translation('common.choices.e_sports'),
                 value: 'ESPORTS'
               },
               {
-                name: command.roster.create.options.category.choices.trophy,
-                name_localizations: translation('command.roster.create.options.category.choices.trophy'),
+                name: common.choices.trophy,
+                name_localizations: translation('common.choices.trophy'),
                 value: 'TROPHY'
               }
             ]
@@ -2507,13 +2507,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'WAR'
               },
               {
-                name: common.choices.esports,
-                name_localizations: translation('common.choices.esports'),
+                name: common.choices.e_sports,
+                name_localizations: translation('common.choices.e_sports'),
                 value: 'ESPORTS'
               },
               {
-                name: command.roster.create.options.category.choices.trophy,
-                name_localizations: translation('command.roster.create.options.category.choices.trophy'),
+                name: common.choices.trophy,
+                name_localizations: translation('common.choices.trophy'),
                 value: 'TROPHY'
               }
             ]
@@ -2691,23 +2691,23 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.roster.manage.options.action.choices.add_user,
-                name_localizations: translation('command.roster.manage.options.action.choices.add_user'),
+                name: common.choices.roster.add_players,
+                name_localizations: translation('common.choices.roster.add_players'),
                 value: RosterManageActions.ADD_USER
               },
               {
-                name: command.roster.manage.options.action.choices.remove_user,
-                name_localizations: translation('command.roster.manage.options.action.choices.remove_user'),
+                name: common.choices.roster.remove_players,
+                name_localizations: translation('common.choices.roster.remove_players'),
                 value: RosterManageActions.DEL_USER
               },
               {
-                name: command.roster.manage.options.action.choices.change_roster,
-                name_localizations: translation('command.roster.manage.options.action.choices.change_roster'),
+                name: common.choices.roster.change_roster,
+                name_localizations: translation('common.choices.roster.change_roster'),
                 value: RosterManageActions.CHANGE_ROSTER
               },
               {
-                name: command.roster.manage.options.action.choices.change_group,
-                name_localizations: translation('command.roster.manage.options.action.choices.change_group'),
+                name: common.choices.roster.change_group,
+                name_localizations: translation('common.choices.roster.change_group'),
                 value: RosterManageActions.CHANGE_CATEGORY
               }
             ]
@@ -3162,63 +3162,63 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.autorole.disable.options.type.choices.clan_roles,
-                name_localizations: translation('command.autorole.disable.options.type.choices.clan_roles'),
+                name: common.choices.autorole.clan_roles,
+                name_localizations: translation('common.choices.autorole.clan_roles'),
                 value: 'clan-roles'
               },
               {
-                name: command.autorole.disable.options.type.choices.town_hall,
-                name_localizations: translation('command.autorole.disable.options.type.choices.town_hall'),
+                name: common.choices.autorole.town_hall,
+                name_localizations: translation('common.choices.autorole.town_hall'),
                 value: 'town-hall'
               },
               {
-                name: command.autorole.disable.options.type.choices.leagues,
-                name_localizations: translation('command.autorole.disable.options.type.choices.leagues'),
+                name: common.choices.autorole.leagues,
+                name_localizations: translation('common.choices.autorole.leagues'),
                 value: 'leagues'
               },
               {
-                name: command.autorole.disable.options.type.choices.builder_hall,
-                name_localizations: translation('command.autorole.disable.options.type.choices.builder_hall'),
+                name: common.choices.autorole.builder_hall,
+                name_localizations: translation('common.choices.autorole.builder_hall'),
                 value: 'builder-hall'
               },
               {
-                name: command.autorole.disable.options.type.choices.builder_leagues,
-                name_localizations: translation('command.autorole.disable.options.type.choices.builder_leagues'),
+                name: common.choices.autorole.builder_leagues,
+                name_localizations: translation('common.choices.autorole.builder_leagues'),
                 value: 'builder-leagues'
               },
               {
-                name: command.autorole.disable.options.type.choices.wars,
-                name_localizations: translation('command.autorole.disable.options.type.choices.wars'),
+                name: common.choices.autorole.wars,
+                name_localizations: translation('common.choices.autorole.wars'),
                 value: 'wars'
               },
               {
-                name: command.autorole.disable.options.type.choices.eos_push,
-                name_localizations: translation('command.autorole.disable.options.type.choices.eos_push'),
+                name: common.choices.autorole.eos_push,
+                name_localizations: translation('common.choices.autorole.eos_push'),
                 value: 'eos-push'
               },
               {
-                name: command.autorole.disable.options.type.choices.family_leaders,
-                name_localizations: translation('command.autorole.disable.options.type.choices.family_leaders'),
+                name: common.choices.autorole.family_leaders,
+                name_localizations: translation('common.choices.autorole.family_leaders'),
                 value: 'family-leaders'
               },
               {
-                name: command.autorole.disable.options.type.choices.family,
-                name_localizations: translation('command.autorole.disable.options.type.choices.family'),
+                name: common.choices.autorole.family,
+                name_localizations: translation('common.choices.autorole.family'),
                 value: 'family'
               },
               {
-                name: command.autorole.disable.options.type.choices.exclusive_family,
-                name_localizations: translation('command.autorole.disable.options.type.choices.exclusive_family'),
+                name: common.choices.autorole.exclusive_family,
+                name_localizations: translation('common.choices.autorole.exclusive_family'),
                 value: 'exclusive-family'
               },
               {
-                name: command.autorole.disable.options.type.choices.guest,
-                name_localizations: translation('command.autorole.disable.options.type.choices.guest'),
+                name: common.choices.autorole.guest,
+                name_localizations: translation('common.choices.autorole.guest'),
                 value: 'guest'
               },
               {
-                name: command.autorole.disable.options.type.choices.verified,
-                name_localizations: translation('command.autorole.disable.options.type.choices.verified'),
+                name: common.choices.autorole.verified,
+                name_localizations: translation('common.choices.autorole.verified'),
                 value: 'verified'
               }
             ]
@@ -3289,8 +3289,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.autorole.config.options.role_removal_delays.choices.off,
-                name_localizations: translation('command.autorole.config.options.role_removal_delays.choices.off'),
+                name: common.choices.off,
+                name_localizations: translation('common.choices.off'),
                 value: '0'
               },
               {
@@ -3354,8 +3354,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.autorole.config.options.role_removal_delays.choices.off,
-                name_localizations: translation('command.autorole.config.options.role_removal_delays.choices.off'),
+                name: common.choices.off,
+                name_localizations: translation('common.choices.off'),
                 value: '0'
               },
               {
@@ -3445,8 +3445,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.reminders.create.options.type.choices.clan_wars,
-                name_localizations: translation('command.reminders.create.options.type.choices.clan_wars'),
+                name: common.choices.clan_wars,
+                name_localizations: translation('common.choices.clan_wars'),
                 value: 'clan-wars'
               },
               {
@@ -3515,8 +3515,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.reminders.create.options.type.choices.clan_wars,
-                name_localizations: translation('command.reminders.create.options.type.choices.clan_wars'),
+                name: common.choices.clan_wars,
+                name_localizations: translation('common.choices.clan_wars'),
                 value: 'clan-wars'
               },
               {
@@ -3561,8 +3561,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.reminders.create.options.type.choices.clan_wars,
-                name_localizations: translation('command.reminders.create.options.type.choices.clan_wars'),
+                name: common.choices.clan_wars,
+                name_localizations: translation('common.choices.clan_wars'),
                 value: 'clan-wars'
               },
               {
@@ -3618,8 +3618,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.reminders.create.options.type.choices.clan_wars,
-                name_localizations: translation('command.reminders.create.options.type.choices.clan_wars'),
+                name: common.choices.clan_wars,
+                name_localizations: translation('common.choices.clan_wars'),
                 value: 'clan-wars'
               },
               {
@@ -3656,8 +3656,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.reminders.create.options.type.choices.clan_wars,
-                name_localizations: translation('command.reminders.create.options.type.choices.clan_wars'),
+                name: common.choices.clan_wars,
+                name_localizations: translation('common.choices.clan_wars'),
                 value: 'clan-wars'
               },
               {
@@ -3800,13 +3800,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.legend.leaderboard.options.enable_auto_updating.choices.legend_leaderboard,
-                name_localizations: translation('command.legend.leaderboard.options.enable_auto_updating.choices.legend_leaderboard'),
+                name: common.choices.legend_leaderboard,
+                name_localizations: translation('common.choices.legend_leaderboard'),
                 value: 'legend-leaderboard'
               },
               {
-                name: command.legend.leaderboard.options.enable_auto_updating.choices.bb_legend_leaderboard,
-                name_localizations: translation('command.legend.leaderboard.options.enable_auto_updating.choices.bb_legend_leaderboard'),
+                name: common.choices.builder_legend_leaderboard,
+                name_localizations: translation('common.choices.builder_legend_leaderboard'),
                 value: 'bb-legend-leaderboard'
               }
             ]
@@ -3940,13 +3940,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description_localizations: translation('command.summary.best.options.order.description'),
             choices: [
               {
-                name: command.summary.best.options.order.choices.desc,
-                name_localizations: translation('command.summary.best.options.order.choices.desc'),
+                name: common.choices.desc,
+                name_localizations: translation('common.choices.desc'),
                 value: 'desc'
               },
               {
-                name: command.summary.best.options.order.choices.asc,
-                name_localizations: translation('command.summary.best.options.order.choices.asc'),
+                name: common.choices.asc,
+                name_localizations: translation('common.choices.asc'),
                 value: 'asc'
               }
             ]
@@ -4619,8 +4619,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'WAR'
               },
               {
-                name: common.choices.esports,
-                name_localizations: translation('common.choices.esports'),
+                name: common.choices.e_sports,
+                name_localizations: translation('common.choices.e_sports'),
                 value: 'ESPORTS'
               }
             ]
@@ -4746,20 +4746,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: command.nickname.config.options.account_preference_for_naming.choices.default_account,
-                name_localizations: translation('command.nickname.config.options.account_preference_for_naming.choices.default_account'),
+                name: common.choices.nickname.default_account,
+                name_localizations: translation('common.choices.nickname.default_account'),
                 value: 'default-account'
               },
               {
-                name: command.nickname.config.options.account_preference_for_naming.choices.best_account,
-                name_localizations: translation('command.nickname.config.options.account_preference_for_naming.choices.best_account'),
+                name: common.choices.nickname.best_account,
+                name_localizations: translation('common.choices.nickname.best_account'),
                 value: 'best-account'
               },
               {
-                name: command.nickname.config.options.account_preference_for_naming.choices.default_or_best_account,
-                name_localizations: translation(
-                  'command.nickname.config.options.account_preference_for_naming.choices.default_or_best_account'
-                ),
+                name: common.choices.nickname.default_or_best_account,
+                name_localizations: translation('common.choices.nickname.default_or_best_account'),
                 value: 'default-or-best-account'
               }
             ]

@@ -42,7 +42,6 @@ export const common = {
   too_many_webhooks: 'Too many webhooks in {{channel}}',
   no_match_found: 'No matches were found with the tag {{tag}}',
   color_code: 'Color Code',
-
   options: {
     clan: {
       tag: {
@@ -76,19 +75,29 @@ export const common = {
   choices: {
     yes: 'Yes',
     no: 'No',
-    regular: 'Regular',
-    friendly: 'Friendly',
 
-    esports: 'ESPORTS',
+    off: 'Off',
+
+    enable: 'Enable',
+    disable: 'Disable',
+
+    desc: 'Descending',
+    asc: 'Ascending',
+
     war: 'WAR',
     cwl: 'CWL',
     trophy: 'TROPHY',
+    e_sports: 'E-SPORTS',
+
+    regular: 'Regular',
+    friendly: 'Friendly',
 
     clan_games: 'Clan Games',
     league_reset: 'League Reset',
     season_end: 'Season End',
     raid_weekend: 'Raid Weekend',
     capital_raids: 'Capital Raids',
+    clan_wars: 'Clan Wars',
 
     war_attacks: 'War Attacks',
     link_button: 'Link Button',
@@ -100,7 +109,85 @@ export const common = {
     clan_games_ending: 'Clan Games (Ending)',
     cwl_end: 'CWL (Ending)',
     cwl_signup_ending: 'CWL Signup (Ending)',
-    raid_weekend_ending: 'Raid Weekend (Ending)'
+    raid_weekend_ending: 'Raid Weekend (Ending)',
+
+    legend_leaderboard: 'Legend Trophies',
+    builder_legend_leaderboard: 'Builder Trophies',
+
+    events_schedular: 'Events Schedular',
+    reminder_ping_exclusion: 'Reminder Ping Exclusion',
+
+    roster: {
+      add_players: 'Add Players',
+      remove_players: 'Remove Players',
+      change_roster: 'Change Roster',
+      change_group: 'Change Group',
+
+      unregistered: "Unregistered (didn't signup, but in the clan)",
+      missing: 'Missing (opted-in, but not in the clan)',
+      everyone: 'Everyone (all opted-in members)'
+    },
+
+    flag: {
+      ban: 'Ban',
+      strike: 'Strike'
+    },
+
+    nickname: {
+      default_account: 'Default Account',
+      best_account: 'Best Account',
+      default_or_best_account: 'Default or Best Account'
+    },
+
+    history: {
+      capital_contribution: 'Capital Contribution',
+      cwl_attacks: 'CWL Attacks',
+      donations: 'Donations/Received',
+      attacks: 'Attacks/Defenses',
+      loot: 'Loot (Gold/Elixir/Dark)',
+      join_leave: 'Join/Leave',
+      legend_attacks: 'Legend Attacks',
+      eos_trophies: 'Season end Trophies'
+    },
+
+    stats: {
+      no_friendly: 'Regular and CWL',
+      no_cwl: 'Regular and Friendly',
+      all: 'Regular, CWL and Friendly',
+
+      fresh: 'Fresh',
+      cleanup: 'Cleanup'
+    },
+
+    setup: {
+      server_link: 'Server Link',
+      channel_link: 'Channel Link',
+      delete_clan: 'Delete clan',
+      logs_or_feed: 'Logs / Feed (New)',
+      war_feed: 'War Feed',
+      last_seen: 'Last Seen',
+      legend_log: 'Legend Log',
+      capital_log: 'Capital Log',
+      clan_feed: 'Clan Feed',
+      join_leave: 'Join/Leave Log',
+      clan_embed: 'Clan Embed',
+      donation_log: 'Donation Log'
+    },
+
+    autorole: {
+      clan_roles: 'Clan Roles',
+      town_hall: 'Town Hall Roles',
+      leagues: 'Leagues Roles',
+      builder_hall: 'Builder Hall Roles',
+      builder_leagues: 'Builder Leagues Roles',
+      wars: 'War Roles',
+      eos_push: 'End of Season Push Role',
+      family_leaders: 'Family Leaders Role',
+      family: 'Family Roles',
+      exclusive_family: 'Exclusive Family Role',
+      guest: 'Guest Role',
+      verified: 'Verified Role'
+    }
   },
 
   contact_support: 'Contact Support',
@@ -178,11 +265,7 @@ export const command = {
           description: 'Limit the number of results.'
         },
         enable_auto_updating: {
-          description: 'Enable auto updating (every 30-60 mins)',
-          choices: {
-            legend_leaderboard: 'Legend Trophies',
-            bb_legend_leaderboard: 'Builder Trophies'
-          }
+          description: 'Enable auto updating (every 30-60 mins)'
         }
       }
     },
@@ -451,13 +534,7 @@ export const command = {
           description: 'Select a roster to manage'
         },
         action: {
-          description: 'Select an action to perform',
-          choices: {
-            add_user: 'Add',
-            remove_user: 'Remove',
-            change_roster: 'Change roster',
-            change_group: 'Change group'
-          }
+          description: 'Select an action to perform'
         },
         player: {
           description: 'Select a player to manage'
@@ -516,13 +593,6 @@ export const command = {
         },
         message: {
           description: 'Message for the members'
-        },
-        ping_options: {
-          choices: {
-            unregistered: "Unregistered (didn't signup, but in the clan)",
-            missing: 'Missing (opted-in, but not in the clan)',
-            everyone: 'Everyone (all opted-in members)'
-          }
         },
         group: {
           description: 'Select a group to ping (Overwrites ping options)'
@@ -605,11 +675,7 @@ export const command = {
     description: 'Create, delete or search player flags.',
     options: {
       flag_type: {
-        description: 'The type of the flag (ban or strike)',
-        choices: {
-          ban: 'Ban',
-          strike: 'Strike'
-        }
+        description: 'The type of the flag (ban or strike)'
       }
     },
     create: {
@@ -757,12 +823,7 @@ export const command = {
           description: 'Whether to update nicknames automatically.'
         },
         account_preference_for_naming: {
-          description: 'Whether to use the default account or the best account in the family.',
-          choices: {
-            default_account: 'Default Account',
-            best_account: 'Best Account',
-            default_or_best_account: 'Default or Best Account'
-          }
+          description: 'Whether to use the default account or the best account in the family.'
         }
       }
     }
@@ -781,10 +842,7 @@ export const command = {
       description: 'Create reminders for clan wars, capital raids or clan games.',
       options: {
         type: {
-          description: 'Type of the reminder.',
-          choices: {
-            clan_wars: 'Clan wars'
-          }
+          description: 'Type of the reminder.'
         },
         duration: {
           description: 'Remaining duration to mention members (e.g. 6h, 12h, 1d, 2d)'
@@ -841,18 +899,6 @@ export const command = {
   history: {
     description: 'Clan Games, Capital Raids, Donations, and CWL attacks history.',
     options: {
-      option: {
-        choices: {
-          capital_contribution: 'Capital contribution',
-          cwl_attacks: 'CWL attacks',
-          donations: 'Donations/Received',
-          attacks: 'Attacks/Defenses',
-          loot: 'Loot (Gold/Elixir/Dark)',
-          join_leave: 'Join/Leave',
-          legend_attacks: 'Legend attacks',
-          eos_trophies: 'Season end trophies'
-        }
-      },
       clans: {
         description: 'Select clans for the history.'
       },
@@ -1019,19 +1065,10 @@ export const command = {
         description: 'War stars earned. (Default: 3)'
       },
       type: {
-        description: 'War Type [e.g. Regular, CWL, Friendly] (Default: Regular and CWL)',
-        choices: {
-          noFriendly: 'Regular and CWL',
-          noCWL: 'Regular and Friendly',
-          all: 'Regular, CWL and Friendly'
-        }
+        description: 'War Type [e.g. Regular, CWL, Friendly] (Default: Regular and CWL)'
       },
       attempt: {
-        description: 'Fresh attacks or clean-up attacks. (Default: Both)',
-        choices: {
-          fresh: 'Fresh',
-          cleanup: 'Cleanup'
-        }
+        description: 'Fresh attacks or clean-up attacks. (Default: Both)'
       },
       days: {
         description: 'Number of days to include (last x days of wars)'
@@ -1074,24 +1111,6 @@ export const command = {
   },
   setup: {
     description: 'Enable/disable features on the server or add/remove clans.',
-    options: {
-      action: {
-        choices: {
-          server_link: 'Server Link',
-          channel_link: 'Channel Link',
-          delete_clan: 'Delete clan',
-          logs_or_feed: 'Logs / Feed (New)',
-          war_feed: 'War Feed',
-          last_seen: 'Last Seen',
-          legend_log: 'Legend Log',
-          capital_log: 'Capital Log',
-          clan_feed: 'Clan Feed',
-          join_leave: 'Join/Leave Log',
-          clan_embed: 'Clan Embed',
-          donation_log: 'Donation Log'
-        }
-      }
-    },
     enable: {
       description: 'Enable a feature on the server or add a clan.',
       description_long:
@@ -1145,12 +1164,6 @@ export const command = {
     utils: {
       description: '[DEPRECATED] Setup other utility features (link button, events schedular)',
       options: {
-        option: {
-          choices: {
-            events_schedular: 'Events schedular',
-            reminder_ping_exclusion: 'Reminder ping exclusion'
-          }
-        },
         disable: {
           description: 'Disable a scheduled event.'
         }
@@ -1190,11 +1203,7 @@ export const command = {
           description: 'Select the clan to setup logs.'
         },
         action: {
-          description: 'What logs to enable or disable.',
-          choices: {
-            enable_logs: 'Enable',
-            disable_logs: 'Disable'
-          }
+          description: 'What logs to enable or disable.'
         }
       }
     }
@@ -1322,21 +1331,7 @@ export const command = {
       description_long: 'Disable automatic role management for clan roles, town hall levels, or leagues.',
       options: {
         type: {
-          description: 'Type of roles to disable.',
-          choices: {
-            clan_roles: 'Clan roles',
-            town_hall: 'Town Hall roles',
-            leagues: 'Leagues roles',
-            builder_hall: 'Builder Hall roles',
-            builder_leagues: 'Builder leagues roles',
-            wars: 'War roles',
-            eos_push: 'End of season push roles',
-            family_leaders: 'Family leaders role',
-            family: 'Family roles',
-            exclusive_family: 'Exclusive family role',
-            guest: 'Guest role',
-            verified: 'Verified role'
-          }
+          description: 'Type of roles to disable.'
         },
         clear: {
           description: 'Clear all roles from all clans.'
@@ -1366,10 +1361,7 @@ export const command = {
           description: 'Whether to update roles automatically.'
         },
         role_removal_delays: {
-          description: 'Whether to delay the removal of roles.',
-          choices: {
-            off: 'Off'
-          }
+          description: 'Whether to delay the removal of roles.'
         },
         role_addition_delays: {
           description: 'Whether to delay the addition of roles.'
@@ -1395,11 +1387,7 @@ export const command = {
           description: 'Number of members to show (Default: 5)'
         },
         order: {
-          description: 'Order of the list.',
-          choices: {
-            desc: 'Descending',
-            asc: 'Ascending'
-          }
+          description: 'Order of the list.'
         }
       }
     },
