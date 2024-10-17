@@ -17,7 +17,7 @@ export default class GameEvents extends Command {
     const embed = new EmbedBuilder()
       .setAuthor({
         name: 'Upcoming Events!',
-        iconURL: `https://cdn.discordapp.com/emojis/${parseEmoji(EMOJIS.COC_LOGO)!.id!}.png?v=1`
+        iconURL: `https://cdn.discordapp.com/emojis/${parseEmoji(EMOJIS.COC_LOGO)!.id}.png?v=1`
       })
       .setColor(this.client.embed(interaction))
       .addFields(

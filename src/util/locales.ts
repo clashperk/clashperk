@@ -123,9 +123,9 @@ export const common = {
       change_roster: 'Change Roster',
       change_group: 'Change Group',
 
-      unregistered: "Unregistered (didn't signup, but in the clan)",
-      missing: 'Missing (opted-in, but not in the clan)',
-      everyone: 'Everyone (all opted-in members)'
+      ping_unregistered: "Unregistered (didn't signup, but in the clan)",
+      ping_missing: 'Missing (opted-in, but not in the clan)',
+      ping_everyone: 'Everyone (all opted-in members)'
     },
 
     flag: {
@@ -594,8 +594,11 @@ export const command = {
         message: {
           description: 'Message for the members'
         },
+        ping_option: {
+          description: 'Select a ping option'
+        },
         group: {
-          description: 'Select a group to ping (Overwrites ping options)'
+          description: 'Select a group to ping (overwrites ping_option)'
         }
       }
     }

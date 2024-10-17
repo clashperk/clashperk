@@ -2841,43 +2841,51 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'ping',
-        description: 'Ping members in the roster',
+        description: command.roster.ping.description,
+        description_localizations: translation('command.roster.ping.description'),
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
             name: 'roster',
-            description: 'Select a roster to manage',
+            description: command.roster.ping.options.roster.description,
+            description_localizations: translation('command.roster.ping.options.roster.description'),
             required: true,
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           },
           {
             name: 'message',
-            description: 'Message for the members',
+            description: command.roster.ping.options.message.description,
+            description_localizations: translation('command.roster.ping.options.message.description'),
             type: ApplicationCommandOptionType.String
           },
           {
             name: 'ping_option',
-            description: 'Ping option',
+            description: command.roster.ping.options.ping_option.description,
+            description_localizations: translation('command.roster.ping.options.ping_option.description'),
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: "Unregistered (didn't signup, but in the clan)",
+                name: common.choices.roster.ping_unregistered,
+                name_localizations: translation('common.choices.roster.ping_unregistered'),
                 value: 'unregistered'
               },
               {
-                name: 'Missing (opted-in, but not in the clan)',
+                name: common.choices.roster.ping_missing,
+                name_localizations: translation('common.choices.roster.ping_missing'),
                 value: 'missing'
               },
               {
-                name: 'Everyone (all opted-in members)',
+                name: common.choices.roster.ping_everyone,
+                name_localizations: translation('common.choices.roster.ping_everyone'),
                 value: 'everyone'
               }
             ]
           },
           {
             name: 'group',
-            description: 'Select a user group (ping everyone in this group)',
+            description: command.roster.ping.options.group.description,
+            description_localizations: translation('command.roster.ping.options.group.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
           }

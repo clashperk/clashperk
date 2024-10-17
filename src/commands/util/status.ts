@@ -75,7 +75,7 @@ export default class StatusCommand extends Command {
       },
       {
         name: 'Clans',
-        value: `${((await this.count(Collections.CLAN_STORES)) + 10_000).toLocaleString()}`,
+        value: `${(await this.count(Collections.CLAN_STORES)).toLocaleString()}`,
         inline: false
       }
     );
@@ -101,7 +101,7 @@ export default class StatusCommand extends Command {
       },
       {
         name: 'Version',
-        value: isOwner ? `[${pkg.version}](https://github.com/clashperk/clashperk/commit/${process.env.GIT_SHA!})` : pkg.version,
+        value: isOwner ? `[${pkg.version}](https://github.com/clashperk/clashperk/commit/${process.env.GIT_SHA})` : pkg.version,
         inline: false
       },
       {
@@ -149,6 +149,6 @@ export default class StatusCommand extends Command {
       ])
       .toArray();
 
-    return (usage?.total ?? 0) + 200_000;
+    return usage?.total ?? 0;
   }
 }
