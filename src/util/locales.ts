@@ -328,10 +328,7 @@ export const command = {
           description: 'Name of the roster'
         },
         category: {
-          description: 'Category of the roster',
-          choices: {
-            trophy: 'TROPHY'
-          }
+          description: 'Category of the roster'
         },
         import_members: {
           description: 'Whether to import members from the clan'
