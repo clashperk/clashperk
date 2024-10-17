@@ -27,8 +27,8 @@ export class ClanWarScheduler {
 
   public constructor(private readonly client: Client) {
     this.refreshRate = 5 * 60 * 1000;
-    this.schedulers = this.client.db.collection(Collections.SCHEDULERS);
-    this.reminders = this.client.db.collection(Collections.REMINDERS);
+    this.schedulers = this.client.db.collection(Collections.WAR_SCHEDULERS);
+    this.reminders = this.client.db.collection(Collections.WAR_REMINDERS);
   }
 
   public async init() {

@@ -30,7 +30,7 @@ export default class ReminderEditCommand extends Command {
   }
 
   private get collection() {
-    return this.client.db.collection<ClanWarRemindersEntity>(Collections.REMINDERS);
+    return this.client.db.collection<ClanWarRemindersEntity>(Collections.WAR_REMINDERS);
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { id: string; disable?: boolean; duration?: string }) {

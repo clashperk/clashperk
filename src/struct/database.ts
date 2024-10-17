@@ -21,7 +21,7 @@ interface CollectionsMap {
   [Collections.PLAYERS]: PlayersEntity;
   [Collections.PLAYER_LINKS]: PlayerLinksEntity;
   [Collections.CLAN_LOGS]: ClanLogsEntity;
-  [Collections.REMINDERS]: ClanWarRemindersEntity;
+  [Collections.WAR_REMINDERS]: ClanWarRemindersEntity;
   [Collections.CLAN_RANKS]: ClanRanksEntity;
   [Collections.PLAYER_RANKS]: PlayerRanksEntity;
   [Collections.CAPITAL_RANKS]: CapitalRanksEntity;
@@ -327,7 +327,7 @@ export class MongoDbClient extends MongoClient {
 
       db.collection(Collections.SETTINGS).createIndex({ guildId: 1 }, { unique: true }),
 
-      db.collection(Collections.REMINDERS).createIndexes([
+      db.collection(Collections.WAR_REMINDERS).createIndexes([
         {
           key: { guild: 1 }
         },
@@ -354,7 +354,7 @@ export class MongoDbClient extends MongoClient {
         }
       ]),
 
-      db.collection(Collections.SCHEDULERS).createIndexes([
+      db.collection(Collections.WAR_SCHEDULERS).createIndexes([
         {
           key: { tag: 1 }
         },

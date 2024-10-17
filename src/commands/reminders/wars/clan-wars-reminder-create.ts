@@ -87,7 +87,7 @@ export default class ClanWarsReminderCreateCommand extends Command {
     }
 
     const reminders = await this.client.db
-      .collection<ClanWarRemindersEntity>(Collections.REMINDERS)
+      .collection<ClanWarRemindersEntity>(Collections.WAR_REMINDERS)
       .countDocuments({ guild: interaction.guild.id });
     if (reminders >= 25 && !this.client.patreonHandler.get(interaction.guild.id)) {
       return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
@@ -390,7 +390,7 @@ export default class ClanWarsReminderCreateCommand extends Command {
           createdAt: new Date()
         };
 
-        const { insertedId } = await this.client.db.collection(Collections.REMINDERS).insertOne(reminder);
+        const { insertedId } = await this.client.db.collection(Collections.WAR_REMINDERS).insertOne(reminder);
         this.client.clanWarScheduler.create({ ...reminder, _id: insertedId });
         await action.editReply({
           components: mutate(true),

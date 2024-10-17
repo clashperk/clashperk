@@ -210,8 +210,8 @@ export class StorageHandler {
   public async deleteReminders(clanTag: string, guild: string) {
     const reminders = [
       {
-        reminder: Collections.REMINDERS,
-        scheduler: Collections.SCHEDULERS
+        reminder: Collections.WAR_REMINDERS,
+        scheduler: Collections.WAR_SCHEDULERS
       },
       {
         reminder: Collections.RAID_REMINDERS,

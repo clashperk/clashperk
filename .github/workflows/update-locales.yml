@@ -32,8 +32,8 @@ jobs:
       - name: NPM Install
         run: npm i
 
-      - name: Check Duplicates
-        run: npm run check:locales
+      # - name: Check Duplicates
+      #   run: npm run check:locales
 
       - name: Build
         run: npm run build

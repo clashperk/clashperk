@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, PLAYER_ROLES_MAP } from '@app/constants';
 import { RaidRemindersEntity, RaidSchedulersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -16,13 +16,6 @@ import { ObjectId } from 'mongodb';
 import { Command } from '../../../lib/handlers.js';
 import { hexToNanoId } from '../../../util/helper.js';
 import { Util } from '../../../util/toolkit.js';
-
-const roles: Record<string, string> = {
-  member: 'Member',
-  admin: 'Elder',
-  coLeader: 'Co-Leader',
-  leader: 'Leader'
-};
 
 export default class CapitalReminderDeleteCommand extends Command {
   public constructor() {
@@ -113,7 +106,7 @@ export default class CapitalReminderDeleteCommand extends Command {
       if (reminder.roles.length === 4) {
         embed.addFields([{ name: 'Roles', value: 'Any' }]);
       } else {
-        embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => roles[role]).join(', ') }]);
+        embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => PLAYER_ROLES_MAP[role]).join(', ') }]);
       }
 
       if (reminder.minThreshold) {
