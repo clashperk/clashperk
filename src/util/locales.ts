@@ -1238,7 +1238,7 @@ export const command = {
     description: 'Enable automatic clan roles and Town Hall roles',
     no_roles: 'You must specify 4 roles to execute this command.',
     no_system_roles: 'System managed or bot roles are not allowed.',
-    no_higher_roles: 'My highest role must be higher than these roles.',
+    no_higher_roles: "Bot's highest role must be higher than the selected roles.",
     invalid_clan_tag: 'The specified clan tag is invalid.',
     roles_already_used:
       'Some roles have already been used for another clan. \nPlease consider supporting us on [Patreon](https://patreon.com/clashperk) to use the same roles for multiple clans.',
