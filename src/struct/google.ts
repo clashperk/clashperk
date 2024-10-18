@@ -1,17 +1,20 @@
-import { Auth, google, sheets_v4 } from 'googleapis';
+import { drive as _drive } from '@googleapis/drive';
+import { auth as _auth } from '@googleapis/oauth2';
+import { sheets as _sheet, type sheets_v4 } from '@googleapis/sheets';
+import { type OAuth2Client } from 'google-auth-library';
 import { Util } from '../util/toolkit.js';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
-const auth = google.auth.fromJSON({
+const auth = _auth.fromJSON({
   type: 'authorized_user',
   client_id: process.env.GOOGLE_CLIENT_ID!,
   client_secret: process.env.GOOGLE_CLIENT_SECRET!,
   refresh_token: process.env.GOOGLE_REFRESH_TOKEN!
-}) as Auth.OAuth2Client;
+}) as OAuth2Client;
 
-const drive = google.drive({ version: 'v3', auth });
-const sheet = google.sheets({ version: 'v4', auth });
+const drive = _drive({ version: 'v3', auth });
+const sheet = _sheet({ version: 'v4', auth });
 
 const publish = async (fileId: string) => {
   return Promise.all([

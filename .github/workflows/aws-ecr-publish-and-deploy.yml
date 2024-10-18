@@ -66,24 +66,24 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           build-args: GIT_SHA=${{ github.sha }}
 
-  # deploy-main-bot:
-  #   needs: build
-  #   environment: production
-  #   name: deploy-main-bot
-  #   runs-on: ubuntu-latest
+  deploy-main-bot:
+    needs: build
+    environment: production
+    name: deploy-main-bot
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Deploy
-  #       uses: appleboy/ssh-action@v1.0.3
-  #       with:
-  #         host: ${{ secrets.SSH_HOST }}
-  #         username: ${{ secrets.SSH_USERNAME }}
-  #         key: ${{ secrets.SSH_PRIVATE_KEY }}
-  #         port: ${{ secrets.SSH_PORT }}
-  #         script: |
-  #           cd clashperk
-  #           docker compose pull
-  #           docker compose up -d
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd clashperk
+            docker compose pull
+            docker compose up -d
 
   deploy-custom-bot:
     needs: build
