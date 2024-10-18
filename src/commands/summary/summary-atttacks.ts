@@ -33,7 +33,6 @@ export default class SummaryAttacksCommand extends Command {
     // group by clan
     const grouped = Object.values(
       members.reduce<Record<string, { attackWins: number; clan: { name: string; tag: string } }>>((acc, member) => {
-        // eslint-disable-next-line
         acc[member.clan.tag] ??= {
           clan: {
             name: member.clan.name,

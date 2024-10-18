@@ -101,7 +101,7 @@ export default class LinkListCommand extends Command {
         tag: padStart(member.tag, 14),
         _tag: member.tag,
         isVerified: Boolean(link?.verified),
-        username: padStart(args.sort_by === SortingKey.TAG ? member.tag : escapeBackTick(username) ?? member.tag, 14),
+        username: padStart(args.sort_by === SortingKey.TAG ? member.tag : (escapeBackTick(username) ?? member.tag), 14),
         _username: username || '',
         townHallLevel: member.townHallLevel,
         _townHallLevel: member.townHallLevel,

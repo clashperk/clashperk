@@ -60,7 +60,7 @@ export default class SetupDisableCommand extends Command {
       return interaction.editReply(
         this.i18n('command.setup.disable.channel_not_found', {
           lng: interaction.locale,
-          channel: args.channel.toString() // eslint-disable-line
+          channel: args.channel.toString()
         })
       );
     }

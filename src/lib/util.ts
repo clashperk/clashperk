@@ -10,7 +10,7 @@ export const CommandHandlerEvents = {
   MISSING_PERMISSIONS: 'missingPermissions'
 } as const;
 
-export const WSEventTypes = {
+const WSEventTypes = {
   GUILD_MEMBER_UPDATE: 'GUILD_MEMBER_UPDATE'
 } as const;
 

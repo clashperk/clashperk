@@ -483,10 +483,10 @@ export default class WarCommand extends Command {
     const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
     const previousBestAttack = isFresh
       ? null
-      : [...attacks]
+      : ([...attacks]
           .filter((_atk) => _atk.defenderTag === defender.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
           .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
-          .at(0) ?? null;
+          .at(0) ?? null);
     return isFresh ? null : previousBestAttack;
   }
 
@@ -568,7 +568,7 @@ export default class WarCommand extends Command {
             const th = member.townhallLevel.toString().padStart(2, ' ');
             const dest = this.percentage(member.destructionPercentage);
             const key = `${member.tag}-${member.originalMapPosition}`;
-            const callerName = this.padEnd(caller[key]?.note ?? ''); // eslint-disable-line
+            const callerName = this.padEnd(caller[key]?.note ?? '');
             return `\u200e\`${stars[member.stars]} ${dest}% ${map} ${th} ${callerName}\``;
           })
           .join('\n'),

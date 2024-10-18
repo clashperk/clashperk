@@ -2,17 +2,6 @@ import { BUILDER_BASE_LEAGUE_NAMES, Settings } from '@app/constants';
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
 
-export interface IArgs {
-  command?: 'refresh' | 'disable' | null;
-  clans?: string;
-  members?: Role;
-  elders?: Role;
-  coLeads?: Role;
-  commonRole?: Role;
-  verify: boolean;
-  clear?: boolean;
-}
-
 export default class AutoBbLeagueRoleCommand extends Command {
   public constructor() {
     super('setup-builder-league-roles', {

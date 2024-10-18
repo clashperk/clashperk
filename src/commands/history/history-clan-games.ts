@@ -162,7 +162,7 @@ export default class ClanGamesHistoryCommand extends Command {
             }
           >
         >((prev, acc) => {
-          prev[acc.season] ??= acc; // eslint-disable-line
+          prev[acc.season] ??= acc;
           return prev;
         }, {});
         return { name: r.name, tag: r.tag, seasons };
@@ -178,7 +178,7 @@ export default class ClanGamesHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.seasons[id]?.points ?? 0)])
       }
     ];

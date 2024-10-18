@@ -102,7 +102,7 @@ export default class ExportSeason extends Command {
           m.trophies.current,
           m.versusTrophies.current - m.versusTrophies.initial,
           m.clanWarStars.current - m.clanWarStars.initial,
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
           ...__achievements.map((ac) => (m[ac]?.current ?? 0) - (m[ac]?.initial ?? 0)),
           m.score ?? 0
         ]),

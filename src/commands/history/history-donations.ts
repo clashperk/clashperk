@@ -176,7 +176,7 @@ export default class DonationsHistoryCommand extends Command {
     const chunks = result
       .map((r) => {
         const records = r.seasons.reduce<Record<string, ISeason>>((prev, acc) => {
-          prev[acc.season] ??= { ...acc, donationsReceived: 0 }; // eslint-disable-line
+          prev[acc.season] ??= { ...acc, donationsReceived: 0 };
 
           const clans = Object.entries(acc.clans ?? {})
             .filter(([key, val]) => val && (clanTags?.length ? clanTags.includes(key) : true))
@@ -208,7 +208,7 @@ export default class DonationsHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.donations ?? 0)])
       },
       {
@@ -218,7 +218,7 @@ export default class DonationsHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.donationsReceived ?? 0)])
       }
     ];

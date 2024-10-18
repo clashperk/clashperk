@@ -1,13 +1,13 @@
-import { RewriteFrames } from '@sentry/integrations';
-import { Integrations, NodeOptions } from '@sentry/node';
+import * as Sentry from '@sentry/node';
+import { httpIntegration, NodeOptions, rewriteFramesIntegration } from '@sentry/node';
 
-export const sentryConfig: NodeOptions = {
+const sentryConfig: NodeOptions = {
   dsn: process.env.SENTRY,
   serverName: process.env.SERVICE_NAME ?? 'clashperk_bot',
   environment: process.env.NODE_ENV ?? 'development',
   release: process.env.GIT_SHA,
   integrations: [
-    new RewriteFrames({
+    rewriteFramesIntegration({
       iteratee(frame) {
         if (frame.filename) {
           const filename = frame.filename.replace(process.cwd(), '');
@@ -16,6 +16,14 @@ export const sentryConfig: NodeOptions = {
         return frame;
       }
     }),
-    new Integrations.Http({ tracing: false, breadcrumbs: false })
+    httpIntegration({ breadcrumbs: false })
   ]
 };
+
+const sentry = () => {
+  if (process.env.SENTRY) {
+    Sentry.init(sentryConfig);
+  }
+};
+
+export default sentry;

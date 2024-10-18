@@ -55,7 +55,7 @@ export type Args = Record<
   } | null
 >;
 
-export class BaseHandler extends EventEmitter {
+class BaseHandler extends EventEmitter {
   public readonly directory: string;
   public readonly modules: Collection<string, Command | Listener | Inhibitor>;
 
@@ -70,12 +70,9 @@ export class BaseHandler extends EventEmitter {
   }
 
   public async register() {
-    for await (const dir of readdirp(this.directory, { fileFilter: '*.js' })) {
+    for await (const dir of readdirp(this.directory, { fileFilter: ({ basename }) => basename.endsWith('.js') })) {
       if (extname(dir.path) !== '.js') continue;
-      const mod = container.resolve<Command | Listener | Inhibitor>(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        (await import(pathToFileURL(dir.fullPath).href)).default
-      );
+      const mod = container.resolve<Command | Listener | Inhibitor>((await import(pathToFileURL(dir.fullPath).href)).default);
       this.construct(mod);
     }
   }
@@ -243,7 +240,7 @@ export class CommandHandler extends BaseHandler {
       } else if (option.type === ApplicationCommandOptionType.Mentionable) {
         resolved[key] = option.user ?? option.role ?? null;
       } else if (option.type === ApplicationCommandOptionType.User) {
-        resolved[key] = args[name]?.match === 'MEMBER' ? option.member ?? null : option.user ?? null;
+        resolved[key] = args[name]?.match === 'MEMBER' ? (option.member ?? null) : (option.user ?? null);
       } else if (option.type === ApplicationCommandOptionType.Attachment) {
         resolved[key] = option.attachment?.url ?? null;
       } else {
@@ -419,7 +416,7 @@ export class ListenerHandler extends BaseHandler {
       rest: this.client.rest as unknown as EventEmitter,
       ws: this.client.ws as unknown as EventEmitter
     }[listener.emitter];
-    if (!emitter) return; // eslint-disable-line
+    if (!emitter) return;
 
     if (listener.once) {
       emitter.once(listener.event, listener.exec.bind(listener));

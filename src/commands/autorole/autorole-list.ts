@@ -4,7 +4,7 @@ import ms from 'ms';
 import { title } from 'radash';
 import { Command } from '../../lib/handlers.js';
 
-export const _rolesMap: Record<string, string> = {
+const _rolesMap: Record<string, string> = {
   admin: 'elder',
   coLeader: 'co-leader',
   leader: 'leader',
@@ -13,7 +13,7 @@ export const _rolesMap: Record<string, string> = {
   warRole: 'war'
 };
 
-export const _rolesPriority: Record<string, number> = {
+const _rolesPriority: Record<string, number> = {
   leader: 1,
   coLeader: 2,
   admin: 3,

@@ -23,7 +23,7 @@ export default class ErrorListener extends Listener {
 
   public async exec(error: Error, interaction: Exclude<Interaction, AutocompleteInteraction>, command?: Command) {
     const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
     this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
     console.error(inspect(error, { depth: Infinity }));
 
@@ -78,7 +78,6 @@ export default class ErrorListener extends Listener {
       if (!interaction.deferred) return await interaction.reply(message);
       return await interaction.followUp(message);
     } catch (err) {
-      // eslint-disable-next-line
       this.client.logger.error(`${(err as DiscordAPIError).toString()}`, { label: 'ERRORED' });
     }
   }

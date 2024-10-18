@@ -9,8 +9,8 @@ export class ElasticIndexer {
       query: { match: { id: doc.id } }
     });
     for (const hit of result.hits.hits) {
-      const { _id } = hit;
-      await this.client.elastic.delete({ index, id: _id });
+      if (!hit._id) continue;
+      await this.client.elastic.delete({ index, id: hit._id });
     }
 
     return this.insert(doc, index);
@@ -26,8 +26,8 @@ export class ElasticIndexer {
       query: { match: { id } }
     });
     for (const hit of result.hits.hits) {
-      const { _id } = hit;
-      await this.client.elastic.delete({ index, refresh: true, id: _id });
+      if (!hit._id) continue;
+      await this.client.elastic.delete({ index, refresh: true, id: hit._id });
     }
   }
 
@@ -38,11 +38,11 @@ export class ElasticIndexer {
         query: { bool: { must: [{ match: { tag: doc.tag } }, { match: { userId: doc.userId } }] } }
       });
       for (const hit of result.hits.hits) {
-        const { _id } = hit;
+        if (!hit._id) continue;
         await this.client.elastic.update({
           index,
           refresh: true,
-          id: _id,
+          id: hit._id,
           doc: { lastSearched: Date.now() }
         });
       }
@@ -53,7 +53,7 @@ export class ElasticIndexer {
           document: { ...doc, lastSearched: Date.now() }
         });
       }
-    } catch (error) {}
+    } catch {}
   }
 }
 

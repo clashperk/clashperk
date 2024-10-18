@@ -285,7 +285,6 @@ export class Util {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Season {
   private static getSeasonEnd(month: number, year: number, autoFix = true): Date {
     const now = new Date();

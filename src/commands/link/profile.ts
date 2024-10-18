@@ -56,7 +56,7 @@ export default class ProfileCommand extends Command {
     const user =
       args.player && whitelist.includes(interaction.user.id)
         ? await this.getUserByTag(interaction, args.player)
-        : args.user ?? interaction.user;
+        : (args.user ?? interaction.user);
 
     const [data, players, otherTags] = await Promise.all([
       this.client.db.collection(Collections.USERS).findOne({ userId: user.id }),

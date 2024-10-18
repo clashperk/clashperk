@@ -84,7 +84,6 @@ export class SettingsProvider {
     const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
     if (this.settings.has(guildId)) {
       const value = this.settings.get(guildId)[key];
-      // eslint-disable-next-line
       return value == null ? defaultValue : value;
     }
 
@@ -117,7 +116,7 @@ export class SettingsProvider {
   public async delete(guild: string | Guild, key: string) {
     const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
     const data = this.settings.get(guildId) || {};
-    delete data[key]; // eslint-disable-line
+    delete data[key];
 
     return this.db.updateOne({ guildId }, { $unset: { [key]: '' } });
   }
@@ -146,7 +145,7 @@ export class SettingsProvider {
 
   private static guildId(guild: string | Guild) {
     if (guild instanceof Guild) return guild.id;
-    if (guild === 'global' || guild === null) return 'global'; // eslint-disable-line
+    if (guild === 'global' || guild === null) return 'global';
     if (/^\d+$/.test(guild)) return guild;
     throw new TypeError('Invalid guild specified. Must be a Guild instance, guild ID, "global", or null.');
   }

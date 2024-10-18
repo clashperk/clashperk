@@ -637,7 +637,7 @@ export class RosterManager {
 
     const grouped = affectedUsers.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
       if (!curr.userId) return prev;
-      prev[curr.userId] ??= []; // eslint-disable-line
+      prev[curr.userId] ??= [];
       prev[curr.userId].push(curr);
       return prev;
     }, {});
@@ -744,11 +744,10 @@ export class RosterManager {
 
     const rolesMap: Record<string, string[]> = {};
     roster.members.forEach((member) => {
-      if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
+      if (member.userId) rolesMap[member.userId] ??= [];
       if (roster.roleId && member.userId) rolesMap[member.userId].push(roster.roleId);
       if (member.categoryId && member.userId) {
         const category = categories[member.categoryId.toHexString()];
-        // eslint-disable-next-line
         if (category?.roleId) rolesMap[member.userId].push(category.roleId);
       }
     });
@@ -800,11 +799,10 @@ export class RosterManager {
 
     const rolesMap: Record<string, string[]> = {};
     members.forEach((member, i) => {
-      if (member.userId) rolesMap[member.userId] ??= []; // eslint-disable-line
+      if (member.userId) rolesMap[member.userId] ??= [];
       if (roster.roleId && member.userId) rolesMap[member.userId].push(roster.roleId);
       if (member.categoryId && member.userId) {
         const category = categories[member.categoryId.toHexString()];
-        // eslint-disable-next-line
         if (category?.roleId) rolesMap[member.userId].push(category.roleId);
       }
 
@@ -890,7 +888,7 @@ export class RosterManager {
       roster.members.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
         const key = curr.categoryId?.toHexString();
         const categoryId = key && key in categoriesMap ? key : 'none';
-        prev[categoryId] ??= []; // eslint-disable-line
+        prev[categoryId] ??= [];
         prev[categoryId].push(curr);
         return prev;
       }, {})
@@ -1667,10 +1665,10 @@ export class RosterManager {
     const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
     const previousBestAttack = isFresh
       ? null
-      : [...attacks]
+      : ([...attacks]
           .filter((_atk) => _atk.defenderTag === defender?.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
           .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
-          .at(0) ?? null;
+          .at(0) ?? null);
     return isFresh ? null : previousBestAttack;
   }
 
@@ -1730,7 +1728,6 @@ export class RosterManager {
         for (const m of clan.members) {
           if (m.tag !== playerTag) continue;
 
-          // eslint-disable-next-line
           members[m.tag] ??= {
             name: m.name,
             tag: m.tag,

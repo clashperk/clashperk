@@ -15,7 +15,7 @@ import { cluster, unique } from 'radash';
 import { i18n } from '../util/i18n.js';
 import { Client } from './client.js';
 
-export const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
+const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
 
 export class StorageHandler {
   public collection: Collection<ClanStoresEntity>;

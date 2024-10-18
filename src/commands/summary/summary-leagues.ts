@@ -58,7 +58,7 @@ export default class SummaryLeaguesCommand extends Command {
     const leagueGroup = Object.entries(
       clans.reduce<Record<string, APIClan[]>>((acc, clan) => {
         const league = this.getWarLeagueId(clan);
-        acc[league] ??= []; // eslint-disable-line
+        acc[league] ??= [];
         acc[league].push(clan);
         return acc;
       }, {})
@@ -104,7 +104,7 @@ export default class SummaryLeaguesCommand extends Command {
     const leagueGroup = Object.entries(
       clans.reduce<Record<string, APIClan[]>>((acc, clan) => {
         const league = this.getCapitalLeagueId(clan);
-        acc[league] ??= []; // eslint-disable-line
+        acc[league] ??= [];
         acc[league].push(clan);
         return acc;
       }, {})
@@ -141,10 +141,10 @@ export default class SummaryLeaguesCommand extends Command {
           value: `${clans
             .map((clan) => {
               const capitalPoints = (clan.clanCapitalPoints || 0).toString().padStart(4, ' ');
-              const _gained = leaguesMap[clan.tag]?.gained ?? 0; // eslint-disable-line
+              const _gained = leaguesMap[clan.tag]?.gained ?? 0;
               const gained = `${_gained >= 0 ? '+' : ''}${_gained}`.padStart(4, ' ');
               const name = Util.escapeBackTick(clan.name);
-              const emoji = leaguesMap[clan.tag]?.emoji || EMOJIS.CAPITAL_TROPHY; // eslint-disable-line
+              const emoji = leaguesMap[clan.tag]?.emoji || EMOJIS.CAPITAL_TROPHY;
               return `\u200e${emoji} \`${capitalPoints}\` \`${gained}\` \u2002${name}`;
             })
             .join('\n')}${emptySpace}`

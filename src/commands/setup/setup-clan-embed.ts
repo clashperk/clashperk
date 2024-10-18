@@ -63,7 +63,7 @@ export default class ClanEmbedCommand extends Command {
       return interaction.editReply(
         this.i18n('common.missing_access', {
           lng: interaction.locale,
-          channel: channel.toString(), // eslint-disable-line
+          channel: channel.toString(),
           permission: permission.missingPerms
         })
       );
@@ -254,10 +254,7 @@ export default class ClanEmbedCommand extends Command {
 
     const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
     if (!webhook) {
-      return interaction.editReply(
-        // eslint-disable-next-line
-        this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
-      );
+      return interaction.editReply(this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() }));
     }
 
     const onResend = async (action: ButtonInteraction<'cached'>) => {

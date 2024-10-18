@@ -113,7 +113,7 @@ export default class AutoTownHallRoleCommand extends Command {
     try {
       const changes = await this.client.rolesManager.updateMany(interaction.guildId, {
         isDryRun: Boolean(args.is_test_run),
-        userOrRole: interaction.isButton() ? interaction.user : args.user_or_role ?? null,
+        userOrRole: interaction.isButton() ? interaction.user : (args.user_or_role ?? null),
         logging: true,
         forced: Boolean(args.force_refresh),
         nicknameOnly: Boolean(args.nickname_only),

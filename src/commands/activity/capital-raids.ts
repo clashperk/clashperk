@@ -177,7 +177,6 @@ export default class CapitalRaidsCommand extends Command {
     // const isRaidWeek = currentWeekId === weekId;
     const raidSeason = await this.aggregateCapitalRaids(clan, weekId);
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const members = raidSeason?.members ?? data?.members ?? [];
     if (!members.length || !data) {
       return interaction.followUp({

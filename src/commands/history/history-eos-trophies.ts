@@ -123,7 +123,7 @@ export default class EosTrophiesHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id] ?? '')])
       }
     ];

@@ -235,7 +235,7 @@ export class Resolver {
 
     return result.reduce<Record<string, { userId: string; tag: string; verified: boolean; displayName: string; username: string }>>(
       (acc, link) => {
-        acc[link.tag] ??= link; // eslint-disable-line
+        acc[link.tag] ??= link;
         const prev = acc[link.tag];
 
         if (!prev.verified && link.verified) acc[link.tag].verified = true;

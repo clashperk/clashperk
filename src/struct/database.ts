@@ -36,7 +36,7 @@ declare module 'mongodb' {
   }
 }
 
-export class MongoDbClient extends MongoClient {
+class MongoDbClient extends MongoClient {
   public dbName = 'clashperk';
 
   public constructor() {

@@ -62,7 +62,7 @@ export default class ReminderCreateCommand extends Command {
       return interaction.editReply(
         this.i18n('common.missing_access', {
           lng: interaction.locale,
-          channel: args.channel.toString(), // eslint-disable-line
+          channel: args.channel.toString(),
           permission: permission.missingPerms
         })
       );
@@ -70,10 +70,7 @@ export default class ReminderCreateCommand extends Command {
 
     const webhook = await this.client.storage.getWebhook(args.channel.isThread() ? args.channel.parent! : args.channel);
     if (!webhook) {
-      return interaction.editReply(
-        // eslint-disable-next-line
-        this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
-      );
+      return interaction.editReply(this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() }));
     }
 
     const reminders = await this.client.db

@@ -34,7 +34,7 @@ export default class EvalCommand extends Command {
     let evaled;
     try {
       const hrStart = process.hrtime();
-      evaled = await (shard ? this.client.shard!.broadcastEval((client, code) => eval(code), { context: code }) : eval(code)); // eslint-disable-line
+      evaled = await (shard ? this.client.shard!.broadcastEval((client, code) => eval(code), { context: code }) : eval(code));
       hrDiff = process.hrtime(hrStart);
     } catch (error) {
       return interaction.followUp({ content: `*Error while evaluating!*\`\`\`js\n${error as string}\`\`\``, ephemeral: true });
@@ -49,7 +49,7 @@ export default class EvalCommand extends Command {
 
   private _result(result: string, hrDiff: number[], depth?: number, shard?: boolean) {
     const inspected = util
-      .inspect(result, { depth: shard && depth ? depth + 1 : depth ?? 0 })
+      .inspect(result, { depth: shard && depth ? depth + 1 : (depth ?? 0) })
       .replace(new RegExp('!!NL!!', 'g'), '\n')
       .replace(this.replaceToken, '--🙄--');
 

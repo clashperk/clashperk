@@ -1,6 +1,7 @@
 import { WAR_LEAGUE_MAP, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 import { APIClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
+import { rankingSort } from '../../helper/cwl.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
@@ -148,7 +149,7 @@ export default class SummaryCWLRanks extends Command {
       opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
     }
 
-    const _ranking = Object.values(ranking).sort(this.rankingSort);
+    const _ranking = Object.values(ranking).sort(rankingSort);
     if (!_ranking.length) return null;
     const index = _ranking.findIndex((r) => r.tag === clan.tag);
     const rank = index + 1;
@@ -160,10 +161,5 @@ export default class SummaryCWLRanks extends Command {
     const rule = pr.select(n);
     const suffix = suffixes.get(rule);
     return `${n}${suffix!}`;
-  }
-
-  private rankingSort(a: { stars: number; destruction: number }, b: { stars: number; destruction: number }) {
-    if (a.stars === b.stars) return b.destruction - a.destruction;
-    return b.stars - a.stars;
   }
 }

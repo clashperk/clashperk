@@ -1,5 +1,8 @@
 import 'reflect-metadata';
 
+import sentry from './util/sentry.js';
+sentry();
+
 import * as Sentry from '@sentry/node';
 import { DiscordAPIError } from 'discord.js';
 import i18next from 'i18next';
@@ -9,7 +12,6 @@ import { inspect } from 'node:util';
 import { Client } from './struct/client.js';
 import { Backend } from './util/i18n.backend.js';
 import { defaultOptions } from './util/i18n.config.js';
-import { sentryConfig } from './util/sentry.js';
 
 const client = new Client();
 
@@ -18,10 +20,6 @@ await i18next.use(Backend).init({
   ...defaultOptions,
   backend: { paths: [fileURLToPath(locales)] }
 });
-
-if (process.env.SENTRY) {
-  Sentry.init(sentryConfig);
-}
 
 client.on('error', (error) => {
   console.error(inspect(error, { depth: Infinity }));

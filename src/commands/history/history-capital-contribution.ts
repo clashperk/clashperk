@@ -177,7 +177,7 @@ export default class CapitalContributionHistoryCommand extends Command {
       .map((r) => {
         const records = r.weeks.reduce<Record<string, IWeek>>((prev, acc) => {
           const weekId = moment(acc.week).format('YYYY-MM-DD');
-          prev[weekId] ??= acc; // eslint-disable-line
+          prev[weekId] ??= acc;
           return prev;
         }, {});
         return { name: r.name, tag: r.tag, records };
@@ -193,7 +193,7 @@ export default class CapitalContributionHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.records[id]?.total ?? 0)])
       }
     ];

@@ -1,6 +1,6 @@
 import { InitOptions } from 'i18next';
 
-export const allowedLocales = {
+const allowedLocales = {
   fr: 'fr-FR', // French/Français
   de: 'de-DE', // German/Deutsch
   it: 'it-IT' // Italian/Italiano

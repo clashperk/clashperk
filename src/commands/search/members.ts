@@ -189,10 +189,10 @@ export default class MembersCommand extends Command {
       const upgrades = fetched.map((player) => ({
         name: player.name,
         tag: player.tag,
-        hero: members[player.tag]?.HERO ?? 0, // eslint-disable-line
-        pet: members[player.tag]?.PET ?? 0, // eslint-disable-line
-        troop: members[player.tag]?.TROOP ?? 0, // eslint-disable-line
-        spell: members[player.tag]?.SPELL ?? 0 // eslint-disable-line
+        hero: members[player.tag]?.HERO ?? 0,
+        pet: members[player.tag]?.PET ?? 0,
+        troop: members[player.tag]?.TROOP ?? 0,
+        spell: members[player.tag]?.SPELL ?? 0
       }));
 
       upgrades.sort((a, b) => {
@@ -329,7 +329,6 @@ export default class MembersCommand extends Command {
     }, {});
 
     const warPref = players.map((player) => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!playersMap[player.tag])
         return {
           warPreference: player.warPreference,
@@ -401,7 +400,6 @@ export default class MembersCommand extends Command {
     }, {});
 
     const warPref = players.map((player) => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!playersMap[player.tag])
         return {
           townHallLevel: player.townHallLevel,

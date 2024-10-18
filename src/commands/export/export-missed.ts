@@ -51,7 +51,7 @@ export default class ExportMissed extends Command {
         for (const m of clan.members) {
           if (m.attacks?.length === war.attacksPerMember) continue;
 
-          const _mem = missed[m.tag] // eslint-disable-line
+          const _mem = missed[m.tag]
             ? missed[m.tag]
             : (missed[m.tag] = {
                 name: m.name,

@@ -5,8 +5,6 @@ import { mapToPlayerInterface } from '../helper/cache-mapper.helper.js';
 import { Client } from './client.js';
 import { CustomIdProps } from './component-handler.js';
 
-export declare type RedisJSON = null | boolean | number | string | Date;
-
 export class RedisService {
   public connection = createClient({
     url: process.env.REDIS_URL,

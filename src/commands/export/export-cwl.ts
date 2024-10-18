@@ -258,7 +258,6 @@ export default class ExportCWL extends Command {
         if (!data) continue;
         if (data.state === 'notInWar' && !season) continue;
 
-        // eslint-disable-next-line
         ranking[data.clan.tag] ??= {
           name: data.clan.name,
           tag: data.clan.tag,
@@ -275,7 +274,6 @@ export default class ExportCWL extends Command {
         clan.attacks += data.clan.attacks;
         clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
-        // eslint-disable-next-line
         ranking[data.opponent.tag] ??= {
           name: data.opponent.name,
           tag: data.opponent.tag,
@@ -378,10 +376,10 @@ export default class ExportCWL extends Command {
     const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
     const previousBestAttack = isFresh
       ? null
-      : [...attacks]
+      : ([...attacks]
           .filter((_atk) => _atk.defenderTag === defender.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
           .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
-          .at(0) ?? null;
+          .at(0) ?? null);
     return isFresh ? null : previousBestAttack;
   }
 }

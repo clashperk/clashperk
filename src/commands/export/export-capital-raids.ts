@@ -45,7 +45,6 @@ export default class ExportCapitalRaidsCommand extends Command {
       > = {};
       for (const clan of weekends.reverse()) {
         for (const member of clan.members) {
-          // eslint-disable-next-line
           membersMap[member.tag] ??= {
             name: member.name,
             tag: member.tag,

@@ -119,7 +119,7 @@ export default class StatsCommand extends Command {
     const type = args.type ?? 'noFriendly';
     const attempt = args.attempt;
     const compare = this.compare(args.compare as string);
-    const mode = args.command || 'attacks'; // eslint-disable-line
+    const mode = args.command || 'attacks';
 
     const data = await this.getDataSource(interaction, args);
     if (!data) return null;
@@ -201,7 +201,7 @@ export default class StatsCommand extends Command {
           };
           const member = members[m.tag];
 
-          for (const attack of mode === 'attacks' ? m.attacks ?? [] : []) {
+          for (const attack of mode === 'attacks' ? (m.attacks ?? []) : []) {
             if (args.filter_farm_hits && attack.stars === 1 && attack.destructionPercentage < 50) continue;
 
             member.attacks += 1;

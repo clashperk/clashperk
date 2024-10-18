@@ -268,7 +268,7 @@ export class ClashClient extends RESTManager {
       }),
       signal: timeoutSignal(10_000, 'POST /login')
     }).catch(() => null);
-    const data = (await res?.json()) as { token?: string } | null;
+    const data = (await res?.json().catch(() => null)) as { token?: string } | null;
 
     if (data?.token) this.bearerToken = data.token;
     return res?.status === 200 && this.bearerToken;

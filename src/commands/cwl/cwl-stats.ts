@@ -108,7 +108,6 @@ export default class CWLStatsCommand extends Command {
           destruction += clan.destructionPercentage * data.teamSize;
           const end = new Date(moment(data.endTime).toDate()).getTime();
           for (const m of clan.members) {
-            // eslint-disable-next-line
             members[m.tag] ??= {
               name: m.name,
               of: 0,
@@ -155,7 +154,6 @@ export default class CWLStatsCommand extends Command {
           destruction += clan.destructionPercentage * data.teamSize;
           const started = new Date(moment(data.startTime).toDate()).getTime();
           for (const m of clan.members) {
-            // eslint-disable-next-line
             members[m.tag] ??= {
               name: m.name,
               of: 0,

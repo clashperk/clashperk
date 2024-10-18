@@ -242,7 +242,7 @@ export class ClanGamesScheduler {
 
     const users = Object.entries(
       mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-        acc[cur.mention] ??= []; // eslint-disable-line
+        acc[cur.mention] ??= [];
         acc[cur.mention].push(cur);
         return acc;
       }, {})

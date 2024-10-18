@@ -35,9 +35,7 @@ export default class SummaryMissedWarsCommand extends Command {
       for (const war of wars) {
         const clan = war.clan.tag === tag ? war.clan : war.opponent;
         for (const m of clan.members) {
-          const mem = missed[m.tag] // eslint-disable-line
-            ? missed[m.tag]
-            : (missed[m.tag] = { name: m.name, tag: m.tag, wars: 0, missed: 0 });
+          const mem = missed[m.tag] ? missed[m.tag] : (missed[m.tag] = { name: m.name, tag: m.tag, wars: 0, missed: 0 });
           mem.wars += 1;
           if (m.attacks?.length === war.attacksPerMember) continue;
           mem.missed += war.attacksPerMember - (m.attacks?.length ?? 0);

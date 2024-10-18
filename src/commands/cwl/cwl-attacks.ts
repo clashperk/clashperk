@@ -215,7 +215,7 @@ export default class CWLAttacksCommand extends Command {
           for (const mem of clan.members) {
             if (mem.attacks?.length) continue;
             missed[mem.tag] = {
-              name: mem.name || mem.tag, // eslint-disable-next-line
+              name: mem.name || mem.tag,
               count: Number((missed[mem.tag] || { count: 0 }).count) + 1
             };
           }

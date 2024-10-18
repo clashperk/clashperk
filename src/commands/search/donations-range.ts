@@ -115,8 +115,8 @@ export default class DonationsCommand extends Command {
     const result = [...clan.memberList, ...players].map((player) => ({
       name: player.name,
       tag: player.tag,
-      donated: playersMap[player.tag]?.donated ?? 0, // eslint-disable-line
-      received: playersMap[player.tag]?.received ?? 0 // eslint-disable-line
+      donated: playersMap[player.tag]?.donated ?? 0,
+      received: playersMap[player.tag]?.received ?? 0
     }));
 
     result.sort((a, b) => b.received - a.received);

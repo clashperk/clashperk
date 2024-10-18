@@ -79,7 +79,6 @@ export default class LegendAttacksHistoryCommand extends Command {
         const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
         const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
 
-        // eslint-disable-next-line
         prev.push({
           attackCount,
           defenseCount,
@@ -103,7 +102,7 @@ export default class LegendAttacksHistoryCommand extends Command {
     const chunks = result
       .map((r) => {
         const records = r.logs.reduce<Record<string, PerDayLog>>((prev, acc) => {
-          prev[acc.day] ??= acc; // eslint-disable-line
+          prev[acc.day] ??= acc;
           return prev;
         }, {});
         return { name: r.name, tag: r.tag, records };
@@ -119,7 +118,7 @@ export default class LegendAttacksHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...days.map((_, n) => ({ name: `Day ${n + 1}`, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...days.map((_, i) => r.records[i + 1]?.attackCount ?? 0)])
       },
       {
@@ -129,7 +128,7 @@ export default class LegendAttacksHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...days.map((_, n) => ({ name: `Day ${n + 1}`, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...days.map((_, i) => r.records[i + 1]?.defenseCount ?? 0)])
       },
       {
@@ -139,7 +138,7 @@ export default class LegendAttacksHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...days.map((_, n) => ({ name: `Day ${n + 1}`, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...days.map((_, i) => r.records[i + 1]?.gain ?? 0)])
       },
       {
@@ -149,7 +148,7 @@ export default class LegendAttacksHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...days.map((_, n) => ({ name: `Day ${n + 1}`, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...days.map((_, i) => r.records[i + 1]?.loss ?? 0)])
       },
       {
@@ -159,7 +158,7 @@ export default class LegendAttacksHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...days.map((_, n) => ({ name: `Day ${n + 1}`, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...days.map((_, i) => r.records[i + 1]?.netGain ?? 0)])
       }
     ];

@@ -16,7 +16,6 @@ export default class PingCommand extends Command {
       reply: { messageReference: message.id, failIfNotExists: false }
     });
 
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const ping = (msg.editedTimestamp || msg.createdTimestamp) - (message.editedTimestamp || message.createdTimestamp);
     return msg.edit({
       allowedMentions: { repliedUser: false },

@@ -290,7 +290,7 @@ export default class AutocompleteInteractionListener extends Listener {
 
     if (!result.length && query) {
       const raw = await Google.timezone(query);
-      // eslint-disable-next-line
+
       if (raw?.location && raw.timezone) {
         const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
         const timezone = {

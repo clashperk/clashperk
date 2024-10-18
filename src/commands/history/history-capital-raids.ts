@@ -154,7 +154,7 @@ export default class CapitalRaidsHistoryCommand extends Command {
     const chunks = result
       .map((r) => {
         const raids = r.raids.reduce<Record<string, IRaid>>((prev, acc) => {
-          prev[acc.weekId] ??= acc; // eslint-disable-line
+          prev[acc.weekId] ??= acc;
           return prev;
         }, {});
         return { name: r.name, tag: r.tag, raids };
@@ -170,7 +170,7 @@ export default class CapitalRaidsHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.attacks ?? 0)])
       },
       {
@@ -180,7 +180,7 @@ export default class CapitalRaidsHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.capitalResourcesLooted ?? 0)])
       },
       {
@@ -190,7 +190,7 @@ export default class CapitalRaidsHistoryCommand extends Command {
           { name: 'TAG', align: 'LEFT', width: 160 },
           ...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.reward ?? 0)])
       }
     ];

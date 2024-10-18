@@ -287,43 +287,6 @@ export default class ClanCommand extends Command {
   }
 
   private async getSeason(clan: APIClan) {
-    [
-      {
-        $limit: 100
-      },
-      {
-        $match: {
-          __clans: {
-            $size: 3
-          }
-        }
-      },
-      {
-        $project: {
-          clans: {
-            $objectToArray: '$clans'
-          },
-          name: 1,
-          tag: 1,
-          attackWins: 1,
-          defenseWins: 1
-        }
-      },
-      {
-        $unwind: {
-          path: '$clans'
-        }
-      },
-      {
-        $project: {
-          name: 1,
-          tag: 1,
-          clanTag: '$clans.v.tag',
-          donations: '$clans.v.donations.total',
-          donationsReceived: '$clans.v.donationsReceived.total'
-        }
-      }
-    ];
     return this.client.db
       .collection(Collections.PLAYER_SEASONS)
       .aggregate<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number }>([

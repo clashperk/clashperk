@@ -1,16 +1,10 @@
-import { Collections } from '@app/constants';
+import { Collections, WarType } from '@app/constants';
 import { APIClanWar, APIClanWarAttack, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
-
-export enum WarType {
-  REGULAR = 1,
-  FRIENDLY,
-  CWL
-}
 
 export default class ExportWarAttackLogCommand extends Command {
   public constructor() {

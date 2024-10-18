@@ -4,7 +4,6 @@ import { Command, Listener } from '../../lib/handlers.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 import { mixpanel } from '../../struct/mixpanel.js';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const flattenArgs = (obj: Record<string, any>) => {
   const result: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(obj)) {

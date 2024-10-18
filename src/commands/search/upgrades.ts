@@ -16,16 +16,6 @@ import { getMenuFromMessage, unitsFlatten } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 import { RAW_TROOPS_WITH_ICONS, TroopJSON } from '../../util/troops.js';
 
-export const EN_ESCAPE = '\u2002';
-
-export const resourceMap = {
-  'Elixir': EMOJIS.ELIXIR,
-  'Dark Elixir': EMOJIS.DARK_ELIXIR,
-  'Gold': EMOJIS.GOLD,
-  'Builder Elixir': EMOJIS.BUILDER_ELIXIR,
-  'Builder Gold': EMOJIS.BUILDER_GOLD
-};
-
 export default class UpgradesCommand extends Command {
   public constructor() {
     super('upgrades', {
@@ -242,7 +232,7 @@ export default class UpgradesCommand extends Command {
         const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
         const maxLevel = apiTroop?.maxLevel ?? unit.levels[unit.levels.length - 1];
         const _level = apiTroop?.level ?? 0;
-        const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel ?? 0;
+        const hallLevel = unit.village === 'home' ? data.townHallLevel : (data.builderHallLevel ?? 0);
         const level = _level === 0 ? 0 : Math.max(_level, unit.minLevel ?? _level);
         const isRushed = unit.levels[hallLevel - 2] > level;
         const hallMaxLevel = unit.levels[hallLevel - 1];

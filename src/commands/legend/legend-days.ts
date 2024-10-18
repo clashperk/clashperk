@@ -734,22 +734,3 @@ export default class LegendDaysCommand extends Command {
     return lastMonday;
   }
 }
-
-export interface LogType {
-  start: number;
-  end: number;
-  timestamp: number;
-  inc: number;
-  type?: string;
-}
-
-export interface LegendAttacksAggregated {
-  _id: string;
-  logs: {
-    timestamp: Date;
-    trophies: number | null;
-  }[];
-  avgGain: number;
-  avgOffense: number;
-  avgDefense: number;
-}

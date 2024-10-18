@@ -13,7 +13,7 @@ const auth = google.auth.fromJSON({
 const drive = google.drive({ version: 'v3', auth });
 const sheet = google.sheets({ version: 'v4', auth });
 
-export const publish = async (fileId: string) => {
+const publish = async (fileId: string) => {
   return Promise.all([
     drive.permissions.create({
       requestBody: {
@@ -39,7 +39,7 @@ export type SchemaRequest = sheets_v4.Schema$Request;
 
 const allowedFormulas = ['=HYPERLINK(', '=IMAGE(', '=SUM('];
 
-export const getSheetValue = (value?: string | number | boolean | Date | null) => {
+const getSheetValue = (value?: string | number | boolean | Date | null) => {
   if (typeof value === 'string' && allowedFormulas.some((formula) => value.startsWith(formula))) {
     return { formulaValue: value };
   }
@@ -61,7 +61,7 @@ const getUserEnteredFormat = (value?: string | number | boolean | Date | null) =
 
 export const createHyperlink = (url: string, text: string) => `=HYPERLINK("${url}","${text}")`;
 
-export const getConditionalFormatRequests = (sheets: CreateGoogleSheet[]) => {
+const getConditionalFormatRequests = (sheets: CreateGoogleSheet[]) => {
   const gridStyleRequests: SchemaRequest[] = sheets
     .map((sheet, sheetId) => [
       {

@@ -116,7 +116,6 @@ export default class CWLStarsCommand extends Command {
         if (['inWar', 'warEnded'].includes(data.state)) {
           if (this.client.coc.isWinner(clan, opponent)) warsWon++;
           for (const m of clan.members) {
-            // eslint-disable-next-line
             members[m.tag] ??= {
               name: m.name || m.tag,
               tag: m.tag,

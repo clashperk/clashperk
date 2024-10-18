@@ -61,7 +61,7 @@ export default class CWLHistoryCommand extends Command {
 
     const warMap = _wars.reduce<Record<string, IWar[]>>((acc, war) => {
       const key = `${war.member.name} (${war.member.tag})`;
-      acc[key] ??= []; // eslint-disable-line
+      acc[key] ??= [];
       acc[key].push(war);
       return acc;
     }, {});
@@ -74,7 +74,7 @@ export default class CWLHistoryCommand extends Command {
 
         const _warsMap = userGroups.reduce<Record<string, IWar[]>>((acc, war) => {
           const seasonId = war.endTime.toISOString().slice(0, 7);
-          acc[seasonId] ??= []; // eslint-disable-line
+          acc[seasonId] ??= [];
           acc[seasonId].push(war);
           return acc;
         }, {});
@@ -204,10 +204,10 @@ export default class CWLHistoryCommand extends Command {
     const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
     const previousBestAttack = isFresh
       ? null
-      : [...attacks]
+      : ([...attacks]
           .filter((_atk) => _atk.defenderTag === defender.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
           .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
-          .at(0) ?? null;
+          .at(0) ?? null);
     return { previousBestAttack: isFresh ? null : previousBestAttack, defender, isFresh };
   }
 }

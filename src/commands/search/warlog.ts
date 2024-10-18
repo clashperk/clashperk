@@ -69,7 +69,7 @@ export default class WarLogCommand extends Command {
       const _time = time(new Date(moment(item.endTime).toDate()), 'R');
       embed.addFields([
         {
-          name: `\u200b\n\u200e${this.result(item.result)} ${opponent.name ?? 'Clan War League'} ${item.id ? `\u200e(#${item.id})` : ''}`,
+          name: `\u200b\n\u200e${this.result(item.result!)} ${opponent.name ?? 'Clan War League'} ${item.id ? `\u200e(#${item.id})` : ''}`,
           value: [
             `${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${
               EMOJIS.FIRE

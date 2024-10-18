@@ -21,7 +21,7 @@ function title(str: string) {
 
 type LogMap = Record<string, { label?: string; description?: string }>;
 
-export const logGroups: { name: string; logs: LogMap }[] = [
+const logGroups: { name: string; logs: LogMap }[] = [
   {
     name: 'Clan Logs',
     logs: {

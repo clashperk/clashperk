@@ -46,7 +46,7 @@ export const clanEmbedMaker = async (
       [
         `${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.BB_TROPHY} **${clan.clanBuilderBasePoints}**`,
         '',
-        description?.toLowerCase() === 'auto' ? clan.description : description ?? ''
+        description?.toLowerCase() === 'auto' ? clan.description : (description ?? '')
       ].join('\n')
     );
 
@@ -81,7 +81,7 @@ export const clanEmbedMaker = async (
           ? clan.requiredTownhallLevel
             ? `TH ${clan.requiredTownhallLevel}+`
             : 'Any'
-          : accepts ?? 'Any'
+          : (accepts ?? 'Any')
       }`
     });
   }
@@ -117,7 +117,7 @@ export const clanEmbedMaker = async (
     });
   }
 
-  if (!['unknown', 'never'].includes(clan.warFrequency) && fields?.includes(ClanEmbedFields.WAR_FREQUENCY)) {
+  if (clan.warFrequency && !['unknown', 'never'].includes(clan.warFrequency) && fields?.includes(ClanEmbedFields.WAR_FREQUENCY)) {
     embed.addFields({
       name: 'War Frequency',
       value: `${

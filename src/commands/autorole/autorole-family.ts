@@ -4,17 +4,6 @@ import { unique } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
-export interface IArgs {
-  command?: 'refresh' | 'disable' | null;
-  clans?: string;
-  members?: Role;
-  elders?: Role;
-  coLeads?: Role;
-  commonRole?: Role;
-  verify: boolean;
-  clear?: boolean;
-}
-
 export default class AutoFamilyRoleCommand extends Command {
   public constructor() {
     super('setup-family-roles', {
