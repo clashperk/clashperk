@@ -81,14 +81,10 @@ export const enum Collections {
 
   LEGEND_ATTACKS = 'LegendAttacks',
 
-  EVENT_LOGS = 'EventLogs',
-
   FLAGS = 'Flags',
 
   PLAYER_LINKS = 'PlayerLinks',
   USERS = 'Users',
-
-  PLAYER_ACTIVITIES = 'PlayerActivities',
 
   WAR_REMINDERS = 'Reminders',
   WAR_SCHEDULERS = 'Schedulers',
@@ -120,7 +116,6 @@ export const enum Collections {
   ROSTERS = 'Rosters',
   ROSTER_CATEGORIES = 'RosterCategories',
 
-  CLAN_MEMBERS = 'ClanMembers',
   CLAN_GAMES_POINTS = 'ClanGamesPoints',
   PLAYER_SEASONS = 'PlayerSeasons',
   CAPITAL_CONTRIBUTIONS = 'CapitalContributions',
@@ -395,6 +390,7 @@ export const WAR_FEED_LOG_TYPES = {
   CWL_WAR_EMBED: 'CWL_WAR_EMBED',
   FRIENDLY_WAR_EMBED: 'FRIENDLY_WAR_EMBED'
 } as const;
+
 export const enum DonationLogFrequencyTypes {
   INSTANT = 'INSTANT',
   DAILY = 'DAILY',

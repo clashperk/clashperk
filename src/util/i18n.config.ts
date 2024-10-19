@@ -1,12 +1,12 @@
 import { InitOptions } from 'i18next';
 
 const allowedLocales = {
-  fr: 'fr-FR', // French/Français
-  de: 'de-DE', // German/Deutsch
-  it: 'it-IT' // Italian/Italiano
+  'fr': 'fr-FR', // French/Français
+  'de': 'de-DE', // German/Deutsch
+  'it': 'it-IT', // Italian/Italiano
+  'es-ES': 'es-ES' // Spanish/Español
   // 'no': 'no-NO', // Norwegian/Norsk
   // 'nl': 'nl-NL', // Dutch/Nederlands
-  // 'es-ES': 'es-ES' // Spanish/Español
   // 'uk': 'uk-UA', // Ukrainian/Українська
   // 'pt-BR': 'pt-BR', // Portuguese/Português
   // 'tr': 'tr-TR', // Turkish/Türkçe
