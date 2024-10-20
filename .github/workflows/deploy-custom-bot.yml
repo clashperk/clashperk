@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy:
-    environment: production
+    environment: Production
     name: deploy-custom-bot
     runs-on: ubuntu-latest
 

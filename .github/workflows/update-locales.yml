@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    environment: production
+    environment: Production
     name: update-locales
     runs-on: ubuntu-latest
 

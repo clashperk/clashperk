@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    environment: production
+    environment: Production
     name: aws-ecr-publish-and-deploy
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
 
@@ -68,7 +68,7 @@ jobs:
 
   deploy-main-bot:
     needs: build
-    environment: production
+    environment: Production
     name: deploy-main-bot
     runs-on: ubuntu-latest
 
@@ -87,7 +87,7 @@ jobs:
 
   deploy-custom-bot:
     needs: build
-    environment: production
+    environment: Production
     name: deploy-custom-bot
     runs-on: ubuntu-latest
 

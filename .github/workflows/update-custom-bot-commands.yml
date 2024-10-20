@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    environment: production
+    environment: Production
     name: update-custom-bot-commands
     runs-on: ubuntu-latest
 
