@@ -165,7 +165,7 @@ export default class LegendAttacksCommand extends Command {
       ].join('\n')
     );
 
-    embed.setFooter({ text: `Day ${day} (${Season.ID})` });
+    embed.setFooter({ text: `Day ${day} (${Season.ID})` }).setTimestamp();
     return embed;
   }
 

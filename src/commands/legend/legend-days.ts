@@ -27,13 +27,6 @@ export default class LegendDaysCommand extends Command {
     };
   }
 
-  private getDay(day?: number) {
-    if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
-    const days = Util.getLegendDays();
-    const num = Math.min(days.length, Math.max(day, 1));
-    return { ...days[num - 1], day };
-  }
-
   public async exec(interaction: CommandInteraction, args: { tag?: string; user?: User; prev?: boolean; day?: number; graph?: boolean }) {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
@@ -47,15 +40,9 @@ export default class LegendDaysCommand extends Command {
       )
       .addComponents(
         new ButtonBuilder()
-          .setLabel(args.prev ? 'Current Day' : 'Previous Days')
+          .setLabel(args.prev ? 'Overview / Current Day' : 'Previous Days / Graph')
           .setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag }))
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
-      )
-      .addComponents(
-        new ButtonBuilder()
-          .setLabel(args.graph ? 'Overview' : 'View Graph')
-          .setCustomId(JSON.stringify({ cmd: this.id, graph: !args.graph, tag: data.tag }))
-          .setStyle(ButtonStyle.Secondary)
       );
 
     if (!(data.trophies >= 4900)) {
@@ -90,57 +77,14 @@ export default class LegendDaysCommand extends Command {
       );
     }
 
-    if (args.graph) {
-      const url = await this.graph(data);
-      if (!url) {
-        return interaction.followUp({ content: this.i18n('common.no_data', { lng: interaction.locale }), ephemeral: true });
-      }
-      return interaction.editReply({ content: url, embeds: [], components: [row] });
-    }
-
     legend.streak = Math.max(legend.streak, await this.getStreak(data.tag));
 
     const embed = args.prev
       ? (await this.logs(data)).setColor(this.client.embed(interaction))
       : (await this.embed(interaction, data, legend, args.day)).setColor(this.client.embed(interaction));
+    embed.setTimestamp();
 
     return interaction.editReply({ embeds: [embed], components: [row], content: null });
-  }
-
-  private calc(clanRank: number) {
-    if (clanRank >= 41) return 3;
-    else if (clanRank >= 31) return 10;
-    else if (clanRank >= 21) return 12;
-    else if (clanRank >= 11) return 25;
-    return 50;
-  }
-
-  private async rankings(tag: string) {
-    const ranks = await this.client.db
-      .collection(Collections.PLAYER_RANKS)
-      .aggregate<{ country: string; countryCode: string; players: { rank: number } }>([
-        {
-          $match: {
-            season: Season.ID
-          }
-        },
-        {
-          $unwind: {
-            path: '$players'
-          }
-        },
-        {
-          $match: {
-            'players.tag': tag
-          }
-        }
-      ])
-      .toArray();
-
-    return {
-      globalRank: ranks.find(({ countryCode }) => countryCode === 'global')?.players.rank ?? null,
-      countryRank: ranks.find(({ countryCode }) => countryCode !== 'global') ?? null
-    };
   }
 
   private async embed(interaction: CommandInteraction, data: APIPlayer, legend: LegendAttacksEntity, _day?: number) {
@@ -262,104 +206,8 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    embed.setFooter({ text: `Day ${day} (${Season.ID})` }).setTimestamp();
+    embed.setFooter({ text: `Day ${day} (${Season.ID})` });
     return embed;
-  }
-
-  private async getStreak(tag: string) {
-    const [legend] = await this.client.db
-      .collection(Collections.LEGEND_ATTACKS)
-      .aggregate<{ name: string; tag: string; streak: number }>([
-        {
-          $match: {
-            seasonId: {
-              $in: Util.getSeasonIds().slice(0, 3)
-            },
-            tag
-          }
-        },
-        {
-          $unwind: '$logs'
-        },
-        {
-          $match: {
-            'logs.type': 'attack'
-          }
-        },
-        {
-          $sort: {
-            'logs.timestamp': 1
-          }
-        },
-        {
-          $group: {
-            _id: '$tag',
-            name: {
-              $last: '$name'
-            },
-            logs: {
-              $push: '$logs.inc'
-            }
-          }
-        },
-        {
-          $set: {
-            streaks: {
-              $reduce: {
-                input: '$logs',
-                initialValue: {
-                  currentStreak: 0,
-                  maxStreak: 0
-                },
-                in: {
-                  $cond: [
-                    {
-                      $eq: ['$$this', 40]
-                    },
-                    {
-                      currentStreak: {
-                        $add: ['$$value.currentStreak', 1]
-                      },
-                      maxStreak: {
-                        $max: [
-                          '$$value.maxStreak',
-                          {
-                            $add: ['$$value.currentStreak', 1]
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      currentStreak: 0,
-                      maxStreak: 0
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            tag: '$_id',
-            name: '$name',
-            streak: {
-              $max: '$streaks.maxStreak'
-            }
-          }
-        },
-        {
-          $sort: {
-            streak: -1
-          }
-        },
-        {
-          $limit: 99
-        }
-      ])
-      .toArray();
-    return legend?.streak ?? 0;
   }
 
   private async graph(data: APIPlayer) {
@@ -630,7 +478,6 @@ export default class LegendDaysCommand extends Command {
     const legend = await this.client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
 
     const logs = legend?.logs ?? [];
-
     const days = Util.getLegendDays();
 
     const perDayLogs = days.reduce<
@@ -715,6 +562,130 @@ export default class LegendDaysCommand extends Command {
     return embed;
   }
 
+  private async getStreak(tag: string) {
+    const [legend] = await this.client.db
+      .collection(Collections.LEGEND_ATTACKS)
+      .aggregate<{ name: string; tag: string; streak: number }>([
+        {
+          $match: {
+            seasonId: {
+              $in: Util.getSeasonIds().slice(0, 3)
+            },
+            tag
+          }
+        },
+        {
+          $unwind: '$logs'
+        },
+        {
+          $match: {
+            'logs.type': 'attack'
+          }
+        },
+        {
+          $sort: {
+            'logs.timestamp': 1
+          }
+        },
+        {
+          $group: {
+            _id: '$tag',
+            name: {
+              $last: '$name'
+            },
+            logs: {
+              $push: '$logs.inc'
+            }
+          }
+        },
+        {
+          $set: {
+            streaks: {
+              $reduce: {
+                input: '$logs',
+                initialValue: {
+                  currentStreak: 0,
+                  maxStreak: 0
+                },
+                in: {
+                  $cond: [
+                    {
+                      $eq: ['$$this', 40]
+                    },
+                    {
+                      currentStreak: {
+                        $add: ['$$value.currentStreak', 1]
+                      },
+                      maxStreak: {
+                        $max: [
+                          '$$value.maxStreak',
+                          {
+                            $add: ['$$value.currentStreak', 1]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      currentStreak: 0,
+                      maxStreak: 0
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            tag: '$_id',
+            name: '$name',
+            streak: {
+              $max: '$streaks.maxStreak'
+            }
+          }
+        },
+        {
+          $sort: {
+            streak: -1
+          }
+        },
+        {
+          $limit: 99
+        }
+      ])
+      .toArray();
+    return legend?.streak ?? 0;
+  }
+
+  private async rankings(tag: string) {
+    const ranks = await this.client.db
+      .collection(Collections.PLAYER_RANKS)
+      .aggregate<{ country: string; countryCode: string; players: { rank: number } }>([
+        {
+          $match: {
+            season: Season.ID
+          }
+        },
+        {
+          $unwind: {
+            path: '$players'
+          }
+        },
+        {
+          $match: {
+            'players.tag': tag
+          }
+        }
+      ])
+      .toArray();
+
+    return {
+      globalRank: ranks.find(({ countryCode }) => countryCode === 'global')?.players.rank ?? null,
+      countryRank: ranks.find(({ countryCode }) => countryCode !== 'global') ?? null
+    };
+  }
+
   private pad(num: number | string, padding = 4) {
     return num.toString().padStart(padding, ' ');
   }
@@ -732,5 +703,20 @@ export default class LegendDaysCommand extends Command {
     // 	return this.getLastMondayOfMonth(month + 1, year, date);
     // }
     return lastMonday;
+  }
+
+  private calc(clanRank: number) {
+    if (clanRank >= 41) return 3;
+    else if (clanRank >= 31) return 10;
+    else if (clanRank >= 21) return 12;
+    else if (clanRank >= 11) return 25;
+    return 50;
+  }
+
+  private getDay(day?: number) {
+    if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
+    const days = Util.getLegendDays();
+    const num = Math.min(days.length, Math.max(day, 1));
+    return { ...days[num - 1], day };
   }
 }
