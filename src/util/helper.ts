@@ -249,7 +249,8 @@ export const recoverDonations = async (clan: APIClan) => {
   return client.redis.set(`RECOVERY:${clan.tag}`, '-0-', Math.round(endTime.getTime() - Date.now() / 1000));
 };
 
-export const unitsFlatten = (data: APIPlayer) => {
+export const unitsFlatten = (data: APIPlayer, { withEquipment = true }) => {
+  const heroEquipment = withEquipment ? data.heroEquipment : [];
   return [
     ...data.troops.map((u) => ({
       name: u.name,
@@ -272,7 +273,7 @@ export const unitsFlatten = (data: APIPlayer) => {
       type: 'spell',
       village: u.village
     })),
-    ...data.heroEquipment.map((u) => ({
+    ...heroEquipment.map((u) => ({
       name: u.name,
       level: u.level,
       maxLevel: u.maxLevel,

@@ -132,7 +132,7 @@ export default class UnitsCommand extends Command {
       'Builder Barracks': 'Builder Troops'
     };
 
-    const apiTroops = unitsFlatten(data);
+    const apiTroops = unitsFlatten(data, { withEquipment: true });
     const units = [];
     const indexes = Object.values(titles);
     for (const [key, value] of Object.entries(Troops)) {

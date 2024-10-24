@@ -1,9 +1,10 @@
 import { APIPlayer } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
+import { sum } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { HERO_EQUIPMENT, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/emojis.js';
-import { getExportComponents } from '../../util/helper.js';
+import { getExportComponents, unitsFlatten } from '../../util/helper.js';
 import { RAW_TROOPS_FILTERED } from '../../util/troops.js';
 
 const achievements = [
@@ -143,9 +144,8 @@ export default class ExportClanMembersCommand extends Command {
       member.displayName = guildMember?.user.displayName ?? link.displayName;
     }
 
-    members
-      .sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
-      .sort((a, b) => b.townHallLevel - a.townHallLevel);
+    members.sort((a, b) => sum(b.heroes, (x) => x.level) - sum(a.heroes, (x) => x.level));
+    members.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
     if (!members.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
@@ -270,28 +270,6 @@ export default class ExportClanMembersCommand extends Command {
   }
 
   private apiTroops(data: APIPlayer) {
-    return [
-      ...data.troops.map((u) => ({
-        name: u.name,
-        level: u.level,
-        maxLevel: u.maxLevel,
-        type: 'troop',
-        village: u.village
-      })),
-      ...data.heroes.map((u) => ({
-        name: u.name,
-        level: u.level,
-        maxLevel: u.maxLevel,
-        type: 'hero',
-        village: u.village
-      })),
-      ...data.spells.map((u) => ({
-        name: u.name,
-        level: u.level,
-        maxLevel: u.maxLevel,
-        type: 'spell',
-        village: u.village
-      }))
-    ];
+    return unitsFlatten(data, { withEquipment: false });
   }
 }

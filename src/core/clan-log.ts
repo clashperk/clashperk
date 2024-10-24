@@ -336,7 +336,7 @@ export class ClanLog extends RootLog {
   }
 
   private remainingUpgrades(data: APIPlayer) {
-    const apiTroops = unitsFlatten(data);
+    const apiTroops = unitsFlatten(data, { withEquipment: true });
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
         const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);

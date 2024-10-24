@@ -94,7 +94,7 @@ export default class RushedCommand extends Command {
   private embed(data: APIPlayer, locale: string) {
     const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
-    const apiTroops = unitsFlatten(data);
+    const apiTroops = unitsFlatten(data, { withEquipment: true });
     const Troops = RAW_TROOPS_WITH_ICONS.filter((unit) => {
       const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
       const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
@@ -247,7 +247,7 @@ export default class RushedCommand extends Command {
   }
 
   private rushedPercentage(data: APIPlayer) {
-    const apiTroops = unitsFlatten(data);
+    const apiTroops = unitsFlatten(data, { withEquipment: true });
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
         const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
@@ -264,7 +264,7 @@ export default class RushedCommand extends Command {
   }
 
   private heroRushed(data: APIPlayer) {
-    const apiTroops = unitsFlatten(data);
+    const apiTroops = unitsFlatten(data, { withEquipment: true });
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
         const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
@@ -281,7 +281,7 @@ export default class RushedCommand extends Command {
   }
 
   private rushedOverall(data: APIPlayer) {
-    const apiTroops = unitsFlatten(data);
+    const apiTroops = unitsFlatten(data, { withEquipment: true });
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
         const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);

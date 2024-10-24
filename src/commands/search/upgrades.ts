@@ -128,7 +128,7 @@ export default class UpgradesCommand extends Command {
       return 'Blacksmith';
     };
 
-    const apiTroops = unitsFlatten(data);
+    const apiTroops = unitsFlatten(data, { withEquipment: true });
     const Troops = RAW_TROOPS_WITH_ICONS.filter((unit) => {
       const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
       const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > (apiTroop?.level ?? 0);

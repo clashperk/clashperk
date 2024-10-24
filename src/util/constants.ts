@@ -283,13 +283,13 @@ export const ATTACK_COUNTS: Record<string, string> = {
   ...SUPER_SCRIPTS
 };
 
-export const BUILDER_HALL_LEVELS_FOR_ROLES = Array(MAX_BUILDER_HALL_LEVEL - 2)
+export const BUILDER_HALL_LEVELS_FOR_ROLES = Array(MAX_BUILDER_HALL_LEVEL)
   .fill(0)
-  .map((_, i) => i + 3);
+  .map((_, i) => i + 1);
 
-export const TOWN_HALL_LEVELS_FOR_ROLES = Array(MAX_TOWN_HALL_LEVEL - 2)
+export const TOWN_HALL_LEVELS_FOR_ROLES = Array(MAX_TOWN_HALL_LEVEL)
   .fill(0)
-  .map((_, i) => i + 3);
+  .map((_, i) => i + 1);
 
 export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
   29000000: 'unranked',
