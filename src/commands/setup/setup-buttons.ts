@@ -67,6 +67,7 @@ export default class SetupButtonsCommand extends Command {
       link: this.client.uuid(),
       roles: this.client.uuid(),
       token: this.client.uuid(),
+      buttonStyle: this.client.uuid(),
       title: this.client.uuid(),
       done: this.client.uuid(),
       description: this.client.uuid(),
@@ -80,6 +81,7 @@ export default class SetupButtonsCommand extends Command {
       token_field: 'optional',
       thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
     });
+    if (!state.button_style) state.button_style = ButtonStyle.Primary;
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
@@ -112,6 +114,35 @@ export default class SetupButtonsCommand extends Command {
         .setMaxValues(1)
         .setMinValues(1)
     );
+    const buttonColorMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId(customIds.buttonStyle)
+        .setPlaceholder('Button Style')
+        .setOptions([
+          {
+            label: `${ButtonStyle[ButtonStyle.Danger]} (Red)`,
+            value: ButtonStyle.Danger.toString(),
+            default: state.button_style === ButtonStyle.Danger
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Primary]} (Blurple)`,
+            value: ButtonStyle.Primary.toString(),
+            default: state.button_style === ButtonStyle.Primary
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Secondary]} (Grey)`,
+            value: ButtonStyle.Secondary.toString(),
+            default: state.button_style === ButtonStyle.Secondary
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Success]} (Green)`,
+            value: ButtonStyle.Success.toString(),
+            default: state.button_style === ButtonStyle.Success
+          }
+        ])
+        .setMaxValues(1)
+        .setMinValues(1)
+    );
 
     const embed = new EmbedBuilder();
     embed.setColor(this.client.embed(interaction));
@@ -124,7 +155,7 @@ export default class SetupButtonsCommand extends Command {
       .setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }))
       .setLabel('Link account')
       .setEmoji('🔗')
-      .setStyle(ButtonStyle.Primary);
+      .setStyle(state.button_style);
     const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
     const resetImages = async () => {
@@ -153,7 +184,7 @@ export default class SetupButtonsCommand extends Command {
         '- You can customize the embed by clicking the button below.',
         '- Once you are done, click the `Post Embed` button to send the Link button to the channel.'
       ].join('\n'),
-      components: [menuRow, row]
+      components: [menuRow, buttonColorMenu, row]
     });
 
     const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -169,11 +200,16 @@ export default class SetupButtonsCommand extends Command {
         return;
       }
 
-      if (action.customId === customIds.token && action.isStringSelectMenu()) {
+      if ([customIds.buttonStyle, customIds.token].includes(action.customId) && action.isStringSelectMenu()) {
         await action.deferUpdate();
-        state.token_field = action.values.at(0) as 'required' | 'optional' | 'hidden';
+        if (action.customId === customIds.buttonStyle) {
+          state.button_style = Number(action.values.at(0) ?? ButtonStyle.Primary);
+        } else {
+          state.token_field = action.values.at(0) as 'required' | 'optional' | 'hidden';
+        }
 
         linkButton.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }));
+        linkButton.setStyle(state.button_style);
         const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
         await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
@@ -231,19 +267,51 @@ export default class SetupButtonsCommand extends Command {
       title: this.client.uuid(),
       description: this.client.uuid(),
       imageUrl: this.client.uuid(),
+      buttonStyle: this.client.uuid(),
       thumbnailUrl: this.client.uuid()
     };
-
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
-    );
 
     const state = this.client.settings.get<EmbedState>(interaction.guild, Settings.REFRESH_EMBEDS, {
       title: `Welcome to ${interaction.guild.name}`,
       description: 'Click the button below to refresh your roles and nickname.',
       thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
     });
+    if (!state.button_style) state.button_style = ButtonStyle.Primary;
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
+    );
+
+    const buttonColorMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId(customIds.buttonStyle)
+        .setPlaceholder('Button Style')
+        .setOptions([
+          {
+            label: `${ButtonStyle[ButtonStyle.Danger]} (Red)`,
+            value: ButtonStyle.Danger.toString(),
+            default: state.button_style === ButtonStyle.Danger
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Primary]} (Blurple)`,
+            value: ButtonStyle.Primary.toString(),
+            default: state.button_style === ButtonStyle.Primary
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Secondary]} (Grey)`,
+            value: ButtonStyle.Secondary.toString(),
+            default: state.button_style === ButtonStyle.Secondary
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Success]} (Green)`,
+            value: ButtonStyle.Success.toString(),
+            default: state.button_style === ButtonStyle.Success
+          }
+        ])
+        .setMaxValues(1)
+        .setMinValues(1)
+    );
 
     const embed = new EmbedBuilder();
     embed.setColor(this.client.embed(interaction));
@@ -253,9 +321,12 @@ export default class SetupButtonsCommand extends Command {
     embed.setImage(state.image_url || null);
 
     const customId = this.createId({ cmd: 'autorole-refresh', ephemeral: true });
-    const refreshButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setLabel('Refresh Roles').setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Primary)
-    );
+    const linkButton = new ButtonBuilder()
+      .setLabel('Refresh Roles')
+      .setEmoji(EMOJIS.REFRESH)
+      .setCustomId(customId)
+      .setStyle(state.button_style);
+    const refreshButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
     const resetImages = async () => {
       state.image_url = '';
@@ -283,7 +354,7 @@ export default class SetupButtonsCommand extends Command {
         '- You can customize the embed by clicking the button below.',
         '- Once you are done, click the `Post Embed` button to send the Link button to the channel.'
       ].join('\n'),
-      components: [row]
+      components: [buttonColorMenu, row]
     });
 
     const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -297,6 +368,16 @@ export default class SetupButtonsCommand extends Command {
         collector.stop();
         await interaction.channel?.send({ embeds: [embed], components: [refreshButtonRow] });
         return;
+      }
+
+      if (action.customId === customIds.buttonStyle && action.isStringSelectMenu()) {
+        await action.deferUpdate();
+        state.button_style = Number(action.values.at(0) ?? ButtonStyle.Primary);
+
+        linkButton.setCustomId(customId);
+        linkButton.setStyle(state.button_style);
+
+        await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
       }
 
       if (action.customId === customIds.embed) {
@@ -411,4 +492,5 @@ interface EmbedState {
   image_url: string;
   thumbnail_url: string;
   token_field: string;
+  button_style: number;
 }
