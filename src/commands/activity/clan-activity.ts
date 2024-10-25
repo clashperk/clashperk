@@ -77,7 +77,7 @@ export default class ClanActivityCommand extends Command {
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Open in Web')
-        .setURL(`https://app.clashperk.com/charts/${res.headers.get('x-chart-id')}`)
+        .setURL(`https://clashperk.com/web/charts/${res.headers.get('x-chart-id')}`)
     );
 
     const timeZoneCommand = this.client.commands.get('/timezone');

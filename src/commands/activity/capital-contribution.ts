@@ -94,7 +94,7 @@ export default class CapitalContributionCommand extends Command {
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
           .setLabel('View Contribution Logs')
-          .setURL(`https://app.clashperk.com/capital/${encodeURIComponent(clan.tag)}`)
+          .setURL(`https://clashperk.com/web/clans/${encodeURIComponent(clan.tag)}/capital-contribution`)
       );
 
     const embed = this.getCapitalContributionsEmbed({ clan, weekId: weekend, contributions, locale: interaction.locale });
