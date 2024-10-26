@@ -1859,6 +1859,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'role-refresh-button'
               }
             ]
+          },
+          {
+            name: 'embed_color',
+            description: command.setup.buttons.options.embed_color.description,
+            description_localizations: translation('command.setup.buttons.options.embed_color.description'),
+            type: ApplicationCommandOptionType.String
           }
         ]
       },

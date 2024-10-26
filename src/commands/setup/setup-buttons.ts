@@ -45,6 +45,9 @@ export default class SetupButtonsCommand extends Command {
       channel: {
         match: 'CHANNEL',
         default: interaction.channel!
+      },
+      embed_color: {
+        match: 'COLOR'
       }
     };
   }
@@ -55,6 +58,7 @@ export default class SetupButtonsCommand extends Command {
       /** @deprecated - To be deleted soon */
       option: string;
       button_type: string;
+      embed_color: number;
       channel: TextChannel | AnyThreadChannel;
       disable?: boolean;
     }
@@ -82,6 +86,7 @@ export default class SetupButtonsCommand extends Command {
       thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
     });
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
+    if (args.embed_color) state.embed_color = args.embed_color ?? this.client.embed(interaction);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
@@ -145,7 +150,7 @@ export default class SetupButtonsCommand extends Command {
     );
 
     const embed = new EmbedBuilder();
-    embed.setColor(this.client.embed(interaction));
+    embed.setColor(state.embed_color);
     embed.setTitle(state.title);
     embed.setDescription(state.description);
     embed.setImage(state.image_url || null);
@@ -259,7 +264,7 @@ export default class SetupButtonsCommand extends Command {
 
   public async selfRefresh(
     interaction: CommandInteraction<'cached'>,
-    _args: { option: string; channel: TextChannel | AnyThreadChannel; disable?: boolean }
+    args: { option: string; channel: TextChannel | AnyThreadChannel; disable?: boolean; embed_color: number }
   ) {
     const customIds = {
       embed: this.client.uuid(),
@@ -277,6 +282,7 @@ export default class SetupButtonsCommand extends Command {
       thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
     });
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
+    if (args.embed_color) state.embed_color = args.embed_color ?? this.client.embed(interaction);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
@@ -314,7 +320,7 @@ export default class SetupButtonsCommand extends Command {
     );
 
     const embed = new EmbedBuilder();
-    embed.setColor(this.client.embed(interaction));
+    embed.setColor(state.embed_color);
     embed.setTitle(state.title);
     embed.setDescription(state.description);
     embed.setThumbnail(state.thumbnail_url || null);
@@ -493,4 +499,5 @@ interface EmbedState {
   thumbnail_url: string;
   token_field: string;
   button_style: number;
+  embed_color: number;
 }

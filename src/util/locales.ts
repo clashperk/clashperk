@@ -1177,6 +1177,9 @@ export const command = {
       options: {
         button_type: {
           description: 'Select the button type to setup'
+        },
+        embed_color: {
+          description: 'Hex color code for the embed'
         }
       }
     },
