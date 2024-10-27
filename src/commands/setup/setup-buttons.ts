@@ -150,7 +150,7 @@ export default class SetupButtonsCommand extends Command {
     );
 
     const embed = new EmbedBuilder();
-    embed.setColor(state.embed_color);
+    if (state.embed_color) embed.setColor(state.embed_color);
     embed.setTitle(state.title);
     embed.setDescription(state.description);
     embed.setImage(state.image_url || null);
@@ -320,7 +320,7 @@ export default class SetupButtonsCommand extends Command {
     );
 
     const embed = new EmbedBuilder();
-    embed.setColor(state.embed_color);
+    if (state.embed_color) embed.setColor(state.embed_color);
     embed.setTitle(state.title);
     embed.setDescription(state.description);
     embed.setThumbnail(state.thumbnail_url || null);
