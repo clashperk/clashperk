@@ -22,6 +22,12 @@ export default class SummaryClansCommand extends Command {
     const _clans = await this.client.coc._getClans(clans);
     _clans.sort((a, b) => a.name.localeCompare(b.name));
 
+    if (!_clans.length) {
+      return interaction.editReply(
+        this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+      );
+    }
+
     const overall: { tag: string; townHallLevel: number }[] = [];
     for (const clan of _clans) {
       const players = clan.memberList.map((mem) => ({ tag: mem.tag, townHallLevel: mem.townHallLevel }));

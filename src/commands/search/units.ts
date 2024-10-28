@@ -164,23 +164,26 @@ export default class UnitsCommand extends Command {
       });
 
       if (unitsArray.length) {
-        embed.addFields([
-          {
-            name: category.title,
-            value: this.chunk(unitsArray)
-              .map((chunks) =>
-                chunks
-                  .map((unit) => {
-                    const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name] || unit.name;
-                    const level = this.padStart(unit.level);
-                    const maxLevel = showMaxLevel ? this.padEnd(unit.maxLevel) : this.padEnd(unit.hallMaxLevel);
-                    return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-                  })
-                  .join(' ')
-              )
-              .join('\n')
-          }
-        ]);
+        const chunkedUnitsArray = this.chunk(unitsArray, 20);
+        chunkedUnitsArray.forEach((chunk, index) => {
+          embed.addFields([
+            {
+              name: index === 0 ? category.title : `\u200b`,
+              value: this.chunk(chunk)
+                .map((units) =>
+                  units
+                    .map((unit) => {
+                      const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name] || unit.name;
+                      const level = this.padStart(unit.level);
+                      const maxLevel = showMaxLevel ? this.padEnd(unit.maxLevel) : this.padEnd(unit.hallMaxLevel);
+                      return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+                    })
+                    .join(' ')
+                )
+                .join('\n')
+            }
+          ]);
+        });
       }
     }
 

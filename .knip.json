@@ -15,6 +15,9 @@
   "eslint": {
     "config": ".eslintrc.json"
   },
+  "prettier": {
+    "config": ".prettierrc.json"
+  },
   "github-actions": true,
   "typescript": {
     "config": [
@@ -38,8 +41,5 @@
     "duplicates": "error",
     "optionalPeerDependencies": "error"
   },
-  "includeEntryExports": true,
-  "prettier": {
-    "config": ".prettierrc.json"
-  }
+  "includeEntryExports": true
 }
