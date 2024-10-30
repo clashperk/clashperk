@@ -50,7 +50,7 @@ export default class DonationsCommand extends Command {
     const season = args.season || Season.ID;
     const isSameSeason = Season.ID === Season.generateID(season);
 
-    await Promise.allSettled([recoverDonations(clan)]);
+    await recoverDonations(clan, season);
     const dbMembers = await this.client.db
       .collection<Pick<PlayerSeasonsEntity, 'tag' | 'clans' | 'townHallLevel'>>(Collections.PLAYER_SEASONS)
       .find(

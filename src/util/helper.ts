@@ -2,11 +2,11 @@ import { PlayerSeasonsEntity } from '@app/entities';
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType, StringSelectMenuBuilder } from 'discord.js';
 import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
-import { title } from 'radash';
+import { title, unique } from 'radash';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { Collections, FeatureFlags, Settings } from './constants.js';
-import { Season, Util } from './toolkit.js';
+import { Util } from './toolkit.js';
 
 export const hexToNanoId = (hex: ObjectId) => {
   return hex.toHexString().slice(-5).toUpperCase();
@@ -119,16 +119,15 @@ export const getMenuFromMessage = (interaction: ButtonInteraction, selected: str
   return [];
 };
 
-export const recoverDonations = async (clan: APIClan) => {
+export const recoverDonations = async (clan: APIClan, seasonId: string) => {
   const client = container.resolve(Client);
-  const { endTime, startTime } = client.coc.util.getSeason();
+  const { endTime, startTime } = client.coc.util.getSeason(new Date(seasonId));
 
   const isEnabled = await client.isFeatureEnabled(FeatureFlags.DONATIONS_RECOVERY, 'global');
   if (!isEnabled) return;
-  if (Date.now() >= endTime.getTime()) return;
 
-  const inserted = await client.redis.connection.get(`RECOVERY:${clan.tag}`);
-  if (inserted) return;
+  const redisKey = `RECOVERY:${seasonId}:${clan.tag}`;
+  if (await client.redis.connection.get(redisKey)) return;
 
   client.logger.debug(`Recovering donations for ${clan.tag}...`, { label: 'DonationRecovery' });
 
@@ -145,6 +144,13 @@ export const recoverDonations = async (clan: APIClan) => {
             range: {
               created_at: {
                 gte: startTime.toISOString()
+              }
+            }
+          },
+          {
+            range: {
+              created_at: {
+                lte: endTime.toISOString()
               }
             }
           }
@@ -216,13 +222,14 @@ export const recoverDonations = async (clan: APIClan) => {
   const tags = Object.keys(playersMap);
   if (!tags.length) return;
 
-  const cursor = client.db
-    .collection(Collections.PLAYER_SEASONS)
-    .find({ tag: { $in: tags } })
-    .project({ tag: 1, clans: 1, _id: 1, season: Season.ID });
+  const collection = client.db.collection(Collections.PLAYER_SEASONS);
+  const cursor = await collection
+    .find({ tag: { $in: unique(tags) }, season: seasonId })
+    .project({ tag: 1, name: 1, clans: 1, _id: 1, season: seasonId })
+    .toArray();
 
   const ops: AnyBulkWriteOperation<PlayerSeasonsEntity>[] = [];
-  for await (const player of cursor) {
+  for (const player of cursor) {
     if (!player.clans?.[clan.tag]) continue;
 
     const record = playersMap[player.tag];
@@ -242,11 +249,9 @@ export const recoverDonations = async (clan: APIClan) => {
     });
   }
 
-  if (ops.length) {
-    await client.db.collection<PlayerSeasonsEntity>(Collections.PLAYER_SEASONS).bulkWrite(ops);
-  }
+  if (ops.length) await collection.bulkWrite(ops);
 
-  return client.redis.set(`RECOVERY:${clan.tag}`, '-0-', Math.round(endTime.getTime() - Date.now() / 1000));
+  return client.redis.set(redisKey, '-0-', 60 * 60 * 24);
 };
 
 export const unitsFlatten = (data: APIPlayer, { withEquipment = true }) => {

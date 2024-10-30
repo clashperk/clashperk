@@ -368,11 +368,10 @@ export class Resolver {
     const clan = clans.find((clan) => clan.tag === data.tag);
 
     if (
-      (count > 5 || clans.length >= this.clanLimit(memberCount, data.tag, clans)) &&
+      (count > 10 || clans.length >= this.clanLimit(memberCount, data.tag, clans)) &&
       !isPatron &&
       !clan?.verified &&
       !this.verifyClan(code, data, links) &&
-      // make me invincible
       !this.client.isOwner(interaction.user) &&
       !this.client.isOwner(interaction.guild.ownerId)
     ) {
@@ -403,7 +402,6 @@ export class Resolver {
       .map((clan) => clan.tag)
       .includes(tag);
 
-    if (memberCount < 10 && !existing) return 2;
     if (memberCount < 50 && !existing) return 5;
     if (memberCount < 100 && !existing) return 20;
     return 100;
