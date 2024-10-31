@@ -1,12 +1,5 @@
 import moment from 'moment';
 
-const DURATION = {
-  SECOND: 1000,
-  MINUTE: 1000 * 60,
-  HOUR: 1000 * 60 * 60,
-  DAY: 1000 * 60 * 60 * 24
-};
-
 export class Util {
   // Convert a JavaScript Date object to a Sheets serial date value
   public static dateToSerialDate(jsDate: Date) {
@@ -237,10 +230,6 @@ export class Util {
     return new Date().toISOString().slice(0, 7);
   }
 
-  public static getRelativeTime(ms: number) {
-    return `<t:${Math.floor(ms / 1000)}:R>`;
-  }
-
   public static escapeSheetName(name: string) {
     return name.replace(/[\*\?\:\[\]\\\/\']/g, '');
   }
@@ -258,21 +247,31 @@ export class Util {
     return moment.duration(ms).format('m[m] s[s]', { trim: 'both mid' });
   }
 
-  private static _format(ms: number, msAbs: number, dur: number, long: string, short: string, l = false) {
+  public static ms(num: number, isLong = false) {
+    const abs = Math.abs(num);
+
+    const units = [
+      { duration: 1000 * 60 * 60 * 24, long: 'day', short: 'd' },
+      { duration: 1000 * 60 * 60, long: 'hour', short: 'h' },
+      { duration: 1000 * 60, long: 'minute', short: 'm' },
+      { duration: 1000, long: 'second', short: 's' }
+    ];
+
+    for (const { duration, long: longUnit, short: shortUnit } of units) {
+      if (abs >= duration) {
+        return this._format(num, abs, duration, longUnit, shortUnit, isLong);
+      }
+    }
+
+    return `${num}${isLong ? ' ms' : 'ms'}`;
+  }
+
+  private static _format(ms: number, msAbs: number, dur: number, longUnit: string, shortUnit: string, isLong = false) {
     const plural = msAbs >= dur * 1.5;
     let num: number | string = ms / dur;
     num = Number(Number.isInteger(num) ? num : num.toFixed(1));
     if (num >= 100) num = Math.round(num);
-    return `${num}${l ? ` ${long}${plural ? 's' : ''}` : short}`;
-  }
-
-  public static ms(num: number, long = false) {
-    const abs = Math.abs(num);
-    if (abs >= DURATION.DAY) return this._format(num, abs, DURATION.DAY, 'day', 'd', long);
-    if (abs >= DURATION.HOUR) return this._format(num, abs, DURATION.HOUR, 'hour', 'h', long);
-    if (abs >= DURATION.MINUTE) return this._format(num, abs, DURATION.MINUTE, 'minute', 'm', long);
-    if (abs >= DURATION.SECOND) return this._format(num, abs, DURATION.SECOND, 'second', 's', long);
-    return `${num}${long ? ' ' : ''}ms`;
+    return `${num}${isLong ? ` ${longUnit}${plural ? 's' : ''}` : shortUnit}`;
   }
 }
 

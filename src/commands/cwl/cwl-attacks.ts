@@ -8,7 +8,8 @@ import {
   StringSelectMenuBuilder,
   User,
   escapeInlineCode,
-  escapeMarkdown
+  escapeMarkdown,
+  time
 } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
@@ -110,7 +111,7 @@ export default class CWLAttacksCommand extends Command {
           .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
         if (['warEnded', 'inWar'].includes(data.state)) {
-          const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
+          const endTimestamp = new Date(moment(data.endTime).toDate());
           const attackers: { name: string; stars: number; destruction: number; mapPosition: number }[] = [];
           const slackers: { name: string; mapPosition: number; townHallLevel: number }[] = [];
 
@@ -148,7 +149,7 @@ export default class CWLAttacksCommand extends Command {
               '**War Against**',
               `\u200e${opponent.name} (${opponent.tag})`,
               '',
-              `${data.state === 'inWar' ? 'Battle Day' : 'War Ended'} (${Util.getRelativeTime(endTimestamp)})`
+              `${data.state === 'inWar' ? 'Battle Day' : 'War Ended'} (${time(endTimestamp, 'R')})`
             ].join('\n')
           );
 
@@ -198,13 +199,13 @@ export default class CWLAttacksCommand extends Command {
         }
 
         if (data.state === 'preparation') {
-          const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
+          const startTimestamp = new Date(moment(data.startTime).toDate());
           embed.setDescription(
             [
               '**War Against**',
               `\u200e${opponent.name} (${opponent.tag})`,
               '',
-              `Preparation (${Util.getRelativeTime(startTimestamp)})`,
+              `Preparation (${time(startTimestamp, 'R')})`,
               '',
               'Wait for the Battle day!'
             ].join('\n')

@@ -12,7 +12,8 @@ import {
   PermissionsString,
   WebhookClient,
   WebhookMessageCreateOptions,
-  escapeMarkdown
+  escapeMarkdown,
+  time
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId, UpdateFilter, WithId } from 'mongodb';
@@ -215,7 +216,7 @@ export class ClanWarLog extends RootLog {
       .setURL(this.clanURL(data.clan.tag))
       .setThumbnail(data.clan.badgeUrls.small);
     if (data.state === 'preparation') {
-      const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
+      const startTimestamp = new Date(moment(data.startTime).toDate());
       embed
         .setColor(states[data.state])
         .setDescription(
@@ -225,7 +226,7 @@ export class ClanWarLog extends RootLog {
             '',
             '**War State**',
             'Preparation Day',
-            `War Start Time: ${Util.getRelativeTime(startTimestamp)}`,
+            `War Start Time: ${time(startTimestamp, 'R')}`,
             '',
             '**War Size**',
             `${data.teamSize} vs ${data.teamSize}`
@@ -235,7 +236,7 @@ export class ClanWarLog extends RootLog {
     }
 
     if (data.state === 'inWar') {
-      const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
+      const endTimestamp = new Date(moment(data.endTime).toDate());
       embed
         .setColor(states[data.state])
         .setDescription(
@@ -245,7 +246,7 @@ export class ClanWarLog extends RootLog {
             '',
             '**War State**',
             'Battle Day',
-            `End Time: ${Util.getRelativeTime(endTimestamp)}`,
+            `End Time: ${time(endTimestamp, 'R')}`,
             '',
             '**War Size**',
             `${data.teamSize} vs ${data.teamSize}`,
@@ -390,21 +391,21 @@ export class ClanWarLog extends RootLog {
       ]);
 
     if (data.state === 'inWar') {
-      const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
+      const endTimestamp = new Date(moment(data.endTime).toDate());
       embed.setColor(states[data.state]);
       embed.addFields([
-        { name: 'War State', value: ['Battle Day', `End Time: ${Util.getRelativeTime(endTimestamp)}`].join('\n') },
+        { name: 'War State', value: ['Battle Day', `End Time: ${time(endTimestamp, 'R')}`].join('\n') },
         { name: 'War Stats', value: this.getLeaderBoard(clan, opponent) }
       ]);
     }
 
     if (data.state === 'preparation') {
-      const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
+      const startTimestamp = new Date(moment(data.startTime).toDate());
       embed.setColor(states[data.state]);
       embed.addFields([
         {
           name: 'War State',
-          value: ['Preparation Day', `War Start Time: ${Util.getRelativeTime(startTimestamp)}`].join('\n')
+          value: ['Preparation Day', `War Start Time: ${time(startTimestamp, 'R')}`].join('\n')
         }
       ]);
     }

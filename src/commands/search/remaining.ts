@@ -1,7 +1,7 @@
 import { Collections, Settings, WarType } from '@app/constants';
 import { CapitalRaidSeasonsEntity, ClanGamesEntity } from '@app/entities';
 import { APIClanWar, APIPlayer } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
 import { group } from 'radash';
@@ -131,7 +131,7 @@ export default class RemainingCommand extends Command {
       body.clan.members.filter((m) => m.attacks && m.attacks.length === 1),
       body.clan.members.filter((m) => !m.attacks)
     ];
-    const endTime = new Date(moment(body.endTime).toDate()).getTime();
+    const endTime = new Date(moment(body.endTime).toDate());
 
     embed.setDescription(
       [
@@ -142,7 +142,7 @@ export default class RemainingCommand extends Command {
         `${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`,
         '',
         '**End Time**',
-        `${Util.getRelativeTime(endTime)}`
+        `${time(endTime, 'R')}`
       ].join('\n')
     );
     if (TwoRem.length) {
@@ -270,7 +270,7 @@ export default class RemainingCommand extends Command {
           wars
             .map(
               ({ member, endTime, remaining }) =>
-                `- ${escapeMarkdown(member.name)} (${member.tag})\n - ${remaining} remaining (${Util.getRelativeTime(endTime.getTime())})`
+                `- ${escapeMarkdown(member.name)} (${member.tag})\n - ${remaining} remaining (${time(endTime, 'R')})`
             )
             .join('\n')
         ];
@@ -281,7 +281,7 @@ export default class RemainingCommand extends Command {
       .map(({ member, endTime, attacksPerMember, clan, remaining }) => {
         return [
           `**${escapeMarkdown(member.name)} (${member.tag})**`,
-          `${remaining}/${attacksPerMember} in ${escapeMarkdown(clan.name)} (${Util.getRelativeTime(endTime.getTime())})`
+          `${remaining}/${attacksPerMember} in ${escapeMarkdown(clan.name)} (${time(endTime, 'R')})`
         ].join('\n');
       })
       .join('\n\n');
@@ -347,9 +347,7 @@ export default class RemainingCommand extends Command {
           raids
             .map(
               ({ member, endTime, attackLimit, attacks }) =>
-                `- ${escapeMarkdown(member.name)} (${
-                  member.tag
-                })\n - ${attacks}/${attackLimit} raids (${Util.getRelativeTime(endTime.getTime())})`
+                `- ${escapeMarkdown(member.name)} (${member.tag})\n - ${attacks}/${attackLimit} raids (${time(endTime, 'R')})`
             )
             .join('\n')
         ];
@@ -360,7 +358,7 @@ export default class RemainingCommand extends Command {
       .map(({ member, endTime, attackLimit, clan, attacks }) => {
         return [
           `**${escapeMarkdown(member.name)} (${member.tag})**`,
-          `${attacks}/${attackLimit} in ${escapeMarkdown(clan.name)} (${Util.getRelativeTime(endTime.getTime())})`
+          `${attacks}/${attackLimit} in ${escapeMarkdown(clan.name)} (${time(endTime, 'R')})`
         ].join('\n');
       })
       .join('\n\n');

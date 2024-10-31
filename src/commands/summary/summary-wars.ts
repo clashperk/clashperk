@@ -1,9 +1,8 @@
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, time } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Util } from '../../util/toolkit.js';
 
 const states: Record<string, string> = {
   inWar: '**End time:**',
@@ -49,7 +48,7 @@ export default class SummaryWarsCommand extends Command {
           name: `${data.clan.name} ${EMOJIS.VS_BLUE} ${data.opponent.name} ${data.round ? `(CWL Round #${data.round})` : ''}`,
           value: [
             `${data.state === 'preparation' ? '' : this.getLeaderBoard(data.clan, data.opponent)}`,
-            `${states[data.state]} ${Util.getRelativeTime(moment(this._getTime(data)).toDate().getTime())}`,
+            `${states[data.state]} ${time(moment(this._getTime(data)).toDate(), 'R')}`,
             '\u200b'
           ].join('\n')
         });

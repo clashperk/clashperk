@@ -1,11 +1,20 @@
 import { APIClan, APIClanWarMember } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
+  time,
+  User
+} from 'discord.js';
 import moment from 'moment';
+import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
-import { cluster } from 'radash';
 
 export default class CWLRoundCommand extends Command {
   public constructor() {
@@ -94,11 +103,11 @@ export default class CWLRoundCommand extends Command {
           }
         ]);
         if (data.state === 'warEnded') {
-          const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
+          const endTimestamp = new Date(moment(data.endTime).toDate());
           embed.addFields([
             {
               name: 'War State',
-              value: ['War Ended', `Ended: ${Util.getRelativeTime(endTimestamp)}`].join('\n')
+              value: ['War Ended', `Ended: ${time(endTimestamp, 'R')}`].join('\n')
             },
             {
               name: 'Stats',
@@ -117,11 +126,11 @@ export default class CWLRoundCommand extends Command {
           ]);
         }
         if (data.state === 'inWar') {
-          const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
+          const endTimestamp = new Date(moment(data.endTime).toDate());
           embed.addFields([
             {
               name: 'War State',
-              value: ['Battle Day', `End Time: ${Util.getRelativeTime(endTimestamp)}`].join('\n')
+              value: ['Battle Day', `End Time: ${time(endTimestamp, 'R')}`].join('\n')
             }
           ]);
           embed.addFields([
@@ -142,11 +151,11 @@ export default class CWLRoundCommand extends Command {
           ]);
         }
         if (data.state === 'preparation') {
-          const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
+          const startTimestamp = new Date(moment(data.startTime).toDate());
           embed.addFields([
             {
               name: 'War State',
-              value: ['Preparation Day', `War Start Time: ${Util.getRelativeTime(startTimestamp)}`].join('\n')
+              value: ['Preparation Day', `War Start Time: ${time(startTimestamp, 'R')}`].join('\n')
             }
           ]);
         }

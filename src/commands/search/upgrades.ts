@@ -405,8 +405,4 @@ export default class UpgradesCommand extends Command {
     if (!sec) return '  -  ';
     return Util.ms(sec * 1000);
   }
-
-  private toGameString(num: number) {
-    return num.toLocaleString('en-US').replace(/,/g, ' ');
-  }
 }

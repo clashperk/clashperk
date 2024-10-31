@@ -11,7 +11,8 @@ import {
   SelectMenuComponentOptionData,
   StringSelectMenuBuilder,
   User,
-  escapeMarkdown
+  escapeMarkdown,
+  time
 } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
@@ -189,7 +190,7 @@ export default class WarCommand extends Command {
       .setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
 
     if (body.state === 'preparation') {
-      const startTimestamp = new Date(moment(body.startTime).toDate()).getTime();
+      const startTimestamp = new Date(moment(body.startTime).toDate());
       embed.setDescription(
         [
           '**War Against**',
@@ -197,7 +198,7 @@ export default class WarCommand extends Command {
           '',
           '**War State**',
           'Preparation',
-          `War Start Time: ${Util.getRelativeTime(startTimestamp)}`,
+          `War Start Time: ${time(startTimestamp, 'R')}`,
           '',
           '**War Size**',
           `${body.teamSize} vs ${body.teamSize}`
@@ -206,7 +207,7 @@ export default class WarCommand extends Command {
     }
 
     if (body.state === 'inWar') {
-      const endTimestamp = new Date(moment(body.endTime).toDate()).getTime();
+      const endTimestamp = new Date(moment(body.endTime).toDate());
       embed.setDescription(
         [
           '**War Against**',
@@ -214,7 +215,7 @@ export default class WarCommand extends Command {
           '',
           '**War State**',
           `Battle Day (${body.teamSize} vs ${body.teamSize})`,
-          `End Time: ${Util.getRelativeTime(endTimestamp)}`,
+          `End Time: ${time(endTimestamp, 'R')}`,
           '',
           '**War Size**',
           `${body.teamSize} vs ${body.teamSize}`,
@@ -226,7 +227,7 @@ export default class WarCommand extends Command {
     }
 
     if (body.state === 'warEnded') {
-      const endTimestamp = new Date(moment(body.endTime).toDate()).getTime();
+      const endTimestamp = new Date(moment(body.endTime).toDate());
       embed.setDescription(
         [
           '**War Against**',
@@ -234,7 +235,7 @@ export default class WarCommand extends Command {
           '',
           '**War State**',
           `War Ended (${body.teamSize} vs ${body.teamSize})`,
-          `Ended: ${Util.getRelativeTime(endTimestamp)}`,
+          `Ended: ${time(endTimestamp, 'R')}`,
           '',
           '**War Stats**',
           `${this.getLeaderBoard(body.clan, body.opponent, body.attacksPerMember ?? 2)}`
