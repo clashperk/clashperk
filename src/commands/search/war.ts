@@ -14,6 +14,7 @@ import {
   escapeMarkdown
 } from 'discord.js';
 import moment from 'moment';
+import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { WarCommandOptionValues, WarCommandOptions } from '../../util/command.options.js';
@@ -358,7 +359,7 @@ export default class WarCommand extends Command {
       .map((entry) => ({ level: Number(entry[0]), total: Number(entry[1]) }))
       .sort((a, b) => b.level - a.level);
 
-    return Util.chunk(townHalls, 5)
+    return cluster(townHalls, 5)
       .map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]}${WHITE_NUMBERS[th.total]}`).join(' '))
       .join('\n');
   }

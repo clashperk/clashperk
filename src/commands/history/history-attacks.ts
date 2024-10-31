@@ -1,6 +1,7 @@
 import { Collections } from '@app/constants';
 import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
+import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
@@ -100,7 +101,7 @@ export default class AttacksHistoryCommand extends Command {
 
     const embeds: EmbedBuilder[] = [];
 
-    for (const chunk of Util.chunk(result, 15)) {
+    for (const chunk of cluster(result, 15)) {
       const embed = new EmbedBuilder();
       embed.setColor(this.client.embed(interaction));
       embed.setTitle('Attacks History (last 6 months)');

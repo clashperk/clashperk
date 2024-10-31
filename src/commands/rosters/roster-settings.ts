@@ -9,12 +9,12 @@ import {
   StringSelectMenuInteraction
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
+import pluralize from 'pluralize';
 import { Command } from '../../lib/handlers.js';
 import { RosterSortTypes, rosterClan, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
 import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/command.options.js';
 import { getExportComponents } from '../../util/helper.js';
 import { createInteractionCollector } from '../../util/pagination.js';
-import { Util } from '../../util/toolkit.js';
 
 export default class RosterEditCommand extends Command {
   public constructor() {
@@ -169,7 +169,7 @@ export default class RosterEditCommand extends Command {
         content: [
           '### Clearing Roster',
           `- ${rosterClan(roster)} - ${roster.name}`,
-          `- ${roster.members.length} ${Util.plural(roster.members.length, 'player')} will be removed.`,
+          `- ${roster.members.length} ${pluralize('player', roster.members.length)} will be removed.`,
           '- **This action cannot be undone! Are you sure?**'
         ].join('\n'),
         components: [row]

@@ -6,6 +6,7 @@ import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 import { handlePagination } from '../../util/pagination.js';
 import { Util } from '../../util/toolkit.js';
+import { cluster } from 'radash';
 
 export default class LootHistoryCommand extends Command {
   public constructor() {
@@ -121,7 +122,7 @@ export default class LootHistoryCommand extends Command {
 
     const embeds: EmbedBuilder[] = [];
 
-    for (const chunk of Util.chunk(result, 12)) {
+    for (const chunk of cluster(result, 12)) {
       const embed = new EmbedBuilder();
       embed.setColor(this.client.embed(interaction));
       embed.setTitle('Loot History (last 12 months)');

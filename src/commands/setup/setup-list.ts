@@ -2,9 +2,8 @@ import { Collections } from '@app/constants';
 import { ClanLogType, ClanStoresEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { WithId } from 'mongodb';
-import { title as toTitle } from 'radash';
+import { cluster, title as toTitle } from 'radash';
 import { Command } from '../../lib/handlers.js';
-import { Util } from '../../util/toolkit.js';
 import { logActionsMap } from './setup-clan-logs.js';
 
 function title(str: string) {
@@ -40,7 +39,7 @@ export default class SetupListCommand extends Command {
       const embeds = await this.getFeatures(interaction, clans);
       if (!embeds.length) return interaction.editReply('No clans are linked.');
 
-      const [firstChunk, ...chunksGroup] = Util.chunk(embeds, 8);
+      const [firstChunk, ...chunksGroup] = cluster(embeds, 8);
       await interaction.editReply({ embeds: firstChunk });
 
       for (const chunks of chunksGroup) {

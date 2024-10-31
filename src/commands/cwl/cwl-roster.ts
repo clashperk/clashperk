@@ -1,9 +1,9 @@
 import { APIClan, APIClanWar, APIClanWarLeagueGroup, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
+import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/emojis.js';
-import { Util } from '../../util/toolkit.js';
 
 export default class CWLRosterCommand extends Command {
   public constructor() {
@@ -205,7 +205,7 @@ export default class CWLRosterCommand extends Command {
         {
           name: `\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
           value: [
-            Util.chunk(townHalls, 5)
+            cluster(townHalls, 5)
               .map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' '))
               .join('\n')
           ].join('\n')

@@ -124,12 +124,3 @@ export interface TroopJSON {
     levels: number[];
   }[];
 }
-
-export interface TroopInfo {
-  type: string;
-  village: string;
-  name: string;
-  level: number;
-  hallMaxLevel: number;
-  maxLevel: number;
-}

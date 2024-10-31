@@ -6,6 +6,7 @@ import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 import { handlePagination } from '../../util/pagination.js';
 import { Util } from '../../util/toolkit.js';
+import { cluster } from 'radash';
 
 export default class CapitalRaidsHistoryCommand extends Command {
   public constructor() {
@@ -120,7 +121,7 @@ export default class CapitalRaidsHistoryCommand extends Command {
     result.sort((a, b) => b.raids.length - a.raids.length);
 
     const embeds: EmbedBuilder[] = [];
-    for (const chunk of Util.chunk(result, 10)) {
+    for (const chunk of cluster(result, 10)) {
       const embed = new EmbedBuilder();
       embed.setColor(this.client.embed(interaction));
       embed.setTitle('Capital Raid History (last 2 months)');

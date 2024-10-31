@@ -3,6 +3,7 @@ import { LegendAttacksEntity, PlayersEntity } from '@app/entities';
 import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
+import pluralize from 'pluralize';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
@@ -543,10 +544,7 @@ export default class LegendDaysCommand extends Command {
         ''
       ],
       `**Legend Season Logs (${Season.ID})**`,
-      `- ${data.attackWins} ${Util.plural(data.attackWins, 'attack')} and ${data.defenseWins} ${Util.plural(
-        data.defenseWins,
-        'defense'
-      )} won`,
+      `- ${data.attackWins} ${pluralize('attack', data.attackWins)} and ${data.defenseWins} ${pluralize('defense', data.defenseWins)} won`,
       '',
       logDescription.join('\n')
     ].join('\n');

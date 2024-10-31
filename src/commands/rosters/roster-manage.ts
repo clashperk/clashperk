@@ -20,7 +20,8 @@ import {
   UserSelectMenuInteraction
 } from 'discord.js';
 import { Filter, ObjectId, WithId } from 'mongodb';
-import { unique } from 'radash';
+import pluralize from 'pluralize';
+import { cluster, unique } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import {
   IRoster,
@@ -372,7 +373,7 @@ export default class RosterManageCommand extends Command {
     const playerRows = () => {
       const _playerRows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
       const options = getOptions();
-      const chunks = Util.chunk(options, maxItems);
+      const chunks = cluster(options, maxItems);
 
       chunks.forEach((chunk, i) => {
         const playerMenu = new StringSelectMenuBuilder()
@@ -435,7 +436,7 @@ export default class RosterManageCommand extends Command {
           ...messageTexts,
           '- User selected:',
           `  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
-          `  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
+          `  - ${options.length} ${pluralize('player', options.length)} for addition.`
         ];
       }
 
@@ -659,7 +660,7 @@ export default class RosterManageCommand extends Command {
     const playerRows = () => {
       const _playerRows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
       const options = getOptions();
-      const chunks = Util.chunk(options, maxItems);
+      const chunks = cluster(options, maxItems);
 
       chunks.forEach((chunk, i) => {
         const playerMenu = new StringSelectMenuBuilder()
@@ -729,7 +730,7 @@ export default class RosterManageCommand extends Command {
           ...messageTexts,
           '- User selected:',
           `  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
-          `  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
+          `  - ${options.length} ${pluralize('player', options.length)} for addition.`
         ];
       }
 
@@ -979,7 +980,7 @@ export default class RosterManageCommand extends Command {
     const playerRows = () => {
       const _playerRows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
       const options = getOptions();
-      const chunks = Util.chunk(options, maxItems);
+      const chunks = cluster(options, maxItems);
 
       chunks.forEach((chunk, i) => {
         const playerMenu = new StringSelectMenuBuilder()
@@ -1027,7 +1028,7 @@ export default class RosterManageCommand extends Command {
           ...messageTexts,
           '- User selected:',
           `  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
-          `  - ${options.length} ${Util.plural(options.length, 'player')} for removal.`
+          `  - ${options.length} ${pluralize('player', options.length)} for removal.`
         ];
       }
 
@@ -1193,7 +1194,7 @@ export default class RosterManageCommand extends Command {
     const playerRows = () => {
       const _playerRows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
       const options = getOptions();
-      const chunks = Util.chunk(options, maxItems);
+      const chunks = cluster(options, maxItems);
 
       chunks.forEach((chunk, i) => {
         const playerMenu = new StringSelectMenuBuilder()
@@ -1269,7 +1270,7 @@ export default class RosterManageCommand extends Command {
           ...messageTexts,
           '- User selected:',
           `  - **\u200e${selected.user.displayName} (${selected.user.id})**`,
-          `  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
+          `  - ${options.length} ${pluralize('player', options.length)} for addition.`
         ];
       }
 
@@ -1278,7 +1279,7 @@ export default class RosterManageCommand extends Command {
           ...messageTexts,
           '- User clan:',
           `  - **\u200e${clan.name} (${clan.tag})**`,
-          `  - ${options.length} ${Util.plural(options.length, 'player')} for addition.`
+          `  - ${options.length} ${pluralize('player', options.length)} for addition.`
         ];
       }
 

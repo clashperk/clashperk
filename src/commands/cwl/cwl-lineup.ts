@@ -1,8 +1,8 @@
 import { APIClan, APIClanWarLeagueGroup, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
+import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/emojis.js';
-import { Util } from '../../util/toolkit.js';
 
 const states: Record<string, string> = {
   inWar: 'Battle Day',
@@ -158,7 +158,7 @@ export default class CWLLineupCommand extends Command {
       };
     });
 
-    return Util.chunk(
+    return cluster(
       [...a, ...b].sort((a, b) => a.e - b.e).sort((a, b) => a.m - b.m),
       2
     );

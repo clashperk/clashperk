@@ -3,6 +3,7 @@ import { CapitalRaidSeasonsEntity, ClanGamesEntity } from '@app/entities';
 import { APIClanWar, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
+import pluralize from 'pluralize';
 import { group } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { CustomIdProps } from '../../struct/component-handler.js';
@@ -369,7 +370,7 @@ export default class RemainingCommand extends Command {
 
     const totalAttacks = players.reduce((a, b) => a + b.attacks, 0);
     const maxTotalAttacks = players.reduce((a, b) => a + b.attackLimit, 0);
-    embed.setFooter({ text: `${totalAttacks}/${maxTotalAttacks} ${Util.plural(totalAttacks, 'Raid')} (${weekend})` });
+    embed.setFooter({ text: `${totalAttacks}/${maxTotalAttacks} ${pluralize('Raid', totalAttacks)} (${weekend})` });
 
     return embed;
   }
@@ -444,7 +445,7 @@ export default class RemainingCommand extends Command {
     const totalPoints = players.reduce((a, b) => a + b.points, 0);
     const maxTotalPoints = players.reduce((a, b) => a + b.maxPoints, 0);
     embed.setFooter({
-      text: `${totalPoints.toLocaleString()}/${maxTotalPoints.toLocaleString()} ${Util.plural(totalPoints, 'Point')} (${seasonId})`
+      text: `${totalPoints.toLocaleString()}/${maxTotalPoints.toLocaleString()} ${pluralize('Point', totalPoints)} (${seasonId})`
     });
 
     return embed;

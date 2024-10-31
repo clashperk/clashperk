@@ -64,13 +64,13 @@ export enum ClanLogType {
 
   CLAN_CAPITAL_CONTRIBUTION_LOG = 'clan_capital_contribution_log',
   CLAN_CAPITAL_RAID_LOG = 'clan_capital_raid_log',
-  CLAN_CAPITAL_WEEKLY_IMAGE_LOG = 'clan_capital_weekly_image_log',
+  // CLAN_CAPITAL_WEEKLY_IMAGE_LOG = 'clan_capital_weekly_image_log',
   CLAN_CAPITAL_WEEKLY_SUMMARY_LOG = 'clan_capital_weekly_summary_log',
 
   CLAN_GAMES_EMBED_LOG = 'clan_games_embed_log',
   CLAN_EMBED_LOG = 'clan_embed_log',
   LAST_SEEN_EMBED_LOG = 'last_seen_embed_log',
-  SUPER_TROOP_BOOSTS_EMBED_LOG = 'super_troop_boosts_embed_log',
+  // SUPER_TROOP_BOOSTS_EMBED_LOG = 'super_troop_boosts_embed_log',
 
   WAR_EMBED_LOG = 'war_embed_log',
   WAR_MISSED_ATTACKS_LOG = 'war_missed_attacks_log',

@@ -5,6 +5,7 @@ import { Args, Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
+import { cluster } from 'radash';
 
 export default class CWLRoundCommand extends Command {
   public constructor() {
@@ -213,7 +214,7 @@ export default class CWLRoundCommand extends Command {
       .map((entry) => ({ level: Number(entry[0]), total: entry[1] }))
       .sort((a, b) => b.level - a.level);
 
-    return Util.chunk(townHalls, 5)
+    return cluster(townHalls, 5)
       .map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`).join(' '))
       .join('\n');
   }

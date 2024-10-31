@@ -6,6 +6,7 @@ import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents, padStart } from '../../util/helper.js';
 import { handlePagination } from '../../util/pagination.js';
 import { Util } from '../../util/toolkit.js';
+import { cluster } from 'radash';
 
 export default class ClanGamesHistoryCommand extends Command {
   public constructor() {
@@ -117,7 +118,7 @@ export default class ClanGamesHistoryCommand extends Command {
     const displayClanTag = this.client.settings.get<boolean>(interaction.guild, Settings.DISPLAY_CLAN_TAG, false);
 
     const embeds: EmbedBuilder[] = [];
-    for (const chunk of Util.chunk(result, 10)) {
+    for (const chunk of cluster(result, 10)) {
       const embed = new EmbedBuilder();
       embed.setColor(this.client.embed(interaction));
       embed.setTitle('Clan Games History (last 12 months)');

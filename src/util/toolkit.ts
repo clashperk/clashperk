@@ -1,5 +1,4 @@
 import moment from 'moment';
-import { cluster } from 'radash';
 
 const DURATION = {
   SECOND: 1000,
@@ -34,10 +33,6 @@ export class Util {
           Math.abs(num) >= 1.0e3
           ? `${(num / 1.0e3).toFixed(fraction)}K`
           : num.toFixed(0);
-  }
-
-  public static plural(count: number, text: string, suffix: 's' | 'es' | '' = 's') {
-    return count === 1 ? text : `${text}${suffix}`;
   }
 
   public static clanGamesSeasonId() {
@@ -244,10 +239,6 @@ export class Util {
 
   public static getRelativeTime(ms: number) {
     return `<t:${Math.floor(ms / 1000)}:R>`;
-  }
-
-  public static chunk<T>(items: T[], chunk: number) {
-    return cluster(items, chunk);
   }
 
   public static escapeSheetName(name: string) {

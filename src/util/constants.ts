@@ -131,8 +131,6 @@ export const enum Collections {
 }
 
 export const enum Settings {
-  BOT_ADMIN_ROLE = 'botAdminRole',
-  PREFIX = 'prefix',
   COLOR = 'color',
   IS_TRUSTED_GUILD = 'isTrustedGuild',
   COMMAND_WHITELIST = 'commandWhitelist',
@@ -173,7 +171,6 @@ export const enum Settings {
   FAMILY_ROLE = 'familyRole',
   EXCLUSIVE_FAMILY_ROLE = 'exclusiveFamilyRole',
   FAMILY_LEADERS_ROLE = 'familyLeadersRole',
-  ACCOUNT_LINKED_ROLE = 'accountLinkedRole',
   ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole',
   GUEST_ROLE = 'guestRole',
   CLANS_SORTING_KEY = 'clansSortingKey',
@@ -370,25 +367,9 @@ export const CLAN_GAMES_MINIMUM_POINTS = [
   1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4500, 5000
 ];
 
-export const CLAN_FEED_LOG_TYPES = {
-  TOWN_HALL_UPGRADE: 'TOWN_HALL_UPGRADE',
-  WAR_PREFERENCE_CHANGE: 'WAR_PREFERENCE_CHANGE',
-  PLAYER_NAME_CHANGE: 'PLAYER_NAME_CHANGE',
-  DONATION_RESET: 'PLAYER_DONATION_RESET',
-  ROLE_CHANGE: 'PLAYER_ROLE_CHANGE',
-  SEASON_BEST_PLAYERS: 'SEASON_BEST_PLAYERS'
-} as const;
-
 export const DEEP_LINK_TYPES = {
   OPEN_IN_GAME: 'OPEN_IN_GAME',
   OPEN_IN_COS: 'OPEN_IN_COS'
-} as const;
-
-export const WAR_FEED_LOG_TYPES = {
-  REGULAR_WAR_EMBED: 'REGULAR_EMBED',
-  MISSED_ATTACK_EMBED: 'MISSED_ATTACK_EMBED',
-  CWL_WAR_EMBED: 'CWL_WAR_EMBED',
-  FRIENDLY_WAR_EMBED: 'FRIENDLY_WAR_EMBED'
 } as const;
 
 export const enum DonationLogFrequencyTypes {
