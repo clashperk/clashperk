@@ -9,10 +9,10 @@ import {
   StringSelectMenuBuilder,
   User
 } from 'discord.js';
+import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/helper.js';
-import { Util } from '../../util/toolkit.js';
 import { RAW_TROOPS_FILTERED, RAW_TROOPS_WITH_ICONS, TroopJSON } from '../../util/troops.js';
 
 export default class RushedCommand extends Command {
@@ -154,23 +154,26 @@ export default class RushedCommand extends Command {
       });
 
       if (unitsArray.length) {
-        embed.addFields([
-          {
-            name: `${category.title} (${unitsArray.length})`,
-            value: Util.chunk(unitsArray, 4)
-              .map((chunks) =>
-                chunks
-                  .map((unit) => {
-                    const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-                    const level = this.padStart(unit.level);
-                    const maxLevel = this.padEnd(unit.hallMaxLevel);
-                    return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-                  })
-                  .join(' ')
-              )
-              .join('\n')
-          }
-        ]);
+        const chunkedUnitsArray = cluster(unitsArray, 20);
+        chunkedUnitsArray.forEach((chunk, index) => {
+          embed.addFields([
+            {
+              name: index === 0 ? `${category.title} (${unitsArray.length})` : '\u200b',
+              value: cluster(chunk, 4)
+                .map((chunks) =>
+                  chunks
+                    .map((unit) => {
+                      const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+                      const level = this.padStart(unit.level);
+                      const maxLevel = this.padEnd(unit.hallMaxLevel);
+                      return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+                    })
+                    .join(' ')
+                )
+                .join('\n')
+            }
+          ]);
+        });
       }
     }
 

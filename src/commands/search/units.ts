@@ -9,11 +9,11 @@ import {
   StringSelectMenuBuilder,
   User
 } from 'discord.js';
-import { unique } from 'radash';
+import { cluster, unique } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/helper.js';
-import { RAW_SUPER_TROOPS, RAW_TROOPS_WITH_ICONS, TroopInfo, TroopJSON } from '../../util/troops.js';
+import { RAW_SUPER_TROOPS, RAW_TROOPS_WITH_ICONS, TroopJSON } from '../../util/troops.js';
 
 export default class UnitsCommand extends Command {
   public constructor() {
@@ -164,12 +164,12 @@ export default class UnitsCommand extends Command {
       });
 
       if (unitsArray.length) {
-        const chunkedUnitsArray = this.chunk(unitsArray, 20);
+        const chunkedUnitsArray = cluster(unitsArray, 20);
         chunkedUnitsArray.forEach((chunk, index) => {
           embed.addFields([
             {
               name: index === 0 ? category.title : `\u200b`,
-              value: this.chunk(chunk)
+              value: cluster(chunk)
                 .map((units) =>
                   units
                     .map((unit) => {
@@ -213,7 +213,7 @@ export default class UnitsCommand extends Command {
         {
           name: `Super Troops (${activeSuperTroops.length ? 'Active' : 'Usable'})`,
           value: [
-            this.chunk(superTroops.filter((en) => (activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true)))
+            cluster(superTroops.filter((en) => (activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true)))
               .map((chunks) =>
                 chunks
                   .map((unit) => {
@@ -231,14 +231,6 @@ export default class UnitsCommand extends Command {
     }
 
     return embed;
-  }
-
-  private chunk(items: TroopInfo[] | Omit<TroopInfo, 'type'>[] = [], chunk = 4) {
-    const array = [];
-    for (let i = 0; i < items.length; i += chunk) {
-      array.push(items.slice(i, i + chunk));
-    }
-    return array;
   }
 
   private padEnd(num: number) {
