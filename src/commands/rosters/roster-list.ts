@@ -86,7 +86,7 @@ export default class RosterListCommand extends Command {
         }, {});
 
         const grouped = members.reduce<Record<string, Grouped['roster'][]>>((acc, member) => {
-          acc[member.tag] = [];
+          acc[member.tag] ??= [];
           acc[member.tag].push(member.roster);
           return acc;
         }, {});

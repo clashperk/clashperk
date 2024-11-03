@@ -29,21 +29,21 @@ export const getLegendRankingEmbedMaker = async ({
   const _players = await client.redis.getPlayers(memberTags);
 
   const playersMap = _players.reduce<Record<string, { townHallLevel: number; attackWins: number; clan?: APIPlayerClan; trophies: number }>>(
-    (prev, curr) => {
-      prev[curr.tag] = {
+    (record, curr) => {
+      record[curr.tag] = {
         townHallLevel: curr.townHallLevel,
         attackWins: curr.attackWins,
         clan: curr.clan,
         trophies: curr.trophies
       };
-      return prev;
+      return record;
     },
     {}
   );
 
   const legends = await client.db
     .collection<Omit<LegendAttacksEntity, 'logs'>>(Collections.LEGEND_ATTACKS)
-    .find({ tag: { $in: _players.map(({ tag }) => tag) }, seasonId }, { projection: { logs: 0 } })
+    .find({ tag: { $in: _players.map(({ tag }) => tag) }, seasonId }, { projection: { logs: 0, defenseLogs: 0, attackLogs: 0 } })
     .toArray();
 
   let players = legends

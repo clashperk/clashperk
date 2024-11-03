@@ -29,7 +29,7 @@ class Manager extends ShardingManager {
       await this.spawn({ timeout: 1000 * 60 });
       this._readyShards = this.shards.size;
       this.log(`All Shards (${this.shards.size}) Ready`);
-    } catch (error: any) {
+    } catch (error) {
       this.logger.error(error, { label: ShardingManager.name.toString() });
 
       if (error.code === DiscordjsErrorCodes.TokenInvalid) {
