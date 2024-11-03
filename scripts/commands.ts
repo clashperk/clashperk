@@ -586,6 +586,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: false
           },
           {
+            name: 'roster',
+            description: command.stats.options.roster.description,
+            description_localizations: translation('command.stats.options.roster.description'),
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true,
+            required: false
+          },
+          {
             name: 'compare',
             description: command.stats.options.compare.description,
             description_localizations: translation('command.stats.options.compare.description'),
@@ -734,6 +742,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: common.options.clan.user.description,
             description_localizations: translation('common.options.clan.user.description'),
             type: ApplicationCommandOptionType.User,
+            required: false
+          },
+          {
+            name: 'roster',
+            description: command.stats.options.roster.description,
+            description_localizations: translation('command.stats.options.roster.description'),
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true,
             required: false
           },
           {

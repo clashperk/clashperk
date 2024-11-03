@@ -2,7 +2,9 @@ import { Collections, MAX_TOWN_HALL_LEVEL, WarType } from '@app/constants';
 import { APIClanWar, APIClanWarAttack } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
+import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
+import { IRoster } from '../../struct/roster-manager.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 
@@ -83,11 +85,23 @@ export default class StatsCommand extends Command {
 
   private async getDataSource(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: { tag?: string; user?: User | null }
+    args: { tag?: string; user?: User | null; roster?: string }
   ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       return { name: args.user.displayName, tag: args.user.id, iconURL: args.user.displayAvatarURL(), playerTags };
+    }
+
+    if (args.roster) {
+      const data = await this.client.db.collection<IRoster>(Collections.ROSTERS).findOne({ _id: new ObjectId(args.roster) });
+      if (!data) return null;
+
+      return {
+        name: data.name,
+        tag: data.name,
+        iconURL: interaction.guild.iconURL()!,
+        playerTags: data.members.map((m) => m.tag)
+      };
     }
 
     const data = await this.client.resolver.resolveClan(interaction, args.tag ?? interaction.user.id);
@@ -108,6 +122,7 @@ export default class StatsCommand extends Command {
       attempt?: string;
       filter_farm_hits?: boolean;
       user?: User;
+      roster?: string;
       days?: number;
       wars?: number;
       clan_only?: boolean;

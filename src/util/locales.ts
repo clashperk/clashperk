@@ -1061,6 +1061,9 @@ export const command = {
     description: 'Shows attack and defense stats of clan members.',
     no_stats: 'No stats are available for this filter or clan.',
     options: {
+      roster: {
+        description: 'Stats of a roster.'
+      },
       compare: {
         description: 'Compare Town Halls (e.g. 14vs13, *vs15, all, equal)'
       },
