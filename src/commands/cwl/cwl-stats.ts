@@ -293,7 +293,7 @@ export default class CWLStatsCommand extends Command {
     );
 
     const menu = await getClanSwitchingMenu(interaction, customIds.clans, clanTag);
-    await interaction.editReply({ embeds: [...embeds, embed], components: menu ? [row, menu] : [row] });
+    await interaction.editReply({ embeds: [...embeds, embed], components: menu ? [row, menu] : [row], files: [] });
     if (!leagueId) return null;
 
     const { file, name, attachmentKey } = await getCWLSummaryImage({
