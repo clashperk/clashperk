@@ -208,6 +208,9 @@ export default class RosterEditCommand extends Command {
     if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', ephemeral: true });
     this.client.rosterManager.setDefaultSettings(interaction.guild.id, updated);
 
+    const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+    const url = `https://clashperk.com/rosters?roster=${updated._id.toHexString()}&bot=${this.client.isCustom() ? 'custom' : 'public'}&token=${token}`;
+
     const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
     embed.setDescription(
       [
@@ -221,6 +224,11 @@ export default class RosterEditCommand extends Command {
         `- ${this.client.commands.get('/roster groups modify')} to edit/delete a user group.`
       ].join('\n')
     );
+
+    embed.addFields({
+      name: '\u200b',
+      value: `[Manage Roster on the Web](${url})`
+    });
 
     const message = await interaction.editReply({
       embeds: args.components_only ? [] : [embed],

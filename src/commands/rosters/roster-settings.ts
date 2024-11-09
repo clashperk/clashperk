@@ -79,6 +79,12 @@ export default class RosterEditCommand extends Command {
             value: 'archive'
           },
           {
+            label: '[NEW] Manage Roster on the Web',
+            description: 'Easily manage rosters on the web.',
+            value: 'dashboard',
+            emoji: '🌐'
+          },
+          {
             label: 'Add User',
             description: 'Add a user or players to the roster.',
             value: RosterManageActions.ADD_USER
@@ -172,6 +178,20 @@ export default class RosterEditCommand extends Command {
           `- ${roster.members.length} ${pluralize('player', roster.members.length)} will be removed.`,
           '- **This action cannot be undone! Are you sure?**'
         ].join('\n'),
+        components: [row]
+      });
+    };
+
+    const getLink = async (action: StringSelectMenuInteraction<'cached'>) => {
+      const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+      const url = `https://clashperk.com/rosters?roster=${roster._id.toHexString()}&bot=${this.client.isCustom() ? 'custom' : 'public'}&token=${token}`;
+
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setURL(url).setLabel('Manage Roster on the Web').setStyle(ButtonStyle.Link)
+      );
+
+      return action.update({
+        content: [`## ${rosterLabel(roster)} - ${roster.members.length}`].join('\n'),
         components: [row]
       });
     };
@@ -331,6 +351,8 @@ export default class RosterEditCommand extends Command {
             return exportSheet(action);
           case 'edit':
             return editRoster(action);
+          case 'dashboard':
+            return getLink(action);
           case 'unregistered': {
             await action.deferReply({ ephemeral: true });
             const command = this.handler.getCommand('roster-ping')!;
