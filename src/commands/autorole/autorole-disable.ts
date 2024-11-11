@@ -7,7 +7,7 @@ import { createInteractionCollector } from '../../util/pagination.js';
 export default class AutoRoleDisableCommand extends Command {
   public constructor() {
     super('autorole-disable', {
-      category: 'setup',
+      category: 'roles',
       channel: 'guild',
       defer: true,
       ephemeral: true,

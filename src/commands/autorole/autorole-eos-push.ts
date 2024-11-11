@@ -5,7 +5,7 @@ import { Command } from '../../lib/handlers.js';
 export default class EOSPushRoleCommand extends Command {
   public constructor() {
     super('autorole-eos-push', {
-      category: 'none',
+      category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'ManageRoles'],

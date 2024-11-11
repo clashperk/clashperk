@@ -21,7 +21,7 @@ export default class CapitalReminderDeleteCommand extends Command {
   public constructor() {
     super('capital-reminder-delete', {
       aliases: ['capital-raids-reminder-delete'],
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks'],

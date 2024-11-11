@@ -23,7 +23,7 @@ import { Args, Command } from '../../../lib/handlers.js';
 export default class ReminderCreateCommand extends Command {
   public constructor() {
     super('clan-games-reminder-create', {
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],

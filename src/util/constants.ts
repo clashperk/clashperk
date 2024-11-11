@@ -260,6 +260,7 @@ export enum CommandCategories {
   FLAG = 'flag',
   PROFILE = 'profile',
   REMINDERS = 'reminders',
+  ROLES = 'roles',
   HISTORY = 'history'
 }
 

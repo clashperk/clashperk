@@ -25,7 +25,7 @@ const _rolesPriority: Record<string, number> = {
 export default class AutoRoleListCommand extends Command {
   public constructor() {
     super('autorole-list', {
-      category: 'setup',
+      category: 'roles',
       channel: 'guild',
       defer: true
     });

@@ -30,7 +30,7 @@ import { createInteractionCollector } from '../../util/pagination.js';
 export default class NicknameConfigCommand extends Command {
   public constructor() {
     super('nickname-config', {
-      category: 'setup',
+      category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'ManageNicknames'],

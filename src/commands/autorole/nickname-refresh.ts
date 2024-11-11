@@ -4,7 +4,7 @@ import { Command } from '../../lib/handlers.js';
 export default class NicknameConfigCommand extends Command {
   public constructor() {
     super('nickname-refresh', {
-      category: 'setup',
+      category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'ManageNicknames'],

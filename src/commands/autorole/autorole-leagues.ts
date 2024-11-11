@@ -6,7 +6,7 @@ export default class AutoLeagueRoleCommand extends Command {
   public constructor() {
     super('setup-league-roles', {
       aliases: ['autorole-leagues'],
-      category: 'none',
+      category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'ManageRoles'],

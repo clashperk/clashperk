@@ -9,7 +9,7 @@ import { handleMessagePagination } from '../../util/pagination.js';
 export default class AutoTownHallRoleCommand extends Command {
   public constructor() {
     super('autorole-refresh', {
-      category: 'setup',
+      category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'ManageRoles', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel', 'UseExternalEmojis'],

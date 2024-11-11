@@ -27,7 +27,7 @@ import { Args, Command } from '../../../lib/handlers.js';
 export default class ClanWarsReminderCreateCommand extends Command {
   public constructor() {
     super('clan-wars-reminder-create', {
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],

@@ -7,7 +7,7 @@ export default class AutoBuilderHallRoleCommand extends Command {
   public constructor() {
     super('setup-builder-hall-roles', {
       aliases: ['autorole-builder-hall'],
-      category: 'setup',
+      category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'ManageRoles'],

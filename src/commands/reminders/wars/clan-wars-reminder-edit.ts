@@ -20,7 +20,7 @@ import { hexToNanoId } from '../../../util/helper.js';
 export default class ReminderEditCommand extends Command {
   public constructor() {
     super('clan-wars-reminder-edit', {
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],

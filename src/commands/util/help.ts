@@ -27,7 +27,9 @@ const categoryMap: Record<string, string> = {
   [CommandCategories.FLAG]: 'Player Links and Flags',
   [CommandCategories.PROFILE]: 'Player Links and Flags',
 
-  [CommandCategories.REMINDERS]: 'Server Settings',
+  [CommandCategories.REMINDERS]: 'Reminders and Auto Roles',
+  [CommandCategories.ROLES]: 'Reminders and Auto Roles',
+
   [CommandCategories.CONFIG]: 'Server Settings',
   [CommandCategories.SETUP]: 'Server Settings'
 };

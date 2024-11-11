@@ -15,7 +15,7 @@ import { Util } from '../../../util/toolkit.js';
 export default class ClanGamesNowCommand extends Command {
   public constructor() {
     super('clan-games-reminder-now', {
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel'],

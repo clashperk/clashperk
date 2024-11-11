@@ -6,7 +6,7 @@ import { Command } from '../../lib/handlers.js';
 export default class AutoRoleConfigCommand extends Command {
   public constructor() {
     super('autorole-config', {
-      category: 'config',
+      category: 'roles',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks'],
       channel: 'guild',

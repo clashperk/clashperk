@@ -6,7 +6,7 @@ export default class AutoClanRoleCommand extends Command {
   public constructor() {
     super('setup-war-roles', {
       aliases: ['autorole-wars'],
-      category: 'none',
+      category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'ManageRoles'],

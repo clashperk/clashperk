@@ -26,7 +26,7 @@ const roles: Record<string, string> = {
 export default class CapitalReminderDeleteCommand extends Command {
   public constructor() {
     super('clan-games-reminder-delete', {
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks'],

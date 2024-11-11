@@ -18,7 +18,7 @@ export default class ReminderListCommand extends Command {
   public constructor() {
     super('capital-reminder-list', {
       aliases: ['capital-raids-reminder-list'],
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
       defer: true,

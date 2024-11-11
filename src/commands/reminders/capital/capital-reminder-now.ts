@@ -15,7 +15,7 @@ export default class CapitalReminderNowCommand extends Command {
   public constructor() {
     super('capital-reminder-now', {
       aliases: ['capital-raids-reminder-now'],
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel'],

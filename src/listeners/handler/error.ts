@@ -33,13 +33,16 @@ export default class ErrorListener extends Listener {
         displayName: interaction.user.displayName,
         username: interaction.user.username
       },
-      guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : interaction.guildId,
+      guild: interaction.guild
+        ? { id: interaction.guild.id, name: interaction.guild.name, locale: interaction.guildLocale }
+        : interaction.guildId,
       channel: interaction.channel ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] } : interaction.channelId,
       command: {
         id: command?.id,
         category: command?.category
       },
       interaction: {
+        locale: interaction.locale,
         id: interaction.id,
         type: InteractionType[interaction.type],
         command: interaction.isCommand() ? interaction.commandName : null,

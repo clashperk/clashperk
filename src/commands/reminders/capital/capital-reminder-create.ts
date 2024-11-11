@@ -24,7 +24,7 @@ export default class ReminderCreateCommand extends Command {
   public constructor() {
     super('capital-reminder-create', {
       aliases: ['capital-raids-reminder-create'],
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],

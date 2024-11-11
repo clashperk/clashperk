@@ -17,7 +17,7 @@ const roles: Record<string, string> = {
 export default class ReminderListCommand extends Command {
   public constructor() {
     super('clan-wars-reminder-list', {
-      category: 'reminder',
+      category: 'none',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
       defer: true,

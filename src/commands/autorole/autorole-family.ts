@@ -8,7 +8,7 @@ export default class AutoFamilyRoleCommand extends Command {
   public constructor() {
     super('setup-family-roles', {
       aliases: ['autorole-family'],
-      category: 'none',
+      category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
       clientPermissions: ['EmbedLinks', 'ManageRoles'],
