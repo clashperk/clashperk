@@ -29,6 +29,10 @@ export class StorageHandler {
     return this.collection.find({ guild: guildId }, { sort: { [key]: 1 } }).toArray();
   }
 
+  public async getTotalClans(guildId: string) {
+    return this.collection.countDocuments({ guild: guildId });
+  }
+
   public async getClan(params: { guildId: string; clanTag: string }) {
     return this.collection.findOne({ guild: params.guildId, tag: params.clanTag });
   }

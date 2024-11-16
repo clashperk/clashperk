@@ -77,9 +77,12 @@ export default class ReminderCreateCommand extends Command {
     const reminders = await this.client.db
       .collection<RaidRemindersEntity>(Collections.RAID_REMINDERS)
       .countDocuments({ guild: interaction.guild.id });
-    if (reminders >= 25 && !this.client.patreonHandler.get(interaction.guild.id)) {
+
+    const totalClans = await this.client.storage.getTotalClans(interaction.guild.id);
+    if (reminders >= Math.max(totalClans * 5, 25) && !this.client.patreonHandler.get(interaction.guild.id)) {
       return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
     }
+
     if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
       return interaction.editReply('The duration must be in a valid format. e.g. 30m 2h, 1h30m, 1d, 2d1h');
     }

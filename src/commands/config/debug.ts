@@ -70,8 +70,8 @@ export default class DebugCommand extends Command {
         `${interaction.guild.id}`,
         '**Shard ID**',
         `[${interaction.guild.shard.id} / ${this.client.shard?.count ?? 1}]`,
-        '**Channel ID**',
-        `${interaction.channelId}`,
+        '**Channel**',
+        `<#${interaction.channelId}> (${interaction.channelId})`,
         '',
         '**Channel Permissions**',
         permissions
@@ -85,20 +85,22 @@ export default class DebugCommand extends Command {
         webhooks?.size ?? 0,
         '',
         `**Loop Time ${cycle.clans && cycle.players && cycle.wars ? '' : '(Processing...)'}**`,
-        `${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
-        `${emojis.tick} \` ${this.fixTime(cycle.clans).padStart(7, ' ')} \` \` ${this.fixTime(cycle.wars).padStart(
-          7,
+        `${emojis.none} \`\u200e ${'CLANS'.padStart(8, ' ')} \u200b ${'WARS'.padStart(8, ' ')} \u200b ${' PLAYERS'} \u200f\``,
+        `${emojis.tick} \`\u200e ${this.fixTime(cycle.clans).padStart(8, ' ')} \u200b ${this.fixTime(cycle.wars).padStart(
+          8,
           ' '
-        )} \` \` ${this.fixTime(cycle.players).padStart(7, ' ')} \``,
+        )} \u200b ${this.fixTime(cycle.players).padStart(8, ' ')} \u200f\``,
         '',
         '**Clan Status and Player Loop Info**',
-        `${emojis.none} \`\u200e ${'CLAN NAME'.padEnd(15, ' ')} \u200f\` \`\u200e ${'UPDATED'} \u200f\` \`\u200e ${'WAR LOG'} \u200f\``,
+        '*The war log must be made publicly accessible for the bot to function properly.*',
+
+        `${emojis.none} \`\u200e${'CLAN NAME'.padEnd(15, ' ')} ${'SYNC'} \u200b ${'WAR LOG'} \u200f\``,
         clans
           .map((clan) => {
             const lastRan = clan.lastRan ? ms(Date.now() - clan.lastRan.getTime()) : '...';
             const warLog = fetched.find((data) => data.tag === clan.tag)?.isWarLogPublic;
             const sign = clan.active && !clan.paused && warLog ? emojis.tick : emojis.cross;
-            return `${sign} \`\u200e ${padEnd(clan.name, 15)} \u200f\` \`\u200e ${padStart(lastRan, 3)} ago \u200f\` \`\u200e ${padStart(warLog ? 'Public' : 'Private', 7)} \u200f\``;
+            return `${sign} \`\u200e${padEnd(clan.name, 15)} ${padStart(lastRan, 4)} \u200b ${padEnd(warLog ? 'Public' : 'Private', 7)} \u200f\``;
           })
           .join('\n')
       ].join('\n')
