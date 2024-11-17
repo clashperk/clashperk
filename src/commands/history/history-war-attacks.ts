@@ -125,7 +125,7 @@ export default class WarHistoryCommand extends Command {
   }
 
   private async getWars(tag: string, player: { name: string; tag: string }) {
-    const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<APIClanWar & { warType: number }>([
+    const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<APIClanWar & { warType: number; id: number }>([
       {
         $match: {
           preparationStartTime: {
@@ -153,6 +153,7 @@ export default class WarHistoryCommand extends Command {
       const __attacks = clan.members.flatMap((m) => m.attacks ?? []);
 
       const war: WarHistory = {
+        id: data.id,
         warType: data.warType,
         clan: {
           name: clan.name,
@@ -257,6 +258,7 @@ export default class WarHistoryCommand extends Command {
         title: Util.escapeSheetName(`${player.name} (${player.tag})`),
         columns: [
           { name: 'War Type', width: 100, align: 'LEFT' },
+          { name: 'War ID', width: 100, align: 'LEFT' },
           { name: 'Clan', width: 160, align: 'LEFT' },
           { name: 'Opponent', width: 160, align: 'LEFT' },
           { name: 'Date', width: 160, align: 'LEFT' },
@@ -269,6 +271,7 @@ export default class WarHistoryCommand extends Command {
         ],
         rows: warsFlatten.map((war) => [
           warTypes[war.warType],
+          war.id,
           war.clan.name,
           war.opponent.name,
           moment(war.startTime).toDate(),
@@ -291,6 +294,7 @@ interface WarHistory {
   warType: number;
   startTime: Date;
   endTime: Date;
+  id: number;
   clan: {
     name: string;
     tag: string;

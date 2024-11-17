@@ -57,6 +57,10 @@ export class Autocomplete {
     };
     if (args.flag_type) filter.flagType = args.flag_type;
 
+    if (args.player === '*') {
+      return interaction.respond([{ name: 'All Flags', value: '*' }]);
+    }
+
     if (args.player) {
       const text = args.player.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       if (this.client.coc.isValidTag(text)) {

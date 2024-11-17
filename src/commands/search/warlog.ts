@@ -1,8 +1,12 @@
 import { Collections, WarType } from '@app/constants';
-import { CommandInteraction, EmbedBuilder, User, time } from 'discord.js';
+import { APIClan } from 'clashofclans.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, time, User } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
+import { createGoogleSheet, CreateGoogleSheet } from '../../struct/google.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { getExportComponents } from '../../util/helper.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class WarLogCommand extends Command {
   public constructor() {
@@ -23,9 +27,13 @@ export default class WarLogCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; export?: boolean }) {
     const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!data) return;
+
+    if (args.export) {
+      return this.exportWars(interaction, data);
+    }
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
@@ -84,7 +92,62 @@ export default class WarLogCommand extends Command {
       ]);
     }
 
-    return interaction.editReply({ embeds: [embed] });
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(this.createId({ cmd: this.id, tag: data.tag, export: true }))
+        .setLabel('Export War ID')
+        .setStyle(ButtonStyle.Primary)
+    );
+
+    return interaction.editReply({ embeds: [embed], components: [row] });
+  }
+
+  private async exportWars(interaction: CommandInteraction<'cached'>, clan: APIClan) {
+    const wars = await this.client.db
+      .collection(Collections.CLAN_WARS)
+      .find({
+        $or: [{ 'clan.tag': clan.tag }, { 'opponent.tag': clan.tag }],
+        warType: WarType.REGULAR,
+        state: 'warEnded'
+      })
+      .sort({ _id: -1 })
+      .limit(300)
+      .project({
+        _id: 0,
+        id: 1,
+        startTime: 1,
+        clan: {
+          name: 1,
+          tag: 1
+        },
+        opponent: {
+          name: 1,
+          tag: 1
+        }
+      })
+      .toArray();
+
+    const sheets: CreateGoogleSheet[] = [];
+
+    wars.forEach((war) => {
+      if (war.opponent.tag === clan.tag) {
+        war.opponent = war.clan;
+      }
+    });
+
+    sheets.push({
+      title: Util.escapeSheetName(`${clan.name} (${clan.tag})`),
+      columns: [
+        { name: 'War ID', width: 100, align: 'LEFT' },
+        { name: 'Opponent', width: 160, align: 'LEFT' },
+        { name: 'Opponent Tag', width: 160, align: 'LEFT' },
+        { name: 'Date', width: 160, align: 'LEFT' }
+      ],
+      rows: wars.map((war) => [war.id, war.opponent.name, war.opponent.tag, moment(war.startTime).toDate()])
+    });
+
+    const spreadsheet = await createGoogleSheet(`${clan.name} (${clan.tag}) [War ID]`, sheets);
+    return interaction.followUp({ content: '**War ID (last 300)**', components: getExportComponents(spreadsheet) });
   }
 
   private getWarInfo(wars: any[], war: any): { id: string; attacks: number } | null {

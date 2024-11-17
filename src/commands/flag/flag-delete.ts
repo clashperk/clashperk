@@ -58,8 +58,8 @@ export default class FlagDeleteCommand extends Command {
 
     const filter: Filter<FlagsEntity> = {
       guild: interaction.guild.id,
-      tag: playerTag,
       flagType: args.flag_type,
+      ...(args.player !== '*' && { tag: playerTag }),
       $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }]
     };
 
@@ -80,6 +80,11 @@ export default class FlagDeleteCommand extends Command {
     const refId = filter._id ? filter._id.toHexString?.().toUpperCase().slice(-5) : null;
 
     await collection.deleteMany(filter);
+
+    if (args.player === '*') {
+      return interaction.editReply(`Successfully deleted all flags (${args.flag_type}s)`);
+    }
+
     return interaction.editReply(
       this.i18n('command.flag.delete.success', {
         lng: interaction.locale,
