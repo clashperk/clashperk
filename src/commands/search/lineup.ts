@@ -1,8 +1,8 @@
 import { APIClanWarMember, APIWarClan } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
-import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/emojis.js';
+import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/emojis.js';
 
 const states: Record<string, string> = {
   inWar: 'Battle Day',
@@ -29,7 +29,7 @@ export default class LineupCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; player_list?: boolean }) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
@@ -60,10 +60,31 @@ export default class LineupCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     }
 
-    const embeds = await this.getComparisonLineup(body.state, body.clan, body.opponent);
+    const embeds = args.player_list
+      ? this.getLineupList(body, body.state)
+      : await this.getComparisonLineup(body.state, body.clan, body.opponent);
     for (const embed of embeds) embed.setColor(this.client.embed(interaction));
 
-    return interaction.editReply({ embeds });
+    const payload = {
+      cmd: this.id,
+      tag: clan.tag,
+      player_list: args.player_list
+    };
+
+    const customIds = {
+      refresh: this.createId(payload),
+      toggle: this.createId({ ...payload, player_list: !args.player_list })
+    };
+
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setCustomId(customIds.toggle)
+        .setLabel(args.player_list ? 'Compare' : 'Player List')
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    return interaction.editReply({ embeds, components: [buttonRow] });
   }
 
   private async getComparisonLineup(state: string, clan: APIWarClan, opponent: APIWarClan) {
@@ -91,6 +112,40 @@ export default class LineupCommand extends Command {
     embed.setFooter({ text: `${states[state]}` });
 
     return [embed];
+  }
+
+  private getLineupList(data: { clan: APIWarClan; opponent: APIWarClan }, state: string) {
+    const embeds = [
+      new EmbedBuilder()
+        .setAuthor({
+          name: `\u200e${data.clan.name} (${data.clan.tag})`,
+          iconURL: data.clan.badgeUrls.medium,
+          url: this.clanURL(data.clan.tag)
+        })
+        .setDescription(
+          data.clan.members
+            .sort((a, b) => a.mapPosition - b.mapPosition)
+            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
+            .join('\n')
+        )
+        .setFooter({ text: `${states[state]}` }),
+
+      new EmbedBuilder()
+        .setAuthor({
+          name: `\u200e${data.opponent.name} (${data.opponent.tag})`,
+          iconURL: data.opponent.badgeUrls.medium,
+          url: this.clanURL(data.opponent.tag)
+        })
+        .setDescription(
+          data.opponent.members
+            .sort((a, b) => a.mapPosition - b.mapPosition)
+            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
+            .join('\n')
+        )
+        .setFooter({ text: `${states[state]}` })
+    ];
+
+    return embeds;
   }
 
   private async rosters(clanMembers: APIClanWarMember[], opponentMembers: APIClanWarMember[]) {
@@ -130,5 +185,9 @@ export default class LineupCommand extends Command {
 
   private pad(num: number, depth: number) {
     return num.toString().padStart(depth, ' ');
+  }
+
+  private clanURL(tag: string) {
+    return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
   }
 }
