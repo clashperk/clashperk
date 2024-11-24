@@ -52,14 +52,23 @@ export default class FlagDeleteCommand extends Command {
     return this.client.autocomplete.flagSearchAutoComplete(interaction, args);
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { player: string; flag_type: 'ban' | 'strike'; flag_ref?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { player: string; flag_type: 'ban' | 'strike'; flag_ref?: string; clan?: string }
+  ) {
     if (!args.player) return interaction.editReply(this.i18n('command.flag.delete.no_tag', { lng: interaction.locale }));
     const playerTag = this.client.coc.fixTag(args.player);
+
+    const playerTags: string[] = [];
+    const result = args.clan && (await this.client.coc.getClan(args.clan));
+    if (args.clan && result && result.res.ok) {
+      playerTags.push(...result.body.memberList.flatMap((member) => member.tag));
+    }
 
     const filter: Filter<FlagsEntity> = {
       guild: interaction.guild.id,
       flagType: args.flag_type,
-      ...(args.player !== '*' && { tag: playerTag }),
+      ...(playerTags.length && args.player === '*' ? { tag: { $in: playerTags } } : { tag: playerTag }),
       $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }]
     };
 
@@ -81,8 +90,8 @@ export default class FlagDeleteCommand extends Command {
 
     await collection.deleteMany(filter);
 
-    if (args.player === '*') {
-      return interaction.editReply(`Successfully deleted all flags (${args.flag_type}s)`);
+    if (args.player === '*' && result && playerTags.length) {
+      return interaction.editReply(`Successfully deleted ${flags.length} ${args.flag_type}s from the clan **\u200e${result.body.name}**`);
     }
 
     return interaction.editReply(

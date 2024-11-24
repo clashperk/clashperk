@@ -1636,6 +1636,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             required: true,
             autocomplete: true
+          },
+          {
+            name: 'clan',
+            description: common.options.clan.tag.description,
+            description_localizations: translation('common.options.clan.tag.description'),
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
           }
         ]
       }
