@@ -192,7 +192,8 @@ export const TOWN_HALLS: Record<string, string> = {
   13: '<:TownHall13:766207117103071242>',
   14: '<:TownHall14:829392900110549038>',
   15: '<:TownHall15:1029109199105425530>',
-  16: '<:TownHall16:1184211259130925166>'
+  16: '<:TownHall16:1184211259130925166>',
+  17: '<:TownHall16:1184211259130925166>'
 };
 
 export const BUILDER_HALLS: Record<string, string> = {
