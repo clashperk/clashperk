@@ -2,7 +2,8 @@ export const HOME_HEROES: Record<string, string> = {
   'Barbarian King': '<:BarbarianKing:696305370682884111>',
   'Archer Queen': '<:ArcherQueen:696305403046133780>',
   'Grand Warden': '<:GrandWarden:841295204476780586>',
-  'Royal Champion': '<:RoyalChampion:813806447934308422>'
+  'Royal Champion': '<:RoyalChampion:813806447934308422>',
+  'Minion Prince': '<:MinionPrince:1310574226448584704>'
 };
 
 export const ELIXIR_TROOPS: Record<string, string> = {
@@ -22,7 +23,8 @@ export const ELIXIR_TROOPS: Record<string, string> = {
   'Yeti': '<:Yeti:696281814293282857>',
   'Dragon Rider': '<:DragonRider:854290952888909834>',
   'Electro Titan': '<:ElectroTitan:1029113633243922572>',
-  'Root Rider': '<:RootRider:1184210445544992788>'
+  'Root Rider': '<:RootRider:1184210445544992788>',
+  'Thrower': '<:Thrower:1310580248857018410>'
 };
 
 export const HERO_PETS: Record<string, string> = {
@@ -61,7 +63,9 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Spiky Ball': '<:SpikeyBall:1234940460070600804>',
   'Rocket Spear': '<:RocketSpear:1223332521358528695>',
   'Magic Mirror': '<:MagicMirror:1252640509403467787>',
-  'Lavaloon Puppet': '<:LavaloonPuppet:1300117184496013403>'
+  'Lavaloon Puppet': '<:LavaloonPuppet:1300117184496013403>',
+  'Dark Orb': '<:DarkOrb:1310574234543587358>',
+  'Henchmen Puppet': '<:Henchmen:1310574231544926218>'
   // 'Electro Boots': '<:ElectroBoots:1252640513790705686>',
   // 'Heroic Torch': '<:HeroicTorch:1252640503988486327>'
 };
@@ -193,7 +197,7 @@ export const TOWN_HALLS: Record<string, string> = {
   14: '<:TownHall14:829392900110549038>',
   15: '<:TownHall15:1029109199105425530>',
   16: '<:TownHall16:1184211259130925166>',
-  17: '<:TownHall16:1184211259130925166>'
+  17: '<:TownHall17:1310573906851135528>'
 };
 
 export const BUILDER_HALLS: Record<string, string> = {
