@@ -102,7 +102,8 @@ export const ELIXIR_SPELLS: Record<string, string> = {
   'Freeze Spell': '<:Freeze:1222627172141891835>',
   'Clone Spell': '<:Clone:696302107950710795>',
   'Invisibility Spell': '<:Invisible:787186410032463882>',
-  'Recall Spell': '<:Recall:1029115194552623227>'
+  'Recall Spell': '<:Recall:1029115194552623227>',
+  'Revive Spell': '<:Revive:1310678415707475999>'
 };
 
 export const DARK_SPELLS: Record<string, string> = {
@@ -197,7 +198,7 @@ export const TOWN_HALLS: Record<string, string> = {
   14: '<:TownHall14:829392900110549038>',
   15: '<:TownHall15:1029109199105425530>',
   16: '<:TownHall16:1184211259130925166>',
-  17: '<:TownHall17:1310573906851135528>'
+  17: '<:TownHall17:1310678877194158132>'
 };
 
 export const BUILDER_HALLS: Record<string, string> = {
