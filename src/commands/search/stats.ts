@@ -89,7 +89,7 @@ export default class StatsCommand extends Command {
   ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
-      return { name: args.user.displayName, tag: args.user.id, iconURL: args.user.displayAvatarURL(), playerTags };
+      return { name: args.user.displayName, tag: args.tag || args.user.id, iconURL: args.user.displayAvatarURL(), playerTags };
     }
 
     if (args.roster) {

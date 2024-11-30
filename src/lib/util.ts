@@ -28,15 +28,15 @@ export interface CommandEvents {
   [CommandHandlerEvents.COMMAND_STARTED]: [];
 }
 
-export const BuiltInReasons = {
-  DM: 'dm',
-  USER: 'user',
-  WHITELIST: 'whitelist',
-  GUILD: 'guild',
-  CHANNEL: 'channel',
-  CLIENT: 'client',
-  OWNER: 'owner'
-} as const;
+export enum BuiltInReasons {
+  DM = 'dm',
+  USER = 'user',
+  WHITELIST = 'whitelist',
+  GUILD = 'guild',
+  CHANNEL = 'channel',
+  CLIENT = 'client',
+  OWNER = 'owner'
+}
 
 export const ResolveColor = (hex: string) => {
   try {

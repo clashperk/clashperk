@@ -445,6 +445,8 @@ export class InhibitorHandler extends BaseHandler {
     } catch (error) {
       this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
     }
+
+    return null;
   }
 }
 

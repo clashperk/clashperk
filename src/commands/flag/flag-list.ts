@@ -75,9 +75,7 @@ export default class FlagListCommand extends Command {
       ])
       .toArray();
 
-    if (!result.length) {
-      return interaction.editReply(`No Flags (${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List)`);
-    }
+    if (!result.length) return this.emptyFallback(interaction, args);
 
     const embeds: EmbedBuilder[] = [];
 
@@ -155,9 +153,7 @@ export default class FlagListCommand extends Command {
       ])
       .toArray();
 
-    if (!result.length) {
-      return interaction.editReply(`No Flags (${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List)`);
-    }
+    if (!result.length) return this.emptyFallback(interaction, args);
 
     const embeds: EmbedBuilder[] = [];
 
@@ -327,5 +323,20 @@ export default class FlagListCommand extends Command {
     if (!clans) return [];
     if (clans === '*') return this.client.storage.find(guildId);
     return this.client.storage.search(guildId, await this.client.resolver.resolveArgs(clans));
+  }
+
+  private emptyFallback(interaction: CommandInteraction<'cached'>, args: { flag_type: 'ban' | 'strike'; clans: string[] }) {
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(this.createId({ cmd: this.id, flag_type: args.flag_type, clans: args.clans.join(',') }))
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    return interaction.editReply({
+      embeds: [],
+      components: [row],
+      content: `No Flags (${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List)`
+    });
   }
 }

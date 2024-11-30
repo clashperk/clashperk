@@ -4,12 +4,13 @@ import { Command, Listener } from '../../lib/handlers.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 
 const texts: Record<string, string> = {
-  guild: 'You must be in a server to use this command.',
-  whitelist: 'This command was whitelisted for specific users or roles. Ask the server owner to grant you access.',
-  restrict: "You can't use this command because you have been restricted.",
-  permission: 'The bot is missing **Send Message** or **View Channel** permission in this channel.',
-  dm: 'You must use a DM channel to use this command.',
-  emoji: 'You must enable `Use External Emojis` permission for @everyone role to let the bot use our custom emojis.'
+  'guild': 'You must be in a server to use this command.',
+  'whitelist': 'This command was whitelisted for specific users or roles. Ask the server owner to grant you access.',
+  'restrict': "You can't use this command because you have been restricted.",
+  'permission': 'The bot is missing **Send Message** or **View Channel** permission in this channel.',
+  'dm': 'You must use a DM channel to use this command.',
+  'emoji': 'You must enable `Use External Emojis` permission for @everyone role to let the bot use our custom emojis.',
+  'custom-bot': 'This server is using a custom bot that is not available to the public.'
 };
 
 export default class CommandBlockedListener extends Listener {

@@ -93,6 +93,26 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
+  const res = await fetch(`${process.env.SERVICE_API_URL}/auth/applications`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${process.env.SERVICE_API_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const body = (await res.json()) as { payload: string };
+  if (!body.payload) console.log(body);
+
+  const applications = JSON.parse(decrypt(body.payload)) as { token: string }[];
+
+  for (const application of applications) {
+    await applicationCommands(application.token, commands);
+  }
+};
+
 (async () => {
   const token = process.env.BOT_TOKEN!;
   if (process.argv.includes('--gh-action')) {
