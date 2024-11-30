@@ -169,7 +169,7 @@ export default class UnitsCommand extends Command {
           embed.addFields([
             {
               name: index === 0 ? category.title : `\u200b`,
-              value: cluster(chunk)
+              value: cluster(chunk, 4)
                 .map((units) =>
                   units
                     .map((unit) => {
@@ -213,7 +213,10 @@ export default class UnitsCommand extends Command {
         {
           name: `Super Troops (${activeSuperTroops.length ? 'Active' : 'Usable'})`,
           value: [
-            cluster(superTroops.filter((en) => (activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true)))
+            cluster(
+              superTroops.filter((en) => (activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true)),
+              4
+            )
               .map((chunks) =>
                 chunks
                   .map((unit) => {
