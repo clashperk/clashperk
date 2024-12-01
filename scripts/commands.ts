@@ -3263,6 +3263,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 name: common.choices.autorole.verified,
                 name_localizations: translation('common.choices.autorole.verified'),
                 value: 'verified'
+              },
+              {
+                name: common.choices.autorole.account_linked,
+                name_localizations: translation('common.choices.autorole.account_linked'),
+                value: 'account-linked'
               }
             ]
           },

@@ -28,7 +28,8 @@ export default class AutoRoleDisableCommand extends Command {
       'family-leaders': this.disableFamilyRoles.bind(this),
       'guest': this.disableFamilyRoles.bind(this),
       'verified': this.disableFamilyRoles.bind(this),
-      'eos-push': this.disableEOSPushRoles.bind(this)
+      'eos-push': this.disableEOSPushRoles.bind(this),
+      'account-linked': this.disableFamilyRoles.bind(this)
     }[args.type];
 
     if (typeof action !== 'function') throw new Error('Invalid action was specified');
@@ -88,6 +89,9 @@ export default class AutoRoleDisableCommand extends Command {
     }
     if (args.type === 'verified') {
       this.client.settings.delete(interaction.guildId, Settings.ACCOUNT_VERIFIED_ROLE);
+    }
+    if (args.type === 'account-linked') {
+      this.client.settings.delete(interaction.guildId, Settings.ACCOUNT_LINKED_ROLE);
     }
     return interaction.editReply(`Successfully disabled ${title(args.type)} role.`);
   }

@@ -186,7 +186,8 @@ export const common = {
       family: 'Family Roles',
       exclusive_family: 'Exclusive Family Role',
       guest: 'Guest Role',
-      verified: 'Verified Role'
+      verified: 'Verified Role',
+      account_linked: 'Account Linked Role'
     }
   },
 
