@@ -38,8 +38,21 @@ export default class ComponentInteractionListener extends Listener {
       label: 'COMPONENT_EXPIRED'
     });
 
+    const isEmpty = !(
+      interaction.message.attachments.size ||
+      interaction.message.embeds.length ||
+      interaction.message.content.length ||
+      interaction.message.stickers.size
+    );
+
+    const content = this.i18n('common.component.expired', { lng: interaction.locale });
+
+    if (isEmpty) {
+      return interaction.update({ components: [], content });
+    }
+
     await interaction.update({ components: [] });
-    return interaction.followUp({ content: this.i18n('common.component.expired', { lng: interaction.locale }), ephemeral: true });
+    return interaction.followUp({ content, ephemeral: true });
   }
 
   private inhibitor(interaction: MessageComponentInteraction) {
