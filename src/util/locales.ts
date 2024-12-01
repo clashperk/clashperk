@@ -92,6 +92,8 @@ export const common = {
     regular: 'Regular',
     friendly: 'Friendly',
 
+    regular_and_cwl: 'Regular and CWL',
+
     clan_games: 'Clan Games',
     league_reset: 'League Reset',
     season_end: 'Season End',
@@ -151,7 +153,6 @@ export const common = {
     },
 
     stats: {
-      no_friendly: 'Regular and CWL',
       no_cwl: 'Regular and Friendly',
       all: 'Regular, CWL and Friendly',
 

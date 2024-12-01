@@ -23,7 +23,7 @@ export default class ExportWarsCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { limit?: number; clans?: string; season?: string; war_type: string }
+    args: { limit?: number; clans?: string; season?: string; war_type?: 'regular-and-cwl' | 'regular' | 'friendly' }
   ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
@@ -39,7 +39,12 @@ export default class ExportWarsCommand extends Command {
         .find({
           $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
           state: { $in: ['inWar', 'warEnded'] },
-          warType: args.war_type === 'friendly' ? WarType.FRIENDLY : WarType.REGULAR,
+          warType:
+            args.war_type === 'regular-and-cwl'
+              ? { $in: [WarType.REGULAR, WarType.CWL] }
+              : args.war_type === 'friendly'
+                ? WarType.FRIENDLY
+                : WarType.REGULAR,
           ...query
         })
         .sort({ _id: -1 })

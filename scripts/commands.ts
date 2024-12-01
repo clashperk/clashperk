@@ -649,8 +649,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'friendly'
               },
               {
-                name: common.choices.stats.no_friendly,
-                name_localizations: translation('common.choices.stats.no_friendly'),
+                name: common.choices.regular_and_cwl,
+                name_localizations: translation('common.choices.regular_and_cwl'),
                 value: 'noFriendly'
               },
               {
@@ -808,8 +808,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'friendly'
               },
               {
-                name: common.choices.stats.no_friendly,
-                name_localizations: translation('common.choices.stats.no_friendly'),
+                name: common.choices.regular_and_cwl,
+                name_localizations: translation('common.choices.regular_and_cwl'),
                 value: 'noFriendly'
               },
               {
@@ -4363,6 +4363,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 name: common.choices.friendly,
                 name_localizations: translation('common.choices.friendly'),
                 value: 'friendly'
+              },
+              {
+                name: common.choices.regular_and_cwl,
+                name_localizations: translation('common.choices.regular_and_cwl'),
+                value: 'regular-and-cwl'
               }
             ]
           },

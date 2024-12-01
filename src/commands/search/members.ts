@@ -91,10 +91,10 @@ export default class MembersCommand extends Command {
       .setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
       .setDescription(
         [
-          `\`TH BK AQ GW RC \`  **NAME**`,
+          `\`TH  BK  AQ GW RC MP \`  **NAME**`,
           ...members.map((mem) => {
             const heroes = this.heroes(mem.heroes)
-              .map((hero) => padStart(hero.level, 2))
+              .map((hero, idx) => padStart(hero.level, idx > 1 ? 2 : 3))
               .join(' ');
             return `\`${padStart(mem.townHallLevel, 2)} ${heroes} \`  \u200e${escapeMarkdown(mem.name)}`;
           })
@@ -273,7 +273,7 @@ export default class MembersCommand extends Command {
   }
 
   private heroes(items: APIPlayerItem[]) {
-    return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
+    return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
   }
 
   private padStart(num: number | string, pad = 2) {
