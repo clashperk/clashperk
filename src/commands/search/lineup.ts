@@ -2,7 +2,8 @@ import { APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
-import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/emojis.js';
+import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 
 const states: Record<string, string> = {
   inWar: 'Battle Day',
@@ -125,7 +126,7 @@ export default class LineupCommand extends Command {
         .setDescription(
           data.clan.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
+            .map((m, i) => `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
             .join('\n')
         )
         .setFooter({ text: `${states[state]}` }),
@@ -139,7 +140,7 @@ export default class LineupCommand extends Command {
         .setDescription(
           data.opponent.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
+            .map((m, i) => `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
             .join('\n')
         )
         .setFooter({ text: `${states[state]}` })
