@@ -3179,6 +3179,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: command.autorole.family.options.verified_role.description,
             description_localizations: translation('command.autorole.family.options.verified_role.description'),
             type: ApplicationCommandOptionType.Role
+          },
+          {
+            name: 'account_linked_role',
+            description: command.autorole.family.options.account_linked_role.description,
+            description_localizations: translation('command.autorole.family.options.account_linked_role.description'),
+            type: ApplicationCommandOptionType.Role
           }
         ]
       },

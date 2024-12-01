@@ -153,6 +153,7 @@ export default class AutoRoleListCommand extends Command {
       });
       embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
       embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
+      embed.addFields({ name: 'Account Linked Role', value: this.getRoleOrNone(rolesMap.accountLinkedRoleId) });
     }
 
     const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);

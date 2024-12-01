@@ -1329,6 +1329,9 @@ export const command = {
         },
         verified_role: {
           description: 'Verified role (API token verified)'
+        },
+        account_linked_role: {
+          description: 'Account linked role (account linked but may not be verified)'
         }
       }
     },

@@ -172,6 +172,7 @@ export const enum Settings {
   EXCLUSIVE_FAMILY_ROLE = 'exclusiveFamilyRole',
   FAMILY_LEADERS_ROLE = 'familyLeadersRole',
   ACCOUNT_VERIFIED_ROLE = 'accountVerifiedRole',
+  ACCOUNT_LINKED_ROLE = 'accountLinkedRole',
   GUEST_ROLE = 'guestRole',
   CLANS_SORTING_KEY = 'clansSortingKey',
   CLAN_CATEGORY_EXCLUSION = 'clanCategoryExclusion',

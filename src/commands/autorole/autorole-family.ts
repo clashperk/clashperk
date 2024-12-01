@@ -25,6 +25,7 @@ export default class AutoFamilyRoleCommand extends Command {
       exclusive_family_role?: Role;
       guest_role?: Role;
       verified_role?: Role;
+      account_linked_role?: Role;
     }
   ) {
     const clans = await this.client.storage.find(interaction.guildId);
@@ -34,7 +35,14 @@ export default class AutoFamilyRoleCommand extends Command {
       );
     }
 
-    const roles = [args.verified_role, args.guest_role, args.family_role, args.family_leaders_role, args.exclusive_family_role];
+    const roles = [
+      args.verified_role,
+      args.guest_role,
+      args.family_role,
+      args.family_leaders_role,
+      args.exclusive_family_role,
+      args.account_linked_role
+    ];
 
     const selected = roles.filter((role) => role) as Role[];
     if (!selected.length) {
@@ -80,6 +88,10 @@ export default class AutoFamilyRoleCommand extends Command {
       await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.verified_role.id);
     }
 
+    if (args.account_linked_role) {
+      await this.client.settings.set(interaction.guild, Settings.ACCOUNT_LINKED_ROLE, args.account_linked_role.id);
+    }
+
     this.client.storage.updateClanLinks(interaction.guildId);
     // TODO: Refresh Roles
 
@@ -96,6 +108,7 @@ export default class AutoFamilyRoleCommand extends Command {
       embed.addFields({ name: 'Exclusive Family Role', value: this.getRoleOrNone(rolesMap.exclusiveFamilyRoleId) });
       embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
       embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
+      embed.addFields({ name: 'Account Linked Role', value: this.getRoleOrNone(rolesMap.accountLinkedRoleId) });
 
       return embed;
     };

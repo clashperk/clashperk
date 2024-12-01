@@ -117,6 +117,7 @@ export class RolesManager {
     const exclusiveFamilyRoleId = this.client.settings.get<string>(guildId, Settings.EXCLUSIVE_FAMILY_ROLE, null);
     const familyLeadersRoles = this.client.settings.get<string[]>(guildId, Settings.FAMILY_LEADERS_ROLE, []);
     const verifiedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_VERIFIED_ROLE, null);
+    const accountLinkedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_LINKED_ROLE, null);
     const guestRoleId = this.client.settings.get<string>(guildId, Settings.GUEST_ROLE, null);
 
     const clanRoles = clans.reduce<GuildRolesDto['clanRoles']>((prev, curr) => {
@@ -155,6 +156,7 @@ export class RolesManager {
       exclusiveFamilyRoleId,
       familyLeadersRoles,
       verifiedRoleId,
+      accountLinkedRoleId,
       guestRoleId,
       leagueRoles,
       builderLeagueRoles,
@@ -186,6 +188,7 @@ export class RolesManager {
       rolesMap.exclusiveFamilyRoleId,
       rolesMap.guestRoleId,
       rolesMap.verifiedRoleId,
+      rolesMap.accountLinkedRoleId,
       ...rolesMap.familyLeadersRoles,
       ...builderHallRoles,
       ...builderLeagueRoles,
@@ -259,6 +262,7 @@ export class RolesManager {
       }
 
       if (player.isVerified) rolesToInclude.push(rolesMap.verifiedRoleId);
+      rolesToInclude.push(rolesMap.accountLinkedRoleId);
     }
 
     if (inFamily) rolesToInclude.push(rolesMap.familyRoleId);
@@ -581,7 +585,7 @@ export class RolesManager {
       member,
       rolesToExclude: playerRolesMap.rolesToExclude,
       rolesToInclude: playerRolesMap.rolesToInclude,
-      rolesExcludedFromDelays: sift([rolesMap.verifiedRoleId])
+      rolesExcludedFromDelays: sift([rolesMap.verifiedRoleId, rolesMap.accountLinkedRoleId])
     });
   }
 
@@ -954,6 +958,7 @@ interface GuildRolesDto {
   familyLeadersRoles: string[];
   eosPushClanRoles: string[];
   verifiedRoleId: string;
+  accountLinkedRoleId: string;
 }
 
 interface AddRoleInput {
