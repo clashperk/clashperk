@@ -64,7 +64,7 @@ export default class SummaryCompoCommand extends Command {
     aggregated.sort((a, b) => b.weight - a.weight);
 
     const embeds = [];
-    for (const clans of cluster(aggregated, 20)) {
+    for (const clans of cluster(aggregated, 15)) {
       const embed = new EmbedBuilder().setTitle('Family TownHall Compo');
       embed.setDescription(clans.map((clan) => `**${clan.name} (${clan.tag})**\n${fromReduced(clan.compo)}`).join('\n\n'));
       embeds.push(embed);
