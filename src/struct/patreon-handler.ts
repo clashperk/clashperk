@@ -156,7 +156,7 @@ export class PatreonHandler {
     const canceled =
       (patron.active && isFormer) ||
       (patron.active && isDeclined && this.gracePeriodExpired(new Date(pledge.attributes.last_charge_date))) ||
-      (patron.active && !pledge);
+      (patron.active && !pledge && !patron.paymentMethod);
 
     // Cancel Subscription
     if (canceled) {

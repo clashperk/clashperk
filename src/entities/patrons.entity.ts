@@ -16,6 +16,7 @@ export interface PatreonMembersEntity {
   active: boolean;
   declined: boolean;
   cancelled: boolean;
+  paymentMethod: string;
 
   entitledAmount: number;
   lifetimeSupport: number;
