@@ -1,5 +1,5 @@
 import { Collections } from '@app/constants';
-import { APIClanWar, APIClanWarAttack, APIClanWarLeagueGroup, APIWarClan } from 'clashofclans.js';
+import { APIClanWar, APIClanWarLeagueGroup } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
@@ -194,7 +194,7 @@ export default class ExportCWL extends Command {
             const gained = m.bestOpponentAttack && m.attacks?.length ? m.attacks[0].stars - m.bestOpponentAttack.stars : '';
             const __attacks = round.clan.members.flatMap((m) => m.attacks ?? []);
 
-            const previousBestAttack = m.attacks?.length ? this.getPreviousBestAttack(__attacks, round.opponent, m.attacks[0]) : null;
+            const previousBestAttack = m.attacks?.length ? this.client.coc.getPreviousBestAttack(__attacks, m.attacks[0]) : null;
 
             return [
               round.clan.name,
@@ -324,7 +324,7 @@ export default class ExportCWL extends Command {
               member.wars += 1;
 
               for (const atk of m.attacks ?? []) {
-                const previousBestAttack = this.getPreviousBestAttack(__attacks, opponent, atk);
+                const previousBestAttack = this.client.coc.getPreviousBestAttack(__attacks, atk);
                 member.attacks += 1;
                 member.stars += atk.stars;
                 member.trueStars += previousBestAttack ? Math.max(0, atk.stars - previousBestAttack.stars) : atk.stars;
@@ -368,18 +368,5 @@ export default class ExportCWL extends Command {
         .sort((a, b) => b.dest - a.dest)
         .sort((a, b) => b.stars - a.stars)
     };
-  }
-
-  private getPreviousBestAttack(attacks: APIClanWarAttack[], opponent: APIWarClan, atk: APIClanWarAttack) {
-    const defender = opponent.members.find((m) => m.tag === atk.defenderTag)!;
-    const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defender.tag);
-    const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
-    const previousBestAttack = isFresh
-      ? null
-      : ([...attacks]
-          .filter((_atk) => _atk.defenderTag === defender.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
-          .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
-          .at(0) ?? null);
-    return isFresh ? null : previousBestAttack;
   }
 }

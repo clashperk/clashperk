@@ -1,5 +1,5 @@
 import { Collections, WarType } from '@app/constants';
-import { APIClanWar, APIClanWarAttack, APIWarClan } from 'clashofclans.js';
+import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
@@ -65,9 +65,9 @@ export default class ExportWarAttackLogCommand extends Command {
 
         for (const m of clan.members) {
           for (const atk of m.attacks ?? []) {
-            const _isFresh = this.isFreshAttack(__attacks, atk.defenderTag, atk.order);
-            const _previousBestAttack = _isFresh ? { stars: 0 } : this.getPreviousBestAttack(__attacks, atk.defenderTag, atk.attackerTag);
-            const _newStars = Math.max(0, atk.stars - _previousBestAttack.stars);
+            const _previousBestAttack = this.client.coc.getPreviousBestAttack(__attacks, atk);
+            const _isFresh = _previousBestAttack === null;
+            const _newStars = Math.max(0, atk.stars - (_previousBestAttack?.stars ?? 0));
             const _defender = opponent.members.find((mem) => mem.tag === atk.defenderTag)!;
 
             attacks.push({
@@ -102,9 +102,9 @@ export default class ExportWarAttackLogCommand extends Command {
 
         for (const m of opponent.members) {
           for (const atk of m.attacks ?? []) {
-            const _isFresh = this.isFreshAttack(__defenses, atk.defenderTag, atk.order);
-            const _previousBestAttack = _isFresh ? { stars: 0 } : this.getPreviousBestAttack(__defenses, atk.defenderTag, atk.attackerTag);
-            const _newStars = Math.max(0, atk.stars - _previousBestAttack.stars);
+            const _previousBestAttack = this.client.coc.getPreviousBestAttack(__defenses, atk);
+            const _isFresh = _previousBestAttack === null;
+            const _newStars = Math.max(0, atk.stars - (_previousBestAttack?.stars ?? 0));
             const _defender = clan.members.find((mem) => mem.tag === atk.defenderTag)!;
 
             attacks.push({
@@ -210,18 +210,6 @@ export default class ExportWarAttackLogCommand extends Command {
       content: `**War Attacks** (${clans.map((clan) => clan.name).join(',')})`,
       components: getExportComponents(spreadsheet)
     });
-  }
-
-  private getPreviousBestAttack(attacks: APIClanWarAttack[], defenderTag: string, attackerTag: string) {
-    return attacks
-      .filter((atk) => atk.defenderTag === defenderTag && atk.attackerTag !== attackerTag)
-      .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
-      .at(0)!;
-  }
-
-  private isFreshAttack(attacks: APIClanWarAttack[], defenderTag: string, order: number) {
-    const hits = attacks.filter((atk) => atk.defenderTag === defenderTag).sort((a, b) => a.order - b.order);
-    return hits.length === 1 || hits.at(0)!.order === order;
   }
 }
 

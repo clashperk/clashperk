@@ -685,24 +685,32 @@ export class RolesManager {
     inFamilyPlayers.sort((a, b) => sumHeroes(b) - sumHeroes(a));
     inFamilyPlayers.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-    if (accountPreference === NicknamingAccountPreference.DEFAULT_ACCOUNT) {
-      return {
-        player: defaultAccount,
-        inFamilyPlayers
-      };
-    }
+    const bestAccount = inFamilyPlayers.at(0);
 
     if (accountPreference === NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT) {
       if (defaultAccount?.clan && rolesMap.clanTags.includes(defaultAccount.clan.tag)) {
         return {
           player: defaultAccount,
-          inFamilyPlayers
+          inFamilyPlayers,
+          inFamily: true
         };
       }
+
+      return {
+        player: bestAccount,
+        inFamilyPlayers
+      };
+    }
+
+    if (accountPreference === NicknamingAccountPreference.BEST_ACCOUNT) {
+      return {
+        player: bestAccount,
+        inFamilyPlayers
+      };
     }
 
     return {
-      player: inFamilyPlayers.at(0) ?? defaultAccount,
+      player: defaultAccount,
       inFamilyPlayers
     };
   }

@@ -1,6 +1,14 @@
 import { DISCORD_ID_REGEX, TAG_REGEX } from '@app/constants';
 import { ClanWarLeagueGroupsEntity } from '@app/entities';
-import { APICapitalRaidSeason, APIClanWar, APIClanWarLeagueGroup, APIWarClan, RESTManager, RequestHandler } from 'clashofclans.js';
+import {
+  APICapitalRaidSeason,
+  APIClanWar,
+  APIClanWarAttack,
+  APIClanWarLeagueGroup,
+  APIWarClan,
+  RESTManager,
+  RequestHandler
+} from 'clashofclans.js';
 import moment from 'moment';
 import { isWinner } from '../helper/cwl.helper.js';
 import { Client } from './client.js';
@@ -249,6 +257,22 @@ export class ClashClient extends RESTManager {
     data['leagues'] = group?.leagues ?? {};
 
     return data;
+  }
+
+  public getPreviousBestAttack(
+    attacks: APIClanWarAttack[],
+    { defenderTag, attackerTag, order }: { defenderTag: string; attackerTag: string; order: number }
+  ) {
+    const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defenderTag);
+    const isFresh = defenderDefenses.length === 0 || order === Math.min(...defenderDefenses.map((def) => def.order));
+    if (isFresh) return null;
+
+    return (
+      attacks
+        .filter((atk) => atk.defenderTag === defenderTag && atk.order < order && atk.attackerTag !== attackerTag)
+        .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
+        .at(0) ?? null
+    );
   }
 
   public async autoLogin() {

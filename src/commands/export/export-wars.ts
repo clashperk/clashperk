@@ -1,5 +1,5 @@
 import { Collections } from '@app/constants';
-import { APIClanWarAttack, APIWarClan } from 'clashofclans.js';
+import { APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
@@ -80,10 +80,8 @@ export default class ExportWarsCommand extends Command {
           member.wars += 1;
 
           for (const atk of m.attacks ?? []) {
-            const prev = this.freshAttack(attacks, atk.defenderTag, atk.order)
-              ? { stars: 0 }
-              : this.getPreviousBestAttack(attacks, atk.defenderTag, atk.attackerTag);
-            member.trueStars += Math.max(0, atk.stars - prev.stars);
+            const prev = this.client.coc.getPreviousBestAttack(attacks, atk);
+            member.trueStars += Math.max(0, atk.stars - (prev?.stars ?? 0));
           }
 
           if (m.attacks?.length) {
@@ -169,16 +167,5 @@ export default class ExportWarsCommand extends Command {
 
   private starCount(stars: number[] = [], count: number) {
     return stars.filter((star) => star === count).length;
-  }
-
-  private getPreviousBestAttack(attacks: APIClanWarAttack[], defenderTag: string, attackerTag: string) {
-    return attacks
-      .filter((atk) => atk.defenderTag === defenderTag && atk.attackerTag !== attackerTag)
-      .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)[0]!;
-  }
-
-  private freshAttack(attacks: APIClanWarAttack[], defenderTag: string, order: number) {
-    const hits = attacks.filter((atk) => atk.defenderTag === defenderTag).sort((a, b) => a.order - b.order);
-    return hits.length === 1 || hits[0]!.order === order;
   }
 }

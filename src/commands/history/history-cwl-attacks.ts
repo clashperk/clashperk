@@ -1,5 +1,5 @@
 import { Collections, WAR_LEAGUE_MAP, WarType } from '@app/constants';
-import { APIClanWar, APIClanWarAttack, APIClanWarMember, APIWarClan } from 'clashofclans.js';
+import { APIClanWar, APIClanWarAttack, APIClanWarMember } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
@@ -172,7 +172,8 @@ export default class CWLHistoryCommand extends Command {
         }
 
         for (const atk of memberAttacks) {
-          const { previousBestAttack, defender } = this.getPreviousBestAttack(__attacks, opponent, atk);
+          const defender = opponent.members.find((m) => m.tag === atk.defenderTag)!;
+          const previousBestAttack = this.client.coc.getPreviousBestAttack(__attacks, atk);
 
           attacks.push({
             attack: atk,
@@ -196,19 +197,6 @@ export default class CWLHistoryCommand extends Command {
 
   private percentage(num: number) {
     return `${num}%`.toString().padStart(4, ' ');
-  }
-
-  private getPreviousBestAttack(attacks: APIClanWarAttack[], opponent: APIWarClan, atk: APIClanWarAttack) {
-    const defender = opponent.members.find((m) => m.tag === atk.defenderTag)!;
-    const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defender.tag);
-    const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
-    const previousBestAttack = isFresh
-      ? null
-      : ([...attacks]
-          .filter((_atk) => _atk.defenderTag === defender.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
-          .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
-          .at(0) ?? null);
-    return { previousBestAttack: isFresh ? null : previousBestAttack, defender, isFresh };
   }
 }
 
