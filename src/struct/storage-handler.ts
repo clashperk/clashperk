@@ -307,22 +307,10 @@ export class StorageHandler {
     return webhook;
   }
 
-  public async getWarTags(tag: string, season?: string | null): Promise<ClanWarLeagueGroupsEntity | null> {
-    const data = await this.client.db
-      .collection(Collections.CWL_GROUPS)
+  public async getWarTags(tag: string, season: string = moment().format('YYYY-MM')): Promise<ClanWarLeagueGroupsEntity | null> {
+    return this.client.db
+      .collection<ClanWarLeagueGroupsEntity>(Collections.CWL_GROUPS)
       .findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });
-    if (!data) return null;
-
-    if (season) return data as unknown as ClanWarLeagueGroupsEntity;
-    // if (data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
-
-    const seasonFormat = 'YYYY-MM';
-    const isInSameSeason = moment().format(seasonFormat) === moment(data.season as string).format(seasonFormat);
-    const isInPreviousSeason = moment(data.season as string).format(seasonFormat) === moment().subtract(1, 'month').format(seasonFormat);
-
-    if (isInSameSeason || (isInPreviousSeason && moment().day() <= 8)) return data as unknown as ClanWarLeagueGroupsEntity;
-
-    return null;
   }
 
   public async pushWarTags(tag: string, body: APIClanWarLeagueGroup) {

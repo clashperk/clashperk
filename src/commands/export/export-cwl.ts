@@ -1,6 +1,7 @@
 import { Collections } from '@app/constants';
 import { APIClanWar, APIClanWarLeagueGroup } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
+import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
@@ -29,7 +30,7 @@ export default class ExportCWL extends Command {
     for (const clan of clans) {
       const result = season ? null : await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (!result?.res.ok || result.body.state === 'notInWar') {
-        const data = await this.client.storage.getWarTags(clan.tag, season);
+        const data = await this.client.storage.getWarTags(clan.tag, season || moment().format('YYYY-MM'));
         if (!data) continue;
         if (args.season && data.season !== args.season) continue;
         const { members, perRound, ranking } = await this.rounds(data, clan, season);
