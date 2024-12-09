@@ -1,7 +1,7 @@
 import { FeatureFlags, Settings } from '@app/constants';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
 import { BaseInteraction, Client as DiscordClient, GatewayIntentBits, Message, Options, User } from 'discord.js';
-import { Db } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { URL, fileURLToPath } from 'node:url';
 import { PostHog } from 'posthog-node';
@@ -44,6 +44,7 @@ export class Client extends DiscordClient {
 
   public logger: Logger;
   public db!: Db;
+  public globalDb!: Db;
   public util: ClientUtil;
   public settings!: SettingsProvider;
   public coc: ClashClient;
@@ -205,6 +206,9 @@ export class Client extends DiscordClient {
     await this.commandHandler.register();
     await this.listenerHandler.register();
     await this.inhibitorHandler.register();
+
+    const globalMongoClient = new MongoClient(process.env.GLOBAL_MONGO_URI!);
+    this.globalDb = globalMongoClient.db('global_tracking');
 
     await mongoClient.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
     this.db = mongoClient.db(mongoClient.dbName);

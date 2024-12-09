@@ -219,7 +219,9 @@ export enum FeatureFlags {
 
   ALLOW_NO_MISSED_ATTACKS_LOG = 'allow-no-missed-attacks-log',
 
-  DONATIONS_RECOVERY = 'donations-recovery'
+  DONATIONS_RECOVERY = 'donations-recovery',
+
+  CLAN_HISTORY = 'clan-history'
 }
 
 export const enum Flags {

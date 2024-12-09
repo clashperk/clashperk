@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, FeatureFlags } from '@app/constants';
 import { APIClanWar, APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -73,7 +73,8 @@ export default class PlayerCommand extends Command {
       units: JSON.stringify({ ...payload, cmd: 'units' }),
       upgrades: JSON.stringify({ ...payload, cmd: 'upgrades' }),
       rushed: JSON.stringify({ ...payload, cmd: 'rushed' }),
-      clan: JSON.stringify({ ...payload, cmd: 'clan', tag: data.clan?.tag })
+      clan: JSON.stringify({ ...payload, cmd: 'clan', tag: data.clan?.tag }),
+      history: JSON.stringify({ ...payload, cmd: 'clan-history' })
     };
 
     const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
@@ -82,6 +83,13 @@ export default class PlayerCommand extends Command {
       .addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.units))
       .addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
       .addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
+
+    const isHistoryEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_HISTORY, interaction.guildId);
+    if (isHistoryEnabled) {
+      mainRow.addComponents(
+        new ButtonBuilder().setLabel('Clan History').setEmoji(EMOJIS.SCROLL).setStyle(ButtonStyle.Secondary).setCustomId(customIds.history)
+      );
+    }
 
     if (interaction.isMessageComponent()) {
       return interaction.editReply({

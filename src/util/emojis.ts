@@ -428,6 +428,7 @@ export const EMOJIS = {
   GEAR: '⚙️' as const,
   EXPORT: '📥' as const,
   PRINT: '🖨️' as const,
+  SCROLL: '📜' as const,
   MAINTENANCE: '🛠️' as const,
   LEGEND_LEAGUE: '<:legend:696301773513818162>',
   WAR: '<:WAR:1131676276994879529>',

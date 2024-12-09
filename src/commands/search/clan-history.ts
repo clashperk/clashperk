@@ -1,6 +1,7 @@
-import { CommandInteraction, EmbedBuilder, time, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, time, User } from 'discord.js';
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
+import { EMOJIS } from '../../util/emojis.js';
 
 export default class ClanHistoryCommand extends Command {
   public constructor() {
@@ -16,7 +17,7 @@ export default class ClanHistoryCommand extends Command {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
-    const clans = await this.client.db
+    const clans = await this.client.globalDb
       .collection('global_clan_history')
       .aggregate<GlobalClanHistoryEntity>([
         {
@@ -82,9 +83,24 @@ export default class ClanHistoryCommand extends Command {
             return `\u200e[${clan.name} (${clan.tag})](${this.hyperlink(clan.tag)}) ${stay} \n-# ${timeFrame}\n`;
           })
         ].join('\n')
-      );
+      )
+      .setTimestamp();
 
-    return interaction.editReply({ embeds: [embed] });
+    const payload = {
+      cmd: this.id,
+      tag: data.tag
+    };
+
+    const customIds = {
+      refresh: JSON.stringify({ ...payload }),
+      profile: JSON.stringify({ ...payload, cmd: 'player' })
+    };
+
+    const row = new ActionRowBuilder<ButtonBuilder>()
+      .addComponents(new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh))
+      .addComponents(new ButtonBuilder().setLabel('View Profile').setStyle(ButtonStyle.Primary).setCustomId(customIds.profile));
+
+    return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
   private hyperlink(tag: string) {
