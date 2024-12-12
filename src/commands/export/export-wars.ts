@@ -131,7 +131,9 @@ export default class ExportWarsCommand extends Command {
         { name: 'Def Stars', width: 100, align: 'RIGHT' },
         { name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
         { name: 'Total Def Dest', width: 100, align: 'RIGHT' },
-        { name: 'Avg. Def Dest', width: 100, align: 'RIGHT' }
+        { name: 'Avg. Def Dest', width: 100, align: 'RIGHT' },
+        { name: `${chunk.name}`, width: 100, align: 'RIGHT' },
+        { name: `${chunk.tag}`, width: 100, align: 'RIGHT' }
       ],
       rows: chunk.members.map((m) => [
         m.name,
@@ -151,7 +153,7 @@ export default class ExportWarsCommand extends Command {
         this.starCount(m.starTypes, 0),
         m.of - m.attacks,
         m.defStars,
-        Number((m.defStars / m.defCount || 0).toFixed()),
+        Number((m.defStars / m.defCount || 0).toFixed(2)),
         Number(m.defDestruction.toFixed(2)),
         Number((m.defDestruction / m.defCount || 0).toFixed(2))
       ]),
