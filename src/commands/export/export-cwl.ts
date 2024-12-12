@@ -91,8 +91,12 @@ export default class ExportCWL extends Command {
             { name: 'Total Def Dest', width: 100, align: 'RIGHT' },
             { name: 'Avg Def Dest', width: 100, align: 'RIGHT' },
             { name: 'Lower TH Hits (Dips)', width: 100, align: 'RIGHT' },
-            { name: 'Upper TH Hits (Reaches)', width: 100, align: 'RIGHT' }
+            { name: 'Upper TH Hits (Reaches)', width: 100, align: 'RIGHT' },
+            { name: 'Avg. Target Rank', width: 100, align: 'RIGHT' },
+
             // { name: 'Same TH Hits', width: 100, align: 'RIGHT' },
+            { name: `${chunk.name}`, width: 100, align: 'RIGHT' },
+            { name: `${chunk.tag}`, width: 100, align: 'RIGHT' }
           ],
           rows: chunk.members
             .filter((m) => m.of > 0)
@@ -115,11 +119,12 @@ export default class ExportCWL extends Command {
               this.starCount(m.starTypes, 0),
               m.of - m.attacks,
               m.defStars,
-              Number((m.defStars / m.defCount || 0).toFixed()),
+              Number((m.defStars / m.defCount || 0).toFixed(2)),
               Number(m.defDestruction.toFixed(2)),
               Number((m.defDestruction / m.defCount || 0).toFixed(2)),
               m.lowerHits,
-              m.upperHits
+              m.upperHits,
+              Number((m.attackPosition / m.of).toFixed(2))
             ])
         },
         {
@@ -296,7 +301,10 @@ export default class ExportCWL extends Command {
           const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 
           clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
+          clan.members = clan.members.map((m, idx) => ({ ...m, mapPosition: idx + 1 }));
+
           opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
+          opponent.members = opponent.members.map((m, idx) => ({ ...m, mapPosition: idx + 1 }));
 
           const __attacks = clan.members.flatMap((m) => m.attacks ?? []);
 
@@ -318,6 +326,7 @@ export default class ExportCWL extends Command {
                 defDestruction: 0,
                 starTypes: [],
                 defCount: 0,
+                attackPosition: 0,
                 wars: 0
               };
               const member = members[m.tag];
@@ -332,7 +341,8 @@ export default class ExportCWL extends Command {
                 member.dest += atk.destructionPercentage;
                 member.starTypes.push(atk.stars);
 
-                const defenderTh = opponent.members.find((mem) => mem.tag === atk.defenderTag)!.townhallLevel;
+                const defender = opponent.members.find((mem) => mem.tag === atk.defenderTag)!;
+                const defenderTh = defender.townhallLevel;
                 const attackerTh = clan.members.find((mem) => mem.tag === m.tag)!.townhallLevel;
 
                 if (attackerTh > defenderTh) {
@@ -344,6 +354,8 @@ export default class ExportCWL extends Command {
                 } else if (attackerTh === defenderTh) {
                   member.mirrorHits += 1;
                 }
+
+                member.attackPosition += defender.mapPosition;
               }
 
               if (m.bestOpponentAttack) {
