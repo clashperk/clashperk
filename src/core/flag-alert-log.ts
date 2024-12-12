@@ -239,7 +239,7 @@ interface Cache {
   guildId: Snowflake;
   channelId: Snowflake;
   threadId?: string;
-  roleId?: string;
+  roleId?: string | null;
   useAutoRole: boolean;
   webhook: WebhookClient | null;
   updatedAt: Date;

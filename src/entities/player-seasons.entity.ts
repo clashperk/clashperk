@@ -18,7 +18,7 @@ export const achievements = {
 } as const;
 
 type GetDictValue<T extends string, O> = T extends keyof O ? O[T] : never;
-export type AchievementsValues = GetDictValue<keyof typeof achievements, typeof achievements>;
+type AchievementsValues = GetDictValue<keyof typeof achievements, typeof achievements>;
 type AchievementsMap = { [key in AchievementsValues]: { initial: number; current: number } };
 
 export interface PlayerSeasonsEntity extends AchievementsMap {

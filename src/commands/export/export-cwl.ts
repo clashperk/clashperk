@@ -124,7 +124,7 @@ export default class ExportCWL extends Command {
               Number((m.defDestruction / m.defCount || 0).toFixed(2)),
               m.lowerHits,
               m.upperHits,
-              Number((m.attackPosition / m.of || 0).toFixed(2))
+              Number((m.attackPosition / m.attacks || 0).toFixed(2))
             ])
         },
         {

@@ -315,7 +315,7 @@ interface Cache {
   channelId: Snowflake;
   messageId?: Snowflake;
   threadId?: string;
-  color?: number;
+  color?: number | null;
   limit?: number;
   webhook: WebhookClient | null;
   updatedAt: Date;

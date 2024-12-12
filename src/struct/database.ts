@@ -1,16 +1,19 @@
 import { Collections } from '@app/constants';
 import {
+  AutoBoardLogsEntity,
   CapitalRaidSeasonsEntity,
   CapitalRanksEntity,
   ClanLogsEntity,
   ClanRanksEntity,
   ClanStoresEntity,
   ClanWarRemindersEntity,
+  FlagAlertLogsEntity,
   LegendAttacksEntity,
   PlayerLinksEntity,
   PlayerRanksEntity,
   PlayerSeasonsEntity,
   PlayersEntity,
+  SettingsEntity,
   UsersEntity
 } from '@app/entities';
 import { Db, MongoClient } from 'mongodb';
@@ -27,6 +30,9 @@ interface CollectionsMap {
   [Collections.CAPITAL_RANKS]: CapitalRanksEntity;
   [Collections.LEGEND_ATTACKS]: LegendAttacksEntity;
   [Collections.USERS]: UsersEntity;
+  [Collections.SETTINGS]: SettingsEntity;
+  [Collections.AUTO_BOARDS]: AutoBoardLogsEntity;
+  [Collections.FLAG_ALERT_LOGS]: FlagAlertLogsEntity;
   [Collections.CAPITAL_RAID_SEASONS]: CapitalRaidSeasonsEntity;
 }
 
