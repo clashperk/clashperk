@@ -254,7 +254,9 @@ export class ClashClient extends RESTManager {
     if (!res.ok) return null;
 
     const data = (await res.json()) as unknown as ClanWarLeagueGroupExtended;
-    data['leagues'] = group?.leagues ?? {};
+
+    data.leagues = group?.leagues ?? {};
+    data.fromArchive = true;
 
     return data;
   }
@@ -387,6 +389,7 @@ export interface ClanWarLeagueGroupAggregated {
   clans: { name: string; tag: string }[];
   wars: (APIClanWar & { warTag: string })[];
   leagues: Record<string, number>;
+  fromArchive?: boolean;
 }
 
 export interface ClanWarLeagueGroupExtended extends ClanWarLeagueGroupAggregated {

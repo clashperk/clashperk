@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, time, User } from 'discord.js';
+import moment from 'moment';
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -46,6 +47,10 @@ export default class ClanHistoryCommand extends Command {
       ])
       .toArray();
 
+    if (!clans.length) {
+      return interaction.editReply(`No clan history found for **${data.name} (${data.tag})`);
+    }
+
     const mostStayedClansMap = clans.reduce<Record<string, { clan: GlobalClanEntity; stay: number }>>(
       (record, { firstSeen, lastSeen, clan }) => {
         const diff = lastSeen.getTime() - firstSeen.getTime();
@@ -63,16 +68,19 @@ export default class ClanHistoryCommand extends Command {
       .sort((a, b) => b.stay - a.stay)
       .filter((x) => x.stay > 0);
 
+    const months = moment(clans.at(-1)?.lastSeen).diff(clans.at(0)?.firstSeen, 'months');
+
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
       .setTitle(`${data.name} (${data.tag})`)
+      .setAuthor({ name: 'Clan History (Beta Release)' })
       .setURL(`http://cprk.eu/p/${data.tag.replace('#', '')}`)
       .setDescription(
         [
           '### Longest-Staying Clans',
           ...mostStayedClans.slice(0, 5).map(({ clan, stay }) => {
             const stayTime = ms(stay);
-            return `\u200e[${clan.name} (${clan.tag})](${this.hyperlink(clan.tag)}) - ${stayTime}`;
+            return `\u200e${this.formatClan(clan, data.tag)} - ${stayTime}`;
           }),
 
           '### Most Recent Clans',
@@ -80,10 +88,11 @@ export default class ClanHistoryCommand extends Command {
             const diff = lastSeen.getTime() - firstSeen.getTime();
             const stay = diff === 0 ? '' : `- ${ms(diff)}`;
             const timeFrame = diff === 0 ? `${time(firstSeen, 'f')}` : `${time(firstSeen, 'D')} to ${time(lastSeen, 'D')}`;
-            return `\u200e[${clan.name} (${clan.tag})](${this.hyperlink(clan.tag)}) ${stay} \n-# ${timeFrame}\n`;
+            return `\u200e${this.formatClan(clan, data.tag)} ${stay} \n-# ${timeFrame}\n`;
           })
         ].join('\n')
       )
+      .setFooter({ text: `Last ${Math.max(months, 6)} months` })
       .setTimestamp();
 
     const payload = {
@@ -103,8 +112,11 @@ export default class ClanHistoryCommand extends Command {
     return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
-  private hyperlink(tag: string) {
-    return `http://cprk.eu/c/${tag.replace('#', '')}`;
+  private formatClan(clan: GlobalClanEntity, playerTag: string) {
+    if (clan.tag === '#00000') {
+      return `[Not in any Clans](http://cprk.eu/p/${playerTag.replace('#', '')})`;
+    }
+    return `[${clan.name} (${clan.tag})](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
   }
 }
 

@@ -65,8 +65,8 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Magic Mirror': '<:MagicMirror:1252640509403467787>',
   'Lavaloon Puppet': '<:LavaloonPuppet:1300117184496013403>',
   'Dark Orb': '<:DarkOrb:1310574234543587358>',
-  'Henchmen Puppet': '<:Henchmen:1310574231544926218>'
-  // 'Electro Boots': '<:ElectroBoots:1252640513790705686>',
+  'Henchmen Puppet': '<:Henchmen:1310574231544926218>',
+  'Electro Boots': '<:ElectroBoots:1252640513790705686>'
   // 'Heroic Torch': '<:HeroicTorch:1252640503988486327>'
 };
 
