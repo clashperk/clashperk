@@ -116,6 +116,8 @@ export default class CWLStarsCommand extends Command {
         if (['inWar', 'warEnded'].includes(data.state)) {
           if (this.client.coc.isWinner(clan, opponent)) warsWon++;
           for (const m of clan.members) {
+            if (m.attacks && !m.attacks.length && !m.bestOpponentAttack && body.fromArchive) continue;
+
             members[m.tag] ??= {
               name: m.name || m.tag,
               tag: m.tag,
