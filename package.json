@@ -51,7 +51,7 @@
     "radash": "^11.0.0",
     "readdirp": "^3.6.0",
     "redis": "^4.6.14",
-    "reflect-metadata": "^0.1.13",
+    "reflect-metadata": "^0.2.2",
     "tsyringe": "^4.6.0"
   },
   "devDependencies": {
