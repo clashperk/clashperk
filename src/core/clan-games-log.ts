@@ -18,7 +18,7 @@ import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 
 export class ClanGamesLog extends RootLog {
-  public declare cached: Collection<string, Cache>;
+  declare public cached: Collection<string, Cache>;
   public refreshRate: number;
   public intervalId!: NodeJS.Timeout;
 

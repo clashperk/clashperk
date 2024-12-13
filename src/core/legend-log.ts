@@ -9,7 +9,7 @@ import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 
 export class LegendLog extends RootLog {
-  public declare cached: Collection<string, Cache>;
+  declare public cached: Collection<string, Cache>;
   private readonly refreshRate: number;
   private readonly queued = new Set<string>();
   private timeout!: NodeJS.Timeout | null;

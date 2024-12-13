@@ -87,7 +87,7 @@ class BaseHandler extends EventEmitter {
 
 export class CommandHandler extends BaseHandler {
   public readonly aliases: Collection<string, string>;
-  public declare modules: Collection<string, Command>;
+  declare public modules: Collection<string, Command>;
 
   public constructor(
     public client: Client,
@@ -392,7 +392,7 @@ export class CommandHandler extends BaseHandler {
 }
 
 export class ListenerHandler extends BaseHandler {
-  public declare modules: Collection<string, Listener>;
+  declare public modules: Collection<string, Listener>;
   private readonly emitters: Collection<string, EventEmitter>;
 
   public constructor(client: Client, { directory }: { directory: string }) {
@@ -427,7 +427,7 @@ export class ListenerHandler extends BaseHandler {
 }
 
 export class InhibitorHandler extends BaseHandler {
-  public declare modules: Collection<string, Inhibitor>;
+  declare public modules: Collection<string, Inhibitor>;
 
   public constructor(client: Client, { directory }: { directory: string }) {
     super(client, { directory });

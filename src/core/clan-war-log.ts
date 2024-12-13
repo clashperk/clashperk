@@ -37,7 +37,7 @@ const results: { [key: string]: number } = {
 };
 
 export class ClanWarLog extends RootLog {
-  public declare cached: Collection<string, Cache>;
+  declare public cached: Collection<string, Cache>;
 
   public constructor(private enqueuer: Enqueuer) {
     super(enqueuer.client);

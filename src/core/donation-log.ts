@@ -10,7 +10,7 @@ import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 
 export class DonationLog extends RootLog {
-  public declare cached: Collection<string, Cache>;
+  declare public cached: Collection<string, Cache>;
   private readonly queued = new Set<string>();
   private readonly refreshRate: number;
   private readonly timeouts: {
