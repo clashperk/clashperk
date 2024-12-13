@@ -55,7 +55,7 @@ jobs:
             type=raw,value=latest
 
       - name: Docker Build, Tag and Push to ECR
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/arm64
