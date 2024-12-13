@@ -39,7 +39,7 @@
     "google-auth-library": "^9.15.0",
     "i18next": "^21.6.13",
     "jsonwebtoken": "^9.0.0",
-    "mixpanel": "^0.17.0",
+    "mixpanel": "^0.18.0",
     "moment": "^2.29.1",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.5.43",
