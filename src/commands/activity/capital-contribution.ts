@@ -42,16 +42,11 @@ export default class CapitalContributionCommand extends Command {
       .aggregate<CapitalContributionsEntity & { total: number }>([
         {
           $match: {
-            'clan.tag': clan.tag
-            // 'tag': { $in: clan.memberList.map((clan) => clan.tag) }
-          }
-        },
-        {
-          $match: {
-            createdAt: {
+            'createdAt': {
               $gt: startWeek,
               $lt: endWeek
-            }
+            },
+            'clan.tag': clan.tag
           }
         },
         {

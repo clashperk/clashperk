@@ -69,8 +69,7 @@ export class ClanWarLog extends RootLog {
 
       return this.send(cache, webhook, {
         files: [result.attachment],
-        threadId: cache.threadId,
-        content: result.content
+        threadId: cache.threadId
       });
     }
 
@@ -490,7 +489,6 @@ export class ClanWarLog extends RootLog {
     });
 
     return {
-      content: `## Clan War League ${moment(body.season).format('MMMM YYYY')}`,
       attachment: new AttachmentBuilder(file, { name })
     };
   }
