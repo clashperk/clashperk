@@ -1,6 +1,6 @@
 {
   "name": "clashperk",
-  "version": "3.8.30",
+  "version": "3.9.0",
   "author": "",
   "license": "MIT",
   "description": "Clash of Clans Discord Bot",
@@ -11,8 +11,8 @@
   },
   "private": true,
   "scripts": {
-    "start": "npm run build && node -r dotenv/config --enable-source-maps dist/src/index.js",
-    "dev": "node -r dotenv/config --enable-source-maps dist/src/index.js",
+    "start": "npm run build && node -r dotenv/config dist/src/index.js",
+    "dev": "node -r dotenv/config dist/src/index.js",
     "release": "./scripts/release.sh",
     "prebuild": "rimraf dist",
     "build": "tsc && tsc-alias",

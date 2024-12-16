@@ -15,8 +15,7 @@ class Manager extends ShardingManager {
 
   public constructor() {
     super(fileURLToPath(new URL('main.js', import.meta.url)), {
-      token: process.env.TOKEN!,
-      execArgv: ['--enable-source-maps', '--trace-warnings']
+      token: process.env.TOKEN!
     });
   }
 

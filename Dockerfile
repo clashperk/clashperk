@@ -25,7 +25,10 @@ COPY --from=deps /app/dist ./dist
 ARG GIT_SHA
 ENV GIT_SHA=$GIT_SHA
 
+ENV NODE_OPTIONS="--trace-warnings --enable-source-maps"
+ENV TZ=UTC
 ENV PORT=8080
+
 EXPOSE 8080
 
-CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/src/index.js"]
+CMD ["node", "dist/src/index.js"]

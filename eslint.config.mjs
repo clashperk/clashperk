@@ -1,9 +1,9 @@
 import { includeIgnoreFile } from '@eslint/compat';
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
-import typescriptEslintEslintPlugin from '@typescript-eslint/eslint-plugin';
+import typescriptEslintPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import prettier from 'eslint-plugin-prettier';
+import prettierPlugin from 'eslint-plugin-prettier';
 import globals from 'globals';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,8 +27,8 @@ export default [
   ...compat.extends('plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'),
   {
     plugins: {
-      '@typescript-eslint': typescriptEslintEslintPlugin,
-      prettier
+      '@typescript-eslint': typescriptEslintPlugin,
+      'prettier': prettierPlugin
     },
 
     languageOptions: {
