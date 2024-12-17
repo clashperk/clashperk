@@ -1,6 +1,5 @@
 import { Collections, Settings, TAG_REGEX } from '@app/constants';
 import { PlayersEntity } from '@app/entities';
-import { APIClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
   AutocompleteInteraction,
@@ -180,7 +179,8 @@ export default class RosterManageCommand extends Command {
     args: {
       roster: string;
       player?: string;
-      clan?: string;
+      from_clan?: string;
+      from_current_wars?: string;
       user?: User;
       target_group?: string;
       target_roster?: string;
@@ -205,10 +205,37 @@ export default class RosterManageCommand extends Command {
     }
 
     if (args.action === 'add-user') {
-      if (args.clan) {
-        const clan = await this.client.resolver.resolveClan(interaction, args.clan);
+      if (args.from_clan) {
+        const clan = await this.client.resolver.resolveClan(interaction, args.from_clan);
         if (!clan) return;
-        return this.addUsers(interaction, { roster, clan, categoryId: args.target_group });
+
+        return this.addUsers(interaction, {
+          roster,
+          clan: {
+            name: clan.name,
+            playerTags: clan.memberList
+          },
+          categoryId: args.target_group
+        });
+      }
+
+      if (args.from_current_wars) {
+        const { res, body } = await this.client.coc.getCurrentWar(args.from_current_wars);
+        if (res.status === 403) {
+          return interaction.editReply('WarLog is Private. Please make it public to use this feature.');
+        }
+        if (!res.ok) {
+          return interaction.editReply({ content: 'This clan is currently not in war.' });
+        }
+
+        return this.addUsers(interaction, {
+          roster,
+          clan: {
+            name: `${body.clan.name} (${body.clan.tag}) [WAR]`,
+            playerTags: body.clan.members
+          },
+          categoryId: args.target_group
+        });
       }
 
       if (!args.player) {
@@ -1124,7 +1151,10 @@ export default class RosterManageCommand extends Command {
     }: {
       roster: WithId<IRoster>;
       user?: User | null;
-      clan?: APIClan;
+      clan?: {
+        name: string;
+        playerTags: { tag: string }[];
+      };
       categoryId?: string;
     }
   ) {
@@ -1136,6 +1166,7 @@ export default class RosterManageCommand extends Command {
     const customIds = {
       user: this.client.uuid(interaction.user.id),
       confirm: this.client.uuid(interaction.user.id),
+      selectAll: this.client.uuid(interaction.user.id),
       category: this.client.uuid(interaction.user.id),
       categorySelect: this.client.uuid(interaction.user.id),
       bulk: this.client.uuid(interaction.user.id),
@@ -1154,9 +1185,11 @@ export default class RosterManageCommand extends Command {
     };
 
     if (clan) {
-      const players = await this.client.rosterManager.getClanMemberLinks(clan.memberList, roster.allowUnlinked);
+      const players = await this.client.rosterManager.getClanMemberLinks(clan.playerTags, roster.allowUnlinked);
       selected.players = players;
+      selected.playerTags = players.map((player) => player.tag);
     }
+
     if (user) {
       selected.userIds.push(user.id);
       selected.user = user;
@@ -1170,6 +1203,7 @@ export default class RosterManageCommand extends Command {
         }
       }));
     }
+
     if (categoryId) {
       selected.categoryId = categoryId;
       selected.targetCategory = await this.client.rosterManager.getCategory(new ObjectId(categoryId));
@@ -1217,7 +1251,7 @@ export default class RosterManageCommand extends Command {
 
     const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(1);
     if (clan && selected.players.length) {
-      userMenu.setPlaceholder(`${clan.name} (${clan.tag})`);
+      userMenu.setPlaceholder(clan.name);
       userMenu.setDisabled(true);
     }
 
@@ -1277,8 +1311,8 @@ export default class RosterManageCommand extends Command {
       if (clan && selected.players.length) {
         messageTexts = [
           ...messageTexts,
-          '- User clan:',
-          `  - **\u200e${clan.name} (${clan.tag})**`,
+          '- Importing from:',
+          `  - **\u200e${clan.name}**`,
           `  - ${options.length} ${pluralize('player', options.length)} for addition.`
         ];
       }

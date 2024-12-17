@@ -2749,17 +2749,24 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String
           },
           {
-            name: 'clan',
-            autocomplete: true,
-            description: command.roster.manage.options.clan.description,
-            description_localizations: translation('command.roster.manage.options.clan.description'),
-            type: ApplicationCommandOptionType.String
-          },
-          {
             name: 'user',
             description: command.roster.manage.options.user.description,
             description_localizations: translation('command.roster.manage.options.user.description'),
             type: ApplicationCommandOptionType.User
+          },
+          {
+            name: 'from_clan',
+            autocomplete: true,
+            description: command.roster.manage.options.from_clan.description,
+            description_localizations: translation('command.roster.manage.options.from_clan.description'),
+            type: ApplicationCommandOptionType.String
+          },
+          {
+            name: 'from_current_wars',
+            autocomplete: true,
+            description: command.roster.manage.options.from_current_wars.description,
+            description_localizations: translation('command.roster.manage.options.from_current_wars.description'),
+            type: ApplicationCommandOptionType.String
           },
           {
             name: 'target_group',

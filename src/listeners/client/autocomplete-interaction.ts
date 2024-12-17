@@ -196,6 +196,8 @@ export default class AutocompleteInteractionListener extends Listener {
       case 'flag_ref': {
         return this.client.autocomplete.handle(interaction);
       }
+      case 'from_current_wars':
+      case 'from_clan':
       case 'clan_tag':
       case 'clan': {
         return this.clanTagAutocomplete(interaction, focused);
