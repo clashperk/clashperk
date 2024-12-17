@@ -184,6 +184,7 @@ export const enum Settings {
   DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook',
   ROLE_REMOVAL_DELAYS = 'roleRemovalDelays',
   ROLE_ADDITION_DELAYS = 'roleAdditionDelays',
+  DELAY_EXCLUSION_LIST = 'delayExclusionList',
   DISABLED_PATREON_IDS = 'disabledPatreonIds',
   USE_GROUPED_TODO_LIST = 'useGroupedTodoList'
 }

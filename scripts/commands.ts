@@ -3441,6 +3441,30 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           },
           {
+            name: 'delay_exclusion_roles',
+            description: command.autorole.config.options.delay_exclusion_roles.description,
+            description_localizations: translation('command.autorole.config.options.delay_exclusion_roles.description'),
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: 'Town Hall Roles',
+                value: 'town-hall-roles'
+              },
+              {
+                name: 'Builder Hall Roles',
+                value: 'builder-hall-roles'
+              },
+              {
+                name: 'League Roles',
+                value: 'league-roles'
+              },
+              {
+                name: 'Builder League Roles',
+                value: 'builder-league-roles'
+              }
+            ]
+          },
+          {
             name: 'always_force_refresh_roles',
             description: command.autorole.config.options.always_force_refresh_roles.description,
             description_localizations: translation('command.autorole.config.options.always_force_refresh_roles.description'),

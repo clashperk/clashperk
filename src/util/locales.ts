@@ -1383,6 +1383,9 @@ export const command = {
         always_force_refresh_roles: {
           description: 'Whether to enforce role refresh for individual users by default.'
         },
+        delay_exclusion_roles: {
+          description: 'Roles that are excluded from delays.'
+        },
         allow_not_linked: {
           description: 'Whether to allow not linked players to get roles.'
         },

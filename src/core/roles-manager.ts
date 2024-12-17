@@ -578,6 +578,8 @@ export class RolesManager {
         }) satisfies PlayerRolesInput
     );
 
+    const exclusion = this.client.settings.get<ExclusionListConfig>(member.guild, Settings.DELAY_EXCLUSION_LIST, {});
+
     const playerRolesMap = this.getPlayerRoles(playerList, rolesMap);
     return this.handleRoleDeletionDelays({
       isDryRun,
@@ -585,7 +587,14 @@ export class RolesManager {
       member,
       rolesToExclude: playerRolesMap.rolesToExclude,
       rolesToInclude: playerRolesMap.rolesToInclude,
-      rolesExcludedFromDelays: sift([rolesMap.verifiedRoleId, rolesMap.accountLinkedRoleId])
+      rolesExcludedFromDelays: sift([
+        rolesMap.verifiedRoleId,
+        rolesMap.accountLinkedRoleId,
+        ...(exclusion.townHallRoles ? Object.values(rolesMap.townHallRoles) : []),
+        ...(exclusion.builderHallRoles ? Object.values(rolesMap.builderHallRoles) : []),
+        ...(exclusion.leagueRoles ? Object.values(rolesMap.leagueRoles) : []),
+        ...(exclusion.builderLeagueRoles ? Object.values(rolesMap.builderLeagueRoles) : [])
+      ])
     });
   }
 
@@ -997,4 +1006,11 @@ interface RolesManagerPollingInput {
     op: string;
     tag: string;
   }[];
+}
+
+export interface ExclusionListConfig {
+  townHallRoles?: boolean;
+  builderHallRoles?: boolean;
+  leagueRoles?: boolean;
+  builderLeagueRoles?: boolean;
 }

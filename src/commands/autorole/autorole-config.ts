@@ -1,6 +1,8 @@
 import { Settings } from '@app/constants';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import ms from 'ms';
+import { camel, title } from 'radash';
+import { ExclusionListConfig } from '../../core/roles-manager.js';
 import { Command } from '../../lib/handlers.js';
 
 export default class AutoRoleConfigCommand extends Command {
@@ -23,6 +25,7 @@ export default class AutoRoleConfigCommand extends Command {
       role_addition_delays?: string;
       always_force_refresh_roles?: boolean;
       allow_not_linked?: boolean;
+      delay_exclusion_roles?: 'town-hall-roles' | 'builder-hall-roles' | 'league-roles' | 'builder-league-roles';
     }
   ) {
     if (typeof args.verified_only_clan_roles === 'boolean') {
@@ -55,6 +58,19 @@ export default class AutoRoleConfigCommand extends Command {
     const allowNotLinked = this.client.settings.get(interaction.guild, Settings.AUTO_ROLE_ALLOW_NOT_LINKED, false);
     const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
     const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
+    const exclusionList = this.client.settings.get<ExclusionListConfig>(interaction.guild, Settings.DELAY_EXCLUSION_LIST, {});
+
+    if (args.delay_exclusion_roles) {
+      const key = camel(args.delay_exclusion_roles) as keyof ExclusionListConfig;
+
+      if (exclusionList[key]) {
+        delete exclusionList[key];
+      } else {
+        exclusionList[key] = true;
+      }
+
+      await this.client.settings.set(interaction.guild, Settings.DELAY_EXCLUSION_LIST, exclusionList);
+    }
 
     const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
     embed.setTitle('AutoRole Settings');
@@ -82,6 +98,10 @@ export default class AutoRoleConfigCommand extends Command {
       {
         name: 'Role Addition Delays',
         value: roleAdditionDelays ? ms(roleAdditionDelays, { long: true }) : 'Disabled'
+      },
+      {
+        name: 'Delay Exclusion List',
+        value: ['- Verified Role', '- Account Linked Role', ...Object.keys(exclusionList).map((k) => `- ${title(k)}`)].join('\n')
       }
     );
 
