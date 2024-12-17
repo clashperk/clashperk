@@ -1,13 +1,22 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 20
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 20
+    groups:
+      eslint:
+        patterns:
+          - 'eslint'
+          - 'globals'
+          - 'prettier'
+          - 'eslint-*'
+          - '@eslint/*'
+          - '@typescript-eslint/*'
