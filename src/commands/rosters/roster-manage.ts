@@ -35,6 +35,12 @@ import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 import { Util } from '../../util/toolkit.js';
 
+const warStates: Record<string, string> = {
+  warEnded: 'War Ended',
+  preparation: 'Preparation Day',
+  inWar: 'Battle Day'
+};
+
 export default class RosterManageCommand extends Command {
   public constructor() {
     super('roster-manage', {
@@ -220,21 +226,59 @@ export default class RosterManageCommand extends Command {
       }
 
       if (args.from_current_wars) {
-        const { res, body } = await this.client.coc.getCurrentWar(args.from_current_wars);
-        if (res.status === 403) {
-          return interaction.editReply('WarLog is Private. Please make it public to use this feature.');
-        }
-        if (!res.ok) {
-          return interaction.editReply({ content: 'This clan is currently not in war.' });
+        const wars = await this.client.coc.getCurrentWars(args.from_current_wars);
+        if (!wars.length) {
+          return interaction.editReply({ content: 'Your clan is current not in any wars.' });
         }
 
-        return this.addUsers(interaction, {
-          roster,
-          clan: {
-            name: `${body.clan.name} (${body.clan.tag}) [WAR]`,
-            playerTags: body.clan.members
-          },
-          categoryId: args.target_group
+        if (wars.length === 1) {
+          const war = wars[0];
+          return this.addUsers(interaction, {
+            roster,
+            clan: {
+              name: `${war.clan.name} (${war.clan.tag}) [WAR]`,
+              playerTags: war.clan.members
+            },
+            categoryId: args.target_group
+          });
+        }
+
+        const customIds = {
+          menu: this.client.uuid(interaction.user.id)
+        };
+
+        const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+          new StringSelectMenuBuilder()
+            .setCustomId(customIds.menu)
+            .setPlaceholder('Select a CWL Round')
+            .addOptions(
+              wars.map((war, idx) => ({
+                label: `Round ${war.round} - ${warStates[war.state]}`,
+                description: `${war.clan.name} vs ${war.opponent.name}`,
+                value: idx.toString()
+              }))
+            )
+        );
+
+        const message = await interaction.editReply({ content: 'Select a CWL Round to add Players from.', components: [row] });
+
+        return createInteractionCollector({
+          customIds,
+          interaction,
+          message,
+          onSelect: (action) => {
+            const idx = parseInt(action.values[0]);
+            const war = wars[idx];
+
+            return this.addUsers(interaction, {
+              roster,
+              clan: {
+                name: `${war.clan.name} (${war.clan.tag}) [WAR]`,
+                playerTags: war.clan.members
+              },
+              categoryId: args.target_group
+            });
+          }
         });
       }
 
