@@ -18,7 +18,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Checkout tools repo
+      - name: Checkout locales Repository
         uses: actions/checkout@v4
         with:
           repository: clashperk/locales

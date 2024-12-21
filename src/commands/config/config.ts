@@ -13,7 +13,6 @@ import {
   StringSelectMenuBuilder,
   resolveColor
 } from 'discord.js';
-import ms from 'ms';
 import { title, unique } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { command } from '../../util/locales.js';
@@ -203,13 +202,7 @@ export default class ConfigCommand extends Command {
     const flagsManagerRoles = this.getRoles(interaction.guild, Settings.FLAGS_MANAGER_ROLE);
     const rosterManagerRoles = this.getRoles(interaction.guild, Settings.ROSTER_MANAGER_ROLE);
     const linksManagerRoles = this.getRoles(interaction.guild, Settings.LINKS_MANAGER_ROLE);
-
-    const verifiedOnlyClanRoles = this.client.settings.get<string>(interaction.guild, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
-    const useAutoRole = this.client.settings.get<string>(interaction.guild, Settings.USE_AUTO_ROLE, true);
-    const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
-    const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
-    const forceRefreshRoles = this.client.settings.get<boolean>(interaction.guild, Settings.FORCE_REFRESH_ROLES, false);
-    const autoRoleAllowNotLinked = this.client.settings.get<boolean>(interaction.guild, Settings.AUTO_ROLE_ALLOW_NOT_LINKED, true);
+    const isPatreon = this.client.patreonHandler.get(interaction.guild.id);
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
@@ -221,7 +214,7 @@ export default class ConfigCommand extends Command {
         },
         {
           name: 'Patreon Subscribed',
-          value: this.client.patreonHandler.get(interaction.guild.id) ? 'Yes' : 'No'
+          value: `${isPatreon ? 'Yes' : 'No'} - [Patreon](https://www.patreon.com/clashperk)`
         },
         {
           name: 'Manager Roles',
@@ -244,35 +237,11 @@ export default class ConfigCommand extends Command {
           value: `${this.client.settings.get<string>(interaction.guild, Settings.WEBHOOK_LIMIT, 8)}`
         },
         {
-          name: 'Verified-Only Clan Roles',
-          value: `${verifiedOnlyClanRoles ? 'Yes' : 'No'}`
-        },
-        {
-          name: 'Auto Update Roles',
-          value: `${useAutoRole ? 'Yes' : 'No'}`
-        },
-        {
-          name: 'Role Removal Delays',
-          value: `${roleRemovalDelays ? ms(roleRemovalDelays, { long: true }) : 'None'}`
-        },
-        {
-          name: 'Role Addition Delays',
-          value: `${roleAdditionDelays ? ms(roleAdditionDelays, { long: true }) : 'None'}`
-        },
-        {
-          name: 'Force Refresh Roles',
-          value: `${forceRefreshRoles ? 'Yes (individual user only)' : 'No'}`
-        },
-        {
-          name: 'Allow Not Linked (AutoRole)',
-          value: `${autoRoleAllowNotLinked ? 'Yes' : 'No'}`
-        },
-        {
           name: this.i18n('common.color_code', { lng: interaction.locale }),
           value: color ? `#${color.toString(16).toUpperCase()}` : 'None'
         },
         {
-          name: this.i18n('command.config.maintenance_notification_channel', { lng: interaction.locale }),
+          name: this.i18n('common.choices.maintenance_break_log', { lng: interaction.locale }),
           value: channel?.toString() ?? 'None'
         }
       ]);

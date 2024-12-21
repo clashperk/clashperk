@@ -356,8 +356,7 @@ export const command = {
       }
     },
     no_text_channel: 'You must specify a text channel to enable this event log.',
-    title: 'Server Settings',
-    maintenance_notification_channel: 'Maintenance Break Notification Channel'
+    title: 'Server Settings'
   },
   debug: {
     description: 'Displays some basic debug information.'
