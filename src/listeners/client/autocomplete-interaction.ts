@@ -17,7 +17,6 @@ import {
 } from '../../helper/reminders.helper.js';
 import { Listener } from '../../lib/handlers.js';
 import Google from '../../struct/google.js';
-import { mixpanel } from '../../struct/mixpanel.js';
 import { IRoster, IRosterCategory, rosterLabel } from '../../struct/roster-manager.js';
 
 const ranges: Record<string, number> = {
@@ -119,19 +118,6 @@ export default class AutocompleteInteractionListener extends Listener {
   public async autocomplete(interaction: AutocompleteInteraction) {
     const { name: focused } = interaction.options.getFocused(true);
     const query = interaction.options.getString(focused)?.trim();
-
-    mixpanel.track('Autocomplete', {
-      distinct_id: interaction.user.id,
-      guild_id: interaction.guildId ?? '0',
-      user_id: interaction.user.id,
-      username: interaction.user.username,
-      display_name: interaction.user.displayName,
-      guild_name: interaction.guild?.name ?? 'DM',
-      command_id: interaction.commandName,
-      sub_command_id: interaction.options.getSubcommand(false),
-      autocomplete_field_name: focused,
-      autocomplete_query: interaction.options.getString(focused)?.slice(0, 10) ?? null
-    });
 
     addBreadcrumb({
       message: 'autocomplete_started',
