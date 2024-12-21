@@ -1,8 +1,9 @@
 import { Collections } from '@app/constants';
+import { SheetType } from '@app/entities';
 import { APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
+import { CreateGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 
 export enum WarType {
@@ -162,7 +163,19 @@ export default class ExportWarsCommand extends Command {
       title: `${chunk.name} (${chunk.tag})`
     }));
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Stats]`, sheets);
+    const spreadsheet = await this.client.util.createOrUpdateSheet({
+      clans,
+      guild: interaction.guild,
+      label: 'War Stats',
+      sheets,
+      sheetType:
+        args.war_type === 'regular-and-cwl'
+          ? SheetType.COMBINED_WARS
+          : args.war_type === 'friendly'
+            ? SheetType.FRIENDLY_WARS
+            : SheetType.REGULAR_WARS
+    });
+
     return interaction.editReply({
       content: `**War Export [Last ${num}]** (${clans.map((clan) => clan.name).join(',')})`,
       components: getExportComponents(spreadsheet)

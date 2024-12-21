@@ -1,10 +1,10 @@
 import { Collections } from '@app/constants';
-import { achievements, PlayerSeasonsEntity } from '@app/entities';
+import { achievements, PlayerSeasonsEntity, SheetType } from '@app/entities';
 import { APIClan, APIClanMember } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { sum } from 'radash';
 import { Command } from '../../lib/handlers.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
+import { CreateGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Season } from '../../util/toolkit.js';
 
@@ -110,7 +110,14 @@ export default class ExportSeason extends Command {
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Season Stats: ${season}]`, sheets);
+    const spreadsheet = await this.client.util.createOrUpdateSheet({
+      clans,
+      guild: interaction.guild,
+      label: `Season Stats ${season}`,
+      sheets,
+      sheetType: SheetType.REGULAR_WARS
+    });
+
     return interaction.editReply({ content: `**Season Export (${season})**`, components: getExportComponents(spreadsheet) });
   }
 

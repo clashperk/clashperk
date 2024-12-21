@@ -1,8 +1,9 @@
+import { SheetType } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { sum } from 'radash';
 import { Command } from '../../lib/handlers.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
+import { CreateGoogleSheet } from '../../struct/google.js';
 import { HERO_EQUIPMENT, HERO_PETS, HOME_HEROES, HOME_TROOPS } from '../../util/emojis.js';
 import { getExportComponents, unitsFlatten } from '../../util/helper.js';
 import { RAW_TROOPS_FILTERED } from '../../util/troops.js';
@@ -210,8 +211,18 @@ export default class ExportClanMembersCommand extends Command {
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Clan Members]`, sheets);
-    return interaction.editReply({ content: `**Clan Members Export**`, components: getExportComponents(spreadsheet) });
+    const spreadsheet = await this.client.util.createOrUpdateSheet({
+      clans,
+      guild: interaction.guild,
+      sheets,
+      label: 'Clan Members',
+      sheetType: SheetType.CLAN_MEMBERS
+    });
+
+    return interaction.editReply({
+      content: `**Clan Members Export** (${clans.map((clan) => clan.name).join(', ')})`,
+      components: getExportComponents(spreadsheet)
+    });
   }
 
   private getAchievements(data: APIPlayer) {

@@ -1,8 +1,10 @@
+import { SheetType } from '@app/entities';
 import {
   ActivityType,
   ChannelType,
   CommandInteraction,
   ForumChannel,
+  Guild,
   GuildMember,
   MediaChannel,
   NewsChannel,
@@ -11,8 +13,10 @@ import {
   TextChannel
 } from 'discord.js';
 import jwt from 'jsonwebtoken';
+import { createHash } from 'node:crypto';
 import { Client } from '../struct/client.js';
-import { FeatureFlags, Settings } from './constants.js';
+import { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from '../struct/google.js';
+import { Collections, FeatureFlags, Settings } from './constants.js';
 
 export class ClientUtil {
   public constructor(private readonly client: Client) {}
@@ -122,5 +126,80 @@ export class ClientUtil {
     if (!isManager) return false;
 
     return isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+  }
+
+  public async createOrUpdateSheet({
+    sheets,
+    guild,
+    clans,
+    label,
+    sheetType
+  }: {
+    sheets: CreateGoogleSheet[];
+    guild: Guild;
+    clans: { tag: string }[];
+    label: string;
+    sheetType: SheetType;
+  }) {
+    const sheet = await this.client.util.getGoogleSheetId(
+      sheetType,
+      guild.id,
+      clans.map((clan) => clan.tag)
+    );
+
+    const spreadsheet = sheet
+      ? await updateGoogleSheet(sheet.spreadsheetId, sheets, { clear: true, recreate: false })
+      : await createGoogleSheet(`${guild.name} [${label}]`, sheets);
+
+    await this.client.util.createGoogleSheetSHA(
+      sheetType,
+      spreadsheet.spreadsheetId,
+      guild.id,
+      clans.map((clan) => clan.tag)
+    );
+
+    return spreadsheet;
+  }
+
+  private md5(data: string) {
+    return createHash('md5').update(data).digest('hex');
+  }
+
+  private createSHA(guildId: string, clanTags: string[], sheetType: SheetType) {
+    const sha = this.md5(
+      `${guildId}-${clanTags
+        .map((tag) => tag)
+        .sort((a, b) => a.localeCompare(b))
+        .join('-')}-${sheetType}`
+    );
+
+    return sha;
+  }
+
+  private async getGoogleSheetId(sheetType: SheetType, guildId: string, clanTags: string[]) {
+    const sha = this.createSHA(guildId, clanTags, sheetType);
+
+    return this.client.db.collection(Collections.GOOGLE_SHEETS).findOne({ sha });
+  }
+
+  private async createGoogleSheetSHA(sheetType: SheetType, spreadsheetId: string, guildId: string, clanTags: string[]) {
+    const sha = this.createSHA(guildId, clanTags, sheetType);
+
+    return this.client.db.collection(Collections.GOOGLE_SHEETS).updateOne(
+      { sha },
+      {
+        $inc: { exported: 1 },
+        $set: { updatedAt: new Date() },
+        $setOnInsert: {
+          guildId,
+          clanTags,
+          sha,
+          spreadsheetId,
+          sheetType,
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
   }
 }

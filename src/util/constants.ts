@@ -116,6 +116,8 @@ export const enum Collections {
   ROSTERS = 'Rosters',
   ROSTER_CATEGORIES = 'RosterCategories',
 
+  GOOGLE_SHEETS = 'GoogleSheets',
+
   CLAN_GAMES_POINTS = 'ClanGamesPoints',
   PLAYER_SEASONS = 'PlayerSeasons',
   CAPITAL_CONTRIBUTIONS = 'CapitalContributions',

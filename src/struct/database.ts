@@ -8,6 +8,7 @@ import {
   ClanStoresEntity,
   ClanWarRemindersEntity,
   FlagAlertLogsEntity,
+  GoogleSheetsEntity,
   LegendAttacksEntity,
   PlayerLinksEntity,
   PlayerRanksEntity,
@@ -34,6 +35,7 @@ interface CollectionsMap {
   [Collections.AUTO_BOARDS]: AutoBoardLogsEntity;
   [Collections.FLAG_ALERT_LOGS]: FlagAlertLogsEntity;
   [Collections.CAPITAL_RAID_SEASONS]: CapitalRaidSeasonsEntity;
+  [Collections.GOOGLE_SHEETS]: GoogleSheetsEntity;
 }
 
 declare module 'mongodb' {
@@ -117,6 +119,13 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { tag: 1 }
+        }
+      ]),
+
+      db.collection(Collections.GOOGLE_SHEETS).createIndexes([
+        {
+          key: { sha: 1 },
+          unique: true
         }
       ]),
 

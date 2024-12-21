@@ -216,7 +216,44 @@ const createColumnRequest = (columns: CreateGoogleSheet['columns']) => {
   };
 };
 
-export const updateGoogleSheet = async (spreadsheetId: string, sheets: CreateGoogleSheet[], clear = false) => {
+export const updateGoogleSheet = async (
+  spreadsheetId: string,
+  sheets: CreateGoogleSheet[],
+  options: { clear: boolean; recreate: boolean }
+) => {
+  const replaceSheetRequests: SchemaRequest[] = [];
+
+  if (options.recreate) {
+    const { data } = await sheet.spreadsheets.get({ spreadsheetId });
+    replaceSheetRequests.push(
+      ...(data.sheets || []).slice(1).map((_, idx) => ({
+        deleteSheet: { sheetId: idx + 1 }
+      }))
+    );
+    replaceSheetRequests.push(
+      ...sheets.slice(1).map((sheet, sheetId) => ({
+        addSheet: {
+          properties: {
+            sheetId: sheetId + 1,
+            title: Util.escapeSheetName(sheet.title),
+            gridProperties: {
+              rowCount: Math.max(sheet.rows.length + 1, 25),
+              columnCount: Math.max(sheet.columns.length, 15),
+              frozenRowCount: sheet.rows.length ? 1 : 0
+            }
+          }
+        }
+      }))
+    );
+
+    await sheet.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [...replaceSheetRequests]
+      }
+    });
+  }
+
   const clearSheetRequests: SchemaRequest[] = sheets
     .map((sheet, sheetId) => [
       {
@@ -231,13 +268,14 @@ export const updateGoogleSheet = async (spreadsheetId: string, sheets: CreateGoo
         updateSheetProperties: {
           properties: {
             sheetId,
+            title: sheet.title,
             gridProperties: {
               columnCount: Math.max(sheet.columns.length, 15),
               rowCount: Math.max(sheet.rows.length + 1, 25),
               frozenRowCount: sheet.rows.length ? 1 : 0
             }
           },
-          fields: 'gridProperties.rowCount,gridProperties.columnCount,gridProperties.frozenRowCount'
+          fields: 'gridProperties.rowCount,gridProperties.columnCount,gridProperties.frozenRowCount,title'
         }
       }
     ])
@@ -266,7 +304,24 @@ export const updateGoogleSheet = async (spreadsheetId: string, sheets: CreateGoo
   await sheet.spreadsheets.batchUpdate({
     spreadsheetId,
     requestBody: {
-      requests: [...(clear ? clearSheetRequests : []), ...requests, ...getStyleRequests(sheets), ...getConditionalFormatRequests(sheets)]
+      requests: [
+        ...(options.clear ? clearSheetRequests : []),
+        ...requests,
+        ...getStyleRequests(sheets),
+        ...getConditionalFormatRequests(sheets),
+        {
+          createDeveloperMetadata: {
+            developerMetadata: {
+              metadataKey: 'project',
+              metadataValue: 'clashperk',
+              visibility: 'DOCUMENT',
+              location: {
+                spreadsheet: true
+              }
+            }
+          }
+        }
+      ]
     }
   });
 
@@ -275,7 +330,10 @@ export const updateGoogleSheet = async (spreadsheetId: string, sheets: CreateGoo
 
 export const createGoogleSheet = async (title: string, sheets: CreateGoogleSheet[]) => {
   const spreadsheet = await createSheetRequest(title, sheets);
-  await Promise.all([updateGoogleSheet(spreadsheet.spreadsheetId!, sheets), publish(spreadsheet.spreadsheetId!)]);
+  await Promise.all([
+    updateGoogleSheet(spreadsheet.spreadsheetId!, sheets, { clear: false, recreate: false }),
+    publish(spreadsheet.spreadsheetId!)
+  ]);
   return {
     spreadsheetId: spreadsheet.spreadsheetId!,
     spreadsheetUrl: spreadsheet.spreadsheetUrl!

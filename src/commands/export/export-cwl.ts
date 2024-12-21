@@ -1,9 +1,10 @@
 import { Collections } from '@app/constants';
+import { SheetType } from '@app/entities';
 import { APIClanWar, APIClanWarLeagueGroup } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
+import { CreateGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
@@ -231,7 +232,14 @@ export default class ExportCWL extends Command {
       ])
       .flat();
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [CWL Stats]`, sheets);
+    const spreadsheet = await this.client.util.createOrUpdateSheet({
+      clans,
+      guild: interaction.guild,
+      label: 'CWL Stats',
+      sheets,
+      sheetType: SheetType.CWL_WARS
+    });
+
     return interaction.editReply({
       content: `**CWL Exports** (${clans.map((clan) => clan.name).join(',')})`,
       components: getExportComponents(spreadsheet)
