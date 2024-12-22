@@ -1,9 +1,10 @@
 import { Collections, WarType } from '@app/constants';
+import { SheetType } from '@app/entities';
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
+import { CreateGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 
 export default class ExportWarAttackLogCommand extends Command {
@@ -205,7 +206,14 @@ export default class ExportWarAttackLogCommand extends Command {
       title: `${chunk.name} (${chunk.tag})`
     }));
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Stats]`, sheets);
+    const spreadsheet = await this.client.util.createOrUpdateSheet({
+      clans,
+      guild: interaction.guild,
+      label: 'Attack Log',
+      sheets,
+      sheetType: SheetType.ATTACK_LOG
+    });
+
     return interaction.followUp({
       content: `**War Attacks** (${clans.map((clan) => clan.name).join(',')})`,
       components: getExportComponents(spreadsheet)

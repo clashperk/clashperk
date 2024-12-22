@@ -1,7 +1,8 @@
+import { SheetType } from '@app/entities';
 import { CommandInteraction } from 'discord.js';
 import { unique } from 'radash';
 import { Command } from '../../lib/handlers.js';
-import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
+import { CreateGoogleSheet } from '../../struct/google.js';
 import { IRosterCategory, rosterLabel } from '../../struct/roster-manager.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
@@ -148,7 +149,13 @@ export default class RosterExportCommand extends Command {
       }
     );
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Rosters]`, sheets);
+    const spreadsheet = await this.client.util.createOrUpdateSheet({
+      clans,
+      guild: interaction.guild,
+      label: 'Rosters',
+      sheets,
+      sheetType: SheetType.ROSTERS
+    });
     return interaction.editReply({ content: `**Roster Export**`, components: getExportComponents(spreadsheet) });
   }
 }
