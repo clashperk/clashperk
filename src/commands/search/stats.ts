@@ -158,7 +158,7 @@ export default class StatsCommand extends Command {
                 : {};
 
     if (args.days && args.days >= 1) season = moment().subtract(args.days, 'days').format('YYYY-MM-DD');
-    const filters = args.wars && args.wars >= 1 ? {} : { preparationStartTime: { $gte: new Date(season) } };
+    const filters = args.wars && args.wars >= 1 ? {} : { startTime: { $gte: new Date(season) } };
 
     const clanOnlyQuery = { $match: { $or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }] } };
 

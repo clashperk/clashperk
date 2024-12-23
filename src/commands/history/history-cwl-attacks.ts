@@ -127,7 +127,7 @@ export default class CWLHistoryCommand extends Command {
     const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<APIClanWar>([
       {
         $match: {
-          preparationStartTime: {
+          startTime: {
             $gte: moment()
               .startOf('month')
               .subtract(new Date().getDate() >= 10 ? 2 : 3, 'month')

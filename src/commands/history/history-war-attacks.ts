@@ -128,7 +128,7 @@ export default class WarHistoryCommand extends Command {
     const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<APIClanWar & { warType: number; id: number }>([
       {
         $match: {
-          preparationStartTime: {
+          startTime: {
             $gte: moment().startOf('month').subtract(6, 'month').toDate()
           },
           warType: WarType.REGULAR,

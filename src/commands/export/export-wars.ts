@@ -1,16 +1,10 @@
-import { Collections } from '@app/constants';
+import { Collections, WarType } from '@app/constants';
 import { SheetType } from '@app/entities';
 import { APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
-
-export enum WarType {
-  REGULAR = 1,
-  FRIENDLY,
-  CWL
-}
 
 export default class ExportWarsCommand extends Command {
   public constructor() {
@@ -31,7 +25,7 @@ export default class ExportWarsCommand extends Command {
 
     let num = Number(args.limit ?? 25);
     num = Math.min(100, num);
-    const query = args.season ? { preparationStartTime: { $gte: new Date(args.season) } } : {};
+    const query = args.season ? { startTime: { $gte: new Date(args.season) } } : {};
 
     const chunks = [];
     for (const { tag, name } of clans) {

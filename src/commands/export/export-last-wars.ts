@@ -1,10 +1,11 @@
-import { Collections } from '@app/constants';
+import { Collections, WarType } from '@app/constants';
+import { ClanWarsEntity } from '@app/entities';
 import { CommandInteraction } from 'discord.js';
+import { Filter } from 'mongodb';
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
-import { WarType } from './export-wars.js';
 
 export default class LastWarsExport extends Command {
   public constructor() {
@@ -28,7 +29,7 @@ export default class LastWarsExport extends Command {
     const clanList = await this.client.coc._getClans(clans);
     const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
-    const query: Record<string, any> = args.season ? { preparationStartTime: { $gte: new Date(args.season) } } : {};
+    const query: Filter<ClanWarsEntity> = args.season ? { startTime: { $gte: new Date(args.season) } } : {};
     if (args.war_type) {
       query.warType = args.war_type === 'cwl' ? WarType.CWL : WarType.REGULAR;
     } else {

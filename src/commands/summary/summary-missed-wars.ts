@@ -27,7 +27,7 @@ export default class SummaryMissedWarsCommand extends Command {
         .find({
           $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
           state: 'warEnded',
-          preparationStartTime: { $gte: new Date(season) }
+          startTime: { $gte: new Date(season) }
         })
         .sort({ _id: -1 })
         .toArray();

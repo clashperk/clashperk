@@ -30,7 +30,7 @@ export default class ExportMissed extends Command {
     const chunks = [];
     const missed: { [key: string]: { name: string; tag: string; count: number; missed: Date[] } } = {};
 
-    const query = args.season ? { preparationStartTime: { $gte: new Date(args.season) } } : {};
+    const query = args.season ? { startTime: { $gte: new Date(args.season) } } : {};
     for (const { tag } of clans) {
       const cursor = this.client.db
         .collection(Collections.CLAN_WARS)

@@ -1,5 +1,6 @@
 import { Collections, FeatureFlags } from '@app/constants';
-import { APIClanWar, APIPlayer } from 'clashofclans.js';
+import { ClanWarsEntity } from '@app/entities';
+import { APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -257,13 +258,13 @@ export default class PlayerCommand extends Command {
     };
 
     const wars = await this.client.db
-      .collection<Omit<APIClanWar, 'preparationStartTime'>>(Collections.CLAN_WARS)
+      .collection<ClanWarsEntity>(Collections.CLAN_WARS)
       .find({
-        preparationStartTime: { $gte: Season.startTimestamp },
+        startTime: { $gte: Season.startTimestamp },
         $or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }],
         state: { $in: ['inWar', 'warEnded'] }
       })
-      .sort({ preparationStartTime: -1 })
+      .sort({ _id: -1 })
       .toArray();
 
     for (const data of wars) {

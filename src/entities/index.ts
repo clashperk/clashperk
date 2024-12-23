@@ -15,6 +15,7 @@ export * from './clan-ranks.entity.js';
 export * from './clan-stores.entity.js';
 export * from './clan-wars-reminders.entity.js';
 export * from './clan-wars-schedulers.entity.js';
+export * from './clan-wars.entity.js';
 export * from './compete-boards.entity.js';
 export * from './custom-bot.entity.js';
 export * from './cwl-groups.entity.js';

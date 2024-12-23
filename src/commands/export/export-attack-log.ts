@@ -27,7 +27,7 @@ export default class ExportWarAttackLogCommand extends Command {
     let num = Number(args.limit ?? 25);
     num = Math.min(100, num);
 
-    const query: Filter<ClanWarsEntity> = args.season ? { season: args.season } : {};
+    const query: Filter<ClanWarsEntity> = args.season ? { startTime: { $gte: new Date(args.season) } } : {};
     if (!args.war_type) query.warType = { $in: [WarType.REGULAR, WarType.CWL] };
     else query.warType = args.war_type === 'cwl' ? WarType.CWL : args.war_type === 'friendly' ? WarType.FRIENDLY : WarType.REGULAR;
 
@@ -221,9 +221,10 @@ export default class ExportWarAttackLogCommand extends Command {
   }
 }
 
-interface ClanWarsEntity extends APIClanWar {
+interface ClanWarsEntity extends Omit<APIClanWar, 'startTime'> {
   id: number;
   warType: WarType;
+  startTime: Date | string;
 }
 
 export interface AggregatedResult {
@@ -249,7 +250,7 @@ export interface AggregatedResult {
   enemyClanTag: string;
   enemyClanName: string;
   enemyClanLevel: number;
-  startTime: string;
+  startTime: string | Date;
   teamSize: number;
   warType: string;
 }
