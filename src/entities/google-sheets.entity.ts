@@ -17,5 +17,6 @@ export enum SheetType {
   CWL_WARS = 'CWL_WARS',
   ATTACK_LOG = 'ATTACK_LOG',
   SEASON = 'SEASON',
-  ROSTERS = 'ROSTERS'
+  ROSTERS = 'ROSTERS',
+  CLANS = 'CLANS'
 }

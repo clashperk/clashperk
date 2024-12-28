@@ -4500,6 +4500,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         ]
       },
       {
+        name: 'clans',
+        description: command.export.clans.description,
+        description_localizations: translation('command.export.clans.description'),
+        type: ApplicationCommandOptionType.Subcommand
+      },
+      {
         name: 'users',
         description: command.export.user.description,
         description_localizations: translation('command.export.user.description'),

@@ -207,7 +207,8 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    embed.setFooter({ text: `Day ${day} (${Season.ID})` });
+    const season = this.client.coc.util.getSeason();
+    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
     return embed;
   }
 
@@ -556,6 +557,9 @@ export default class LegendDaysCommand extends Command {
 
     const url = await this.graph(data);
     if (url) embed.setImage(url);
+
+    const season = this.client.coc.util.getSeason();
+    embed.setFooter({ text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
 
     return embed;
   }

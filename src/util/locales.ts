@@ -633,6 +633,9 @@ export const command = {
     members: {
       description: 'Export a comprehensive version of clan member stats.'
     },
+    clans: {
+      description: 'Export all linked clans.'
+    },
     missed: {
       description: 'Export missed attack history.'
     },

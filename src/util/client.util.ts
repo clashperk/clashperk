@@ -166,14 +166,16 @@ export class ClientUtil {
   }
 
   private createSHA(guildId: string, clanTags: string[], sheetType: SheetType) {
-    const sha = this.md5(
+    if (sheetType === SheetType.CLANS) {
+      return this.md5(`${guildId}-#00000-${sheetType}`);
+    }
+
+    return this.md5(
       `${guildId}-${clanTags
         .map((tag) => tag)
         .sort((a, b) => a.localeCompare(b))
         .join('-')}-${sheetType}`
     );
-
-    return sha;
   }
 
   private async getGoogleSheetId(sheetType: SheetType, guildId: string, clanTags: string[]) {
