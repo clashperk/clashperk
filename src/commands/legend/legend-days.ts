@@ -501,7 +501,7 @@ export default class LegendDaysCommand extends Command {
       const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
       const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
 
-      prev.push({ attackCount, defenseCount, gain, loss, final: final?.end ?? '-', initial: initial?.start ?? '-' });
+      prev.push({ attackCount, defenseCount, gain, loss, final: final?.end ?? '-', initial: initial?.end ?? '-' });
       return prev;
     }, []);
 
