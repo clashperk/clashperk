@@ -4,6 +4,7 @@ export interface GoogleSheetsEntity {
   sha: string;
   exported: number;
   spreadsheetId: string;
+  sheetCount: number;
   clanTags: string[];
   updatedAt: Date;
   createdAt: Date;

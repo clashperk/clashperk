@@ -141,67 +141,42 @@ export class ClientUtil {
     label: string;
     sheetType: SheetType;
   }) {
-    const sheet = await this.client.util.getGoogleSheetId(
-      sheetType,
-      guild.id,
-      clans.map((clan) => clan.tag)
-    );
+    const clanTags = clans.map((clan) => clan.tag);
+    const sha = this.createSha({ clanTags, guildId: guild.id, sheetType });
+    const sheet = await this.client.db.collection(Collections.GOOGLE_SHEETS).findOne({ sha });
 
     const spreadsheet = sheet
-      ? await updateGoogleSheet(sheet.spreadsheetId, sheets, { clear: true, recreate: false })
+      ? await updateGoogleSheet(sheet.spreadsheetId, sheets, {
+          clear: true,
+          recreate: !!(sheet?.sheetCount && sheet.sheetCount !== sheets.length)
+        })
       : await createGoogleSheet(`${guild.name} [${label}]`, sheets);
 
-    await this.client.util.createGoogleSheetSHA(
-      sheetType,
-      spreadsheet.spreadsheetId,
-      guild.id,
-      clans.map((clan) => clan.tag)
-    );
-
-    return spreadsheet;
-  }
-
-  private md5(data: string) {
-    return createHash('md5').update(data).digest('hex');
-  }
-
-  private createSHA(guildId: string, clanTags: string[], sheetType: SheetType) {
-    if (sheetType === SheetType.CLANS) {
-      return this.md5(`${guildId}-#00000-${sheetType}`);
-    }
-
-    return this.md5(
-      `${guildId}-${clanTags
-        .map((tag) => tag)
-        .sort((a, b) => a.localeCompare(b))
-        .join('-')}-${sheetType}`
-    );
-  }
-
-  private async getGoogleSheetId(sheetType: SheetType, guildId: string, clanTags: string[]) {
-    const sha = this.createSHA(guildId, clanTags, sheetType);
-
-    return this.client.db.collection(Collections.GOOGLE_SHEETS).findOne({ sha });
-  }
-
-  private async createGoogleSheetSHA(sheetType: SheetType, spreadsheetId: string, guildId: string, clanTags: string[]) {
-    const sha = this.createSHA(guildId, clanTags, sheetType);
-
-    return this.client.db.collection(Collections.GOOGLE_SHEETS).updateOne(
+    await this.client.db.collection(Collections.GOOGLE_SHEETS).updateOne(
       { sha },
       {
         $inc: { exported: 1 },
-        $set: { updatedAt: new Date() },
+        $set: { updatedAt: new Date(), sheetCount: sheets.length },
         $setOnInsert: {
-          guildId,
+          guildId: guild.id,
           clanTags,
           sha,
-          spreadsheetId,
+          spreadsheetId: spreadsheet.spreadsheetId,
           sheetType,
           createdAt: new Date()
         }
       },
       { upsert: true }
     );
+
+    return spreadsheet;
+  }
+
+  private createSha({ guildId, clanTags, sheetType }: { guildId: string; clanTags: string[]; sheetType: SheetType }) {
+    const text = `${guildId}-${clanTags
+      .map((tag) => tag)
+      .sort((a, b) => a.localeCompare(b))
+      .join('-')}-${sheetType}`;
+    return createHash('md5').update(text).digest('hex');
   }
 }

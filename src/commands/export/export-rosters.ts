@@ -150,7 +150,7 @@ export default class RosterExportCommand extends Command {
     );
 
     const spreadsheet = await this.client.util.createOrUpdateSheet({
-      clans,
+      clans: [{ tag: args.category || 'ALL' }],
       guild: interaction.guild,
       label: 'Rosters',
       sheets,

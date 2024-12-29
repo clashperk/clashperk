@@ -246,12 +246,14 @@ export const updateGoogleSheet = async (
       }))
     );
 
-    await sheet.spreadsheets.batchUpdate({
-      spreadsheetId,
-      requestBody: {
-        requests: [...replaceSheetRequests]
-      }
-    });
+    if (replaceSheetRequests.length) {
+      await sheet.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [...replaceSheetRequests]
+        }
+      });
+    }
   }
 
   const clearSheetRequests: SchemaRequest[] = sheets

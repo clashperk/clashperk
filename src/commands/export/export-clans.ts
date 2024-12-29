@@ -60,7 +60,7 @@ export default class ExportClansCommand extends Command {
     ];
 
     const spreadsheet = await this.client.util.createOrUpdateSheet({
-      clans,
+      clans: [{ tag: '#00000' }],
       guild: interaction.guild,
       label: 'Clans Export',
       sheets,
