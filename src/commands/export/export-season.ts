@@ -115,7 +115,7 @@ export default class ExportSeason extends Command {
       guild: interaction.guild,
       label: `Season Stats ${season}`,
       sheets,
-      sheetType: SheetType.REGULAR_WARS
+      sheetType: SheetType.SEASON
     });
 
     return interaction.editReply({ content: `**Season Export (${season})**`, components: getExportComponents(spreadsheet) });
