@@ -71,6 +71,8 @@ const fields = {
   _clanGamesCompletionTime: `${EMOJIS.CLAN_GAMES} Fastest Clan Games Completion`
 };
 
+type FieldKeys = keyof typeof fields;
+
 export default class SummaryBestCommand extends Command {
   public constructor() {
     super('summary-best', {
@@ -670,9 +672,18 @@ export default class SummaryBestCommand extends Command {
   }
 
   private formatNumber(key: keyof typeof fields, value: number) {
-    if (key === '_trophies' || key === '_trophiesGained' || key === '_versusTrophies') {
+    const excludedFields = [
+      '_trophies',
+      '_trophiesGained',
+      '_versusTrophies',
+      '_attackWins',
+      '_versusAttackWins'
+    ] satisfies FieldKeys[] as FieldKeys[];
+
+    if (excludedFields.includes(key)) {
       return (value || 0).toString();
     }
+
     return Util.formatNumber(value);
   }
 }

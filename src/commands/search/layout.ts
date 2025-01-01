@@ -47,10 +47,27 @@ export default class LayoutCommand extends Command {
 
     // const isValidLayout = await this.validateScreenshot(args.screenshot);
     // if (!isValidLayout) {
-    // 	return interaction.editReply({ content: 'Invalid base layout screenshot was provided.' });
+    //   return interaction.editReply({ content: 'Invalid base layout screenshot was provided.' });
     // }
 
-    const matched = new URL(args.layout_link).searchParams.get('id')?.match(/TH\d+/)?.at(0);
+    const layoutTypes: Record<string, string> = {
+      'HV': 'Town Hall',
+      'BB2': 'Builder Base',
+      'CC:0': 'Capital Peak',
+      'CC:1': 'Barbarian Champ',
+      'CC:2': 'Wizard Valley',
+      'CC:3': 'Ballon Lagoon',
+      'CC:4': "Builder's Workshop",
+      'CC:5': 'Dragon Cliff',
+      'CC:6': 'Golem Quarry',
+      'CC:7': 'Skeleton Park',
+      'CC:8': 'Goblin Mines'
+    };
+
+    const layoutId = new URL(args.layout_link).searchParams.get('id')!;
+    const [levelString, layoutType, buildingType] = layoutId.split(':');
+    const level = levelString.replace('TH', '');
+    const buildingLabel = ['HV', 'BB2'].includes(layoutType) ? layoutTypes[layoutType] : layoutTypes[`CC:${buildingType}`];
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Copy Layout').setURL(args.layout_link)
@@ -58,7 +75,7 @@ export default class LayoutCommand extends Command {
 
     const armyRow = new ActionRowBuilder<ButtonBuilder>();
     const isValidArmyLink = args.army_link && ARMY_URL_REGEX.test(args.army_link);
-    if (args.army_link && isValidArmyLink) {
+    if (args.army_link && isValidArmyLink && layoutType === 'HV') {
       armyRow.addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Primary)
@@ -69,7 +86,7 @@ export default class LayoutCommand extends Command {
     }
 
     return interaction.editReply({
-      content: args.title ?? `${matched} Layout`,
+      content: args.title ?? `## ${buildingLabel} ${level} Layout`,
       files: [new AttachmentBuilder(args.screenshot)],
       components: isValidArmyLink ? [row, armyRow] : [row]
     });
