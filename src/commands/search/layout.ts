@@ -43,64 +43,64 @@ export default class LayoutCommand extends Command {
       render_army?: boolean;
     }
   ) {
-    if (interaction.isButton()) {
-      const isAdmin = this.client.util.isManager(interaction.member) || interaction.message.author.id === interaction.user.id;
-      if (!isAdmin) {
-        return interaction.reply({ ephemeral: true, content: 'You are not allowed to edit this layout.' });
-      }
-
-      const modalCustomId = this.client.uuid(interaction.user.id);
-      const customIds = {
-        link: this.client.uuid(interaction.user.id),
-        description: this.client.uuid(interaction.user.id)
-      };
-      const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Layout');
-      const linkInput = new TextInputBuilder()
-        .setCustomId(customIds.link)
-        .setLabel('Layout Link')
-        .setPlaceholder('Enter Layout Link')
-        .setStyle(TextInputStyle.Paragraph)
-        .setMaxLength(200)
-        .setRequired(true);
-      const link = this.getUrlFromInteractionComponents(interaction);
-      if (link) linkInput.setValue(link);
-
-      const descriptionInput = new TextInputBuilder()
-        .setCustomId(customIds.description)
-        .setLabel('Description')
-        .setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
-        .setStyle(TextInputStyle.Paragraph)
-        .setMaxLength(2000)
-        .setRequired(false);
-      if (interaction.message.content && args.has_description) descriptionInput.setValue(interaction.message.content);
-
-      modal.addComponents(
-        new ActionRowBuilder<TextInputBuilder>().addComponents(linkInput),
-        new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput)
-      );
-
-      try {
-        await interaction.showModal(modal);
-
-        const modalSubmitInteraction = await interaction.awaitModalSubmit({
-          time: 10 * 60 * 1000,
-          filter: (action) => action.customId === modalCustomId
-        });
-
-        args.layout_link = modalSubmitInteraction.fields.getTextInputValue(customIds.link);
-        args.description = modalSubmitInteraction.fields.getTextInputValue(customIds.description);
-
-        await modalSubmitInteraction.deferUpdate();
-
-        return await this.handleSubmit(interaction, args);
-      } catch (error) {
-        if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
-          throw error;
-        }
-      }
+    if (!interaction.isButton()) {
+      return this.handleSubmit(interaction, args);
     }
 
-    return this.handleSubmit(interaction, args);
+    const isAdmin = this.client.util.isManager(interaction.member) || interaction.message.author.id === interaction.user.id;
+    if (!isAdmin) {
+      return interaction.reply({ ephemeral: true, content: 'You are not allowed to edit this layout.' });
+    }
+
+    const modalCustomId = this.client.uuid(interaction.user.id);
+    const customIds = {
+      link: this.client.uuid(interaction.user.id),
+      description: this.client.uuid(interaction.user.id)
+    };
+    const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Layout');
+    const linkInput = new TextInputBuilder()
+      .setCustomId(customIds.link)
+      .setLabel('Layout Link')
+      .setPlaceholder('Enter Layout Link')
+      .setStyle(TextInputStyle.Paragraph)
+      .setMaxLength(200)
+      .setRequired(true);
+    const link = this.getUrlFromInteractionComponents(interaction);
+    if (link) linkInput.setValue(link);
+
+    const descriptionInput = new TextInputBuilder()
+      .setCustomId(customIds.description)
+      .setLabel('Description')
+      .setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
+      .setStyle(TextInputStyle.Paragraph)
+      .setMaxLength(2000)
+      .setRequired(false);
+    if (interaction.message.content && args.has_description) descriptionInput.setValue(interaction.message.content);
+
+    modal.addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(linkInput),
+      new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput)
+    );
+
+    try {
+      await interaction.showModal(modal);
+
+      const modalSubmitInteraction = await interaction.awaitModalSubmit({
+        time: 10 * 60 * 1000,
+        filter: (action) => action.customId === modalCustomId
+      });
+
+      args.layout_link = modalSubmitInteraction.fields.getTextInputValue(customIds.link);
+      args.description = modalSubmitInteraction.fields.getTextInputValue(customIds.description);
+
+      await modalSubmitInteraction.deferUpdate();
+
+      return await this.handleSubmit(interaction, args);
+    } catch (error) {
+      if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+        throw error;
+      }
+    }
   }
 
   public async handleSubmit(
