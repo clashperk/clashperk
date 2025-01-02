@@ -44,6 +44,11 @@ export default class LayoutCommand extends Command {
     }
   ) {
     if (interaction.isButton()) {
+      const isAdmin = this.client.util.isManager(interaction.member) || interaction.message.author.id === interaction.user.id;
+      if (!isAdmin) {
+        return interaction.reply({ ephemeral: true, content: 'You are not allowed to edit this layout.' });
+      }
+
       const modalCustomId = this.client.uuid(interaction.user.id);
       const customIds = {
         link: this.client.uuid(interaction.user.id),
