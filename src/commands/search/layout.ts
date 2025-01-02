@@ -1,26 +1,23 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction } from 'discord.js';
+import {
+  ActionRowBuilder,
+  AttachmentBuilder,
+  BaseInteraction,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  CommandInteraction,
+  ComponentType,
+  DiscordjsError,
+  DiscordjsErrorCodes,
+  ModalBuilder,
+  ModalSubmitInteraction,
+  TextInputBuilder,
+  TextInputStyle
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
 const LAYOUT_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}[\/]?\?action=OpenLayout&id=TH[0-9]{1,2}.*$/;
 const ARMY_URL_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}[\/]?\?action=CopyArmy&army=[u|s]([\d+x-])+[s|u]?([\d+x-])+/;
-
-interface PredictionResult {
-  id: string;
-  project: string;
-  iteration: string;
-  created: string;
-  predictions: {
-    probability: number;
-    tagId: string;
-    tagName: string;
-    boundingBox: {
-      left: number;
-      top: number;
-      width: number;
-      height: number;
-    };
-  }[];
-}
 
 export default class LayoutCommand extends Command {
   public constructor() {
@@ -31,24 +28,83 @@ export default class LayoutCommand extends Command {
     });
   }
 
+  public async pre(interaction: BaseInteraction) {
+    this.defer = !interaction.isButton();
+  }
+
   public async exec(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: { screenshot: string; title?: string; layout_link: string; army_link?: string; render_army?: boolean }
+    args: {
+      screenshot: string;
+      description?: string;
+      has_description?: boolean;
+      layout_link: string;
+      army_link?: string;
+      render_army?: boolean;
+    }
   ) {
-    if (interaction.isButton() && args.render_army) {
-      const button = interaction.message.components.at(1)?.components.at(1);
-      // @ts-expect-error it exists
-      return this.handler.getCommand('army')?.exec(interaction, { link: button?.data.url });
+    if (interaction.isButton()) {
+      const modalCustomId = this.client.uuid(interaction.user.id);
+      const customIds = {
+        link: this.client.uuid(interaction.user.id),
+        description: this.client.uuid(interaction.user.id)
+      };
+      const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Layout');
+      const linkInput = new TextInputBuilder()
+        .setCustomId(customIds.link)
+        .setLabel('Layout Link')
+        .setPlaceholder('Enter Layout Link')
+        .setStyle(TextInputStyle.Paragraph)
+        .setMaxLength(200)
+        .setRequired(true);
+      const link = this.getUrlFromInteractionComponents(interaction);
+      if (link) linkInput.setValue(link);
+
+      const descriptionInput = new TextInputBuilder()
+        .setCustomId(customIds.description)
+        .setLabel('Description')
+        .setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
+        .setStyle(TextInputStyle.Paragraph)
+        .setMaxLength(2000)
+        .setRequired(false);
+      if (interaction.message.content && args.has_description) descriptionInput.setValue(interaction.message.content);
+
+      modal.addComponents(
+        new ActionRowBuilder<TextInputBuilder>().addComponents(linkInput),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput)
+      );
+
+      try {
+        await interaction.showModal(modal);
+
+        const modalSubmitInteraction = await interaction.awaitModalSubmit({
+          time: 10 * 60 * 1000,
+          filter: (action) => action.customId === modalCustomId
+        });
+
+        args.layout_link = modalSubmitInteraction.fields.getTextInputValue(customIds.link);
+        args.description = modalSubmitInteraction.fields.getTextInputValue(customIds.description);
+
+        await modalSubmitInteraction.deferUpdate();
+
+        return await this.handleSubmit(interaction, args);
+      } catch (error) {
+        if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          throw error;
+        }
+      }
     }
 
+    return this.handleSubmit(interaction, args);
+  }
+
+  public async handleSubmit(
+    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | ModalSubmitInteraction<'cached'>,
+    args: { screenshot: string; description?: string; layout_link: string; army_link?: string; render_army?: boolean }
+  ) {
     if (!LAYOUT_REGEX.test(args.layout_link)) {
-      return interaction.editReply({ content: 'Invalid base layout link was provided.' });
+      return interaction.followUp({ ephemeral: true, content: 'Invalid layout link was provided.' });
     }
-
-    // const isValidLayout = await this.validateScreenshot(args.screenshot);
-    // if (!isValidLayout) {
-    //   return interaction.editReply({ content: 'Invalid base layout screenshot was provided.' });
-    // }
 
     const layoutTypes: Record<string, string> = {
       'HV': 'Town Hall',
@@ -69,9 +125,14 @@ export default class LayoutCommand extends Command {
     const level = levelString.replace('TH', '');
     const buildingLabel = ['HV', 'BB2'].includes(layoutType) ? layoutTypes[layoutType] : layoutTypes[`CC:${buildingType}`];
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Copy Layout').setURL(args.layout_link)
-    );
+    const row = new ActionRowBuilder<ButtonBuilder>()
+      .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Copy Layout').setURL(args.layout_link))
+      .addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(this.createId({ cmd: this.id, defer: false, has_description: !!args.description }))
+          .setLabel('Edit')
+      );
 
     const armyRow = new ActionRowBuilder<ButtonBuilder>();
     const isValidArmyLink = args.army_link && ARMY_URL_REGEX.test(args.army_link);
@@ -86,25 +147,19 @@ export default class LayoutCommand extends Command {
     }
 
     return interaction.editReply({
-      content: args.title ?? `## ${buildingLabel} ${level} Layout`,
-      files: [new AttachmentBuilder(args.screenshot)],
-      components: isValidArmyLink ? [row, armyRow] : [row]
+      content: args.description || `**${buildingLabel} ${level} Layout**`,
+      components: isValidArmyLink ? [row, armyRow] : [row],
+      ...(args.screenshot && { files: [new AttachmentBuilder(args.screenshot)] })
     });
   }
 
-  async validateScreenshot(screenshotUrl: string) {
-    const res = await fetch(
-      `https://southcentralus.api.cognitive.microsoft.com/customvision/v3.0/Prediction/2f3793f7-6f80-498c-aff0-87b69aba6f36/detect/iterations/Iteration2/url`,
-      {
-        headers: {
-          'Prediction-Key': process.env.CUSTOM_VISION_PREDICTION_KEY!,
-          'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify({ Url: screenshotUrl })
+  private getUrlFromInteractionComponents(interaction: ButtonInteraction) {
+    const actionRow = interaction.message.components[0];
+    if (actionRow.type === ComponentType.ActionRow) {
+      const button = actionRow.components[0];
+      if (button.type === ComponentType.Button) {
+        return button.url;
       }
-    );
-    const body = (await res.json()) as unknown as PredictionResult;
-    return body.predictions.some((prediction) => prediction.probability * 100 >= 95);
+    }
   }
 }
