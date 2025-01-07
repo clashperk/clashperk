@@ -9,13 +9,12 @@ services:
       - .env
     mem_limit: 8gb
     ports:
-      - '8070:8080'
-    # healthcheck:
-    #   test: wget -qO - localhost:8080 || exit 1
-    #   interval: 60s
-    #   timeout: 30s
-    #   retries: 1
-    #   start_period: 60s
+      - '8070:8070'
+    healthcheck:
+      test: wget -qO - localhost:8070 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 120
     networks:
       - default_net
 

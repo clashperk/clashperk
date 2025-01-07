@@ -56,7 +56,7 @@ const server = createServer((_, res) => {
   res.end(JSON.stringify({ isReady }));
 });
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8070;
 server.listen(port, () => {
   manager.log(`Listening on http://localhost:${port}`);
 });

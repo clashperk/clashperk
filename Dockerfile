@@ -27,8 +27,8 @@ ENV GIT_SHA=$GIT_SHA
 
 ENV NODE_OPTIONS="--trace-warnings --enable-source-maps"
 ENV TZ=UTC
-ENV PORT=8080
+ENV PORT=8070
 
-EXPOSE 8080
+EXPOSE 8070
 
 CMD ["node", "dist/src/index.js"]
