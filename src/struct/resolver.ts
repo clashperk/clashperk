@@ -118,6 +118,10 @@ export class Resolver {
   }
 
   private async updateLastSearchedPlayer(user: User, player: APIPlayer) {
+    await this.indexer.reSyncClanHistory(player);
+
+    if (player.trophies >= 4900) await this.indexer.reSyncLegends(player);
+
     await this.client.db.collection(Collections.USERS).updateOne(
       { userId: user.id },
       {
@@ -130,7 +134,8 @@ export class Resolver {
       },
       { upsert: true }
     );
-    return this.indexer.index({ name: player.name, tag: player.tag, userId: user.id }, ElasticIndex.RECENT_PLAYERS);
+
+    await this.indexer.index({ name: player.name, tag: player.tag, userId: user.id }, ElasticIndex.RECENT_PLAYERS);
   }
 
   private async updateLastSearchedClan(user: User, clan: APIClan) {
@@ -146,7 +151,8 @@ export class Resolver {
       },
       { upsert: true }
     );
-    return this.indexer.index({ name: clan.name, tag: clan.tag, userId: user.id }, ElasticIndex.RECENT_CLANS);
+
+    await this.indexer.index({ name: clan.name, tag: clan.tag, userId: user.id }, ElasticIndex.RECENT_CLANS);
   }
 
   private async fail(interaction: BaseInteraction, content: string) {

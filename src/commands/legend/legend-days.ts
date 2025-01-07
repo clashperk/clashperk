@@ -1,6 +1,6 @@
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
-import { LegendAttacksEntity, PlayersEntity } from '@app/entities';
-import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
+import { LegendAttacksEntity } from '@app/entities';
+import { APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
@@ -52,25 +52,6 @@ export default class LegendDaysCommand extends Command {
 
     const seasonId = Season.ID;
     const legend = await this.client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
-
-    // Updating the players DB
-    await this.client.db.collection<PlayersEntity>(Collections.PLAYERS).updateOne(
-      { tag: data.tag },
-      {
-        $setOnInsert: {
-          lastSeen: moment().subtract(1, 'day').toDate()
-        },
-        $set: {
-          name: data.name,
-          townHallLevel: data.townHallLevel,
-          leagueId: data.league?.id ?? (data.trophies >= 5000 ? LEGEND_LEAGUE_ID : UnrankedLeagueData.id),
-          clan: data.clan ? { name: data.clan.name, tag: data.clan.tag } : {}
-        }
-      },
-      {
-        upsert: true
-      }
-    );
 
     if (!legend) {
       return interaction.editReply(

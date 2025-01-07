@@ -21,6 +21,7 @@ export * from './custom-bot.entity.js';
 export * from './cwl-groups.entity.js';
 export * from './flag-alert-logs.entity.js';
 export * from './flags.entity.js';
+export * from './global-players.entity.js';
 export * from './google-sheets.entity.js';
 export * from './legend-attacks.entity.js';
 export * from './patrons.entity.js';
