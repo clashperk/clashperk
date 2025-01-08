@@ -73,7 +73,7 @@ export default class ExportCWL extends Command {
             { name: 'Name', width: 160, align: 'LEFT' },
             { name: 'Tag', width: 120, align: 'LEFT' },
             { name: 'Town Hall', width: 100, align: 'RIGHT' },
-            { name: 'Wars Participated ', width: 100, align: 'RIGHT' },
+            { name: 'Wars Participated', width: 100, align: 'RIGHT' },
             { name: 'Number of Attacks', width: 100, align: 'RIGHT' },
             { name: 'Attack Percentage', width: 100, align: 'RIGHT' },
             { name: 'Total Stars', width: 100, align: 'RIGHT' },
@@ -94,9 +94,13 @@ export default class ExportCWL extends Command {
             { name: 'Avg Def Dest', width: 100, align: 'RIGHT' },
             { name: 'Lower TH Hits (Dips)', width: 100, align: 'RIGHT' },
             { name: 'Upper TH Hits (Reaches)', width: 100, align: 'RIGHT' },
-            { name: 'Avg. Target Rank', width: 100, align: 'RIGHT' },
+            {
+              name: 'Avg. Target Position',
+              width: 100,
+              align: 'RIGHT',
+              note: 'The average position of opponents a player attacked over a period. For example, attacks on positions 20, 25, and 30 yield an average of 25'
+            },
 
-            // { name: 'Same TH Hits', width: 100, align: 'RIGHT' },
             { name: `${chunk.name}`, width: 100, align: 'RIGHT' },
             { name: `${chunk.tag}`, width: 100, align: 'RIGHT' }
           ],

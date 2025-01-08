@@ -59,6 +59,16 @@ const getUserEnteredFormat = (value?: string | number | boolean | Date | null) =
   if (typeof value === 'string' && allowedFormulas.some((formula) => value.startsWith(formula))) {
     return { hyperlinkDisplayType: 'LINKED' };
   }
+
+  if (typeof value === 'number' && value % 1 !== 0) {
+    return {
+      numberFormat: {
+        type: 'NUMBER',
+        pattern: '0.00'
+      }
+    };
+  }
+
   return {};
 };
 
@@ -211,7 +221,8 @@ const createColumnRequest = (columns: CreateGoogleSheet['columns']) => {
         wrapStrategy: 'WRAP',
         textFormat: { bold: true },
         verticalAlignment: 'MIDDLE'
-      }
+      },
+      note: column.note
     }))
   };
 };
@@ -224,12 +235,16 @@ export const updateGoogleSheet = async (
   const replaceSheetRequests: SchemaRequest[] = [];
 
   if (options.recreate) {
-    const { data } = await sheet.spreadsheets.get({ spreadsheetId });
+    const {
+      data: { sheets: oldSheets }
+    } = await sheet.spreadsheets.get({ spreadsheetId });
+
     replaceSheetRequests.push(
-      ...(data.sheets || []).slice(1).map((_, idx) => ({
+      ...(oldSheets || []).slice(1).map((_, idx) => ({
         deleteSheet: { sheetId: idx + 1 }
       }))
     );
+
     replaceSheetRequests.push(
       ...sheets.slice(1).map((sheet, sheetId) => ({
         addSheet: {
@@ -410,6 +425,6 @@ export default {
 
 export interface CreateGoogleSheet {
   title: string;
-  columns: { align: string; width: number; name: string }[];
+  columns: { align: string; width: number; name: string; note?: string }[];
   rows: (string | number | Date | boolean | undefined | null)[][];
 }

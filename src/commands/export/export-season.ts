@@ -76,7 +76,12 @@ export default class ExportSeason extends Command {
           { name: 'Trophies Gained', width: 100, align: 'RIGHT' },
           { name: 'Season-End Trophies', width: 100, align: 'RIGHT' },
           { name: 'Versus-Trophies Gained', width: 100, align: 'RIGHT' },
-          { name: 'War-Stars Gained', width: 100, align: 'RIGHT' },
+          {
+            name: 'War-Stars Gained',
+            width: 100,
+            align: 'RIGHT',
+            note: "It's calculated from the player's War Hero achievement."
+          },
           { name: 'CWL-Stars Gained', width: 100, align: 'RIGHT' },
           { name: 'Gold Looted', width: 100, align: 'RIGHT' },
           { name: 'Elixir Looted', width: 100, align: 'RIGHT' },

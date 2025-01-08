@@ -1,5 +1,5 @@
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder, time } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, time } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -21,7 +21,7 @@ export default class SummaryWarsCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
     const result = (await Promise.all(clans.map((clan) => this.getWAR(clan.tag)))).flat();
@@ -41,6 +41,9 @@ export default class SummaryWarsCommand extends Command {
     const chunks = Array(Math.ceil(sorted.length / 15))
       .fill(0)
       .map(() => sorted.splice(0, 15));
+
+    const embeds: EmbedBuilder[] = [];
+
     for (const chunk of chunks) {
       const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
       for (const data of chunk) {
@@ -53,7 +56,26 @@ export default class SummaryWarsCommand extends Command {
           ].join('\n')
         });
       }
-      await interaction.followUp({ embeds: [embed] });
+      embeds.push(embed);
+    }
+
+    if (embeds.length === 1) {
+      embeds.forEach((embed) => embed.setTimestamp());
+    }
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(EMOJIS.REFRESH)
+        .setCustomId(this.createId({ cmd: this.id, clans: resolvedArgs }))
+    );
+
+    if (embeds.length === 1) {
+      return interaction.editReply({ embeds: embeds, components: [row] });
+    }
+
+    for (const embed of embeds) {
+      await interaction.followUp({ embeds: [embed], components: [] });
     }
   }
 

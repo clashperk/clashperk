@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, WarType } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -14,7 +14,10 @@ export default class SummaryMissedWarsCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string; is_reversed?: boolean }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; season?: string; war_type?: string; is_reversed?: boolean }
+  ) {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -27,6 +30,14 @@ export default class SummaryMissedWarsCommand extends Command {
         .find({
           $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
           state: 'warEnded',
+          warType:
+            args.war_type === 'regular-and-cwl'
+              ? { $in: [WarType.REGULAR, WarType.CWL] }
+              : args.war_type === 'friendly'
+                ? WarType.FRIENDLY
+                : args.war_type === 'cwl'
+                  ? WarType.CWL
+                  : WarType.REGULAR,
           startTime: { $gte: new Date(season) }
         })
         .sort({ _id: -1 })
@@ -56,6 +67,7 @@ export default class SummaryMissedWarsCommand extends Command {
     }
 
     const embed = this.getEmbed(members, season);
+    embed.setTimestamp();
 
     const payload = {
       cmd: this.id,

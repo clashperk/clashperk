@@ -48,6 +48,8 @@ export default class ExportWarsCommand extends Command {
       const members: { [key: string]: any } = {};
       for await (const war of cursor) {
         const clan: APIWarClan = war.clan.tag === tag ? war.clan : war.opponent;
+        const opponent: APIWarClan = war.clan.tag === tag ? war.opponent : war.clan;
+
         const attacks = clan.members
           .filter((m) => m.attacks?.length)
           .map((m) => m.attacks!)
@@ -67,6 +69,7 @@ export default class ExportWarsCommand extends Command {
             defCount: 0,
             of: 0,
             defDestruction: 0,
+            attackPosition: 0,
             wars: 0
           };
 
@@ -77,13 +80,16 @@ export default class ExportWarsCommand extends Command {
           for (const atk of m.attacks ?? []) {
             const prev = this.client.coc.getPreviousBestAttack(attacks, atk);
             member.trueStars += Math.max(0, atk.stars - (prev?.stars ?? 0));
+
+            const defender = opponent.members.find((mem) => mem.tag === atk.defenderTag)!;
+            member.attackPosition += defender.mapPosition;
           }
 
           if (m.attacks?.length) {
             member.attacks += m.attacks.length;
             member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
             member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);
-            member.starTypes.push(...m.attacks.map((atk: any) => atk.stars));
+            member.starTypes.push(...m.attacks.map((atk) => atk.stars));
           }
 
           if (m.bestOpponentAttack) {
@@ -110,8 +116,8 @@ export default class ExportWarsCommand extends Command {
         { name: 'Name', width: 160, align: 'LEFT' },
         { name: 'Tag', width: 120, align: 'LEFT' },
         { name: 'Town Hall', width: 100, align: 'RIGHT' },
-        { name: 'War Count', width: 100, align: 'RIGHT' },
-        { name: 'Total Attacks', width: 100, align: 'RIGHT' },
+        { name: 'Wars Participated', width: 100, align: 'RIGHT' },
+        { name: 'Number of Attacks', width: 100, align: 'RIGHT' },
         { name: 'Total Stars', width: 100, align: 'RIGHT' },
         { name: 'Avg. Stars', width: 100, align: 'RIGHT' },
         { name: 'True Stars', width: 100, align: 'RIGHT' },
@@ -128,6 +134,13 @@ export default class ExportWarsCommand extends Command {
         { name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
         { name: 'Total Def Dest', width: 100, align: 'RIGHT' },
         { name: 'Avg. Def Dest', width: 100, align: 'RIGHT' },
+        {
+          name: 'Avg. Target Position',
+          width: 100,
+          align: 'RIGHT',
+          note: 'The average position of opponents a player attacked over a period. For example, attacks on positions 20, 25, and 30 yield an average of 25'
+        },
+
         { name: `${chunk.name}`, width: 100, align: 'RIGHT' },
         { name: `${chunk.tag}`, width: 100, align: 'RIGHT' }
       ],
@@ -136,7 +149,7 @@ export default class ExportWarsCommand extends Command {
         m.tag,
         m.townHallLevel,
         m.wars,
-        m.of,
+        m.attacks,
         m.stars,
         Number((m.stars / m.of || 0).toFixed(2)),
         m.trueStars,
@@ -152,7 +165,8 @@ export default class ExportWarsCommand extends Command {
         m.defStars,
         Number((m.defStars / m.defCount || 0).toFixed(2)),
         Number(m.defDestruction.toFixed(2)),
-        Number((m.defDestruction / m.defCount || 0).toFixed(2))
+        Number((m.defDestruction / m.defCount || 0).toFixed(2)),
+        Number((m.attackPosition / m.attacks || 0).toFixed(2))
       ]),
       title: `${chunk.name} (${chunk.tag})`
     }));

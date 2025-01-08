@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, WarType } from '@app/constants';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
@@ -21,7 +21,10 @@ export default class ExportMissed extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { limit?: number; clans?: string; war_type?: string; season?: string }
+  ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -38,6 +41,14 @@ export default class ExportMissed extends Command {
           {
             $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
             state: 'warEnded',
+            warType:
+              args.war_type === 'regular-and-cwl'
+                ? { $in: [WarType.REGULAR, WarType.CWL] }
+                : args.war_type === 'friendly'
+                  ? WarType.FRIENDLY
+                  : args.war_type === 'cwl'
+                    ? WarType.CWL
+                    : WarType.REGULAR,
             ...query
           },
           args.season ? {} : { limit }
