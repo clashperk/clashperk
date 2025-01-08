@@ -195,7 +195,7 @@ export class ClashClient extends RESTManager {
     for (const { warTags } of body.rounds.filter((en) => !en.warTags.includes('#0')).slice(-2)) {
       for (const warTag of warTags) {
         const { body: data, res } = await this.getClanWarLeagueRound(warTag);
-        if (!res.ok) continue;
+        if (!res.ok || data.state === 'notInWar') continue;
         const round = body.rounds.findIndex((en) => en.warTags.includes(warTag));
         if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
           const clan = data.clan.tag === clanTag ? data.clan : data.opponent;

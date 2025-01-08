@@ -74,7 +74,7 @@ export class ClanWarScheduler {
       await this.schedulers.deleteMany({ reminderId: reminder._id, triggered: false });
       await this.create(reminder);
     }
-    this.client.logger.debug(`Schedular restored for ${guildId}`, { label: ClanWarScheduler.name });
+    this.client.logger.log(`Schedular restored for ${guildId}`, { label: ClanWarScheduler.name });
   }
 
   public async create(reminder: ClanWarRemindersEntity) {

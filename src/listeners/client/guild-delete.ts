@@ -28,7 +28,7 @@ export default class GuildDeleteListener extends Listener {
   public async exec(guild: Guild) {
     if (!guild.available) return;
     this.client.util.setPresence();
-    this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_DELETE' });
+    this.client.logger.log(`${guild.name} (${guild.id})`, { label: 'GUILD_DELETE' });
 
     await this.delete(guild);
 

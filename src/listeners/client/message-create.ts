@@ -61,7 +61,7 @@ export default class MessageCreateListener extends Listener {
       keys.forEach((key, index) => (resolved[key] = contents[index]));
       if (!keys.length) resolved.content = content;
 
-      this.client.logger.debug(`${command.id}`, { label: `${message.guild.name}/${message.author.displayName}` });
+      this.client.logger.log(`${command.id}`, { label: `${message.guild.name}/${message.author.displayName}` });
       await command.run(message, resolved);
     } catch (error) {
       this.client.logger.error(`${command.id} ~ ${error as string}`, {

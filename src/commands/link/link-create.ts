@@ -56,17 +56,6 @@ export default class LinkCreateCommand extends Command {
     const member = args.member ?? interaction.member;
     if (member.user.bot) return interaction.editReply(this.i18n('command.link.create.no_bots', { lng: interaction.locale }));
 
-    if (interaction.user.id !== member.user.id) {
-      this.client.logger.debug(
-        `${interaction.user.username} (${
-          interaction.user.id
-        }) attempted to link [clan_tag: ${args.clan_tag!}] [player_tag: ${args.player_tag!}] on behalf of ${
-          member.user.username
-        } (${member.user.id})`,
-        { label: 'LINK' }
-      );
-    }
-
     // Server disallowed linking users;
     if (
       this.client.settings.get(interaction.guild, Settings.LINKS_MANAGER_ROLE) &&

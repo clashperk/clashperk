@@ -7,14 +7,16 @@ const COLORS: Record<string, string> = {
   debug: 'yellow',
   info: 'cyan',
   warn: 'magenta',
-  error: 'red'
+  error: 'red',
+  log: 'grey'
 };
 
 const TAGS: Record<string, string> = {
   debug: '[DEBUG]',
   info: '[INFO ]',
   warn: '[WARN ]',
-  error: '[ERROR]'
+  error: '[ERROR]',
+  log: '[INFO ]'
 };
 
 export class Logger {
@@ -25,7 +27,7 @@ export class Logger {
   }
 
   public log(message: string | unknown, { label }: { label?: string }) {
-    return this.write(message, { label: chalk.red.bold(label), tag: 'debug' });
+    return this.write(message, { label, tag: 'log' });
   }
 
   public info(message: string | unknown, { label }: { label?: string }) {

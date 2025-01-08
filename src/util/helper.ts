@@ -129,7 +129,7 @@ export const recoverDonations = async (clan: APIClan, seasonId: string) => {
   const redisKey = `RECOVERY:${seasonId}:${clan.tag}`;
   if (await client.redis.connection.get(redisKey)) return;
 
-  client.logger.debug(`Recovering donations for ${clan.tag}...`, { label: 'DonationRecovery' });
+  client.logger.log(`Recovering donations for ${clan.tag}...`, { label: 'DonationRecovery' });
 
   const { aggregations } = await client.elastic.search({
     query: {

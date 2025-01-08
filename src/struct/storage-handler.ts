@@ -303,7 +303,7 @@ export class StorageHandler {
       name: this.client.user!.displayName,
       avatar: this.client.user!.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
     });
-    this.client.logger.debug(`Created webhook for ${channel.guild.name}#${channel.name}`, { label: 'HOOK' });
+    this.client.logger.log(`Created webhook for ${channel.guild.name}#${channel.name}`, { label: 'HOOK' });
     return webhook;
   }
 
@@ -490,7 +490,7 @@ export class StorageHandler {
     }
 
     if (conflicts.length) {
-      this.client.logger.debug(
+      this.client.logger.log(
         conflicts.map(({ playerTag }) => playerTag),
         { label: 'AccountConflicts' }
       );

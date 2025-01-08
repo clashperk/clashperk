@@ -166,7 +166,7 @@ export class CustomBotManager {
 
     try {
       await this._upgradeService(bot.applicationId);
-      this.client.logger.debug(`Custom bot "${bot.name}" was set to production.`, { label: 'CUSTOM-BOT' });
+      this.client.logger.log(`Custom bot "${bot.name}" was set to production.`, { label: 'CUSTOM-BOT' });
     } catch (error) {
       captureException(error);
 
@@ -192,7 +192,7 @@ export class CustomBotManager {
       await this.addGuild({ applicationId: bot.applicationId, guildId });
     }
 
-    this.client.logger.debug(`Guilds restored.`, { label: CustomBotManager.name });
+    this.client.logger.log(`Guilds restored.`, { label: CustomBotManager.name });
   }
 
   private async _deployWebhook(payload: WebhookMessageCreateOptions) {

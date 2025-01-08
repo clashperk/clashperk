@@ -29,7 +29,7 @@ export default class MissingPermissionsListener extends Listener {
     }[type];
 
     const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
-    this.client.logger.debug(`${command.id} ~ ${type}Permissions (${missing.join(', ')})`, { label });
+    this.client.logger.log(`${command.id} ~ ${type}Permissions (${missing.join(', ')})`, { label });
 
     return interaction.reply({ content: text(), ephemeral: true });
   }

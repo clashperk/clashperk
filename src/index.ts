@@ -38,7 +38,7 @@ class Manager extends ShardingManager {
   }
 
   public log(message: string) {
-    this.logger.debug(message, { label: ShardingManager.name });
+    this.logger.info(message, { label: ShardingManager.name });
   }
 }
 

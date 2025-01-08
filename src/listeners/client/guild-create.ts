@@ -29,7 +29,7 @@ export default class GuildCreateListener extends Listener {
   public async exec(guild: Guild) {
     if (!guild.available) return;
     this.client.util.setPresence();
-    this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
+    this.client.logger.log(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
     await this.intro(guild).catch(() => null);
 

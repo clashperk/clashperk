@@ -88,7 +88,7 @@ export default class ClanActivityCommand extends Command {
     });
 
     const diff = process.hrtime(hrStart);
-    this.client.logger.debug(`Rendered in ${(diff.at(0)! * 1000 + diff.at(1)! / 1000000).toFixed(2)}ms`, { label: 'CHART' });
+    this.client.logger.info(`Rendered in ${(diff.at(0)! * 1000 + diff.at(1)! / 1000000).toFixed(2)}ms`, { label: 'CHART' });
   }
 
   private async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {

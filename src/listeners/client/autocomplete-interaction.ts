@@ -221,9 +221,6 @@ export default class AutocompleteInteractionListener extends Listener {
 
   private async timezoneAutocomplete(interaction: AutocompleteInteraction, focused: string) {
     const query = interaction.options.getString(focused)?.trim();
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
-      label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
-    });
     const text = query?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') ?? '';
 
     const now = Date.now();
@@ -309,12 +306,7 @@ export default class AutocompleteInteractionListener extends Listener {
     const filter: Filter<IRoster> = {
       guildId: interaction.guild.id
     };
-
     const query = interaction.options.getString(focused)?.trim();
-
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
     const now = Date.now();
 
     if (query) {
@@ -349,10 +341,6 @@ export default class AutocompleteInteractionListener extends Listener {
       guildId: interaction.guild.id
     };
     const query = interaction.options.getString(focused)?.trim();
-
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
     const now = Date.now();
 
     if (query) {
@@ -382,11 +370,7 @@ export default class AutocompleteInteractionListener extends Listener {
       ?.trim()
       ?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
     const now = Date.now();
-
     const aliases = clans.filter((clan) => clan.alias && (query ? new RegExp(`.*${query}.*`, 'i').test(clan.alias) : true)).slice(0, 24);
 
     this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
@@ -429,10 +413,6 @@ export default class AutocompleteInteractionListener extends Listener {
 
   private async playerTagAutocomplete(interaction: AutocompleteInteraction, focused: string) {
     const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '').slice(0, 500);
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
-      label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
-    });
-
     const userId = interaction.user.id;
 
     const now = Date.now();
@@ -517,10 +497,6 @@ export default class AutocompleteInteractionListener extends Listener {
 
   private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
     const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '')?.slice(0, 500);
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
-
     if (!query) {
       return this.client.autocomplete.clanAutoComplete(interaction, { withCategory: false, isMulti: true });
     }
@@ -608,9 +584,6 @@ export default class AutocompleteInteractionListener extends Listener {
 
   private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
     const query = interaction.options.getString(focused)?.trim()?.slice(0, 500);
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ searching for "${query ?? ''}"`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
 
     const userId = interaction.user.id;
     const guildId = interaction.guild.id;

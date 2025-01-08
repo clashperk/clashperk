@@ -97,7 +97,7 @@ export class RolesManager {
       this.queues.set(guildId, []);
 
       await this.delay(1000);
-      this.client.logger.debug(`Completing remaining ${queuedMemberTags.length} queues`, { label: RolesManager.name });
+      this.client.logger.log(`Completing remaining ${queuedMemberTags.length} queues`, { label: RolesManager.name });
       await this.trigger({ guildId, memberTags: queuedMemberTags });
     } else {
       this.queues.delete(guildId);
