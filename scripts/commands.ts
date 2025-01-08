@@ -4246,6 +4246,33 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description_localizations: translation('common.options.clan.tag.description')
           },
           {
+            name: 'war_type',
+            description: 'Regular, CWL or Friendly Wars (defaults to Regular)',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: common.choices.regular,
+                name_localizations: translation('common.choices.regular'),
+                value: 'regular'
+              },
+              {
+                name: common.choices.cwl,
+                name_localizations: translation('common.choices.cwl'),
+                value: 'cwl'
+              },
+              {
+                name: common.choices.friendly,
+                name_localizations: translation('common.choices.friendly'),
+                value: 'friendly'
+              },
+              {
+                name: common.choices.regular_and_cwl,
+                name_localizations: translation('common.choices.regular_and_cwl'),
+                value: 'regular-and-cwl'
+              }
+            ]
+          },
+          {
             name: 'season',
             required: false,
             type: ApplicationCommandOptionType.String,
@@ -4382,7 +4409,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'war_type',
-            description: 'Regular or friendly wars (defaults to Regular)',
+            description: 'Regular, CWL or Friendly Wars (defaults to Regular)',
             type: ApplicationCommandOptionType.String,
             choices: [
               {
@@ -4572,18 +4599,45 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
-            name: 'season',
-            description: common.options.season_since.description,
-            description_localizations: translation('common.options.season_since.description'),
-            type: ApplicationCommandOptionType.String,
-            choices: SEASON_SINCE_CHOICES
-          },
-          {
             name: 'clans',
             description: common.options.clans.description,
             description_localizations: translation('common.options.clans.description'),
             autocomplete: true,
             type: ApplicationCommandOptionType.String
+          },
+          {
+            name: 'war_type',
+            description: 'Regular, CWL or Friendly Wars (defaults to Regular)',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: common.choices.regular,
+                name_localizations: translation('common.choices.regular'),
+                value: 'regular'
+              },
+              {
+                name: common.choices.cwl,
+                name_localizations: translation('common.choices.cwl'),
+                value: 'cwl'
+              },
+              {
+                name: common.choices.friendly,
+                name_localizations: translation('common.choices.friendly'),
+                value: 'friendly'
+              },
+              {
+                name: common.choices.regular_and_cwl,
+                name_localizations: translation('common.choices.regular_and_cwl'),
+                value: 'regular-and-cwl'
+              }
+            ]
+          },
+          {
+            name: 'season',
+            description: common.options.season_since.description,
+            description_localizations: translation('common.options.season_since.description'),
+            type: ApplicationCommandOptionType.String,
+            choices: SEASON_SINCE_CHOICES
           },
           {
             name: 'limit',

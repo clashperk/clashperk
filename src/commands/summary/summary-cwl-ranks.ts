@@ -61,8 +61,7 @@ export default class SummaryCWLRanks extends Command {
       }, {})
     );
 
-    const embed = new EmbedBuilder();
-    embed.setColor(this.client.embed(interaction));
+    const embed = new EmbedBuilder().setTimestamp().setColor(this.client.embed(interaction));
     embed.setDescription(`${EMOJIS.CWL} **Clan War League Ranking (${season})**`);
     leagueGroups.sort(([a], [b]) => Number(b) - Number(a));
     leagueGroups.forEach(([leagueId, clans], idx) => {
