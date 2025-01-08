@@ -192,7 +192,7 @@ export class Client extends DiscordClient {
     return uniqueId;
   }
 
-  private run() {
+  private async enqueue() {
     this.enqueuer.init();
     this.patreonHandler.init();
     this.clanGamesScheduler.init();
@@ -213,23 +213,20 @@ export class Client extends DiscordClient {
     await mongoClient.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
     this.db = mongoClient.db(mongoClient.dbName);
 
-    this.settings = new SettingsProvider(this.db);
-    await this.settings.init();
+    this.settings = new SettingsProvider(this);
+    await this.settings.init({ globalOnly: true });
 
     await this.redis.connection.connect();
     await Promise.all([this.subscriber.connect(), this.publisher.connect()]);
 
     this.storage = new StorageHandler(this);
     this.enqueuer = new Enqueuer(this);
-
-    this.patreonHandler = new PatreonHandler(this);
-    await this.patreonHandler.refresh();
-
     this.stats = new StatsHandler(this);
     this.resolver = new Resolver(this);
     this.clanWarScheduler = new ClanWarScheduler(this);
     this.capitalRaidScheduler = new CapitalRaidScheduler(this);
     this.clanGamesScheduler = new ClanGamesScheduler(this);
+    this.patreonHandler = new PatreonHandler(this);
     this.commands = new CommandsMap(this);
     this.guildEvents = new GuildEventsHandler(this);
     this.rosterManager = new RosterManager(this);
@@ -238,8 +235,13 @@ export class Client extends DiscordClient {
 
     await this.coc.autoLogin();
 
-    this.once('ready', () => {
-      if (process.env.NODE_ENV === 'production') return this.run();
+    this.once('ready', async () => {
+      await this.settings.init({ globalOnly: false });
+      await this.patreonHandler.refresh();
+
+      if (process.env.NODE_ENV === 'production') {
+        await this.enqueue();
+      }
     });
 
     this.logger.info('Connecting to the Gateway', { label: 'DISCORD' });

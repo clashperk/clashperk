@@ -1,14 +1,15 @@
 import { Collections, Settings as SettingsEnum } from '@app/constants';
 import { Guild } from 'discord.js';
-import { Collection, Db } from 'mongodb';
+import { Collection } from 'mongodb';
 import { unique } from 'radash';
+import { Client } from './client.js';
 
 export class SettingsProvider {
   protected db: Collection<Settings>;
   private readonly settings = new Map();
 
-  public constructor(db: Db) {
-    this.db = db.collection(Collections.SETTINGS);
+  public constructor(private client: Client) {
+    this.db = client.db.collection(Collections.SETTINGS);
 
     const watchStream = this.db.watch(
       [
@@ -27,9 +28,17 @@ export class SettingsProvider {
     });
   }
 
-  public async init() {
-    const collection = await this.db.find({}, { projection: { _id: 0 } }).toArray();
-    for (const data of collection) {
+  public async init({ globalOnly }: { globalOnly: boolean }) {
+    const cursor = this.db.find(
+      globalOnly
+        ? { guildId: 'global' }
+        : {
+            guildId: { $in: this.client.guilds.cache.map((guild) => guild.id) }
+          },
+      { projection: { _id: 0 } }
+    );
+
+    for await (const data of cursor) {
       this.settings.set(data.guildId, data);
     }
   }
