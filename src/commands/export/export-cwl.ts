@@ -8,8 +8,6 @@ import { CreateGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 export default class ExportCWL extends Command {
   public constructor() {
     super('export-cwl', {
@@ -34,7 +32,7 @@ export default class ExportCWL extends Command {
         const data = await this.client.storage.getWarTags(clan.tag, season || moment().format('YYYY-MM'));
         if (!data) continue;
         if (args.season && data.season !== args.season) continue;
-        const { members, perRound, ranking } = await this.rounds(data, clan, season);
+        const { members, perRound, ranking } = await this.rounds(data, clan, { season });
         if (!members.length) continue;
 
         chunks.push({
@@ -43,13 +41,13 @@ export default class ExportCWL extends Command {
           members,
           ranking,
           perRound,
-          id: `${months[new Date(data.season).getMonth()]} ${new Date(data.season).getFullYear()}`
+          id: moment(data.season).format('MMM YYYY')
         });
         continue;
       }
 
       if (args.season && result.body.season !== args.season) continue;
-      const { members, perRound, ranking } = await this.rounds(result.body, clan);
+      const { members, perRound, ranking } = await this.rounds(result.body, clan, {});
       if (!members.length) continue;
       chunks.push({
         name: clan.name,
@@ -57,7 +55,7 @@ export default class ExportCWL extends Command {
         members,
         perRound,
         ranking,
-        id: `${months[new Date().getMonth()]} ${new Date().getFullYear()}`
+        id: moment().format('MMM YYYY')
       });
     }
 
@@ -100,6 +98,12 @@ export default class ExportCWL extends Command {
               align: 'RIGHT',
               note: 'The average position of opponents a player attacked over a period. For example, attacks on positions 20, 25, and 30 yield an average of 25'
             },
+            {
+              name: 'Avg. Target Distance',
+              width: 100,
+              align: 'RIGHT',
+              note: 'The average distance between the player and the opponent they attacked. For example, #5 player attacks on positions 20, 25, and 30 yield an average of -20'
+            },
 
             { name: `${chunk.name}`, width: 100, align: 'RIGHT' },
             { name: `${chunk.tag}`, width: 100, align: 'RIGHT' }
@@ -131,7 +135,8 @@ export default class ExportCWL extends Command {
               Number((m.defDestruction / m.defCount || 0).toFixed(2)),
               m.lowerHits,
               m.upperHits,
-              Number((m.attackPosition / m.attacks || 0).toFixed(2))
+              Number((m.attackPosition / m.attacks || 0).toFixed(2)),
+              Number((m.attackDistance / m.attacks || 0).toFixed(2))
             ])
         },
         {
@@ -254,7 +259,11 @@ export default class ExportCWL extends Command {
     return stars.filter((star) => star === count).length;
   }
 
-  private async rounds(body: APIClanWarLeagueGroup, clan: { tag: string }, season?: string | null) {
+  private async rounds(
+    body: APIClanWarLeagueGroup,
+    clan: { tag: string },
+    { season }: { season?: string | null; exclude_unfinished?: boolean }
+  ) {
     const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
     const clanTag = clan.tag;
     const members: { [key: string]: any } = {};
@@ -322,7 +331,7 @@ export default class ExportCWL extends Command {
 
           const __attacks = clan.members.flatMap((m) => m.attacks ?? []);
 
-          if (['inWar', 'warEnded'].includes(data.state)) {
+          if (data.state === 'warEnded' || moment().isAfter(moment(data.endTime))) {
             for (const m of clan.members) {
               members[m.tag] ??= {
                 name: m.name,
@@ -341,6 +350,7 @@ export default class ExportCWL extends Command {
                 starTypes: [],
                 defCount: 0,
                 attackPosition: 0,
+                attackDistance: 0,
                 wars: 0
               };
               const member = members[m.tag];
@@ -370,6 +380,7 @@ export default class ExportCWL extends Command {
                 }
 
                 member.attackPosition += defender.mapPosition;
+                member.attackDistance += defender.mapPosition - m.mapPosition;
               }
 
               if (m.bestOpponentAttack) {
@@ -381,7 +392,6 @@ export default class ExportCWL extends Command {
 
             perRound.push({ clan, opponent });
           }
-          // break;
         }
       }
     }

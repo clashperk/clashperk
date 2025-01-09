@@ -1,7 +1,8 @@
 import { Collections, WarType } from '@app/constants';
-import { SheetType } from '@app/entities';
+import { ClanWarsEntity, SheetType } from '@app/entities';
 import { APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
+import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
@@ -30,7 +31,7 @@ export default class ExportWarsCommand extends Command {
     const chunks = [];
     for (const { tag, name } of clans) {
       const cursor = this.client.db
-        .collection(Collections.CLAN_WARS)
+        .collection<ClanWarsEntity>(Collections.CLAN_WARS)
         .find({
           $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
           state: { $in: ['inWar', 'warEnded'] },
@@ -47,8 +48,17 @@ export default class ExportWarsCommand extends Command {
 
       const members: { [key: string]: any } = {};
       for await (const war of cursor) {
+        const ended = war.state === 'warEnded' || moment().isAfter(moment(war.endTime));
+        if (!ended) continue;
+
         const clan: APIWarClan = war.clan.tag === tag ? war.clan : war.opponent;
         const opponent: APIWarClan = war.clan.tag === tag ? war.opponent : war.clan;
+
+        clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
+        clan.members = clan.members.map((m, idx) => ({ ...m, mapPosition: idx + 1 }));
+
+        opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
+        opponent.members = opponent.members.map((m, idx) => ({ ...m, mapPosition: idx + 1 }));
 
         const attacks = clan.members
           .filter((m) => m.attacks?.length)
@@ -70,6 +80,7 @@ export default class ExportWarsCommand extends Command {
             of: 0,
             defDestruction: 0,
             attackPosition: 0,
+            attackDistance: 0,
             wars: 0
           };
 
@@ -83,6 +94,7 @@ export default class ExportWarsCommand extends Command {
 
             const defender = opponent.members.find((mem) => mem.tag === atk.defenderTag)!;
             member.attackPosition += defender.mapPosition;
+            member.attackDistance += defender.mapPosition - m.mapPosition;
           }
 
           if (m.attacks?.length) {
@@ -140,6 +152,12 @@ export default class ExportWarsCommand extends Command {
           align: 'RIGHT',
           note: 'The average position of opponents a player attacked over a period. For example, attacks on positions 20, 25, and 30 yield an average of 25'
         },
+        {
+          name: 'Avg. Target Distance',
+          width: 100,
+          align: 'RIGHT',
+          note: 'The average distance between the player and the opponent they attacked. For example, #5 player attacks on positions 20, 25, and 30 yield an average of -20'
+        },
 
         { name: `${chunk.name}`, width: 100, align: 'RIGHT' },
         { name: `${chunk.tag}`, width: 100, align: 'RIGHT' }
@@ -166,7 +184,8 @@ export default class ExportWarsCommand extends Command {
         Number((m.defStars / m.defCount || 0).toFixed(2)),
         Number(m.defDestruction.toFixed(2)),
         Number((m.defDestruction / m.defCount || 0).toFixed(2)),
-        Number((m.attackPosition / m.attacks || 0).toFixed(2))
+        Number((m.attackPosition / m.attacks || 0).toFixed(2)),
+        Number((m.attackDistance / m.attacks || 0).toFixed(2))
       ]),
       title: `${chunk.name} (${chunk.tag})`
     }));
