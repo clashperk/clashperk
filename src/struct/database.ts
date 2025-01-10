@@ -124,7 +124,7 @@ class MongoDbClient extends MongoClient {
 
       db.collection(Collections.GOOGLE_SHEETS).createIndexes([
         {
-          key: { sha: 1 },
+          key: { hash: 1 },
           unique: true
         }
       ]),
