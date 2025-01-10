@@ -8,6 +8,7 @@ import {
   ButtonStyle,
   CommandInteraction,
   EmbedBuilder,
+  MessageFlags,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
   User
@@ -259,7 +260,7 @@ export default class ProfileCommand extends Command {
       message,
       onClick: async (action) => {
         if (action.customId === customIds.export) {
-          await action.deferReply({ ephemeral: true });
+          await action.deferReply({ flags: MessageFlags.Ephemeral });
           return this.export(action, links, user);
         }
 
@@ -273,7 +274,7 @@ export default class ProfileCommand extends Command {
             // not author && has verified account
             (user.id !== action.user.id && players.some((link) => link.verified) && !isTrustedGuild)
           ) {
-            return action.reply({ ephemeral: true, content: "You're not allowed to change this user's default account." });
+            return action.reply({ flags: MessageFlags.Ephemeral, content: "You're not allowed to change this user's default account." });
           }
 
           const linkedPlayerTags = players.map((link) => link.tag);

@@ -1,4 +1,4 @@
-import { MessageComponentInteraction, StringSelectMenuInteraction } from 'discord.js';
+import { MessageComponentInteraction, MessageFlags, StringSelectMenuInteraction } from 'discord.js';
 import { i18n } from '../util/i18n.js';
 import { Client } from './client.js';
 
@@ -29,15 +29,22 @@ export default class ComponentHandler {
     if (!interaction.inCachedGuild() && command.channel !== 'dm') return true;
     if (interaction.inCachedGuild() && !interaction.channel) return true;
 
-    if (parsed.is_locked && interaction.message.interaction && interaction.message.interaction?.user.id !== interaction.user.id) {
-      await interaction.reply({ content: i18n('common.component.unauthorized', { lng: interaction.locale }), ephemeral: true });
+    if (
+      parsed.is_locked &&
+      interaction.message.interactionMetadata &&
+      interaction.message.interactionMetadata?.user.id !== interaction.user.id
+    ) {
+      await interaction.reply({
+        content: i18n('common.component.unauthorized', { lng: interaction.locale }),
+        flags: MessageFlags.Ephemeral
+      });
       return true;
     }
 
     const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
     if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) {
       if (parsed.ephemeral) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       } else {
         await interaction.deferUpdate();
       }

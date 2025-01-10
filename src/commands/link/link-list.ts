@@ -7,6 +7,7 @@ import {
   ButtonStyle,
   CommandInteraction,
   EmbedBuilder,
+  MessageFlags,
   StringSelectMenuBuilder,
   User
 } from 'discord.js';
@@ -58,7 +59,7 @@ export default class LinkListCommand extends Command {
       if (!this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE)) {
         return interaction.followUp({
           content: this.i18n('common.missing_manager_role', { lng: interaction.locale }),
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         });
       }
 
@@ -76,7 +77,7 @@ export default class LinkListCommand extends Command {
 
       return interaction.followUp({
         content: [`**Click the button below to manage Discord links on our Dashboard.**`].join('\n'),
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         components: [linkRow]
       });
     }

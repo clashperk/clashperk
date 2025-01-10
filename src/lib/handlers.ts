@@ -14,6 +14,7 @@ import {
   Message,
   MessageComponentInteraction,
   MessageContextMenuCommandInteraction,
+  MessageFlags,
   PermissionsString,
   RestEvents,
   User,
@@ -296,7 +297,7 @@ export class CommandHandler extends BaseHandler {
       await command.pre(interaction, args);
 
       if (command.defer && !interaction.deferred && !interaction.replied) {
-        await interaction.deferReply({ ephemeral: command.ephemeral });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       }
       this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
       await command.exec(interaction, args);

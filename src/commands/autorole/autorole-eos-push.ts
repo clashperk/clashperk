@@ -1,5 +1,5 @@
 import { Settings } from '@app/constants';
-import { CommandInteraction, EmbedBuilder, Guild, Role } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, Guild, MessageFlags, Role } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
 export default class EOSPushRoleCommand extends Command {
@@ -28,7 +28,7 @@ export default class EOSPushRoleCommand extends Command {
 
     const selected = roles.filter((role) => role) as Role[];
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', ephemeral: true });
+      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
     }
 
     if (selected.some((role) => this.isSystemRole(role, interaction.guild))) {

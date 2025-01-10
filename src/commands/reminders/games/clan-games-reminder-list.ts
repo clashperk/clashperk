@@ -1,6 +1,15 @@
 import { Collections } from '@app/constants';
 import { ClanGamesRemindersEntity } from '@app/entities';
-import { AnyThreadChannel, CommandInteraction, EmbedBuilder, Interaction, TextChannel, escapeMarkdown, time } from 'discord.js';
+import {
+  AnyThreadChannel,
+  CommandInteraction,
+  EmbedBuilder,
+  Interaction,
+  MessageFlags,
+  TextChannel,
+  escapeMarkdown,
+  time
+} from 'discord.js';
 import moment from 'moment';
 import { Filter } from 'mongodb';
 import { Command } from '../../../lib/handlers.js';
@@ -85,10 +94,10 @@ export default class ReminderListCommand extends Command {
 
     if (chunks.length === 1) {
       const embed = new EmbedBuilder().setDescription(chunks.join(''));
-      return interaction.followUp({ embeds: [embed], ephemeral: true });
+      return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
     }
 
     const contents = Util.splitMessage(chunks.join('\n\u200b\n'), { maxLength: 2000, char: '\n\u200b\n' });
-    for (const content of contents) await interaction.followUp({ content, ephemeral: true });
+    for (const content of contents) await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
   }
 }

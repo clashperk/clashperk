@@ -1,6 +1,6 @@
 import { Collections, Settings } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, MessageFlags } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
 
 export default class PatreonCommand extends Command {
@@ -80,7 +80,7 @@ export default class PatreonCommand extends Command {
           [`**Our Current Members (${patrons.length})**`, ...patrons.map((patron) => `0. ${patron.username}`)].join('\n')
         );
 
-        await action.reply({ embeds: [embed], ephemeral: true });
+        await action.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         return collector.stop();
       }
     });

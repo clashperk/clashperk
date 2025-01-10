@@ -2,6 +2,7 @@ import {
   CommandInteraction,
   ContextMenuCommandInteraction,
   MessageComponentInteraction,
+  MessageFlags,
   ModalSubmitInteraction,
   PermissionFlagsBits
 } from 'discord.js';
@@ -28,19 +29,19 @@ for (const Interaction of [CommandInteraction, ContextMenuCommandInteraction, Me
   Object.defineProperties(Interaction.prototype, {
     reply: {
       value: function reply(record: Record<string, unknown>) {
-        if (isEphemeral(this)) record.ephemeral = true;
+        if (isEphemeral(this)) record.flags = MessageFlags.Ephemeral;
         return _reply.call(this, record);
       }
     },
     deferReply: {
       value: function deferReply(record: Record<string, unknown>) {
-        if (isEphemeral(this)) record.ephemeral = true;
+        if (isEphemeral(this)) record.flags = MessageFlags.Ephemeral;
         return _deferReply.call(this, record);
       }
     },
     followUp: {
       value: function followUp(record: Record<string, unknown>) {
-        if (isEphemeral(this)) record.ephemeral = true;
+        if (isEphemeral(this)) record.flags = MessageFlags.Ephemeral;
         return _followUp.call(this, record);
       }
     }

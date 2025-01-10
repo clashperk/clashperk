@@ -8,6 +8,7 @@ import {
   CommandInteraction,
   EmbedBuilder,
   MessageComponentInteraction,
+  MessageFlags,
   SelectMenuComponentOptionData,
   StringSelectMenuBuilder,
   User,
@@ -67,25 +68,25 @@ export default class WarCommand extends Command {
     if (args.attacks && args.war_id) {
       const collection = this.client.db.collection(Collections.CLAN_WARS);
       const body = await collection.findOne({ id: args.war_id });
-      if (!body) return interaction.followUp({ content: 'No war found with that ID.', ephemeral: true });
+      if (!body) return interaction.followUp({ content: 'No war found with that ID.', flags: MessageFlags.Ephemeral });
 
       const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
       const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
 
       const embed = this.attacks(interaction, { ...body, clan, opponent } as unknown as APIClanWar);
-      return interaction.followUp({ embeds: [embed], ephemeral: true });
+      return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
     }
 
     if ((args.open_bases || args.openBases) && args.war_id) {
       const collection = this.client.db.collection(Collections.CLAN_WARS);
       const body = await collection.findOne({ id: args.war_id });
-      if (!body) return interaction.followUp({ content: 'No war found with that ID.', ephemeral: true });
+      if (!body) return interaction.followUp({ content: 'No war found with that ID.', flags: MessageFlags.Ephemeral });
 
       const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
       const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
 
       const embed = await this.openBases(interaction, { ...body, clan, opponent } as unknown as APIClanWar);
-      return interaction.followUp({ embeds: [embed], ephemeral: true });
+      return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
     }
 
     let body: APIClanWar | null = null;
@@ -406,7 +407,7 @@ export default class WarCommand extends Command {
 
     const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Export]`, sheets);
     return interaction.followUp({
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       content: `**War (${round.clan.name} vs ${round.opponent.name})**`,
       components: getExportComponents(spreadsheet)
     });

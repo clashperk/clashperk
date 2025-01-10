@@ -6,6 +6,7 @@ import {
   ButtonInteraction,
   ButtonStyle,
   CommandInteraction,
+  MessageFlags,
   Role,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
@@ -72,15 +73,15 @@ export default class RosterEditCommand extends Command {
   ) {
     if (args.roster === '*') return this.handleBulk(interaction);
 
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
+    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', ephemeral: true });
+    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
     if (args.delete_roster) {
       await this.client.rosterManager.delete(rosterId);
-      return interaction.followUp({ content: 'Roster deleted successfully.', ephemeral: true });
+      return interaction.followUp({ content: 'Roster deleted successfully.', flags: MessageFlags.Ephemeral });
     }
 
     if (args.clan && args.detach_clan) {
@@ -205,7 +206,7 @@ export default class RosterEditCommand extends Command {
     }
 
     const updated = await this.client.rosterManager.edit(rosterId, data);
-    if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', ephemeral: true });
+    if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', flags: MessageFlags.Ephemeral });
     this.client.rosterManager.setDefaultSettings(interaction.guild.id, updated);
 
     const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
@@ -247,7 +248,7 @@ export default class RosterEditCommand extends Command {
         data.layout = selected.layoutIds.join('/');
 
         const updated = await this.client.rosterManager.edit(rosterId, data);
-        if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', ephemeral: true });
+        if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', flags: MessageFlags.Ephemeral });
 
         const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
         return interaction.update({ embeds: [embed], components: [menuRow] });

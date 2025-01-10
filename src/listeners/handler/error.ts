@@ -7,7 +7,8 @@ import {
   ChannelType,
   DiscordAPIError,
   Interaction,
-  InteractionType
+  InteractionType,
+  MessageFlags
 } from 'discord.js';
 import { inspect } from 'node:util';
 import { Command, Listener } from '../../lib/handlers.js';
@@ -74,8 +75,8 @@ export default class ErrorListener extends Listener {
             .setURL('https://discord.gg//ppuppun')
         )
       ],
-      ephemeral: true
-    };
+      flags: MessageFlags.Ephemeral
+    } as const;
 
     try {
       if (!interaction.deferred) return await interaction.reply(message);

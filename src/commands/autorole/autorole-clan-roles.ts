@@ -1,5 +1,5 @@
 import { Collections, Settings } from '@app/constants';
-import { CommandInteraction, Guild, Role } from 'discord.js';
+import { CommandInteraction, Guild, MessageFlags, Role } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
 export default class AutoClanRoleCommand extends Command {
@@ -42,7 +42,7 @@ export default class AutoClanRoleCommand extends Command {
     }
 
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', ephemeral: true });
+      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
     }
 
     if (selected.some((role) => this.isSystemRole(role, interaction.guild))) {

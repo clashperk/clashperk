@@ -1,6 +1,15 @@
 import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 import { APIClan, APIWarClan } from 'clashofclans.js';
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  AttachmentBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  MessageFlags,
+  User
+} from 'discord.js';
 import moment from 'moment';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { aggregateRoundsForRanking, calculateLeagueRanking } from '../../helper/cwl.helper.js';
@@ -39,7 +48,7 @@ export default class CWLStatsCommand extends Command {
     ]);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
       });
     }
@@ -50,7 +59,7 @@ export default class CWLStatsCommand extends Command {
 
     if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
       });
     }
@@ -58,7 +67,7 @@ export default class CWLStatsCommand extends Command {
     const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
     if (!aggregated) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
       });
     }
@@ -203,13 +212,13 @@ export default class CWLStatsCommand extends Command {
 
     if (!collection.length && body.season !== Util.getCWLSeasonId()) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
       });
     }
     if (!collection.length) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.no_rounds', { lng: interaction.locale })
       });
     }

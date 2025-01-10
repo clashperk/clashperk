@@ -1,5 +1,5 @@
 import { BUILDER_HALL_LEVELS_FOR_ROLES, Settings } from '@app/constants';
-import { CommandInteraction, Guild, Role } from 'discord.js';
+import { CommandInteraction, Guild, MessageFlags, Role } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { ORANGE_NUMBERS } from '../../util/emojis.js';
 
@@ -51,7 +51,7 @@ export default class AutoBuilderHallRoleCommand extends Command {
     }
 
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', ephemeral: true });
+      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
     }
 
     if (selected.some((r) => this.isSystemRole(r.role, interaction.guild))) {

@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageFlags } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { Util } from '../../util/toolkit.js';
 
@@ -30,6 +30,6 @@ export default class AliasListCommand extends Command {
       ].join('\n')
     );
 
-    for (const content of chunks) await interaction.followUp({ content, ephemeral: true });
+    for (const content of chunks) await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
   }
 }

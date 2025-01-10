@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageFlags } from 'discord.js';
 import util from 'node:util';
 import { Args, Command } from '../../lib/handlers.js';
 import { Util } from '../../util/toolkit.js';
@@ -37,14 +37,17 @@ export default class EvalCommand extends Command {
       evaled = await (shard ? this.client.shard!.broadcastEval((client, code) => eval(code), { context: code }) : eval(code));
       hrDiff = process.hrtime(hrStart);
     } catch (error) {
-      return interaction.followUp({ content: `*Error while evaluating!*\`\`\`js\n${error as string}\`\`\``, ephemeral: true });
+      return interaction.followUp({
+        content: `*Error while evaluating!*\`\`\`js\n${error as string}\`\`\``,
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     const result = this._result(evaled, hrDiff, depth, shard);
     if (Array.isArray(result)) {
-      return result.slice(0, 5).map((content) => interaction.followUp({ content, ephemeral: true }));
+      return result.slice(0, 5).map((content) => interaction.followUp({ content, flags: MessageFlags.Ephemeral }));
     }
-    return interaction.followUp({ content: result as string, ephemeral: true });
+    return interaction.followUp({ content: result as string, flags: MessageFlags.Ephemeral });
   }
 
   private _result(result: string, hrDiff: number[], depth?: number, shard?: boolean) {

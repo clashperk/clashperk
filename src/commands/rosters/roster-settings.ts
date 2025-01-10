@@ -5,6 +5,7 @@ import {
   ButtonInteraction,
   ButtonStyle,
   CommandInteraction,
+  MessageFlags,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction
 } from 'discord.js';
@@ -27,11 +28,11 @@ export default class RosterEditCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; signup_disabled: boolean }) {
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
+    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', ephemeral: true });
+    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
     const customIds = {
       select: this.client.uuid(interaction.user.id),
@@ -122,12 +123,12 @@ export default class RosterEditCommand extends Command {
         ])
     );
 
-    const message = await interaction.followUp({ components: [menuRow], ephemeral: true });
+    const message = await interaction.followUp({ components: [menuRow], flags: MessageFlags.Ephemeral });
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
     const closeRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
       const updated = await this.client.rosterManager.close(rosterId);
-      if (!updated) return action.reply({ content: 'Roster was deleted.', ephemeral: true });
+      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
       await action.update({ content: 'Roster closed!', components: [] });
 
       const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
@@ -137,7 +138,7 @@ export default class RosterEditCommand extends Command {
 
     const openRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
       if (roster.endTime && new Date(roster.endTime) < new Date()) {
-        return action.reply({ content: 'This roster cannot be opened as the closing time has passed.', ephemeral: true });
+        return action.reply({ content: 'This roster cannot be opened as the closing time has passed.', flags: MessageFlags.Ephemeral });
       }
 
       if (!roster.allowMultiSignup && roster.members.length > 0 && roster.closed) {
@@ -159,7 +160,7 @@ export default class RosterEditCommand extends Command {
       }
 
       const updated = await this.client.rosterManager.open(rosterId);
-      if (!updated) return action.reply({ content: 'Roster was deleted.', ephemeral: true });
+      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
       await action.update({ content: 'Roster opened!', components: [] });
 
       const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
@@ -198,7 +199,7 @@ export default class RosterEditCommand extends Command {
 
     const clearRoster = async (action: ButtonInteraction<'cached'>) => {
       const updated = await this.client.rosterManager.clear(rosterId);
-      if (!updated) return action.reply({ content: 'Roster was deleted.', ephemeral: true });
+      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
       await action.update({ content: 'Roster cleared!', components: [] });
 
@@ -236,7 +237,7 @@ export default class RosterEditCommand extends Command {
     };
 
     const exportSheet = async (action: StringSelectMenuInteraction<'cached'>) => {
-      if (!roster.members.length) return action.reply({ content: 'Roster is empty.', ephemeral: true });
+      if (!roster.members.length) return action.reply({ content: 'Roster is empty.', flags: MessageFlags.Ephemeral });
 
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder().setLabel('Updating spreadsheet...').setStyle(ButtonStyle.Link).setURL('https://google.com').setDisabled(true)
@@ -260,7 +261,7 @@ export default class RosterEditCommand extends Command {
     const selectSortBy = async (action: StringSelectMenuInteraction<'cached'>) => {
       selected.sortBy = action.values.at(0)! as RosterSortTypes;
       const updated = await this.client.rosterManager.edit(rosterId, { sortBy: selected.sortBy });
-      if (!updated) return action.reply({ content: 'Roster was deleted.', ephemeral: true });
+      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
       await action.deferUpdate();
 
@@ -272,7 +273,7 @@ export default class RosterEditCommand extends Command {
     const selectLayout = async (action: StringSelectMenuInteraction<'cached'>) => {
       selected.layoutIds = action.values;
       const updated = await this.client.rosterManager.edit(rosterId, { layout: selected.layoutIds.join('/') });
-      if (!updated) return action.reply({ content: 'Roster was deleted.', ephemeral: true });
+      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
       await action.deferUpdate();
 
@@ -313,7 +314,7 @@ export default class RosterEditCommand extends Command {
       onClick: (action) => {
         if (!this.client.util.isManager(action.member, Settings.ROSTER_MANAGER_ROLE)) {
           return action.reply({
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
             content: this.i18n('common.missing_manager_role', { lng: action.locale })
           });
         }
@@ -324,7 +325,7 @@ export default class RosterEditCommand extends Command {
         const value = action.values.at(0)!;
         if (!this.client.util.isManager(action.member, Settings.ROSTER_MANAGER_ROLE) && !['export'].includes(value)) {
           return action.reply({
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
             content: this.i18n('common.missing_manager_role', { lng: action.locale })
           });
         }
@@ -354,7 +355,7 @@ export default class RosterEditCommand extends Command {
           case 'dashboard':
             return getLink(action);
           case 'unregistered': {
-            await action.deferReply({ ephemeral: true });
+            await action.deferReply({ flags: MessageFlags.Ephemeral });
             const command = this.handler.getCommand('roster-ping')!;
             return command.exec(action, {
               roster: rosterId.toHexString(),
@@ -363,7 +364,7 @@ export default class RosterEditCommand extends Command {
             });
           }
           case 'missing': {
-            await action.deferReply({ ephemeral: true });
+            await action.deferReply({ flags: MessageFlags.Ephemeral });
             const command = this.handler.getCommand('roster-ping')!;
             return command.exec(action, {
               roster: rosterId.toHexString(),

@@ -1,6 +1,15 @@
 import { Collections } from '@app/constants';
 import { APIPlayer } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  MessageFlags,
+  StringSelectMenuBuilder,
+  User
+} from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS, SUPER_TROOPS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
@@ -31,14 +40,17 @@ export default class BoostsCommand extends Command {
     if (!clan.members) {
       return interaction.followUp({
         content: this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }),
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
     const members = await this.client.coc._getPlayers(clan.memberList);
     const players = members.filter((mem) => mem.troops.filter((en) => en.superTroopIsActive).length);
     if (!players.length)
-      return interaction.followUp({ content: this.i18n('command.boosts.no_boosts', { lng: interaction.locale }), ephemeral: true });
+      return interaction.followUp({
+        content: this.i18n('command.boosts.no_boosts', { lng: interaction.locale }),
+        flags: MessageFlags.Ephemeral
+      });
 
     const boostTimes = await this.client.db
       .collection<{ tag: string; lastSeen: Date }>(Collections.PLAYERS)
@@ -99,14 +111,14 @@ export default class BoostsCommand extends Command {
 
     if (args.recent && !recently.length) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.boosts.no_recent_boosts', { lng: interaction.locale })
       });
     }
 
     if (args.unit && !selected) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: args.recent
           ? this.i18n('command.boosts.no_recent_unit_boosts', { lng: interaction.locale, unit: args.unit })
           : this.i18n('command.boosts.no_unit_boosts', { lng: interaction.locale, unit: args.unit })

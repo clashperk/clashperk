@@ -1,6 +1,6 @@
 import { Collections } from '@app/constants';
 import { ClanLogType, ClanStoresEntity } from '@app/entities';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, MessageFlags } from 'discord.js';
 import { WithId } from 'mongodb';
 import { cluster, title as toTitle } from 'radash';
 import { Command } from '../../lib/handlers.js';
@@ -43,7 +43,7 @@ export default class SetupListCommand extends Command {
       await interaction.editReply({ embeds: firstChunk });
 
       for (const chunks of chunksGroup) {
-        await interaction.followUp({ embeds: chunks, ephemeral: true });
+        await interaction.followUp({ embeds: chunks, flags: MessageFlags.Ephemeral });
       }
       return;
     }

@@ -1,5 +1,5 @@
 import { Settings } from '@app/constants';
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageFlags } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 import { dynamicPagination } from '../../util/pagination.js';
@@ -16,16 +16,16 @@ export default class RosterPostCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; signup_disabled: boolean; page?: number }) {
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
+    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.followUp({ content: 'Roster not found.', ephemeral: true });
+    if (!roster) return interaction.followUp({ content: 'Roster not found.', flags: MessageFlags.Ephemeral });
 
     const updated =
       Date.now() - roster.lastUpdated.getTime() < 30 * 1000 && roster.members.length >= 65
         ? roster
         : await this.client.rosterManager.updateMembers(roster, roster.members);
-    if (!updated) return interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
+    if (!updated) return interaction.followUp({ content: 'This roster no longer exists.', flags: MessageFlags.Ephemeral });
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 

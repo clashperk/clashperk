@@ -11,7 +11,7 @@ import {
 } from '@app/constants';
 import { ClanStoresEntity, PlayerLinksEntity } from '@app/entities';
 import { APIClan, APIPlayer } from 'clashofclans.js';
-import { BaseInteraction, CommandInteraction, User } from 'discord.js';
+import { BaseInteraction, CommandInteraction, MessageFlags, User } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { unique } from 'radash';
 import { i18n } from '../util/i18n.js';
@@ -159,7 +159,7 @@ export class Resolver {
     if (interaction.isCommand()) {
       return interaction.editReply({ content }).then(() => null);
     } else if (interaction.isMessageComponent()) {
-      return interaction.followUp({ content, ephemeral: true }).then(() => null);
+      return interaction.followUp({ content, flags: MessageFlags.Ephemeral }).then(() => null);
     }
     return null;
   }

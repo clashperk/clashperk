@@ -1,5 +1,5 @@
 import { Settings } from '@app/constants';
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageFlags } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 import { IRoster } from '../../struct/roster-manager.js';
@@ -26,10 +26,10 @@ export default class RosterCloneCommand extends Command {
     // Create default categories
     this.client.rosterManager.createDefaultGroups(interaction.guild.id);
 
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
+    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', ephemeral: true });
+    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
     const data: IRoster = {
       name: args.name ?? `${roster.name} [CLONE]`,

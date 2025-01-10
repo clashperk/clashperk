@@ -234,12 +234,6 @@ export const updateGoogleSheet = async (
 ) => {
   const replaceSheetRequests: SchemaRequest[] = [];
 
-  console.log(
-    spreadsheetId,
-    sheets.map((s) => s.title),
-    options
-  );
-
   if (options.recreate) {
     const {
       data: { sheets: oldSheets }

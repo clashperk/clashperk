@@ -10,6 +10,7 @@ import {
   DiscordjsError,
   DiscordjsErrorCodes,
   EmbedBuilder,
+  MessageFlags,
   ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
@@ -183,7 +184,7 @@ export default class SetupButtonsCommand extends Command {
     }
 
     await interaction.followUp({
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       content: [
         '### Customization Guide',
         '- You can customize the embed by clicking the button below.',
@@ -326,7 +327,7 @@ export default class SetupButtonsCommand extends Command {
     embed.setThumbnail(state.thumbnail_url || null);
     embed.setImage(state.image_url || null);
 
-    const customId = this.createId({ cmd: 'autorole-refresh', ephemeral: true });
+    const customId = this.createId({ cmd: 'autorole-refresh', flags: MessageFlags.Ephemeral });
     const linkButton = new ButtonBuilder()
       .setLabel('Refresh Roles')
       .setEmoji(EMOJIS.REFRESH)
@@ -354,7 +355,7 @@ export default class SetupButtonsCommand extends Command {
     }
 
     await interaction.followUp({
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       content: [
         '### Customization Guide',
         '- You can customize the embed by clicking the button below.',

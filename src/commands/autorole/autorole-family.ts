@@ -1,5 +1,5 @@
 import { Settings } from '@app/constants';
-import { ActionRowBuilder, CommandInteraction, EmbedBuilder, Guild, Role, RoleSelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, CommandInteraction, EmbedBuilder, Guild, MessageFlags, Role, RoleSelectMenuBuilder } from 'discord.js';
 import { unique } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { createInteractionCollector } from '../../util/pagination.js';
@@ -46,7 +46,7 @@ export default class AutoFamilyRoleCommand extends Command {
 
     const selected = roles.filter((role) => role) as Role[];
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', ephemeral: true });
+      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
     }
 
     if (selected.some((role) => this.isSystemRole(role, interaction.guild))) {
@@ -141,14 +141,14 @@ export default class AutoFamilyRoleCommand extends Command {
 
           return action.reply({
             content: `${this.i18n('command.autorole.no_system_roles', { lng: action.locale })} (${systemRoles})`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
           });
         }
 
         if (action.roles.some((role) => this.isHigherRole(role, action.guild))) {
           return action.reply({
             content: this.i18n('command.autorole.no_higher_roles', { lng: action.locale }),
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
           });
         }
 

@@ -8,6 +8,7 @@ import {
   EmbedBuilder,
   escapeMarkdown,
   Interaction,
+  MessageFlags,
   StringSelectMenuBuilder
 } from 'discord.js';
 import moment from 'moment';
@@ -89,7 +90,7 @@ export default class CompeteCommand extends Command {
       const message = await interaction.followUp({
         content: 'Select your account(s) to participate in the legend league leaderboard.',
         components: [row],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
 
       return createInteractionCollector({

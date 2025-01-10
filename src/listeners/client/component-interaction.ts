@@ -1,5 +1,5 @@
 import { Settings } from '@app/constants';
-import { Interaction, MessageComponentInteraction } from 'discord.js';
+import { Interaction, MessageComponentInteraction, MessageFlags } from 'discord.js';
 import { Listener } from '../../lib/handlers.js';
 import ComponentHandler from '../../struct/component-handler.js';
 
@@ -28,7 +28,10 @@ export default class ComponentInteractionListener extends Listener {
     if (userIds?.length && userIds.includes(interaction.user.id)) return;
     if (userIds?.length && !userIds.includes(interaction.user.id)) {
       this.client.logger.log(`[${interaction.guild!.name}/${interaction.user.displayName}]`, { label: 'COMPONENT_BLOCKED' });
-      return interaction.reply({ content: this.i18n('common.component.unauthorized', { lng: interaction.locale }), ephemeral: true });
+      return interaction.reply({
+        content: this.i18n('common.component.unauthorized', { lng: interaction.locale }),
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (this.client.components.has(interaction.customId)) return;
@@ -52,7 +55,7 @@ export default class ComponentInteractionListener extends Listener {
     }
 
     await interaction.update({ components: [] });
-    return interaction.followUp({ content, ephemeral: true });
+    return interaction.followUp({ content, flags: MessageFlags.Ephemeral });
   }
 
   private inhibitor(interaction: MessageComponentInteraction) {

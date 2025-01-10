@@ -9,6 +9,7 @@ import {
   ComponentType,
   DiscordjsError,
   DiscordjsErrorCodes,
+  MessageFlags,
   ModalBuilder,
   ModalSubmitInteraction,
   TextInputBuilder,
@@ -49,7 +50,7 @@ export default class LayoutCommand extends Command {
 
     const isAdmin = this.client.util.isManager(interaction.member) || interaction.message.author.id === interaction.user.id;
     if (!isAdmin) {
-      return interaction.reply({ ephemeral: true, content: 'You are not allowed to edit this layout.' });
+      return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'You are not allowed to edit this layout.' });
     }
 
     const modalCustomId = this.client.uuid(interaction.user.id);
@@ -108,7 +109,7 @@ export default class LayoutCommand extends Command {
     args: { screenshot: string; description?: string; layout_link: string; army_link?: string; render_army?: boolean }
   ) {
     if (!LAYOUT_REGEX.test(args.layout_link)) {
-      return interaction.followUp({ ephemeral: true, content: 'Invalid layout link was provided.' });
+      return interaction.followUp({ flags: MessageFlags.Ephemeral, content: 'Invalid layout link was provided.' });
     }
 
     const layoutTypes: Record<string, string> = {

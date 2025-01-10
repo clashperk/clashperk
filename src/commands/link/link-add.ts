@@ -6,6 +6,7 @@ import {
   DiscordjsError,
   DiscordjsErrorCodes,
   GuildMember,
+  MessageFlags,
   ModalBuilder,
   ModalSubmitInteraction,
   TextInputBuilder,
@@ -136,7 +137,7 @@ export default class LinkAddCommand extends Command {
         .then(async (modalSubmit) => {
           const tag = modalSubmit.fields.getTextInputValue(customIds.tag);
           const token = token_field === 'hidden' ? null : modalSubmit.fields.getTextInputValue(customIds.token);
-          await modalSubmit.deferReply({ ephemeral: true });
+          await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
 
           const { body: data, res } = await this.client.coc.getPlayer(tag);
           if (!res.ok) {

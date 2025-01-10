@@ -7,6 +7,7 @@ import {
   CommandInteraction,
   EmbedBuilder,
   escapeMarkdown,
+  MessageFlags,
   StringSelectMenuBuilder,
   User
 } from 'discord.js';
@@ -46,7 +47,7 @@ export default class CWLStarsCommand extends Command {
     ]);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
       });
     }
@@ -57,7 +58,7 @@ export default class CWLStarsCommand extends Command {
 
     if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
       });
     }
@@ -66,7 +67,7 @@ export default class CWLStarsCommand extends Command {
 
     if (!aggregated) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
       });
     }
@@ -147,13 +148,16 @@ export default class CWLStarsCommand extends Command {
     const leaderboard = Object.values(members);
     if (!leaderboard.length && body.season !== Util.getCWLSeasonId()) {
       return interaction.followUp({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
       });
     }
 
     if (!leaderboard.length)
-      return interaction.followUp({ ephemeral: true, content: this.i18n('command.cwl.no_rounds', { lng: interaction.locale }) });
+      return interaction.followUp({
+        flags: MessageFlags.Ephemeral,
+        content: this.i18n('command.cwl.no_rounds', { lng: interaction.locale })
+      });
     leaderboard.sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars);
 
     const comparisonMode = args.list_view === 'GAINED';

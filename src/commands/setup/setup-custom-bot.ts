@@ -25,8 +25,7 @@ export default class SetupCustomBotCommand extends Command {
       aliases: ['setup-custom-bot'],
       category: 'setup',
       clientPermissions: ['EmbedLinks', 'AttachFiles'],
-      defer: true,
-      ephemeral: false
+      defer: true
     });
   }
 

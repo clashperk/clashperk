@@ -1,5 +1,5 @@
 import { APIPlayer } from 'clashofclans.js';
-import { ActionRowBuilder, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
+import { ActionRowBuilder, CommandInteraction, MessageFlags, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
@@ -19,17 +19,17 @@ export default class RosterSignupCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; signup: boolean }) {
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', ephemeral: true });
+    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', ephemeral: true });
+    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
     const isClosed = this.client.rosterManager.isClosed(roster);
     if (isClosed) {
       const row = this.client.rosterManager.getRosterComponents({ roster, signupDisabled: false });
       await interaction.editReply({ components: [row] });
-      return interaction.followUp({ content: 'Roster is closed.', ephemeral: true });
+      return interaction.followUp({ content: 'Roster is closed.', flags: MessageFlags.Ephemeral });
     }
 
     const players = await this.client.resolver.getPlayers(interaction.user.id, 75);
@@ -80,11 +80,11 @@ export default class RosterSignupCommand extends Command {
     const _options = args.signup ? linked : registered;
 
     if (!linked.length && args.signup) {
-      return interaction.followUp({ content: 'You are not linked to any players.', ephemeral: true });
+      return interaction.followUp({ content: 'You are not linked to any players.', flags: MessageFlags.Ephemeral });
     }
 
     if (!registered.length && !args.signup) {
-      return interaction.followUp({ content: 'You are not signed up for this roster.', ephemeral: true });
+      return interaction.followUp({ content: 'You are not signed up for this roster.', flags: MessageFlags.Ephemeral });
     }
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
@@ -124,7 +124,7 @@ export default class RosterSignupCommand extends Command {
 
     const msg = await interaction.followUp({
       content: args.signup ? 'Select the accounts you want to signup with.' : 'Select the accounts you want to remove.',
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       components:
         args.signup && roster.allowCategorySelection && selectableCategories.length ? [categoryRow, ...accountsRows] : [...accountsRows]
     });

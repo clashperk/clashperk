@@ -17,6 +17,7 @@ import {
   CommandInteraction,
   EmbedBuilder,
   Guild,
+  MessageFlags,
   PermissionFlagsBits,
   StringSelectMenuInteraction,
   User,
@@ -508,7 +509,7 @@ export class RosterManager {
   }) {
     const roster = await this.rosters.findOne({ _id: rosterId });
     if (!roster) {
-      await interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
+      await interaction.followUp({ content: 'This roster no longer exists.', flags: MessageFlags.Ephemeral });
       return false;
     }
 
@@ -522,7 +523,7 @@ export class RosterManager {
     });
 
     if (!attempt.success) {
-      await interaction.followUp({ content: attempt.message, ephemeral: true });
+      await interaction.followUp({ content: attempt.message, flags: MessageFlags.Ephemeral });
       return false;
     }
 
@@ -530,7 +531,7 @@ export class RosterManager {
 
     const value = await this.signupUser({ roster, player, user, categoryId });
     if (!value) {
-      await interaction.followUp({ content: 'This roster no longer exists.', ephemeral: true });
+      await interaction.followUp({ content: 'This roster no longer exists.', flags: MessageFlags.Ephemeral });
       return false;
     }
 

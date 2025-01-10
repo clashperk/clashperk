@@ -9,6 +9,7 @@ import {
   CommandInteraction,
   DiscordjsError,
   DiscordjsErrorCodes,
+  MessageFlags,
   ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
@@ -620,7 +621,7 @@ export default class RosterManageCommand extends Command {
       selected.categoryId = action.values.at(0)!;
 
       const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
-      if (!target) return action.reply({ content: 'Target group was deleted.', ephemeral: true });
+      if (!target) return action.reply({ content: 'Target group was deleted.', flags: MessageFlags.Ephemeral });
 
       selected.targetCategory = target;
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
@@ -948,7 +949,7 @@ export default class RosterManageCommand extends Command {
       selected.categoryId = action.values.at(0)!;
 
       const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
-      if (!target) return action.reply({ content: 'Target group was deleted.', ephemeral: true });
+      if (!target) return action.reply({ content: 'Target group was deleted.', flags: MessageFlags.Ephemeral });
 
       selected.targetCategory = target;
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
@@ -960,10 +961,10 @@ export default class RosterManageCommand extends Command {
     const selectRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
       selected.rosterId = action.values.at(0)!;
       if (roster._id.toHexString() === selected.rosterId) {
-        return action.reply({ content: 'You cannot move a user to the same roster.', ephemeral: true });
+        return action.reply({ content: 'You cannot move a user to the same roster.', flags: MessageFlags.Ephemeral });
       }
       const target = await this.client.rosterManager.get(new ObjectId(selected.rosterId));
-      if (!target) return action.reply({ content: 'Target roster was deleted.', ephemeral: true });
+      if (!target) return action.reply({ content: 'Target roster was deleted.', flags: MessageFlags.Ephemeral });
 
       selected.targetRoster = target;
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
@@ -1468,7 +1469,7 @@ export default class RosterManageCommand extends Command {
       selected.categoryId = action.values.at(0)!;
 
       const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
-      if (!target) return action.reply({ content: 'Target group was deleted.', ephemeral: true });
+      if (!target) return action.reply({ content: 'Target group was deleted.', flags: MessageFlags.Ephemeral });
 
       selected.targetCategory = target;
       confirmButton.setDisabled(!selected.playerTags.length);

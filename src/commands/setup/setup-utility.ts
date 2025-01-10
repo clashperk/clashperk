@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageFlags } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
 /** @deprecated */
@@ -24,9 +24,9 @@ export default class SetupUtilityCommand extends Command {
     }[args.option];
 
     if (!command) {
-      return interaction.reply({ content: 'This command is no longer supported.', ephemeral: true });
+      return interaction.reply({ content: 'This command is no longer supported.', flags: MessageFlags.Ephemeral });
     }
 
-    return interaction.reply({ content: `This command is no longer supported. Use ${command} instead.`, ephemeral: true });
+    return interaction.reply({ content: `This command is no longer supported. Use ${command} instead.`, flags: MessageFlags.Ephemeral });
   }
 }

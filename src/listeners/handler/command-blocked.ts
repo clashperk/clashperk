@@ -1,5 +1,5 @@
 import { BIT_FIELD } from '@app/constants';
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageFlags } from 'discord.js';
 import { Command, Listener } from '../../lib/handlers.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 
@@ -36,7 +36,7 @@ export default class CommandBlockedListener extends Listener {
       this.client.logger.log('Guild is not cached.', { label });
       return interaction.reply({
         content: `Please [invite the bot](https://discord.com/api/oauth2/authorize?${query}) again to execute its commands.`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -50,6 +50,6 @@ export default class CommandBlockedListener extends Listener {
       this.client.logger.log(`${command.id} ~ ${reason} (no response)`, { label });
       return null;
     }
-    return interaction.reply({ content, ephemeral: true });
+    return interaction.reply({ content, flags: MessageFlags.Ephemeral });
   }
 }
