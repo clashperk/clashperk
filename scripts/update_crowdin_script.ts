@@ -18,6 +18,11 @@ async function update(item: SourceString, maxLength: number) {
   console.log(`${item.data.identifier as string} updated.`);
 }
 
+const limits = {
+  description: 100,
+  choices: 60
+};
+
 (async () => {
   const limit = 250;
   let [hasMore, offset] = [true, 0];
@@ -45,18 +50,18 @@ async function update(item: SourceString, maxLength: number) {
   }
 
   for (const item of strings) {
-    if (item.data.identifier.endsWith('.description') && item.data.maxLength === 0) {
-      if (item.data.text.length > 100) {
+    if (item.data.identifier.endsWith('.description') && item.data.maxLength !== limits.description) {
+      if (item.data.text.length > limits.description) {
         console.log(`${item.data.identifier as string} is too long.`);
       }
-      await update(item, 100);
+      await update(item, limits.description);
     }
 
-    if (item.data.identifier.includes('.choices.') && item.data.maxLength === 0) {
-      if (item.data.text.length > 32) {
+    if (item.data.identifier.includes('.choices.') && item.data.maxLength !== limits.choices) {
+      if (item.data.text.length > limits.choices) {
         console.log(`${item.data.identifier as string} is too long.`);
       }
-      await update(item, 32);
+      await update(item, limits.choices);
     }
   }
 })();
