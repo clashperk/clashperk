@@ -5,6 +5,7 @@ export default class RemindersEditCommand extends Command {
   public constructor() {
     super('reminders-edit', {
       category: 'reminders',
+      userPermissions: ['ManageGuild'],
       channel: 'guild',
       defer: false
     });

@@ -902,6 +902,14 @@ export const command = {
       description: 'Create an instant reminder to notify members.',
       no_match: 'There are no wars or no members that are matching with the selected options.'
     },
+    config: {
+      description: 'Configure reminder settings.',
+      options: {
+        reminder_ping_exclusion: {
+          description: 'Set reminder ping exclusion settings.'
+        }
+      }
+    },
     //
     no_reminders: 'You have no reminders.',
     no_message: 'You must specify a message to execute this command.'

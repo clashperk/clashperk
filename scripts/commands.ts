@@ -3768,6 +3768,32 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String
           }
         ]
+      },
+      {
+        name: 'config',
+        description: command.reminders.now.description,
+        description_localizations: translation('command.reminders.now.description'),
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'reminder_ping_exclusion',
+            description: command.reminders.config.options.reminder_ping_exclusion.description,
+            description_localizations: translation('command.reminders.config.options.reminder_ping_exclusion.description'),
+            type: ApplicationCommandOptionType.String,
+            choices: [
+              {
+                name: common.choices.enable,
+                name_localizations: translation('common.choices.enable'),
+                value: 'enable'
+              },
+              {
+                name: common.choices.disable,
+                name_localizations: translation('common.choices.disable'),
+                value: 'disable'
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -5182,20 +5208,4 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   }
 ];
 
-export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
-  {
-    name: 'clan-history',
-    description: "You can't use it anyway, so why explain?",
-    dm_permission: true,
-    default_member_permissions: '0',
-    options: [
-      {
-        name: 'tag',
-        description: 'It does something, yeah?',
-        type: ApplicationCommandOptionType.String,
-        required: false,
-        autocomplete: true
-      }
-    ]
-  }
-];
+export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [];

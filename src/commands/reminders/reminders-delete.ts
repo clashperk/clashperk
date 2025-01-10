@@ -5,6 +5,7 @@ export default class RemindersDeleteCommand extends Command {
   public constructor() {
     super('reminders-delete', {
       category: 'reminders',
+      userPermissions: ['ManageGuild'],
       channel: 'guild',
       defer: false
     });

@@ -5,6 +5,7 @@ export default class RemindersNowCommand extends Command {
   public constructor() {
     super('reminders-now', {
       category: 'reminders',
+      userPermissions: ['ManageGuild'],
       channel: 'guild',
       defer: false
     });
