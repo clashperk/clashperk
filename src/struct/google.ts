@@ -234,6 +234,12 @@ export const updateGoogleSheet = async (
 ) => {
   const replaceSheetRequests: SchemaRequest[] = [];
 
+  console.log(
+    spreadsheetId,
+    sheets.map((s) => s.title),
+    options
+  );
+
   if (options.recreate) {
     const {
       data: { sheets: oldSheets }
@@ -318,29 +324,36 @@ export const updateGoogleSheet = async (
     }
   }));
 
-  await sheet.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      requests: [
-        ...(options.clear ? clearSheetRequests : []),
-        ...requests,
-        ...getStyleRequests(sheets),
-        ...getConditionalFormatRequests(sheets),
-        {
-          createDeveloperMetadata: {
-            developerMetadata: {
-              metadataKey: 'project',
-              metadataValue: 'clashperk',
-              visibility: 'DOCUMENT',
-              location: {
-                spreadsheet: true
+  try {
+    await sheet.spreadsheets.batchUpdate(
+      {
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            ...(options.clear ? clearSheetRequests : []),
+            ...requests,
+            ...getStyleRequests(sheets),
+            ...getConditionalFormatRequests(sheets),
+            {
+              createDeveloperMetadata: {
+                developerMetadata: {
+                  metadataKey: 'project',
+                  metadataValue: 'clashperk',
+                  visibility: 'DOCUMENT',
+                  location: {
+                    spreadsheet: true
+                  }
+                }
               }
             }
-          }
+          ]
         }
-      ]
-    }
-  });
+      },
+      { retry: true }
+    );
+  } catch (error) {
+    throw new Error(error.message);
+  }
 
   return { spreadsheetId, spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit` };
 };

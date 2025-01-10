@@ -1,7 +1,8 @@
 export interface GoogleSheetsEntity {
   sheetType: SheetType;
   guildId: string;
-  sha: string;
+  hash: string;
+  sheetHash: string;
   exported: number;
   spreadsheetId: string;
   sheetCount: number;

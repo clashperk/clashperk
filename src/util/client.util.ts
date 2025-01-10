@@ -142,25 +142,26 @@ export class ClientUtil {
     sheetType: SheetType;
   }) {
     const clanTags = clans.map((clan) => clan.tag);
-    const sha = this.createSha({ clanTags, guildId: guild.id, sheetType });
-    const sheet = await this.client.db.collection(Collections.GOOGLE_SHEETS).findOne({ sha });
+    const hash = this.createSpreadsheetHash({ clanTags, guildId: guild.id, sheetType });
+    const sheetHash = this.createSheetsHash(sheets);
+    const sheet = await this.client.db.collection(Collections.GOOGLE_SHEETS).findOne({ hash });
 
     const spreadsheet = sheet
       ? await updateGoogleSheet(sheet.spreadsheetId, sheets, {
           clear: true,
-          recreate: !!(sheet?.sheetCount && sheet.sheetCount !== sheets.length)
+          recreate: !!(sheet && sheetHash !== sheet.sheetHash)
         })
       : await createGoogleSheet(`${guild.name} [${label}]`, sheets);
 
     await this.client.db.collection(Collections.GOOGLE_SHEETS).updateOne(
-      { sha },
+      { hash },
       {
         $inc: { exported: 1 },
-        $set: { updatedAt: new Date(), sheetCount: sheets.length },
+        $set: { updatedAt: new Date(), sheetCount: sheets.length, sheetHash },
         $setOnInsert: {
           guildId: guild.id,
           clanTags,
-          sha,
+          hash,
           spreadsheetId: spreadsheet.spreadsheetId,
           sheetType,
           createdAt: new Date()
@@ -172,11 +173,17 @@ export class ClientUtil {
     return spreadsheet;
   }
 
-  private createSha({ guildId, clanTags, sheetType }: { guildId: string; clanTags: string[]; sheetType: SheetType }) {
+  private createSpreadsheetHash({ guildId, clanTags, sheetType }: { guildId: string; clanTags: string[]; sheetType: SheetType }) {
     const text = `${guildId}-${clanTags
       .map((tag) => tag)
       .sort((a, b) => a.localeCompare(b))
       .join('-')}-${sheetType}`;
     return createHash('md5').update(text).digest('hex');
+  }
+
+  private createSheetsHash(sheets: CreateGoogleSheet[]) {
+    return createHash('md5')
+      .update(sheets.map((sheet) => sheet.title).join('-'))
+      .digest('hex');
   }
 }
