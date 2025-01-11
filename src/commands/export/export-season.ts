@@ -25,10 +25,17 @@ export default class ExportSeason extends Command {
     const season = args.season ?? Season.ID;
     const _clanTags = clans.map((clan) => clan.tag);
     const _clans = await this.client.coc._getClans(clans);
-    const _members = _clans.reduce<(APIClanMember & { clanTag: string })[]>((previous, current) => {
-      previous.push(...current.memberList.map((mem) => ({ ...mem, clanTag: current.tag })));
-      return previous;
-    }, []);
+
+    const _membersMap = new Map<string, string>();
+    const _members: (APIClanMember & { clanTag: string })[] = [];
+
+    for (const clan of _clans) {
+      for (const member of clan.memberList) {
+        _membersMap.set(member.tag, clan.tag);
+      }
+      _members.push(...clan.memberList.map((mem) => ({ ...mem, clanTag: clan.tag })));
+    }
+
     const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 
     const linksMap = await this.client.resolver.getLinkedUsersMap(_members);
@@ -97,7 +104,7 @@ export default class ExportSeason extends Command {
           m.displayName,
           m.username,
           m.userId,
-          m.clans?.[m.clanTag]?.name,
+          _membersMap.get(m.tag) === m.clanTag ? m.clans?.[m.clanTag]?.name : '',
           m.townHallLevel,
           sum(Object.values(m.clans ?? {}), (clan) => (_clanTags.includes(clan.tag) ? clan.donations.total : 0)),
           sum(Object.values(m.clans ?? {}), (clan) => (_clanTags.includes(clan.tag) ? clan.donationsReceived.total : 0)),
@@ -131,8 +138,7 @@ export default class ExportSeason extends Command {
       {
         $match: {
           season: seasonId,
-          __clans: clan.tag,
-          tag: { $in: clan.memberList.map((m) => m.tag) }
+          __clans: clan.tag
         }
       },
       {
@@ -158,6 +164,14 @@ export default class ExportSeason extends Command {
           },
           clanTag: clan.tag
         }
+      },
+      {
+        $sort: {
+          score: -1
+        }
+      },
+      {
+        $limit: 150
       },
       {
         $unset: 'lastSeen'
@@ -188,9 +202,6 @@ export default class ExportSeason extends Command {
           path: '$clanGamesPoints',
           preserveNullAndEmptyArrays: true
         }
-      },
-      {
-        $sort: { _id: -1 }
       }
     ]);
 
