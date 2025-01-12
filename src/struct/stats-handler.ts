@@ -27,23 +27,6 @@ export class StatsHandler {
     await collection.updateOne({ name: 'GUILDS' }, { $set: { count: guilds } });
     await collection.updateOne({ name: 'PLAYERS' }, { $set: { count: players } });
     await collection.updateOne({ name: 'CLANS' }, { $set: { count: clans } });
-
-    const res = await fetch(`https://top.gg/api/bots/${this.client.user!.id}/stats`, {
-      headers: {
-        'Authorization': process.env.DBL!,
-        'Content-Type': 'application/json'
-      },
-      method: 'POST',
-      body: JSON.stringify({
-        server_count: guilds,
-        shard_count: this.client.shard?.count ?? 1
-      })
-    });
-
-    if (!res.ok) {
-      const body = await res.json().catch(() => res.statusText);
-      this.client.logger.error(body, { label: 'TOP.GG' });
-    }
   }
 
   public message(id: string) {

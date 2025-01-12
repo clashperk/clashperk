@@ -3,18 +3,26 @@ name: aws-ecr-publish
 on:
   push:
     branches:
-      - next
+      - main
   workflow_dispatch:
 
 jobs:
   build:
     environment: Production
     name: aws-ecr-publish
-    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Use Cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-build
+          restore-keys: |
+            ${{ runner.os }}-build
 
       - name: Install Submodules
         run: git submodule init && git submodule update
