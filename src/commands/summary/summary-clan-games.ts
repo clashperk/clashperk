@@ -12,7 +12,7 @@ import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { clanGamesSortingAlgorithm, getExportComponents } from '../../util/helper.js';
+import { clanGamesSortingAlgorithm, getExportComponents, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class SummaryClanGamesCommand extends Command {
@@ -46,8 +46,7 @@ export default class SummaryClanGamesCommand extends Command {
       seasonId
     );
 
-    const clansEmbed = this.clanScoreboard(interaction, {
-      members: queried?.members ?? [],
+    const clansEmbed = this.clanScoreboard({
       clans: queried?.clans ?? [],
       seasonId
     });
@@ -128,34 +127,27 @@ export default class SummaryClanGamesCommand extends Command {
     return interaction.editReply({ components: getExportComponents(spreadsheet) });
   }
 
-  private clanScoreboard(
-    interaction: BaseInteraction,
-    {
-      clans,
-      seasonId
-    }: {
-      members: { name: string; tag: string; points: number }[];
-      clans: { name: string; tag: string; points: number }[];
-      seasonId: string;
-    }
-  ) {
-    const embed = new EmbedBuilder()
-      .setAuthor({ name: `${interaction.guild!.name} Clan Games Scoreboard`, iconURL: interaction.guild!.iconURL()! })
-      .setDescription(
-        [
-          '```',
-          ` # POINTS  CLANS`,
-          clans
-            .slice(0, 99)
-            .map((c, i) => {
-              const points = this.padStart(c.points);
-              return `\u200e${(++i).toString().padStart(2, ' ')} ${points}  ${c.name}`;
-            })
-            .join('\n'),
-          '```'
-        ].join('\n')
-      );
+  private clanScoreboard({
+    clans,
+    seasonId
+  }: {
+    clans: { name: string; tag: string; points: number; players: number }[];
+    seasonId: string;
+  }) {
+    const embed = new EmbedBuilder();
+    embed.setAuthor({ name: `Clan Games Scoreboard (${seasonId})` });
+    embed.setDescription(
+      [
+        `\` # PLAYERS POINTS\` \u200b **CLANS**`,
+        ...clans.slice(0, 99).map((clan, idx) => {
+          const points = padStart(clan.points, 6);
+          const players = padStart(`${Math.min(clan.players, 50)}/50`, 6);
+          return `\`${padStart(++idx, 2)} ${players}  ${points}\` \u200b \u200e[${clan.name}](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+        })
+      ].join('\n')
+    );
     embed.setFooter({ text: `Season ${seasonId}` });
+    embed.setTimestamp();
     return embed;
   }
 
@@ -213,10 +205,6 @@ export default class SummaryClanGamesCommand extends Command {
     return 4000;
   }
 
-  private padStart(num: number) {
-    return num.toString().padStart(6, ' ');
-  }
-
   private getSeasonId(seasonId?: string) {
     if (seasonId) return seasonId;
     return this.latestSeason;
@@ -231,7 +219,7 @@ export default class SummaryClanGamesCommand extends Command {
   private query(clanTags: string[], seasonId: string) {
     const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
     const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<{
-      clans: { name: string; tag: string; points: number }[];
+      clans: { name: string; tag: string; points: number; players: number }[];
       members: ClanGamesMember[];
     }>([
       {
@@ -277,6 +265,15 @@ export default class SummaryClanGamesCommand extends Command {
                 points: {
                   $sum: {
                     $min: ['$points', this.MAX]
+                  }
+                },
+                players: {
+                  $sum: {
+                    $cond: {
+                      if: { $gte: ['$points', 1] },
+                      then: 1,
+                      else: 0
+                    }
                   }
                 }
               }

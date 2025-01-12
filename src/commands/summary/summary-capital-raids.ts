@@ -2,6 +2,7 @@ import { Collections } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class SummaryCapitalRaidsCommand extends Command {
@@ -16,7 +17,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { week?: string; clans?: string; clans_only?: boolean; avg_loot?: boolean }
+    args: { week?: string; clans?: string; clans_only?: boolean; layout?: 'avg_loot' | 'medals_earned' | 'players_rank' }
   ) {
     const { weekId } = this.raidWeek();
     let { week } = args;
@@ -33,73 +34,74 @@ export default class SummaryCapitalRaidsCommand extends Command {
     const embed = new EmbedBuilder();
     embed.setColor(this.client.embed(interaction));
 
-    if (args.avg_loot && args.clans_only) {
-      embed.setAuthor({ name: `${interaction.guild.name} Capital Raids` });
+    if (args.clans_only && args.layout === 'avg_loot') {
+      embed.setAuthor({ name: `Capital Raids Leaderboard (${week})` });
       embed.setDescription(
         [
-          '```',
-          `\u200e # ${'LOOT'.padStart(maxPad, ' ')} HIT  AVG NAME`,
-          clansGroup
-            .map(
-              (clan, i) =>
-                `${(i + 1).toString().padStart(2, ' ')} ${clan.looted.toFixed(0).padStart(maxPad, ' ')} ${clan.attacks
-                  .toString()
-                  .padStart(3, ' ')} ${(clan.looted ? clan.looted / clan.attacks : 0).toFixed(0).padStart(4, ' ')} ${clan.name}`
-            )
-            .join('\n'),
-          '```'
+          `\` # ${padStart('LOOT', maxPad)} HIT  AVG\` \u200b **NAME**`,
+          ...clansGroup.map((clan, idx) => {
+            const looted = padStart(clan.looted.toFixed(0), maxPad);
+            const attacks = padStart(clan.attacks, 3);
+            const hit = padStart((clan.looted ? clan.looted / clan.attacks : 0).toFixed(0), 4);
+            return `\`${padStart(idx + 1, 2)} ${looted} ${attacks} ${hit}\` \u200b \u200e${clan.name}`;
+          })
         ].join('\n')
       );
-    } else if (args.clans_only) {
-      embed.setAuthor({ name: `${interaction.guild.name} Capital Raids` });
+    } else if (args.clans_only && args.layout === 'players_rank') {
+      embed.setAuthor({ name: `Capital Raids Leaderboard (${week})` });
       embed.setDescription(
         [
-          '```',
-          `\u200e # ${'LOOT'.padStart(6, ' ')} HIT MEDAL NAME`,
-          clansGroup
-            .map(
-              (clan, i) =>
-                `\u200e${(i + 1).toString().padStart(2, ' ')} ${Util.formatNumber(clan.looted, 1).padStart(
-                  6,
-                  ' '
-                )} ${clan.attacks.toString().padStart(3, ' ')} ${clan.medals.toFixed(0).padStart(5, ' ')} ${clan.name}`
-            )
-            .join('\n'),
-          '```'
+          `\` # PLAYERS ${padStart('LOOTED', 6)}\` \u200b **NAME**`,
+          ...clansGroup.map((clan, i) => {
+            const looted = padStart(Util.formatNumber(clan.looted, 1), 6);
+            const players = padStart(`${clan.players}/50`, 6);
+            return `\`${padStart(i + 1, 2)} ${players}  ${looted}\` \u200b \u200e${clan.name}`;
+          })
+        ].join('\n')
+      );
+    } else if (args.clans_only && args.layout === 'medals_earned') {
+      embed.setAuthor({ name: `Capital Raids Leaderboard (${week})` });
+      embed.setDescription(
+        [
+          `\` # ${padStart('LOOT', 6)} HIT MEDAL\` \u200b **NAME**`,
+          ...clansGroup.map((clan, i) => {
+            const looted = padStart(Util.formatNumber(clan.looted, 1), 6);
+            const attacks = padStart(clan.attacks, 3);
+            const medals = padStart(clan.medals.toFixed(0), 5);
+            return `\`${padStart(i + 1, 2)} ${looted} ${attacks} ${medals}\` \u200b \u200e${clan.name}`;
+          })
         ].join('\n')
       );
     } else {
-      embed.setAuthor({ name: `${interaction.guild.name} Top Capital Looters` });
+      embed.setAuthor({ name: `Top Capital Looters (${week})` });
       embed.setDescription(
         [
-          `**Clan Capital Raids (${week})**`,
-          '```',
-          '\u200e #   LOOT  HIT  NAME',
-          membersGroup
-            .map(
-              (mem, i) =>
-                `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.capitalResourcesLooted)}  ${
-                  mem.attacks
-                }/${mem.attackLimit}  ${mem.name}`
-            )
-            .join('\n'),
-          '```'
+          '\` #   LOOT  HIT \` \u200b **NAME**',
+          ...membersGroup.map((mem, i) => {
+            const looted = this.padding(mem.capitalResourcesLooted);
+            return `\`${padStart(i + 1, 2)}  ${looted}  ${mem.attacks}/${mem.attackLimit} \` \u200b \u200e${mem.name}`;
+          })
         ].join('\n')
       );
     }
     embed.setFooter({ text: `Week ${week}` });
+    embed.setTimestamp();
 
     const payload = {
       cmd: this.id,
       clans: resolvedArgs,
       week: args.week,
       clans_only: args.clans_only,
-      avg_loot: args.avg_loot
+      layout: args.layout
     };
 
     const customIds = {
       refresh: this.createId(payload),
-      avg_loot: this.createId({ ...payload, avg_loot: !args.avg_loot, clans_only: true }),
+      layout: this.createId({
+        ...payload,
+        layout: args.layout === 'avg_loot' ? 'players_rank' : args.layout === 'medals_earned' ? 'avg_loot' : 'medals_earned',
+        clans_only: true
+      }),
       toggle: this.createId({ ...payload, clans_only: !args.clans_only })
     };
 
@@ -114,9 +116,9 @@ export default class SummaryCapitalRaidsCommand extends Command {
     if (args.clans_only) {
       row.addComponents(
         new ButtonBuilder()
-          .setLabel(args.avg_loot ? 'Loot/Hit/Medals' : 'Avg. Loot/Hit')
+          .setLabel(args.layout === 'avg_loot' ? 'Participation' : args.layout === 'medals_earned' ? 'Avg. Loot/Hit' : 'Loot/Hit/Medals')
           .setStyle(ButtonStyle.Secondary)
-          .setCustomId(customIds.avg_loot)
+          .setCustomId(customIds.layout)
       );
     }
 
@@ -127,7 +129,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
     const result = await this.client.db
       .collection(Collections.CAPITAL_RAID_SEASONS)
       .aggregate<{
-        clans: { name: string; tag: string; attacks: number; looted: number; attackLimit: number; medals: number }[];
+        clans: { name: string; tag: string; attacks: number; looted: number; attackLimit: number; medals: number; players: number }[];
         members: { name: string; tag: string; attacks: number; attackLimit: number; capitalResourcesLooted: number }[];
       }>([
         {
@@ -154,6 +156,9 @@ export default class SummaryCapitalRaidsCommand extends Command {
                   },
                   medals: {
                     $sum: [{ $multiply: ['$offensiveReward', 6] }, '$defensiveReward']
+                  },
+                  players: {
+                    $size: '$members'
                   }
                 }
               },

@@ -3,7 +3,7 @@ name: aws-ecr-publish
 on:
   push:
     branches:
-      - main
+      - next
   workflow_dispatch:
 
 jobs:

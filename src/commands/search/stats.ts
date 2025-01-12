@@ -92,7 +92,7 @@ export default class StatsCommand extends Command {
       return { name: args.user.displayName, tag: args.tag || args.user.id, iconURL: args.user.displayAvatarURL(), playerTags };
     }
 
-    if (args.roster) {
+    if (args.roster && ObjectId.isValid(args.roster)) {
       const data = await this.client.db.collection<IRoster>(Collections.ROSTERS).findOne({ _id: new ObjectId(args.roster) });
       if (!data) return null;
 
