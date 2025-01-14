@@ -57,7 +57,8 @@ export class Autocomplete {
     };
     if (args.flag_type) filter.flagType = args.flag_type;
 
-    if (args.player === '*') {
+    const subCommand = interaction.options.getSubcommand(false);
+    if (args.player === '*' && subCommand === 'delete') {
       return interaction.respond([{ name: 'All Flags', value: '*' }]);
     }
 
@@ -74,8 +75,12 @@ export class Autocomplete {
     if (!args.player) cursor.sort({ _id: -1 });
 
     const flags = await cursor.limit(24).toArray();
-    const players = flags.filter((flag, index) => flags.findIndex((f) => f.tag === flag.tag) === index);
-    return interaction.respond(players.map((flag) => ({ name: `${flag.name} (${flag.tag})`, value: flag.tag })));
+    const players = unique(flags, (flag) => flag.tag);
+    const choices = players.map((flag) => ({ name: `${flag.name} (${flag.tag})`, value: flag.tag }));
+
+    if (subCommand === 'delete') choices.unshift({ name: 'All Flags', value: '*' });
+
+    return interaction.respond(choices);
   }
 
   public async clanCategoriesAutoComplete(interaction: AutocompleteInteraction<'cached'>) {
