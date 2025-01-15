@@ -1,7 +1,8 @@
-import { CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
+import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
 import { Season } from '../../util/toolkit.js';
 
@@ -29,17 +30,14 @@ export default class DonationsCommand extends Command {
     if (args.start_date && !moment(args.start_date).isValid()) return interaction.editReply('Invalid start date provided.');
     if (args.end_date && !moment(args.end_date).isValid()) return interaction.editReply('Invalid end date provided.');
 
-    if (args.start_date) args.start_date = moment(args.start_date).toISOString();
-    if (args.end_date) args.end_date = moment(args.end_date).toISOString();
+    const startTime = moment(args.start_date || moment(Season.ID)).toDate();
+    const endTime = moment(args.end_date || moment()).toDate();
 
-    args.end_date ??= moment().toISOString();
-    args.start_date ??= moment(Season.ID).toISOString();
-
-    if (moment(args.end_date).diff(moment(args.start_date), 'months') > 6) {
+    if (moment(endTime).diff(moment(startTime), 'months') > 6) {
       return interaction.editReply('The date range cannot exceed 6 months.');
     }
 
-    if (moment(args.start_date).isAfter(args.end_date)) {
+    if (moment(startTime).isAfter(endTime)) {
       return interaction.editReply('The start date cannot be after the end date.');
     }
 
@@ -63,8 +61,8 @@ export default class DonationsCommand extends Command {
             {
               range: {
                 created_at: {
-                  gte: args.start_date,
-                  lte: args.end_date
+                  gte: startTime.toISOString(),
+                  lte: endTime.toISOString()
                 }
               }
             }
@@ -129,9 +127,6 @@ export default class DonationsCommand extends Command {
     const maxDonations = Math.max(...result.map((player) => player.donated)).toString().length;
     const maxReceived = Math.max(...result.map((player) => player.received)).toString().length;
 
-    const startTime = moment(args.start_date).toDate();
-    const endTime = moment(args.end_date).toDate();
-
     const embed = new EmbedBuilder()
       .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.large })
       .setColor(this.client.embed(interaction))
@@ -153,7 +148,14 @@ export default class DonationsCommand extends Command {
     embed.setFooter({ text: `[${donated} DON | ${received} REC]` });
     embed.setTimestamp();
 
-    return interaction.editReply({ embeds: [embed] });
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(this.createId({ cmd: this.id, tag: args.tag, start_date: args.start_date, end_date: args.end_date }))
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    return interaction.editReply({ embeds: [embed], components: !args.end_date ? [row] : [] });
   }
 }
 
