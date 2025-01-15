@@ -235,7 +235,7 @@ export default class FlagListCommand extends Command {
       .next();
 
     if (!flag) {
-      return interaction.editReply(this.i18n('common.no_match_found', { lng: interaction.locale, tag: player.tag }));
+      return interaction.editReply('No flags were found for this player.');
     }
 
     const embed = new EmbedBuilder()

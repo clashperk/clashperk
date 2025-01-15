@@ -38,15 +38,21 @@ export default class DonationsCommand extends Command {
       sort_by?: SortKey[];
       order_by?: OrderKey;
       user?: User;
+      start_date?: string;
+      end_date?: string;
     }
   ) {
-    const { sort_by: sortBy, order_by: orderBy } = args;
+    if (args.start_date) {
+      return this.handler.continue(interaction, this.handler.getCommand('donations-range')!);
+    }
+
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
     if (clan.members < 1) {
       return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
     }
 
+    const { sort_by: sortBy, order_by: orderBy } = args;
     const season = args.season || Season.ID;
     const isSameSeason = Season.ID === Season.generateID(season);
 

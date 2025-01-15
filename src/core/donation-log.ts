@@ -101,7 +101,7 @@ export class DonationLog extends RootLog {
         players: {
           terms: {
             field: 'tag',
-            size: 10000
+            size: 200
           },
           aggs: {
             donated: {
