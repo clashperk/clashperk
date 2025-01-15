@@ -1,10 +1,21 @@
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
 import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User, escapeMarkdown, time } from 'discord.js';
+import {
+  ActionRowBuilder,
+  AttachmentBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  User,
+  escapeMarkdown,
+  time
+} from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
 import { Args, Command } from '../../lib/handlers.js';
+import { createLegendGraph } from '../../struct/image-helper.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
@@ -64,9 +75,16 @@ export default class LegendDaysCommand extends Command {
     const embed = args.prev
       ? (await this.logs(data)).setColor(this.client.embed(interaction))
       : (await this.embed(interaction, data, legend, args.day)).setColor(this.client.embed(interaction));
-    embed.setTimestamp();
 
-    return interaction.editReply({ embeds: [embed], components: [row], content: null });
+    embed.setTimestamp();
+    await interaction.editReply({ embeds: [embed], components: [row], content: null, files: [] });
+
+    const result = args.prev ? await this.graph(data) : null;
+    if (result) {
+      const rawFile = new AttachmentBuilder(result.file, { name: result.name });
+      embed.setImage(result.attachmentKey);
+      return interaction.editReply({ embeds: [embed], components: [row], files: [rawFile], content: null });
+    }
   }
 
   private async embed(interaction: CommandInteraction, data: APIPlayer, legend: LegendAttacksEntity, _day?: number) {
@@ -427,33 +445,21 @@ export default class LegendDaysCommand extends Command {
       // }
     }
 
-    const res = await fetch(`${process.env.ASSET_API_BACKEND}/legends/graph`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        datasets: result.slice(0, 2),
-        labels,
+    return createLegendGraph({
+      datasets: result.slice(0, 2),
+      data: {
         name: data.name,
-        avgNetGain: this.formatNumber(season.avgGain),
-        avgOffense: this.formatNumber(season.avgOffense),
-        avgDefense: this.formatNumber(season.avgDefense),
-        prevAvgNetGain: lastSeason ? this.formatNumber(lastSeason.avgGain) : '',
-        prevAvgOffense: lastSeason ? this.formatNumber(lastSeason.avgOffense) : '',
-        prevAvgDefense: lastSeason ? this.formatNumber(lastSeason.avgDefense) : '',
-        townHall: data.townHallLevel.toString(),
-        prevFinalTrophies,
-        prevSeason: lastSeason ? `${moment(lastSeason._id).format('MMM')}` : '',
-        currentTrophies: data.trophies.toFixed(0),
-        clanName: data.clan?.name,
-        clanBadgeURL: data.clan?.badgeUrls.large,
-        season: `${moment(season._id).format('MMMM YYYY')} (${moment(seasonStart).format('DD MMM')} - ${moment(seasonEnd).format(
-          'DD MMM'
-        )})`
-      })
-    }).then((res) => res.json());
-    return `${process.env.ASSET_API_BACKEND}/${(res as any).id as string}`;
+        townHallLevel: data.townHallLevel,
+        trophies: data.trophies,
+        clan: data.clan
+      },
+      labels,
+      prevFinalTrophies,
+      season,
+      seasonEnd,
+      seasonStart,
+      lastSeason
+    });
   }
 
   private async logs(data: APIPlayer) {
@@ -535,9 +541,6 @@ export default class LegendDaysCommand extends Command {
       .setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
       .setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`);
     embed.setDescription(description);
-
-    const url = await this.graph(data);
-    if (url) embed.setImage(url);
 
     const season = this.client.coc.util.getSeason();
     embed.setFooter({ text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
