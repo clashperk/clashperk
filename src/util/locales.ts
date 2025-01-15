@@ -999,6 +999,12 @@ export const command = {
       },
       player: {
         description: 'Donation history of a player.'
+      },
+      start_date: {
+        description: 'Starting date (YYYY-MM-DD)'
+      },
+      end_date: {
+        description: 'Ending date (YYYY-MM-DD)'
       }
     }
   },

@@ -1,13 +1,13 @@
-import { Collections } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
-import { Args, Command } from '../../lib/handlers.js';
+import ms from 'ms';
+import { Command } from '../../lib/handlers.js';
 import { padStart } from '../../util/helper.js';
-import { Season, Util } from '../../util/toolkit.js';
+import { Season } from '../../util/toolkit.js';
 
 export default class DonationsCommand extends Command {
   public constructor() {
-    super('donations_range', {
+    super('donations-range', {
       category: 'activity',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
@@ -15,29 +15,33 @@ export default class DonationsCommand extends Command {
     });
   }
 
-  public args(): Args {
-    return {
-      season: {
-        match: 'ENUM',
-        enums: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
-        default: Season.ID
-      }
-    };
-  }
-
   public async exec(
     interaction: CommandInteraction<'cached'>,
     args: {
-      tag?: string;
-      gte?: string;
-      lte?: string;
+      tag: string;
+      start_date?: string;
+      end_date?: string;
     }
   ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag);
     if (!clan) return;
-    const now = moment('2023-04-03').toDate();
-    const lte = moment(now).weekday(1).startOf('day').toISOString();
-    const gte = moment(lte).subtract(7, 'days').toISOString();
+
+    if (args.start_date && !moment(args.start_date).isValid()) return interaction.editReply('Invalid start date provided.');
+    if (args.end_date && !moment(args.end_date).isValid()) return interaction.editReply('Invalid end date provided.');
+
+    if (args.start_date) args.start_date = moment(args.start_date).toISOString();
+    if (args.end_date) args.end_date = moment(args.end_date).toISOString();
+
+    args.end_date ??= moment().toISOString();
+    args.start_date ??= moment(Season.ID).toISOString();
+
+    if (moment(args.end_date).diff(moment(args.start_date), 'months') > 6) {
+      return interaction.editReply('The date range cannot exceed 6 months.');
+    }
+
+    if (moment(args.start_date).isAfter(args.end_date)) {
+      return interaction.editReply('The start date cannot be after the end date.');
+    }
 
     const { aggregations } = await this.client.elastic.search({
       index: 'donation_events',
@@ -52,10 +56,15 @@ export default class DonationsCommand extends Command {
               }
             },
             {
+              terms: {
+                tag: clan.memberList.map((member) => member.tag)
+              }
+            },
+            {
               range: {
                 created_at: {
-                  gte,
-                  lte
+                  gte: args.start_date,
+                  lte: args.end_date
                 }
               }
             }
@@ -66,7 +75,7 @@ export default class DonationsCommand extends Command {
         players: {
           terms: {
             field: 'tag',
-            size: 10000
+            size: 50
           },
           aggs: {
             donated: {
@@ -95,6 +104,10 @@ export default class DonationsCommand extends Command {
     });
 
     const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
+    if (!buckets.length) {
+      return interaction.editReply('No donation data found for the specified date range.');
+    }
+
     const playersMap = buckets.reduce<Record<string, { donated: number; received: number }>>((acc, cur) => {
       acc[cur.key] = {
         donated: cur.donated.total.value,
@@ -103,16 +116,7 @@ export default class DonationsCommand extends Command {
       return acc;
     }, {});
 
-    const playerTags = Object.keys(playersMap);
-    const currentMemberTags = clan.memberList.map((member) => member.tag);
-    const oldMemberTags = playerTags.filter((tag) => !currentMemberTags.includes(tag));
-
-    const players = await this.client.db
-      .collection(Collections.PLAYERS)
-      .find({ tag: { $in: oldMemberTags } }, { projection: { name: 1, tag: 1 } })
-      .toArray();
-
-    const result = [...clan.memberList, ...players].map((player) => ({
+    const result = clan.memberList.map((player) => ({
       name: player.name,
       tag: player.tag,
       donated: playersMap[player.tag]?.donated ?? 0,
@@ -122,19 +126,25 @@ export default class DonationsCommand extends Command {
     result.sort((a, b) => b.received - a.received);
     result.sort((a, b) => b.donated - a.donated);
 
+    const maxDonations = Math.max(...result.map((player) => player.donated)).toString().length;
+    const maxReceived = Math.max(...result.map((player) => player.received)).toString().length;
+
+    const startTime = moment(args.start_date).toDate();
+    const endTime = moment(args.end_date).toDate();
+
     const embed = new EmbedBuilder()
       .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.large })
       .setColor(this.client.embed(interaction))
       .setDescription(
         [
-          '**Daily Donations**',
-          `${time(moment(gte).toDate())} - ${time(moment(lte).toDate())}`,
+          `**Donations by Date Range (${ms(endTime.getTime() - startTime.getTime(), { long: true })})**`,
+          `${time(startTime)} - ${time(endTime)}`,
           '',
           ...result.map((player) => {
-            const don = padStart(player.donated, 5);
-            const rec = padStart(player.received, 5);
+            const don = padStart(player.donated, maxDonations);
+            const rec = padStart(player.received, maxReceived);
             const name = escapeMarkdown(player.name);
-            return `\` ${don} ${rec} \` ${name}`;
+            return `\` ${don}  ${rec} \` \u200e${name}`;
           })
         ].join('\n')
       );

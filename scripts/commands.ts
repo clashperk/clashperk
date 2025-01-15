@@ -888,6 +888,20 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.String,
         required: false,
         choices: getSeasonIds()
+      },
+      {
+        name: 'start_date',
+        description: command.donations.options.start_date.description,
+        description_localizations: translation('command.donations.options.start_date.description'),
+        type: ApplicationCommandOptionType.String,
+        required: false
+      },
+      {
+        name: 'end_date',
+        description: command.donations.options.end_date.description,
+        description_localizations: translation('command.donations.options.end_date.description'),
+        type: ApplicationCommandOptionType.String,
+        required: false
       }
     ]
   },
