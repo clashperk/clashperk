@@ -17,6 +17,7 @@ import { unique } from 'radash';
 import { i18n } from '../util/i18n.js';
 import { Client } from './client.js';
 import { ElasticIndexer } from './indexer.js';
+import { mixpanel } from './mixpanel.js';
 
 export class Resolver {
   private readonly indexer: ElasticIndexer;
@@ -360,9 +361,21 @@ export class Resolver {
             '',
             `### Already subscribed? Use the ${this.client.commands.REDEEM} command.`
           ].join('\n')
-          // content: this.client.i18n('common.clan_limit', { lng: interaction.locale, command: this.client.commands.REDEEM })
         });
       }
+
+      mixpanel.track('Clan Limit Reached', {
+        distinct_id: interaction.user.id,
+        username: interaction.user.username,
+        display_name: interaction.user.username,
+        guild_id: interaction.guildId,
+        guild_name: interaction.guild.name,
+        guild_member_count: memberCount,
+        user_id: interaction.user.id,
+        is_patron: isPatron,
+        linked_clans: clans.length
+      });
+
       return null;
     }
 
@@ -388,6 +401,19 @@ export class Resolver {
           command: this.client.commands.VERIFY
         })
       });
+
+      mixpanel.track('Clan Verification Required', {
+        distinct_id: interaction.user.id,
+        username: interaction.user.username,
+        display_name: interaction.user.username,
+        guild_member_count: memberCount,
+        guild_id: interaction.guildId,
+        guild_name: interaction.guild.name,
+        user_id: interaction.user.id,
+        is_patron: isPatron,
+        linked_clans: clans.length
+      });
+
       return null;
     }
 

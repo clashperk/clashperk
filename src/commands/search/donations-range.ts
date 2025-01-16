@@ -27,8 +27,9 @@ export default class DonationsCommand extends Command {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag);
     if (!clan) return;
 
-    if (args.start_date && !moment(args.start_date).isValid()) return interaction.editReply('Invalid start date provided.');
-    if (args.end_date && !moment(args.end_date).isValid()) return interaction.editReply('Invalid end date provided.');
+    if ((args.start_date && !moment(args.start_date, true).isValid()) || (args.end_date && !moment(args.end_date, true).isValid())) {
+      return interaction.editReply('Invalid date format, allowed formats are `YYYY-MM-DD` or `YYYY-MM-DD HH:mm`');
+    }
 
     const startTime = moment(args.start_date || moment(Season.ID)).toDate();
     const endTime = moment(args.end_date || moment()).toDate();
