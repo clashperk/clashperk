@@ -424,25 +424,24 @@ export default class LegendDaysCommand extends Command {
       moment(seasonStart).add(i, 'days').toDate()
     );
 
-    const prevLabels = Array.from({ length: moment(lastSeasonEnd).diff(lastSeasonStart, 'days') + 1 }, (_, i) =>
-      moment(lastSeasonStart).add(i, 'days').toDate()
-    );
-
     for (const label of labels) {
       const log = season.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
       if (!log) season.logs.push({ timestamp: label, trophies: null });
     }
     season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
+    const lastSeasonLabels = Array.from({ length: moment(lastSeasonEnd).diff(lastSeasonStart, 'days') + 1 }, (_, i) =>
+      moment(lastSeasonStart).add(i, 'days').toDate()
+    );
+
     if (lastSeason) {
-      for (const label of prevLabels) {
+      lastSeasonLabels.forEach((label, idx) => {
         const log = lastSeason.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
-        if (!log) lastSeason.logs.push({ timestamp: label, trophies: null });
-      }
+        if (!log) lastSeason.logs.push({ timestamp: label, trophies: lastSeason.logs[idx - 1]?.trophies ?? null });
+      });
+
       lastSeason.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-      // if (lastSeason.logs.length > season.logs.length) {
-      // 	lastSeason.logs = randomlySelectItems(lastSeason.logs, season.logs.length);
-      // }
+      lastSeason.logs = lastSeason.logs.slice(-season.logs.length);
     }
 
     return createLegendGraph({
