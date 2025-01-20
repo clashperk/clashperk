@@ -199,8 +199,8 @@ export interface IRoster {
   webhook?: {
     id: string;
     token: string;
-  };
-  logChannelId?: string;
+  } | null;
+  logChannelId?: string | null;
   allowCategorySelection?: boolean;
   lastUpdated: Date;
   createdAt: Date;
@@ -1761,21 +1761,18 @@ export class RosterManager {
     return members;
   }
 
-  public async rosterChangeLog({
-    roster,
-    user,
-    action,
-    members,
-    categoryId
-  }: {
-    roster: IRoster;
+  public async rosterChangeLog(options: {
+    roster: WithId<IRoster>;
     oldCategory?: IRosterCategory;
     oldRoster?: IRoster;
     user: User;
     action: RosterLog;
     members: IRosterMember[];
     categoryId?: string | null;
+    isRetry?: boolean;
   }) {
+    const { roster, user, action, members, categoryId } = options;
+
     const categories = await this.getCategories(roster.guildId);
     const categoryMap = categories.reduce<Record<string, IRosterCategory>>(
       (prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
@@ -1834,9 +1831,9 @@ export class RosterManager {
 
     const rosterLog =
       roster.logChannelId && roster.webhook
-        ? { channelId: roster.logChannelId, webhook: { token: roster.webhook.token, id: roster.webhook.id } }
+        ? { fromRoster: true, channelId: roster.logChannelId, webhook: { token: roster.webhook.token, id: roster.webhook.id } }
         : null;
-    const defaultConfig = this.client.settings.get<{ channelId: string; webhook: { token: string; id: string } }>(
+    const defaultConfig = this.client.settings.get<{ fromRoster: boolean; channelId: string; webhook: { token: string; id: string } }>(
       roster.guildId,
       Settings.ROSTER_CHANGELOG,
       rosterLog
@@ -1846,19 +1843,77 @@ export class RosterManager {
     if (!config) return null;
 
     const webhook = new WebhookClient(config.webhook);
+    const channel = this.client.util.getTextBasedChannel(config.channelId);
 
     try {
-      const isThread = this.client.util.getTextBasedChannel(config.channelId)?.isThread();
-      return await webhook.send(isThread ? { embeds: [embed], threadId: config.channelId } : { embeds: [embed] });
+      return await webhook.send(channel?.isThread() ? { embeds: [embed], threadId: config.channelId } : { embeds: [embed] });
     } catch (error) {
       if ([DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)) {
-        await this.client.settings.delete(roster.guildId, Settings.ROSTER_CHANGELOG);
+        if (config.fromRoster) {
+          await this.edit(roster._id, { logChannelId: null, webhook: null });
+        } else {
+          await this.client.settings.delete(roster.guildId, Settings.ROSTER_CHANGELOG);
+        }
+
+        if (error.code === DiscordErrorCodes.UNKNOWN_WEBHOOK && !options.isRetry) {
+          await this.retryWebhook(options, config);
+          return null;
+        }
       }
 
       captureException(error);
       this.client.logger.error(`${error.toString()}`, { label: 'RosterLog' });
     }
   }
+
+  private async retryWebhook(options: RosterLogInput, config: RosterWebhookConfig) {
+    const channel = this.client.util.getTextBasedChannel(config.channelId);
+    if (!channel) return null;
+
+    const { roster } = options;
+
+    const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
+    if (!webhook) return null;
+
+    if (config.fromRoster) {
+      await this.edit(roster._id, {
+        logChannelId: channel.id,
+        webhook: {
+          token: webhook.token!,
+          id: webhook.id
+        }
+      });
+    } else {
+      await this.client.settings.set(roster.guildId, Settings.ROSTER_CHANGELOG, {
+        channelId: channel.id,
+        webhook: { token: webhook.token, id: webhook.id }
+      });
+    }
+
+    const updatedRoster = await this.get(roster._id);
+    if (!updatedRoster) return null;
+
+    await this.rosterChangeLog({ ...options, isRetry: true, roster: updatedRoster });
+  }
+}
+
+interface RosterLogInput {
+  roster: WithId<IRoster>;
+  oldCategory?: IRosterCategory;
+  oldRoster?: IRoster;
+  user: User;
+  action: RosterLog;
+  members: IRosterMember[];
+  categoryId?: string | null;
+}
+
+interface RosterWebhookConfig {
+  fromRoster: boolean;
+  channelId: string;
+  webhook: {
+    token: string;
+    id: string;
+  };
 }
 
 export enum RosterLog {

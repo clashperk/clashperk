@@ -3,6 +3,7 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Comman
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import Google from '../../struct/google.js';
+import { EMOJIS } from '../../util/emojis.js';
 
 export default class ClanActivityCommand extends Command {
   public constructor() {
@@ -15,7 +16,7 @@ export default class ClanActivityCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number; timezone?: string; limit?: number }) {
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
     const result = await this.aggregate(
@@ -73,12 +74,19 @@ export default class ClanActivityCommand extends Command {
       name: 'chart.png'
     });
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel('Open in Web')
-        .setURL(`https://clashperk.com/web/charts/${res.headers.get('x-chart-id')}`)
-    );
+    const row = new ActionRowBuilder<ButtonBuilder>()
+      .addComponents(
+        new ButtonBuilder()
+          .setEmoji(EMOJIS.REFRESH)
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(this.createId({ cmd: this.id, clans: resolvedArgs, days: args.days, timezone: args.timezone, limit: args.limit }))
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Link)
+          .setLabel('Open in Web')
+          .setURL(`https://clashperk.com/web/charts/${res.headers.get('x-chart-id')}`)
+      );
 
     const timeZoneCommand = this.client.commands.get('/timezone');
     await interaction.editReply({

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, time, User } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
@@ -19,12 +19,13 @@ export default class DonationsCommand extends Command {
   public async exec(
     interaction: CommandInteraction<'cached'>,
     args: {
-      tag: string;
+      tag?: string;
+      user?: User;
       start_date?: string;
       end_date?: string;
     }
   ) {
-    const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+    const clan = await this.client.resolver.resolveClan(interaction, args?.tag ?? args.user?.id);
     if (!clan) return;
 
     if ((args.start_date && !moment(args.start_date, true).isValid()) || (args.end_date && !moment(args.end_date, true).isValid())) {

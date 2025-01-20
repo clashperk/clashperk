@@ -38,7 +38,7 @@ async function graph(data: {
     })
     .reverse();
   const [, seasonStart, seasonEnd] = seasonIds;
-  const [lastSeasonStart, lastSeasonEnd] = seasonIds;
+  const [, lastSeasonEnd] = seasonIds;
 
   const result = await db
     .collection(Collections.LEGEND_ATTACKS)
@@ -245,17 +245,20 @@ async function graph(data: {
   }
   season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-  const lastSeasonLabels = Array.from({ length: moment(lastSeasonEnd).diff(lastSeasonStart, 'days') + 1 }, (_, i) =>
-    moment(lastSeasonStart).add(i, 'days').toDate()
-  );
+  const lastSeasonLabels = Array.from({ length: labels.length }, (_, i) => moment(lastSeasonEnd).subtract(i, 'days').toDate()).reverse();
 
   if (lastSeason) {
-    lastSeasonLabels.forEach((label, idx) => {
+    lastSeasonLabels.forEach((label) => {
       const log = lastSeason.logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
-      if (!log) lastSeason.logs.push({ timestamp: label, trophies: lastSeason.logs[idx - 1]?.trophies ?? null });
+      if (!log) lastSeason.logs.push({ timestamp: label, trophies: null });
     });
-
     lastSeason.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+    lastSeason.logs.forEach((log, i) => {
+      if (log.trophies === null) {
+        log.trophies = lastSeason.logs[i - 1]?.trophies ?? lastSeason.logs[i + 1]?.trophies ?? null;
+      }
+    });
     lastSeason.logs = lastSeason.logs.slice(-season.logs.length);
   }
 
