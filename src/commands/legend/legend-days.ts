@@ -439,10 +439,14 @@ export default class LegendDaysCommand extends Command {
       });
       lastSeason.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-      lastSeason.logs.forEach((log, i) => {
+      lastSeason.logs = lastSeason.logs.map((log, i) => {
         if (log.trophies === null) {
-          log.trophies = lastSeason.logs[i - 1]?.trophies ?? lastSeason.logs[i + 1]?.trophies ?? null;
+          return {
+            ...log,
+            trophies: lastSeason.logs[i - 1]?.trophies ?? null
+          };
         }
+        return log;
       });
       lastSeason.logs = lastSeason.logs.slice(-season.logs.length);
     }
