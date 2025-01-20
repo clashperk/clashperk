@@ -13,6 +13,7 @@ import {
 import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class CapitalRaidsCommand extends Command {
@@ -31,34 +32,6 @@ export default class CapitalRaidsCommand extends Command {
         id: 'tag',
         match: 'STRING'
       }
-    };
-  }
-
-  private async rankings(tag: string) {
-    const ranks = await this.client.db
-      .collection(Collections.CAPITAL_RANKS)
-      .aggregate<{ country: string; countryCode: string; clans: { rank: number } }>([
-        {
-          $match: {
-            season: Season.ID
-          }
-        },
-        {
-          $unwind: {
-            path: '$clans'
-          }
-        },
-        {
-          $match: {
-            'clans.tag': tag
-          }
-        }
-      ])
-      .toArray();
-
-    return {
-      globalRank: ranks.find(({ countryCode }) => countryCode === 'global')?.clans.rank ?? null,
-      countryRank: ranks.find(({ countryCode }) => countryCode !== 'global') ?? null
     };
   }
 
@@ -174,7 +147,6 @@ export default class CapitalRaidsCommand extends Command {
     new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
     if (interaction.isButton()) row.setComponents(refreshButton);
 
-    // const isRaidWeek = currentWeekId === weekId;
     const raidSeason = await this.aggregateCapitalRaids(clan, weekId);
 
     const members = raidSeason?.members ?? data?.members ?? [];
@@ -200,7 +172,7 @@ export default class CapitalRaidsCommand extends Command {
     await interaction.editReply({ embeds: [embed], components: [row] });
 
     const { offensive, defensive } = this.calculateStats(data);
-    const url = await this.performancesCardURL({
+    const url = await this.performanceCard({
       clanName: clan.name,
       clanBadgeUrl: clan.badgeUrls.large,
       trophies: clan.clanCapitalPoints || 0,
@@ -244,7 +216,6 @@ export default class CapitalRaidsCommand extends Command {
     clan,
     weekId,
     members,
-    // raidSeason
     locale
   }: {
     clan: APIClan;
@@ -254,20 +225,8 @@ export default class CapitalRaidsCommand extends Command {
     previousAttacks: number[];
     members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[];
   }) {
-    // const totalLoot = members.reduce((acc, cur) => acc + cur.capitalResourcesLooted, 0);
-    // const totalAttacks = members.reduce((acc, cur) => acc + cur.attacks, 0);
     const startDate = moment(weekId).toDate();
     const endDate = moment(weekId).clone().add(3, 'days').toDate();
-
-    // const { offensive } = this.calculateStats(raidSeason);
-    // previousAttacks.sort((a, b) => a - b);
-    // const totalPreviousAttacks = previousAttacks.reduce((acc, cur) => acc + cur, 0);
-    // const avgAttacks = totalPreviousAttacks ? totalPreviousAttacks / previousAttacks.length : 0;
-
-    // let avgMax = avgAttacks;
-    // if (raidSeason.totalAttacks > avgAttacks) {
-    // 	avgMax = previousAttacks.find((a) => a > raidSeason.totalAttacks) ?? raidSeason.totalAttacks;
-    // }
 
     const weekend = Util.raidWeekDateFormat(startDate, endDate);
     const embed = new EmbedBuilder()
@@ -277,11 +236,7 @@ export default class CapitalRaidsCommand extends Command {
       })
       .setTimestamp()
       .setFooter({
-        text: [
-          // `Looted: ${totalLoot}, Attacks: ${totalAttacks} (Avg. ${offensive.attacksPerRaid}/Raid)`,
-          // `Avg. Loot/Raid: ${offensive.lootPerRaid}, Avg. Loot/Attack: ${offensive.lootPerAttack}`,
-          `Week of ${weekend}`
-        ].join('\n')
+        text: [`Week of ${weekend}`].join('\n')
       });
 
     embed.setDescription(
@@ -292,28 +247,12 @@ export default class CapitalRaidsCommand extends Command {
         members
           .map((mem, i) => {
             const rank = (i + 1).toString().padStart(2, ' ');
-            const looted = this.padding(mem.capitalResourcesLooted);
+            const looted = padStart(mem.capitalResourcesLooted, 6);
             const attacks = `${mem.attacks}/${mem.attackLimit}`.padStart(4, ' ');
             return `\u200e${rank} ${looted} ${attacks}  ${mem.name}`;
           })
           .join('\n'),
         '```'
-        // 'Offensive Stats',
-        // `Attacks: ${offensive.totalAttacks}`,
-        // `Loot: ${offensive.totalLoot}`,
-        // `Avg. Attacks/Raid: ${offensive.attacksPerRaid}`,
-        // `Avg. Loot/Raid: ${offensive.lootPerRaid}`,
-        // `Avg. Loot/Attack: ${offensive.lootPerAttack}`,
-        // '',
-        // `Avg. Attacks of last 10 weekends: ${avgAttacks.toFixed(2)} / Swapped: ${avgMax}`,
-        // `Projected Loot: ${(offensive.lootPerAttack * avgMax).toFixed(0)}`,
-        // '',
-        // 'Defensive Stats',
-        // `Attacks: ${defensive.totalAttacks}`,
-        // `Loot: ${defensive.totalLoot}`,
-        // `Avg. Attacks/Raid: ${defensive.attacksPerRaid}`,
-        // `Avg. Loot/Raid: ${defensive.lootPerRaid}`,
-        // `Avg. Loot/Attack: ${defensive.lootPerAttack}`
       ].join('\n')
     );
 
@@ -352,12 +291,10 @@ export default class CapitalRaidsCommand extends Command {
       }
     }
 
-    // defensive.attacksPerRaid = Number((defensive.totalAttacks / raidSeason.defenseLog.length).toFixed(2));
     defensive.attacksPerRaid = Number(
       (defensive.attacksPerClan.reduce((acc, cur) => acc + cur, 0) / defensive.attacksPerClan.length).toFixed(2)
     );
 
-    // defensive.lootPerRaid = Number((defensive.totalLoot / raidSeason.defenseLog.length).toFixed(2));
     defensive.lootPerRaid = Number((defensive.lootPerClan.reduce((acc, cur) => acc + cur, 0) / defensive.lootPerClan.length).toFixed(2));
     defensive.lootPerAttack = Number((defensive.totalLoot / defensive.totalAttacks).toFixed(2));
 
@@ -372,12 +309,10 @@ export default class CapitalRaidsCommand extends Command {
       }
     }
 
-    // offensive.attacksPerRaid = Number((offensive.totalAttacks / raidSeason.attackLog.length).toFixed(2));
     offensive.attacksPerRaid = Number(
       (offensive.attacksPerClan.reduce((acc, cur) => acc + cur, 0) / offensive.attacksPerClan.length).toFixed(2)
     );
 
-    // offensive.lootPerRaid = Number((offensive.totalLoot / raidSeason.attackLog.length).toFixed(2));
     offensive.lootPerRaid = Number((offensive.lootPerClan.reduce((acc, cur) => acc + cur, 0) / offensive.lootPerClan.length).toFixed(2));
     offensive.lootPerAttack = Number((offensive.totalLoot / offensive.totalAttacks).toFixed(2));
     offensive.projectedLoot = Number((offensive.lootPerAttack * 300).toFixed(2));
@@ -385,7 +320,35 @@ export default class CapitalRaidsCommand extends Command {
     return { offensive, defensive };
   }
 
-  private async performancesCardURL(body: any) {
+  private async rankings(tag: string) {
+    const ranks = await this.client.db
+      .collection(Collections.CAPITAL_RANKS)
+      .aggregate<{ country: string; countryCode: string; clans: { rank: number } }>([
+        {
+          $match: {
+            season: Season.ID
+          }
+        },
+        {
+          $unwind: {
+            path: '$clans'
+          }
+        },
+        {
+          $match: {
+            'clans.tag': tag
+          }
+        }
+      ])
+      .toArray();
+
+    return {
+      globalRank: ranks.find(({ countryCode }) => countryCode === 'global')?.clans.rank ?? null,
+      countryRank: ranks.find(({ countryCode }) => countryCode !== 'global') ?? null
+    };
+  }
+
+  private async performanceCard(body: any) {
     const res = await fetch(`${process.env.ASSET_API_BACKEND!}/capital/raid-performance-card`, {
       method: 'PUT',
       headers: {
@@ -394,10 +357,6 @@ export default class CapitalRaidsCommand extends Command {
       body: JSON.stringify(body)
     }).then((res) => res.json());
     return `${process.env.ASSET_API_BACKEND!}/${(res as any).id as string}`;
-  }
-
-  private padding(num: number) {
-    return num.toString().padStart(6, ' ');
   }
 
   private raidWeek() {
