@@ -63,7 +63,7 @@ export default class AliasCreateCommand extends Command {
 
     const updated = await this.client.db
       .collection<ClanStoresEntity>(Collections.CLAN_STORES)
-      .updateOne({ guild: interaction.guild.id, tag }, { $set: record });
+      .updateOne({ guild: interaction.guild.id, tag }, record);
 
     if (!updated.matchedCount) {
       return interaction.editReply(this.i18n('command.alias.create.clan_not_linked', { lng: interaction.locale }));
