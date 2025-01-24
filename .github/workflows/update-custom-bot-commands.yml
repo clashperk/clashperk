@@ -1,4 +1,5 @@
 name: update-custom-bot-commands
+
 on:
   workflow_dispatch:
   schedule:
