@@ -26,6 +26,7 @@ jobs:
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
+          cache: 'npm'
           node-version: 20
 
       - name: Switch to latest Tag

@@ -1,6 +1,7 @@
 import { Collections } from '@app/constants';
 import { ClanStoresEntity } from '@app/entities';
 import { CommandInteraction } from 'discord.js';
+import { UpdateFilter } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 
 export default class AliasCreateCommand extends Command {
@@ -43,9 +44,22 @@ export default class AliasCreateCommand extends Command {
       }
     }
 
-    const record: Partial<ClanStoresEntity> = {};
-    if (args.clan_nickname) record.nickname = args.clan_nickname.trim();
-    if (args.alias_name) record.alias = args.alias_name.trim();
+    const record: UpdateFilter<ClanStoresEntity> = {};
+    if (args.clan_nickname) {
+      if (!/^none$/i.test(args.clan_nickname)) {
+        record.$set = { nickname: args.clan_nickname.trim() };
+      } else {
+        record.$unset = { nickname: true };
+      }
+    }
+
+    if (args.alias_name) {
+      if (!/^none$/i.test(args.alias_name)) {
+        record.$set = { ...record.$set, alias: args.alias_name.trim() };
+      } else {
+        record.$unset = { ...record.$unset, alias: true };
+      }
+    }
 
     const updated = await this.client.db
       .collection<ClanStoresEntity>(Collections.CLAN_STORES)
