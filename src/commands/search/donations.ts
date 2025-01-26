@@ -3,7 +3,7 @@ import { PlayerSeasonsEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { recoverDonations } from '../../util/helper.js';
+import { padStart, recoverDonations } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class DonationsCommand extends Command {
@@ -89,7 +89,7 @@ export default class DonationsCommand extends Command {
           received: donationsReceived,
           townHall: townHallLevel,
           difference: donations - donationsReceived,
-          ratio: donationsReceived === 0 ? 0 : donations / donationsReceived
+          ratio: +(donationsReceived === 0 ? 0 : donations / donationsReceived).toFixed(2)
         });
       }
     }
@@ -119,7 +119,7 @@ export default class DonationsCommand extends Command {
           donated,
           received,
           difference: donated - received,
-          ratio: received === 0 ? 0 : donated / received
+          ratio: +(received === 0 ? 0 : donated / received).toFixed(2)
         });
       }
     }
@@ -139,24 +139,39 @@ export default class DonationsCommand extends Command {
 
     const isTh = sortBy?.includes('townHall');
     const isDiff = sortBy?.includes('difference');
+    const isRatio = sortBy?.includes('ratio');
     const getEmbed = () => {
       const embed = new EmbedBuilder()
         .setColor(this.client.embed(interaction))
         .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
-      if (isDiff) {
+      if (isRatio) {
+        const ds = Math.max(...members.map((m) => m.ratio)).toString().length + 1;
+        embed.setDescription(
+          [
+            '```',
+            `\u200e${' #'} ${padStart('DON', 5)}  ${padStart('RATIO', ds)}  ${'NAME'}`,
+            ...members.map((mem, count) => {
+              const idx = padStart(count + 1, 2);
+              const ratio = padStart(mem.ratio, ds);
+              const name = this.padEnd(mem.name.slice(0, 15));
+              const donated = padStart(Util.formatNumber(mem.donated, 1), 5);
+              return `${idx} ${donated}  ${ratio}  \u200e${name}`;
+            }),
+            '```'
+          ].join('\n')
+        );
+      } else if (isDiff) {
         const ds = Math.max(...members.map((m) => m.difference)).toString().length + 1;
         embed.setDescription(
           [
             '```',
-            `\u200e # ${'DIFF'.padStart(ds, ' ')} ${'RATIO'.padStart(5, ' ')}  ${'NAME'}`,
-            members
-              .map((mem, count) => {
-                const ratio = mem.ratio.toFixed(2).padStart(5, ' ');
-                const name = this.padEnd(mem.name.slice(0, 15));
-                const rank = (count + 1).toString().padStart(2, ' ');
-                return `${rank} ${this.donation(mem.difference, ds)} ${ratio}  \u200e${name}`;
-              })
-              .join('\n'),
+            `\u200e # ${padStart('DIFF', ds)} ${padStart('RATIO', 5)}  ${'NAME'}`,
+            ...members.map((mem, count) => {
+              const ratio = padStart(mem.ratio, 5);
+              const name = this.padEnd(mem.name.slice(0, 15));
+              const rank = (count + 1).toString().padStart(2, ' ');
+              return `${rank} ${this.donation(mem.difference, ds)} ${ratio}  \u200e${name}`;
+            }),
             '```'
           ].join('\n')
         );
@@ -164,15 +179,13 @@ export default class DonationsCommand extends Command {
         embed.setDescription(
           [
             '```',
-            `\u200e${isTh ? 'TH' : ' #'} ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
-            members
-              .map((mem, count) => {
-                const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
-                const name = this.padEnd(mem.name.slice(0, 15));
-                const thOrIndex = (isTh ? mem.townHall : count + 1).toString().padStart(2, ' ');
-                return `${thOrIndex} ${donation}  \u200e${name}`;
-              })
-              .join('\n'),
+            `\u200e${isTh ? 'TH' : ' #'} ${padStart('DON', ds)} ${padStart('REC', rs)}  ${'NAME'}`,
+            ...members.map((mem, count) => {
+              const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
+              const name = this.padEnd(mem.name.slice(0, 15));
+              const thOrIndex = padStart(isTh ? mem.townHall : count + 1, 2);
+              return `${thOrIndex} ${donation}  \u200e${name}`;
+            }),
             '```'
           ].join('\n')
         );
@@ -225,6 +238,12 @@ export default class DonationsCommand extends Command {
             default: sortBy?.includes('difference')
           },
           {
+            label: 'Donation Ratio',
+            description: 'Donation ratio',
+            value: 'ratio',
+            default: sortBy?.includes('ratio')
+          },
+          {
             label: 'Town-Hall Level',
             description: 'Sorted by Town-Hall level',
             value: 'townHall',
@@ -265,5 +284,5 @@ export default class DonationsCommand extends Command {
   }
 }
 
-type SortKey = 'donated' | 'received' | 'townHall' | 'difference';
+type SortKey = 'donated' | 'received' | 'townHall' | 'difference' | 'ratio';
 type OrderKey = 'asc' | 'desc';
