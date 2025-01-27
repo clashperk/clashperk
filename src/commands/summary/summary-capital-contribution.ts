@@ -3,6 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class SummaryCapitalContributionCommand extends Command {
@@ -99,28 +100,24 @@ export default class SummaryCapitalContributionCommand extends Command {
     embed.setColor(this.client.embed(interaction));
 
     if (args.clans_only) {
-      embed.setAuthor({ name: `${interaction.guild.name} Capital Contributions` });
+      embed.setAuthor({ name: `Capital Contribution Leaderborad` });
       embed.setDescription(
         [
           '```',
-          `\u200e #  ${'TOTAL'.padStart(maxPad, ' ')}  NAME`,
-          clansGroup
-            .map((clan, i) => `${(i + 1).toString().padStart(2, ' ')}  ${clan.total.toString().padStart(maxPad, ' ')}  ${clan.name}`)
-            .join('\n'),
+          `\u200e #  ${padStart('TOTAL', maxPad)}  NAME`,
+          clansGroup.map((clan, i) => `${padStart(i + 1, 2)}  ${padStart(clan.total, maxPad)}  ${clan.name}`).join('\n'),
           '```'
         ].join('\n')
       );
     } else {
       embed
-        .setAuthor({ name: `${interaction.guild.name} Top Contributors` })
+        .setAuthor({ name: `Capital Contribution Leaderborad` })
         .setDescription(
           [
             `**${this.i18n('command.capital.contribution.title', { lng: interaction.locale })} (${season})**`,
             '```',
             '\u200e #  TOTAL  NAME',
-            membersGroup
-              .map((mem, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.total)}  ${mem.name}`)
-              .join('\n'),
+            membersGroup.map((mem, i) => `\u200e${padStart(i + 1, 2)}  ${this.padding(mem.total)}  ${mem.name}`).join('\n'),
             '```'
           ].join('\n')
         );

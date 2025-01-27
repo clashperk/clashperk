@@ -17,7 +17,7 @@ import pluralize from 'pluralize';
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
-import { padStart } from '../../util/helper.js';
+import { padStart, trimTag } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class LegendDaysCommand extends Command {
@@ -119,7 +119,7 @@ export default class LegendDaysCommand extends Command {
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
       .setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
-      .setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`);
+      .setURL(`http://cprk.eu/p/${trimTag(data.tag)}`);
     embed.setDescription(
       [
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
@@ -160,7 +160,7 @@ export default class LegendDaysCommand extends Command {
         {
           name: '**Clan**',
           value: [
-            `- ${clan ? `[${clan.name} (${clan.tag})](http://cprk.eu/c/${clan.tag.replace('#', '')})` : 'N/A'}`,
+            `- ${clan ? `[${clan.name} (${clan.tag})](http://cprk.eu/c/${trimTag(clan.tag)})` : 'N/A'}`,
             `- Rank in Clan: ${member.clanRank}`,
             `- Clan Points Contribution: ${Math.floor((member.trophies * percentage) / 100)} (${percentage}%)`
           ].join('\n')
@@ -176,7 +176,7 @@ export default class LegendDaysCommand extends Command {
         const troops = [hero, ...hero.equipment!].filter((unit) => HOME_TROOPS[unit.name]);
         return troops.map((unit, idx) => {
           const unitIcon = HOME_TROOPS[unit.name];
-          const level = padStart(unit.level, 2);
+          const level = padStart(unit.level, idx === 0 ? 3 : 2);
           return `${unitIcon} \`\u200e${level}\u200f\`${idx === 0 ? ' -' : ''}`;
         });
       })
@@ -543,9 +543,9 @@ export default class LegendDaysCommand extends Command {
       logDescription.join('\n')
     ].join('\n');
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
-      .setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`);
+    const embed = new EmbedBuilder();
+    embed.setTitle(`${escapeMarkdown(data.name)} (${data.tag})`);
+    embed.setURL(`http://cprk.eu/c/${trimTag(data.tag)}`);
     embed.setDescription(description);
 
     const season = this.client.coc.util.getSeason();

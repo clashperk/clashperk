@@ -16,7 +16,7 @@ import {
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/emojis.js';
-import { getMenuFromMessage } from '../../util/helper.js';
+import { getMenuFromMessage, trimTag } from '../../util/helper.js';
 import { Season } from '../../util/toolkit.js';
 
 const roles: Record<string, string> = {
@@ -121,24 +121,11 @@ export default class PlayerCommand extends Command {
   private async embed(data: APIPlayer) {
     const aggregated = await this.client.db
       .collection(Collections.PLAYERS)
-      .aggregate([
-        {
-          $match: {
-            tag: data.tag
-          }
-        },
-        {
-          $project: {
-            tag: '$tag',
-            lastSeen: '$lastSeen'
-          }
-        }
-      ])
-      .next();
+      .findOne({ tag: data.tag }, { projection: { tag: 1, lastSeen: 1 } });
 
     const lastSeen = aggregated?.lastSeen ? this.getLastSeen(aggregated.lastSeen) : 'Unknown';
     const clan = data.clan
-      ? `**Clan Info**\n${EMOJIS.CLAN} [${data.clan.name}](${this.clanURL(data.clan.tag)}) (${roles[data.role!]})\n`
+      ? `**Clan Info**\n${EMOJIS.CLAN} [${data.clan.name}](http://cprk.eu/c/${trimTag(data.clan.tag)}) (${roles[data.role!]})\n`
       : '';
 
     const war = await this.getWars(data.tag);
@@ -149,7 +136,6 @@ export default class PlayerCommand extends Command {
     const embed = new EmbedBuilder()
       .setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
       .setURL(this.client.coc.getPlayerURL(data.tag))
-      .setThumbnail(data.league?.iconUrls.small ?? `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`)
       .setDescription(
         [
           `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${EMOJIS.EXP} **${data.expLevel}** ${
@@ -157,6 +143,8 @@ export default class PlayerCommand extends Command {
           } **${data.trophies}** ${EMOJIS.WAR_STAR} **${data.warStars}**`
         ].join('\n')
       );
+    if (data.league?.iconUrls.small) embed.setThumbnail(data.league?.iconUrls.small);
+
     embed.addFields([
       {
         name: '**Season Stats**',
@@ -224,10 +212,6 @@ export default class PlayerCommand extends Command {
     }
 
     return embed;
-  }
-
-  private clanURL(tag: string) {
-    return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
   }
 
   private format(num = 0) {

@@ -4,7 +4,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { padStart } from '../../util/helper.js';
+import { padStart, trimTag } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class LegendAttacksCommand extends Command {
@@ -148,7 +148,7 @@ export default class LegendAttacksCommand extends Command {
     if (clans.length === 1) {
       const [clan] = clans;
       embed.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`);
-      embed.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`);
+      embed.setURL(`http://cprk.eu/c/${trimTag(clan.tag)}`);
     } else {
       embed.setAuthor({ name: `Legend League Attacks (${seasonId})`, iconURL: guild.iconURL()! });
     }

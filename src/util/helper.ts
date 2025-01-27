@@ -19,6 +19,10 @@ export const makeAbbr = (text: string) => {
     .join('');
 };
 
+export const trimTag = (tag: string) => {
+  return tag.replace('#', '');
+};
+
 export const padStart = (str: string | number, length: number) => {
   return `${str}`.padStart(length, ' ');
 };
