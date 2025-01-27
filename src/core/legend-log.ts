@@ -147,7 +147,10 @@ export class LegendLog extends RootLog {
       ].join('\n')
     );
 
-    embed.setFooter({ text: `End of Day ${Util.getPreviousLegendDay()} (${seasonId})` });
+    const season = this.client.coc.util.getSeason(timestamp, false);
+    embed.setFooter({
+      text: `End of Day ${Util.getPreviousLegendDay()}/${moment(season.endTime).diff(season.startTime, 'days')} (${seasonId})`
+    });
 
     if (!members.length) return null;
     return embed;
