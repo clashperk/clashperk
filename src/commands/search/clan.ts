@@ -16,6 +16,7 @@ import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { MembersCommandOptions } from '../../util/command.options.js';
 import { CLAN_LABELS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
+import { trimTag } from '../../util/helper.js';
 import { Season } from '../../util/toolkit.js';
 
 const clanTypes: Record<string, string> = {
@@ -55,7 +56,6 @@ export default class ClanCommand extends Command {
     if (!clan) return;
 
     const embed = await this.embed(interaction.guildId, clan);
-
     if (!interaction.inCachedGuild()) return interaction.editReply({ embeds: [embed] });
 
     const payload = {
@@ -96,7 +96,7 @@ export default class ClanCommand extends Command {
   private async embed(guildId: string | null, clan: APIClan) {
     const embed = new EmbedBuilder()
       .setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
-      .setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
+      .setURL(`http://cprk.eu/c/${trimTag(clan.tag)}`)
       .setColor(this.client.embed(guildId))
       .setThumbnail(clan.badgeUrls.medium);
 
@@ -287,7 +287,7 @@ export default class ClanCommand extends Command {
   }
 
   private async getSeason(clan: APIClan) {
-    return this.client.db
+    const [result] = await this.client.db
       .collection(Collections.PLAYER_SEASONS)
       .aggregate<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number }>([
         {
@@ -329,7 +329,9 @@ export default class ClanCommand extends Command {
           }
         }
       ])
-      .next();
+      .toArray();
+
+    return result;
   }
 
   private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {
