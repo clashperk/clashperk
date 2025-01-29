@@ -39,4 +39,4 @@ process.on('unhandledRejection', (error: DiscordAPIError) => {
 process.once('SIGTERM', () => client.close());
 process.once('SIGINT', () => client.close());
 
-await client.init(process.env.TOKEN!);
+await client.init(process.env.DISCORD_TOKEN!);

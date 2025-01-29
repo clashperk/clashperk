@@ -74,10 +74,10 @@ const applicationCommands = async (token: string, commands: RESTPostAPIApplicati
 };
 
 const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
-  const res = await fetch(`${process.env.SERVICE_API_URL}/auth/applications`, {
+  const res = await fetch(`${process.env.INTERNAL_API_BASE_URL}/auth/applications`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${process.env.SERVICE_API_KEY}`,
+      'Authorization': `Bearer ${process.env.INTERNAL_API_TOKEN}`,
       'Content-Type': 'application/json'
     }
   });
@@ -95,10 +95,10 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
-  const res = await fetch(`${process.env.SERVICE_API_URL}/auth/applications`, {
+  const res = await fetch(`${process.env.INTERNAL_API_BASE_URL}/auth/applications`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${process.env.SERVICE_API_KEY}`,
+      'Authorization': `Bearer ${process.env.INTERNAL_API_TOKEN}`,
       'Content-Type': 'application/json'
     }
   });
@@ -114,7 +114,7 @@ const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJ
 };
 
 (async () => {
-  const token = process.env.BOT_TOKEN!;
+  const token = process.env.DISCORD_TOKEN!;
   if (process.argv.includes('--gh-action')) {
     return applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS]);
   }

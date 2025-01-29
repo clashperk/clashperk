@@ -33,11 +33,11 @@ export class ClashClient extends RESTManager {
   private bearerToken!: string;
 
   public constructor(private readonly client: Client) {
-    const keys = process.env.CLASH_TOKENS?.split(',') ?? [];
+    const keys = process.env.CLASH_OF_CLANS_API_KEYS?.split(',') ?? [];
 
     super({
       restRequestTimeout: 10_000,
-      baseURL: process.env.BASE_URL,
+      baseURL: process.env.CLASH_OF_CLANS_API_BASE_URL,
       keys: [...keys]
     });
 
@@ -49,7 +49,7 @@ export class ClashClient extends RESTManager {
       connections: 50,
       pipelining: 10,
       keys: [...keys],
-      baseURL: process.env.BASE_URL,
+      baseURL: process.env.CLASH_OF_CLANS_API_BASE_URL,
       onError: ({ path, status, body }) => {
         if (
           (status !== 200 || !body) &&

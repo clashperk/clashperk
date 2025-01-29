@@ -218,7 +218,7 @@ export class PatreonHandler {
     }).toString();
 
     const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
-      headers: { authorization: `Bearer ${process.env.PATREON_API}` },
+      headers: { authorization: `Bearer ${process.env.PATREON_API_KEY}` },
       signal: timeoutSignal(10_000, 'GET /campaigns/:id/members')
     })
       .then((res) => res.json())

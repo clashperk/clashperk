@@ -28,6 +28,7 @@ ENV GIT_SHA=$GIT_SHA
 ENV NODE_OPTIONS="--trace-warnings --enable-source-maps"
 ENV TZ=UTC
 ENV PORT=8070
+ENV FORCE_COLOR=1
 
 EXPOSE 8070
 

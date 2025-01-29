@@ -3,7 +3,7 @@ import { ActionRowBuilder, CommandInteraction, Locale, MessageFlags, StringSelec
 import { Command } from '../../lib/handlers.js';
 
 const translate = new v2.Translate({
-  key: process.env.GOOGLE_TRANSLATION_KEY
+  key: process.env.GOOGLE_TRANSLATION_API_KEY
 });
 
 export default class TranslateCommand extends Command {

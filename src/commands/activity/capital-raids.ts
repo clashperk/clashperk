@@ -81,7 +81,7 @@ export default class CapitalRaidsCommand extends Command {
 
       await interaction.followUp({
         files: [
-          new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-medals-card?${query.toString()}`, {
+          new AttachmentBuilder(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-medals-card?${query.toString()}`, {
             name: 'capital-raid-weekend-card.jpeg'
           })
         ]
@@ -107,7 +107,7 @@ export default class CapitalRaidsCommand extends Command {
 
         return interaction.followUp({
           files: [
-            new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-trophies-card?${query.toString()}`, {
+            new AttachmentBuilder(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-trophies-card?${query.toString()}`, {
               name: 'capital-raid-trophy-card.jpeg'
             })
           ]
@@ -349,14 +349,14 @@ export default class CapitalRaidsCommand extends Command {
   }
 
   private async performanceCard(body: any) {
-    const res = await fetch(`${process.env.ASSET_API_BACKEND!}/capital/raid-performance-card`, {
+    const res = await fetch(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-performance-card`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(body)
     }).then((res) => res.json());
-    return `${process.env.ASSET_API_BACKEND!}/${(res as any).id as string}`;
+    return `${process.env.IMAGE_GEN_API_BASE_URL!}/${(res as any).id as string}`;
   }
 
   private raidWeek() {

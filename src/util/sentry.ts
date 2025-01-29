@@ -21,7 +21,7 @@ const sentryConfig: NodeOptions = {
 };
 
 const sentry = () => {
-  if (process.env.SENTRY) {
+  if (process.env.SENTRY_DSN) {
     Sentry.init(sentryConfig);
   }
 };

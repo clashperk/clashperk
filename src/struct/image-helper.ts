@@ -35,7 +35,7 @@ export const createLegendGraph = async ({
   lastSeason?: any;
   prevFinalTrophies: number | string;
 }) => {
-  const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND}/legends/graph`, {
+  const arrayBuffer = await fetch(`${process.env.IMAGE_GEN_API_BASE_URL}/legends/graph`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ export const getCWLSummaryImage = async ({
   activeRounds: number;
   totalRounds: number;
 }) => {
-  const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND}/wars/cwl-ranks`, {
+  const arrayBuffer = await fetch(`${process.env.IMAGE_GEN_API_BASE_URL}/wars/cwl-ranks`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

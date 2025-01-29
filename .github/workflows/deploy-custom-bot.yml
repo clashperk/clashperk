@@ -13,5 +13,5 @@ jobs:
     steps:
       - name: Deploy
         run: |
-          curl --fail --location --request POST '${{ secrets.CUSTOM_BOT_SERVICE }}/github-webhook' \
-            --header 'x-api-key: ${{ secrets.CUSTOM_BOT_SERVICE_TOKEN }}'
+          curl --fail --location --request POST '${{ secrets.DOCKER_SERVICE_API_BASE_URL }}/github-webhook' \
+            --header 'x-api-key: ${{ secrets.DOCKER_SERVICE_API_KEY }}'

@@ -165,7 +165,7 @@ export class CapitalLog extends RootLog {
     const files: AttachmentBuilder[] = [];
 
     files.push(
-      new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-medals-card?${query.toString()}`, {
+      new AttachmentBuilder(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-medals-card?${query.toString()}`, {
         name: 'capital-raid-trophy-card.jpeg'
       })
     );
@@ -189,7 +189,7 @@ export class CapitalLog extends RootLog {
       query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');
 
       files.push(
-        new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-trophies-card?${query.toString()}`, {
+        new AttachmentBuilder(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-trophies-card?${query.toString()}`, {
           name: 'capital-raid-trophy-card.jpeg'
         })
       );

@@ -204,12 +204,12 @@ export class CustomBotManager {
   }
 
   private async _createService(input: CreateServiceInput) {
-    const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services`, {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services`, {
       method: 'POST',
       body: JSON.stringify(input),
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
+        'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
       }
     });
 
@@ -220,11 +220,11 @@ export class CustomBotManager {
   }
 
   private async _upgradeService(applicationId: string) {
-    const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/upgrade`, {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${applicationId}/upgrade`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
+        'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
       }
     });
 
@@ -235,11 +235,11 @@ export class CustomBotManager {
   }
 
   private async _suspendService(applicationId: string) {
-    const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/suspend`, {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${applicationId}/suspend`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
+        'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
       }
     });
 
@@ -250,11 +250,11 @@ export class CustomBotManager {
   }
 
   private async _resumeService(applicationId: string) {
-    const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}/resume`, {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${applicationId}/resume`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
+        'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
       }
     });
 
@@ -265,11 +265,11 @@ export class CustomBotManager {
   }
 
   private async _deleteService(applicationId: string) {
-    const res = await fetch(`${process.env.CUSTOM_BOT_SERVICE}/services/${applicationId}`, {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${applicationId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': process.env.CUSTOM_BOT_SERVICE_TOKEN!
+        'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
       }
     });
 

@@ -207,7 +207,7 @@ export class Client extends DiscordClient {
     await this.listenerHandler.register();
     await this.inhibitorHandler.register();
 
-    const globalMongoClient = new MongoClient(process.env.GLOBAL_MONGO_URI!);
+    const globalMongoClient = new MongoClient(process.env.GLOBAL_MONGODB_URL!);
     this.globalDb = globalMongoClient.db('global_tracking');
 
     await mongoClient.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));

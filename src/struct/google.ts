@@ -367,7 +367,7 @@ export const createGoogleSheet = async (title: string, sheets: CreateGoogleSheet
 const getLocation = async (query: string) => {
   const search = new URLSearchParams({
     address: query,
-    key: process.env.GOOGLE!
+    key: process.env.GOOGLE_MAPS_API_KEY!
   }).toString();
 
   return fetch(`${GOOGLE_MAPS_API_BASE_URL}/geocode/json?${search}`)
@@ -385,7 +385,7 @@ const timezone = async (query: string) => {
   if (!location?.formatted_address) return null;
 
   const search = new URLSearchParams({
-    key: process.env.GOOGLE!,
+    key: process.env.GOOGLE_MAPS_API_KEY!,
     timestamp: (new Date().getTime() / 1000).toString()
   }).toString();
 

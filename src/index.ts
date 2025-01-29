@@ -15,7 +15,7 @@ class Manager extends ShardingManager {
 
   public constructor() {
     super(fileURLToPath(new URL('main.js', import.meta.url)), {
-      token: process.env.TOKEN!
+      token: process.env.DISCORD_TOKEN!
     });
   }
 

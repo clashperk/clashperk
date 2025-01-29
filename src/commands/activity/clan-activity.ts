@@ -55,7 +55,7 @@ export default class ClanActivityCommand extends Command {
 
     const unit = isHourly ? 'hour' : 'day';
     const hrStart = process.hrtime();
-    const res = await fetch(`${process.env.ASSET_API_BACKEND!}/clans/activity`, {
+    const res = await fetch(`${process.env.IMAGE_GEN_API_BASE_URL!}/clans/activity`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
