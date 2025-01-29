@@ -37,7 +37,7 @@
     "clashofclans.js": "^3.3.20",
     "discord.js": "^14.17.3",
     "google-auth-library": "^9.15.1",
-    "i18next": "^21.6.13",
+    "i18next": "^24.2.2",
     "jsonwebtoken": "^9.0.0",
     "mixpanel": "^0.18.0",
     "moment": "^2.29.1",
