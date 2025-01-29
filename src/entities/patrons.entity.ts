@@ -22,6 +22,9 @@ export interface PatreonMembersEntity {
   lifetimeSupport: number;
 
   sponsored: boolean;
+  isGifted: boolean;
+  isLifetime: boolean;
+
   applicationId?: string;
 
   lastChargeDate: Date;

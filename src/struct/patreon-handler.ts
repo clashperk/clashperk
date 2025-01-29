@@ -75,7 +75,9 @@ export class PatreonHandler {
 
       for (const guild of data.guilds) {
         this.patrons.add(guild.id);
-        if (this.client.settings.get(guild.id, Settings.CLAN_LIMIT, 2) !== guild.limit) {
+
+        const guildLimit = this.client.settings.get(guild.id, Settings.CLAN_LIMIT, guild.limit);
+        if (guildLimit !== guild.limit) {
           await this.client.settings.set(guild.id, Settings.CLAN_LIMIT, guild.limit);
         }
       }
@@ -98,51 +100,53 @@ export class PatreonHandler {
   }
 
   public async resyncPatron(patron: WithId<PatreonMembersEntity>, pledge: PatreonMember | null) {
-    const rewardId: string | null = pledge?.relationships.currently_entitled_tiers.data[0]?.id ?? null;
-    if (rewardId && patron.rewardId !== rewardId && guildLimits[rewardId]) {
-      await this.collection.updateOne({ _id: patron._id }, { $set: { rewardId } });
-      if (pledge?.attributes.patron_status === 'active_patron') {
-        for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
-
-        for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
-
-        if (![rewards.gold, rewards.platinum].includes(rewardId)) {
-          // if (patron.applicationId) await this.suspendService(patron.applicationId);
-        }
-      }
-    }
-
-    if (pledge && new Date(pledge.attributes.last_charge_date).getTime() >= patron.lastChargeDate.getTime()) {
-      await this.collection.updateOne(
-        { _id: patron._id },
-        {
-          $set: {
-            lastChargeDate: new Date(pledge.attributes.last_charge_date)
-          }
-        }
-      );
-    }
+    const isLifetime = !!(pledge && ['gifted', 'sponsored'].includes(pledge.attributes.note));
+    const isGifted = !!(pledge && pledge.attributes.is_gifted);
 
     if (
       pledge &&
       !(
-        pledge.attributes.lifetime_support_cents === patron.lifetimeSupport &&
-        pledge.attributes.currently_entitled_amount_cents === patron.entitledAmount
+        pledge.attributes.campaign_lifetime_support_cents === patron.lifetimeSupport &&
+        pledge.attributes.currently_entitled_amount_cents === patron.entitledAmount &&
+        new Date(pledge.attributes.last_charge_date).getTime() !== patron.lastChargeDate.getTime() &&
+        isGifted === patron.isGifted &&
+        isLifetime === patron.isLifetime
       )
     ) {
       await this.collection.updateOne(
         { _id: patron._id },
         {
           $set: {
+            lastChargeDate: new Date(pledge.attributes.last_charge_date),
             entitledAmount: pledge.attributes.currently_entitled_amount_cents,
-            lifetimeSupport: pledge.attributes.lifetime_support_cents
+            lifetimeSupport: pledge.attributes.campaign_lifetime_support_cents,
+            isGifted,
+            isLifetime
           }
         }
       );
     }
 
+    const rewardId = pledge?.relationships.currently_entitled_tiers.data[0]?.id;
+
+    // Downgrade Subscription
+    if (pledge && rewardId && patron.rewardId !== rewardId && guildLimits[rewardId]) {
+      await this.collection.updateOne({ _id: patron._id }, { $set: { rewardId } });
+
+      if (pledge.attributes.patron_status === 'active_patron') {
+        for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
+        for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
+
+        if (![rewards.gold, rewards.platinum].includes(rewardId) && !patron.sponsored && patron.applicationId) {
+          await this.client.customBotManager.suspendService(patron.applicationId);
+        }
+      }
+    }
+
+    const isActive = pledge?.attributes.patron_status === 'active_patron' || isGifted || isLifetime;
+
     // Resume Subscription
-    if (!patron.active && (patron.declined || patron.cancelled) && pledge?.attributes.patron_status === 'active_patron') {
+    if (!patron.active && (patron.declined || patron.cancelled) && isActive) {
       await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true, cancelled: false } });
 
       for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
@@ -151,8 +155,9 @@ export class PatreonHandler {
       this.client.logger.info(`Subscription Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
     }
 
-    const isFormer = pledge?.attributes.patron_status === 'former_patron';
-    const isDeclined = pledge?.attributes.patron_status === 'declined_patron';
+    const isFormer = pledge?.attributes.patron_status === 'former_patron' && !isActive;
+    const isDeclined = pledge?.attributes.patron_status === 'declined_patron' && !isActive;
+
     const canceled =
       (patron.active && isFormer) ||
       (patron.active && isDeclined && this.gracePeriodExpired(new Date(pledge.attributes.last_charge_date))) ||
@@ -214,7 +219,7 @@ export class PatreonHandler {
       'include': 'user,currently_entitled_tiers',
       'fields[user]': 'social_connections,email,full_name,email,image_url',
       'fields[member]':
-        'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,lifetime_support_cents'
+        'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,campaign_lifetime_support_cents,is_gifted,note'
     }).toString();
 
     const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
@@ -233,7 +238,9 @@ export interface PatreonMember {
     email: string;
     last_charge_date: string;
     currently_entitled_amount_cents: number;
-    lifetime_support_cents: number;
+    is_gifted: boolean;
+    note: string;
+    campaign_lifetime_support_cents: number;
     pledge_relationship_start: string;
     patron_status: 'active_patron' | 'declined_patron' | 'former_patron' | null;
     last_charge_status: 'Paid' | 'Declined' | 'Deleted' | 'Pending' | 'Refunded' | 'Fraud' | 'Other' | null;

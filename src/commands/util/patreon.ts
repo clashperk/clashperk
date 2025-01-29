@@ -1,7 +1,7 @@
-import { Collections, Settings } from '@app/constants';
+import { Collections } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, MessageFlags } from 'discord.js';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class PatreonCommand extends Command {
   public constructor() {
@@ -12,51 +12,10 @@ export default class PatreonCommand extends Command {
     });
   }
 
-  public args(): Args {
-    return {
-      action: {
-        match: 'STRING'
-      },
-      id: {
-        match: 'STRING'
-      }
-    };
-  }
-
-  public async exec(interaction: CommandInteraction<'cached'>, { action, id }: { action: string; id: string }) {
-    if (action && id && this.client.isOwner(interaction.user.id)) {
-      const patrons = await this.patrons();
-      const patron = patrons.find((d) => d.userId === id || d.id === id);
-      for (const guild of patron?.guilds ?? []) {
-        if (action === 'add') await this.add(guild.id);
-        if (['del', 'dec'].includes(action)) await this.del(guild.id);
-      }
-
-      if (action === 'add' && patron) {
-        await this.client.db
-          .collection(Collections.PATREON_MEMBERS)
-          .updateOne({ id: patron.id }, { $set: { active: true, declined: false, cancelled: false } });
-
-        await this.client.patreonHandler.refresh();
-        return interaction.editReply('Success!');
-      }
-
-      if (['del', 'dec'].includes(action) && patron) {
-        await this.client.db
-          .collection(Collections.PATREON_MEMBERS)
-          .updateOne({ id: patron.id }, { $set: { active: false, declined: action === 'dec', cancelled: action === 'del' } });
-
-        await this.client.patreonHandler.refresh();
-        return interaction.editReply('Success!');
-      }
-
-      return interaction.editReply('Failed!');
-    }
-
+  public async exec(interaction: CommandInteraction<'cached'>) {
     const content = [
-      'Help us with our hosting related expenses.',
-      'Any help is beyond appreciated. Thanks!',
-      '<https://www.patreon.com/clashperk>'
+      '### Help us with our hosting related expenses. Any help is beyond appreciated. Thanks!',
+      'https://www.patreon.com/clashperk'
     ].join('\n');
 
     const customId = this.client.uuid(interaction.user.id);
@@ -93,24 +52,5 @@ export default class PatreonCommand extends Command {
 
   private patrons() {
     return this.client.db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS).find().sort({ createdAt: 1 }).toArray();
-  }
-
-  private async add(guild: string) {
-    await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
-
-    for await (const data of this.client.db.collection(Collections.CLAN_STORES).find({ guild })) {
-      this.client.enqueuer.add({ tag: data.tag, guild: data.guild });
-    }
-  }
-
-  private async del(guild: string) {
-    await this.client.settings.delete(guild, Settings.CLAN_LIMIT); // Delete ClanLimit
-
-    await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { patron: false } });
-
-    for await (const data of this.client.db.collection(Collections.CLAN_STORES).find({ guild }).skip(2)) {
-      this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
-      this.client.enqueuer.delete({ tag: data.tag, guild });
-    }
   }
 }

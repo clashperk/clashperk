@@ -83,7 +83,9 @@ export default class RedeemCommand extends Command {
       return interaction.editReply('**Something went wrong (unknown pledge), please [contact us.](https://discord.gg/ppuppun)**');
     }
 
-    if (pledge.attributes.patron_status !== 'active_patron') {
+    const isGifted = !!pledge.attributes.is_gifted || ['gifted', 'sponsored'].includes(pledge.attributes.note);
+
+    if (pledge.attributes.patron_status !== 'active_patron' && !isGifted) {
       return interaction.editReply('**Something went wrong (declined pledge), please [contact us.](https://discord.gg/ppuppun)**');
     }
 
@@ -116,11 +118,13 @@ export default class RedeemCommand extends Command {
               }
             ],
             redeemed: true,
+            isGifted: !!pledge.attributes.is_gifted,
+            isLifetime: ['gifted', 'sponsored'].includes(pledge.attributes.note),
             active: true,
             declined: false,
             cancelled: false,
             entitledAmount: pledge.attributes.currently_entitled_amount_cents,
-            lifetimeSupport: pledge.attributes.lifetime_support_cents,
+            lifetimeSupport: pledge.attributes.campaign_lifetime_support_cents,
             createdAt: new Date(pledge.attributes.pledge_relationship_start),
             lastChargeDate: new Date(pledge.attributes.last_charge_date)
           }
@@ -157,8 +161,10 @@ export default class RedeemCommand extends Command {
           declined: false,
           cancelled: false,
           redeemed: true,
+          isGifted: !!pledge.attributes.is_gifted,
+          isLifetime: ['gifted', 'sponsored'].includes(pledge.attributes.note),
           entitledAmount: pledge.attributes.currently_entitled_amount_cents,
-          lifetimeSupport: pledge.attributes.lifetime_support_cents,
+          lifetimeSupport: pledge.attributes.campaign_lifetime_support_cents,
           lastChargeDate: new Date(pledge.attributes.last_charge_date)
         },
         $push: {

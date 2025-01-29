@@ -10,7 +10,7 @@ const getSubscribers = async () => {
     'include': 'user,currently_entitled_tiers',
     'fields[user]': 'social_connections,email,full_name,email,image_url',
     'fields[member]':
-      'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,lifetime_support_cents'
+      'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,campaign_lifetime_support_cents,is_gifted,note'
   }).toString();
 
   const res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
