@@ -8,13 +8,14 @@ import { Client } from './client.js';
 export const rewards = {
   bronze: '3705318',
   silver: '4742718',
+  /** @deprecated */
   platinum: '21789215',
   gold: '5352215'
 };
 
 export const guildLimits: Record<string, number> = {
   [rewards.bronze]: 1,
-  [rewards.silver]: 3,
+  [rewards.silver]: 5,
   [rewards.platinum]: 5,
   [rewards.gold]: 10
 };
@@ -76,8 +77,8 @@ export class PatreonHandler {
       for (const guild of data.guilds) {
         this.patrons.add(guild.id);
 
-        const guildLimit = this.client.settings.get(guild.id, Settings.CLAN_LIMIT, guild.limit);
-        if (guildLimit !== guild.limit) {
+        const guildLimit = this.client.settings.get(guild.id, Settings.CLAN_LIMIT, 2);
+        if (guildLimit !== guild.limit && this.client.guilds.cache.has(guild.id)) {
           await this.client.settings.set(guild.id, Settings.CLAN_LIMIT, guild.limit);
         }
       }

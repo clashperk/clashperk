@@ -171,7 +171,7 @@ export default class RedeemCommand extends Command {
           guilds: {
             id: interaction.guild.id,
             name: interaction.guild.name,
-            limit: 100
+            limit: 50
           }
         }
       }
