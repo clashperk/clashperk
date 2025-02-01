@@ -33,7 +33,7 @@ export default class ExportCWL extends Command {
         if (!data) continue;
         if (args.season && data.season !== args.season) continue;
         const { members, perRound, ranking } = await this.rounds(data, clan, { season });
-        if (!members.length) continue;
+        if (!perRound.length) continue;
 
         chunks.push({
           name: clan.name,
@@ -48,7 +48,7 @@ export default class ExportCWL extends Command {
 
       if (args.season && result.body.season !== args.season) continue;
       const { members, perRound, ranking } = await this.rounds(result.body, clan, {});
-      if (!members.length) continue;
+      if (!perRound.length) continue;
       chunks.push({
         name: clan.name,
         tag: clan.tag,
@@ -219,14 +219,10 @@ export default class ExportCWL extends Command {
               round.opponent.name,
               m.name,
               m.tag,
-              m.attacks?.length ? m.attacks.at(0)!.stars : '',
-              previousBestAttack
-                ? Math.max(m.attacks!.at(0)!.stars - previousBestAttack.stars)
-                : m.attacks?.length
-                  ? m.attacks.at(0)!.stars
-                  : '',
+              m.attacks?.at(0)?.stars ?? '',
+              previousBestAttack ? Math.max(m.attacks!.at(0)!.stars - previousBestAttack.stars) : (m.attacks?.at(0)?.stars ?? ''),
               gained,
-              m.attacks?.length ? m.attacks.at(0)!.destructionPercentage.toFixed(2) : '',
+              m.attacks?.at(0)?.destructionPercentage.toFixed(2) ?? '',
               opponent ? opponent.name : '',
               opponent ? opponent.tag : '',
               round.clan.members.findIndex((en) => en.tag === m.tag) + 1,
@@ -353,6 +349,7 @@ export default class ExportCWL extends Command {
                 attackDistance: 0,
                 wars: 0
               };
+
               const member = members[m.tag];
               member.of += 1;
               member.wars += 1;
@@ -389,7 +386,9 @@ export default class ExportCWL extends Command {
                 member.defCount += 1;
               }
             }
+          }
 
+          if (data.state === 'inWar' || data.state === 'warEnded') {
             perRound.push({ clan, opponent });
           }
         }
