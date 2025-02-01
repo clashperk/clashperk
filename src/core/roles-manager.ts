@@ -700,20 +700,19 @@ export class RolesManager {
       if (defaultAccount?.clan && rolesMap.clanTags.includes(defaultAccount.clan.tag)) {
         return {
           player: defaultAccount,
-          inFamilyPlayers,
-          inFamily: true
+          inFamilyPlayers
         };
       }
 
       return {
-        player: bestAccount,
+        player: bestAccount || defaultAccount,
         inFamilyPlayers
       };
     }
 
     if (accountPreference === NicknamingAccountPreference.BEST_ACCOUNT) {
       return {
-        player: bestAccount,
+        player: bestAccount || defaultAccount,
         inFamilyPlayers
       };
     }
