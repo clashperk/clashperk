@@ -93,7 +93,7 @@ export default class CWLAttacksCommand extends Command {
     }: {
       body: ClanWarLeagueGroupAggregated;
       clan: APIClan;
-      args: { tag?: string; user?: User; round?: number; missed?: boolean };
+      args: { tag?: string; user?: User; round?: number; missed?: boolean; season?: string };
     }
   ) {
     const clanTag = clan.tag;
@@ -248,6 +248,7 @@ export default class CWLAttacksCommand extends Command {
     const payload = {
       cmd: this.id,
       tag: clanTag,
+      season: args.season,
       missed: args.missed,
       round: args.round
     };

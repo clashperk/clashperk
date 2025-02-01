@@ -80,7 +80,7 @@ export default class CWLRoundCommand extends Command {
     }: {
       body: ClanWarLeagueGroupAggregated;
       clan: APIClan;
-      args: { tag?: string; user?: User; round?: number };
+      args: { tag?: string; user?: User; round?: number; season?: string };
     }
   ) {
     const clanTag = clan.tag;
@@ -188,6 +188,7 @@ export default class CWLRoundCommand extends Command {
     const payload = {
       cmd: this.id,
       tag: clanTag,
+      season: args.season,
       round: args.round
     };
 

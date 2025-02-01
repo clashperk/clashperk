@@ -74,7 +74,8 @@ export default class CWLStatsCommand extends Command {
 
     return this.rounds(interaction, {
       body: aggregated,
-      clan
+      clan,
+      args
     });
   }
 
@@ -82,10 +83,12 @@ export default class CWLStatsCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     {
       body,
-      clan
+      clan,
+      args
     }: {
       body: ClanWarLeagueGroupAggregated;
       clan: APIClan;
+      args: { tag?: string; season?: string };
     }
   ) {
     let [index, stars, destruction] = [0, 0, 0];
@@ -292,9 +295,14 @@ export default class CWLStatsCommand extends Command {
       );
     }
 
+    const payload = {
+      cmd: this.id,
+      tag: clanTag,
+      season: args.season
+    };
     const customIds = {
-      refresh: this.createId({ cmd: this.id, tag: clanTag }),
-      clans: this.createId({ cmd: this.id, string_key: 'tag' })
+      refresh: this.createId({ ...payload }),
+      clans: this.createId({ ...payload, string_key: 'tag' })
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

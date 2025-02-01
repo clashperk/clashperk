@@ -3,6 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 
 const states: Record<string, string> = {
   inWar: 'Battle Day',
@@ -180,7 +181,7 @@ export default class CWLLineupCommand extends Command {
         `\u200e${EMOJIS.HASH} \`TH HERO \u2002  \u2002 TH HERO \``,
         lineups
           .map((lineup, i) => {
-            const desc = lineup.map((en) => `${this.pad(en.t, 2)} ${this.pad(en.h, 4)}`).join(' \u2002vs\u2002 ');
+            const desc = lineup.map((en) => `${padStart(en.t, 2)} ${padStart(en.h, 4)}`).join(' \u2002vs\u2002 ');
             return `${BLUE_NUMBERS[i + 1]} \`${desc} \``;
           })
           .join('\n')
@@ -223,10 +224,6 @@ export default class CWLLineupCommand extends Command {
     ];
 
     return embeds;
-  }
-
-  private pad(num: number, depth: number) {
-    return num.toString().padStart(depth, ' ');
   }
 
   private clanURL(tag: string) {

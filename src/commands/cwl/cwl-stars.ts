@@ -91,6 +91,7 @@ export default class CWLStarsCommand extends Command {
       args: {
         tag?: string;
         user?: User;
+        season?: string;
         list_view?: 'TOTAL' | 'GAINED';
       };
     }
@@ -209,6 +210,7 @@ export default class CWLStarsCommand extends Command {
     const payload = {
       cmd: this.id,
       tag: clanTag,
+      season: args.season,
       list_view: args.list_view
     };
 
