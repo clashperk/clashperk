@@ -81,6 +81,7 @@ export default class ExportWarsCommand extends Command {
             defDestruction: 0,
             attackPosition: 0,
             attackDistance: 0,
+            townHallDistance: 0,
             wars: 0
           };
 
@@ -95,6 +96,7 @@ export default class ExportWarsCommand extends Command {
             const defender = opponent.members.find((mem) => mem.tag === atk.defenderTag)!;
             member.attackPosition += defender.mapPosition;
             member.attackDistance += defender.mapPosition - m.mapPosition;
+            member.townHallDistance += defender.townhallLevel - m.townhallLevel;
           }
 
           if (m.attacks?.length) {
@@ -158,6 +160,12 @@ export default class ExportWarsCommand extends Command {
           align: 'RIGHT',
           note: 'The average distance between the player and the opponent they attacked. For example, #5 player attacks on positions 20, 25, and 30 yield an average of -20'
         },
+        {
+          name: 'Avg. TH Distance',
+          width: 100,
+          align: 'RIGHT',
+          note: 'The average difference in town hall levels between the player and the opponent they attacked. For example, a TH 14 player attacks on TH 15, and 16 yield an average of 1.5'
+        },
 
         { name: `${chunk.name}`, width: 100, align: 'RIGHT' },
         { name: `${chunk.tag}`, width: 100, align: 'RIGHT' }
@@ -185,7 +193,8 @@ export default class ExportWarsCommand extends Command {
         Number(m.defDestruction.toFixed(2)),
         Number((m.defDestruction / m.defCount || 0).toFixed(2)),
         Number((m.attackPosition / m.attacks || 0).toFixed(2)),
-        Number((m.attackDistance / m.attacks || 0).toFixed(2))
+        Number((m.attackDistance / m.attacks || 0).toFixed(2)),
+        Number((m.townHallDistance / m.attacks || 0).toFixed(2))
       ]),
       title: `${chunk.name} (${chunk.tag})`
     }));

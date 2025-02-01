@@ -211,7 +211,6 @@ export default class ExportCWL extends Command {
             const opponent = round.opponent.members.find((en) => en.tag === m.attacks?.[0]?.defenderTag);
             const gained = m.bestOpponentAttack && m.attacks?.length ? m.attacks[0].stars - m.bestOpponentAttack.stars : '';
             const __attacks = round.clan.members.flatMap((m) => m.attacks ?? []);
-
             const previousBestAttack = m.attacks?.length ? this.client.coc.getPreviousBestAttack(__attacks, m.attacks[0]) : null;
 
             return [
@@ -222,7 +221,7 @@ export default class ExportCWL extends Command {
               m.attacks?.at(0)?.stars ?? '',
               previousBestAttack ? Math.max(m.attacks!.at(0)!.stars - previousBestAttack.stars) : (m.attacks?.at(0)?.stars ?? ''),
               gained,
-              m.attacks?.at(0)?.destructionPercentage.toFixed(2) ?? '',
+              this._format(m.attacks?.at(0)?.destructionPercentage),
               opponent ? opponent.name : '',
               opponent ? opponent.tag : '',
               round.clan.members.findIndex((en) => en.tag === m.tag) + 1,
@@ -230,7 +229,7 @@ export default class ExportCWL extends Command {
               opponent ? round.opponent.members.findIndex((en) => en.tag === opponent.tag) + 1 : '',
               opponent ? opponent.townhallLevel : '',
               m.bestOpponentAttack?.stars ?? '',
-              m.bestOpponentAttack?.destructionPercentage.toFixed(2) ?? ''
+              this._format(m.bestOpponentAttack?.destructionPercentage)
             ];
           })
         }))
@@ -404,5 +403,12 @@ export default class ExportCWL extends Command {
         .sort((a, b) => b.dest - a.dest)
         .sort((a, b) => b.stars - a.stars)
     };
+  }
+
+  private _format(num?: number) {
+    if (typeof num === 'number') {
+      return Number(num.toFixed(2));
+    }
+    return '';
   }
 }
