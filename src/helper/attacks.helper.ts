@@ -2,6 +2,7 @@ import { APIClan } from 'clashofclans.js';
 import { EmbedBuilder, Guild } from 'discord.js';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
+import { padEnd, padStart } from '../util/helper.js';
 
 // not in use
 export const attacksEmbedMaker = async ({
@@ -30,13 +31,13 @@ export const attacksEmbedMaker = async ({
     .setDescription(
       [
         '```',
-        `\u200e ${'#'}  ${'ATK'}  ${'DEF'}  ${'NAME'.padEnd(15, ' ')}`,
+        `\u200e ${'#'}  ${'ATK'}  ${'DEF'}  ${padEnd('NAME', 15)}`,
         members
           .map((member, i) => {
-            const name = `${member.name.replace(/\`/g, '\\').padEnd(15, ' ')}`;
-            const attackWins = `${member.attackWins.toString().padStart(3, ' ')}`;
-            const defenseWins = `${member.defenseWins.toString().padStart(3, ' ')}`;
-            return `${(i + 1).toString().padStart(2, ' ')}  ${attackWins}  ${defenseWins}  \u200e${name}`;
+            const name = padEnd(member.name.replace(/\`/g, '\\'), 15);
+            const attackWins = padStart(member.attackWins, 3);
+            const defenseWins = padStart(member.defenseWins, 3);
+            return `${padStart(i + 1, 2)}  ${attackWins}  ${defenseWins}  \u200e${name}`;
           })
           .join('\n'),
         '```'
