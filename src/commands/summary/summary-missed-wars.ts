@@ -72,6 +72,8 @@ export default class SummaryMissedWarsCommand extends Command {
     const payload = {
       cmd: this.id,
       clans: resolvedArgs,
+      season: args.season,
+      war_type: args.war_type,
       is_reversed: args.is_reversed
     };
     const customIds = {
