@@ -125,7 +125,7 @@ export default class ExportSeason extends Command {
     const spreadsheet = await this.client.util.createOrUpdateSheet({
       clans,
       guild: interaction.guild,
-      label: `Season Stats ${season}`,
+      label: `Season Stats (${season})`,
       sheets,
       sheetType: SheetType.SEASON
     });
@@ -138,7 +138,8 @@ export default class ExportSeason extends Command {
       {
         $match: {
           season: seasonId,
-          __clans: clan.tag
+          __clans: clan.tag,
+          ...(seasonId === Season.ID && { tag: { $in: clan.memberList.map((mem) => mem.tag) } })
         }
       },
       {

@@ -1,6 +1,6 @@
 {
   "name": "clashperk",
-  "version": "3.9.21",
+  "version": "3.9.22",
   "author": "",
   "license": "MIT",
   "description": "Clash of Clans Discord Bot",
@@ -84,7 +84,7 @@
     "zlib-sync": "^0.1.8"
   },
   "engines": {
-    "node": ">=18.x"
+    "node": ">=20.x"
   },
   "overrides": {}
 }
