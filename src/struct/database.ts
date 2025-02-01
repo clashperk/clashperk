@@ -91,7 +91,7 @@ class MongoDbClient extends MongoClient {
 
       db.collection(Collections.CUSTOM_BOTS).createIndexes([
         {
-          key: { applicationId: 1 },
+          key: { serviceId: 1 },
           unique: true
         }
       ]),

@@ -95,7 +95,7 @@ export default class GuildDeleteListener extends Listener {
   }
 
   private async onDelete(guildId: string) {
-    const app = await this.client.customBotManager.findBot({ applicationId: this.client.user!.id });
+    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user!.id });
     if (!app) return;
 
     return this.client.settings.deleteCustomBot(guildId);

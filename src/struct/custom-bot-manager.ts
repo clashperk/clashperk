@@ -48,18 +48,18 @@ export class CustomBotManager {
     return application.bot_public;
   }
 
-  public async findBot({ applicationId }: { applicationId: string }) {
-    return this.collection.findOne({ applicationId });
+  public async findBot({ serviceId }: { serviceId: string }) {
+    return this.collection.findOne({ serviceId });
   }
 
-  public async addGuild({ applicationId, guildId }: { applicationId: string; guildId: string }) {
-    return this.collection.updateOne({ applicationId }, { $addToSet: { guildIds: guildId } });
+  public async addGuild({ serviceId, guildId }: { serviceId: string; guildId: string }) {
+    return this.collection.updateOne({ serviceId }, { $addToSet: { guildIds: guildId } });
   }
 
-  public async createCommands(applicationId: string, guildId: string, token: string) {
+  public async createCommands(serviceId: string, guildId: string, token: string) {
     try {
       const rest = new REST({ version: '10' }).setToken(token);
-      const commands = await rest.put(Routes.applicationGuildCommands(applicationId, guildId), { body: COMMANDS });
+      const commands = await rest.put(Routes.applicationGuildCommands(serviceId, guildId), { body: COMMANDS });
       return commands as APIApplicationCommand[];
     } catch (error) {
       this.client.logger.error(error, { label: 'CUSTOM_BOT' });
@@ -71,7 +71,7 @@ export class CustomBotManager {
   public async createService(input: { application: DiscordBot; guildId: string; user: User; patronId: string; token: string }) {
     const value = await this.collection.findOneAndUpdate(
       {
-        applicationId: input.application.id
+        serviceId: input.application.id
       },
       {
         $addToSet: {
@@ -103,6 +103,26 @@ export class CustomBotManager {
 
       const isOk = result.message === 'OK';
       if (isOk) {
+        await this.collection.findOneAndUpdate(
+          {
+            serviceId: input.application.id
+          },
+          {
+            $addToSet: {
+              guildIds: input.guildId
+            },
+            $set: {
+              patronId: input.patronId,
+              userId: input.user.id,
+              isLive: false,
+              updatedAt: new Date()
+            },
+            $setOnInsert: {
+              createdAt: new Date()
+            }
+          }
+        );
+
         await this._deployWebhook({ content: `Service Created [${input.application.name}] (${input.application.id})` }).catch(() => null);
       }
 
@@ -114,42 +134,42 @@ export class CustomBotManager {
     }
   }
 
-  public async suspendService(applicationId: string) {
-    const app = await this.findBot({ applicationId });
+  public async suspendService(serviceId: string) {
+    const app = await this.findBot({ serviceId });
     if (!app) return;
 
-    await this._suspendService(applicationId);
+    await this._suspendService(serviceId);
     for (const guildId of app.guildIds) await this.client.settings.deleteCustomBot(guildId);
 
-    await this._deployWebhook({ content: `Service Suspended [${app.name}] (<@${applicationId}>)` });
+    await this._deployWebhook({ content: `Service Suspended [${app.name}] (<@${serviceId}>)` });
   }
 
-  public async resumeService(applicationId: string) {
-    const bot = await this.findBot({ applicationId });
+  public async resumeService(serviceId: string) {
+    const bot = await this.findBot({ serviceId });
     if (!bot) return;
 
     const app = await this.getApplication(bot.token);
     if (!app) {
-      return this._deployWebhook({ content: `Service Resuming Failed (<@${applicationId}>)` });
+      return this._deployWebhook({ content: `Service Resuming Failed (<@${serviceId}>)` });
     }
 
-    await this._resumeService(applicationId);
+    await this._resumeService(serviceId);
     for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
 
-    await this._deployWebhook({ content: `Service Resumed [${app.name}] (<@${applicationId}>)` });
+    await this._deployWebhook({ content: `Service Resumed [${app.name}] (<@${serviceId}>)` });
   }
 
-  public async deleteService(applicationId: string) {
-    const bot = await this.findBot({ applicationId });
+  public async deleteService(serviceId: string) {
+    const bot = await this.findBot({ serviceId });
     if (!bot) return;
 
-    await this._suspendService(applicationId);
-    await this._deleteService(applicationId);
+    await this._suspendService(serviceId);
+    await this._deleteService(serviceId);
     await this.client.patreonHandler.detachCustomBot(bot.patronId);
     for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
-    await this.collection.deleteOne({ applicationId });
+    await this.collection.deleteOne({ serviceId });
 
-    await this._deployWebhook({ content: `Service Deleted [${bot.name}] (<@${applicationId}>)` });
+    await this._deployWebhook({ content: `Service Deleted [${bot.name}] (<@${serviceId}>)` });
   }
 
   public async handleOnReady(bot: CustomBotsEntity) {
@@ -159,22 +179,22 @@ export class CustomBotManager {
     const hasInvited = emojiServers.every((id) => guildIds.includes(id));
     if (!hasInvited) return;
 
-    await this.collection.updateOne({ applicationId: bot.applicationId }, { $set: { isLive: true } });
+    await this.collection.updateOne({ serviceId: bot.serviceId }, { $set: { isLive: true } });
     for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
 
-    await this._deployWebhook({ content: `Service Upgrading [${bot.name}] (<@${bot.applicationId}>)` });
+    await this._deployWebhook({ content: `Service Upgrading [${bot.name}] (<@${bot.serviceId}>)` });
 
     try {
-      await this._upgradeService(bot.applicationId);
+      await this._upgradeService(bot.serviceId);
       this.client.logger.log(`Custom bot "${bot.name}" was set to production.`, { label: 'CUSTOM-BOT' });
     } catch (error) {
       captureException(error);
 
-      await this.collection.updateOne({ applicationId: bot.applicationId }, { $set: { isLive: false } });
+      await this.collection.updateOne({ serviceId: bot.serviceId }, { $set: { isLive: false } });
       for (const guildId of bot.guildIds) await this.client.settings.deleteCustomBot(guildId);
       this.client.logger.error(`Custom bot "${bot.name}" was failed to set to production.`, { label: 'CUSTOM-BOT' });
 
-      await this._deployWebhook({ content: `Service Upgrading Failed [${bot.name}] (<@${bot.applicationId}>)` });
+      await this._deployWebhook({ content: `Service Upgrading Failed [${bot.name}] (<@${bot.serviceId}>)` });
     }
   }
 
@@ -189,7 +209,7 @@ export class CustomBotManager {
     if (!missingGuilds.length) return;
 
     for (const guildId of missingGuilds) {
-      await this.addGuild({ applicationId: bot.applicationId, guildId });
+      await this.addGuild({ serviceId: bot.serviceId, guildId });
     }
 
     this.client.logger.log(`Guilds restored.`, { label: CustomBotManager.name });
@@ -219,8 +239,8 @@ export class CustomBotManager {
     return body;
   }
 
-  private async _upgradeService(applicationId: string) {
-    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${applicationId}/upgrade`, {
+  private async _upgradeService(serviceId: string) {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/upgrade`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -234,8 +254,8 @@ export class CustomBotManager {
     return body;
   }
 
-  private async _suspendService(applicationId: string) {
-    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${applicationId}/suspend`, {
+  private async _suspendService(serviceId: string) {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/suspend`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -249,8 +269,8 @@ export class CustomBotManager {
     return body;
   }
 
-  private async _resumeService(applicationId: string) {
-    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${applicationId}/resume`, {
+  private async _resumeService(serviceId: string) {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/resume`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -264,8 +284,8 @@ export class CustomBotManager {
     return body;
   }
 
-  private async _deleteService(applicationId: string) {
-    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${applicationId}`, {
+  private async _deleteService(serviceId: string) {
+    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

@@ -85,7 +85,7 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
   const body = (await res.json()) as { payload: string };
   if (!body.payload) console.log(body);
 
-  const applications = JSON.parse(decrypt(body.payload)) as { applicationId: string; token: string; guildIds: string[] }[];
+  const applications = JSON.parse(decrypt(body.payload)) as { serviceId: string; token: string; guildIds: string[] }[];
   for (const application of applications) {
     for (const guildId of [...application.guildIds, CUSTOM_BOT_SERVER_ID]) {
       await applicationGuildCommands(application.token, guildId, commands);

@@ -128,13 +128,13 @@ export default class GuildCreateListener extends Listener {
     const patron = await this.client.patreonHandler.findGuild(guild.id);
     if (!patron?.applicationId) return;
 
-    const app = await this.client.customBotManager.findBot({ applicationId: this.client.user!.id });
+    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user!.id });
     if (!app) return;
 
-    const commands = await this.client.customBotManager.createCommands(app.applicationId, guild.id, app.token);
+    const commands = await this.client.customBotManager.createCommands(app.serviceId, guild.id, app.token);
 
     if (commands.length) {
-      await this.client.customBotManager.addGuild({ guildId: guild.id, applicationId: app.applicationId });
+      await this.client.customBotManager.addGuild({ guildId: guild.id, serviceId: app.serviceId });
       if (app.isLive) await this.client.settings.setCustomBot(guild);
     }
 
@@ -142,7 +142,7 @@ export default class GuildCreateListener extends Listener {
   }
 
   private async onReady() {
-    const app = await this.client.customBotManager.findBot({ applicationId: this.client.user!.id });
+    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user!.id });
     if (!app || app.isLive) return;
 
     return this.client.customBotManager.handleOnReady(app);
