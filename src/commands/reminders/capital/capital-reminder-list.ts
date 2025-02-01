@@ -36,7 +36,7 @@ export default class ReminderListCommand extends Command {
   }
 
   async pre(_: Interaction, args: { compact_list?: boolean }) {
-    this.ephemeral = !!args.compact_list;
+    this.ephemeral = !args.compact_list;
   }
 
   public async exec(
