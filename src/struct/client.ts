@@ -1,4 +1,5 @@
 import { FeatureFlags, Settings } from '@app/constants';
+import { createClient as createClickHouseClient } from '@clickhouse/client';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
 import { BaseInteraction, Client as DiscordClient, GatewayIntentBits, Message, Options, User } from 'discord.js';
 import { Db, MongoClient } from 'mongodb';
@@ -69,6 +70,12 @@ export class Client extends DiscordClient {
       ca: process.env.ES_CA_CRT!,
       rejectUnauthorized: false
     }
+  });
+
+  public clickhouse = createClickHouseClient({
+    url: process.env.CLICKHOUSE_HOST,
+    username: process.env.CLICKHOUSE_USER,
+    password: process.env.CLICKHOUSE_PASSWORD
   });
 
   public subscriber = this.redis.connection.duplicate();

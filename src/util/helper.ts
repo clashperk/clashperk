@@ -135,92 +135,55 @@ export const recoverDonations = async (clan: APIClan, seasonId: string) => {
 
   client.logger.log(`Recovering donations for ${clan.tag}...`, { label: 'DonationRecovery' });
 
-  const { aggregations } = await client.elastic.search({
-    query: {
-      bool: {
-        filter: [
-          {
-            term: {
-              clan_tag: clan.tag
-            }
-          },
-          {
-            range: {
-              created_at: {
-                gte: startTime.toISOString()
-              }
-            }
-          },
-          {
-            range: {
-              created_at: {
-                lte: endTime.toISOString()
-              }
-            }
-          }
-        ]
+  const rows = await client.clickhouse
+    .query({
+      format: 'JSON',
+      query: `
+      SELECT
+        tag,
+        SUM(if(action = 'DONATED', value, 0))  AS donated,
+        SUM(if(action = 'RECEIVED', value, 0)) AS received
+      FROM
+        donation_records
+      WHERE
+        clanTag = {clanTag: String}
+        AND createdAt >= {startDate: DateTime}
+        AND createdAt <= {endDate: DateTime}
+      GROUP BY
+        tag
+      ORDER BY
+        donated DESC, received DESC
+      LIMIT 200
+    `,
+      query_params: {
+        clanTag: clan.tag,
+        startDate: Math.floor(startTime.getTime() / 1000),
+        endDate: Math.floor(endTime.getTime() / 1000)
       }
-    },
-    from: 0,
-    size: 0,
-    aggs: {
-      players: {
-        terms: {
-          field: 'tag',
-          size: 10000
-        },
-        aggs: {
-          donated: {
-            filter: {
-              term: {
-                op: 'DONATED'
-              }
-            },
-            aggs: {
-              total: {
-                sum: {
-                  field: 'value'
-                }
-              }
-            }
-          },
-          received: {
-            filter: {
-              term: {
-                op: 'RECEIVED'
-              }
-            },
-            aggs: {
-              total: {
-                sum: {
-                  field: 'value'
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  });
+    })
+    .then((res) => res.json<AggregatedRaw>());
 
-  const membersMap = clan.memberList.reduce<Record<string, { donated: number; received: number }>>((record, mem) => {
-    record[mem.tag] = {
-      donated: mem.donations,
-      received: mem.donationsReceived
+  const data = rows.data.map((row) => ({
+    ...row,
+    donated: Number(row.donated),
+    received: Number(row.received)
+  }));
+
+  const membersMap = clan.memberList.reduce<Record<string, { donated: number; received: number }>>((record, item) => {
+    record[item.tag] = {
+      donated: item.donations,
+      received: item.donationsReceived
     };
     return record;
   }, {});
 
-  const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
-  const playersMap = buckets.reduce<Record<string, { donated: number; received: number }>>((acc, cur) => {
-    const member = membersMap[cur.key] ?? { donated: 0, received: 0 };
-
-    acc[cur.key] = {
-      donated: Math.max(cur.donated.total.value, member.donated),
-      received: Math.max(cur.received.total.value, member.received)
+  const playersMap = data.reduce<Record<string, { donated: number; received: number }>>((record, item) => {
+    const member = membersMap[item.tag] ?? { donated: 0, received: 0 };
+    record[item.tag] = {
+      donated: Math.max(item.donated, member.donated),
+      received: Math.max(item.received, member.received)
     };
-
-    return acc;
+    return record;
   }, {});
 
   const tags = Object.keys(playersMap);
@@ -292,17 +255,12 @@ export const unitsFlatten = (data: APIPlayer, { withEquipment = true }) => {
   ];
 };
 
-interface AggsBucket {
-  key: string;
-  doc_count: number;
-  donated: {
-    total: {
-      value: number;
-    };
-  };
-  received: {
-    total: {
-      value: number;
-    };
-  };
+interface AggregatedResult {
+  tag: string;
+  donated: number;
+  received: number;
 }
+
+type AggregatedRaw = {
+  [K in keyof AggregatedResult]: string;
+};

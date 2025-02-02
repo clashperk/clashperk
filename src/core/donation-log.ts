@@ -74,68 +74,43 @@ export class DonationLog extends RootLog {
     const clan = await this.client.redis.getClan(tag);
     if (!clan?.members) return null;
 
-    const { aggregations } = await this.client.elastic.search({
-      index: 'donation_events',
-      size: 0,
-      from: 0,
-      query: {
-        bool: {
-          filter: [
-            {
-              term: {
-                clan_tag: clan.tag
-              }
-            },
-            {
-              range: {
-                created_at: {
-                  gte,
-                  lte
-                }
-              }
-            }
-          ]
+    const rows = await this.client.clickhouse
+      .query({
+        format: 'JSON',
+        query: `
+          SELECT
+            tag,
+            SUM(if(action = 'DONATED', value, 0))  AS donated,
+            SUM(if(action = 'RECEIVED', value, 0)) AS received
+          FROM
+            donation_records
+          WHERE
+            clanTag = {clanTag: String}
+            AND createdAt >= {startDate: DateTime}
+            AND createdAt <= {endDate: DateTime}
+          GROUP BY
+            tag
+          ORDER BY
+            donated DESC, received DESC
+          LIMIT 200
+        `,
+        query_params: {
+          clanTag: clan.tag,
+          startDate: Math.floor(new Date(gte).getTime() / 1000),
+          endDate: Math.floor(new Date(lte).getTime() / 1000)
         }
-      },
-      aggs: {
-        players: {
-          terms: {
-            field: 'tag',
-            size: 200
-          },
-          aggs: {
-            donated: {
-              filter: { term: { op: 'DONATED' } },
-              aggs: {
-                total: {
-                  sum: {
-                    field: 'value'
-                  }
-                }
-              }
-            },
-            received: {
-              filter: { term: { op: 'RECEIVED' } },
-              aggs: {
-                total: {
-                  sum: {
-                    field: 'value'
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
+      })
+      .then((res) => res.json<AggregatedRaw>());
 
-    const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
-    const playersMap = buckets.reduce<Record<string, { donated: number; received: number }>>((acc, cur) => {
-      acc[cur.key] = {
-        donated: cur.donated.total.value,
-        received: cur.received.total.value
-      };
-      return acc;
+    const data = rows.data.map((row) => ({
+      ...row,
+      donated: Number(row.donated),
+      received: Number(row.received)
+    }));
+
+    const playersMap = data.reduce<Record<string, AggregatedResult>>((record, item) => {
+      record[item.tag] = item;
+      return record;
     }, {});
 
     const playerTags = Object.keys(playersMap);
@@ -352,20 +327,15 @@ export class DonationLog extends RootLog {
   }
 }
 
-interface AggsBucket {
-  key: string;
-  doc_count: number;
-  donated: {
-    total: {
-      value: number;
-    };
-  };
-  received: {
-    total: {
-      value: number;
-    };
-  };
+interface AggregatedResult {
+  tag: string;
+  donated: number;
+  received: number;
 }
+
+type AggregatedRaw = {
+  [K in keyof AggregatedResult]: string;
+};
 
 interface Feed {
   gte: string;

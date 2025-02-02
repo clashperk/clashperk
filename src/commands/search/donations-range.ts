@@ -43,77 +43,44 @@ export default class DonationsCommand extends Command {
       return interaction.editReply('The start date cannot be after the end date.');
     }
 
-    const { aggregations } = await this.client.elastic.search({
-      index: 'donation_events',
-      size: 0,
-      from: 0,
-      query: {
-        bool: {
-          filter: [
-            {
-              term: {
-                clan_tag: clan.tag
-              }
-            },
-            {
-              terms: {
-                tag: clan.memberList.map((member) => member.tag)
-              }
-            },
-            {
-              range: {
-                created_at: {
-                  gte: startTime.toISOString(),
-                  lte: endTime.toISOString()
-                }
-              }
-            }
-          ]
+    const rows = await this.client.clickhouse
+      .query({
+        format: 'JSON',
+        query: `
+          SELECT
+            tag,
+            SUM(if(action = 'DONATED', value, 0))  AS donated,
+            SUM(if(action = 'RECEIVED', value, 0)) AS received
+          FROM
+            donation_records
+          WHERE
+            clanTag = {clanTag: String}
+            AND tag IN {tags: Array(String)}
+            AND createdAt >= {startDate: DateTime}
+            AND createdAt <= {endDate: DateTime}
+          GROUP BY
+            tag
+          ORDER BY
+            donated DESC, received DESC
+        `,
+        query_params: {
+          clanTag: clan.tag,
+          tags: clan.memberList.map((member) => member.tag),
+          startDate: Math.floor(startTime.getTime() / 1000),
+          endDate: Math.floor(endTime.getTime() / 1000)
         }
-      },
-      aggs: {
-        players: {
-          terms: {
-            field: 'tag',
-            size: 50
-          },
-          aggs: {
-            donated: {
-              filter: { term: { op: 'DONATED' } },
-              aggs: {
-                total: {
-                  sum: {
-                    field: 'value'
-                  }
-                }
-              }
-            },
-            received: {
-              filter: { term: { op: 'RECEIVED' } },
-              aggs: {
-                total: {
-                  sum: {
-                    field: 'value'
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
+      })
+      .then((res) => res.json<AggregatedRaw>());
 
-    const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
-    if (!buckets.length) {
-      return interaction.editReply('No donation data found for the specified date range.');
-    }
+    const data = rows.data.map((row) => ({
+      ...row,
+      donated: Number(row.donated),
+      received: Number(row.received)
+    }));
 
-    const playersMap = buckets.reduce<Record<string, { donated: number; received: number }>>((acc, cur) => {
-      acc[cur.key] = {
-        donated: cur.donated.total.value,
-        received: cur.received.total.value
-      };
-      return acc;
+    const playersMap = data.reduce<Record<string, AggregatedResult>>((record, item) => {
+      record[item.tag] = item;
+      return record;
     }, {});
 
     const result = clan.memberList.map((player) => ({
@@ -161,17 +128,12 @@ export default class DonationsCommand extends Command {
   }
 }
 
-interface AggsBucket {
-  key: string;
-  doc_count: number;
-  donated: {
-    total: {
-      value: number;
-    };
-  };
-  received: {
-    total: {
-      value: number;
-    };
-  };
+interface AggregatedResult {
+  tag: string;
+  donated: number;
+  received: number;
 }
+
+type AggregatedRaw = {
+  [K in keyof AggregatedResult]: string;
+};
