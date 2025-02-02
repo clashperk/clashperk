@@ -12,14 +12,15 @@ Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ev
 - [Discord.js](https://discord.js.org/#/)
 - [MongoDB](https://www.mongodb.com/)
 - [Elasticsearch](https://www.elastic.co/)
+- [Clickhouse](https://clickhouse.com/)
 - [Redis](https://redis.io/)
 - [Kafka](https://kafka.apache.org/)
 - [Docker](https://www.docker.com/)
 
 ## Contributing
 
-We welcome contributions! Fork the repository, create a feature branch, make changes, and submit a pull request with a clear description. Thank you for helping improve ClashPerk!  
+We welcome contributions! Fork the repository, create a feature branch, make changes, and submit a pull request with a clear description. For more details, please refer to our [Contributing Guide](.github/CONTRIBUTING.md)
 
 ## License
 
-MIT License - See LICENSE file for details
+[MIT License](LICENSE)
