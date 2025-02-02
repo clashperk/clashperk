@@ -109,7 +109,7 @@ export class PatreonHandler {
       !(
         pledge.attributes.campaign_lifetime_support_cents === patron.lifetimeSupport &&
         pledge.attributes.currently_entitled_amount_cents === patron.entitledAmount &&
-        new Date(pledge.attributes.last_charge_date).getTime() !== patron.lastChargeDate.getTime() &&
+        new Date(pledge.attributes.last_charge_date).getTime() === patron.lastChargeDate.getTime() &&
         isGifted === patron.isGifted &&
         isLifetime === patron.isLifetime
       )
