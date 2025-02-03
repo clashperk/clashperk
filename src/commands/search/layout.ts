@@ -113,6 +113,7 @@ export default class LayoutCommand extends Command {
     }
 
     const layoutTypes: Record<string, string> = {
+      'WB': 'Town Hall',
       'HV': 'Town Hall',
       'BB2': 'Builder Base',
       'CC:0': 'Capital Peak',
@@ -129,7 +130,7 @@ export default class LayoutCommand extends Command {
     const layoutId = new URL(args.layout_link).searchParams.get('id')!;
     const [levelString, layoutType, buildingType] = layoutId.split(':');
     const level = levelString.replace('TH', '');
-    const buildingLabel = ['HV', 'BB2'].includes(layoutType) ? layoutTypes[layoutType] : layoutTypes[`CC:${buildingType}`];
+    const buildingLabel = ['HV', 'BB2', 'WB'].includes(layoutType) ? layoutTypes[layoutType] : layoutTypes[`CC:${buildingType}`];
 
     const row = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Copy Layout').setURL(args.layout_link))

@@ -98,6 +98,7 @@ export const enum Collections {
   PATREON_MEMBERS = 'Patrons',
   SETTINGS = 'Settings',
   PLAYERS = 'Players',
+  CLANS = 'Clans',
   CLAN_WARS = 'ClanWars',
   CLAN_GAMES = 'ClanGames',
   CWL_GROUPS = 'CWLGroups',
