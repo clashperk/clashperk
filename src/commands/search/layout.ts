@@ -106,7 +106,15 @@ export default class LayoutCommand extends Command {
 
   public async handleSubmit(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | ModalSubmitInteraction<'cached'>,
-    args: { screenshot: string; description?: string; layout_link: string; army_link?: string; render_army?: boolean }
+    args: {
+      screenshot: string;
+      description?: string;
+      layout_link: string;
+      army_link?: string;
+      render_army?: boolean;
+      upvote?: number;
+      downvote?: number;
+    }
   ) {
     if (!LAYOUT_REGEX.test(args.layout_link)) {
       return interaction.followUp({ flags: MessageFlags.Ephemeral, content: 'Invalid layout link was provided.' });
