@@ -56,7 +56,7 @@
     "tsyringe": "^4.6.0"
   },
   "devDependencies": {
-    "@eslint/compat": "^1.2.5",
+    "@eslint/compat": "^1.2.6",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.19.0",
     "@types/jsonwebtoken": "^9.0.8",
@@ -64,8 +64,8 @@
     "@types/ms": "^0.7.31",
     "@types/node": "^22.12.0",
     "@types/pluralize": "^0.0.33",
-    "@typescript-eslint/eslint-plugin": "^8.22.0",
-    "@typescript-eslint/parser": "^8.22.0",
+    "@typescript-eslint/eslint-plugin": "^8.23.0",
+    "@typescript-eslint/parser": "^8.23.0",
     "dotenv": "^16.4.7",
     "eslint": "^9.19.0",
     "eslint-config-prettier": "^10.0.1",
