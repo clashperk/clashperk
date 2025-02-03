@@ -1,0 +1,128 @@
+services:
+  clickhouse:
+    container_name: clickhouse
+    image: clickhouse/clickhouse-server:latest
+    restart: always
+    ports:
+      - 8123:8123
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_logs:/var/log/clickhouse-server
+    mem_limit: 1g
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    environment:
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=password
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: always
+    mem_limit: 1g
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    command: --requirepass password
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:8.16.1
+    volumes:
+      - elasticsearch_data:/esdata
+    ports:
+      - 9200:9200
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=password
+      - ELASTIC_USERNAME=kibana
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - node.name=elasticsearch
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - PORT=9200
+    mem_limit: 2gb
+    restart: always
+    hostname: elasticsearch
+
+  kibana:
+    container_name: kibana
+    depends_on:
+      - elasticsearch
+    image: kibana:8.16.1
+    ports:
+      - 5601:5601
+    environment:
+      - SERVER_NAME=kibana
+      - SERVER_HOST=0.0.0.0
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana
+      - ELASTICSEARCH_PASSWORD=password
+      - SERVER_PUBLICBASEURL=http://localhost:5601
+      - xpack.security.enabled=false
+      - PORT=5601
+    mem_limit: 1gb
+    restart: always
+
+  mongodb-keyfile-generator:
+    image: mongo:7
+    container_name: mongodb-keyfile-generator
+    volumes:
+      - 'mongodb_config:/data/configdb'
+    entrypoint:
+      [
+        '/bin/sh',
+        '-c',
+        'openssl rand -base64 756 > /data/configdb/keyFile.pem && chmod 400 /data/configdb/keyFile.pem && chown 999:999 /data/configdb/keyFile.pem'
+      ]
+
+  mongodb:
+    container_name: mongodb
+    image: mongo:7
+    restart: always
+    depends_on:
+      - mongodb-keyfile-generator
+    mem_limit: 1g
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - 'mongodb_data:/data/db'
+      - 'mongodb_config:/data/configdb'
+    command: --bind_ip_all --replSet rs0 --keyFile /data/configdb/keyFile.pem
+
+  mongodb-repl-init:
+    image: mongo:7
+    container_name: mongodb-repl-init
+    depends_on:
+      - mongodb
+    volumes:
+      - 'mongodb_config:/data/configdb'
+    entrypoint:
+      [
+        '/bin/sh',
+        '-c',
+        'sleep 5 && mongosh --host mongodb:27017 -u root -p password --authenticationDatabase admin --eval ''rs.initiate({_id: "rs0", members: [{ _id: 0, host: "mongodb:27017" }]})'''
+      ]
+
+volumes:
+  redis_data:
+    external: false
+  clickhouse_data:
+    external: false
+  elasticsearch_data:
+    external: false
+  clickhouse_logs:
+    external: false
+  mongodb_data:
+    external: false
+  mongodb_config:
+    external: false
