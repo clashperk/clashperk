@@ -230,7 +230,7 @@ const createColumnRequest = (columns: CreateGoogleSheet['columns']) => {
 export const updateGoogleSheet = async (
   spreadsheetId: string,
   sheets: CreateGoogleSheet[],
-  options: { clear: boolean; recreate: boolean }
+  options: { clear: boolean; recreate: boolean; title: string }
 ) => {
   const replaceSheetRequests: SchemaRequest[] = [];
 
@@ -324,6 +324,14 @@ export const updateGoogleSheet = async (
         spreadsheetId,
         requestBody: {
           requests: [
+            {
+              updateSpreadsheetProperties: {
+                properties: {
+                  title: options.title
+                },
+                fields: 'title'
+              }
+            },
             ...(options.clear ? clearSheetRequests : []),
             ...requests,
             ...getStyleRequests(sheets),
@@ -355,7 +363,7 @@ export const updateGoogleSheet = async (
 export const createGoogleSheet = async (title: string, sheets: CreateGoogleSheet[]) => {
   const spreadsheet = await createSheetRequest(title, sheets);
   await Promise.all([
-    updateGoogleSheet(spreadsheet.spreadsheetId!, sheets, { clear: false, recreate: false }),
+    updateGoogleSheet(spreadsheet.spreadsheetId!, sheets, { clear: false, recreate: false, title }),
     publish(spreadsheet.spreadsheetId!)
   ]);
   return {

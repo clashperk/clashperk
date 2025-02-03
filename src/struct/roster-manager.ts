@@ -1631,7 +1631,7 @@ export class RosterManager {
     }
 
     const sheet = roster.sheetId
-      ? await updateGoogleSheet(roster.sheetId, sheets, { clear: true, recreate: false })
+      ? await updateGoogleSheet(roster.sheetId, sheets, { clear: true, recreate: false, title: `${name} [Roster Export]` })
       : await createGoogleSheet(`${name} [Roster Export]`, sheets);
     if (!roster.sheetId) this.client.rosterManager.attachSheetId(roster._id, sheet.spreadsheetId);
     return sheet;
