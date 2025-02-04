@@ -593,79 +593,46 @@ export default class AutocompleteInteractionListener extends Listener {
     }
 
     const now = Date.now();
-    const result = query
-      ? await this.client.elastic.msearch({
-          searches: [
-            { index: ElasticIndex.USER_LINKED_CLANS },
-            {
-              size: 25,
-              query: {
-                bool: {
-                  must: { term: { userId } },
-                  should: getClanQuery(query),
-                  minimum_should_match: 1
-                }
-              }
-            },
-            { index: ElasticIndex.GUILD_LINKED_CLANS },
-            {
-              size: 25,
-              sort: [{ name: 'asc' }],
-              query: {
-                bool: {
-                  must: { term: { guildId } },
-                  should: getClanQuery(query),
-                  minimum_should_match: 1
-                }
-              }
-            },
-            { index: ElasticIndex.RECENT_CLANS },
-            {
-              size: 25,
-              sort: [{ lastSearched: 'desc' }],
-              query: {
-                bool: {
-                  must: { term: { userId } },
-                  should: getClanQuery(query),
-                  minimum_should_match: 1
-                }
-              }
+    const result = await this.client.elastic.msearch({
+      searches: [
+        { index: ElasticIndex.USER_LINKED_CLANS },
+        {
+          size: 25,
+          query: {
+            bool: {
+              must: { term: { userId } },
+              should: getClanQuery(query),
+              minimum_should_match: 1
             }
-          ]
-        })
-      : await this.client.elastic.msearch({
-          searches: [
-            { index: ElasticIndex.USER_LINKED_CLANS },
-            {
-              size: 25,
-              query: {
-                bool: {
-                  must: { term: { userId } }
-                }
-              }
-            },
-            { index: ElasticIndex.GUILD_LINKED_CLANS },
-            {
-              size: 25,
-              sort: [{ name: 'asc' }],
-              query: {
-                bool: {
-                  must: { term: { guildId } }
-                }
-              }
-            },
-            { index: ElasticIndex.RECENT_CLANS },
-            {
-              size: 25,
-              sort: [{ lastSearched: 'desc' }],
-              query: {
-                bool: {
-                  must: { term: { userId } }
-                }
-              }
+          }
+        },
+        { index: ElasticIndex.GUILD_LINKED_CLANS },
+        {
+          size: 25,
+          sort: [{ name: 'asc' }],
+          query: {
+            bool: {
+              must: { term: { guildId } },
+              should: getClanQuery(query),
+              minimum_should_match: 1
             }
-          ]
-        });
+          }
+        },
+        { index: ElasticIndex.RECENT_CLANS },
+        {
+          size: 25,
+          sort: [{ lastSearched: 'desc' }],
+          query: {
+            bool: {
+              must: { term: { userId } },
+              should: getClanQuery(query),
+              minimum_should_match: 1
+            }
+          }
+        }
+      ]
+    });
+
     this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
       label: `${interaction.guild.name}/${interaction.user.displayName}`
     });
