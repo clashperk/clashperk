@@ -17,8 +17,7 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
-const LAYOUT_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}[\/]?\?action=OpenLayout&id=TH[0-9]{1,2}.*$/;
-const ARMY_URL_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}[\/]?\?action=CopyArmy&army=[u|s]([\d+x-])+[s|u]?([\d+x-])+/;
+const LAYOUT_REGEX = /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?action=OpenLayout&id=TH\S+$/;
 
 export default class LayoutCommand extends Command {
   public constructor() {
@@ -44,6 +43,8 @@ export default class LayoutCommand extends Command {
       render_army?: boolean;
     }
   ) {
+    args.layout_link = args.layout_link.trim();
+
     if (!interaction.isButton()) {
       return this.handleSubmit(interaction, args);
     }
@@ -149,21 +150,9 @@ export default class LayoutCommand extends Command {
           .setLabel('Edit')
       );
 
-    const armyRow = new ActionRowBuilder<ButtonBuilder>();
-    const isValidArmyLink = args.army_link && ARMY_URL_REGEX.test(args.army_link);
-    if (args.army_link && isValidArmyLink && layoutType === 'HV') {
-      armyRow.addComponents(
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Primary)
-          .setLabel('View Army')
-          .setCustomId(JSON.stringify({ cmd: this.id, render_army: true, defer: false })),
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Copy Army').setURL(args.army_link)
-      );
-    }
-
     return interaction.editReply({
+      components: [row],
       content: args.description || `**${buildingLabel} ${level} Layout**`,
-      components: isValidArmyLink ? [row, armyRow] : [row],
       ...(args.screenshot && { files: [new AttachmentBuilder(args.screenshot)] })
     });
   }
