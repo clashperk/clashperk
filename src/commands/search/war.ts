@@ -16,6 +16,7 @@ import {
   time
 } from 'discord.js';
 import moment from 'moment';
+import pluralize from 'pluralize';
 import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
@@ -129,6 +130,15 @@ export default class WarCommand extends Command {
       const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
 
       const embed = this.attacks(interaction, { ...body, clan, opponent } as unknown as APIClanWar);
+      const components = this.getComponents({ body, selected: args.selected });
+      return interaction.editReply({ embeds: [embed], components });
+    }
+
+    if (args.selected === WarCommandOptions.GROUP_ATTACKS) {
+      const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
+      const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
+
+      const embed = this.groupAttacks(interaction, { ...body, clan, opponent } as unknown as APIClanWar);
       const components = this.getComponents({ body, selected: args.selected });
       return interaction.editReply({ embeds: [embed], components });
     }
@@ -305,6 +315,12 @@ export default class WarCommand extends Command {
         description: 'View opponent attacks.',
         value: WarCommandOptions.DEFENSES,
         emoji: EMOJIS.SHIELD
+      },
+      {
+        label: 'Group War Stars',
+        description: 'Group participants by stars.',
+        value: WarCommandOptions.GROUP_ATTACKS,
+        emoji: EMOJIS.SWORD
       },
       {
         label: 'Open Bases',
@@ -509,6 +525,56 @@ export default class WarCommand extends Command {
               .join('\n');
           })
           .join('\n')
+      ].join('\n')
+    );
+
+    return embed;
+  }
+
+  private groupAttacks(interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>, body: APIClanWar) {
+    const embed = new EmbedBuilder()
+      .setColor(this.client.embed(interaction))
+      .setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
+
+    const attacks = [];
+
+    for (const member of body.clan.members) {
+      const stars = (member.attacks ?? []).reduce((num, atk) => {
+        num += atk.stars;
+        return num;
+      }, 0);
+      attacks.push({ tag: member.tag, name: member.name, stars, townHallLevel: member.townhallLevel });
+    }
+
+    const groups = Object.entries(
+      attacks.reduce<Record<string, { name: string; tag: string; townHallLevel: number }[]>>((record, mem) => {
+        record[mem.stars] = (record[mem.stars] || []).concat(mem);
+        return record;
+      }, {})
+    ).map(([stars, members]) => {
+      members.sort((a, b) => b.townHallLevel - a.townHallLevel);
+      return {
+        stars: +stars,
+        members
+      };
+    });
+    groups.sort((a, b) => b.stars - a.stars);
+
+    embed.setDescription(
+      [
+        embed.data.description,
+        '',
+        `**Total Attacks - ${body.clan.attacks}/${body.teamSize * (body.attacksPerMember ?? 1)}**`,
+        `**Total Stars - ${body.clan.stars}/${body.teamSize * 3}**`,
+        '',
+        ...groups.map((group, n) => {
+          return [
+            `${n === 0 ? '' : '\n'}**${group.stars} ${pluralize('Star', +group.stars)}**`,
+            ...group.members.map((member) => {
+              return `${TOWN_HALLS[member.townHallLevel]} ${member.name}`;
+            })
+          ].join('\n');
+        })
       ].join('\n')
     );
 

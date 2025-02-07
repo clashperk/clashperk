@@ -1,7 +1,7 @@
 import { Collections } from '@app/constants';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { EMOJIS, WHITE_NUMBERS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Season } from '../../util/toolkit.js';
 
 export default class SummaryClansCommand extends Command {
@@ -41,14 +41,13 @@ export default class SummaryClansCommand extends Command {
     embed.setAuthor({ name: 'War Results Summary', iconURL: interaction.guild.iconURL()! });
     embed.setDescription(
       [
-        `${EMOJIS.HASH} \`WON LOST WARS ${'NAME'.padEnd(15, ' ')}\``,
+        `\` # WON LOST WARS ${'NAME'.padEnd(15, ' ')}\``,
         collection
           .map((en, i) => {
             const won = en.won.toLocaleString().padStart(2, ' ');
             const lost = en.lost.toLocaleString().padStart(2, ' ');
             const wars = en.wars.toLocaleString().padStart(3, ' ');
-
-            return `${WHITE_NUMBERS[++i]} \`\u200e${won}  ${lost}  ${wars}   ${en.name.padEnd(15, ' ')}\u200f\``;
+            return `\`\u200e${padStart(++i, 2)} ${won}  ${lost}  ${wars}   ${en.name.padEnd(15, ' ')}\u200f\``;
           })
           .join('\n')
       ].join('\n')

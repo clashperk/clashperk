@@ -326,9 +326,7 @@ export const updateGoogleSheet = async (
           requests: [
             {
               updateSpreadsheetProperties: {
-                properties: {
-                  title: options.title
-                },
+                properties: { title: options.title },
                 fields: 'title'
               }
             },

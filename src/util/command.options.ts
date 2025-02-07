@@ -94,6 +94,7 @@ export const RosterManageActions = {
 
 export const WarCommandOptions = {
   ATTACKS: 'attacks',
+  GROUP_ATTACKS: 'group-attacks',
   DEFENSES: 'defenses',
   LINEUP: 'lineup',
   REMAINING: 'remaining',
