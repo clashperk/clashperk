@@ -139,54 +139,44 @@ export default class ClanActivityCommand extends Command {
 
   private async aggregate(clanTags: string[], days: number, limit: number) {
     const isHourly = days <= 3;
-    const body = await this.client.elastic.search<{ clanTag: string }, AggregationsAggregate>({
-      index: 'player_activities',
-      query: {
-        bool: {
-          filter: [
-            {
-              terms: {
-                clanTag: clanTags
-              }
-            },
-            {
-              range: {
-                timestamp: {
-                  gte: `now-${days}d/d`
-                }
-              }
-            }
-          ]
-        }
-      },
-      aggs: {
-        clans: {
-          terms: {
-            field: 'clanTag',
-            size: limit
-          },
-          aggs: {
-            active_members: {
-              date_histogram: {
-                field: 'timestamp',
-                calendar_interval: isHourly ? 'hour' : 'day'
-              },
-              aggs: {
-                unique_members: {
-                  cardinality: {
-                    field: 'tag'
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
 
-    return (body.aggregations?.clans.buckets ?? []).map((clan) => ({
-      clanTag: clan.key,
-      activities: clan.active_members.buckets.map((bucket) => ({ count: bucket.unique_members.value, time: bucket.key_as_string }))
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT
+            clanTag,
+            timestamp,
+            sum(active_members) as count
+          FROM ${isHourly ? 'hourly_activity_views' : 'daily_activity_views'}
+          WHERE
+            clanTag IN {clanTags: Array(String)} AND timestamp >= now() - INTERVAL ${days} DAY
+          GROUP BY clanTag, timestamp
+          ORDER BY timestamp;
+        `,
+        query_params: {
+          clanTags
+        }
+      })
+      .then((res) => res.json<{ timestamp: string; count: string; clanTag: string }>());
+
+    const groups = Object.entries(
+      rows.data.reduce<Record<string, { activities: { count: number; time: string }[]; total: number }>>((record, row) => {
+        if (!record[row.clanTag]) record[row.clanTag] = { activities: [], total: 0 };
+        record[row.clanTag].activities.push({ count: Number(row.count), time: row.timestamp });
+        record[row.clanTag].total += Number(row.count);
+        return record;
+      }, {})
+    );
+
+    if (!groups.length) return [];
+    groups.sort((a, b) => b[1].total - a[1].total);
+
+    return groups.slice(0, limit).map(([clanTag, { activities }]) => ({
+      clanTag,
+      activities: activities.map((activity) => ({
+        count: activity.count,
+        time: moment(activity.time).toISOString()
+      }))
     }));
   }
 
@@ -231,19 +221,4 @@ export default class ClanActivityCommand extends Command {
       }
     });
   }
-}
-
-interface AggregationsAggregate {
-  clans: {
-    buckets: {
-      key: string;
-      active_members: {
-        buckets: {
-          key_as_string: string;
-          key: number;
-          unique_members: { value: number };
-        }[];
-      };
-    }[];
-  };
 }

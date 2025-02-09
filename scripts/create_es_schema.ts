@@ -57,29 +57,6 @@ const elastic = new ElasticClient({
 
   await elastic.indices.create(
     {
-      index: 'player_activities',
-      body: {
-        mappings: {
-          dynamic: 'strict',
-          properties: {
-            clanTag: {
-              type: 'keyword'
-            },
-            tag: {
-              type: 'keyword'
-            },
-            timestamp: {
-              type: 'date'
-            }
-          }
-        }
-      }
-    },
-    { ignore: [400] }
-  );
-
-  await elastic.indices.create(
-    {
       index: 'join_leave_events',
       body: {
         mappings: {

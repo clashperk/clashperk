@@ -4,7 +4,6 @@ import { Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/toolkit.js';
 
-// TODO: Per season activity
 export default class SummaryCommand extends Command {
   public constructor() {
     super('summary-activity', {
@@ -57,58 +56,28 @@ export default class SummaryCommand extends Command {
   }
 
   private async getActivity(clanTag: string): Promise<{ avgDailyActivity: number; avgDailyOnline: number } | null> {
-    const body = await this.client.elastic.search<unknown, AggregationsAggregate>({
-      index: 'player_activities',
-      query: {
-        bool: {
-          filter: [
-            {
-              term: {
-                clanTag: {
-                  value: clanTag
-                }
-              }
-            },
-            {
-              range: {
-                timestamp: {
-                  gte: 'now-30d/d'
-                }
-              }
-            }
-          ]
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT
+            clanTag,
+            avg(activity_count) AS avg_daily_activity_count,
+            avg(active_members) AS avg_daily_active_members
+          FROM daily_activity_views
+          WHERE
+            clanTag = {clanTag: String}
+            AND timestamp >= now() - INTERVAL 30 DAY
+          GROUP BY clanTag;
+        `,
+        query_params: {
+          clanTag
         }
-      },
-      size: 0,
-      aggs: {
-        daily_stats: {
-          date_histogram: {
-            field: 'timestamp',
-            calendar_interval: 'day'
-          },
-          aggs: {
-            online_members_count: {
-              cardinality: {
-                field: 'tag'
-              }
-            }
-          }
-        },
-        avg_daily_members: {
-          avg_bucket: {
-            buckets_path: 'daily_stats>online_members_count'
-          }
-        },
-        avg_daily_activity: {
-          avg_bucket: {
-            buckets_path: 'daily_stats>_count'
-          }
-        }
-      }
-    });
+      })
+      .then((res) => res.json<{ avg_daily_activity_count: string; avg_daily_active_members: string }>());
+
     return {
-      avgDailyOnline: body.aggregations?.avg_daily_members.value ?? 0,
-      avgDailyActivity: body.aggregations?.avg_daily_activity.value ?? 0
+      avgDailyOnline: Number(rows.data[0]?.avg_daily_active_members ?? 0),
+      avgDailyActivity: Number(rows.data[0]?.avg_daily_activity_count ?? 0)
     };
   }
 
@@ -212,24 +181,4 @@ export default class SummaryCommand extends Command {
     if (!ms) return ''.padEnd(7, ' ');
     return Util.duration(ms + 1e3).padEnd(7, ' ');
   }
-}
-
-// TODO: REMOVE DUPLICATE
-interface AggregationsAggregate {
-  daily_stats: {
-    buckets: {
-      key_as_string: string;
-      key: number;
-      doc_count: number;
-      online_members_count: {
-        value: number;
-      };
-    }[];
-  };
-  avg_daily_members: {
-    value: number | null;
-  };
-  avg_daily_activity: {
-    value: number | null;
-  };
 }

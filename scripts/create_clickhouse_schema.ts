@@ -39,6 +39,43 @@ const clickhouse = createClickHouseClient({
     `
   });
 
+  await clickhouse.query({
+    query: `
+      CREATE MATERIALIZED VIEW daily_activity_views
+      ENGINE = SummingMergeTree()
+      PARTITION BY toYYYYMM(timestamp)
+      ORDER BY (timestamp, clanTag)
+      POPULATE
+      AS
+      SELECT
+        toDate(createdAt) AS timestamp,
+        clanTag,
+        COUNT(*) AS activity_count,
+        uniq(tag) AS active_members
+      FROM player_activities
+      WHERE createdAt >= now() - INTERVAL 30 DAY
+      GROUP BY timestamp, clanTag;
+    `
+  });
+
+  await clickhouse.query({
+    query: `
+      CREATE MATERIALIZED VIEW hourly_activity_views
+      ENGINE = SummingMergeTree()
+      PARTITION BY toYYYYMM(timestamp)
+      ORDER BY (timestamp, clanTag)
+      POPULATE
+      AS
+      SELECT
+        toStartOfHour(createdAt) AS timestamp,
+        clanTag,
+        uniq(tag) AS active_members
+      FROM player_activities
+      WHERE createdAt >= now() - INTERVAL 1 DAY
+      GROUP BY timestamp, clanTag;
+    `
+  });
+
   console.log('Tables created successfully!');
   clickhouse.close();
 })();

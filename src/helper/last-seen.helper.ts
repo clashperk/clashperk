@@ -26,38 +26,32 @@ export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { 
     ])
     .toArray();
 
-  const body = await client.elastic.search<unknown, { players: { buckets: { key: string; doc_count: number }[] } }>({
-    query: {
-      bool: {
-        filter: [
-          {
-            terms: {
-              tag: playerTags
-            }
-          },
-          {
-            range: {
-              timestamp: {
-                gte: scoreView ? 'now-30d/d' : 'now-24h/h',
-                lte: 'now'
-              }
-            }
-          }
-        ]
+  const rows = await client.clickhouse
+    .query({
+      query: `
+        SELECT
+          tag,
+          count() AS count
+        FROM player_activities
+        WHERE
+          tag in {tags: Array(String)}
+          AND createdAt >= {createdAt: DateTime}
+        GROUP BY tag
+      `,
+      query_params: {
+        tags: playerTags,
+        createdAt: scoreView
+          ? Math.floor(new Date().getTime() / 1000) - 30 * 24 * 60 * 60
+          : Math.floor(new Date().getTime() / 1000) - 24 * 60 * 60
       }
-    },
-    size: 0,
-    aggs: {
-      players: {
-        terms: {
-          field: 'tag',
-          size: 50
-        }
-      }
-    }
-  });
+    })
+    .then((res) => res.json<{ tag: string; count: string }>());
 
-  const activityMap = Object.fromEntries((body.aggregations?.players.buckets ?? []).map((bucket) => [bucket.key, bucket.doc_count]));
+  const activityMap = rows.data.reduce<Record<string, number>>((record, item) => {
+    record[item.tag] = +item.count;
+    return record;
+  }, {});
+
   const _members = clan.memberList.map((m) => {
     const mem = result.find((d) => d.tag === m.tag);
     return {
