@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/node';
 import { httpIntegration, NodeOptions, rewriteFramesIntegration } from '@sentry/node';
 
 const sentryConfig: NodeOptions = {
-  dsn: process.env.SENTRY,
+  dsn: process.env.SENTRY_DSN,
   serverName: process.env.SERVICE_NAME ?? 'clashperk_bot',
   environment: process.env.NODE_ENV ?? 'development',
   release: process.env.GIT_SHA,
