@@ -38,12 +38,12 @@ export default class LayoutCommand extends Command {
       screenshot: string;
       description?: string;
       has_description?: boolean;
-      layout_link: string;
+      layout_link?: string;
       army_link?: string;
       render_army?: boolean;
     }
   ) {
-    args.layout_link = args.layout_link.trim();
+    args.layout_link &&= args.layout_link.trim();
 
     if (!interaction.isButton()) {
       return this.handleSubmit(interaction, args);
@@ -110,14 +110,14 @@ export default class LayoutCommand extends Command {
     args: {
       screenshot: string;
       description?: string;
-      layout_link: string;
+      layout_link?: string;
       army_link?: string;
       render_army?: boolean;
       upvote?: number;
       downvote?: number;
     }
   ) {
-    if (!LAYOUT_REGEX.test(args.layout_link)) {
+    if (!args.layout_link || !LAYOUT_REGEX.test(args.layout_link)) {
       return interaction.followUp({ flags: MessageFlags.Ephemeral, content: 'Invalid layout link was provided.' });
     }
 
