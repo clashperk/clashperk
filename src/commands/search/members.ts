@@ -33,9 +33,9 @@ const roleNames: Record<string, string> = {
   leader: 'Lead'
 };
 
-const PETS = Object.keys(HERO_PETS).reduce<Record<string, number>>((prev, curr, i) => {
-  prev[curr] = i + 1;
-  return prev;
+const PETS = Object.keys(HERO_PETS).reduce<Record<string, number>>((record, item, idx) => {
+  record[item] = idx + 1;
+  return record;
 }, {});
 
 export default class MembersCommand extends Command {
@@ -184,7 +184,7 @@ export default class MembersCommand extends Command {
 
     // PROGRESS
     if (args.option === options.progress.id) {
-      const members = await this.progress(data, fetched);
+      const members = await this.progress(fetched);
 
       const upgrades = fetched.map((player) => ({
         name: player.name,
@@ -427,43 +427,37 @@ export default class MembersCommand extends Command {
     return warPref;
   }
 
-  private async progress(clan: APIClan, players: APIPlayer[]) {
-    const gte = moment().subtract(1, 'month').toDate().toISOString();
+  private async progress(players: APIPlayer[]) {
+    const timestamp = moment().subtract(30, 'day').toDate().getTime();
 
-    const { aggregations } = await this.client.elastic.search({
-      index: 'player_progress_events',
-      query: {
-        bool: {
-          filter: [{ terms: { tag: players.map((p) => p.tag) } }, { range: { created_at: { gte } } }, { term: { op: 'UNIT_UPGRADED' } }]
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT
+            tag,
+            type,
+            COUNT(*) AS count
+          FROM player_unit_activities
+          WHERE
+            tag IN {playersTags: Array(String)}
+            AND createdAt >= {timestamp: DateTime}
+            AND action IN {actions: Array(String)}
+          GROUP BY tag, type
+          ORDER BY tag, count DESC
+        `,
+        query_params: {
+          actions: ['UNLOCK', 'UPGRADE'],
+          playersTags: players.map((player) => player.tag),
+          timestamp: Math.floor(timestamp / 1000)
         }
-      },
-      size: 0,
-      from: 0,
-      aggs: {
-        players: {
-          terms: {
-            field: 'tag',
-            size: 10_000
-          },
-          aggs: {
-            types: {
-              terms: {
-                field: 'unit_type'
-              }
-            }
-          }
-        }
-      }
-    });
+      })
+      .then((res) => res.json<{ count: string; type: string; tag: string }>());
 
-    const { buckets } = (aggregations?.players ?? []) as { buckets: ProgressAggsBucket[] };
-    const playersMap = buckets.reduce<Record<string, Record<string, number>>>((acc, cur) => {
-      acc[cur.key] = cur.types.buckets.reduce<Record<string, number>>((acc, cur) => {
-        acc[cur.key] = cur.doc_count;
-        return acc;
-      }, {});
-      return acc;
-    }, {});
+    const playersMap: Record<string, Record<string, number>> = {};
+    for (const row of rows.data) {
+      if (!playersMap[row.tag]) playersMap[row.tag] = {};
+      playersMap[row.tag][row.type] = Number(row.count);
+    }
 
     return playersMap;
   }
@@ -479,16 +473,5 @@ interface AggsBucket {
   out_stats: {
     doc_count: number;
     aggregated: { max: number | null; min: number | null; count: number };
-  };
-}
-
-interface ProgressAggsBucket {
-  key: string;
-  doc_count: number;
-  types: {
-    buckets: {
-      key: string;
-      doc_count: number;
-    }[];
   };
 }
