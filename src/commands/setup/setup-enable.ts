@@ -16,15 +16,15 @@ export default class SetupEnableCommand extends Command {
       'clan-embed': this.handler.getCommand('setup-clan-embed')!,
       'link-channel': this.handler.getCommand('setup-clan')!,
       'link-clan': this.handler.getCommand('setup-clan')!,
-      'enable-logs': this.handler.getCommand('setup-logs')!,
-      'war-feed': this.handler.getCommand('setup-logs')!,
-      'last-seen': this.handler.getCommand('setup-logs')!,
-      'clan-games': this.handler.getCommand('setup-logs')!,
-      'legend-log': this.handler.getCommand('setup-logs')!,
-      'capital-log': this.handler.getCommand('setup-logs')!,
-      'clan-feed': this.handler.getCommand('setup-logs')!,
-      'join-leave': this.handler.getCommand('setup-logs')!,
-      'donation-log': this.handler.getCommand('setup-logs')
+      'enable-logs': this.handler.getCommand('setup-clan-logs')!,
+      'war-feed': this.handler.getCommand('setup-clan-logs')!,
+      'last-seen': this.handler.getCommand('setup-clan-logs')!,
+      'clan-games': this.handler.getCommand('setup-clan-logs')!,
+      'legend-log': this.handler.getCommand('setup-clan-logs')!,
+      'capital-log': this.handler.getCommand('setup-clan-logs')!,
+      'clan-feed': this.handler.getCommand('setup-clan-logs')!,
+      'join-leave': this.handler.getCommand('setup-clan-logs')!,
+      'donation-log': this.handler.getCommand('setup-clan-logs')
     }[args.action];
 
     if (!command) throw Error('Command not found.');

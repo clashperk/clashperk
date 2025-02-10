@@ -35,7 +35,7 @@ export default class SetupDisableCommand extends Command {
     args: { action: 'unlink-channel' | 'delete-clan' | 'disable-logs' | keyof typeof DeprecatedLogs; channel: TextChannel; clan: string }
   ) {
     if (args.action === 'disable-logs') {
-      const command = this.handler.getCommand('setup-logs')!;
+      const command = this.handler.getCommand('setup-clan-logs')!;
       return this.handler.continue(interaction, command);
     }
 
