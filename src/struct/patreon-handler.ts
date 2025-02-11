@@ -60,7 +60,7 @@ export class PatreonHandler {
   }
 
   public async detachCustomBot(patronId: string) {
-    return this.collection.updateOne({ id: patronId }, { $unset: { applicationId: '' } });
+    return this.collection.updateOne({ id: patronId }, { $unset: { applicationId: true } });
   }
 
   public async findGuild(guildId: string) {

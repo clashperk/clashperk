@@ -166,7 +166,7 @@ export class CustomBotManager {
     await this._suspendService(serviceId);
     await this._deleteService(serviceId);
     await this.client.patreonHandler.detachCustomBot(bot.patronId);
-    for (const guildId of bot.guildIds) await this.client.settings.setCustomBot(guildId);
+    for (const guildId of bot.guildIds) await this.client.settings.deleteCustomBot(guildId);
     await this.collection.deleteOne({ serviceId });
 
     await this._deployWebhook({ content: `Service Deleted [${bot.name}] (<@${serviceId}>)` });
