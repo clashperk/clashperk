@@ -146,11 +146,11 @@ export default class ClanActivityCommand extends Command {
           SELECT
             clanTag,
             timestamp,
-            sum(active_members) as count
-          FROM ${isHourly ? 'hourly_activity_views' : 'daily_activity_views'}
+            active_members AS count
+          FROM ${isHourly ? 'hourly_activities_mv' : 'daily_activities_mv'}
+          FINAL
           WHERE
             clanTag IN {clanTags: Array(String)} AND timestamp >= now() - INTERVAL ${days} DAY
-          GROUP BY clanTag, timestamp
           ORDER BY timestamp;
         `,
         query_params: {

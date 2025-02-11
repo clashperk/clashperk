@@ -238,7 +238,8 @@ export default class ClanCommand extends Command {
             clanTag,
             avg(activity_count) AS avg_daily_activity_count,
             avg(active_members) AS avg_daily_active_members
-          FROM daily_activity_views
+          FROM daily_activities_mv
+          FINAL
           WHERE
             clanTag = {clanTag: String}
             AND timestamp >= now() - INTERVAL 30 DAY
