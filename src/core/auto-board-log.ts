@@ -13,7 +13,8 @@ import {
   SnowflakeUtil,
   TextChannel,
   WebhookClient,
-  WebhookMessageCreateOptions
+  WebhookMessageCreateOptions,
+  WebhookMessageEditOptions
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../helper/leaderboard.helper.js';
@@ -142,7 +143,7 @@ export class AutoBoardLog {
 
   public async _edit(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
     try {
-      return await webhook.editMessage(cache.messageId!, payload);
+      return await webhook.editMessage(cache.messageId!, payload as WebhookMessageEditOptions);
     } catch (error: any) {
       if (error.code === 10008) return this.disableLog(cache);
 

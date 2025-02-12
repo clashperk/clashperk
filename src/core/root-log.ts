@@ -9,7 +9,8 @@ import {
   PermissionsString,
   TextChannel,
   WebhookClient,
-  WebhookMessageCreateOptions
+  WebhookMessageCreateOptions,
+  WebhookMessageEditOptions
 } from 'discord.js';
 import { Collection as DbCollection, ObjectId } from 'mongodb';
 import { Client } from '../struct/client.js';
@@ -117,7 +118,7 @@ export class RootLog {
     if (!cache.message) return this.sendMessage(cache, webhook, payload);
 
     try {
-      return await webhook.editMessage(cache.message, payload);
+      return await webhook.editMessage(cache.message, payload as WebhookMessageEditOptions);
     } catch (error) {
       if (error.code === DiscordErrorCodes.UNKNOWN_MESSAGE) {
         delete cache.message;
