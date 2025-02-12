@@ -126,7 +126,7 @@ export default class LineupCommand extends Command {
         .setDescription(
           data.clan.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
+            .map((m, i) => `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`)
             .join('\n')
         )
         .setFooter({ text: `${states[state]}` }),
@@ -140,7 +140,7 @@ export default class LineupCommand extends Command {
         .setDescription(
           data.opponent.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
+            .map((m, i) => `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`)
             .join('\n')
         )
         .setFooter({ text: `${states[state]}` })

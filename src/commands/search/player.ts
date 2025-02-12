@@ -125,7 +125,7 @@ export default class PlayerCommand extends Command {
 
     const lastSeen = aggregated?.lastSeen ? this.getLastSeen(aggregated.lastSeen) : 'Unknown';
     const clan = data.clan
-      ? `**Clan Info**\n${EMOJIS.CLAN} [${data.clan.name}](http://cprk.eu/c/${trimTag(data.clan.tag)}) (${roles[data.role!]})\n`
+      ? `**Clan Info**\n${EMOJIS.CLAN} [${data.clan.name}](http://cprk.us/c/${trimTag(data.clan.tag)}) (${roles[data.role!]})\n`
       : '';
 
     const war = await this.getWars(data.tag);

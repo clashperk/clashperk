@@ -74,7 +74,7 @@ export default class ClanHistoryCommand extends Command {
       .setColor(this.client.embed(interaction))
       .setTitle(`${data.name} (${data.tag})`)
       .setAuthor({ name: 'Clan History (Beta Release)' })
-      .setURL(`http://cprk.eu/p/${data.tag.replace('#', '')}`)
+      .setURL(`http://cprk.us/p/${data.tag.replace('#', '')}`)
       .setDescription(
         [
           '### Longest-Staying Clans',
@@ -114,9 +114,9 @@ export default class ClanHistoryCommand extends Command {
 
   private formatClan(clan: GlobalClanEntity, playerTag: string) {
     if (clan.tag === '#00000') {
-      return `[Not in any Clans](http://cprk.eu/p/${playerTag.replace('#', '')})`;
+      return `[Not in any Clans](http://cprk.us/p/${playerTag.replace('#', '')})`;
     }
-    return `[${clan.name} (${clan.tag})](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+    return `[${clan.name} (${clan.tag})](http://cprk.us/c/${clan.tag.replace('#', '')})`;
   }
 }
 

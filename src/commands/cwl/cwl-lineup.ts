@@ -203,7 +203,7 @@ export default class CWLLineupCommand extends Command {
         .setDescription(
           data.clan.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
+            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`)
             .join('\n')
         )
         .setFooter({ text: `Round #${round} (${states[state]})` }),
@@ -217,7 +217,7 @@ export default class CWLLineupCommand extends Command {
         .setDescription(
           data.opponent.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.eu/p/${m.tag.replace('#', '')})`)
+            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`)
             .join('\n')
         )
         .setFooter({ text: `Round #${round} (${states[state]})` })

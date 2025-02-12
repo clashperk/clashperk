@@ -78,7 +78,7 @@ export default class FlagCreateCommand extends Command {
     if (newFlags.length === 1) {
       embed.setDescription(
         [
-          `\u200eFlag added to ${`[${flag.name} (${flag.tag})](http://cprk.eu/p/${flag.tag.replace('#', '')})`} by <@${
+          `\u200eFlag added to ${`[${flag.name} (${flag.tag})](http://cprk.us/p/${flag.tag.replace('#', '')})`} by <@${
             interaction.user.id
           }>`,
           flag.expiresAt ? `Expires on ${time(flag.expiresAt, 'd')}\n` : ``,
@@ -95,7 +95,7 @@ export default class FlagCreateCommand extends Command {
         `**Reason**\n${flag.reason}`,
         '',
         '**Players**',
-        newFlags.map((flag) => `\u200e[${flag.name} (${flag.tag})](http://cprk.eu/p/${flag.tag.replace('#', '')})`).join('\n')
+        newFlags.map((flag) => `\u200e[${flag.name} (${flag.tag})](http://cprk.us/p/${flag.tag.replace('#', '')})`).join('\n')
       ].join('\n')
     );
 

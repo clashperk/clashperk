@@ -43,7 +43,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
             const looted = padStart(clan.looted.toFixed(0), maxPad);
             const attacks = padStart(clan.attacks, 3);
             const hit = padStart((clan.looted ? clan.looted / clan.attacks : 0).toFixed(0), 4);
-            const _clan = `[${clan.name}](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+            const _clan = `[${clan.name}](http://cprk.us/c/${clan.tag.replace('#', '')})`;
             return `\`${padStart(idx + 1, 2)} ${looted} ${attacks} ${hit}\` \u200b \u200e${_clan}`;
           })
         ].join('\n')
@@ -56,7 +56,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
           ...clansGroup.map((clan, i) => {
             const looted = padStart(Util.formatNumber(clan.looted, 1), 6);
             const players = padStart(`${clan.players}/50`, 6);
-            const _clan = `[${clan.name}](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+            const _clan = `[${clan.name}](http://cprk.us/c/${clan.tag.replace('#', '')})`;
             return `\`${padStart(i + 1, 2)} ${players}  ${looted}\` \u200b \u200e${_clan}`;
           })
         ].join('\n')
@@ -70,7 +70,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
             const looted = padStart(Util.formatNumber(clan.looted, 1), 6);
             const attacks = padStart(clan.attacks, 3);
             const medals = padStart(clan.medals.toFixed(0), 5);
-            const _clan = `[${clan.name}](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+            const _clan = `[${clan.name}](http://cprk.us/c/${clan.tag.replace('#', '')})`;
             return `\`${padStart(i + 1, 2)} ${looted} ${attacks} ${medals}\` \u200b \u200e${_clan}`;
           })
         ].join('\n')

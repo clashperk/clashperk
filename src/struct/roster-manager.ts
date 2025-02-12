@@ -1797,7 +1797,7 @@ export class RosterManager {
     const embed = new EmbedBuilder().setColor(colorCodes[action]).setTitle(`${roster.name}`);
     if (roster.clan) {
       embed
-        .setURL(`http://cprk.eu/c/${roster.clan.tag.slice(1)}`)
+        .setURL(`http://cprk.us/c/${roster.clan.tag.slice(1)}`)
         .setFooter({ text: `${roster.clan.name} (${roster.clan.tag})`, iconURL: roster.clan.badgeUrl });
     }
 

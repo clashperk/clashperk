@@ -430,7 +430,7 @@ export default class ProfileCommand extends Command {
   }
 
   private playerShortUrl(tag: string) {
-    return `http://cprk.eu/p/${tag.replace('#', '')}`;
+    return `http://cprk.us/p/${tag.replace('#', '')}`;
   }
 }
 

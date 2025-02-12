@@ -43,7 +43,7 @@ export default class LeaderboardCapitalCommand extends Command {
         clans
           .map((clan) => {
             if (clanTags.includes(clan.tag)) {
-              return `${idx * 101}. \`${clan.trophies}\` \u200b \u200e[${escapeMarkdown(clan.name)}](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+              return `${idx * 101}. \`${clan.trophies}\` \u200b \u200e[${escapeMarkdown(clan.name)}](http://cprk.us/c/${clan.tag.replace('#', '')})`;
             }
             return `${idx * 101}. \`${clan.trophies}\` \u200b \u200e${escapeMarkdown(clan.name)}`;
           })

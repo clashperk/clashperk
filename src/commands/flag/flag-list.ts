@@ -87,7 +87,7 @@ export default class FlagListCommand extends Command {
         embed.addFields({
           name: itemIndex === 0 ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})` : '\u200b',
           value: [
-            `\u200e[${escapeMarkdown(flag.name)} (${flag.tag})](http://cprk.eu/p/${flag.tag.replace('#', '')})`,
+            `\u200e[${escapeMarkdown(flag.name)} (${flag.tag})](http://cprk.us/p/${flag.tag.replace('#', '')})`,
             `Created ${time(flag.createdAt, 'R')}, by ${flag.username}${flag.expiresAt ? `` : ''}`,
             flag.expiresAt ? `Expires on ${time(flag.expiresAt, 'd')}\n${reason}` : `${reason}`
           ].join('\n')
@@ -164,7 +164,7 @@ export default class FlagListCommand extends Command {
         embed.addFields({
           name: itemIndex === 0 ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})` : '\u200b',
           value: [
-            `\u200e[${escapeMarkdown(flag.name)} (${flag.tag})](http://cprk.eu/p/${flag.tag.replace('#', '')})`,
+            `\u200e[${escapeMarkdown(flag.name)} (${flag.tag})](http://cprk.us/p/${flag.tag.replace('#', '')})`,
             `**Total ${flag.count} flag${flag.count === 1 ? '' : 's'}, ${flag.flagImpact} ${args.flag_type}${
               flag.flagImpact === 1 ? '' : 's'
             }**`,
@@ -243,7 +243,7 @@ export default class FlagListCommand extends Command {
       .setTitle(`Flags (${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List)`)
       .setDescription(
         [
-          `[${player.name} (${player.tag})](http://cprk.eu/p/${player.tag.replace('#', '')})`,
+          `[${player.name} (${player.tag})](http://cprk.us/p/${player.tag.replace('#', '')})`,
           `Flagged by <@${flag.user}>`,
           '',
           `**Flags (Total ${flag.count})**`,

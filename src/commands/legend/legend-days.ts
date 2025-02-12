@@ -119,7 +119,7 @@ export default class LegendDaysCommand extends Command {
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
       .setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
-      .setURL(`http://cprk.eu/p/${trimTag(data.tag)}`);
+      .setURL(`http://cprk.us/p/${trimTag(data.tag)}`);
     embed.setDescription(
       [
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
@@ -160,7 +160,7 @@ export default class LegendDaysCommand extends Command {
         {
           name: '**Clan**',
           value: [
-            `- ${clan ? `[${clan.name} (${clan.tag})](http://cprk.eu/c/${trimTag(clan.tag)})` : 'N/A'}`,
+            `- ${clan ? `[${clan.name} (${clan.tag})](http://cprk.us/c/${trimTag(clan.tag)})` : 'N/A'}`,
             `- Rank in Clan: ${member.clanRank}`,
             `- Clan Points Contribution: ${Math.floor((member.trophies * percentage) / 100)} (${percentage}%)`
           ].join('\n')
@@ -545,7 +545,7 @@ export default class LegendDaysCommand extends Command {
 
     const embed = new EmbedBuilder();
     embed.setTitle(`${escapeMarkdown(data.name)} (${data.tag})`);
-    embed.setURL(`http://cprk.eu/c/${trimTag(data.tag)}`);
+    embed.setURL(`http://cprk.us/c/${trimTag(data.tag)}`);
     embed.setDescription(description);
 
     const season = this.client.coc.util.getSeason();

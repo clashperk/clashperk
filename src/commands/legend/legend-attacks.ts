@@ -148,7 +148,7 @@ export default class LegendAttacksCommand extends Command {
     if (clans.length === 1) {
       const [clan] = clans;
       embed.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`);
-      embed.setURL(`http://cprk.eu/c/${trimTag(clan.tag)}`);
+      embed.setURL(`http://cprk.us/c/${trimTag(clan.tag)}`);
     } else {
       embed.setAuthor({ name: `Legend League Attacks (${seasonId})`, iconURL: guild.iconURL()! });
     }

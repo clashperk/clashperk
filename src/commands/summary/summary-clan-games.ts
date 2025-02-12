@@ -142,7 +142,7 @@ export default class SummaryClanGamesCommand extends Command {
         ...clans.slice(0, 99).map((clan, idx) => {
           const points = padStart(clan.points, 6);
           const players = padStart(`${Math.min(clan.players, 50)}/50`, 6);
-          return `\`${padStart(++idx, 2)} ${players}  ${points}\` \u200b \u200e[${clan.name}](http://cprk.eu/c/${clan.tag.replace('#', '')})`;
+          return `\`${padStart(++idx, 2)} ${players}  ${points}\` \u200b \u200e[${clan.name}](http://cprk.us/c/${clan.tag.replace('#', '')})`;
         })
       ].join('\n')
     );

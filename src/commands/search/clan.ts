@@ -96,7 +96,7 @@ export default class ClanCommand extends Command {
   private async embed(guildId: string | null, clan: APIClan) {
     const embed = new EmbedBuilder()
       .setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
-      .setURL(`http://cprk.eu/c/${trimTag(clan.tag)}`)
+      .setURL(`http://cprk.us/c/${trimTag(clan.tag)}`)
       .setColor(this.client.embed(guildId))
       .setThumbnail(clan.badgeUrls.medium);
 
