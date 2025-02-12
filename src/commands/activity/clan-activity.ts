@@ -160,6 +160,7 @@ export default class ClanActivityCommand extends Command {
       })
       .then((res) => res.json<{ timestamp: string; count: string; clanTag: string }>());
 
+    const groups = Object.entries(
       rows.data.reduce<Record<string, { activities: { count: number; time: string }[]; total: number }>>((record, row) => {
         if (!record[row.clanTag]) record[row.clanTag] = { activities: [], total: 0 };
         record[row.clanTag].activities.push({ count: Number(row.count), time: row.timestamp });
