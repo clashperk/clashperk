@@ -60,15 +60,19 @@ export default class SummaryCommand extends Command {
       .query({
         query: `
           SELECT
-            clanTag,
-            avg(activity_count) AS avg_daily_activity_count,
-            avg(active_members) AS avg_daily_active_members
-          FROM daily_activities_mv
-          FINAL
-          WHERE
-            clanTag = {clanTag: String}
-            AND timestamp >= now() - INTERVAL 30 DAY
-          GROUP BY clanTag;
+            avg(active_members) AS avg_daily_active_members,
+            avg(activity_count) AS avg_daily_activity_count
+          FROM
+          (
+            SELECT
+              timestamp,
+              uniqMerge(active_members) AS active_members,
+              sumMerge(activity_count) as activity_count
+            FROM daily_activities_mv
+            FINAL
+            WHERE timestamp >= now() - INTERVAL 30 DAY AND clanTag = {clanTag: String}
+            GROUP BY timestamp
+          );
         `,
         query_params: {
           clanTag
