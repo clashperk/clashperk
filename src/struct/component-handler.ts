@@ -5,6 +5,7 @@ import { Client } from './client.js';
 export interface CustomIdProps {
   cmd: string;
   ephemeral?: boolean;
+  flags?: never;
   /** It defaults to `true` */
   defer?: false;
   array_key?: string;

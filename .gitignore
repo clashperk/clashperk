@@ -8,3 +8,4 @@ test/
 .DS_Store
 .sentryclirc
 .env.*
+scripts/sql/
