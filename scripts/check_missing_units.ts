@@ -8,6 +8,6 @@ const units = {
 
 for (const unit of RawData.RawUnits) {
   if (!units[unit.name]) {
-    console.log(unit.name);
+    console.log({ name: unit.name, type: unit.subCategory });
   }
 }
