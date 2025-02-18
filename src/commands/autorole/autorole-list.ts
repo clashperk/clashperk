@@ -3,6 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import ms from 'ms';
 import { title } from 'radash';
 import { Command } from '../../lib/handlers.js';
+import { Util } from '../../util/toolkit.js';
 
 const _rolesMap: Record<string, string> = {
   admin: 'elder',
@@ -84,7 +85,9 @@ export default class AutoRoleListCommand extends Command {
           }, {});
 
         return {
-          name: `${clan.nickname || clan.name} (${clan.tag})`,
+          label: `${clan.nickname || clan.name} (${clan.tag})`,
+          name: clan.name,
+          tag: clan.tag,
           roles: Object.values(flattenRolesMap)
         };
       })
@@ -96,19 +99,27 @@ export default class AutoRoleListCommand extends Command {
     embed.setTitle('AutoRole Settings');
 
     if (args.expand && clanRoleList.length) {
-      embed.setDescription(
+      const [description, ...fields] = Util.splitMessage(
         [
           clanRoleList
             .map((clan) => {
               return [
-                `${clan.name}`,
+                `${clan.label}`,
                 `${clan.roles.map(({ roles, roleId }) => `- <@&${roleId}> (${roles.map((r) => _rolesMap[r]).join(', ')})`).join('\n')}`
               ];
             })
             .flat()
             .join('\n')
-        ].join('\n')
+        ].join('\n'),
+        {
+          maxLength: 4000
+        }
       );
+      embed.setDescription(description);
+
+      for (const value of Util.splitMessage(fields.join('\n'), { maxLength: 1024 })) {
+        embed.addFields({ name: '\u200b', value });
+      }
     } else {
       embed.setDescription(
         [
