@@ -3,6 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import ms from 'ms';
 import { title } from 'radash';
 import { Command } from '../../lib/handlers.js';
+import { Util } from '../../util/toolkit.js';
 
 const _rolesMap: Record<string, string> = {
   admin: 'elder',
@@ -32,12 +33,12 @@ export default class AutoRoleListCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { expand?: boolean }) {
-    const clans = await this.client.storage.find(interaction.guildId);
-    const rolesMap = await this.client.rolesManager.getGuildRolesMap(interaction.guildId);
+    const clans = await this.client.storage.find('328997757048324101');
+    const rolesMap = await this.client.rolesManager.getGuildRolesMap('328997757048324101');
 
     const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
     const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(
-      interaction.guildId,
+      '328997757048324101',
       Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE,
       false
     );
@@ -84,7 +85,9 @@ export default class AutoRoleListCommand extends Command {
           }, {});
 
         return {
-          name: `${clan.nickname || clan.name} (${clan.tag})`,
+          label: `${clan.nickname || clan.name} (${clan.tag})`,
+          name: clan.name,
+          tag: clan.tag,
           roles: Object.values(flattenRolesMap)
         };
       })
@@ -96,19 +99,27 @@ export default class AutoRoleListCommand extends Command {
     embed.setTitle('AutoRole Settings');
 
     if (args.expand && clanRoleList.length) {
-      embed.setDescription(
+      const [description, ...fields] = Util.splitMessage(
         [
           clanRoleList
             .map((clan) => {
               return [
-                `${clan.name}`,
+                `${clan.label}`,
                 `${clan.roles.map(({ roles, roleId }) => `- <@&${roleId}> (${roles.map((r) => _rolesMap[r]).join(', ')})`).join('\n')}`
               ];
             })
             .flat()
             .join('\n')
-        ].join('\n')
+        ].join('\n'),
+        {
+          maxLength: 4000
+        }
       );
+      embed.setDescription(description);
+
+      for (const value of Util.splitMessage(fields.join('\n'), { maxLength: 1024 })) {
+        embed.addFields({ name: '\u200b', value });
+      }
     } else {
       embed.setDescription(
         [
@@ -159,7 +170,7 @@ export default class AutoRoleListCommand extends Command {
     const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
     const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
     const useAutoRole = this.client.settings.get<boolean>(interaction.guild, Settings.USE_AUTO_ROLE, true);
-    const requiresVerification = this.client.settings.get<boolean>(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
+    const requiresVerification = this.client.settings.get<boolean>('328997757048324101', Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 
     const footerTexts: string[] = [];
     if (roleAdditionDelays) {
