@@ -33,12 +33,12 @@ export default class AutoRoleListCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { expand?: boolean }) {
-    const clans = await this.client.storage.find('328997757048324101');
-    const rolesMap = await this.client.rolesManager.getGuildRolesMap('328997757048324101');
+    const clans = await this.client.storage.find(interaction.guildId);
+    const rolesMap = await this.client.rolesManager.getGuildRolesMap(interaction.guildId);
 
     const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
     const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(
-      '328997757048324101',
+      interaction.guildId,
       Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE,
       false
     );
@@ -176,7 +176,7 @@ export default class AutoRoleListCommand extends Command {
     const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
     const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
     const useAutoRole = this.client.settings.get<boolean>(interaction.guild, Settings.USE_AUTO_ROLE, true);
-    const requiresVerification = this.client.settings.get<boolean>('328997757048324101', Settings.VERIFIED_ONLY_CLAN_ROLES, false);
+    const requiresVerification = this.client.settings.get<boolean>(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
 
     const footerTexts: string[] = [];
     if (roleAdditionDelays) {
