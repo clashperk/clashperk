@@ -398,7 +398,7 @@ export class RosterManager {
       };
     }
 
-    const maxMembers = roster.maxMembers ?? 50;
+    const maxMembers = roster.maxMembers ?? ROSTER_MAX_LIMIT;
     if (roster.members.length >= maxMembers) {
       return {
         success: false,
@@ -990,7 +990,7 @@ export class RosterManager {
       { maxLength: 4096 }
     );
 
-    const total = `Total ${roster.members.length}/${roster.maxMembers || 65}`;
+    const total = `Total ${roster.members.length}/${roster.maxMembers || ROSTER_MAX_LIMIT}`;
     const minTownHall = roster.minTownHall ? ` | Min. TH${roster.minTownHall}` : '';
     const maxTownHall = roster.maxTownHall ? ` | Max. TH${roster.maxTownHall}` : '';
     const rosterRole = roster.roleId ? `Role <@&${roster.roleId}>\n` : '';

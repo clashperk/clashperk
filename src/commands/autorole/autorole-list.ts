@@ -98,17 +98,19 @@ export default class AutoRoleListCommand extends Command {
     embed.setURL('https://docs.clashperk.com/features/auto-role');
     embed.setTitle('AutoRole Settings');
 
+    const isTooMany = clanRoleList.length >= 60;
+
     if (args.expand && clanRoleList.length) {
       const [description, ...fields] = Util.splitMessage(
         [
           clanRoleList
             .map((clan) => {
               return [
-                `${clan.name}`,
+                isTooMany ? `${clan.label}` : `${clan.name}`,
                 `${clan.roles
                   .map(({ roles, roleId }) => {
                     const role = interaction.guild.roles.cache.get(roleId);
-                    const label = clanRoleList.length >= 60 ? role?.name || 'Unknown' : `<@&${roleId}>`;
+                    const label = isTooMany ? role?.name || 'Unknown' : `<@&${roleId}>`;
                     return `- ${label} (${roles.map((r) => _rolesMap[r]).join(', ')})`;
                   })
                   .join('\n')}`

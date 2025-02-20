@@ -2,7 +2,7 @@ import { Settings } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
-import { IRoster, rosterLabel } from '../../struct/roster-manager.js';
+import { IRoster, ROSTER_MAX_LIMIT, rosterLabel } from '../../struct/roster-manager.js';
 
 export default class RosterListCommand extends Command {
   public constructor() {
@@ -54,7 +54,7 @@ export default class RosterListCommand extends Command {
         rosters
           .map((roster, i) => {
             const closed = this.client.rosterManager.isClosed(roster) ? '[CLOSED]' : '';
-            const memberCount = `${roster.memberCount}/${roster.maxMembers ?? 50}`;
+            const memberCount = `${roster.memberCount}/${roster.maxMembers ?? ROSTER_MAX_LIMIT}`;
             return `**${i + 1}.** ${escapeMarkdown(`\u200e${rosterLabel(roster)}${closed} (${memberCount})`)}`;
           })
           .join('\n')
@@ -105,7 +105,7 @@ export default class RosterListCommand extends Command {
                 `- ${member.name} (${member.tag})`,
                 ...member.rosters.map((roster) => {
                   const closed = roster.isClosed ? '[CLOSED] ' : '- ';
-                  const memberCount = `${roster.memberCount}/${roster.maxMembers ?? 50}`;
+                  const memberCount = `${roster.memberCount}/${roster.maxMembers ?? ROSTER_MAX_LIMIT}`;
                   return ` - ${escapeMarkdown(`\u200e${roster.name} ${closed}${roster.clan} (${memberCount})`)}`;
                 })
               ].join('\n');
