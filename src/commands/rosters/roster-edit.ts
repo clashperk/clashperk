@@ -199,6 +199,14 @@ export default class RosterEditCommand extends Command {
       }
     }
 
+    if (args.start_time && /^none$/i.test(args.start_time)) {
+      data.startTime = null;
+    }
+
+    if (args.end_time && /^none$/i.test(args.end_time)) {
+      data.endTime = null;
+    }
+
     if (data.endTime && data.startTime) {
       if (data.endTime < data.startTime) return interaction.editReply('End time cannot be before start time.');
       if (data.endTime.getTime() - data.startTime.getTime() < 600000)
