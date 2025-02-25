@@ -57,7 +57,7 @@ export default class LegendDaysCommand extends Command {
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       );
 
-    if (!(data.trophies >= 4900)) {
+    if (data.trophies <= 4900 && data.league?.id !== LEGEND_LEAGUE_ID) {
       return interaction.editReply(`**${data.name} (${data.tag})** is not in the Legend League.`);
     }
 
