@@ -2,6 +2,7 @@ import { Collections } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class SummaryTrophiesCommand extends Command {
@@ -38,10 +39,17 @@ export default class SummaryTrophiesCommand extends Command {
         acc[clan.tag] = {
           name: clan.name,
           tag: clan.tag,
+          maxTrophies: Math.max(...clan.memberList.map((mem) => mem.trophies)),
+          4000: clan.memberList.filter((mem) => mem.trophies >= 4000).length,
+          4800: clan.memberList.filter((mem) => mem.trophies >= 4800).length,
+          5100: clan.memberList.filter((mem) => mem.trophies >= 5100).length,
+          5200: clan.memberList.filter((mem) => mem.trophies >= 5200).length,
+          5000: clan.memberList.filter((mem) => mem.trophies >= 5000).length,
+          5500: clan.memberList.filter((mem) => mem.trophies >= 5500).length,
+          5800: clan.memberList.filter((mem) => mem.trophies >= 5800).length,
+          6000: clan.memberList.filter((mem) => mem.trophies >= 6000).length,
           clanPoints: args.builder_base ? clan.clanBuilderBasePoints : clan.clanPoints,
-          preLegends: clan.memberList.filter((mem) => [29000021, 29000020, 29000019].includes(mem.league.id)).length,
-          totalTrophies: clan.memberList.reduce((prev, mem) => prev + mem.trophies, 0),
-          legends: clan.memberList.filter((mem) => mem.league.id === 29000022).length
+          totalTrophies: clan.memberList.reduce((prev, mem) => prev + mem.trophies, 0)
         };
         return acc;
       }, {})
@@ -49,19 +57,49 @@ export default class SummaryTrophiesCommand extends Command {
 
     grouped.sort((a, b) => b.clanPoints - a.clanPoints);
     const memberTags = members.map((member) => member.tag);
+    const maxTrophies = Math.max(...grouped.map((clan) => clan.maxTrophies));
 
     const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setTimestamp();
     if (args.clans_only) {
+      const label =
+        maxTrophies >= 6000
+          ? '5K 5.5 6K'
+          : maxTrophies >= 5800
+            ? '5K 5.5 5.8'
+            : maxTrophies >= 5500
+              ? '5K 5.2 5.5'
+              : maxTrophies >= 5200
+                ? '5K 5.1 5.2'
+                : '4K 4.8 5K';
+
       embed.setDescription(
         [
           '```',
-          `\u200e # >4K >5K ${'POINTS'.padStart(6, ' ')} NAME`,
+          `\u200e # ${label} ${'POINTS'.padStart(6, ' ')} NAME`,
           grouped
             .map((clan, index) => {
-              const preLegends = `${clan.preLegends.toString().padStart(3, ' ')}`;
-              const legends = `${clan.legends.toString().padStart(3, ' ')}`;
-              const clanPoints = `${clan.clanPoints.toString().padStart(6, ' ')}`;
-              return `${(index + 1).toString().padStart(2, ' ')} ${preLegends} ${legends} ${clanPoints} \u200e${escapeMarkdown(clan.name)}`;
+              const _4000 = `${padStart(clan['4000'], 2)}`;
+              const _4800 = `${padStart(clan['4800'], 3)}`;
+              const _5000 = `${padStart(clan['5000'], 2)}`;
+              const _5100 = `${padStart(clan['5100'], 3)}`;
+              const _5200 = `${padStart(clan['5200'], 3)}`;
+              const _5500 = `${padStart(clan['5500'], 3)}`;
+              const _5800 = `${padStart(clan['5800'], 3)}`;
+              const _6000 = `${padStart(clan['6000'], 2)}`;
+
+              const clanPoints = `${padStart(clan.clanPoints, 6)}`;
+              const stats =
+                maxTrophies >= 6000
+                  ? `${_5000} ${_5500} ${_6000}`
+                  : maxTrophies >= 5800
+                    ? `${_5000} ${_5500} ${_5800}`
+                    : maxTrophies >= 5500
+                      ? `${_5000} ${_5200} ${_5500}`
+                      : maxTrophies >= 5200
+                        ? `${_5000} ${_5100} ${_5200}`
+                        : `${_4000} ${_4800} ${_5000}`;
+
+              return `${padStart(index + 1, 2)} ${stats} ${clanPoints} \u200e${escapeMarkdown(clan.name)}`;
             })
             .join('\n'),
           '```'
@@ -170,8 +208,15 @@ export default class SummaryTrophiesCommand extends Command {
 interface ClansGroup {
   clanPoints: number;
   totalTrophies: number;
-  legends: number;
   name: string;
   tag: string;
-  preLegends: number;
+  4000: number;
+  4800: number;
+  5000: number;
+  5100: number;
+  5200: number;
+  5500: number;
+  5800: number;
+  6000: number;
+  maxTrophies: number;
 }

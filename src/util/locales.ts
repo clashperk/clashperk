@@ -68,6 +68,9 @@ export const common = {
     season_since: {
       description: 'Retrieve data since the specified season.'
     },
+    include_past_members: {
+      description: 'Include past members of the clan.'
+    },
     week: {
       description: 'Retrieve data for the specified raid weekend.'
     }

@@ -4541,6 +4541,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description_localizations: translation('common.options.season_since.description'),
             type: ApplicationCommandOptionType.String,
             choices: getSeasonIds()
+          },
+          {
+            name: 'include_past_members',
+            description: common.options.include_past_members.description,
+            description_localizations: translation('common.options.include_past_members.description'),
+            type: ApplicationCommandOptionType.Boolean
           }
         ]
       },

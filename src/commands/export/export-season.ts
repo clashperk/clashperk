@@ -18,7 +18,7 @@ export default class ExportSeason extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string; include_past_members?: boolean }) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -36,7 +36,7 @@ export default class ExportSeason extends Command {
       _members.push(...clan.memberList.map((mem) => ({ ...mem, clanTag: clan.tag })));
     }
 
-    const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
+    const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season, !!args.include_past_members)))).flat();
 
     const linksMap = await this.client.resolver.getLinkedUsersMap(_members);
     const guildMembers = await interaction.guild.members.fetch();
@@ -133,13 +133,13 @@ export default class ExportSeason extends Command {
     return interaction.editReply({ content: `**Season Export (${season})**`, components: getExportComponents(spreadsheet) });
   }
 
-  private async aggregationQuery(clan: APIClan, seasonId: string) {
+  private async aggregationQuery(clan: APIClan, seasonId: string, includePastMembers: boolean) {
     const cursor = this.client.db.collection(Collections.PLAYER_SEASONS).aggregate<PlayerSeasonModelAggregated>([
       {
         $match: {
           season: seasonId,
           __clans: clan.tag,
-          ...(seasonId === Season.ID && { tag: { $in: clan.memberList.map((mem) => mem.tag) } })
+          ...(!includePastMembers && { tag: { $in: clan.memberList.map((mem) => mem.tag) } })
         }
       },
       {
