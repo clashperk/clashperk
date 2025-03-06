@@ -29,7 +29,7 @@
   "dependencies": {
     "@clickhouse/client": "^1.10.1",
     "@elastic/elasticsearch": "^8.6.0",
-    "@google-cloud/translate": "^8.3.0",
+    "@google-cloud/translate": "^8.5.1",
     "@googleapis/drive": "^8.14.0",
     "@googleapis/oauth2": "^1.0.7",
     "@googleapis/sheets": "^9.3.1",
