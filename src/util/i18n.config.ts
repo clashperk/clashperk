@@ -4,7 +4,8 @@ const allowedLocales = {
   'fr': 'fr-FR', // French/Français
   'de': 'de-DE', // German/Deutsch
   'it': 'it-IT', // Italian/Italiano
-  'es-ES': 'es-ES' // Spanish/Español
+  'es-ES': 'es-ES', // Spanish/Español
+  'bg': 'bg-BG' // Bulgarian/Български
   // 'no': 'no-NO', // Norwegian/Norsk
   // 'nl': 'nl-NL', // Dutch/Nederlands
   // 'uk': 'uk-UA', // Ukrainian/Українська
