@@ -34,11 +34,6 @@ export default class SetupDisableCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { action: 'unlink-channel' | 'delete-clan' | 'disable-logs' | keyof typeof DeprecatedLogs; channel: TextChannel; clan: string }
   ) {
-    if (args.action === 'disable-logs') {
-      const command = this.handler.getCommand('setup-clan-logs')!;
-      return this.handler.continue(interaction, command);
-    }
-
     args.clan = this.client.coc.fixTag(args.clan);
     if (args.action === 'unlink-channel') {
       const value = await this.client.storage.collection.findOneAndUpdate(
@@ -83,6 +78,11 @@ export default class SetupDisableCommand extends Command {
           clan: `**${data.name as string} (${data.tag as string})**`
         })
       );
+    }
+
+    if (args.action === 'disable-logs' || DeprecatedLogs[args.action]) {
+      const command = this.handler.getCommand('setup-clan-logs')!;
+      return this.handler.continue(interaction, command);
     }
 
     const logTypes = Object.keys(logActionsMap) as ClanLogType[];

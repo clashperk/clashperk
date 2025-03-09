@@ -98,12 +98,6 @@ export class ClientUtil {
     });
   }
 
-  public createJWT() {
-    return jwt.sign({ scopes: ['read'], roles: ['admin'] }, process.env.JWT_SECRET!, {
-      expiresIn: '6h'
-    });
-  }
-
   public isManager(member: GuildMember, roleKey?: string | null) {
     if (this.client.isOwner(member.user)) return true;
     const managerRoleIds = this.client.settings.get<string[]>(member.guild, Settings.MANAGER_ROLE, []);

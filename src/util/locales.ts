@@ -164,9 +164,10 @@ export const common = {
     },
 
     setup: {
-      server_link: 'Server Link',
-      channel_link: 'Channel Link',
-      delete_clan: 'Delete clan',
+      link_server: 'Link to Server',
+      link_channel: 'Link to Channel',
+      unlink_channel: 'Unlink from Channel',
+      remove_clan: 'Remove Clan',
       logs_or_feed: 'Logs / Feed (New)',
       war_feed: 'War Feed',
       last_seen: 'Last Seen',

@@ -16,21 +16,21 @@ export default class StatusCommand extends Command {
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
       defer: true,
-      ephemeral: true
+      ephemeral: false
     });
   }
 
   public async run(message: Message<true>) {
-    const embed = await this.get(message.guild, this.client.isOwner(message.author));
+    const embed = await this.get(message.guild);
     return message.channel.send({ embeds: [embed] });
   }
 
   public async exec(interaction: CommandInteraction<'cached'>) {
-    const embed = await this.get(interaction.guild, this.client.isOwner(interaction.user));
+    const embed = await this.get(interaction.guild);
     return interaction.editReply({ embeds: [embed] });
   }
 
-  public async get(guild: Guild, isOwner: boolean) {
+  public async get(guild: Guild) {
     let [guilds, memory] = [0, 0];
     const values = await this.client.shard?.broadcastEval((client) => [
       client.guilds.cache.size,
@@ -101,7 +101,7 @@ export default class StatusCommand extends Command {
       },
       {
         name: 'Version',
-        value: isOwner ? `[${pkg.version}](https://github.com/clashperk/clashperk/commit/${process.env.GIT_SHA})` : pkg.version,
+        value: `[${pkg.version}](https://github.com/clashperk/clashperk/commit/${process.env.GIT_SHA})`,
         inline: false
       },
       {

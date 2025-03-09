@@ -2,7 +2,9 @@ import { drive as _drive } from '@googleapis/drive';
 import { auth as _auth } from '@googleapis/oauth2';
 import { sheets as _sheet, type sheets_v4 } from '@googleapis/sheets';
 import { type OAuth2Client } from 'google-auth-library';
+import { container } from 'tsyringe';
 import { Util } from '../util/toolkit.js';
+import { Client } from './client.js';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
@@ -232,6 +234,7 @@ export const updateGoogleSheet = async (
   sheets: CreateGoogleSheet[],
   options: { clear: boolean; recreate: boolean; title: string }
 ) => {
+  const client = container.resolve(Client);
   const replaceSheetRequests: SchemaRequest[] = [];
 
   if (options.recreate) {
@@ -352,6 +355,7 @@ export const updateGoogleSheet = async (
       { retry: true }
     );
   } catch (error) {
+    client.logger.error(`${spreadsheetId} - ${error.message}`, { label: 'SHEET_UPDATE' });
     throw new Error(error.message);
   }
 

@@ -36,6 +36,10 @@ export class CommandsMap {
     return this.get('/setup enable');
   }
 
+  public get SETUP_CLAN_LOGS() {
+    return this.get('/setup clan-logs');
+  }
+
   public get LINK_CREATE() {
     return this.get('/link create');
   }

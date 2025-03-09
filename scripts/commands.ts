@@ -1683,54 +1683,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             required: true,
             choices: [
               {
-                name: common.choices.setup.server_link,
-                name_localizations: translation('common.choices.setup.server_link'),
+                name: common.choices.setup.link_server,
+                name_localizations: translation('common.choices.setup.link_server'),
                 value: 'link-clan'
               },
               {
-                name: common.choices.setup.channel_link,
-                name_localizations: translation('common.choices.setup.channel_link'),
+                name: common.choices.setup.link_channel,
+                name_localizations: translation('common.choices.setup.link_channel'),
                 value: 'link-channel'
-              },
-              {
-                name: common.choices.setup.logs_or_feed,
-                name_localizations: translation('common.choices.setup.logs_or_feed'),
-                value: 'enable-logs'
-              },
-              {
-                name: common.choices.setup.war_feed,
-                name_localizations: translation('common.choices.setup.war_feed'),
-                value: 'war-feed'
-              },
-              {
-                name: common.choices.setup.last_seen,
-                name_localizations: translation('common.choices.setup.last_seen'),
-                value: 'last-seen'
-              },
-              {
-                name: common.choices.clan_games,
-                name_localizations: translation('common.choices.clan_games'),
-                value: 'clan-games'
-              },
-              {
-                name: common.choices.setup.legend_log,
-                name_localizations: translation('common.choices.setup.legend_log'),
-                value: 'legend-log'
-              },
-              {
-                name: common.choices.setup.capital_log,
-                name_localizations: translation('common.choices.setup.capital_log'),
-                value: 'capital-log'
-              },
-              {
-                name: common.choices.setup.clan_feed,
-                name_localizations: translation('common.choices.setup.clan_feed'),
-                value: 'clan-feed'
-              },
-              {
-                name: common.choices.setup.join_leave,
-                name_localizations: translation('common.choices.setup.join_leave'),
-                value: 'join-leave'
               },
               {
                 name: common.choices.setup.clan_embed,
@@ -1738,7 +1698,42 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'clan-embed'
               },
               {
-                name: common.choices.setup.donation_log,
+                name: common.choices.setup.war_feed + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.war_feed'),
+                value: 'war-feed'
+              },
+              {
+                name: common.choices.setup.last_seen + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.last_seen'),
+                value: 'last-seen'
+              },
+              {
+                name: common.choices.clan_games + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.clan_games'),
+                value: 'clan-games'
+              },
+              {
+                name: common.choices.setup.legend_log + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.legend_log'),
+                value: 'legend-log'
+              },
+              {
+                name: common.choices.setup.capital_log + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.capital_log'),
+                value: 'capital-log'
+              },
+              {
+                name: common.choices.setup.clan_feed + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.clan_feed'),
+                value: 'clan-feed'
+              },
+              {
+                name: common.choices.setup.join_leave + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.join_leave'),
+                value: 'join-leave'
+              },
+              {
+                name: common.choices.setup.donation_log + ' [DEPRECATED] (Use /setup clan-logs instead)',
                 name_localizations: translation('common.choices.setup.donation_log'),
                 value: 'donation-log'
               }
@@ -1769,17 +1764,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'color',
-            name_localizations: {
-              'en-GB': 'colour'
-            },
+            name_localizations: { 'en-GB': 'colour' },
             description: command.setup.enable.options.color.description,
             description_localizations: translation('command.setup.enable.options.color.description'),
             type: ApplicationCommandOptionType.String
-          },
-          {
-            name: 'ping_role',
-            description: '[DEPRECATED] Ping this role in the logs (only for town hall upgrade log)',
-            type: ApplicationCommandOptionType.Role
           }
         ]
       },
@@ -1796,78 +1784,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description_localizations: translation('command.setup.list.options.clans.description'),
             type: ApplicationCommandOptionType.String,
             autocomplete: true
-          }
-        ]
-      },
-      // utility
-      {
-        name: 'utility',
-        description: command.setup.utils.description,
-        description_localizations: translation('command.setup.utils.description'),
-        type: ApplicationCommandOptionType.Subcommand,
-        options: [
-          {
-            name: 'option',
-            required: true,
-            description: common.select_an_option,
-            description_localizations: translation('common.select_an_option'),
-            type: ApplicationCommandOptionType.String,
-            choices: [
-              {
-                name: common.choices.link_button,
-                name_localizations: translation('common.choices.link_button'),
-                value: 'link-button'
-              },
-              {
-                name: common.choices.role_refresh_button,
-                name_localizations: translation('common.choices.role_refresh_button'),
-                value: 'role-refresh-button'
-              },
-              {
-                name: common.choices.events_schedular,
-                name_localizations: translation('common.choices.events_schedular'),
-                value: 'events-schedular'
-              },
-              {
-                name: common.choices.flag_alert_log,
-                name_localizations: translation('common.choices.flag_alert_log'),
-                value: 'flag-alert-log'
-              },
-              {
-                name: common.choices.roster_change_log,
-                name_localizations: translation('common.choices.roster_change_log'),
-                value: 'roster-changelog'
-              },
-              {
-                name: common.choices.reminder_ping_exclusion,
-                name_localizations: translation('common.choices.reminder_ping_exclusion'),
-                value: 'reminder-ping-exclusion'
-              },
-              {
-                name: common.choices.maintenance_break_log,
-                name_localizations: translation('common.choices.maintenance_break_log'),
-                value: 'maintenance-break-log'
-              }
-            ]
-          },
-          {
-            name: 'disable',
-            description: command.setup.utils.options.disable.description,
-            description_localizations: translation('command.setup.utils.options.disable.description'),
-            type: ApplicationCommandOptionType.String,
-            required: false,
-            choices: [
-              {
-                name: common.choices.yes,
-                name_localizations: translation('common.choices.yes'),
-                value: 'true'
-              },
-              {
-                name: common.choices.no,
-                name_localizations: translation('common.choices.no'),
-                value: 'false'
-              }
-            ]
           }
         ]
       },
@@ -2037,7 +1953,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'ping_role',
-            description: '[DEPRECATED] Ping this role in the logs (only for town hall upgrade log)',
+            description: 'Ping this role in the logs (only for town hall upgrade log)',
             type: ApplicationCommandOptionType.Role
           }
         ]
@@ -2057,54 +1973,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             type: ApplicationCommandOptionType.String,
             choices: [
               {
-                name: common.choices.setup.channel_link,
-                name_localizations: translation('common.choices.setup.channel_link'),
+                name: common.choices.setup.unlink_channel,
+                name_localizations: translation('common.choices.setup.unlink_channel'),
                 value: 'unlink-channel'
               },
               {
-                name: common.choices.setup.delete_clan,
-                name_localizations: translation('common.choices.setup.delete_clan'),
+                name: common.choices.setup.remove_clan,
+                name_localizations: translation('common.choices.setup.remove_clan'),
                 value: 'delete-clan'
-              },
-              {
-                name: common.choices.setup.logs_or_feed,
-                name_localizations: translation('common.choices.setup.logs_or_feed'),
-                value: 'disable-logs'
-              },
-              {
-                name: common.choices.setup.war_feed,
-                name_localizations: translation('common.choices.setup.war_feed'),
-                value: 'war-feed'
-              },
-              {
-                name: common.choices.setup.last_seen,
-                name_localizations: translation('common.choices.setup.last_seen'),
-                value: 'last-seen'
-              },
-              {
-                name: common.choices.clan_games,
-                name_localizations: translation('common.choices.clan_games'),
-                value: 'clan-games'
-              },
-              {
-                name: common.choices.setup.legend_log,
-                name_localizations: translation('common.choices.setup.legend_log'),
-                value: 'legend-log'
-              },
-              {
-                name: common.choices.setup.capital_log,
-                name_localizations: translation('common.choices.setup.capital_log'),
-                value: 'capital-log'
-              },
-              {
-                name: common.choices.setup.clan_feed,
-                name_localizations: translation('common.choices.setup.clan_feed'),
-                value: 'clan-feed'
-              },
-              {
-                name: common.choices.setup.join_leave,
-                name_localizations: translation('common.choices.setup.join_leave'),
-                value: 'join-leave'
               },
               {
                 name: common.choices.setup.clan_embed,
@@ -2112,7 +1988,42 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 value: 'clan-embed'
               },
               {
-                name: common.choices.setup.donation_log,
+                name: common.choices.setup.war_feed + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.war_feed'),
+                value: 'war-feed'
+              },
+              {
+                name: common.choices.setup.last_seen + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.last_seen'),
+                value: 'last-seen'
+              },
+              {
+                name: common.choices.clan_games + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.clan_games'),
+                value: 'clan-games'
+              },
+              {
+                name: common.choices.setup.legend_log + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.legend_log'),
+                value: 'legend-log'
+              },
+              {
+                name: common.choices.setup.capital_log + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.capital_log'),
+                value: 'capital-log'
+              },
+              {
+                name: common.choices.setup.clan_feed + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.clan_feed'),
+                value: 'clan-feed'
+              },
+              {
+                name: common.choices.setup.join_leave + ' [DEPRECATED] (Use /setup clan-logs instead)',
+                name_localizations: translation('common.choices.setup.join_leave'),
+                value: 'join-leave'
+              },
+              {
+                name: common.choices.setup.donation_log + ' [DEPRECATED] (Use /setup clan-logs instead)',
                 name_localizations: translation('common.choices.setup.donation_log'),
                 value: 'donation-log'
               }
