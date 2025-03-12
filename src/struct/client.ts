@@ -149,16 +149,8 @@ export class Client extends DiscordClient {
     this.postHog = new PostHog(process.env.POSTHOG_API_KEY!, {
       host: 'https://us.i.posthog.com',
       personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY!,
-      preloadFeatureFlags: true,
-      disableGeoip: true,
-      bootstrap: {
-        featureFlags: {
-          [FeatureFlags.CLAN_LOG_SEPARATION]: true,
-          [FeatureFlags.GUILD_EVENT_SCHEDULER]: true,
-          [FeatureFlags.COMMAND_WHITELIST]: true
-        }
-      },
-      featureFlagsPollingInterval: 30_000
+      preloadFeatureFlags: false,
+      disableGeoip: true
     });
 
     this.ownerId = process.env.OWNER!;
