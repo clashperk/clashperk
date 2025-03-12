@@ -356,7 +356,7 @@ export default class CapitalRaidsCommand extends Command {
       },
       body: JSON.stringify(body)
     }).then((res) => res.json());
-    return `${process.env.IMAGE_GEN_API_BASE_URL!}/${(res as any).id as string}`;
+    return `${process.env.IMAGE_GEN_API_BASE_URL!}/${(res as { id: string }).id as string}`;
   }
 
   private raidWeek() {

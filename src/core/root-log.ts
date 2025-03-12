@@ -46,6 +46,7 @@ export class RootLog {
       if (data.channel && cache.channel !== data.channel) continue;
 
       const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, cache.guild);
+      console.log(isEnabled);
       if (!isEnabled) return null;
 
       // Double posting prevention for custom bots

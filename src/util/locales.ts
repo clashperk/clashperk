@@ -548,7 +548,7 @@ export const command = {
           description: 'Select a clan to add players from'
         },
         from_current_wars: {
-          description: 'Select a clan to add players from the current wars'
+          description: 'Choose a clan to add players from the ongoing wars.'
         },
         user: {
           description: 'Select a user to manage'
