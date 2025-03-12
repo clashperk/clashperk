@@ -21,5 +21,4 @@ updates:
           - '@eslint/*'
           - '@typescript-eslint/*'
     ignore:
-      - dependency-name: 'posthog-node'
       - dependency-name: 'i18next'
