@@ -153,6 +153,7 @@ export class Client extends DiscordClient {
       disableGeoip: true,
       bootstrap: {
         featureFlags: {
+          [FeatureFlags.CLAN_LOG_SEPARATION]: true,
           [FeatureFlags.GUILD_EVENT_SCHEDULER]: true,
           [FeatureFlags.COMMAND_WHITELIST]: true
         }
@@ -165,12 +166,14 @@ export class Client extends DiscordClient {
   }
 
   public async isFeatureEnabled(flag: FeatureFlags, distinctId: string | 'global') {
-    const isEnabled = await this.postHog.isFeatureEnabled(flag, distinctId, {
-      onlyEvaluateLocally: true,
-      disableGeoip: true,
-      sendFeatureFlagEvents: false
-    });
-    return !!isEnabled;
+    const localFlags = Object.values(FeatureFlags).reduce<Record<string, boolean>>((record, key) => {
+      record[key] =
+        key === FeatureFlags.RANDOM_DONATOR
+          ? ['418321379562094593', '969477737947480136', '1016659402817814620'].includes(distinctId)
+          : true;
+      return record;
+    }, {});
+    return localFlags[flag];
   }
 
   public isOwner(user: string | User) {

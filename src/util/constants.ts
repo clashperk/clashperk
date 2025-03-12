@@ -708,8 +708,7 @@ export const calculateCWLMedals = (leagueId: string, stars: number, rank: number
   const percentage = MEDALS_PERCENTAGE_MAP[Math.min(8, stars)];
   const ranks = MEDALS_RANKING_MAP[leagueId];
   const rankMedals = ranks[rank - 1];
-  const totalMedals = Math.round((rankMedals * percentage) / 100);
-  return totalMedals;
+  return Math.round((rankMedals * percentage) / 100);
 };
 
 export const getHttpStatusText = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });

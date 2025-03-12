@@ -144,7 +144,7 @@ export class ClientUtil {
       ? await updateGoogleSheet(sheet.spreadsheetId, sheets, {
           title: `${guild.name} [${label}]`,
           clear: true,
-          recreate: !!(sheet && sheetHash !== sheet.sheetHash)
+          recreate: sheet && sheetHash !== sheet.sheetHash
         })
       : await createGoogleSheet(`${guild.name} [${label}]`, sheets);
 

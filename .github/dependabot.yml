@@ -20,3 +20,5 @@ updates:
           - 'eslint-*'
           - '@eslint/*'
           - '@typescript-eslint/*'
+    ignore:
+      - dependency-name: 'i18next'
