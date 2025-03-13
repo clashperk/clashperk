@@ -209,7 +209,7 @@ export class GuildEventsHandler {
       enabled: true
     });
 
-    const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.GUILD_EVENT_SCHEDULER, 'global');
+    const isEnabled = this.client.isFeatureEnabled(FeatureFlags.GUILD_EVENT_SCHEDULER, 'global');
 
     try {
       for await (const guildEvent of cursor) {

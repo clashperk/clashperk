@@ -157,15 +157,8 @@ export class Client extends DiscordClient {
     container.register(Client, { useValue: this });
   }
 
-  public async isFeatureEnabled(flag: FeatureFlags, distinctId: string | 'global') {
-    const localFlags = Object.values(FeatureFlags).reduce<Record<string, boolean>>((record, key) => {
-      record[key] =
-        key === FeatureFlags.RANDOM_DONATOR
-          ? ['418321379562094593', '969477737947480136', '1016659402817814620'].includes(distinctId)
-          : true;
-      return record;
-    }, {});
-    return localFlags[flag];
+  public isFeatureEnabled(flag: FeatureFlags, distinctId: string | 'global') {
+    return this.settings.isFeatureEnabled(flag, distinctId);
   }
 
   public isOwner(user: string | User) {

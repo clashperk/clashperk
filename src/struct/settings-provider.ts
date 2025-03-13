@@ -1,17 +1,21 @@
-import { Collections, Settings as SettingsEnum } from '@app/constants';
+import { Collections, FeatureFlags, Settings as SettingsEnum } from '@app/constants';
+import { FeatureFlagsEntity } from '@app/entities';
 import { Guild } from 'discord.js';
 import { Collection } from 'mongodb';
 import { unique } from 'radash';
 import { Client } from './client.js';
 
 export class SettingsProvider {
-  protected db: Collection<Settings>;
   private readonly settings = new Map();
+  private flags = new Map<string, FeatureFlagsEntity>();
+  protected settingsCollection: Collection<Settings>;
+  protected featureFlagsCollection: Collection<FeatureFlagsEntity>;
 
   public constructor(private client: Client) {
-    this.db = client.db.collection(Collections.SETTINGS);
+    this.settingsCollection = client.db.collection(Collections.SETTINGS);
+    this.featureFlagsCollection = client.db.collection(Collections.FEATURE_FLAGS);
 
-    const watchStream = this.db.watch(
+    const watchStream = this.settingsCollection.watch(
       [
         {
           $match: {
@@ -26,10 +30,45 @@ export class SettingsProvider {
         this.settings.set(change.fullDocument!.guildId, change.fullDocument);
       }
     });
+
+    this.featureFlagsCollection
+      .watch(
+        [
+          {
+            $match: {
+              operationType: { $in: ['insert', 'update', 'delete'] }
+            }
+          }
+        ],
+        { fullDocument: 'updateLookup' }
+      )
+      .on('change', (change) => {
+        if (change.operationType === 'insert' || change.operationType === 'update') {
+          this.flags.set(change.fullDocument!.key as string, change.fullDocument!);
+        }
+        if (change.operationType === 'delete') {
+          this.flags.delete(change.documentKey.key);
+        }
+      });
+  }
+
+  public isFeatureEnabled(flagKey: FeatureFlags, distinctId: string | 'global') {
+    const flag = this.flags.get(flagKey);
+    if (!flag) return false;
+
+    if (distinctId === 'global') {
+      return flag.enabled;
+    }
+
+    if (flag.limited) {
+      return flag.guildIds.includes(distinctId);
+    }
+
+    return flag.enabled;
   }
 
   public async init({ globalOnly }: { globalOnly: boolean }) {
-    const cursor = this.db.find(
+    const cursor = this.settingsCollection.find(
       globalOnly
         ? { guildId: 'global' }
         : {
@@ -40,6 +79,13 @@ export class SettingsProvider {
 
     for await (const data of cursor) {
       this.settings.set(data.guildId, data);
+    }
+
+    if (globalOnly) {
+      const cursor = this.featureFlagsCollection.find({}, { projection: { _id: 0 } });
+      for await (const data of cursor) {
+        this.flags.set(data.key, data);
+      }
     }
   }
 
@@ -67,7 +113,7 @@ export class SettingsProvider {
     record[SettingsEnum.COMMAND_WHITELIST] = unique(whiteList, (list) => list.key);
 
     this.settings.set(guildId, record);
-    return this.db.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: whiteList } }, { upsert: true });
+    return this.settingsCollection.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: whiteList } }, { upsert: true });
   }
 
   public async removeFromWhiteList(guild: string | Guild, { userOrRoleId, commandId }: { userOrRoleId: string; commandId: string }) {
@@ -86,7 +132,7 @@ export class SettingsProvider {
     record[SettingsEnum.COMMAND_WHITELIST] = filtered;
 
     this.settings.set(guildId, record);
-    return this.db.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: filtered } });
+    return this.settingsCollection.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: filtered } });
   }
 
   public get<T>(guild: string | Guild, key: string, defaultValue?: any): T {
@@ -104,7 +150,7 @@ export class SettingsProvider {
     const data = this.settings.get(guildId) || {};
     data[key] = value;
     this.settings.set(guildId, data);
-    return this.db.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
+    return this.settingsCollection.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
   }
 
   public async push(guild: string | Guild, key: string, items: string[]) {
@@ -119,7 +165,7 @@ export class SettingsProvider {
     record[key] = unique(value);
 
     this.settings.set(guildId, record);
-    return this.db.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
+    return this.settingsCollection.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
   }
 
   public async delete(guild: string | Guild, key: string) {
@@ -127,13 +173,13 @@ export class SettingsProvider {
     const data = this.settings.get(guildId) || {};
     delete data[key];
 
-    return this.db.updateOne({ guildId }, { $unset: { [key]: '' } });
+    return this.settingsCollection.updateOne({ guildId }, { $unset: { [key]: '' } });
   }
 
   public async clear(guild: string | Guild) {
     const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
     this.settings.delete(guildId);
-    return this.db.deleteOne({ guildId });
+    return this.settingsCollection.deleteOne({ guildId });
   }
 
   public flatten() {

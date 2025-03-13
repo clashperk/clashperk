@@ -200,7 +200,7 @@ export default class LinkCreateCommand extends Command {
   }
 
   private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-    const isTrustedFlag = await this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
+    const isTrustedFlag = this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
 
     const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
     if (!isTrusted) return false;

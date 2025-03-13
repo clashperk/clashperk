@@ -1,4 +1,4 @@
-import { DiscordErrorCodes, FeatureFlags } from '@app/constants';
+import { DiscordErrorCodes } from '@app/constants';
 import { ClanLogsEntity } from '@app/entities';
 import {
   APIMessage,
@@ -44,9 +44,6 @@ export class RootLog {
       if (!cache) continue;
 
       if (data.channel && cache.channel !== data.channel) continue;
-
-      const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_LOG_SEPARATION, cache.guild);
-      if (!isEnabled) return null;
 
       // Double posting prevention for custom bots
       if (this.client.settings.hasCustomBot(cache.guild) && !this.client.isCustom()) continue;

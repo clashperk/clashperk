@@ -15,7 +15,7 @@ export default class FeatureFlagsCommand extends Command {
   public async run(message: Message<true>) {
     const result = await Promise.all(
       Object.values(FeatureFlags).map(async (flag) => ({
-        [flag]: await this.client.isFeatureEnabled(flag, message.guild.id)
+        [flag]: this.client.isFeatureEnabled(flag, message.guild.id)
       }))
     );
 

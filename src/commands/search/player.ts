@@ -85,7 +85,7 @@ export default class PlayerCommand extends Command {
       .addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
       .addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
 
-    const isHistoryEnabled = await this.client.isFeatureEnabled(FeatureFlags.CLAN_HISTORY, interaction.guildId);
+    const isHistoryEnabled = this.client.isFeatureEnabled(FeatureFlags.CLAN_HISTORY, interaction.guildId);
     if (isHistoryEnabled) {
       mainRow.addComponents(
         new ButtonBuilder().setLabel('Clan History').setEmoji(EMOJIS.SCROLL).setStyle(ButtonStyle.Secondary).setCustomId(customIds.history)

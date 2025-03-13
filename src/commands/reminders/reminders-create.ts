@@ -134,7 +134,7 @@ export default class RemindersCreateCommand extends Command {
       modalMessage: this.client.uuid(interaction.user.id)
     };
 
-    const randomDonators = (await this.client.isFeatureEnabled(FeatureFlags.RANDOM_DONATOR, interaction.guild.id))
+    const randomDonators = this.client.isFeatureEnabled(FeatureFlags.RANDOM_DONATOR, interaction.guild.id)
       ? ['1-d', '2-d', '3-d', '5-d', '10-d']
       : [];
 

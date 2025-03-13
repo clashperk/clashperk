@@ -97,6 +97,7 @@ export const enum Collections {
 
   PATREON_MEMBERS = 'Patrons',
   SETTINGS = 'Settings',
+  FEATURE_FLAGS = 'FeatureFlags',
   PLAYERS = 'Players',
   CLANS = 'Clans',
   CLAN_WARS = 'ClanWars',
@@ -202,29 +203,13 @@ export enum ElasticIndex {
 
 export enum FeatureFlags {
   CLAN_LOG_SEPARATION = 'clan-log-separation',
-  CLAN_MEMBERS_PROMOTION_LOG = 'clan-member-promotion-log',
-
-  /** unused */
-  LEGEND_ATTACKS_DAILY_LOG = 'legend-attacks-daily-log',
-  /** unused */
-  CLAN_GAMES_EMBED = 'clan-games-embed',
-  /** unused */
-  LAST_SEEN_EMBED = 'last-seen-embed',
-
   COMMAND_WHITELIST = 'command-whitelist',
-
-  GUILD_EVENT_SCHEDULER = 'guild-event-scheduler',
-
   NO_PERMISSION_MESSAGE = 'no-permission-message',
-
+  GUILD_EVENT_SCHEDULER = 'guild-event-scheduler',
   TRUSTED_GUILD = 'trusted-guild',
-
   RANDOM_DONATOR = 'random-donator',
-
   ALLOW_NO_MISSED_ATTACKS_LOG = 'allow-no-missed-attacks-log',
-
   DONATIONS_RECOVERY = 'donations-recovery',
-
   CLAN_HISTORY = 'clan-history'
 }
 

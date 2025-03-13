@@ -127,7 +127,7 @@ export const recoverDonations = async (clan: APIClan, seasonId: string) => {
   const client = container.resolve(Client);
   const { endTime, startTime } = client.coc.util.getSeason(new Date(seasonId));
 
-  const isEnabled = await client.isFeatureEnabled(FeatureFlags.DONATIONS_RECOVERY, 'global');
+  const isEnabled = client.isFeatureEnabled(FeatureFlags.DONATIONS_RECOVERY, 'global');
   if (!isEnabled) return;
 
   const redisKey = `RECOVERY:${seasonId}:${clan.tag}`;

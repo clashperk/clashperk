@@ -78,7 +78,7 @@ export class ClanWarLog extends RootLog {
       if (data.warTag && cache.logType !== ClanLogType.CWL_MISSED_ATTACKS_LOG) return null;
       if (!data.warTag && cache.logType !== ClanLogType.WAR_MISSED_ATTACKS_LOG) return null;
 
-      const isEnabled = await this.client.isFeatureEnabled(FeatureFlags.ALLOW_NO_MISSED_ATTACKS_LOG, cache.guild);
+      const isEnabled = this.client.isFeatureEnabled(FeatureFlags.ALLOW_NO_MISSED_ATTACKS_LOG, cache.guild);
       if (!isEnabled && !data.remaining.length) return null;
 
       const embed = this.getRemaining(data);

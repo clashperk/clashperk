@@ -19,6 +19,7 @@ export * from './clan-wars.entity.js';
 export * from './compete-boards.entity.js';
 export * from './custom-bot.entity.js';
 export * from './cwl-groups.entity.js';
+export * from './feature-flags.entity.js';
 export * from './flag-alert-logs.entity.js';
 export * from './flags.entity.js';
 export * from './global-players.entity.js';

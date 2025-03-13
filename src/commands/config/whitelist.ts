@@ -1,4 +1,4 @@
-import { FeatureFlags, Settings } from '@app/constants';
+import { Settings } from '@app/constants';
 import { CommandInteraction, Role, User } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
@@ -23,13 +23,6 @@ export default class WhitelistCommand extends Command {
       list?: boolean;
     }
   ) {
-    const isWhitelistEnabled = await this.client.isFeatureEnabled(FeatureFlags.COMMAND_WHITELIST, interaction.guildId);
-    if (!isWhitelistEnabled) {
-      return interaction.editReply({
-        content: 'Your server is not enabled for the experimental whitelist feature, contact support for more information.'
-      });
-    }
-
     if ((!args.user_or_role && !args.command) || args.list) {
       const commandWhitelist = this.client.settings.get<{ key: string; userOrRoleId: string; commandId: string; isRole: boolean }[]>(
         interaction.guild,

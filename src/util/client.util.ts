@@ -114,7 +114,7 @@ export class ClientUtil {
   }
 
   public async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-    const isTrustedFlag = await this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
+    const isTrustedFlag = this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
 
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
     if (!isManager) return false;
