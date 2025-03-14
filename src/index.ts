@@ -52,7 +52,7 @@ manager.init();
 
 const server = createServer((_, res) => {
   const isReady = manager.isReady();
-  res.writeHead(isReady ? 200 : 500, { 'Content-Type': 'application/json' });
+  res.writeHead(isReady ? 200 : 503, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ isReady }));
 });
 
