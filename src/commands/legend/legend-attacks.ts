@@ -2,6 +2,7 @@ import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
 import { LegendAttacksEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, Guild, User } from 'discord.js';
 import moment from 'moment';
+import { getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart, trimTag } from '../../util/helper.js';
@@ -54,7 +55,7 @@ export default class LegendAttacksCommand extends Command {
         .setCustomId(JSON.stringify({ cmd: this.id, clans: resolvedArgs, tag: args.tag }))
     );
 
-    const isCurrentDay = Util.getLegendDay() === this.getDay(args.day).day;
+    const isCurrentDay = Util.getLegendDay() === getLegendTimestampAgainstDay(args.day).day;
     return interaction.editReply({ embeds: [embed], components: isCurrentDay ? [row] : [] });
   }
 
@@ -79,7 +80,7 @@ export default class LegendAttacksCommand extends Command {
       .toArray();
 
     const attackingMembers = result.map((mem) => mem.tag);
-    const { startTime, endTime, day } = this.getDay(leagueDay);
+    const { startTime, endTime, day } = getLegendTimestampAgainstDay(leagueDay);
 
     const clanMembers: LegendAttacksEntity[] = legendMembers
       .filter((mem) => !attackingMembers.includes(mem.tag))
@@ -170,13 +171,6 @@ export default class LegendAttacksCommand extends Command {
     embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
 
     return embed;
-  }
-
-  private getDay(day?: number) {
-    if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
-    const days = Util.getLegendDays();
-    const num = Math.min(days.length, Math.max(day, 1));
-    return { ...days[num - 1], day };
   }
 
   private async getClans(

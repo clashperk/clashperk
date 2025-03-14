@@ -14,6 +14,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
+import { getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
@@ -90,7 +91,7 @@ export default class LegendDaysCommand extends Command {
   private async embed(interaction: CommandInteraction, data: APIPlayer, legend: LegendAttacksEntity, _day?: number) {
     const clan = data.clan ? await this.client.redis.getClan(data.clan.tag) : null;
 
-    const { startTime, endTime, day } = this.getDay(_day);
+    const { startTime, endTime, day } = getLegendTimestampAgainstDay(_day);
     const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
     const attacks = logs.filter((en) => en.type === 'attack') ?? [];
     const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
@@ -219,7 +220,7 @@ export default class LegendDaysCommand extends Command {
         const now = new Date(Season.ID);
         now.setHours(0, 0, 0, 0);
         now.setMonth(now.getMonth() - (m - 1), 0);
-        return this.getLastMondayOfMonth(now.getMonth(), now.getFullYear());
+        return Season.getLastMondayOfMonth(now.getMonth(), now.getFullYear());
       })
       .reverse();
     const [, seasonStart, seasonEnd] = seasonIds;
@@ -475,9 +476,7 @@ export default class LegendDaysCommand extends Command {
     const logs = legend?.logs ?? [];
     const days = Util.getLegendDays();
 
-    const perDayLogs = days.reduce<
-      { attackCount: number; defenseCount: number; gain: number; loss: number; final: number; initial: number }[]
-    >((prev, { startTime, endTime }) => {
+    const perDayLogs = days.reduce<AggsEntry[]>((prev, { startTime, endTime }) => {
       const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
       const attacks = mixedLogs.filter((en) => en.type === 'attack') ?? [];
       const defenses = mixedLogs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
@@ -506,11 +505,11 @@ export default class LegendDaysCommand extends Command {
             'DAY   ATK    DEF   +/-   INIT  FINAL ',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
-              const def = this.pad(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
-              const atk = this.pad(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
-              const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
-              const final = this.pad(day.final, 4);
-              const init = this.pad(day.initial, 5);
+              const def = padStart(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
+              const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
+              const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
+              const final = padStart(day.final, 4);
+              const init = padStart(day.initial, 5);
               const n = (i + 1).toString().padStart(2, ' ');
               return `\u200e${n}  ${atk}  ${def}  ${ng}  ${init}  ${final}`;
             }),
@@ -520,11 +519,11 @@ export default class LegendDaysCommand extends Command {
             '`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
-              const def = this.pad(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
-              const atk = this.pad(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
-              const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
-              const final = this.pad(day.final, 4);
-              const init = this.pad(day.initial, 5);
+              const def = padStart(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
+              const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
+              const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
+              const final = padStart(day.final, 4);
+              const init = padStart(day.initial, 5);
               const n = (i + 1).toString().padStart(2, ' ');
               return `\`\u200e${n} \` \`${atk} \` \`${def} \` \`${ng} \` \`${init} \` \` ${final} \``;
             })
@@ -678,25 +677,6 @@ export default class LegendDaysCommand extends Command {
     };
   }
 
-  private pad(num: number | string, padding = 4) {
-    return num.toString().padStart(padding, ' ');
-  }
-
-  private formatNumber(num: number) {
-    return `${num > 0 ? '+' : ''}${num.toFixed(0)}`;
-  }
-
-  private getLastMondayOfMonth(month: number, year: number): Date {
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-    const lastMonday = new Date(lastDayOfMonth);
-    lastMonday.setDate(lastMonday.getDate() - ((lastMonday.getDay() + 6) % 7));
-    lastMonday.setHours(5, 0, 0, 0);
-    // if (date.getTime() > lastMonday.getTime()) {
-    // 	return this.getLastMondayOfMonth(month + 1, year, date);
-    // }
-    return lastMonday;
-  }
-
   private calc(clanRank: number) {
     if (clanRank >= 41) return 3;
     else if (clanRank >= 31) return 10;
@@ -704,11 +684,13 @@ export default class LegendDaysCommand extends Command {
     else if (clanRank >= 11) return 25;
     return 50;
   }
+}
 
-  private getDay(day?: number) {
-    if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
-    const days = Util.getLegendDays();
-    const num = Math.min(days.length, Math.max(day, 1));
-    return { ...days[num - 1], day };
-  }
+interface AggsEntry {
+  attackCount: number;
+  defenseCount: number;
+  gain: number;
+  loss: number;
+  final: number;
+  initial: number;
 }

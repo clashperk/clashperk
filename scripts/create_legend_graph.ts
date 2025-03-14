@@ -7,14 +7,6 @@ import { mongoClient } from '../src/struct/database.js';
 import { createLegendGraph } from '../src/struct/image-helper.js';
 import { Season, Util } from '../src/util/toolkit.js';
 
-function getLastMondayOfMonth(month: number, year: number): Date {
-  const lastDayOfMonth = new Date(year, month + 1, 0);
-  const lastMonday = new Date(lastDayOfMonth);
-  lastMonday.setDate(lastMonday.getDate() - ((lastMonday.getDay() + 6) % 7));
-  lastMonday.setHours(5, 0, 0, 0);
-  return lastMonday;
-}
-
 async function graph(data: {
   tag: string;
   name: string;
@@ -34,7 +26,7 @@ async function graph(data: {
       const now = new Date(Season.ID);
       now.setHours(0, 0, 0, 0);
       now.setMonth(now.getMonth() - (m - 1), 0);
-      return getLastMondayOfMonth(now.getMonth(), now.getFullYear());
+      return Season.getLastMondayOfMonth(now.getMonth(), now.getFullYear());
     })
     .reverse();
   const [, seasonStart, seasonEnd] = seasonIds;

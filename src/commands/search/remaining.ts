@@ -5,15 +5,17 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import moment from 'moment';
 import pluralize from 'pluralize';
 import { group } from 'radash';
+import { getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { CustomIdProps } from '../../struct/component-handler.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
-import { Util } from '../../util/toolkit.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 const RemainingType = {
   WAR_ATTACKS: 'war-attacks',
   CAPITAL_RAIDS: 'capital-raids',
-  CLAN_GAMES: 'clan-games'
+  CLAN_GAMES: 'clan-games',
+  LEGEND_ATTACKS: 'legend-attacks'
 } as const;
 
 interface CommandArgs {
@@ -196,6 +198,11 @@ export default class RemainingCommand extends Command {
         embeds.push(embed);
         break;
       }
+      case RemainingType.LEGEND_ATTACKS: {
+        const embed = await this.legendAttacks(interaction, { ...args, player });
+        embeds.push(embed);
+        break;
+      }
       default: {
         const embed = await this.warAttacks(interaction, { ...args, player });
         embeds.push(embed);
@@ -203,10 +210,7 @@ export default class RemainingCommand extends Command {
       }
     }
 
-    return interaction.editReply({
-      components: [this.getComponents(args)],
-      embeds
-    });
+    return interaction.editReply({ components: [this.getComponents(args)], embeds });
   }
 
   private async warAttacks(interaction: CommandInteraction<'cached'>, args: CommandArgs & { player: APIPlayer | null }) {
@@ -449,6 +453,74 @@ export default class RemainingCommand extends Command {
     return embed;
   }
 
+  private async legendAttacks(interaction: CommandInteraction<'cached'>, args: CommandArgs & { player: APIPlayer | null }) {
+    const playerTags = args.player ? [args.player.tag] : await this.client.resolver.getLinkedPlayerTags(args.user!.id);
+
+    const result = await this.client.db
+      .collection(Collections.LEGEND_ATTACKS)
+      .find({ tag: { $in: playerTags }, seasonId: Season.ID })
+      .toArray();
+    const { startTime, endTime } = getLegendTimestampAgainstDay();
+
+    const playersMap: { [key: string]: { name: string; tag: string; attacks: number; netTrophies: number; trophies: number } } = {};
+    for (const legend of result) {
+      playersMap[legend.tag] = { name: legend.name, tag: legend.tag, attacks: 0, netTrophies: 0, trophies: legend.trophies };
+
+      const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+      if (logs.length === 0) continue;
+
+      const attacks = logs.filter((en) => en.type === 'attack');
+      const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+
+      const possibleAttackCount = legend.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
+      const attackCount = Math.max(attacks.length, possibleAttackCount);
+
+      const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
+      const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);
+      const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
+
+      const player = playersMap[legend.tag];
+      player.attacks = attackCount;
+      player.netTrophies = netTrophies;
+    }
+
+    const players = Object.values(playersMap)
+      .filter((player) => player.attacks < 8)
+      .sort((a, b) => b.trophies - a.trophies);
+
+    const embed = new EmbedBuilder();
+    embed.setColor(this.client.embed(interaction));
+    embed.setTitle('Remaining Legend Attacks');
+
+    if (args.user && !args.player)
+      embed.setAuthor({ name: `\u200e${args.user.displayName} (${args.user.id})`, iconURL: args.user.displayAvatarURL() });
+
+    const listedDescription = players
+      .map((player) => {
+        return `**${escapeMarkdown(player.name)} (${player.tag})** \n${8 - player.attacks} remaining`;
+      })
+      .join('\n\n');
+
+    const groupedDescription = players
+      .map((player) => {
+        const net = `${player.netTrophies >= 0 ? '+' : '-'}${Math.ceil(player.netTrophies)}`;
+        return `**${escapeMarkdown(player.name)} (${player.tag})** \n${player.attacks}/8 • ${player.trophies} • (${net})`;
+      })
+      .join('\n\n');
+
+    if (args.is_grouped) embed.setDescription(groupedDescription || null);
+    else embed.setDescription(listedDescription || null);
+
+    if (players.length) {
+      embed.addFields({
+        name: 'Time Left',
+        value: `${time(Math.floor(endTime / 1000), 'R')} | ${time(Math.floor(endTime / 1000), 'f')}`
+      });
+    }
+
+    return embed;
+  }
+
   private getComponents(args: CommandArgs) {
     const payload: CustomIdProps = {
       cmd: this.id,
@@ -461,6 +533,7 @@ export default class RemainingCommand extends Command {
       clanGames: this.createId({ ...payload, type: RemainingType.CLAN_GAMES }),
       capitalRaids: this.createId({ ...payload, type: RemainingType.CAPITAL_RAIDS }),
       warAttacks: this.createId({ ...payload, type: RemainingType.WAR_ATTACKS }),
+      legendAttacks: this.createId({ ...payload, type: RemainingType.LEGEND_ATTACKS }),
       refresh: this.createId({ ...payload, type: args.type }),
       group: this.createId({ ...payload, type: args.type, is_grouped: !args.is_grouped })
     };
@@ -480,6 +553,9 @@ export default class RemainingCommand extends Command {
 
     if (args.type !== RemainingType.CLAN_GAMES && new Date().getDate() >= 22 && new Date().getDate() <= 28)
       row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(customIds.clanGames).setLabel('Clan Games'));
+
+    if (args.type !== RemainingType.LEGEND_ATTACKS)
+      row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(customIds.legendAttacks).setLabel('Legend Attacks'));
 
     return row;
   }

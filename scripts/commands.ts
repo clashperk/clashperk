@@ -1034,6 +1034,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             name: common.choices.capital_raids,
             name_localizations: translation('common.choices.capital_raids'),
             value: 'capital-raids'
+          },
+          {
+            name: 'Legend Attacks',
+            value: 'legend-attacks'
           }
         ]
       },
