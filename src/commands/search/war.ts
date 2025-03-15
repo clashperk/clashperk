@@ -22,7 +22,7 @@ import { Args, Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { WarCommandOptionValues, WarCommandOptions } from '../../util/command.options.js';
 import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/emojis.js';
-import { getExportComponents } from '../../util/helper.js';
+import { getExportComponents, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 const stars: Record<string, string> = {
@@ -515,11 +515,12 @@ export default class WarCommand extends Command {
             return member
               .attacks!.map((atk, i) => {
                 const n = i === 0 ? member.mapPosition.toString() : ' ';
-                const th = i === 0 ? member.townhallLevel.toString() : ' ';
+                const th = i === 0 ? padStart(member.townhallLevel, 2) : ' ';
                 const name = i === 0 ? member.name : ' ';
 
-                return `\`\u200e${this.index(n)} ${th.padStart(2, ' ')} ${stars[atk.stars]} ${this.percentage(
-                  atk.destructionPercentage
+                return `\`\u200e${padStart(n, 3)} ${th} ${stars[atk.stars]} ${padStart(
+                  atk.destructionPercentage,
+                  3
                 )}% ${this.padEnd(`${name}`)}\``;
               })
               .join('\n');
@@ -543,14 +544,19 @@ export default class WarCommand extends Command {
         num += atk.stars;
         return num;
       }, 0);
-      attacks.push({ tag: member.tag, name: member.name, stars, townHallLevel: member.townhallLevel });
+      const attacksPerMember = body.attacksPerMember || 2;
+      const attackCount = member.attacks?.length || 0;
+      attacks.push({ tag: member.tag, name: member.name, stars, townHallLevel: member.townhallLevel, attackCount, attacksPerMember });
     }
 
     const groups = Object.entries(
-      attacks.reduce<Record<string, { name: string; tag: string; townHallLevel: number }[]>>((record, mem) => {
-        record[mem.stars] = (record[mem.stars] || []).concat(mem);
-        return record;
-      }, {})
+      attacks.reduce<Record<string, { name: string; tag: string; townHallLevel: number; attacksPerMember: number; attackCount: number }[]>>(
+        (record, mem) => {
+          record[mem.stars] = (record[mem.stars] || []).concat(mem);
+          return record;
+        },
+        {}
+      )
     ).map(([stars, members]) => {
       members.sort((a, b) => b.townHallLevel - a.townHallLevel);
       return {
@@ -571,7 +577,7 @@ export default class WarCommand extends Command {
           return [
             `${n === 0 ? '' : '\n'}**${group.stars} ${pluralize('Star', +group.stars)}**`,
             ...group.members.map((member) => {
-              return `${TOWN_HALLS[member.townHallLevel]} ${member.name}`;
+              return `${TOWN_HALLS[member.townHallLevel]} ${member.name} - ${member.attackCount}/${member.attacksPerMember}`;
             })
           ].join('\n');
         })
@@ -620,9 +626,9 @@ export default class WarCommand extends Command {
         openBases
           .map((member) => {
             const n = member.mapPosition.toString();
-            const map = this.index(n);
+            const map = padStart(n, 2);
             const th = member.townhallLevel.toString().padStart(2, ' ');
-            const dest = this.percentage(member.destructionPercentage);
+            const dest = padStart(member.destructionPercentage, 3);
             const key = `${member.tag}-${member.originalMapPosition}`;
             const callerName = this.padEnd(caller[key]?.note ?? '');
             return `\u200e\`${stars[member.stars]} ${dest}% ${map} ${th} ${callerName}\``;
@@ -637,13 +643,5 @@ export default class WarCommand extends Command {
 
   private padEnd(name: string) {
     return Util.escapeBackTick(name).padEnd(15, ' ');
-  }
-
-  private index(num: number | string) {
-    return num.toString().padStart(2, ' ');
-  }
-
-  private percentage(num: number) {
-    return num.toString().padStart(3, ' ');
   }
 }
