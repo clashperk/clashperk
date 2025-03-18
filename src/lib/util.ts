@@ -38,7 +38,7 @@ export enum BuiltInReasons {
   OWNER = 'owner'
 }
 
-export const ResolveColor = (hex: string) => {
+export const resolveColorCode = (hex: string) => {
   try {
     return resolveColor(hex as HexColorString);
   } catch {

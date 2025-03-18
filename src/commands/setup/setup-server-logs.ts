@@ -1,18 +1,27 @@
-import { Collections, Settings, missingPermissions } from '@app/constants';
+import { Collections, Settings, URL_REGEX, missingPermissions } from '@app/constants';
+import { LinkButtonConfig, WelcomeLogConfig } from '@app/entities';
 import {
   ActionRowBuilder,
   AnyThreadChannel,
   ButtonBuilder,
+  ButtonInteraction,
   ButtonStyle,
   ChannelSelectMenuBuilder,
   ChannelType,
   CommandInteraction,
+  DiscordjsError,
+  DiscordjsErrorCodes,
   EmbedBuilder,
+  MessageFlags,
+  ModalBuilder,
   PermissionFlagsBits,
   RoleSelectMenuBuilder,
-  TextChannel
+  TextChannel,
+  TextInputBuilder,
+  TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
+import { resolveColorCode } from '../../lib/util.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
 export default class SetupUtilsCommand extends Command {
@@ -47,19 +56,17 @@ export default class SetupUtilsCommand extends Command {
   public async exec(
     interaction: CommandInteraction<'cached'>,
     args: {
-      /** @deprecated - To be deleted soon. */
-      option: string;
       log_type: string;
       channel: TextChannel | AnyThreadChannel;
       disable?: boolean;
     }
   ) {
-    const logType = args.option || args.log_type;
-    if (logType === 'flag-alert-log') return this.flagAlertLog(interaction, args);
-    if (logType === 'roster-changelog') return this.rosterChangeLog(interaction, args);
-    if (logType === 'maintenance-break-log') return this.maintenanceBreakLog(interaction, args);
+    if (args.log_type === 'flag-alert-log') return this.flagAlertLog(interaction, args);
+    if (args.log_type === 'roster-changelog') return this.rosterChangeLog(interaction, args);
+    if (args.log_type === 'maintenance-break-log') return this.maintenanceBreakLog(interaction, args);
+    if (args.log_type === 'welcome-log') return this.welcomeLog(interaction, args);
 
-    throw new Error(`Command "${logType}" not found.`);
+    throw new Error(`Command "${args.log_type}" not found.`);
   }
 
   public async rosterChangeLog(
@@ -276,6 +283,174 @@ export default class SetupUtilsCommand extends Command {
         await onMutation();
         this.client.settings.set(interaction.guildId, Settings.HAS_FLAG_ALERT_LOG, true);
         await action.update({ embeds: [embed], components: [], content: null });
+      }
+    });
+  }
+
+  public async welcomeLog(interaction: CommandInteraction<'cached'>, args: { disable?: boolean }) {
+    const state = this.client.settings.get<WelcomeLogConfig>(interaction.guildId, Settings.WELCOME_LOG, {
+      enabled: true,
+      channelId: interaction.channel!.id,
+      webhook: null,
+      buttons: ['link-button'],
+      welcomeText: 'Welcome {{user}}',
+      description: 'Click the button to link your account.',
+      bannerImage: null,
+      embedColor: this.client.embed(interaction)
+    } satisfies WelcomeLogConfig);
+
+    state.channelId = interaction.channel!.id;
+
+    if (args.disable) {
+      this.client.settings.set(interaction.guildId, Settings.WELCOME_LOG, { ...state, enabled: false });
+      return interaction.editReply('Successfully disabled.');
+    }
+
+    const customIds = {
+      edit: this.client.uuid(),
+      confirm: this.client.uuid()
+    };
+
+    const editButton = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setLabel('Edit').setCustomId(customIds.edit);
+    const confirmButton = new ButtonBuilder().setStyle(ButtonStyle.Secondary).setLabel('Confirm').setCustomId(customIds.confirm);
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(editButton, confirmButton);
+
+    const getText = () => {
+      const embed = new EmbedBuilder().setDescription(state.description);
+      if (state.embedColor) embed.setColor(state.embedColor);
+      if (state.bannerImage) embed.setImage(state.bannerImage);
+
+      const linkConfig = this.client.settings.get<LinkButtonConfig>(interaction.guild, Settings.LINK_EMBEDS, {
+        token_field: 'optional',
+        button_style: ButtonStyle.Primary
+      });
+
+      const linkButton = new ButtonBuilder()
+        .setCustomId(JSON.stringify({ cmd: 'link-add', token_field: linkConfig.token_field }))
+        .setLabel('Link account')
+        .setEmoji('🔗')
+        .setStyle(linkConfig.button_style || ButtonStyle.Primary);
+
+      const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
+      return {
+        content: state.welcomeText,
+        embeds: [embed],
+        components: [actionRow, row]
+      };
+    };
+
+    const message = await interaction.editReply(getText());
+
+    const onCustomization = async (action: ButtonInteraction<'cached'>) => {
+      const modalCustomIds = {
+        modal: this.client.uuid(action.user.id),
+        welcomeText: this.client.uuid(action.user.id),
+        description: this.client.uuid(action.user.id),
+        bannerImage: this.client.uuid(action.user.id),
+        embedColor: this.client.uuid(action.user.id)
+      };
+
+      const modal = new ModalBuilder().setCustomId(modalCustomIds.modal).setTitle(`Welcome Log`);
+      const welcomeTextInput = new TextInputBuilder()
+        .setCustomId(modalCustomIds.welcomeText)
+        .setLabel('Welcome Text')
+        .setPlaceholder('This will be shown in the welcome message. \nWelcome {{user}} \nMust include {{user}}')
+        .setStyle(TextInputStyle.Paragraph)
+        .setMaxLength(500)
+        .setRequired(false);
+      if (state.welcomeText) welcomeTextInput.setValue(state.welcomeText);
+
+      const descriptionInput = new TextInputBuilder()
+        .setCustomId(modalCustomIds.description)
+        .setLabel('Description')
+        .setPlaceholder('This will be shown in the embed description.')
+        .setStyle(TextInputStyle.Paragraph)
+        .setMaxLength(2000)
+        .setRequired(false);
+      if (state.description) {
+        descriptionInput.setValue(state.description);
+      }
+
+      const bannerImageInput = new TextInputBuilder()
+        .setCustomId(modalCustomIds.bannerImage)
+        .setLabel('Banner Image URL')
+        .setPlaceholder('Enter an image URL')
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(256)
+        .setRequired(false);
+      if (state.bannerImage) bannerImageInput.setValue(state.bannerImage);
+
+      const colorCodeInput = new TextInputBuilder()
+        .setCustomId(modalCustomIds.embedColor)
+        .setLabel('Embed Color Code')
+        .setPlaceholder('Enter a hex color code (eg. #FF0000)')
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20)
+        .setRequired(false);
+      if (state.embedColor) colorCodeInput.setValue(`#${state.embedColor.toString(16).toUpperCase()}`);
+
+      modal.addComponents(
+        new ActionRowBuilder<TextInputBuilder>().addComponents(welcomeTextInput),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(bannerImageInput),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(colorCodeInput)
+      );
+
+      await action.showModal(modal);
+
+      try {
+        const modalSubmit = await action.awaitModalSubmit({
+          time: 10 * 60 * 1000,
+          filter: (action) => action.customId === modalCustomIds.modal
+        });
+
+        const welcomeText = modalSubmit.fields.getTextInputValue(modalCustomIds.welcomeText);
+        state.welcomeText = welcomeText.trim();
+
+        const description = modalSubmit.fields.getTextInputValue(modalCustomIds.description);
+        state.description = description.trim();
+
+        const bannerImage = modalSubmit.fields.getTextInputValue(modalCustomIds.bannerImage);
+        state.bannerImage = URL_REGEX.test(bannerImage) ? bannerImage : '';
+
+        const embedColor = modalSubmit.fields.getTextInputValue(modalCustomIds.embedColor);
+        state.embedColor = resolveColorCode(embedColor);
+
+        await modalSubmit.deferUpdate();
+
+        await modalSubmit.editReply(getText());
+      } catch (error) {
+        if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          throw error;
+        }
+      }
+    };
+
+    createInteractionCollector({
+      customIds,
+      interaction,
+      message,
+      onClick: async (action) => {
+        if (action.customId === customIds.edit) {
+          return onCustomization(action);
+        }
+
+        if (!state.welcomeText.includes('{{user}}')) {
+          return action.reply({ content: 'Welcome text must include {{user}}', flags: MessageFlags.Ephemeral });
+        }
+
+        const channel = this.client.util.getTextBasedChannel(state.channelId);
+        if (!channel) throw new Error('Channel not found');
+
+        const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
+        if (!webhook) {
+          return action.reply(this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() }));
+        }
+
+        state.webhook = { token: webhook.token!, id: webhook.id };
+        await this.client.settings.set(interaction.guildId, Settings.WELCOME_LOG, state);
+        await action.update({ components: [], embeds: [], content: 'Welcome log enabled.' });
       }
     });
   }

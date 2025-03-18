@@ -1,3 +1,24 @@
+export interface LinkButtonConfig {
+  title: string;
+  description: string;
+  image_url: string;
+  thumbnail_url: string;
+  token_field: string;
+  button_style: number;
+  embed_color: number;
+}
+
+export interface WelcomeLogConfig {
+  enabled: boolean;
+  channelId: string;
+  webhook: { id: string; token: string } | null;
+  buttons: string[]; // ['link-account', 'role-refresh'];
+  welcomeText: string;
+  description: string;
+  bannerImage: string | null;
+  embedColor: number | null;
+}
+
 export interface SettingsEntity {
   guildId: string;
   commandWhitelist?: {
@@ -81,4 +102,5 @@ export interface SettingsEntity {
       id: string;
     };
   };
+  welcomeLog?: WelcomeLogConfig;
 }
