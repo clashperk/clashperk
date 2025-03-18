@@ -1,3 +1,4 @@
+import { FeatureFlags } from '@app/constants';
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -16,6 +17,7 @@ import {
   TextInputStyle
 } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
+import { EMOJIS } from '../../util/emojis.js';
 
 const LAYOUT_REGEX = /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?action=OpenLayout&id=TH\S+$/;
 
@@ -41,6 +43,7 @@ export default class LayoutCommand extends Command {
       layout_link?: string;
       army_link?: string;
       render_army?: boolean;
+      allow_voting?: boolean;
     }
   ) {
     args.layout_link &&= args.layout_link.trim();
@@ -114,7 +117,7 @@ export default class LayoutCommand extends Command {
       army_link?: string;
       render_army?: boolean;
       upvote?: number;
-      downvote?: number;
+      allow_voting?: boolean;
     }
   ) {
     if (!args.layout_link || !LAYOUT_REGEX.test(args.layout_link)) {
@@ -150,11 +153,19 @@ export default class LayoutCommand extends Command {
           .setLabel('Edit')
       );
 
-    return interaction.editReply({
+    const msg = await interaction.editReply({
       components: [row],
       content: args.description || `**${buildingLabel} ${level} Layout**`,
       ...(args.screenshot && { files: [new AttachmentBuilder(args.screenshot)] })
     });
+
+    const isVotingEnabled = args.allow_voting ?? this.client.isFeatureEnabled(FeatureFlags.LAYOUT_VOTING, interaction.guildId);
+    if (interaction.appPermissions.has('AddReactions') && isVotingEnabled) {
+      try {
+        await msg.react(EMOJIS.WHITE_CHECK_MARK);
+        await msg.react(EMOJIS.RED_CHECK_MARK);
+      } catch {}
+    }
   }
 
   private getUrlFromInteractionComponents(interaction: ButtonInteraction) {

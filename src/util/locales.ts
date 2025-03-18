@@ -1542,6 +1542,9 @@ export const command = {
       },
       title: {
         description: 'Title of the layout.'
+      },
+      allow_voting: {
+        description: 'Whether to allow voting on the layout.'
       }
     }
   },
