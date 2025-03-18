@@ -42,7 +42,7 @@ const logActionsMap: Record<string, LogAction[]> = {
 export class ClanLog extends RootLog {
   declare public cached: Collection<string, Cache>;
 
-  public constructor(private enqueuer: Enqueuer) {
+  public constructor(enqueuer: Enqueuer) {
     super(enqueuer.client);
     this.client = enqueuer.client;
   }

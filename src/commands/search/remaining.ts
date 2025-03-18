@@ -23,6 +23,7 @@ interface CommandArgs {
   war_id?: number;
   user?: User;
   player_tag?: string;
+  playerTags?: string[];
   is_grouped?: boolean;
   type?: (typeof RemainingType)[keyof typeof RemainingType];
 }
@@ -57,6 +58,10 @@ export default class RemainingCommand extends Command {
 
     const clan = await this.client.resolver.resolveClan(interaction, args.tag);
     if (!clan) return;
+
+    if (args.type === RemainingType.LEGEND_ATTACKS) {
+      return this.forUsers(interaction, { ...args, playerTags: clan.memberList.map((m) => m.tag) });
+    }
 
     let body: APIClanWar | null = null;
     if (args.war_id) {
@@ -199,7 +204,8 @@ export default class RemainingCommand extends Command {
         break;
       }
       case RemainingType.LEGEND_ATTACKS: {
-        const embed = await this.legendAttacks(interaction, { ...args, player });
+        const playerTags = player ? [player.tag] : args.playerTags;
+        const embed = await this.legendAttacks(interaction, { ...args, player, playerTags });
         embeds.push(embed);
         break;
       }
@@ -453,8 +459,13 @@ export default class RemainingCommand extends Command {
     return embed;
   }
 
-  private async legendAttacks(interaction: CommandInteraction<'cached'>, args: CommandArgs & { player: APIPlayer | null }) {
-    const playerTags = args.player ? [args.player.tag] : await this.client.resolver.getLinkedPlayerTags(args.user!.id);
+  private async legendAttacks(
+    interaction: CommandInteraction<'cached'>,
+    args: CommandArgs & { player: APIPlayer | null; playerTags?: string[] }
+  ) {
+    const playerTags = args.player
+      ? [args.player.tag]
+      : (args.playerTags ?? (await this.client.resolver.getLinkedPlayerTags(args.user!.id)));
 
     const result = await this.client.db
       .collection(Collections.LEGEND_ATTACKS)

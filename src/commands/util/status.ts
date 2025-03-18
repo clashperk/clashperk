@@ -12,6 +12,7 @@ const pkg = JSON.parse((await readFile(pkgPath)).toString()) as { version: strin
 export default class StatusCommand extends Command {
   public constructor() {
     super('status', {
+      aliases: ['bot'],
       category: 'none',
       channel: 'guild',
       clientPermissions: ['EmbedLinks'],
