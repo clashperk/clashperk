@@ -1,4 +1,4 @@
-import { Collections, DEEP_LINK_TYPES, Flags, missingPermissions, URL_REGEX } from '@app/constants';
+import { Collections, DEEP_LINK_TYPES, FeatureFlags, Flags, missingPermissions, URL_REGEX } from '@app/constants';
 import { ClanLogType } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -80,12 +80,14 @@ export default class ClanEmbedCommand extends Command {
       fields: this.client.uuid(interaction.user.id)
     };
 
-    const state: Partial<{ description: string; bannerImage: string; accepts: string; fields: ClanEmbedFieldValues[] }> = {
-      description: existing?.metadata?.description ?? 'auto',
-      bannerImage: existing?.metadata?.bannerImage ?? null,
-      accepts: existing?.metadata?.accepts ?? 'auto',
-      fields: existing?.metadata?.fields ?? ['*']
-    };
+    const state: Partial<{ description: string; bannerImage: string; accepts: string; rulesText: string; fields: ClanEmbedFieldValues[] }> =
+      {
+        description: existing?.metadata?.description ?? 'auto',
+        bannerImage: existing?.metadata?.bannerImage ?? null,
+        accepts: existing?.metadata?.accepts ?? 'auto',
+        rulesText: existing?.metadata?.rulesText ?? null,
+        fields: existing?.metadata?.fields ?? ['*']
+      };
 
     let embed = await clanEmbedMaker(data, { color, ...state });
 
@@ -133,6 +135,7 @@ export default class ClanEmbedCommand extends Command {
         modal: this.client.uuid(action.user.id),
         description: this.client.uuid(action.user.id),
         requirements: this.client.uuid(action.user.id),
+        rules: this.client.uuid(action.user.id),
         bannerImage: this.client.uuid(action.user.id)
       };
 
@@ -166,11 +169,27 @@ export default class ClanEmbedCommand extends Command {
         .setRequired(false);
       if (state.bannerImage) bannerImageInput.setValue(state.bannerImage);
 
+      const rulesInput = new TextInputBuilder()
+        .setCustomId(modalCustomIds.rules)
+        .setLabel('Clan Rules')
+        .setPlaceholder('Type in your clan\'s rules here. They\'ll pop up when you click the "Clan Rules" button!')
+        .setStyle(TextInputStyle.Paragraph)
+        .setMaxLength(2000)
+        .setRequired(false);
+      if (state.rulesText) {
+        rulesInput.setValue(state.rulesText).setMaxLength(Math.max(2000, state.rulesText.length));
+      }
+
       modal.addComponents(
         new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput),
         new ActionRowBuilder<TextInputBuilder>().addComponents(requirementsInput),
         new ActionRowBuilder<TextInputBuilder>().addComponents(bannerImageInput)
       );
+
+      const isRulesTextEnabled = this.client.isFeatureEnabled(FeatureFlags.CLAN_RULES_BUTTON, interaction.guild.id);
+      if (isRulesTextEnabled) {
+        modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(rulesInput));
+      }
 
       await action.showModal(modal);
 
@@ -188,6 +207,9 @@ export default class ClanEmbedCommand extends Command {
 
         const bannerImage = modalSubmit.fields.getTextInputValue(modalCustomIds.bannerImage);
         state.bannerImage = URL_REGEX.test(bannerImage) ? bannerImage : '';
+
+        const rulesText = modalSubmit.fields.getTextInputValue(modalCustomIds.rules);
+        state.rulesText = rulesText.trim();
 
         await modalSubmit.deferUpdate();
 
@@ -232,7 +254,8 @@ export default class ClanEmbedCommand extends Command {
               accepts: state.accepts,
               bannerImage: state.bannerImage,
               description: state.description?.trim(),
-              fields: state.fields
+              fields: state.fields,
+              rulesText: state.rulesText?.trim()
             },
             messageId,
             webhook: { id: webhook.id, token: webhook.token },
@@ -257,8 +280,24 @@ export default class ClanEmbedCommand extends Command {
       return interaction.editReply(this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() }));
     }
 
+    const getEmbedButtons = () => {
+      const isRulesTextEnabled = this.client.isFeatureEnabled(FeatureFlags.CLAN_RULES_BUTTON, interaction.guild.id);
+      if (!isRulesTextEnabled) return [];
+
+      const rulesButton = new ButtonBuilder()
+        .setLabel('Clan Rules')
+        .setEmoji('📜')
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(this.createId({ cmd: 'post-clan-rules', tag: data.tag, defer: false }));
+      return [new ActionRowBuilder<ButtonBuilder>().addComponents(rulesButton)];
+    };
+
     const onResend = async (action: ButtonInteraction<'cached'>) => {
-      const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
+      const msg = await webhook.send(
+        channel.isThread()
+          ? { embeds: [embed], threadId: channel.id, components: getEmbedButtons() }
+          : { embeds: [embed], components: getEmbedButtons() }
+      );
       await mutate(msg.id, msg.channel.id, { id: webhook.id, token: webhook.token! });
       return action.update({ content: '**Clan embed created!**', embeds: [], components: [] });
     };
@@ -271,7 +310,9 @@ export default class ClanEmbedCommand extends Command {
         const webhook = new WebhookClient(existing.webhook!);
         const msg = await webhook.editMessage(
           existing.messageId,
-          channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] }
+          channel?.isThread()
+            ? { embeds: [embed], threadId: channel.id, components: getEmbedButtons() }
+            : { embeds: [embed], components: getEmbedButtons() }
         );
 
         await mutate(existing.messageId, msg.channel_id, existing.webhook!);

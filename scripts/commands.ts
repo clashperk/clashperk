@@ -1881,6 +1881,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 name: common.choices.maintenance_break_log,
                 name_localizations: translation('common.choices.maintenance_break_log'),
                 value: 'maintenance-break-log'
+              },
+              {
+                name: common.choices.welcome_log,
+                name_localizations: translation('common.choices.welcome_log'),
+                value: 'welcome-log'
               }
             ]
           },

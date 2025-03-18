@@ -75,7 +75,6 @@ export const enum Collections {
   CLAN_STORES = 'ClanStores',
   FLAG_ALERT_LOGS = 'FlagAlertLogs',
   CLAN_LOGS = 'ClanLogs',
-  COMPETE_BOARDS = 'CompeteBoards',
 
   AUTO_BOARDS = 'AutoBoardLogs',
 
@@ -185,6 +184,7 @@ export const enum Settings {
   ROLE_REPLACEMENT_LABELS = 'roleReplacementLabels',
   ROSTER_CHANGELOG = 'rosterChangeLog',
   REMINDER_EXCLUSION = 'reminderExclusion',
+  WELCOME_LOG = 'welcomeLog',
   DEPLOYMENT_WEBHOOK_URL = 'deploymentWebhook',
   ROLE_REMOVAL_DELAYS = 'roleRemovalDelays',
   ROLE_ADDITION_DELAYS = 'roleAdditionDelays',
@@ -210,7 +210,8 @@ export enum FeatureFlags {
   RANDOM_DONATOR = 'random-donator',
   ALLOW_NO_MISSED_ATTACKS_LOG = 'allow-no-missed-attacks-log',
   DONATIONS_RECOVERY = 'donations-recovery',
-  CLAN_HISTORY = 'clan-history'
+  CLAN_HISTORY = 'clan-history',
+  CLAN_RULES_BUTTON = 'clan-rules-button'
 }
 
 export const enum Flags {

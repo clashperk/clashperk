@@ -29,7 +29,7 @@ import { Client } from '../struct/client.js';
 import { CustomIdProps } from '../struct/component-handler.js';
 import { i18n } from '../util/i18n.js';
 import './modifier.js';
-import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor, WSEvents } from './util.js';
+import { BuiltInReasons, CommandEvents, CommandHandlerEvents, resolveColorCode, WSEvents } from './util.js';
 
 type ArgsMatchType =
   | 'SUB_COMMAND'
@@ -214,7 +214,7 @@ export class CommandHandler extends BaseHandler {
       }
 
       if (resolved[key] && name === 'color') {
-        resolved[key] = ResolveColor(resolved[key] as string);
+        resolved[key] = resolveColorCode(resolved[key] as string);
       }
     }
 
@@ -253,7 +253,7 @@ export class CommandHandler extends BaseHandler {
       }
 
       if (resolved[key] && args[name]?.match === 'COLOR') {
-        resolved[key] = ResolveColor(resolved[key] as string);
+        resolved[key] = resolveColorCode(resolved[key] as string);
       }
 
       if (resolved[key] && args[name]?.match === 'ENUM') {
