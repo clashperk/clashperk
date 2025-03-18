@@ -299,6 +299,8 @@ export default class SetupUtilsCommand extends Command {
       embedColor: this.client.embed(interaction)
     } satisfies WelcomeLogConfig);
 
+    state.channelId = interaction.channel!.id;
+
     if (args.disable) {
       this.client.settings.set(interaction.guildId, Settings.WELCOME_LOG, { ...state, enabled: false });
       return interaction.editReply('Successfully disabled.');

@@ -46,9 +46,10 @@ export default class GuildMemberAddListener extends Listener {
       const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
       await webhook.send({
-        content: log.welcomeText.replace('{{user}}', `<@${member.id}>`),
+        content: log.welcomeText.replace('{{user}}', member.toString()),
         embeds: [embed],
-        components: [actionRow]
+        components: [actionRow],
+        ...(channel.isThread() ? { threadId: channel.id } : {})
       });
     } catch (error) {
       if (error.code === DiscordErrorCodes.UNKNOWN_WEBHOOK && !isRetry) {
