@@ -142,7 +142,10 @@ export default class AutocompleteInteractionListener extends Listener {
       }
     });
 
-    if (['player', 'units', 'upgrades', 'rushed'].includes(interaction.commandName) && ['player_tag', 'tag', 'player'].includes(focused)) {
+    if (
+      ['player', 'units', 'upgrades', 'rushed', 'legends'].includes(interaction.commandName) &&
+      ['player_tag', 'tag', 'player'].includes(focused)
+    ) {
       return this.playerTagAutocomplete(interaction, focused);
     }
     if (!interaction.inCachedGuild()) return null;

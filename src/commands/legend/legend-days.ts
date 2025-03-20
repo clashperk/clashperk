@@ -26,7 +26,7 @@ export default class LegendDaysCommand extends Command {
     super('legend-days', {
       aliases: ['legends-search'],
       category: 'search',
-      channel: 'guild',
+      channel: 'dm',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
     });
