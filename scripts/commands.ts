@@ -3861,6 +3861,47 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     ]
   },
   {
+    name: 'legends',
+    dm_permission: false,
+    description: command.legend.description,
+    description_localizations: translation('command.legend.description'),
+    options: [
+      {
+        name: 'search',
+        description: command.legend.days.description,
+        description_localizations: translation('command.legend.days.description'),
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'player',
+            description: common.options.player.user.description,
+            description_localizations: translation('common.options.player.user.description'),
+            type: ApplicationCommandOptionType.String,
+            required: false,
+            autocomplete: true
+          },
+          {
+            name: 'user',
+            description: common.options.clan.user.description,
+            description_localizations: translation('common.options.clan.user.description'),
+            type: ApplicationCommandOptionType.User,
+            required: false
+          },
+          {
+            name: 'day',
+            description: command.legend.attacks.options.day.description,
+            description_localizations: translation('command.legend.attacks.options.day.description'),
+            type: ApplicationCommandOptionType.Number,
+            max_value: 35,
+            min_value: 1,
+            required: false
+          }
+        ]
+      }
+    ],
+    ...userInstallable
+  },
+  {
     name: 'leaderboard',
     description: command.leaderboard.description,
     description_localizations: translation('command.leaderboard.description'),

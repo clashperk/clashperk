@@ -208,8 +208,10 @@ export default class ClanEmbedCommand extends Command {
         const bannerImage = modalSubmit.fields.getTextInputValue(modalCustomIds.bannerImage);
         state.bannerImage = URL_REGEX.test(bannerImage) ? bannerImage : '';
 
-        const rulesText = modalSubmit.fields.getTextInputValue(modalCustomIds.rules);
-        state.rulesText = rulesText.trim();
+        if (isRulesTextEnabled) {
+          const rulesText = modalSubmit.fields.getTextInputValue(modalCustomIds.rules);
+          state.rulesText = rulesText.trim();
+        }
 
         await modalSubmit.deferUpdate();
 

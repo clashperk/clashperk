@@ -24,6 +24,7 @@ import { Season, Util } from '../../util/toolkit.js';
 export default class LegendDaysCommand extends Command {
   public constructor() {
     super('legend-days', {
+      aliases: ['legends-search'],
       category: 'search',
       channel: 'guild',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
