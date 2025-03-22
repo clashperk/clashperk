@@ -25,7 +25,7 @@ export default class AutoRoleConfigCommand extends Command {
       role_addition_delays?: string;
       always_force_refresh_roles?: boolean;
       allow_not_linked?: boolean;
-      delay_exclusion_roles?: 'town-hall-roles' | 'builder-hall-roles' | 'league-roles' | 'builder-league-roles';
+      delay_exclusion_roles?: 'town-hall-roles' | 'builder-hall-roles' | 'league-roles' | 'builder-league-roles' | 'guest-role';
     }
   ) {
     if (typeof args.verified_only_clan_roles === 'boolean') {

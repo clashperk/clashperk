@@ -1,4 +1,5 @@
 import { FeatureFlags } from '@app/constants';
+import { Util } from 'clashofclans.js';
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -13,6 +14,7 @@ import {
   MessageFlags,
   ModalBuilder,
   ModalSubmitInteraction,
+  PermissionFlagsBits,
   TextInputBuilder,
   TextInputStyle
 } from 'discord.js';
@@ -160,9 +162,10 @@ export default class LayoutCommand extends Command {
     });
 
     const isVotingEnabled = args.allow_voting ?? this.client.isFeatureEnabled(FeatureFlags.LAYOUT_VOTING, interaction.guildId);
-    if (interaction.appPermissions.has('AddReactions') && isVotingEnabled) {
+    if (interaction.appPermissions.has(PermissionFlagsBits.AddReactions) && isVotingEnabled) {
       try {
         await msg.react(EMOJIS.WHITE_CHECK_MARK);
+        await Util.delay(250);
         await msg.react(EMOJIS.RED_CHECK_MARK);
       } catch {}
     }

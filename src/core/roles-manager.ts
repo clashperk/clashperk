@@ -590,6 +590,7 @@ export class RolesManager {
       rolesExcludedFromDelays: sift([
         rolesMap.verifiedRoleId,
         rolesMap.accountLinkedRoleId,
+        ...(exclusion.guestRole ? [rolesMap.guestRoleId] : []),
         ...(exclusion.townHallRoles ? Object.values(rolesMap.townHallRoles) : []),
         ...(exclusion.builderHallRoles ? Object.values(rolesMap.builderHallRoles) : []),
         ...(exclusion.leagueRoles ? Object.values(rolesMap.leagueRoles) : []),
@@ -1012,4 +1013,5 @@ export interface ExclusionListConfig {
   builderHallRoles?: boolean;
   leagueRoles?: boolean;
   builderLeagueRoles?: boolean;
+  guestRole?: boolean;
 }
