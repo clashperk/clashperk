@@ -13,7 +13,6 @@ export const hexToNanoId = (hex: ObjectId) => {
 };
 
 export const makeAbbr = (text: string) => {
-  if (!text) return '';
   return title(text)
     .split(/\s+/)
     .map((word) => word[0]?.toUpperCase() || '')

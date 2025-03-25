@@ -37,7 +37,8 @@ export const HERO_PETS: Record<string, string> = {
   'Frosty': '<:Frosty:1029115796271669369>',
   'Phoenix': '<:Phoenix:1029115881982271549>',
   'Spirit Fox': '<:SpiritFox:1184210185263259778>',
-  'Angry Jelly': '<:AngryJelly:1230233853013004319>'
+  'Angry Jelly': '<:AngryJelly:1230233853013004319>',
+  'Sneezy': '<:Sneezy:1354122571343466518>'
 };
 
 export const HERO_EQUIPMENT: Record<string, string> = {
@@ -68,7 +69,8 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Henchmen Puppet': '<:Henchmen:1310574231544926218>',
   'Electro Boots': '<:ElectroBoots:1252640513790705686>',
   'Metal Pants': '<:MetalPants:1341345439626039337>',
-  'Snake Bracelet': '<:SnakeBracelet:1341345443929391154>'
+  'Snake Bracelet': '<:SnakeBracelet:1341345443929391154>',
+  'Noble Iron': '<:NobleIron:1354122575965454347>'
   // 'Heroic Torch': '<:HeroicTorch:1252640503988486327>'
 };
 
@@ -94,7 +96,8 @@ export const SIEGE_MACHINES: Record<string, string> = {
   'Log Launcher': '<:LogLauncher:918762884257939478>',
   'Flame Flinger': '<:FlameFlinger:918762753013981235>',
   'Battle Drill': '<:BattleDrill:1029114347949142087>',
-  'Troop Launcher': '<:TroopLauncher:1341345433632636968>'
+  'Troop Launcher': '<:TroopLauncher:1341345433632636968>',
+  'Furnace': '<:Furnace:1354122556499693578>'
 };
 
 export const ELIXIR_SPELLS: Record<string, string> = {
@@ -134,7 +137,8 @@ export const SUPER_TROOPS: Record<string, string> = {
   'Ice Hound': '<:IceHound:789730401816018945>',
   'Super Bowler': '<:SuperBowler:892028277252825128>',
   'Super Miner': '<:SuperMiner:1062662677077446656>',
-  'Super Hog Rider': '<:SuperHogRider:1117866738495787018>'
+  'Super Hog Rider': '<:SuperHogRider:1117866738495787018>',
+  'Super Yeti': '<:SuperYeti:1354122565861376080>'
 };
 
 export const BUILDER_ELIXIR_TROOPS: Record<string, string> = {
