@@ -448,6 +448,7 @@ export default class SetupUtilsCommand extends Command {
           return action.reply(this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() }));
         }
 
+        state.enabled = true;
         state.webhook = { token: webhook.token!, id: webhook.id };
         await this.client.settings.set(interaction.guildId, Settings.WELCOME_LOG, state);
         await action.update({ components: [], embeds: [], content: 'Welcome log enabled.' });
