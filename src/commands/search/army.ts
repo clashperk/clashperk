@@ -1,6 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
 import { URL } from 'node:url';
-import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import {
   DARK_ELIXIR_TROOPS,
@@ -262,6 +261,25 @@ export default class ArmyCommand extends Command {
         ].join('\n')
       );
 
+    if (heroes.length) {
+      embed.setDescription(
+        [
+          embed.data.description,
+          '',
+          '**Heroes**',
+          heroes
+            .map((en) => {
+              const exts = en.pets
+                .map((eq) => `${EMOJIS.GAP} ${HERO_PETS[eq.name]} ${eq.name}`)
+                .concat(...en.equipment.map((eq) => `${EMOJIS.GAP} ${HERO_EQUIPMENT[eq.name]} ${eq.name}`))
+                .join('\n');
+              return `${HOME_HEROES[en.name]} ${en.name}${exts.length ? '\n' : ''}${exts}`;
+            })
+            .join('\n')
+        ].join('\n')
+      );
+    }
+
     if (troops.length) {
       embed.setDescription(
         [
@@ -306,29 +324,6 @@ export default class ArmyCommand extends Command {
           ].join('\n')
         }
       ]);
-    }
-
-    if (heroes.length) {
-      cluster(heroes, 2).forEach((items, i) => {
-        embed.addFields([
-          {
-            name: '\u200b',
-            value: [
-              i === 0 ? '**Heroes**' : '',
-              items
-                .map((en) => {
-                  const exts = en.pets
-                    .map((eq) => `${EMOJIS.GAP} ${HERO_PETS[eq.name]} ${eq.name} ${EMOJIS.PET}`)
-                    .concat(...en.equipment.map((eq) => `${EMOJIS.GAP} ${HERO_EQUIPMENT[eq.name]} ${eq.name} ${EMOJIS.EQUIPMENT}`))
-                    .join('\n');
-
-                  return `${HOME_HEROES[en.name]} ${en.name} ${exts.length ? '\n' : ''}${exts}`;
-                })
-                .join('\n')
-            ].join('\n')
-          }
-        ]);
-      });
     }
 
     if (ccTroops.length || ccSpells.length) {
