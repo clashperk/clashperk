@@ -149,7 +149,6 @@ export class Client extends DiscordClient {
     this.postHog = new PostHog(process.env.POSTHOG_API_KEY!, {
       host: 'https://us.i.posthog.com',
       personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY!,
-      preloadFeatureFlags: false,
       disableGeoip: true
     });
 

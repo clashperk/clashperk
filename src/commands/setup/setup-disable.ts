@@ -80,7 +80,7 @@ export default class SetupDisableCommand extends Command {
       );
     }
 
-    if (args.action === 'disable-logs' || DeprecatedLogs[args.action]) {
+    if (args.action === 'disable-logs' || (DeprecatedLogs[args.action] && args.action !== 'clan-embed')) {
       const command = this.handler.getCommand('setup-clan-logs')!;
       return this.handler.continue(interaction, command);
     }
