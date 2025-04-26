@@ -25,6 +25,7 @@ for (const Interaction of [CommandInteraction, ContextMenuCommandInteraction, Me
   const _deferReply = Interaction.prototype.deferReply;
   const _followUp = Interaction.prototype.followUp;
   const _reply = Interaction.prototype.reply;
+  const _editReply = Interaction.prototype.editReply;
 
   Object.defineProperties(Interaction.prototype, {
     reply: {
@@ -43,6 +44,12 @@ for (const Interaction of [CommandInteraction, ContextMenuCommandInteraction, Me
       value: function followUp(record: Record<string, unknown>) {
         if (isEphemeral(this)) record.flags = MessageFlags.Ephemeral;
         return _followUp.call(this, record);
+      }
+    },
+    editReply: {
+      value: function editReply(record: Record<string, unknown>) {
+        if (record.withComponents) record.flags = MessageFlags.IsComponentsV2;
+        return _editReply.call(this, record);
       }
     }
   });

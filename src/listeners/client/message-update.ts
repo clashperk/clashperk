@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { ActionRow, Message, MessageActionRowComponent } from 'discord.js';
 import { diff } from 'radash';
 import { Listener } from '../../lib/handlers.js';
 
@@ -26,9 +26,8 @@ export default class MessageUpdateListener extends Listener {
   }
 
   public flattenCustomIds(message: Message): string[] {
-    return message.components
-      .map((actionRow) => actionRow.components)
-      .flat()
+    return (message.components as ActionRow<MessageActionRowComponent>[])
+      .flatMap((actionRow) => actionRow.components)
       .map((messageComponent) => messageComponent.customId as string)
       .filter((customId) => customId && /^CMD/.test(customId));
   }

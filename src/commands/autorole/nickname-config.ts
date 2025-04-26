@@ -4,13 +4,16 @@ import {
   ButtonBuilder,
   ButtonStyle,
   CommandInteraction,
+  ContainerBuilder,
   DiscordjsError,
   DiscordjsErrorCodes,
-  EmbedBuilder,
+  escapeMarkdown,
   ModalBuilder,
+  SectionBuilder,
+  SeparatorSpacingSize,
+  TextDisplayBuilder,
   TextInputBuilder,
-  TextInputStyle,
-  escapeMarkdown
+  TextInputStyle
 } from 'discord.js';
 import { title } from 'radash';
 import { NicknamingAccountPreference } from '../../core/roles-manager.js';
@@ -108,46 +111,21 @@ export default class NicknameConfigCommand extends Command {
       {}
     );
 
-    const embed = new EmbedBuilder().setAuthor({ name: 'Server Nickname Settings' }).setColor(this.client.embed(interaction));
-    embed.addFields({ name: 'Family Nickname Format', value: `\`${familyFormat || 'None'}\`` });
-    embed.addFields({ name: 'Non-Family Nickname Format', value: `\`${nonFamilyFormat || 'None'}\`` });
-    embed.addFields({ name: 'Change Nicknames', value: `\`${enabledAuto ? 'Yes' : 'No'}\`` });
-    embed.addFields({ name: 'Account Preference', value: `\`${title(accountPreference)}\`` });
+    const container = new ContainerBuilder();
+    container.setAccentColor(this.client.embed(interaction)!);
+    container.addTextDisplayComponents(new TextDisplayBuilder().setContent('## Server Nickname Settings'));
 
-    const applyRoleLabels = () => {
-      embed.addFields({
-        name: 'Role Labels',
-        value: [
-          `\`Leader    \`: ${escapeMarkdown(state.leader || 'Lead')}`,
-          `\`Co-Leader \`: ${escapeMarkdown(state.coLeader || 'Co-Lead')}`,
-          `\`Elder     \`: ${escapeMarkdown(state.admin || 'Eld')}`,
-          `\`Member    \`: ${escapeMarkdown(state.member || 'Mem')}`
-        ].join('\n')
-      });
+    const settings = [
+      { name: 'Family Nickname Format', value: `\`${familyFormat || 'None'}\`` },
+      { name: 'Non-Family Nickname Format', value: `\`${nonFamilyFormat || 'None'}\`` },
+      { name: 'Change Nicknames', value: `\`${enabledAuto ? 'Yes' : 'No'}\`` },
+      { name: 'Account Preference', value: `\`${title(accountPreference)}\`` }
+    ];
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(settings.map((config) => `**${config.name}**\n${config.value}`).join('\n'))
+    );
 
-      embed.addFields({
-        name: '\u200b\nAvailable Variables',
-        value: [
-          `\`{NAME}\` or \`{PLAYER_NAME}\``,
-          `\`{TH}\` or \`{TOWN_HALL}\``,
-          `\`{TH_SMALL}\` or \`{TOWN_HALL_SMALL}\``,
-          `\`{ROLE}\` or \`{CLAN_ROLE}\``,
-          `\`{ALIAS}\` or \`{CLAN_ALIAS}\``,
-          `\`{ALIASES}\` or \`{CLAN_ALIASES}\``,
-          `\`{CLAN}\` or \`{CLAN_NAME}\``,
-          `\`{DISCORD}\` or \`{DISCORD_NAME}\``,
-          `\`{USERNAME}\` or \`{DISCORD_USERNAME}\``,
-          '',
-          '**Example Formats**',
-          `\`{NAME} | {TH} | {ROLE}\``,
-          `\`{ROLE} | {TH} | {NAME}\``,
-          `\`{NAME} | {TH} | {ALIAS}\``,
-          '',
-          `Run ${this.client.commands.AUTOROLE_REFRESH} to refresh nicknames.`
-        ].join('\n')
-      });
-    };
-    applyRoleLabels();
+    container.addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Large));
 
     const customIds = {
       labels: this.client.uuid(),
@@ -157,11 +135,52 @@ export default class NicknameConfigCommand extends Command {
       member: this.client.uuid()
     };
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setLabel('Set Role Labels').setCustomId(customIds.labels).setStyle(ButtonStyle.Primary)
+    const labelButton = new ButtonBuilder().setLabel('Set Role Labels').setCustomId(customIds.labels).setStyle(ButtonStyle.Secondary);
+    const labelsText = new TextDisplayBuilder();
+    const section = new SectionBuilder();
+
+    const mutateLabelsText = () => {
+      labelsText.setContent(
+        [
+          '**Role Labels**',
+          `- \`Leader    \`: ${escapeMarkdown(state.leader || 'Lead')}`,
+          `- \`Co-Leader \`: ${escapeMarkdown(state.coLeader || 'Co-Lead')}`,
+          `- \`Elder     \`: ${escapeMarkdown(state.admin || 'Eld')}`,
+          `- \`Member    \`: ${escapeMarkdown(state.member || 'Mem')}`
+        ].join('\n')
+      );
+    };
+    mutateLabelsText();
+
+    section.addTextDisplayComponents(labelsText).setButtonAccessory(labelButton);
+    container.addSectionComponents(section);
+    container.addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Large));
+
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        [
+          '**Available Variables**',
+          `- \`{NAME}\` or \`{PLAYER_NAME}\``,
+          `- \`{TH}\` or \`{TOWN_HALL}\``,
+          `- \`{TH_SMALL}\` or \`{TOWN_HALL_SMALL}\``,
+          `- \`{ROLE}\` or \`{CLAN_ROLE}\``,
+          `- \`{ALIAS}\` or \`{CLAN_ALIAS}\``,
+          `- \`{ALIASES}\` or \`{CLAN_ALIASES}\``,
+          `- \`{CLAN}\` or \`{CLAN_NAME}\``,
+          `- \`{DISCORD}\` or \`{DISCORD_NAME}\``,
+          `- \`{USERNAME}\` or \`{DISCORD_USERNAME}\``,
+          '',
+          '**Example Formats**',
+          `- \`{NAME} | {TH} | {ROLE}\``,
+          `- \`{ROLE} | {TH} | {NAME}\``,
+          `- \`{NAME} | {TH} | {ALIAS}\``,
+          '',
+          `Run ${this.client.commands.AUTOROLE_REFRESH} to refresh nicknames.`
+        ].join('\n')
+      )
     );
 
-    const message = await interaction.editReply({ embeds: [embed], components: [row] });
+    const message = await interaction.editReply({ components: [container], withComponents: true });
 
     createInteractionCollector({
       customIds,
@@ -232,11 +251,10 @@ export default class NicknameConfigCommand extends Command {
 
           await modalSubmit.deferUpdate();
 
-          embed.spliceFields(-2, 2);
-          applyRoleLabels();
+          mutateLabelsText();
 
           await this.client.settings.set(interaction.guild, Settings.ROLE_REPLACEMENT_LABELS, state);
-          await modalSubmit.editReply({ embeds: [embed], components: [row] });
+          await modalSubmit.editReply({ withComponents: true, components: [container] });
         } catch (e) {
           if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
             throw e;

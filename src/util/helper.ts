@@ -1,6 +1,15 @@
 import { PlayerSeasonsEntity } from '@app/entities';
 import { APIClan, APIPlayer } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType, StringSelectMenuBuilder } from 'discord.js';
+import {
+  ActionRow,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  ComponentType,
+  MessageActionRowComponent,
+  StringSelectMenuBuilder
+} from 'discord.js';
 import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title, unique } from 'radash';
 import { container } from 'tsyringe';
@@ -104,7 +113,7 @@ export const getExportComponents = (sheet: { spreadsheetUrl: string; spreadsheet
 };
 
 export const getMenuFromMessage = (interaction: ButtonInteraction, selected: string, customId: string) => {
-  const _components = interaction.message.components;
+  const _components = interaction.message.components as ActionRow<MessageActionRowComponent>[];
   const mainIndex = _components.findIndex(({ components }) => components.length === 4);
   const components = _components.slice(mainIndex + 1);
   const component = components.at(0)?.components.at(0);
