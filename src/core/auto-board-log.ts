@@ -88,7 +88,14 @@ export class AutoBoardLog {
   private _components(cache: Cache) {
     const btn = new ButtonBuilder()
       .setStyle(ButtonStyle.Secondary)
-      .setCustomId(JSON.stringify({ cmd: 'legend-leaderboard', is_bb: cache.boardType === 'bb-legend-leaderboard', limit: cache.limit }))
+      .setCustomId(
+        JSON.stringify({
+          cmd: 'legend-leaderboard',
+          is_bb: cache.boardType === 'bb-legend-leaderboard',
+          limit: cache.limit,
+          offset: cache.offset
+        })
+      )
       .setEmoji(EMOJIS.REFRESH);
 
     return new ActionRowBuilder<ButtonBuilder>().addComponents(btn);
@@ -234,6 +241,7 @@ export class AutoBoardLog {
         boardType: data.boardType,
         color: data.color,
         limit: data.limit,
+        offset: data.offset,
         channelId: data.channelId,
         messageId: data.messageId,
         updatedAt: data.updatedAt,
@@ -254,6 +262,7 @@ export class AutoBoardLog {
       boardType: data.boardType,
       color: data.color,
       limit: data.limit,
+      offset: data.offset,
       channelId: data.channelId,
       messageId: data.messageId,
       updatedAt: data.updatedAt,
@@ -318,6 +327,7 @@ interface Cache {
   threadId?: string;
   color?: number | null;
   limit?: number;
+  offset?: number;
   webhook: WebhookClient | null;
   updatedAt: Date;
   deleted?: boolean;
