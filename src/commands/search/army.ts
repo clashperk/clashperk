@@ -46,7 +46,7 @@ export default class ArmyCommand extends Command {
     for (const char of army.split(/(?=[hsiud])/)) {
       // troops
       if (char.startsWith('u')) {
-        const regex = /^u\d+x\d+(-\d+x\d+)*$/;
+        const regex = /^u\d+x\d+(-\d+x\d+)*-?$/;
 
         if (regex.test(char)) {
           troopParts.push(...char.slice(1).split('-'));
@@ -55,7 +55,7 @@ export default class ArmyCommand extends Command {
 
       // spells
       if (char.startsWith('s')) {
-        const regex = /^s\d+x\d+(-\d+x\d+)*$/;
+        const regex = /^s\d+x\d+(-\d+x\d+)*-?$/;
 
         if (regex.test(char)) {
           spellParts.push(...char.slice(1).split('-'));
@@ -64,7 +64,7 @@ export default class ArmyCommand extends Command {
 
       // heroes
       if (char.startsWith('h')) {
-        const regex = /^h(\d+(p\d+)?e\d+_\d+(-\d+(p\d+)?e\d+_\d+)*)$/;
+        const regex = /^h(\d+(p\d+)?e\d+_\d+(-\d+(p\d+)?e\d+_\d+)*)-?$/;
         if (regex.test(char)) {
           heroParts.push(...char.slice(1).split('-'));
         }
@@ -72,7 +72,7 @@ export default class ArmyCommand extends Command {
 
       // cc spells
       if (char.startsWith('d')) {
-        const regex = /^d\d+x\d+(-\d+x\d+)*$/;
+        const regex = /^d\d+x\d+(-\d+x\d+)*-?$/;
 
         if (regex.test(char)) {
           ccSpellParts.push(...char.slice(1).split('-'));
@@ -81,7 +81,7 @@ export default class ArmyCommand extends Command {
 
       // cc troops
       if (char.startsWith('i')) {
-        const regex = /^i\d+x\d+(-\d+x\d+)*$/;
+        const regex = /^i\d+x\d+(-\d+x\d+)*-?$/;
         if (regex.test(char)) {
           ccTroopParts.push(...char.slice(1).split('-'));
         }
