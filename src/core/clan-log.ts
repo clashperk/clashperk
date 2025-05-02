@@ -321,7 +321,7 @@ export class ClanLog extends RootLog {
   }
 
   private formatHeroes(heroes: APIPlayerItem[]) {
-    return heroes.length ? `${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}` : ``;
+    return heroes.length ? `${heroes.map((hero) => `${HEROES[hero.name]}**${hero.level}**`).join(' ')}` : ``;
   }
 
   private divMod(num: number) {

@@ -1,6 +1,7 @@
-import { APIPlayer } from 'clashofclans.js';
+import { APIPlayerItem } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, escapeInlineCode, User } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
+import { makeAbbr } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class CWLMembersCommand extends Command {
@@ -66,8 +67,18 @@ export default class CWLMembersCommand extends Command {
     return interaction.editReply({ embeds: [embed] });
   }
 
-  private heroes(items: APIPlayer['heroes']) {
-    return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
+  private heroes(items: APIPlayerItem[]) {
+    const mapped = items.reduce<Record<string, number>>((record, hero) => {
+      record[makeAbbr(hero.name)] = hero.level;
+      return record;
+    }, {});
+    return [
+      { name: 'BK', level: mapped['BK'] ?? 0 },
+      { name: 'AQ', level: mapped['AQ'] ?? 0 },
+      { name: 'GW', level: mapped['GW'] ?? 0 },
+      { name: 'RC', level: mapped['RC'] ?? 0 },
+      { name: 'MP', level: mapped['MP'] ?? 0 }
+    ];
   }
 
   private padStart(num: number | string) {

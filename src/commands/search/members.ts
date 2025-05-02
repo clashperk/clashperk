@@ -16,7 +16,7 @@ import ms from 'ms';
 import { Args, Command } from '../../lib/handlers.js';
 import { MembersCommandOptions as options } from '../../util/command.options.js';
 import { EMOJIS, HERO_PETS } from '../../util/emojis.js';
-import { padEnd, padStart } from '../../util/helper.js';
+import { makeAbbr, padEnd, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 const roleIds: { [key: string]: number } = {
@@ -273,7 +273,17 @@ export default class MembersCommand extends Command {
   }
 
   private heroes(items: APIPlayerItem[]) {
-    return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
+    const mapped = items.reduce<Record<string, number>>((record, hero) => {
+      record[makeAbbr(hero.name)] = hero.level;
+      return record;
+    }, {});
+    return [
+      { name: 'BK', level: mapped['BK'] ?? 0 },
+      { name: 'AQ', level: mapped['AQ'] ?? 0 },
+      { name: 'GW', level: mapped['GW'] ?? 0 },
+      { name: 'RC', level: mapped['RC'] ?? 0 },
+      { name: 'MP', level: mapped['MP'] ?? 0 }
+    ];
   }
 
   private padStart(num: number | string, pad = 2) {
