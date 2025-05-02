@@ -2,7 +2,7 @@ import { Collections } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { padStart } from '../../util/helper.js';
+import { escapeBackTick, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class SummaryCapitalRaidsCommand extends Command {
@@ -82,7 +82,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
           '\` #   LOOT  HIT \` \u200b **NAME**',
           ...membersGroup.map((mem, i) => {
             const looted = this.padding(mem.capitalResourcesLooted);
-            return `\`${padStart(i + 1, 2)}  ${looted}  ${mem.attacks}/${mem.attackLimit} \` \u200b \u200e${mem.name}`;
+            return `\`${padStart(i + 1, 2)}  ${looted}  ${mem.attacks}/${mem.attackLimit} \` \u200b \u200e${escapeBackTick(mem.name)}`;
           })
         ].join('\n')
       );
