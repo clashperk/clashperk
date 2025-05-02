@@ -33,7 +33,7 @@
     "@googleapis/drive": "^12.0.0",
     "@googleapis/oauth2": "^1.0.7",
     "@googleapis/sheets": "^9.7.0",
-    "@sentry/node": "^9.9.0",
+    "@sentry/node": "^9.15.0",
     "chalk": "^5.4.1",
     "clashofclans.js": "^3.3.22",
     "discord.js": "^14.19.1",
