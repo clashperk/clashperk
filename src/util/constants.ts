@@ -209,6 +209,7 @@ export enum FeatureFlags {
   TRUSTED_GUILD = 'trusted-guild',
   RANDOM_DONATOR = 'random-donator',
   ALLOW_NO_MISSED_ATTACKS_LOG = 'allow-no-missed-attacks-log',
+  CLAN_POINTS_PROJECTION = 'clan-points-projection',
   DONATIONS_RECOVERY = 'donations-recovery',
   CLAN_HISTORY = 'clan-history',
   CLAN_RULES_BUTTON = 'clan-rules-button',

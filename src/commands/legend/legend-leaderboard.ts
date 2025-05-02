@@ -158,6 +158,14 @@ export default class LegendLeaderboardCommand extends Command {
     }
   }
 
+  private calc(clanRank: number) {
+    if (clanRank >= 41) return 3;
+    else if (clanRank >= 31) return 10;
+    else if (clanRank >= 21) return 12;
+    else if (clanRank >= 11) return 25;
+    return 50;
+  }
+
   private async export(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     players: { name: string; tag: string; clan?: APIPlayerClan; townHallLevel: number; trophies: number; attackWins: number }[],

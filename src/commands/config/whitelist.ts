@@ -46,7 +46,7 @@ export default class WhitelistCommand extends Command {
       return interaction.editReply({ content: 'You must provide a user or role and a command to whitelist.' });
 
     if (args.clear) {
-      await this.client.settings.removeFromWhiteList(interaction.guild, { commandId: args.command, userOrRoleId: args.user_or_role.id });
+      await this.client.settings.clearWhitelist(interaction.guild, { commandId: args.command, userOrRoleId: args.user_or_role.id });
       return interaction.editReply({
         content: `### Successfully cleared the whitelist for ${args.user_or_role.toString()} on ${this.client.commands.resolve(args.command)}`
       });
@@ -55,7 +55,7 @@ export default class WhitelistCommand extends Command {
     const isBot = args.user_or_role instanceof User && args.user_or_role.bot;
     if (isBot) return interaction.editReply({ content: 'You cannot whitelist a bot.' });
 
-    await this.client.settings.addToWhiteList(interaction.guild, {
+    await this.client.settings.addToWhitelist(interaction.guild, {
       commandId: args.command,
       userOrRoleId: args.user_or_role.id,
       isRole: args.user_or_role instanceof Role

@@ -89,7 +89,7 @@ export class SettingsProvider {
     }
   }
 
-  public async addToWhiteList(
+  public async addToWhitelist(
     guild: string | Guild,
     { userOrRoleId, isRole, commandId }: { userOrRoleId: string; isRole: boolean; commandId: string }
   ) {
@@ -116,7 +116,7 @@ export class SettingsProvider {
     return this.settingsCollection.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: whiteList } }, { upsert: true });
   }
 
-  public async removeFromWhiteList(guild: string | Guild, { userOrRoleId, commandId }: { userOrRoleId: string; commandId: string }) {
+  public async clearWhitelist(guild: string | Guild, { userOrRoleId, commandId }: { userOrRoleId: string; commandId: string }) {
     const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
     const record = this.settings.get(guildId) || {};
 

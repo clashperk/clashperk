@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, FeatureFlags } from '@app/constants';
 import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayerClan } from 'clashofclans.js';
 import { EmbedBuilder, escapeMarkdown, Guild } from 'discord.js';
@@ -7,6 +7,14 @@ import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { BLUE_NUMBERS } from '../util/emojis.js';
 import { escapeBackTick, padStart } from '../util/helper.js';
+
+function calc(clanRank: number) {
+  if (clanRank >= 41) return 3;
+  else if (clanRank >= 31) return 10;
+  else if (clanRank >= 21) return 12;
+  else if (clanRank >= 11) return 25;
+  return 50;
+}
 
 export const getLegendRankingEmbedMaker = async ({
   clanTags,
@@ -73,11 +81,18 @@ export const getLegendRankingEmbedMaker = async ({
 
   if (limit) players = players.slice(0, limit);
 
+  const totalPoints = players.reduce((total, player, idx) => {
+    const percentage = calc(idx + 1);
+    return total + Math.floor((player.trophies * percentage) / 100);
+  }, 0);
+
   const embed = new EmbedBuilder();
   embed.setColor(client.embed(guild.id));
-  embed.setAuthor({ name: `${guild.name} Legend Leaderboard (${moment(seasonId).format('MMM YYYY')})`, iconURL: guild.iconURL()! });
+  embed.setAuthor({ name: `Legend Leaderboard (${moment(seasonId).format('MMM YYYY')})` });
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
+
+  const isProjectionEnabled = client.isFeatureEnabled(FeatureFlags.CLAN_POINTS_PROJECTION, guild.id);
 
   if (players.length) {
     embed.setDescription(
@@ -91,20 +106,23 @@ export const getLegendRankingEmbedMaker = async ({
           const townHall = padStart(player.townHallLevel, 2);
           return `\u200e${padStart(n + 1, 2)}  ${townHall}  ${trophies}  ${attacks}  ${name}`;
         }),
-        '```'
+        '```',
+        '',
+        isProjectionEnabled ? `**Projected Clan Points:** \`${totalPoints}\`` : ''
       ].join('\n')
     );
   }
 
   if ((!sort_by || sort_by === 'trophies_only') && players.length) {
     embed.setDescription(
-      players
-        .slice(0, 50)
-        .map((player, idx) => {
+      [
+        ...players.slice(0, 50).map((player, idx) => {
           const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
           return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
-        })
-        .join('\n')
+        }),
+        '',
+        isProjectionEnabled ? `**Projected Clan Points:** \`${totalPoints}\`` : ''
+      ].join('\n')
     );
   }
 
