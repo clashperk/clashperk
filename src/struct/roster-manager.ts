@@ -431,7 +431,7 @@ export class RosterManager {
     }
 
     const heroes = player.heroes.filter((hero) => hero.village === 'home');
-    const sumOfHeroLevels = heroes.reduce((prev, curr) => prev + curr.level, 0);
+    const sumOfHeroLevels = heroes.reduce((total, curr) => total + curr.level, 0);
     if (roster.minHeroLevels && sumOfHeroLevels < roster.minHeroLevels) {
       return {
         success: false,

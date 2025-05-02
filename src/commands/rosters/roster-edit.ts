@@ -18,6 +18,7 @@ import { Args, Command } from '../../lib/handlers.js';
 import { IRoster, RosterSortTypes, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
 import { RosterCommandSortOptions } from '../../util/command.options.js';
 import { createInteractionCollector } from '../../util/pagination.js';
+import { isNumber } from 'radash';
 
 export default class RosterEditCommand extends Command {
   public constructor() {
@@ -109,10 +110,10 @@ export default class RosterEditCommand extends Command {
         }
       };
     if (args.name) data.name = args.name;
-    if (args.max_members) data.maxMembers = args.max_members;
-    if (args.min_town_hall) data.minTownHall = args.min_town_hall;
-    if (args.max_town_hall) data.maxTownHall = args.max_town_hall;
-    if (args.min_hero_level) data.minHeroLevels = args.min_hero_level;
+    if (isNumber(args.max_members)) data.maxMembers = args.max_members;
+    if (isNumber(args.min_town_hall)) data.minTownHall = args.min_town_hall;
+    if (isNumber(args.max_town_hall)) data.maxTownHall = args.max_town_hall;
+    if (isNumber(args.min_hero_level)) data.minHeroLevels = args.min_hero_level;
     if (args.roster_role) data.roleId = args.roster_role.id;
     if (args.delete_role) data.roleId = null;
 
