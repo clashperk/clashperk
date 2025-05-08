@@ -207,10 +207,10 @@ export default class MembersCommand extends Command {
           '```',
           `HRO PET TRP SPL  NAME`,
           ...upgrades.map((player) => {
-            const hero = this.padStart(player.hero || '-', 3);
-            const pet = this.padStart(player.pet || '-', 3);
-            const troop = this.padStart(player.troop || '-', 3);
-            const spell = this.padStart(player.spell || '-', 3);
+            const hero = padStart(player.hero || '-', 3);
+            const pet = padStart(player.pet || '-', 3);
+            const troop = padStart(player.troop || '-', 3);
+            const spell = padStart(player.spell || '-', 3);
             return `${hero} ${pet} ${troop} ${spell}  ${player.name}`;
           }),
           '```'
@@ -284,10 +284,6 @@ export default class MembersCommand extends Command {
       { name: 'RC', level: mapped['RC'] ?? 0 },
       { name: 'MP', level: mapped['MP'] ?? 0 }
     ];
-  }
-
-  private padStart(num: number | string, pad = 2) {
-    return num.toString().padStart(pad, ' ');
   }
 
   private async getWarPref(clan: APIClan, players: APIPlayer[]) {

@@ -81,7 +81,7 @@ export const getLegendRankingEmbedMaker = async ({
 
   if (limit) players = players.slice(0, limit);
 
-  const totalPoints = players.reduce((total, player, idx) => {
+  const totalPoints = players.slice(0, 50).reduce((total, player, idx) => {
     const percentage = calc(idx + 1);
     return total + Math.floor((player.trophies * percentage) / 100);
   }, 0);
