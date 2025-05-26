@@ -14,6 +14,8 @@ import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
 import { PatreonUser, guildLimits } from '../../struct/patreon-handler.js';
 
+const defaultClanLimit = 50;
+
 export default class RedeemCommand extends Command {
   public constructor() {
     super('redeem', {
@@ -83,7 +85,7 @@ export default class RedeemCommand extends Command {
       return interaction.editReply('**Something went wrong (unknown pledge), please [contact us.](https://discord.gg/ppuppun)**');
     }
 
-    const isGifted = !!pledge.attributes.is_gifted || ['gifted', 'sponsored'].includes(pledge.attributes.note);
+    const isGifted = !!pledge.attributes.is_gifted || ['gifted', 'sponsored', 'lifetime'].includes(pledge.attributes.note);
 
     if (pledge.attributes.patron_status !== 'active_patron' && !isGifted) {
       return interaction.editReply('**Something went wrong (declined pledge), please [contact us.](https://discord.gg/ppuppun)**');
@@ -114,12 +116,12 @@ export default class RedeemCommand extends Command {
               {
                 id: interaction.guild.id,
                 name: interaction.guild.name,
-                limit: 50
+                limit: defaultClanLimit
               }
             ],
             redeemed: true,
             isGifted: !!pledge.attributes.is_gifted,
-            isLifetime: ['gifted', 'sponsored'].includes(pledge.attributes.note),
+            isLifetime: ['gifted', 'sponsored', 'lifetime'].includes(pledge.attributes.note),
             active: true,
             declined: false,
             cancelled: false,
@@ -162,7 +164,7 @@ export default class RedeemCommand extends Command {
           cancelled: false,
           redeemed: true,
           isGifted: !!pledge.attributes.is_gifted,
-          isLifetime: ['gifted', 'sponsored'].includes(pledge.attributes.note),
+          isLifetime: ['gifted', 'sponsored', 'lifetime'].includes(pledge.attributes.note),
           entitledAmount: pledge.attributes.currently_entitled_amount_cents,
           lifetimeSupport: pledge.attributes.campaign_lifetime_support_cents,
           lastChargeDate: new Date(pledge.attributes.last_charge_date)
@@ -171,7 +173,7 @@ export default class RedeemCommand extends Command {
           guilds: {
             id: interaction.guild.id,
             name: interaction.guild.name,
-            limit: 50
+            limit: defaultClanLimit
           }
         }
       }

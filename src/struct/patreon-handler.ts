@@ -101,7 +101,7 @@ export class PatreonHandler {
   }
 
   public async resyncPatron(patron: WithId<PatreonMembersEntity>, pledge: PatreonMember | null) {
-    const isLifetime = !!(pledge && ['gifted', 'sponsored'].includes(pledge.attributes.note));
+    const isLifetime = !!(pledge && ['gifted', 'sponsored', 'lifetime'].includes(pledge.attributes.note));
     const isGifted = !!(pledge && pledge.attributes.is_gifted);
 
     if (
