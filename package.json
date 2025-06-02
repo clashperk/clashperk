@@ -27,7 +27,7 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@clickhouse/client": "^1.11.0",
+    "@clickhouse/client": "^1.11.1",
     "@elastic/elasticsearch": "^8.6.0",
     "@google-cloud/translate": "^9.0.1",
     "@googleapis/drive": "^12.0.0",
