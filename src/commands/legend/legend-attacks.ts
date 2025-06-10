@@ -24,8 +24,6 @@ export default class LegendAttacksCommand extends Command {
       clans?: string;
       user?: User;
       day?: number;
-      /** @deprecated */
-      tag?: string;
     }
   ) {
     const resolved = await this.getClans(interaction, args);
@@ -52,7 +50,7 @@ export default class LegendAttacksCommand extends Command {
       new ButtonBuilder()
         .setEmoji(EMOJIS.REFRESH)
         .setStyle(ButtonStyle.Secondary)
-        .setCustomId(JSON.stringify({ cmd: this.id, clans: resolvedArgs, tag: args.tag }))
+        .setCustomId(JSON.stringify({ cmd: this.id, clans: resolvedArgs }))
     );
 
     const isCurrentDay = Util.getLegendDay() === getLegendTimestampAgainstDay(args.day).day;
@@ -173,10 +171,7 @@ export default class LegendAttacksCommand extends Command {
     return embed;
   }
 
-  private async getClans(
-    interaction: CommandInteraction<'cached'>,
-    args: { clans?: string; tag?: string; user?: User; location?: string }
-  ) {
+  private async getClans(interaction: CommandInteraction<'cached'>, args: { clans?: string; user?: User }) {
     const isSingleTag = args.clans && this.client.coc.isValidTag(this.client.coc.fixTag(args.clans));
 
     if (args.clans && !isSingleTag) {
@@ -187,9 +182,9 @@ export default class LegendAttacksCommand extends Command {
       if (_clans.length) return { clans: _clans, resolvedArgs };
     }
 
-    const clan = await this.client.resolver.resolveClan(interaction, args?.clans ?? args.tag ?? args.user?.id);
+    const clan = await this.client.resolver.resolveClan(interaction, args?.clans ?? args.user?.id);
     if (!clan) return;
 
-    return { clans: [clan], resolvedArgs: null };
+    return { clans: [clan], resolvedArgs: clan.tag };
   }
 }
