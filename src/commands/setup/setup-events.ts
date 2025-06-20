@@ -79,6 +79,7 @@ export default class SetupEventsCommand extends Command {
     const state = {
       allowedEvents: value?.allowedEvents ?? [],
       durationOverrides: value?.durationOverrides ?? [],
+      tooLargeImage: value?.tooLargeImage ?? false,
 
       clan_games_image_url: value?.images?.clan_games_image_url ?? '',
       raid_week_image_url: value?.images?.raid_week_image_url ?? '',
@@ -146,7 +147,10 @@ export default class SetupEventsCommand extends Command {
                 ? `${state[locationsMap[event] as keyof typeof state] as string}`
                 : null;
               return `- ${eventName}${location ? `\n  - ${location}` : ''}`;
-            })
+            }),
+
+          '',
+          state.tooLargeImage ? '**Action Required: The images you provided are too large (>10MB), so they will not be used.**' : ''
         ].join('\n')
       );
 
@@ -191,6 +195,9 @@ export default class SetupEventsCommand extends Command {
               enabled: true,
               allowedEvents: [...state.allowedEvents],
               durationOverrides: [...state.durationOverrides]
+            },
+            $unset: {
+              tooLargeImage: true
             }
           },
           { returnDocument: 'after' }
@@ -297,6 +304,7 @@ export default class SetupEventsCommand extends Command {
           state.cwl_image_url = URL_REGEX.test(cwl_image_url) ? cwl_image_url : '';
           state.raid_week_image_url = URL_REGEX.test(raid_week_image_url) ? raid_week_image_url : '';
           state.clan_games_image_url = URL_REGEX.test(clan_games_image_url) ? clan_games_image_url : '';
+          state.tooLargeImage = false;
 
           await modalSubmit.deferUpdate();
           await modalSubmit.editReply({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });

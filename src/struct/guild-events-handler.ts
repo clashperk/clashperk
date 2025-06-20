@@ -1,4 +1,5 @@
 import { Collections, FeatureFlags } from '@app/constants';
+import { addBreadcrumb, captureException } from '@sentry/node';
 import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, PermissionFlagsBits, time } from 'discord.js';
 import moment from 'moment';
 import { EMOJIS } from '../util/emojis.js';
@@ -55,6 +56,10 @@ export class GuildEventsHandler {
       'raid_week_start',
       'raid_week_end'
     ];
+  }
+
+  public get collection() {
+    return this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS);
   }
 
   public getEvents(lng: string, { filtered, useGraceTime }: { filtered: boolean; useGraceTime: boolean }) {
@@ -189,10 +194,10 @@ export class GuildEventsHandler {
         scheduledEndTime: new Date(endTime),
         entityMetadata: { location: guildEvent.locations?.[locationsMap[event.type]] ?? 'in game' },
         description: event.value,
-        image: guildEvent.images?.[imageMaps[event.type]]
+        image: !guildEvent.tooLargeImage ? guildEvent.images?.[imageMaps[event.type]] : null
       });
 
-      await this.client.db.collection(Collections.GUILD_EVENTS).updateOne(
+      await this.collection.updateOne(
         { guildId: guild.id },
         {
           $set: {
@@ -204,7 +209,7 @@ export class GuildEventsHandler {
   }
 
   public async init() {
-    const cursor = this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).find({
+    const cursor = this.collection.find({
       guildId: { $in: this.client.guilds.cache.map((guild) => guild.id) },
       enabled: true
     });
@@ -218,7 +223,33 @@ export class GuildEventsHandler {
 
         if (this.client.settings.hasCustomBot(guild) && !this.client.isCustom()) continue;
 
-        await this.create(guild, guildEvent);
+        try {
+          await this.create(guild, guildEvent);
+        } catch (error) {
+          if (error.message.includes('BINARY_TYPE_MAX_SIZE')) {
+            await this.collection.updateOne(
+              { guildId: guild.id },
+              {
+                $set: {
+                  tooLargeImage: true
+                }
+              }
+            );
+          }
+
+          addBreadcrumb({
+            message: 'guild_event_scheduler_errored',
+            category: 'guild_event_scheduler',
+            level: 'error',
+            data: {
+              guildId: guild.id,
+              name: guild.name,
+              error: error.message
+            }
+          });
+          captureException(error);
+          this.client.logger.error(error.message, { label: 'GuildEventsHandler' });
+        }
       }
     } finally {
       setTimeout(this.init.bind(this), 1000 * 60 * 30).unref();
@@ -232,6 +263,7 @@ export interface GuildEventData {
   events: Record<string, number>;
   allowedEvents?: string[];
   images?: Record<string, string>;
+  tooLargeImage?: boolean;
   locations?: Record<string, string | null>;
   createdAt: Date;
   durationOverrides?: string[];
