@@ -236,6 +236,8 @@ export class Client extends DiscordClient {
       if (process.env.NODE_ENV === 'production') {
         await this.enqueue();
       }
+
+      this.guildEvents.init();
     });
 
     this.logger.info('Connecting to the Gateway', { label: 'DISCORD' });
