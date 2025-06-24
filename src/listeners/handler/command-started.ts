@@ -32,15 +32,15 @@ export default class CommandStartedListener extends Listener {
     mixpanel.track('Command used', {
       distinct_id: interaction.user.id,
       command_id: command.id,
+      application_command_name: args.commandName || null,
       user_id: interaction.user.id,
       username: interaction.user.username,
       display_name: interaction.user.displayName,
       guild_id: interaction.guildId ?? '0',
       guild_name: interaction.guild?.name ?? 'DM',
       interaction_type: InteractionType[interaction.type],
-      sub_command_id: args.command ?? args.option ?? null,
       args: flattenArgs(args),
-      is_application_command: Boolean(interaction.isCommand() && [command.id, ...(command.aliases ?? [])].includes(interaction.commandName))
+      is_application_command: interaction.isCommand()
     });
 
     mixpanel.people.set(interaction.user.id, {
@@ -66,7 +66,7 @@ export default class CommandStartedListener extends Listener {
         id: interaction.id,
         locale: interaction.locale,
         type: InteractionType[interaction.type],
-        command: interaction.isCommand() ? interaction.commandName : null,
+        command: interaction.isCommand() ? args.commandName : null,
         customId: interaction.isMessageComponent() ? interaction.customId : null
       },
       args
