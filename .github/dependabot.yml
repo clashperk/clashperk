@@ -23,3 +23,7 @@ updates:
     ignore:
       - dependency-name: 'i18next'
       - dependency-name: 'posthog-node'
+      - dependency-name: '@google-cloud/*'
+      - dependency-name: '@googleapis/*'
+      - dependency-name: 'google-auth-library'
+      - dependency-name: '@elastic/elasticsearch'

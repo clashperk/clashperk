@@ -154,7 +154,7 @@ export default class NicknameConfigCommand extends Command {
 
     section.addTextDisplayComponents(labelsText).setButtonAccessory(labelButton);
     container.addSectionComponents(section);
-    container.addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Large));
+    container.addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Small));
 
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(

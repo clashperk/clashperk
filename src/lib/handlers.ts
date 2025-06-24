@@ -188,7 +188,7 @@ export class CommandHandler extends BaseHandler {
     return result;
   }
 
-  public rawArgs(interaction: CommandInteraction | AutocompleteInteraction) {
+  public rawArgs(interaction: ChatInputCommandInteraction | AutocompleteInteraction) {
     const resolved: Record<string, unknown> = {};
     for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
       const key = name.toString();
@@ -225,7 +225,7 @@ export class CommandHandler extends BaseHandler {
     return resolved;
   }
 
-  public argumentRunner(interaction: CommandInteraction | AutocompleteInteraction, command: Command) {
+  public argumentRunner(interaction: ChatInputCommandInteraction | AutocompleteInteraction, command: Command) {
     const args = command.args(interaction);
 
     const resolved: Record<string, unknown> = {};
@@ -288,7 +288,7 @@ export class CommandHandler extends BaseHandler {
   /** This method should only be used with CommandInteraction */
   public continue(interaction: CommandInteraction | MessageComponentInteraction, command: Command) {
     if (this.preInhibitor(interaction, command)) return;
-    const args = this.argumentRunner(interaction as CommandInteraction, command);
+    const args = this.argumentRunner(interaction as ChatInputCommandInteraction, command);
     return this.exec(interaction, command, args);
   }
 

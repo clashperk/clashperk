@@ -5,6 +5,7 @@ import {
   AnyThreadChannel,
   ButtonBuilder,
   ButtonStyle,
+  ChatInputCommandInteraction,
   CommandInteraction,
   ComponentType,
   EmbedBuilder,
@@ -49,7 +50,7 @@ export default class RemindersCreateCommand extends Command {
   }
 
   public exec(
-    interaction: CommandInteraction<'cached'>,
+    interaction: ChatInputCommandInteraction<'cached'>,
     args: { command: string; type: string } & {
       duration: string;
       message: string;
@@ -69,7 +70,7 @@ export default class RemindersCreateCommand extends Command {
   }
 
   private async clanWarsReminders(
-    interaction: CommandInteraction<'cached'>,
+    interaction: ChatInputCommandInteraction<'cached'>,
     args: {
       duration: string;
       message: string;
@@ -420,7 +421,7 @@ export default class RemindersCreateCommand extends Command {
   }
 
   private async clanGamesReminders(
-    interaction: CommandInteraction<'cached'>,
+    interaction: ChatInputCommandInteraction<'cached'>,
     args: { duration: string; message: string; channel: TextChannel | AnyThreadChannel; clans?: string }
   ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
@@ -667,7 +668,7 @@ export default class RemindersCreateCommand extends Command {
   }
 
   private async capitalReminders(
-    interaction: CommandInteraction<'cached'>,
+    interaction: ChatInputCommandInteraction<'cached'>,
     args: { duration: string; message: string; channel: TextChannel | AnyThreadChannel; clans?: string }
   ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });

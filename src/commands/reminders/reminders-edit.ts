@@ -4,7 +4,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   ComponentType,
   EmbedBuilder,
   ModalBuilder,
@@ -28,7 +28,7 @@ export default class RemindersEditCommand extends Command {
   }
 
   public exec(
-    interaction: CommandInteraction<'cached'>,
+    interaction: ChatInputCommandInteraction<'cached'>,
     args: { command: string; type: string } & { id: string; disable?: boolean; duration?: string }
   ) {
     const command = {
@@ -41,7 +41,10 @@ export default class RemindersEditCommand extends Command {
     return command(interaction, args);
   }
 
-  private async clanWarsReminders(interaction: CommandInteraction<'cached'>, args: { id: string; disable?: boolean; duration?: string }) {
+  private async clanWarsReminders(
+    interaction: ChatInputCommandInteraction<'cached'>,
+    args: { id: string; disable?: boolean; duration?: string }
+  ) {
     const collection = this.client.db.collection<ClanWarRemindersEntity>(Collections.WAR_REMINDERS);
 
     const reminders = await collection.find({ guild: interaction.guild.id }).toArray();
@@ -365,7 +368,7 @@ export default class RemindersEditCommand extends Command {
     });
   }
 
-  private async clanGamesReminders(interaction: CommandInteraction<'cached'>, args: { id: string; duration?: string }) {
+  private async clanGamesReminders(interaction: ChatInputCommandInteraction<'cached'>, args: { id: string; duration?: string }) {
     const collection = this.client.db.collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS);
 
     const reminders = await collection.find({ guild: interaction.guild.id }).toArray();
@@ -593,7 +596,7 @@ export default class RemindersEditCommand extends Command {
     });
   }
 
-  private async capitalReminders(interaction: CommandInteraction<'cached'>, args: { id: string; duration?: string }) {
+  private async capitalReminders(interaction: ChatInputCommandInteraction<'cached'>, args: { id: string; duration?: string }) {
     const collection = this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS);
 
     const reminders = await collection.find({ guild: interaction.guild.id }).toArray();
