@@ -3,7 +3,8 @@ import {
   BUILDER_HALL_LEVELS_FOR_ROLES,
   MAX_TOWN_HALL_LEVEL,
   PLAYER_LEAGUE_NAMES,
-  TOWN_HALL_LEVELS_FOR_ROLES
+  TOWN_HALL_LEVELS_FOR_ROLES,
+  TROPHY_ROLES
 } from '@app/constants';
 import {
   APIApplicationCommandBasicOption,
@@ -3000,6 +3001,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
               ({
                 name: league,
                 description: `${title(league)} league role.`,
+                type: ApplicationCommandOptionType.Role
+              }) satisfies APIApplicationCommandBasicOption
+          ),
+          ...TROPHY_ROLES.map(
+            (range) =>
+              ({
+                name: `${range.min}_${range.max}`,
+                description: `Trophy range ${range.min} - ${range.max} role.`,
                 type: ApplicationCommandOptionType.Role
               }) satisfies APIApplicationCommandBasicOption
           ),

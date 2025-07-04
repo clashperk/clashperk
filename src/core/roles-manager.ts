@@ -119,6 +119,7 @@ export class RolesManager {
     const verifiedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_VERIFIED_ROLE, null);
     const accountLinkedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_LINKED_ROLE, null);
     const guestRoleId = this.client.settings.get<string>(guildId, Settings.GUEST_ROLE, null);
+    const trophyRoles = this.client.settings.get<Record<string, TrophyRolesConfig>>(guildId, Settings.TROPHY_ROLES, {});
 
     const clanRoles = clans.reduce<GuildRolesDto['clanRoles']>((prev, curr) => {
       const roles = curr.roles ?? {};
@@ -164,6 +165,7 @@ export class RolesManager {
       builderHallRoles,
       clanRoles,
       eosPushClans,
+      trophyRoles: Object.values(trophyRoles),
       eosPushClanRoles,
       verifiedOnlyClanRoles
     };
@@ -196,7 +198,8 @@ export class RolesManager {
       ...leagueRoles,
       ...townHallRoles,
       ...clanRoles,
-      ...rolesMap.eosPushClanRoles
+      ...rolesMap.eosPushClanRoles,
+      ...rolesMap.trophyRoles.map((range) => range.roleId)
     ].filter((id) => id);
 
     return {
@@ -259,6 +262,14 @@ export class RolesManager {
       // Builder League Roles
       if (rolesMap.allowNonFamilyLeagueRoles || (inFamily && !rolesMap.allowNonFamilyLeagueRoles)) {
         rolesToInclude.push(rolesMap.builderLeagueRoles[BUILDER_BASE_LEAGUE_MAPS[player.builderLeagueId]]);
+      }
+
+      // Trophy Ranges
+      if (rolesMap.trophyRoles.length && player.trophies >= 5000) {
+        const trophyRange = rolesMap.trophyRoles.find((range) => player.trophies >= range.min && player.trophies <= range.max);
+        if (trophyRange) {
+          rolesToInclude.push(trophyRange.roleId);
+        }
       }
 
       if (player.isVerified) rolesToInclude.push(rolesMap.verifiedRoleId);
@@ -961,6 +972,7 @@ interface GuildRolesDto {
   builderHallRoles: { [level: string]: string };
   leagueRoles: { [leagueId: string]: string };
   builderLeagueRoles: { [leagueId: string]: string };
+  trophyRoles: TrophyRolesConfig[];
   clanRoles: {
     [clanTag: string]: {
       roles: { [clanRole: string]: string };
@@ -1014,4 +1026,11 @@ export interface ExclusionListConfig {
   leagueRoles?: boolean;
   builderLeagueRoles?: boolean;
   guestRole?: boolean;
+}
+
+export interface TrophyRolesConfig {
+  key: string; // "min_max"
+  min: number;
+  max: number;
+  roleId: string;
 }

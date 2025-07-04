@@ -190,7 +190,8 @@ export const enum Settings {
   ROLE_ADDITION_DELAYS = 'roleAdditionDelays',
   DELAY_EXCLUSION_LIST = 'delayExclusionList',
   DISABLED_PATREON_IDS = 'disabledPatreonIds',
-  USE_GROUPED_TODO_LIST = 'useGroupedTodoList'
+  USE_GROUPED_TODO_LIST = 'useGroupedTodoList',
+  TROPHY_ROLES = 'trophyRoles'
 }
 
 export enum ElasticIndex {
@@ -358,6 +359,14 @@ export const BUILDER_BASE_LEAGUE_MAPS: Record<string, string> = {
 export const PLAYER_LEAGUE_NAMES = Array.from(new Set(Object.values(PLAYER_LEAGUE_MAPS)));
 
 export const BUILDER_BASE_LEAGUE_NAMES = Array.from(new Set(Object.values(BUILDER_BASE_LEAGUE_MAPS)));
+
+export const TROPHY_ROLES = [
+  { min: 5200, max: 5249 },
+  { min: 5250, max: 5499 },
+  { min: 5500, max: 5749 },
+  { min: 5750, max: 5999 },
+  { min: 6000, max: 8000 }
+];
 
 export const CLAN_GAMES_MINIMUM_POINTS = [
   1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4500, 5000

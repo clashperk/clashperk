@@ -1,6 +1,9 @@
-import { PLAYER_LEAGUE_NAMES, Settings } from '@app/constants';
+import { PLAYER_LEAGUE_NAMES, Settings, TROPHY_ROLES } from '@app/constants';
 import { CommandInteraction, Guild, MessageFlags, Role } from 'discord.js';
+import { TrophyRolesConfig } from '../../core/roles-manager.js';
 import { Args, Command } from '../../lib/handlers.js';
+
+const TROPHY_RANGE_KEYS = TROPHY_ROLES.map((range) => `${range.min}_${range.max}`);
 
 export default class AutoLeagueRoleCommand extends Command {
   public constructor() {
@@ -37,26 +40,43 @@ export default class AutoLeagueRoleCommand extends Command {
       );
     }
 
+    const trophyRanges: Record<string, Role> = {};
+    for (const key in args) {
+      if (TROPHY_RANGE_KEYS.includes(key)) {
+        const range = TROPHY_ROLES.find((range) => `${range.min}_${range.max}` === key);
+        if (range && args[key]) {
+          trophyRanges[key] = args[key];
+        }
+      }
+    }
+
     const rolesMap: Record<string, Role> = {};
     for (const key in args) {
-      if (!PLAYER_LEAGUE_NAMES.includes(key)) continue;
-      rolesMap[key] = args[key]!;
+      if (PLAYER_LEAGUE_NAMES.includes(key)) {
+        rolesMap[key] = args[key]!;
+      }
     }
-    const selected = Object.entries(rolesMap).map(([league, role]) => ({ league, role }));
+
+    const selectedLeagueRoles = Object.entries(rolesMap).map(([league, role]) => ({ league, role }));
+    const selectedTrophyRoles = Object.entries(trophyRanges).map(([key, role]) => {
+      const [min, max] = key.split('_').map(Number);
+      return { min, max, role, key };
+    });
+    const selectedRoles = [...selectedLeagueRoles, ...selectedTrophyRoles];
 
     if (typeof args.allowExternal === 'boolean') {
       await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, Boolean(args.allowExternal));
-      if (!selected.length) {
+      if (!selectedRoles.length) {
         return interaction.editReply('League roles settings updated.');
       }
     }
 
-    if (!selected.length) {
+    if (!selectedRoles.length) {
       return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
     }
 
-    if (selected.some((r) => this.isSystemRole(r.role, interaction.guild))) {
-      const systemRoles = selected.filter(({ role }) => this.isSystemRole(role, interaction.guild));
+    if (selectedRoles.some((r) => this.isSystemRole(r.role, interaction.guild))) {
+      const systemRoles = selectedRoles.filter(({ role }) => this.isSystemRole(role, interaction.guild));
       return interaction.editReply(
         `${this.i18n('command.autorole.no_system_roles', { lng: interaction.locale })} (${systemRoles
           .map((r) => `<@&${r.role.id}>`)
@@ -64,28 +84,54 @@ export default class AutoLeagueRoleCommand extends Command {
       );
     }
 
-    if (selected.some((r) => this.isHigherRole(r.role, interaction.guild))) {
+    if (selectedRoles.some((r) => this.isHigherRole(r.role, interaction.guild))) {
       return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
     }
 
-    const rolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.LEAGUE_ROLES, {});
-    Object.assign(rolesConfig, Object.fromEntries(selected.map((s) => [s.league, s.role.id])));
-    await this.client.settings.set(interaction.guildId, Settings.LEAGUE_ROLES, rolesConfig);
+    const leagueRolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.LEAGUE_ROLES, {});
+    const trophyRolesConfig = this.client.settings.get<Record<string, TrophyRolesConfig>>(interaction.guildId, Settings.TROPHY_ROLES, {});
+
+    Object.assign(leagueRolesConfig, Object.fromEntries(selectedLeagueRoles.map((selected) => [selected.league, selected.role.id])));
+    Object.assign(
+      trophyRolesConfig,
+      Object.fromEntries(
+        selectedTrophyRoles.map((selected) => [
+          selected.key,
+          { key: selected.key, min: selected.min, max: selected.max, roleId: selected.role.id }
+        ])
+      )
+    );
+
+    await this.client.settings.set(interaction.guildId, Settings.LEAGUE_ROLES, leagueRolesConfig);
+    await this.client.settings.set(interaction.guildId, Settings.TROPHY_ROLES, trophyRolesConfig);
 
     this.client.storage.updateClanLinks(interaction.guildId);
     // TODO: Refresh Roles
 
-    const roles = PLAYER_LEAGUE_NAMES.map((league) => ({
+    const leagueRoles = PLAYER_LEAGUE_NAMES.map((league) => ({
       league,
-      role: rolesConfig[league]
+      role: leagueRolesConfig[league]
     }));
+    const trophyRoles = TROPHY_ROLES.map((range) => {
+      const key = `${range.min}_${range.max}`;
+      return {
+        key,
+        min: range.min,
+        max: range.max,
+        role: trophyRolesConfig[key]?.roleId
+      };
+    });
 
     return interaction.editReply({
       allowedMentions: { parse: [] },
       content: [
-        roles
+        '**League Roles**',
+        leagueRoles
           .map(({ league, role }) => `${league.replace(/\b(\w)/g, (char) => char.toUpperCase())} ${role ? `<@&${role}>` : ''}`)
           .join('\n'),
+        '',
+        '**Trophy Roles**',
+        trophyRoles.map(({ min, max, role }) => `${min} - ${max} ${role ? `<@&${role}>` : ''}`).join('\n'),
         '',
         args.allowExternal ? '' : '(Family Only) Roles will be given to family members only.'
       ].join('\n')
