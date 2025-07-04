@@ -263,8 +263,12 @@ export default class RedeemCommand extends Command {
   }
 
   private redeemed(user: PatreonMembersEntity) {
-    if (user.note in guildLimits && user.guilds.length >= guildLimits[user.note]) return true;
-    if (user.rewardId in guildLimits && user.guilds.length >= guildLimits[user.rewardId]) return true;
+    if (user.note in guildLimits) {
+      return user.guilds.length >= guildLimits[user.note];
+    }
+    if (user.rewardId in guildLimits) {
+      return user.guilds.length >= guildLimits[user.rewardId];
+    }
     return false;
   }
 }
