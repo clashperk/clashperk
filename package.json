@@ -75,7 +75,7 @@
     "knip": "^5.58.1",
     "prettier": "^3.6.0",
     "rimraf": "^6.0.1",
-    "tsc-alias": "^1.8.11",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.19.4",
     "typescript": "^5.8.2"
   },
