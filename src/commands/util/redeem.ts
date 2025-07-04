@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
-import { PatreonUser, guildLimits } from '../../struct/patreon-handler.js';
+import { CustomTiers, PatreonUser, guildLimits } from '../../struct/patreon-handler.js';
 
 const defaultClanLimit = 50;
 
@@ -85,7 +85,7 @@ export default class RedeemCommand extends Command {
       return interaction.editReply('**Something went wrong (unknown pledge), please [contact us.](https://discord.gg/ppuppun)**');
     }
 
-    const isGifted = !!pledge.attributes.is_gifted || ['gifted', 'sponsored', 'lifetime'].includes(pledge.attributes.note);
+    const isGifted = !!pledge.attributes.is_gifted || Object.values(CustomTiers).includes(pledge.attributes.note);
 
     if (pledge.attributes.patron_status !== 'active_patron' && !isGifted) {
       return interaction.editReply('**Something went wrong (declined pledge), please [contact us.](https://discord.gg/ppuppun)**');
@@ -121,7 +121,9 @@ export default class RedeemCommand extends Command {
             ],
             redeemed: true,
             isGifted: !!pledge.attributes.is_gifted,
-            isLifetime: ['gifted', 'sponsored', 'lifetime'].includes(pledge.attributes.note),
+            note: pledge.attributes.note,
+            status: pledge.attributes.patron_status ?? 'unknown_status',
+            isLifetime: Object.values(CustomTiers).includes(pledge.attributes.note),
             active: true,
             declined: false,
             cancelled: false,
@@ -164,7 +166,9 @@ export default class RedeemCommand extends Command {
           cancelled: false,
           redeemed: true,
           isGifted: !!pledge.attributes.is_gifted,
-          isLifetime: ['gifted', 'sponsored', 'lifetime'].includes(pledge.attributes.note),
+          note: pledge.attributes.note,
+          status: pledge.attributes.patron_status ?? 'unknown_status',
+          isLifetime: Object.values(CustomTiers).includes(pledge.attributes.note),
           entitledAmount: pledge.attributes.currently_entitled_amount_cents,
           lifetimeSupport: pledge.attributes.campaign_lifetime_support_cents,
           lastChargeDate: new Date(pledge.attributes.last_charge_date)
@@ -259,6 +263,7 @@ export default class RedeemCommand extends Command {
   }
 
   private redeemed(user: PatreonMembersEntity) {
+    if (user.note in guildLimits && user.guilds.length >= guildLimits[user.note]) return true;
     if (user.rewardId in guildLimits && user.guilds.length >= guildLimits[user.rewardId]) return true;
     return false;
   }

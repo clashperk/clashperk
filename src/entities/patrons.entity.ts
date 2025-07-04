@@ -1,3 +1,5 @@
+import { CustomTiers } from '../struct/patreon-handler.js';
+
 export interface PatreonMembersEntity {
   id: string;
   name: string;
@@ -16,14 +18,14 @@ export interface PatreonMembersEntity {
   active: boolean;
   declined: boolean;
   cancelled: boolean;
-  paymentMethod: string;
 
   entitledAmount: number;
   lifetimeSupport: number;
 
-  sponsored: boolean;
   isGifted: boolean;
   isLifetime: boolean;
+  note: CustomTiers;
+  patronStatus: string;
 
   applicationId?: string;
 

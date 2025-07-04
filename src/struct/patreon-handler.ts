@@ -8,16 +8,33 @@ import { Client } from './client.js';
 export const rewards = {
   bronze: '3705318',
   silver: '4742718',
+  gold: '5352215',
   /** @deprecated */
-  platinum: '21789215',
-  gold: '5352215'
+  gold_discontinued: '21789215'
 };
+
+export enum CustomTiers {
+  GIFTED = 'gifted',
+  SPONSORED = 'sponsored',
+  SPONSORED_CUSTOM_BOT = 'sponsored_custom_bot',
+  LIFETIME = 'lifetime',
+  LIFETIME_CUSTOM_BOT = 'lifetime_custom_bot'
+}
+
+export const customTierLimits = {
+  [CustomTiers.GIFTED]: 3,
+  [CustomTiers.SPONSORED]: 3,
+  [CustomTiers.SPONSORED_CUSTOM_BOT]: 5,
+  [CustomTiers.LIFETIME]: 5,
+  [CustomTiers.LIFETIME_CUSTOM_BOT]: 10
+} as const;
 
 export const guildLimits: Record<string, number> = {
   [rewards.bronze]: 1,
   [rewards.silver]: 5,
-  [rewards.platinum]: 5,
-  [rewards.gold]: 10
+  [rewards.gold]: 10,
+  [rewards.gold_discontinued]: 5,
+  ...customTierLimits
 };
 
 export class PatreonHandler {
@@ -101,8 +118,9 @@ export class PatreonHandler {
   }
 
   public async resyncPatron(patron: WithId<PatreonMembersEntity>, pledge: PatreonMember | null) {
-    const isLifetime = !!(pledge && ['gifted', 'sponsored', 'lifetime'].includes(pledge.attributes.note));
+    const isLifetime = !!(pledge && Object.values(CustomTiers).includes(pledge.attributes.note));
     const isGifted = !!(pledge && pledge.attributes.is_gifted);
+    const patronStatus = pledge?.attributes.patron_status ?? 'unknown_status';
 
     if (
       pledge &&
@@ -111,7 +129,9 @@ export class PatreonHandler {
         pledge.attributes.currently_entitled_amount_cents === patron.entitledAmount &&
         new Date(pledge.attributes.last_charge_date).getTime() === patron.lastChargeDate.getTime() &&
         isGifted === patron.isGifted &&
-        isLifetime === patron.isLifetime
+        isLifetime === patron.isLifetime &&
+        patron.note === pledge.attributes.note &&
+        patronStatus === patron.patronStatus
       )
     ) {
       await this.collection.updateOne(
@@ -122,7 +142,9 @@ export class PatreonHandler {
             entitledAmount: pledge.attributes.currently_entitled_amount_cents,
             lifetimeSupport: pledge.attributes.campaign_lifetime_support_cents,
             isGifted,
-            isLifetime
+            isLifetime,
+            note: pledge.attributes.note,
+            status: patronStatus
           }
         }
       );
@@ -138,7 +160,11 @@ export class PatreonHandler {
         for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
         for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
 
-        if (![rewards.gold, rewards.platinum].includes(rewardId) && !patron.sponsored && patron.applicationId) {
+        if (
+          ![rewards.gold, rewards.gold_discontinued].includes(rewardId) &&
+          ![CustomTiers.LIFETIME_CUSTOM_BOT, CustomTiers.SPONSORED_CUSTOM_BOT].includes(patron.note) &&
+          patron.applicationId
+        ) {
           await this.client.customBotManager.suspendService(patron.applicationId);
         }
       }
@@ -162,7 +188,7 @@ export class PatreonHandler {
     const canceled =
       (patron.active && isFormer) ||
       (patron.active && isDeclined && this.gracePeriodExpired(new Date(pledge.attributes.last_charge_date))) ||
-      (patron.active && !pledge && !patron.paymentMethod);
+      (patron.active && !pledge && patron.userId !== '00000000');
 
     // Cancel Subscription
     if (canceled) {
@@ -240,7 +266,7 @@ export interface PatreonMember {
     last_charge_date: string;
     currently_entitled_amount_cents: number;
     is_gifted: boolean;
-    note: string;
+    note: CustomTiers;
     campaign_lifetime_support_cents: number;
     pledge_relationship_start: string;
     patron_status: 'active_patron' | 'declined_patron' | 'former_patron' | null;

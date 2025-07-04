@@ -15,7 +15,7 @@ import {
 import moment from 'moment';
 import { WithId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
-import { rewards } from '../../struct/patreon-handler.js';
+import { CustomTiers, rewards } from '../../struct/patreon-handler.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -30,8 +30,8 @@ export default class SetupCustomBotCommand extends Command {
   }
 
   private isEligible(patron: WithId<PatreonMembersEntity>) {
-    if (patron.rewardId === rewards.gold || patron.rewardId === rewards.platinum) return true;
-    if (patron.rewardId === rewards.silver || patron.rewardId === rewards.bronze) return patron.sponsored;
+    if (patron.rewardId === rewards.gold || patron.rewardId === rewards.gold_discontinued) return true;
+    return patron.note === CustomTiers.LIFETIME_CUSTOM_BOT || patron.note === CustomTiers.SPONSORED_CUSTOM_BOT;
   }
 
   private isAllowedGuild(patron: PatreonMembersEntity, guildId: string) {
