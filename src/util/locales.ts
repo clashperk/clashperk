@@ -110,6 +110,7 @@ export const common = {
     roster_change_log: 'Roster Change Log',
     maintenance_break_log: 'Maintenance Break Log',
     role_refresh_button: 'Role Refresh Button',
+    my_rosters_button: 'My Rosters Button',
     welcome_log: 'Welcome Log',
     custom_button: 'Custom Button',
 

@@ -1925,7 +1925,10 @@ export enum RosterLog {
   CHANGE_ROSTER = 'CHANGE_ROSTER'
 }
 
-export function rosterLabel(roster: IRoster) {
+export function rosterLabel(roster: IRoster, hyperlink = false) {
+  if (roster.clan && hyperlink) {
+    return `${roster.name} ([${roster.clan.name}](http://cprk.us/c/${roster.clan.tag.replace('#', '')}))`;
+  }
   if (roster.clan) {
     return `${roster.name} (${roster.clan.name})`;
   }

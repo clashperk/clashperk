@@ -1,5 +1,5 @@
 import { Settings } from '@app/constants';
-import { CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
 import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 import { IRoster, ROSTER_MAX_LIMIT, rosterLabel } from '../../struct/roster-manager.js';
@@ -16,7 +16,12 @@ export default class RosterListCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player?: string; name?: string; clan?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+    args: { user?: User; player?: string; name?: string; clan?: string }
+  ) {
+    if (interaction.isButton()) args.user = interaction.user;
+
     const query: Filter<IRoster> = { guildId: interaction.guild.id };
 
     if (args.user) query['members.userId'] = args.user.id;
@@ -70,8 +75,8 @@ export default class RosterListCommand extends Command {
               username: member.username,
               townHallLevel: member.townHallLevel,
               roster: {
+                ...roster,
                 name: roster.name,
-                clan: roster.clan?.name,
                 memberCount: roster.memberCount,
                 maxMembers: roster.maxMembers,
                 isClosed: this.client.rosterManager.isClosed(roster)
@@ -104,9 +109,9 @@ export default class RosterListCommand extends Command {
               return [
                 `- ${member.name} (${member.tag})`,
                 ...member.rosters.map((roster) => {
-                  const closed = roster.isClosed ? '[CLOSED] ' : '- ';
+                  const closed = roster.isClosed ? '[CLOSED]' : '-';
                   const memberCount = `${roster.memberCount}/${roster.maxMembers ?? ROSTER_MAX_LIMIT}`;
-                  return ` - ${escapeMarkdown(`\u200e${roster.name} ${closed}${roster.clan} (${memberCount})`)}`;
+                  return `  - ${escapeMarkdown(`\u200e${rosterLabel(roster, true)} ${closed} (${memberCount})`)}`;
                 })
               ].join('\n');
             })
@@ -151,9 +156,8 @@ interface Grouped {
   userId: string | null;
   username: string | null;
   townHallLevel: number;
-  roster: {
+  roster: WithId<IRoster> & {
     name: string;
-    clan?: string;
     memberCount: number;
     isClosed: boolean;
     maxMembers?: number;

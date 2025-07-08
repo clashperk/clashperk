@@ -151,6 +151,7 @@ export const enum Settings {
   BUILDER_LEAGUE_ROLES = 'builderLeagueRoles',
   LINK_EMBEDS = 'linkEmbeds',
   REFRESH_EMBEDS = 'refreshEmbeds',
+  MY_ROSTERS_EMBEDS = 'myRostersEmbeds',
   WEBHOOK_LIMIT = 'webhookLimit',
   ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
   ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',

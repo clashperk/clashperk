@@ -69,6 +69,9 @@ export default class SetupButtonsCommand extends Command {
     if (args.button_type === 'link-button') {
       return this.linkButton(interaction, args);
     }
+    if (args.button_type === 'my-rosters-button') {
+      return this.myRostersButton(interaction, args);
+    }
 
     return this.customButton(interaction, args);
   }
@@ -130,35 +133,7 @@ export default class SetupButtonsCommand extends Command {
         .setMaxValues(1)
         .setMinValues(1)
     );
-    const buttonColorMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId(customIds.buttonStyle)
-        .setPlaceholder('Button Style')
-        .setOptions([
-          {
-            label: `${ButtonStyle[ButtonStyle.Danger]} (Red)`,
-            value: ButtonStyle.Danger.toString(),
-            default: state.button_style === ButtonStyle.Danger
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Primary]} (Blurple)`,
-            value: ButtonStyle.Primary.toString(),
-            default: state.button_style === ButtonStyle.Primary
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Secondary]} (Grey)`,
-            value: ButtonStyle.Secondary.toString(),
-            default: state.button_style === ButtonStyle.Secondary
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Success]} (Green)`,
-            value: ButtonStyle.Success.toString(),
-            default: state.button_style === ButtonStyle.Success
-          }
-        ])
-        .setMaxValues(1)
-        .setMinValues(1)
-    );
+    const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
 
     const embed = new EmbedBuilder();
     if (state.embed_color) embed.setColor(state.embed_color);
@@ -300,35 +275,7 @@ export default class SetupButtonsCommand extends Command {
       new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
     );
 
-    const buttonColorMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId(customIds.buttonStyle)
-        .setPlaceholder('Button Style')
-        .setOptions([
-          {
-            label: `${ButtonStyle[ButtonStyle.Danger]} (Red)`,
-            value: ButtonStyle.Danger.toString(),
-            default: state.button_style === ButtonStyle.Danger
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Primary]} (Blurple)`,
-            value: ButtonStyle.Primary.toString(),
-            default: state.button_style === ButtonStyle.Primary
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Secondary]} (Grey)`,
-            value: ButtonStyle.Secondary.toString(),
-            default: state.button_style === ButtonStyle.Secondary
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Success]} (Green)`,
-            value: ButtonStyle.Success.toString(),
-            default: state.button_style === ButtonStyle.Success
-          }
-        ])
-        .setMaxValues(1)
-        .setMinValues(1)
-    );
+    const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
 
     const embed = new EmbedBuilder();
     if (state.embed_color) embed.setColor(state.embed_color);
@@ -457,35 +404,7 @@ export default class SetupButtonsCommand extends Command {
       new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
     );
 
-    const buttonColorMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId(customIds.buttonStyle)
-        .setPlaceholder('Button Style')
-        .setOptions([
-          {
-            label: `${ButtonStyle[ButtonStyle.Danger]} (Red)`,
-            value: ButtonStyle.Danger.toString(),
-            default: state.button_style === ButtonStyle.Danger
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Primary]} (Blurple)`,
-            value: ButtonStyle.Primary.toString(),
-            default: state.button_style === ButtonStyle.Primary
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Secondary]} (Grey)`,
-            value: ButtonStyle.Secondary.toString(),
-            default: state.button_style === ButtonStyle.Secondary
-          },
-          {
-            label: `${ButtonStyle[ButtonStyle.Success]} (Green)`,
-            value: ButtonStyle.Success.toString(),
-            default: state.button_style === ButtonStyle.Success
-          }
-        ])
-        .setMaxValues(1)
-        .setMinValues(1)
-    );
+    const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
 
     const embed = new EmbedBuilder();
     if (state.embed_color) embed.setColor(state.embed_color);
@@ -587,6 +506,135 @@ export default class SetupButtonsCommand extends Command {
     });
   }
 
+  private async myRostersButton(
+    interaction: CommandInteraction<'cached'>,
+    args: { channel: TextChannel | AnyThreadChannel; disable?: boolean; embed_color: number }
+  ) {
+    const customIds = {
+      embed: this.client.uuid(),
+      done: this.client.uuid(),
+      title: this.client.uuid(),
+      description: this.client.uuid(),
+      imageUrl: this.client.uuid(),
+      buttonStyle: this.client.uuid(),
+      thumbnailUrl: this.client.uuid()
+    };
+
+    const state = this.client.settings.get<LinkButtonConfig>(interaction.guild, Settings.MY_ROSTERS_EMBEDS, {
+      title: `Welcome to ${interaction.guild.name}`,
+      description: "Click the button below to find the rosters you're in.",
+      thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
+    });
+    if (!state.button_style) state.button_style = ButtonStyle.Primary;
+    if (args.embed_color) state.embed_color = args.embed_color ?? this.client.embed(interaction);
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
+    );
+
+    const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
+
+    const embed = new EmbedBuilder();
+    if (state.embed_color) embed.setColor(state.embed_color);
+    embed.setTitle(state.title);
+    embed.setDescription(state.description);
+    embed.setThumbnail(state.thumbnail_url || null);
+    embed.setImage(state.image_url || null);
+
+    const customId = this.createId({ cmd: 'roster-list', ephemeral: true });
+    const linkButton = new ButtonBuilder()
+      .setLabel('My Rosters')
+      .setEmoji(EMOJIS.REFRESH)
+      .setCustomId(customId)
+      .setStyle(state.button_style);
+    const refreshButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
+
+    const resetImages = async () => {
+      state.image_url = '';
+      state.thumbnail_url = '';
+      embed.setImage(null);
+      embed.setThumbnail(null);
+      await this.client.settings.set(interaction.guild.id, Settings.MY_ROSTERS_EMBEDS, state);
+      await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+    };
+
+    try {
+      await interaction.editReply({ embeds: [embed], components: [refreshButtonRow] });
+    } catch (e) {
+      if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
+        await resetImages();
+      } else {
+        throw e;
+      }
+    }
+
+    await interaction.followUp({
+      flags: MessageFlags.Ephemeral,
+      content: [
+        '### Customization Guide',
+        '- You can customize the embed by clicking the button below.',
+        '- Once you are done, click the `Post Embed` button to send the Link button to the channel.'
+      ].join('\n'),
+      components: [buttonColorMenu, row]
+    });
+
+    const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
+      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+      time: 10 * 60 * 1000
+    });
+
+    collector.on('collect', async (action) => {
+      if (action.customId === customIds.done) {
+        await action.update({ components: [] });
+        collector.stop();
+        await interaction.channel?.send({ embeds: [embed], components: [refreshButtonRow] });
+        return;
+      }
+
+      if (action.customId === customIds.buttonStyle && action.isStringSelectMenu()) {
+        await action.deferUpdate();
+        state.button_style = Number(action.values.at(0) ?? ButtonStyle.Primary);
+
+        linkButton.setCustomId(customId);
+        linkButton.setStyle(state.button_style);
+
+        await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+      }
+
+      if (action.customId === customIds.embed) {
+        try {
+          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } = await this.handleCustomEmbed(action, customIds, {
+            ...state,
+            imageUrl: state.image_url,
+            thumbnailUrl: state.thumbnail_url
+          });
+
+          state.title = title;
+          state.description = description;
+          state.image_url = URL_REGEX.test(imageUrl) ? imageUrl : '';
+          state.thumbnail_url = URL_REGEX.test(thumbnailUrl) ? thumbnailUrl : '';
+
+          await modalSubmitInteraction.deferUpdate();
+
+          embed.setTitle(state.title);
+          embed.setDescription(state.description);
+          embed.setImage(state.image_url || null);
+          embed.setThumbnail(state.thumbnail_url || null);
+
+          await this.client.settings.set(interaction.guild.id, Settings.MY_ROSTERS_EMBEDS, state);
+          await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+        } catch (e) {
+          if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
+            await resetImages();
+          } else if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+            throw e;
+          }
+        }
+      }
+    });
+  }
+
   private async handleCustomEmbed(
     action: ButtonInteraction | StringSelectMenuInteraction,
     customIds: { title: string; description: string; imageUrl: string; thumbnailUrl: string },
@@ -650,6 +698,40 @@ export default class SetupButtonsCommand extends Command {
     const thumbnailUrl = modalSubmitInteraction.fields.getTextInputValue(customIds.thumbnailUrl);
 
     return { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction };
+  }
+
+  private buttonStyleMenu(customId: string, currentStyle: ButtonStyle) {
+    const buttonColorMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId(customId)
+        .setPlaceholder('Button Style')
+        .setOptions([
+          {
+            label: `${ButtonStyle[ButtonStyle.Danger]} (Red)`,
+            value: ButtonStyle.Danger.toString(),
+            default: currentStyle === ButtonStyle.Danger
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Primary]} (Blurple)`,
+            value: ButtonStyle.Primary.toString(),
+            default: currentStyle === ButtonStyle.Primary
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Secondary]} (Grey)`,
+            value: ButtonStyle.Secondary.toString(),
+            default: currentStyle === ButtonStyle.Secondary
+          },
+          {
+            label: `${ButtonStyle[ButtonStyle.Success]} (Green)`,
+            value: ButtonStyle.Success.toString(),
+            default: currentStyle === ButtonStyle.Success
+          }
+        ])
+        .setMaxValues(1)
+        .setMinValues(1)
+    );
+
+    return buttonColorMenu;
   }
 }
 

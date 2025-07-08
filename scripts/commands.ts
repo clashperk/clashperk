@@ -1815,6 +1815,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
                 name: common.choices.role_refresh_button,
                 name_localizations: translation('common.choices.role_refresh_button'),
                 value: 'role-refresh-button'
+              },
+              {
+                name: common.choices.my_rosters_button,
+                name_localizations: translation('common.choices.my_rosters_button'),
+                value: 'my-rosters-button'
               }
             ]
           },
