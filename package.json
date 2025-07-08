@@ -37,7 +37,7 @@
     "@sentry/node": "^9.31.0",
     "chalk": "^5.4.1",
     "clashofclans.js": "^3.3.22",
-    "discord.js": "^14.20.0",
+    "discord.js": "^14.21.0",
     "google-auth-library": "^9.15.0",
     "i18next": "^21.6.13",
     "jsonwebtoken": "^9.0.0",
