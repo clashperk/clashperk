@@ -543,11 +543,7 @@ export default class SetupButtonsCommand extends Command {
     embed.setImage(state.image_url || null);
 
     const customId = this.createId({ cmd: 'roster-list', ephemeral: true });
-    const linkButton = new ButtonBuilder()
-      .setLabel('My Rosters')
-      .setEmoji(EMOJIS.REFRESH)
-      .setCustomId(customId)
-      .setStyle(state.button_style);
+    const linkButton = new ButtonBuilder().setLabel('My Rosters').setEmoji(EMOJIS.INFO).setCustomId(customId).setStyle(state.button_style);
     const refreshButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
     const resetImages = async () => {
@@ -624,11 +620,11 @@ export default class SetupButtonsCommand extends Command {
 
           await this.client.settings.set(interaction.guild.id, Settings.MY_ROSTERS_EMBEDS, state);
           await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
-        } catch (e) {
-          if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
+        } catch (error) {
+          if (error.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
-            throw e;
+          } else if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+            throw error;
           }
         }
       }
@@ -641,7 +637,7 @@ export default class SetupButtonsCommand extends Command {
     state: CustomEmbed
   ) {
     const modalCustomId = this.client.uuid(action.user.id);
-    const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Link a Player Account');
+    const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Customize Embed');
     const titleInput = new TextInputBuilder()
       .setCustomId(customIds.title)
       .setLabel('Title')

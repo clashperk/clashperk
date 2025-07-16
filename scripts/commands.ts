@@ -5042,9 +5042,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.String
       },
       {
-        name: 'title',
-        description: command.layout.options.title.description,
-        description_localizations: translation('command.layout.options.title.description'),
+        name: 'notes',
+        description: command.layout.options.notes.description,
+        description_localizations: translation('command.layout.options.notes.description'),
         max_length: 2000,
         type: ApplicationCommandOptionType.String
       },

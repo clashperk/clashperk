@@ -1,5 +1,4 @@
 import { FeatureFlags } from '@app/constants';
-import { Util } from 'clashofclans.js';
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -20,6 +19,7 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { Util } from '../../util/toolkit.js';
 
 const LAYOUT_REGEX = /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?action=OpenLayout&id=TH\S+$/;
 
@@ -40,7 +40,7 @@ export default class LayoutCommand extends Command {
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     args: {
       screenshot: string;
-      description?: string;
+      notes?: string;
       has_description?: boolean;
       layout_link?: string;
       army_link?: string;
@@ -62,7 +62,7 @@ export default class LayoutCommand extends Command {
     const modalCustomId = this.client.uuid(interaction.user.id);
     const customIds = {
       link: this.client.uuid(interaction.user.id),
-      description: this.client.uuid(interaction.user.id)
+      notes: this.client.uuid(interaction.user.id)
     };
     const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Layout');
     const linkInput = new TextInputBuilder()
@@ -76,8 +76,8 @@ export default class LayoutCommand extends Command {
     if (link) linkInput.setValue(link);
 
     const descriptionInput = new TextInputBuilder()
-      .setCustomId(customIds.description)
-      .setLabel('Description')
+      .setCustomId(customIds.notes)
+      .setLabel('Notes')
       .setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
       .setStyle(TextInputStyle.Paragraph)
       .setMaxLength(2000)
@@ -98,7 +98,7 @@ export default class LayoutCommand extends Command {
       });
 
       args.layout_link = modalSubmitInteraction.fields.getTextInputValue(customIds.link);
-      args.description = modalSubmitInteraction.fields.getTextInputValue(customIds.description);
+      args.notes = modalSubmitInteraction.fields.getTextInputValue(customIds.notes);
 
       await modalSubmitInteraction.deferUpdate();
 
@@ -114,7 +114,7 @@ export default class LayoutCommand extends Command {
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | ModalSubmitInteraction<'cached'>,
     args: {
       screenshot: string;
-      description?: string;
+      notes?: string;
       layout_link?: string;
       army_link?: string;
       render_army?: boolean;
@@ -151,13 +151,13 @@ export default class LayoutCommand extends Command {
       .addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Primary)
-          .setCustomId(this.createId({ cmd: this.id, defer: false, has_description: !!args.description }))
+          .setCustomId(this.createId({ cmd: this.id, defer: false, has_description: !!args.notes }))
           .setLabel('Edit')
       );
 
     const msg = await interaction.editReply({
       components: [row],
-      content: args.description || `**${buildingLabel} ${level} Layout**`,
+      content: args.notes || `**${buildingLabel} ${level} Layout**`,
       ...(args.screenshot && { files: [new AttachmentBuilder(args.screenshot)] })
     });
 

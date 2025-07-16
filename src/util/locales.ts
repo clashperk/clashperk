@@ -1541,8 +1541,8 @@ export const command = {
       layout_link: {
         description: 'Shareable link of the layout.'
       },
-      title: {
-        description: 'Title of the layout.'
+      notes: {
+        description: 'Custom notes of the layout.'
       },
       allow_voting: {
         description: 'Whether to allow voting on the layout.'
