@@ -892,15 +892,15 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
       {
         name: 'start_date',
-        description: command.donations.options.start_date.description,
-        description_localizations: translation('command.donations.options.start_date.description'),
+        description: common.options.start_date.description,
+        description_localizations: translation('common.options.start_date.description'),
         type: ApplicationCommandOptionType.String,
         required: false
       },
       {
         name: 'end_date',
-        description: command.donations.options.end_date.description,
-        description_localizations: translation('command.donations.options.end_date.description'),
+        description: common.options.end_date.description,
+        description_localizations: translation('common.options.end_date.description'),
         type: ApplicationCommandOptionType.String,
         required: false
       }
@@ -4408,16 +4408,23 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             ]
           },
           {
-            name: 'season',
-            description: common.options.season_since.description,
-            description_localizations: translation('common.options.season_since.description'),
+            name: 'start_date',
+            description: common.options.start_date.description,
+            description_localizations: translation('common.options.start_date.description'),
             type: ApplicationCommandOptionType.String,
-            choices: getSeasonIds()
+            required: false
+          },
+          {
+            name: 'end_date',
+            description: common.options.end_date.description,
+            description_localizations: translation('common.options.end_date.description'),
+            type: ApplicationCommandOptionType.String,
+            required: false
           },
           {
             name: 'limit',
             min_value: 1,
-            max_value: 100,
+            max_value: 120,
             description: command.export.options.wars.description,
             description_localizations: translation('command.export.options.wars.description'),
             type: ApplicationCommandOptionType.Integer

@@ -73,6 +73,12 @@ export const common = {
     },
     week: {
       description: 'Retrieve data for the specified raid weekend.'
+    },
+    start_date: {
+      description: 'Starting date (YYYY-MM-DD)'
+    },
+    end_date: {
+      description: 'Ending date (YYYY-MM-DD)'
     }
   },
   choices: {
@@ -1006,12 +1012,6 @@ export const command = {
       },
       player: {
         description: 'Donation history of a player.'
-      },
-      start_date: {
-        description: 'Starting date (YYYY-MM-DD)'
-      },
-      end_date: {
-        description: 'Ending date (YYYY-MM-DD)'
       }
     }
   },

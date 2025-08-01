@@ -19,14 +19,27 @@ export default class ExportWarsCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { limit?: number; clans?: string; season?: string; war_type?: 'regular-and-cwl' | 'regular' | 'friendly' }
+    args: { limit?: number; clans?: string; war_type?: 'regular-and-cwl' | 'regular' | 'friendly'; start_date?: string; end_date?: string }
   ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    let num = Number(args.limit ?? 25);
-    num = Math.min(100, num);
-    const query = args.season ? { startTime: { $gte: new Date(args.season) } } : {};
+    if ((args.start_date && !moment(args.start_date, true).isValid()) || (args.end_date && !moment(args.end_date, true).isValid())) {
+      return interaction.editReply('Invalid date format, allowed formats are `YYYY-MM-DD` or `YYYY-MM-DD HH:mm`');
+    }
+
+    const startTime = moment(args.start_date || moment().subtract(30, 'days')).toDate();
+    const endTime = moment(args.end_date || moment()).toDate();
+
+    if (moment(endTime).diff(moment(startTime), 'months') > 6) {
+      return interaction.editReply('The date range cannot exceed 6 months.');
+    }
+
+    if (moment(startTime).isAfter(endTime)) {
+      return interaction.editReply('The start date cannot be after the end date.');
+    }
+
+    const days = moment(endTime).diff(moment(startTime), 'days');
 
     const chunks = [];
     for (const { tag, name } of clans) {
@@ -41,10 +54,11 @@ export default class ExportWarsCommand extends Command {
               : args.war_type === 'friendly'
                 ? WarType.FRIENDLY
                 : WarType.REGULAR,
-          ...query
+          startTime: { $gte: startTime },
+          endTime: { $lte: endTime }
         })
         .sort({ _id: -1 })
-        .limit(num);
+        .limit(args.limit || 120);
 
       const members: { [key: string]: any } = {};
       for await (const war of cursor) {
@@ -213,7 +227,7 @@ export default class ExportWarsCommand extends Command {
     });
 
     return interaction.editReply({
-      content: `**War Export [Last ${num}]** (${clans.map((clan) => clan.name).join(',')})`,
+      content: `**War Export [Last ${days} days]** (${clans.map((clan) => clan.name).join(',')})`,
       components: getExportComponents(spreadsheet)
     });
   }
