@@ -13,6 +13,10 @@ export const rewards = {
   gold_discontinued: '21789215'
 };
 
+export enum CustomScopes {
+  CUSTOM_BOT = 'scopes/custom_bot'
+}
+
 export enum CustomTiers {
   GIFTED = 'gifted',
   SPONSORED = 'sponsored',
@@ -162,7 +166,7 @@ export class PatreonHandler {
 
         if (
           ![rewards.gold, rewards.gold_discontinued].includes(rewardId) &&
-          ![CustomTiers.LIFETIME_CUSTOM_BOT, CustomTiers.SPONSORED_CUSTOM_BOT].includes(patron.note) &&
+          ![CustomTiers.LIFETIME_CUSTOM_BOT, CustomTiers.SPONSORED_CUSTOM_BOT, CustomScopes.CUSTOM_BOT].includes(patron.note) &&
           patron.applicationId
         ) {
           await this.client.customBotManager.suspendService(patron.applicationId);
