@@ -34,6 +34,16 @@ export class RedisService {
     }
   }
 
+  public async getLegendThresholdRecords(keys: string[]) {
+    try {
+      const results = await this.connection.mGet(keys);
+      const thresholds = results.filter((result) => result).map((result) => JSON.parse(result as string));
+      return thresholds as { timestamp: string; thresholds: { rank: number; minTrophies: number }[] }[];
+    } catch {
+      return [];
+    }
+  }
+
   public async mGet(keys: string[]) {
     try {
       if (!keys.length) return [];
