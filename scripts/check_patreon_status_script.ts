@@ -1,3 +1,6 @@
+import { config } from 'dotenv';
+config();
+
 import { Collections } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
 import { mongoClient } from '../src/struct/database.js';
@@ -38,11 +41,7 @@ const getSubscribers = async () => {
   result.included.forEach((user) => {
     const patron = members.find((m) => m.id === user?.id);
     const pledge = result.data.find((m) => m.relationships.user.data.id === user.id);
-    if (
-      (!patron && pledge?.attributes.patron_status === 'active_patron') ||
-      pledge?.attributes.is_gifted ||
-      pledge?.attributes.note === 'gifted'
-    ) {
+    if (!patron && pledge?.attributes.patron_status === 'active_patron') {
       console.log(user?.attributes.full_name, user?.attributes.email, user.id);
     }
   });
