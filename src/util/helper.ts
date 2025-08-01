@@ -101,9 +101,6 @@ export const getExportComponents = (sheet: { spreadsheetUrl: string; spreadsheet
   return [
     new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(sheet.spreadsheetUrl),
-      new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Open in Web').setURL(sheet.spreadsheetUrl.replace('edit', 'pubhtml'))
-    ),
-    new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Download')

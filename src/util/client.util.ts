@@ -122,42 +122,45 @@ export class ClientUtil {
     return isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
   }
 
-  public async createOrUpdateSheet({
-    sheets,
-    guild,
-    clans,
-    label,
-    sheetType
-  }: {
-    sheets: CreateGoogleSheet[];
-    guild: Guild;
-    clans: { tag: string }[];
-    label: string;
-    sheetType: SheetType;
-  }) {
+  public async createOrUpdateSheet({ sheets, guild, clans, label, sheetType }: CreateSheetProps) {
     const clanTags = clans.map((clan) => clan.tag);
     const hash = this.createSpreadsheetHash({ clanTags, guildId: guild.id, sheetType });
     const sheetHash = this.createSheetsHash(sheets);
     const sheet = await this.client.db.collection(Collections.GOOGLE_SHEETS).findOne({ hash });
 
-    const spreadsheet = sheet
-      ? await updateGoogleSheet(sheet.spreadsheetId, sheets, {
+    let spreadsheet;
+    if (sheet) {
+      try {
+        spreadsheet = await updateGoogleSheet(sheet.spreadsheetId, sheets, {
           title: `${guild.name} [${label}]`,
           clear: true,
           recreate: sheet && sheetHash !== sheet.sheetHash
-        })
-      : await createGoogleSheet(`${guild.name} [${label}]`, sheets);
+        });
+      } catch (error) {
+        if (/invalid requests/i.test(error.message)) {
+          spreadsheet = await createGoogleSheet(`${guild.name} [${label}]`, sheets);
+        } else {
+          throw error;
+        }
+      }
+    } else {
+      spreadsheet = await createGoogleSheet(`${guild.name} [${label}]`, sheets);
+    }
 
     await this.client.db.collection(Collections.GOOGLE_SHEETS).updateOne(
       { hash },
       {
         $inc: { exported: 1 },
-        $set: { updatedAt: new Date(), sheetCount: sheets.length, sheetHash },
+        $set: {
+          updatedAt: new Date(),
+          sheetCount: sheets.length,
+          sheetHash,
+          spreadsheetId: spreadsheet.spreadsheetId
+        },
         $setOnInsert: {
           guildId: guild.id,
           clanTags,
           hash,
-          spreadsheetId: spreadsheet.spreadsheetId,
           sheetType,
           createdAt: new Date()
         }
@@ -181,4 +184,12 @@ export class ClientUtil {
       .update(sheets.map((sheet) => sheet.title).join('-'))
       .digest('hex');
   }
+}
+
+interface CreateSheetProps {
+  sheets: CreateGoogleSheet[];
+  guild: Guild;
+  clans: { tag: string }[];
+  label: string;
+  sheetType: SheetType;
 }
