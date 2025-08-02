@@ -87,7 +87,7 @@ export default class LegendStatsCommand extends Command {
     );
 
     if (!args.is_eod) {
-      return interaction.editReply({ withComponents: true, components: [container, row] });
+      return interaction.editReply({ withComponents: true, components: [container, row], embeds: [] });
     }
 
     const menu = new StringSelectMenuBuilder()
@@ -200,7 +200,7 @@ export default class LegendStatsCommand extends Command {
       row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(webLink).setLabel('Open in Web'))
     );
 
-    return interaction.editReply({ withComponents: true, components: [container, row] });
+    return interaction.editReply({ withComponents: true, components: [container, row], embeds: [] });
   }
 
   private async getLegendThreshold(isEod: boolean) {
