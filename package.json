@@ -36,7 +36,7 @@
     "@googleapis/sheets": "^9.4.0",
     "@sentry/node": "^9.31.0",
     "chalk": "^5.4.1",
-    "clashofclans.js": "^3.3.22",
+    "clashofclans.js": "^3.3.23-dev.3d29bd7",
     "discord.js": "^14.21.0",
     "google-auth-library": "^9.15.0",
     "i18next": "^21.6.13",

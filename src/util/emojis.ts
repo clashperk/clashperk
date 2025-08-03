@@ -74,7 +74,9 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Electro Boots': '<:ElectroBoots:1252640513790705686>',
   'Metal Pants': '<:MetalPants:1341345439626039337>',
   'Snake Bracelet': '<:SnakeBracelet:1341345443929391154>',
-  'Noble Iron': '<:NobleIron:1354122575965454347>'
+  'Noble Iron': '<:NobleIron:1354122575965454347>',
+  'Action Figure': '<:ActionFigure:1401438960294690867>',
+  'Dark Crown': '<:DarkCrown:1401438986366484602>'
   // 'Heroic Torch': '<:HeroicTorch:1252640503988486327>'
 };
 
@@ -122,7 +124,8 @@ export const DARK_SPELLS: Record<string, string> = {
   'Haste Spell': '<:Haste:696302178763276348>',
   'Skeleton Spell': '<:Skeleton:696302204348530698>',
   'Bat Spell': '<:Bat:696303291176583198>',
-  'Overgrowth Spell': '<:Overgrowth:1212040817896726631>'
+  'Overgrowth Spell': '<:Overgrowth:1212040817896726631>',
+  'Ice Block Spell': '<:IceBlock:1401438458664452238>'
 };
 
 export const SUPER_TROOPS: Record<string, string> = {

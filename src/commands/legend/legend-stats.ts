@@ -7,6 +7,7 @@ import {
   ContainerBuilder,
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
+  MessageFlags,
   StringSelectMenuBuilder,
   TextDisplayBuilder,
   time
@@ -48,7 +49,7 @@ export default class LegendStatsCommand extends Command {
 
   public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { is_eod?: boolean; ranks?: string[] }) {
     const threshold = await this.getLegendThreshold(!!args.is_eod);
-    if (!threshold?.thresholds?.length) return interaction.editReply('No data available.');
+    if (!threshold?.thresholds?.length) return interaction.followUp({ content: 'No data available.', flags: MessageFlags.Ephemeral });
 
     const container = new ContainerBuilder();
     container.setAccentColor(this.client.embed(interaction)!);
