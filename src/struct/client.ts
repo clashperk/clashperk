@@ -13,6 +13,7 @@ import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/handle
 import { ClientUtil } from '../util/client.util.js';
 import { i18n } from '../util/i18n.js';
 import { Logger } from '../util/logger.js';
+import { AnalyticsManager } from './analytics.js';
 import { Autocomplete } from './autocomplete-client.js';
 import { CapitalRaidScheduler } from './capital-raid-scheduler.js';
 import { ClanGamesScheduler } from './clan-games-scheduler.js';
@@ -59,6 +60,7 @@ export class Client extends DiscordClient {
   public guildEvents!: GuildEventsHandler;
   public inMaintenance = Boolean(false);
   public redis = new RedisService(this);
+  public analytics = new AnalyticsManager(this);
 
   public elastic = new ElasticClient({
     node: process.env.ES_HOST!,
@@ -156,6 +158,10 @@ export class Client extends DiscordClient {
     container.register(Client, { useValue: this });
   }
 
+  public get applicationId() {
+    return this.user!.id!;
+  }
+
   public isFeatureEnabled(flag: FeatureFlags, distinctId: string | 'global') {
     return this.settings.isFeatureEnabled(flag, distinctId);
   }
@@ -230,6 +236,7 @@ export class Client extends DiscordClient {
     await this.coc.autoLogin();
 
     this.once('ready', async () => {
+      await this.analytics.flush();
       await this.settings.init({ globalOnly: false });
       await this.patreonHandler.refresh();
 

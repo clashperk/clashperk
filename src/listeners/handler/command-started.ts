@@ -5,17 +5,23 @@ import { CommandHandlerEvents } from '../../lib/util.js';
 import { mixpanel } from '../../struct/mixpanel.js';
 
 const flattenArgs = (obj: Record<string, any>) => {
-  const result: Record<string, string | number | boolean> = {};
+  const result: Record<string, string | number | boolean | (string | number)[]> = {};
+
   for (const [key, value] of Object.entries(obj)) {
-    if (key.startsWith('_') || key === 'cmd') continue;
+    if (key.startsWith('_') || ['cmd'].includes(key)) continue;
 
     if (typeof value === 'object') {
-      if (value?.id) result[`${key}_id`] = value.id;
+      if (value?.id) {
+        result[`${key}_id`] = value.id;
+      } else {
+        result[key] = Array.isArray(value) ? value : '_object';
+      }
     }
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       result[key] = value;
     }
   }
+
   return result;
 };
 
@@ -29,25 +35,45 @@ export default class CommandStartedListener extends Listener {
   }
 
   public exec(interaction: Interaction, command: Command, args: Record<string, unknown>) {
-    mixpanel.track('Command used', {
-      distinct_id: interaction.user.id,
-      command_id: command.id,
-      application_command_name: args.commandName || null,
-      user_id: interaction.user.id,
-      username: interaction.user.username,
-      display_name: interaction.user.displayName,
-      guild_id: interaction.guildId ?? '0',
-      guild_name: interaction.guild?.name ?? 'DM',
-      interaction_type: InteractionType[interaction.type],
-      args: flattenArgs(args),
-      is_application_command: interaction.isCommand()
-    });
+    if (interaction.isCommand()) {
+      mixpanel.track('Command used', {
+        distinct_id: interaction.user.id,
+        command_id: command.id,
+        application_command_name: args.commandName || null,
+        user_id: interaction.user.id,
+        username: interaction.user.username,
+        display_name: interaction.user.displayName,
+        guild_id: interaction.guildId ?? '0',
+        guild_name: interaction.guild?.name ?? 'DM',
+        interaction_type: InteractionType[interaction.type],
+        args: flattenArgs(args),
+        is_application_command: interaction.isCommand()
+      });
 
-    mixpanel.people.set(interaction.user.id, {
-      $first_name: interaction.user.displayName,
+      mixpanel.people.set(interaction.user.id, {
+        $first_name: interaction.user.displayName,
+        username: interaction.user.username,
+        user_id: interaction.user.id,
+        locale: interaction.locale
+      });
+    }
+
+    this.client.analytics.track({
+      commandId: command.id,
+      applicationCommandName: (args.commandName as string) || null,
+      userId: interaction.user.id,
       username: interaction.user.username,
-      user_id: interaction.user.id,
-      locale: interaction.locale
+      displayName: interaction.user.displayName,
+      userLocale: interaction.locale,
+      guildId: interaction.guildId ?? '0',
+      guildName: interaction.guild?.name ?? (interaction.inGuild() ? '_unknown' : '_dm'),
+      guildLocale: interaction.guild?.preferredLocale ?? null,
+      isCommand: interaction.isCommand(),
+      isUserInstalled: !interaction.inGuild() || (interaction.inGuild() && !interaction.inCachedGuild()),
+      interactionType: InteractionType[interaction.type],
+      args: JSON.stringify(flattenArgs(args)),
+      applicationId: this.client.applicationId,
+      createdAt: Math.floor(Date.now() / 1000)
     });
 
     const context = {
