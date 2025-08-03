@@ -1,10 +1,6 @@
 export const common = {
   no_clans_found: 'No clans were found on this server for the specified input! \nUse {{command}} command to link a clan.',
   no_clans_linked: 'No clans are linked to this server. Why not link some? \nUse {{command}} command to link a clan.',
-  clan_limit:
-    'The maximum number of clans has reached. Please consider supporting us on our [Patreon](https://patreon.com/clashperk) to add more than two clans.\n\nAlready subscribed? Use {{command}} command.',
-  patreon_only:
-    'This command is only available on Patreon subscribed servers. Please consider supporting us on our [Patreon](https://patreon.com/clashperk) to use this command.\n\nAlready subscribed? Use {{command}} command.',
   clan_verification:
     'We need to ensure that you are a leader or co-leader of this clan. Please verify your player account with the API token.\nUse the {{command}} command to verify your player account. The API token is available in the Game settings.',
   no_option: 'Something went wrong while executing this command. (option not found)',
@@ -1274,8 +1270,6 @@ export const command = {
     no_system_roles: 'System managed or bot roles are not allowed.',
     no_higher_roles: "Bot's highest role must be higher than the selected roles.",
     invalid_clan_tag: 'The specified clan tag is invalid.',
-    roles_already_used:
-      'Some roles have already been used for another clan. \nPlease consider supporting us on [Patreon](https://patreon.com/clashperk) to use the same roles for multiple clans.',
     clan_not_linked: 'The clan must be linked to the server to enable auto-role.',
     success_with_count: 'Successfully enabled auto-role for {{count}} clan(s). \n{{clans}}',
     clan_roles: {

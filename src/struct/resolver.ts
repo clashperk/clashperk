@@ -352,14 +352,16 @@ export class Resolver {
     ) {
       if (isPatron) {
         await interaction.editReply(
-          '### You have reached the maximum limit of automation. Please [contact us](https://discord.gg/ppuppun) to increase the limit.'
+          '### You have reached the maximum limit of logs. Please [contact us](https://discord.gg/ppuppun) to increase the limit.'
         );
       } else {
         await interaction.editReply({
           content: [
-            `### The maximum number of clans has been reached. Please consider supporting us through our [Patreon](${PATREON_LINK}) to add more than ${max} clans (${allowedClans.join(', ')})`,
+            `### The maximum number of logs has been reached. Please consider supporting us through our [Patreon](${PATREON_LINK}) to add more than ${max} logs (${allowedClans.join(', ')})`,
             '',
-            `### Already subscribed? Use the ${this.client.commands.REDEEM} command.`
+            `### Already subscribed? Use the ${this.client.commands.REDEEM} command.`,
+            '',
+            `-# Note: There's no limit on how many clans you can add, and you can use all logs for any 2 clans for free.`
           ].join('\n')
         });
       }

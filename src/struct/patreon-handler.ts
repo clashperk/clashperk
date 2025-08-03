@@ -29,7 +29,7 @@ export const customTierLimits = {
   [CustomTiers.GIFTED]: 3,
   [CustomTiers.SPONSORED]: 3,
   [CustomTiers.SPONSORED_CUSTOM_BOT]: 5,
-  [CustomTiers.LIFETIME]: 5,
+  [CustomTiers.LIFETIME]: 10,
   [CustomTiers.LIFETIME_CUSTOM_BOT]: 10
 } as const;
 
