@@ -48,7 +48,11 @@ for (const Interaction of [CommandInteraction, ContextMenuCommandInteraction, Me
     },
     editReply: {
       value: function editReply(record: Record<string, unknown>) {
-        if (record.withComponents) record.flags = MessageFlags.IsComponentsV2;
+        if (record.withComponents) {
+          record.flags = MessageFlags.IsComponentsV2;
+          record.embeds = [];
+          record.content = null;
+        }
         return _editReply.call(this, record);
       }
     }
