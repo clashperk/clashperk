@@ -154,6 +154,10 @@ export default class AutocompleteInteractionListener extends Listener {
       case 'duration': {
         return this.durationAutocomplete(interaction, focused);
       }
+      case 'end_date':
+      case 'start_date': {
+        return this.client.autocomplete.startOrEndDateAutocomplete(interaction, focused);
+      }
       case 'clans': {
         if (interaction.commandName === 'activity' && !query) {
           return this.client.autocomplete.clanAutoComplete(interaction, { withCategory: true, isMulti: true });

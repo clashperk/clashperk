@@ -4412,6 +4412,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: common.options.start_date.description,
             description_localizations: translation('common.options.start_date.description'),
             type: ApplicationCommandOptionType.String,
+            autocomplete: true,
             required: false
           },
           {
@@ -4419,6 +4420,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description: common.options.end_date.description,
             description_localizations: translation('common.options.end_date.description'),
             type: ApplicationCommandOptionType.String,
+            autocomplete: true,
             required: false
           },
           {

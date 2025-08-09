@@ -5,6 +5,7 @@ import { Filter } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { sift, unique } from 'radash';
 import { COUNTRIES } from '../util/countries.js';
+import { Util } from '../util/toolkit.js';
 import { Client } from './client.js';
 
 export class Autocomplete {
@@ -45,6 +46,16 @@ export class Autocomplete {
     if (!countries.length) return interaction.respond([{ name: 'No countries found.', value: '0' }]);
 
     return interaction.respond(countries.map((country) => ({ name: country.name, value: country.countryCode! })));
+  }
+
+  public async startOrEndDateAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+    let query = interaction.options.getString(focused)?.trim();
+    if (!query) {
+      const ids = Util.getSeasonIds().slice(0, 12);
+      return interaction.respond(ids.map((id) => ({ name: id, value: id })));
+    }
+    query = query.slice(0, 100).trim();
+    return interaction.respond([{ name: query, value: query }]);
   }
 
   public async flagSearchAutoComplete(
