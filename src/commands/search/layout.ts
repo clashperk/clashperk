@@ -54,7 +54,8 @@ export default class LayoutCommand extends Command {
       return this.handleSubmit(interaction, args);
     }
 
-    const isAdmin = this.client.util.isManager(interaction.member) || interaction.message.author.id === interaction.user.id;
+    const isAdmin =
+      this.client.util.isManager(interaction.member) || interaction.message.interactionMetadata?.user.id === interaction.user.id;
     if (!isAdmin) {
       return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'You are not allowed to edit this layout.' });
     }
