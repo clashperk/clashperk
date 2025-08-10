@@ -64,7 +64,9 @@ export default class ArmyCommand extends Command {
 
       // heroes
       if (char.startsWith('h')) {
-        const regex = /^h(\d+(p\d+)?e\d+_\d+(-\d+(p\d+)?e\d+_\d+)*)-?$/;
+        // const regex = /^h(\d+(p\d+)?e\d+_\d+(-\d+(p\d+)?e\d+_\d+)*)-?$/;
+        const regex = /^h(\d+(m\d+)?(p\d+)?(e\d+)?_\d+(?:-\d+(m\d+)?(p\d+)?(e\d+)?_\d+)*)-?$/;
+
         if (regex.test(char)) {
           heroParts.push(...char.slice(1).split('-'));
         }
@@ -98,20 +100,35 @@ export default class ArmyCommand extends Command {
     };
 
     const parseHeroCombinations = (combinations: string[]) => {
-      return combinations
-        .map((parts) => parts.split(/(?=[pe])/)) // [ '6', 'p4', 'e42_43' ],
-        .map((parts) => {
-          return {
-            id: Number(parts[0]),
-            pets: parts[1]?.startsWith('p') ? [Number(parts[1].slice(1))] : [],
-            equipment: parts[2]?.startsWith('e')
-              ? parts[2]
-                  .slice(1)
-                  .split('_')
-                  .map((en) => Number(en))
-              : []
-          };
-        });
+      const heroes: { id: number; pets: number[]; equipment: number[] }[] = [];
+      for (const parts of combinations) {
+        const components = parts.split(/(?=[mpe])/); // [ '*', 'm*', 'p*', 'e*_*' ]
+        const hero: { id: number; pets: number[]; equipment: number[] } = {
+          id: Number(parts[0]),
+          pets: [],
+          equipment: []
+        };
+
+        for (const component of components) {
+          if (component.startsWith('p')) {
+            hero.pets.push(Number(component.slice(1)));
+          }
+          if (component.startsWith('e')) {
+            hero.equipment.push(
+              ...component
+                .slice(1)
+                .split('_')
+                .map((en) => Number(en))
+            );
+          }
+          if (component.startsWith('m')) {
+          }
+        }
+
+        heroes.push(hero);
+      }
+
+      return heroes;
     };
 
     if (!troopParts.length && !spellParts.length) {

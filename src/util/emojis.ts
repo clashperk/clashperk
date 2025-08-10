@@ -91,7 +91,8 @@ export const DARK_ELIXIR_TROOPS: Record<string, string> = {
   'Ice Golem': '<:IceGolem:696282324798799892>',
   'Headhunter': '<:Headhunter:724650414066106459>',
   'Apprentice Warden': '<:ApprenticeWarden:1117866249645461604>',
-  'Druid': '<:Druid:1252640516881911900>'
+  'Druid': '<:Druid:1252640516881911900>',
+  'Furnace': '<:Furnace:1354122556499693578>'
 };
 
 export const SIEGE_MACHINES: Record<string, string> = {
@@ -102,8 +103,7 @@ export const SIEGE_MACHINES: Record<string, string> = {
   'Log Launcher': '<:LogLauncher:918762884257939478>',
   'Flame Flinger': '<:FlameFlinger:918762753013981235>',
   'Battle Drill': '<:BattleDrill:1029114347949142087>',
-  'Troop Launcher': '<:TroopLauncher:1341345433632636968>',
-  'Furnace': '<:Furnace:1354122556499693578>'
+  'Troop Launcher': '<:TroopLauncher:1341345433632636968>'
 };
 
 export const ELIXIR_SPELLS: Record<string, string> = {
