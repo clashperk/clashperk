@@ -1,4 +1,4 @@
-import { FeatureFlags } from '@app/constants';
+import { Settings } from '@app/constants';
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -162,7 +162,11 @@ export default class LayoutCommand extends Command {
       ...(args.screenshot && { files: [new AttachmentBuilder(args.screenshot)] })
     });
 
-    const isVotingEnabled = args.allow_voting ?? this.client.isFeatureEnabled(FeatureFlags.LAYOUT_VOTING, interaction.guildId);
+    if (typeof args.allow_voting === 'boolean' && this.client.util.isManager(interaction.member)) {
+      await this.client.settings.set(interaction.guild, Settings.ALLOW_LAYOUT_VOTING, args.allow_voting);
+    }
+    const isVotingEnabled = this.client.settings.get(interaction.guild, Settings.ALLOW_LAYOUT_VOTING, false);
+
     if (interaction.appPermissions.has(PermissionFlagsBits.AddReactions) && isVotingEnabled) {
       try {
         await msg.react(EMOJIS.WHITE_CHECK_MARK);

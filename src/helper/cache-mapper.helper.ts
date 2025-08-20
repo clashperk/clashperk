@@ -195,7 +195,7 @@ const ACHIEVEMENTS_MAP_BY_NAME: Record<string, number> = {
   'Supercharger': 47
 };
 
-const UNITS_MAP_BY_NAME: Record<string, number> = {
+export const UNITS_MAP_BY_NAME: Record<string, number> = {
   'Barbarian': 1,
   'Archer': 2,
   'Goblin': 3,
@@ -311,7 +311,23 @@ const UNITS_MAP_BY_NAME: Record<string, number> = {
   'Rage Gem': 114,
   'Healing Tome': 115,
   'Magic Mirror': 116,
-  'Electro Boots': 117
+  'Electro Boots': 117,
+  'Thrower': 118,
+  'Troop Launcher': 119,
+  'Super Yeti': 120,
+  'Furnace': 121,
+  'Revive Spell': 122,
+  'Minion Prince': 123,
+  'Sneezy': 124,
+  'Snake Bracelet': 125,
+  'Dark Crown': 126,
+  'Lavaloon Puppet': 127,
+  'Henchmen Puppet': 128,
+  'Dark Orb': 129,
+  'Noble Iron': 130,
+  'Ice Block Spell': 131,
+  'Metal Pants': 132,
+  'Action Figure': 133
 };
 
 const ACHIEVEMENT_LIST = Object.entries(ACHIEVEMENTS_MAP_BY_NAME).reduce<{ name: string; id: string }[]>((record, [name, id]) => {

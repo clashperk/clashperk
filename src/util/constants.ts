@@ -192,7 +192,8 @@ export const enum Settings {
   DELAY_EXCLUSION_LIST = 'delayExclusionList',
   DISABLED_PATREON_IDS = 'disabledPatreonIds',
   USE_GROUPED_TODO_LIST = 'useGroupedTodoList',
-  TROPHY_ROLES = 'trophyRoles'
+  TROPHY_ROLES = 'trophyRoles',
+  ALLOW_LAYOUT_VOTING = 'allowLayoutVoting'
 }
 
 export enum ElasticIndex {

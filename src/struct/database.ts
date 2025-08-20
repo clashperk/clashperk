@@ -289,14 +289,16 @@ class MongoDbClient extends MongoClient {
 
       db.collection(Collections.PLAYERS).createIndexes([
         {
-          key: { 'clan.tag': 1, 'tag': 1 }
-        },
-        {
           key: { 'clan.tag': 1 }
         },
         {
           key: { tag: 1 },
           unique: true
+        },
+        {
+          key: { lastSeen: 1 },
+          expireAfterSeconds: 60 * 60 * 24 * 100,
+          partialFilterExpression: { leagueId: { $lt: 29000022 } }
         }
       ]),
 

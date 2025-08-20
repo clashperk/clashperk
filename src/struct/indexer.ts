@@ -1,9 +1,9 @@
+import { Collections, LEGEND_LEAGUE_ID } from '@app/constants';
 import { GlobalPlayersEntity, PlayersEntity } from '@app/entities';
 import { APIPlayer, UnrankedLeagueData, UnrankedLeagueId } from 'clashofclans.js';
+import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from './client.js';
-import { Collections, LEGEND_LEAGUE_ID } from '@app/constants';
-import moment from 'moment';
 
 export class ElasticIndexer {
   public constructor(private readonly client: Client) {}
@@ -144,7 +144,8 @@ export class ElasticIndexer {
           name: player.name,
           townHallLevel: player.townHallLevel,
           leagueId: player.league?.id ?? (player.trophies >= 5000 ? LEGEND_LEAGUE_ID : UnrankedLeagueData.id),
-          clan: player.clan ? { name: player.clan.name, tag: player.clan.tag } : {}
+          clan: player.clan ? { name: player.clan.name, tag: player.clan.tag } : {},
+          lastSearched: new Date()
         }
       },
       {
