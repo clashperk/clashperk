@@ -297,7 +297,7 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { lastSeen: 1 },
-          expireAfterSeconds: 60 * 60 * 24 * 100,
+          expireAfterSeconds: 60 * 60 * 24 * 180,
           partialFilterExpression: { leagueId: { $lt: 29000022 } }
         }
       ]),
