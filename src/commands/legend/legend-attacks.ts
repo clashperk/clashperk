@@ -50,7 +50,7 @@ export default class LegendAttacksCommand extends Command {
       new ButtonBuilder()
         .setEmoji(EMOJIS.REFRESH)
         .setStyle(ButtonStyle.Secondary)
-        .setCustomId(JSON.stringify({ cmd: this.id, clans: resolvedArgs }))
+        .setCustomId(this.createId({ cmd: this.id, clans: resolvedArgs }))
     );
 
     const isCurrentDay = Util.getLegendDay() === getLegendTimestampAgainstDay(args.day).day;
