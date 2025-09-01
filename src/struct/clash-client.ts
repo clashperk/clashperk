@@ -1,4 +1,4 @@
-import { DISCORD_ID_REGEX, TAG_REGEX } from '@app/constants';
+import { DISCORD_ID_REGEX, FeatureFlags, TAG_REGEX } from '@app/constants';
 import { ClanWarLeagueGroupsEntity } from '@app/entities';
 import {
   APICapitalRaidSeason,
@@ -300,7 +300,13 @@ export class ClashClient extends RESTManager {
     return res?.status === 200 && this.bearerToken;
   }
 
-  public async linkPlayerTag(discordId: string, playerTag: string) {
+  public async linkPlayerTag(discordId: string, playerTag: string, force = true) {
+    if (!this.client.isFeatureEnabled(FeatureFlags.USE_DISCORD_LINK_API, 'global')) return true;
+
+    if (force) {
+      await this.unlinkPlayerTag(playerTag);
+    }
+
     const res = await fetch('https://cocdiscord.link/links', {
       method: 'POST',
       headers: {

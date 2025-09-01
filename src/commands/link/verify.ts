@@ -67,7 +67,6 @@ export default class VerifyPlayerCommand extends Command {
   }
 
   private async resetLinkAPI(userId: string, tag: string) {
-    await this.client.coc.unlinkPlayerTag(tag);
     await this.client.coc.linkPlayerTag(userId, tag);
   }
 }

@@ -195,7 +195,6 @@ export default class LinkCreateCommand extends Command {
   }
 
   private async resetLinkAPI(user: string, tag: string) {
-    await this.client.coc.unlinkPlayerTag(tag);
     await this.client.coc.linkPlayerTag(user, tag);
   }
 

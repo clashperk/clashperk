@@ -216,7 +216,8 @@ export enum FeatureFlags {
   DONATIONS_RECOVERY = 'donations-recovery',
   CLAN_HISTORY = 'clan-history',
   CLAN_RULES_BUTTON = 'clan-rules-button',
-  LAYOUT_VOTING = 'layout-voting'
+  LAYOUT_VOTING = 'layout-voting',
+  USE_DISCORD_LINK_API = 'use-discord-link-api'
 }
 
 export const enum Flags {
