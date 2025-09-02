@@ -168,6 +168,10 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { __clans: 1, season: 1 }
+        },
+        {
+          key: { createdAt: 1 },
+          expireAfterSeconds: 60 * 60 * 24 * 30 * 6 // 36 months
         }
       ]),
 
@@ -194,6 +198,10 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { 'clan.tag': 1 }
+        },
+        {
+          key: { endTime: 1 },
+          expireAfterSeconds: 60 * 60 * 24 * 30 * 24 // 24 months
         }
       ]),
 
@@ -282,6 +290,10 @@ class MongoDbClient extends MongoClient {
         {
           key: { warTag: 1 },
           sparse: true
+        },
+        {
+          key: { endTime: 1 },
+          expireAfterSeconds: 60 * 60 * 24 * 30 * 36 // 36 months
         }
       ]),
 
@@ -297,7 +309,7 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { lastSeen: 1 },
-          expireAfterSeconds: 60 * 60 * 24 * 180,
+          expireAfterSeconds: 60 * 60 * 24 * 180, // 180 days
           partialFilterExpression: { leagueId: { $lt: 29000022 } }
         }
       ]),
