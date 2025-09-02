@@ -74,10 +74,10 @@ const applicationCommands = async (token: string, commands: RESTPostAPIApplicati
 };
 
 const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
-  const res = await fetch(`${process.env.INTERNAL_API_BASE_URL}/auth/applications`, {
+  const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${process.env.INTERNAL_API_TOKEN}`,
+      'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!,
       'Content-Type': 'application/json'
     }
   });
@@ -95,10 +95,10 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
-  const res = await fetch(`${process.env.INTERNAL_API_BASE_URL}/auth/applications`, {
+  const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${process.env.INTERNAL_API_TOKEN}`,
+      'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!,
       'Content-Type': 'application/json'
     }
   });
