@@ -171,7 +171,7 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { createdAt: 1 },
-          expireAfterSeconds: 60 * 60 * 24 * 30 * 6 // 36 months
+          expireAfterSeconds: 60 * 60 * 24 * 30 * 36 // 36 months
         }
       ]),
 
@@ -309,7 +309,7 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { lastSeen: 1 },
-          expireAfterSeconds: 60 * 60 * 24 * 180, // 180 days
+          expireAfterSeconds: 60 * 60 * 24 * 30 * 6, // 6 months
           partialFilterExpression: { leagueId: { $lt: 29000022 } }
         }
       ]),
@@ -395,7 +395,7 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { timestamp: 1 },
-          expireAfterSeconds: 60 * 60 * 24 * 3
+          expireAfterSeconds: 60 * 60 * 24 * 3 // 3 days
         }
       ]),
 
@@ -411,7 +411,7 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { timestamp: 1 },
-          expireAfterSeconds: 60 * 60 * 24 * 3
+          expireAfterSeconds: 60 * 60 * 24 * 3 // 3 days
         }
       ]),
 
@@ -427,7 +427,7 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { timestamp: 1 },
-          expireAfterSeconds: 60 * 60 * 24 * 3
+          expireAfterSeconds: 60 * 60 * 24 * 3 // 3 days
         }
       ])
     ]);
