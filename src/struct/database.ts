@@ -200,7 +200,7 @@ class MongoDbClient extends MongoClient {
           key: { 'clan.tag': 1 }
         },
         {
-          key: { endTime: 1 },
+          key: { createdAt: 1 },
           expireAfterSeconds: 60 * 60 * 24 * 30 * 24 // 24 months
         }
       ]),

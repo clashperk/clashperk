@@ -1,6 +1,7 @@
 import { Settings } from '@app/constants';
 import { CommandInteraction, Role, User } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class WhitelistCommand extends Command {
   public constructor() {
@@ -36,10 +37,18 @@ export default class WhitelistCommand extends Command {
         return `**${this.client.commands.resolve(whitelist.commandId)}** - ${userOrRole}`;
       });
 
-      return interaction.editReply({
+      const [firstPage, ...pages] = Util.splitMessage(content.join('\n'), { maxLength: 2000 });
+
+      await interaction.editReply({
         allowedMentions: { parse: [] },
-        content: [`### Whitelisted Commands, Users and Roles`, '', content.join('\n') || 'No whitelisted users or roles.'].join('\n')
+        content: [`### Whitelisted Commands, Users and Roles`, '', firstPage || 'No whitelisted users or roles.'].join('\n')
       });
+
+      for (const page of pages) {
+        await interaction.followUp({ allowedMentions: { parse: [] }, content: page });
+      }
+
+      return;
     }
 
     if (!args.user_or_role || !args.command)
