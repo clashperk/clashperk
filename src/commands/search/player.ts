@@ -241,17 +241,23 @@ export default class PlayerCommand extends Command {
       defCount: 0
     };
 
-    const wars = await this.client.db
-      .collection<ClanWarsEntity>(Collections.CLAN_WARS)
-      .find({
-        startTime: { $gte: Season.startTimestamp },
-        $or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }],
-        state: { $in: ['inWar', 'warEnded'] }
-      })
-      .sort({ _id: -1 })
-      .toArray();
+    const cursor = this.client.db.collection<ClanWarsEntity>(Collections.CLAN_WARS).aggregate<ClanWarsEntity>([
+      {
+        $match: {
+          $or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }],
+          startTime: {
+            $gte: Season.startTimestamp
+          }
+        }
+      },
+      {
+        $sort: {
+          _id: -1
+        }
+      }
+    ]);
 
-    for (const data of wars) {
+    for await (const data of cursor) {
       const clan = data.clan.members.find((m) => m.tag === tag) ? data.clan : data.opponent;
       member.total += 1;
       for (const m of clan.members) {
