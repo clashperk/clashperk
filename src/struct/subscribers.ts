@@ -1,6 +1,6 @@
-import { Collections, Settings } from '@app/constants';
+import { Collections, FeatureFlags, Settings } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
-import { BaseInteraction } from 'discord.js';
+import { Interaction } from 'discord.js';
 import { Collection, WithId } from 'mongodb';
 import { timeoutSignal } from './clash-client.js';
 import { Client } from './client.js';
@@ -10,11 +10,11 @@ export const rewards = {
   silver: '4742718',
   gold: '5352215',
   /** @deprecated */
-  gold_discontinued: '21789215'
+  gold_deprecated: '21789215'
 };
 
 export enum CustomScopes {
-  CUSTOM_BOT = 'scopes/custom_bot'
+  CUSTOM_BOT = 'discounted_custom_bot'
 }
 
 export enum CustomTiers {
@@ -37,13 +37,13 @@ export const guildLimits: Record<string, number> = {
   [rewards.bronze]: 1,
   [rewards.silver]: 5,
   [rewards.gold]: 10,
-  [rewards.gold_discontinued]: 5,
+  [rewards.gold_deprecated]: 5,
   ...customTierLimits
 };
 
-export class PatreonHandler {
+export class Subscribers {
   private readonly collection: Collection<PatreonMembersEntity>;
-  private readonly patrons = new Set<string>();
+  private readonly patrons = new Map<string, { note: string }>();
 
   public constructor(private readonly client: Client) {
     this.collection = this.client.db.collection(Collections.PATREON_MEMBERS);
@@ -67,9 +67,14 @@ export class PatreonHandler {
     setInterval(() => this.autoSyncSubscription(false), 10 * 60 * 1000).unref();
   }
 
-  public get(interaction: BaseInteraction | string): boolean {
+  public has(interaction: Interaction<'cached'> | string): boolean {
     if (typeof interaction === 'string') return this.patrons.has(interaction);
-    return this.patrons.has(interaction.guildId!);
+    return this.patrons.has(interaction.guildId);
+  }
+
+  public get(interaction: Interaction<'cached'> | string) {
+    if (typeof interaction === 'string') return this.patrons.get(interaction);
+    return this.patrons.get(interaction.guildId);
   }
 
   public async findOne(userId: string) {
@@ -84,7 +89,7 @@ export class PatreonHandler {
     return this.collection.updateOne({ id: patronId }, { $unset: { applicationId: true } });
   }
 
-  public async findGuild(guildId: string) {
+  public async getMemberByGuildId(guildId: string) {
     return this.collection.findOne({ active: true, applicationId: { $exists: true }, guilds: { $elemMatch: { id: guildId } } });
   }
 
@@ -93,10 +98,10 @@ export class PatreonHandler {
     this.patrons.clear(); // clear old user_id and guild_id
 
     for (const data of patrons) {
-      if (data.userId) this.patrons.add(data.userId);
+      if (data.userId) this.patrons.set(data.userId, { note: data.note });
 
       for (const guild of data.guilds) {
-        this.patrons.add(guild.id);
+        this.patrons.set(guild.id, { note: data.note });
 
         const guildLimit = this.client.settings.get(guild.id, Settings.CLAN_LIMIT, 2);
         if (guildLimit !== guild.limit && this.client.guilds.cache.has(guild.id)) {
@@ -113,6 +118,11 @@ export class PatreonHandler {
     const res = await this.fetchAPI();
     if (!res) return null;
     if (debug) this.client.logger.info(`Patreon Handler Initialized.`, { label: 'PATREON' });
+
+    if (!this.client.isFeatureEnabled(FeatureFlags.AUTO_SYNC_PATREON, 'global')) {
+      this.client.logger.info('Sync is disabled', { label: 'PATREON' });
+      return;
+    }
 
     const patrons = await this.collection.find().toArray();
     for (const patron of patrons) {
@@ -165,7 +175,7 @@ export class PatreonHandler {
         for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
 
         if (
-          ![rewards.gold, rewards.gold_discontinued].includes(rewardId) &&
+          ![rewards.gold, rewards.gold_deprecated].includes(rewardId) &&
           ![CustomTiers.LIFETIME_CUSTOM_BOT, CustomTiers.SPONSORED_CUSTOM_BOT, CustomScopes.CUSTOM_BOT].includes(patron.note) &&
           patron.applicationId
         ) {

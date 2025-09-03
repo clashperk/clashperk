@@ -36,7 +36,4 @@ process.on('unhandledRejection', (error: DiscordAPIError) => {
   Sentry.captureException(error);
 });
 
-process.once('SIGTERM', () => client.close());
-process.once('SIGINT', () => client.close());
-
 await client.init(process.env.DISCORD_TOKEN!);

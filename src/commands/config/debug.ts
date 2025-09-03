@@ -72,6 +72,8 @@ export default class DebugCommand extends Command {
         `[${interaction.guild.shard.id} / ${this.client.shard?.count ?? 1}]`,
         '**Channel**',
         `<#${interaction.channelId}> (${interaction.channelId})`,
+        '**Patreon Status**',
+        `${this.client.subscribers.has(interaction.guild.id) ? `Active` : `Inactive`}`,
         '',
         '**Channel Permissions**',
         permissions

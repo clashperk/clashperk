@@ -49,7 +49,7 @@ export class Enqueuer {
   }
 
   private async broadcast() {
-    await this.client.subscriber.subscribe('channel', async (message) => {
+    await this.client.redis.subscriber.subscribe('channel', async (message) => {
       const data = JSON.parse(message);
 
       if (this.paused) return;
@@ -99,7 +99,7 @@ export class Enqueuer {
       }
     });
 
-    return this.client.publisher.publish(
+    return this.client.redis.publisher.publish(
       'CONNECT',
       JSON.stringify({ shardId: this.client.shard?.ids[0] ?? 0, shards: this.client.shard?.count ?? 1 })
     );
@@ -152,7 +152,7 @@ export class Enqueuer {
     await this.flagAlertLog.init();
 
     await this.broadcast();
-    return this.client.publisher.publish('INIT', '{}');
+    return this.client.redis.publisher.publish('INIT', '{}');
   }
 
   public async add(data: { tag: string; guild: string }) {
@@ -200,7 +200,7 @@ export class Enqueuer {
       };
 
       await this._loadClans(data.tag);
-      await this.client.publisher.publish('ADD', JSON.stringify(clan));
+      await this.client.redis.publisher.publish('ADD', JSON.stringify(clan));
     } else {
       this.cached.delete(data.tag);
     }
@@ -225,7 +225,7 @@ export class Enqueuer {
 
     if (!clans.length) {
       this.cached.delete(data.tag);
-      await this.client.publisher.publish('REMOVE', JSON.stringify(data));
+      await this.client.redis.publisher.publish('REMOVE', JSON.stringify(data));
     } else {
       await this._loadClans(data.tag);
     }
@@ -276,8 +276,8 @@ export class Enqueuer {
     this.lastSeenLog.cached.clear();
     this.legendLog.cached.clear();
 
-    await this.client.subscriber.unsubscribe('channel');
-    return this.client.publisher.publish('FLUSH', '{}');
+    await this.client.redis.subscriber.unsubscribe('channel');
+    return this.client.redis.publisher.publish('FLUSH', '{}');
   }
 }
 

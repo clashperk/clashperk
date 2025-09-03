@@ -17,6 +17,6 @@ export default class CustomBotLockerInhibitor extends Inhibitor {
 
     if (this.client.isOwner(interaction.guild.ownerId)) return false;
 
-    return !this.client.patreonHandler.get(interaction.guildId);
+    return !this.client.subscribers.has(interaction.guildId);
   }
 }

@@ -1,4 +1,4 @@
-import { CustomTiers } from '../struct/patreon-handler.js';
+import { CustomTiers } from '../struct/subscribers.js';
 
 export interface PatreonMembersEntity {
   id: string;

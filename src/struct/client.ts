@@ -23,13 +23,13 @@ import { CommandsMap } from './commands-map.js';
 import { CustomBotManager } from './custom-bot-manager.js';
 import { mongoClient } from './database.js';
 import { GuildEventsHandler } from './guild-events-handler.js';
-import { PatreonHandler } from './patreon-handler.js';
 import { RedisService } from './redis-service.js';
 import { Resolver } from './resolver.js';
 import { RosterManager } from './roster-manager.js';
 import { SettingsProvider } from './settings-provider.js';
 import { StatsHandler } from './stats-handler.js';
 import { StorageHandler } from './storage-handler.js';
+import { Subscribers } from './subscribers.js';
 
 export class Client extends DiscordClient {
   public commandHandler = new CommandHandler(this, {
@@ -80,11 +80,8 @@ export class Client extends DiscordClient {
     password: process.env.CLICKHOUSE_PASSWORD
   });
 
-  public subscriber = this.redis.connection.duplicate();
-  public publisher = this.redis.connection.duplicate();
-
   public enqueuer!: Enqueuer;
-  public patreonHandler!: PatreonHandler;
+  public subscribers!: Subscribers;
   public components = new Map<string, string[]>();
   public resolver!: Resolver;
   public ownerId: string;
@@ -141,9 +138,6 @@ export class Client extends DiscordClient {
       }
     });
 
-    this.publisher.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
-    this.subscriber.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
-
     this.logger = new Logger(this);
     this.util = new ClientUtil(this);
     this.coc = new ClashClient(this);
@@ -194,7 +188,7 @@ export class Client extends DiscordClient {
 
   private async enqueue() {
     this.enqueuer.init();
-    this.patreonHandler.init();
+    this.subscribers.init();
     this.clanGamesScheduler.init();
     this.capitalRaidScheduler.init();
     this.clanWarScheduler.init();
@@ -216,8 +210,7 @@ export class Client extends DiscordClient {
     this.settings = new SettingsProvider(this);
     await this.settings.init({ globalOnly: true });
 
-    await this.redis.connection.connect();
-    await Promise.all([this.subscriber.connect(), this.publisher.connect()]);
+    await this.redis.connect();
 
     this.storage = new StorageHandler(this);
     this.enqueuer = new Enqueuer(this);
@@ -226,7 +219,7 @@ export class Client extends DiscordClient {
     this.clanWarScheduler = new ClanWarScheduler(this);
     this.capitalRaidScheduler = new CapitalRaidScheduler(this);
     this.clanGamesScheduler = new ClanGamesScheduler(this);
-    this.patreonHandler = new PatreonHandler(this);
+    this.subscribers = new Subscribers(this);
     this.commands = new CommandsMap(this);
     this.guildEvents = new GuildEventsHandler(this);
     this.rosterManager = new RosterManager(this);
@@ -238,7 +231,7 @@ export class Client extends DiscordClient {
     this.once('ready', async () => {
       await this.analytics.flush();
       await this.settings.init({ globalOnly: false });
-      await this.patreonHandler.refresh();
+      await this.subscribers.refresh();
 
       if (process.env.NODE_ENV === 'production') {
         await this.enqueue();
@@ -247,17 +240,5 @@ export class Client extends DiscordClient {
 
     this.logger.info('Connecting to the Gateway', { label: 'DISCORD' });
     return this.login(token);
-  }
-
-  async close() {
-    try {
-      await this.subscriber.disconnect();
-      await this.publisher.disconnect();
-      await this.redis.disconnect();
-      await this.elastic.close();
-      await mongoClient.close(true);
-    } finally {
-      process.exit();
-    }
   }
 }

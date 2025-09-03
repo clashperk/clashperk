@@ -4,7 +4,7 @@ config();
 import { Collections } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
 import { mongoClient } from '../src/struct/database.js';
-import { PatreonMember, PatreonUser } from '../src/struct/patreon-handler.js';
+import { PatreonMember, PatreonUser } from '../src/struct/subscribers.js';
 
 const getSubscribers = async () => {
   const query = new URLSearchParams({

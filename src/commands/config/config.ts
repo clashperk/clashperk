@@ -202,7 +202,9 @@ export default class ConfigCommand extends Command {
     const flagsManagerRoles = this.getRoles(interaction.guild, Settings.FLAGS_MANAGER_ROLE);
     const rosterManagerRoles = this.getRoles(interaction.guild, Settings.ROSTER_MANAGER_ROLE);
     const linksManagerRoles = this.getRoles(interaction.guild, Settings.LINKS_MANAGER_ROLE);
-    const isPatreon = this.client.patreonHandler.get(interaction.guild.id);
+    const isPatreon = this.client.subscribers.has(interaction.guild.id);
+    const subscriber = this.client.subscribers.get(interaction.guild.id);
+    const note = subscriber?.note ? `\n-# (${title(subscriber.note)})` : '';
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
@@ -213,8 +215,8 @@ export default class ConfigCommand extends Command {
           value: '/'
         },
         {
-          name: 'Patreon Subscribed',
-          value: `${isPatreon ? 'Yes' : 'No'} - [Patreon](https://www.patreon.com/clashperk)`
+          name: 'Patreon Status',
+          value: `${isPatreon ? 'Active' : 'Inactive'} ${note} \n-# https://patreon.com/clashperk`
         },
         {
           name: 'Manager Roles',

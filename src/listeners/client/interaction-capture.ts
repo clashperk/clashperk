@@ -23,7 +23,7 @@ export default class InteractionCaptureListener extends Listener {
           name: interaction.guild.name,
           id: interaction.guild.id,
           members: interaction.guild.approximateMemberCount || interaction.guild.memberCount,
-          is_premium: this.client.patreonHandler.get(interaction.guildId),
+          is_premium: this.client.subscribers.has(interaction.guildId),
           owner_id: interaction.guild.ownerId
         },
         $set_once: { invited_at: interaction.guild.joinedAt }

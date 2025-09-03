@@ -12,8 +12,18 @@ export class RedisService {
     disableOfflineQueue: false
   });
 
+  public subscriber = this.connection.duplicate();
+  public publisher = this.connection.duplicate();
+
   public constructor(private readonly client: Client) {
     this.connection.on('error', (error) => this.client.logger.error(error, { label: 'REDIS' }));
+  }
+
+  public async connect() {
+    await this.connection.connect();
+    await this.subscriber.connect();
+    await this.publisher.connect();
+    return this;
   }
 
   public disconnect() {

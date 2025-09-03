@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
-import { CustomTiers, PatreonUser, guildLimits } from '../../struct/patreon-handler.js';
+import { CustomTiers, PatreonUser, guildLimits } from '../../struct/subscribers.js';
 
 const defaultClanLimit = 50;
 
@@ -36,7 +36,7 @@ export default class RedeemCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, { disable }: { disable?: boolean }) {
-    const data = await this.client.patreonHandler.fetchAPI();
+    const data = await this.client.subscribers.fetchAPI();
     if (!data) {
       return interaction.editReply({
         content: '**Something went wrong (unresponsive api), please [contact us.](https://discord.gg/ppuppun)**'
@@ -76,7 +76,7 @@ export default class RedeemCommand extends Command {
       return this.disableRedemption(interaction, { select: true, user, message: { content: '**Manage Patreon Subscriptions**' } });
     }
 
-    if (this.client.patreonHandler.get(interaction.guild.id)) {
+    if (this.client.subscribers.has(interaction.guild.id)) {
       return interaction.editReply('**This server already has an active subscription.**');
     }
 
@@ -136,14 +136,14 @@ export default class RedeemCommand extends Command {
         { upsert: true }
       );
 
-      await this.client.patreonHandler.refresh();
+      await this.client.subscribers.refresh();
       await this.sync(interaction.guild.id);
       return interaction.editReply({ embeds: [embed] });
     }
 
     const redeemed = this.redeemed({ ...user, rewardId });
     if (redeemed) {
-      if (!this.isNew(user, interaction, patron)) await this.client.patreonHandler.refresh();
+      if (!this.isNew(user, interaction, patron)) await this.client.subscribers.refresh();
       const embed = new EmbedBuilder()
         .setColor(16345172)
         .setDescription(
@@ -183,7 +183,7 @@ export default class RedeemCommand extends Command {
       }
     );
 
-    await this.client.patreonHandler.refresh();
+    await this.client.subscribers.refresh();
     await this.sync(interaction.guild.id);
     return interaction.editReply({ embeds: [embed] });
   }
@@ -232,7 +232,7 @@ export default class RedeemCommand extends Command {
         }
         await action.deferUpdate();
         await collection.updateOne({ _id: user._id }, { $pull: { guilds: { id } } });
-        await this.client.patreonHandler.deleteGuild(id);
+        await this.client.subscribers.deleteGuild(id);
         await action.editReply({ components: [], content: `Subscription disabled for **${guild.name} (${guild.id})**` });
       }
     });

@@ -191,7 +191,7 @@ export class StorageHandler {
           order: _clan?.order ?? _total + 1,
           ...(data.hexCode ? { color: data.hexCode } : {}),
           ...(data.categoryId ? { categoryId: data.categoryId } : {}),
-          patron: this.client.patreonHandler.get(interaction.guildId)
+          patron: this.client.subscribers.has(interaction.guildId)
         },
         $setOnInsert: {
           uniqueId: _clan?.uniqueId ?? (_lastClan?.uniqueId ?? 1000) + 1,

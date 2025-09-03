@@ -338,7 +338,7 @@ export class Resolver {
     ]);
 
     const max = this.client.settings.get<number>(interaction.guildId, Settings.CLAN_LIMIT, 2);
-    const isPatron = this.client.patreonHandler.get(interaction.guildId);
+    const isPatron = this.client.subscribers.has(interaction.guildId);
     const featuresPerClan = unique(features.map((clan) => clan.clanTag));
     const allowedClans = clans.filter((clan) => featuresPerClan.includes(clan.tag)).map((clan) => clan.name);
 

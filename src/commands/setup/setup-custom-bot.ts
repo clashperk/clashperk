@@ -15,7 +15,7 @@ import {
 import moment from 'moment';
 import { WithId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
-import { CustomScopes, CustomTiers, rewards } from '../../struct/patreon-handler.js';
+import { CustomScopes, CustomTiers, rewards } from '../../struct/subscribers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -30,7 +30,7 @@ export default class SetupCustomBotCommand extends Command {
   }
 
   private isEligible(patron: WithId<PatreonMembersEntity>) {
-    if (patron.rewardId === rewards.gold || patron.rewardId === rewards.gold_discontinued) return true;
+    if (patron.rewardId === rewards.gold || patron.rewardId === rewards.gold_deprecated) return true;
     return [CustomTiers.LIFETIME_CUSTOM_BOT, CustomTiers.SPONSORED_CUSTOM_BOT, CustomScopes.CUSTOM_BOT].includes(patron.note);
   }
 
@@ -43,7 +43,7 @@ export default class SetupCustomBotCommand extends Command {
       token: this.client.uuid(interaction.user.id)
     };
 
-    const patron = await this.client.patreonHandler.findOne(interaction.user.id);
+    const patron = await this.client.subscribers.findOne(interaction.user.id);
     const isEligible =
       Boolean(patron && this.isEligible(patron) && this.isAllowedGuild(patron, interaction.guildId)) ||
       this.client.isOwner(interaction.user.id);
@@ -158,7 +158,7 @@ export default class SetupCustomBotCommand extends Command {
           token: botToken,
           user: interaction.user
         });
-        await this.client.patreonHandler.attachCustomBot(patron.id, app.id);
+        await this.client.subscribers.attachCustomBot(patron.id, app.id);
 
         if (!service) {
           messages.push(`${EMOJIS.WRONG} Failed to deploy application...`);
