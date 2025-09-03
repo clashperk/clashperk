@@ -47,5 +47,5 @@ jobs:
         env:
           CRYPTO_KEY: ${{ secrets.CRYPTO_KEY }}
           CRYPTO_IV: ${{ secrets.CRYPTO_IV }}
-          INTERNAL_API_BASE_URL: ${{ secrets.INTERNAL_API_BASE_URL }}
-          INTERNAL_API_TOKEN: ${{ secrets.INTERNAL_API_TOKEN }}
+          DOCKER_SERVICE_API_BASE_URL: ${{ secrets.DOCKER_SERVICE_API_BASE_URL }}
+          DOCKER_SERVICE_API_KEY: ${{ secrets.DOCKER_SERVICE_API_KEY }}
