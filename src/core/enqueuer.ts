@@ -164,7 +164,6 @@ export class Enqueuer {
         {
           $match: {
             tag: data.tag,
-            // active: true,
             paused: false
           }
         },
@@ -212,7 +211,6 @@ export class Enqueuer {
       .find(
         {
           tag: data.tag,
-          // active: true,
           paused: false,
           guild: { $ne: data.guild }
         },

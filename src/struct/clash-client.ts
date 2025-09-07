@@ -56,7 +56,11 @@ export class ClashClient extends RESTManager {
           !(!(body as Record<string, string>)?.message && status === 403) &&
           !(path.includes('war') && status === 404)
         ) {
-          this.client.logger.debug(`${status} ${path}`, { label: 'HTTP' });
+          if (status === 500) {
+            this.client.logger.debug(`${status} ${path} ${JSON.stringify(body)}`, { label: 'HTTP' });
+          } else {
+            this.client.logger.debug(`${status} ${path}`, { label: 'HTTP' });
+          }
         }
       }
     });

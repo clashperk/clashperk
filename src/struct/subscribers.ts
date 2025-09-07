@@ -263,14 +263,18 @@ export class Subscribers {
         'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,campaign_lifetime_support_cents,is_gifted,note'
     }).toString();
 
-    const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
-      headers: { authorization: `Bearer ${process.env.PATREON_API_KEY}` },
-      signal: timeoutSignal(10_000, 'GET /campaigns/:id/members')
-    })
-      .then((res) => res.json())
-      .catch(() => null)) as { data: PatreonMember[]; included: PatreonUser[] } | null;
-
-    return data?.data ? data : null;
+    try {
+      const res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
+        headers: { authorization: `Bearer ${process.env.PATREON_API_KEY}` },
+        signal: timeoutSignal(10_000, 'GET /campaigns/:id/members')
+      });
+      const result = (await res.json()) as { data: PatreonMember[]; included: PatreonUser[] };
+      return result?.data ? result : null;
+    } catch (error) {
+      this.client.logger.log('Failed to fetch Patreon API', { label: 'PATREON' });
+      this.client.logger.error(error, { label: 'PATREON' });
+      return null;
+    }
   }
 }
 

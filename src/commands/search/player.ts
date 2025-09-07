@@ -1,5 +1,4 @@
 import { Collections, FeatureFlags } from '@app/constants';
-import { ClanWarsEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -17,7 +16,6 @@ import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage, trimTag } from '../../util/helper.js';
-import { Season } from '../../util/toolkit.js';
 
 const roles: Record<string, string> = {
   member: 'Member',
@@ -128,10 +126,6 @@ export default class PlayerCommand extends Command {
       ? `**Clan Info**\n${EMOJIS.CLAN} [${data.clan.name}](http://cprk.us/c/${trimTag(data.clan.tag)}) (${roles[data.role!]})\n`
       : '';
 
-    const war = await this.getWars(data.tag);
-    const warStats = `${EMOJIS.CROSS_SWORD} ${war.total} ${EMOJIS.SWORD} ${war.attacks} ${EMOJIS.STAR} ${war.stars} ${
-      EMOJIS.THREE_STARS
-    } ${war.starTypes.filter((num) => num === 3).length} ${EMOJIS.EMPTY_SWORD} ${war.of - war.attacks}`;
     const weaponLevel = data.townHallWeaponLevel ? weaponLevels[data.townHallWeaponLevel] : '';
     const embed = new EmbedBuilder()
       .setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
@@ -152,7 +146,7 @@ export default class PlayerCommand extends Command {
           `**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations.toLocaleString()} ${EMOJIS.UP_KEY}`,
           `**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived.toLocaleString()} ${EMOJIS.DOWN_KEY}`,
           `**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
-          `**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${war.total > 0 ? `\n**War Stats**\n${warStats}` : ''}`,
+          `**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}`,
           `[View war attack history](https://clashperk.com/players/${encodeURIComponent(data.tag)}/wars)`,
           '\u200b\u2002'
         ].join('\n')
@@ -225,61 +219,6 @@ export default class PlayerCommand extends Command {
           Math.abs(num) >= 1.0e3
           ? `${(Math.abs(num) / 1.0e3).toFixed(2)}K`
           : Math.abs(num).toFixed(2);
-  }
-
-  private async getWars(tag: string) {
-    const member = {
-      tag,
-      total: 0,
-      of: 0,
-      attacks: 0,
-      stars: 0,
-      dest: 0,
-      defStars: 0,
-      defDestruction: 0,
-      starTypes: [] as number[],
-      defCount: 0
-    };
-
-    const cursor = this.client.db.collection<ClanWarsEntity>(Collections.CLAN_WARS).aggregate<ClanWarsEntity>([
-      {
-        $match: {
-          $or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }],
-          startTime: {
-            $gte: Season.startTimestamp
-          }
-        }
-      },
-      {
-        $sort: {
-          _id: -1
-        }
-      }
-    ]);
-
-    for await (const data of cursor) {
-      const clan = data.clan.members.find((m) => m.tag === tag) ? data.clan : data.opponent;
-      member.total += 1;
-      for (const m of clan.members) {
-        if (m.tag !== tag) continue;
-        member.of += data.attacksPerMember ?? 2;
-
-        if (m.attacks?.length) {
-          member.attacks += m.attacks.length;
-          member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
-          member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);
-          member.starTypes.push(...m.attacks.map((atk) => atk.stars));
-        }
-
-        if (m.bestOpponentAttack) {
-          member.defStars += m.bestOpponentAttack.stars;
-          member.defDestruction += m.bestOpponentAttack.destructionPercentage;
-          member.defCount += 1;
-        }
-      }
-    }
-
-    return member;
   }
 
   private getLastSeen(lastSeen: Date) {

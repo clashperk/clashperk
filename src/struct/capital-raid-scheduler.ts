@@ -191,22 +191,22 @@ export class CapitalRaidScheduler {
 
     const currentMemberTags = clan.memberList.map((m) => m.tag);
     const missingMembers = data.members.filter((m) => !currentMemberTags.includes(m.tag));
-    const players = await this.client.coc._getPlayers(clan.memberList);
-    const clanMembers = players
+    const clanMembers = clan.memberList
       .map((player) => {
-        const clanMember = clan.memberList.find((mem) => mem.tag === player.tag)!;
         const raidMember = data.members.find((mem) => mem.tag === player.tag);
-        if (raidMember)
+        if (raidMember) {
           return {
             ...raidMember,
-            role: player.role ?? clanMember.role,
+            role: player.role ?? 'member',
             isParticipating: true,
             townHallLevel: player.townHallLevel
           };
+        }
+
         return {
           tag: player.tag,
           name: player.name,
-          role: player.role ?? clanMember.role,
+          role: player.role ?? 'member',
           attacks: 0,
           attackLimit: 5,
           bonusAttackLimit: 0,
