@@ -98,7 +98,7 @@ export default class StatsCommand extends Command {
 
       return {
         name: data.name,
-        tag: data.name,
+        tag: 'Roster',
         iconURL: interaction.guild.iconURL()!,
         playerTags: data.members.map((m) => m.tag)
       };
@@ -185,10 +185,7 @@ export default class StatsCommand extends Command {
     };
 
     const wars = await cursor.toArray();
-    const members: Record<
-      string,
-      { name: string; tag: string; total: number; success: number; hall: number; attacks: number; stars: number }
-    > = {};
+    const members: Record<string, Aggregated> = {};
 
     for (const war of wars) {
       for (const playerTag of playerTags) {
@@ -212,6 +209,7 @@ export default class StatsCommand extends Command {
             success: 0,
             attacks: 0,
             stars: 0,
+            destruction: 0,
             hall: m.townhallLevel
           };
           const member = members[m.tag];
@@ -230,6 +228,7 @@ export default class StatsCommand extends Command {
                   member.attacks += 1;
                   member.success += 1;
                   member.stars += attack.stars;
+                  member.destruction += attack.destructionPercentage;
                 }
               }
             } else if (typeof compare === 'object') {
@@ -241,6 +240,7 @@ export default class StatsCommand extends Command {
                     member.attacks += 1;
                     member.success += 1;
                     member.stars += attack.stars;
+                    member.destruction += attack.destructionPercentage;
                   }
                 }
               }
@@ -248,8 +248,9 @@ export default class StatsCommand extends Command {
               member.total += 1;
               if (this.getStars(attack.stars, stars)) {
                 member.attacks += 1;
-                member.stars += attack.stars;
                 member.success += 1;
+                member.stars += attack.stars;
+                member.destruction += attack.destructionPercentage;
               }
             }
           }
@@ -294,8 +295,14 @@ export default class StatsCommand extends Command {
       .map((mem) => ({ ...mem, rate: (mem.success * 100) / mem.total, avgStars: mem.stars / mem.attacks }));
 
     stats.sort((a, b) => b.total - a.total);
+    stats.sort((a, b) => b.destruction - a.destruction);
     stats.sort((a, b) => b.stars - a.stars);
-    stats.sort((a, b) => b.rate - a.rate);
+
+    if (args.view === 'starsAvg') {
+      stats.sort((a, b) => b.avgStars - a.avgStars);
+    } else {
+      stats.sort((a, b) => b.rate - a.rate);
+    }
 
     if (!stats.length) {
       return interaction.editReply(this.i18n('command.stats.no_stats', { lng: interaction.locale }));
@@ -340,7 +347,6 @@ export default class StatsCommand extends Command {
     }
 
     if (args.view === 'starsAvg') {
-      stats.sort((a, b) => b.avgStars - a.avgStars);
       embed.setDescription(
         Util.splitMessage(
           [
@@ -429,4 +435,15 @@ export default class StatsCommand extends Command {
     const hits = attacks.filter((atk) => atk.defenderTag === defenderTag).sort((a, b) => a.order - b.order);
     return hits.length === 1 || hits[0]!.order === order;
   }
+}
+
+interface Aggregated {
+  name: string;
+  tag: string;
+  total: number;
+  success: number;
+  hall: number;
+  attacks: number;
+  stars: number;
+  destruction: number;
 }

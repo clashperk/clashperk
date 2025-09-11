@@ -103,8 +103,11 @@ export default class RemindersCreateCommand extends Command {
       .countDocuments({ guild: interaction.guild.id });
 
     const totalClans = await this.client.storage.getTotalClans(interaction.guild.id);
-    if (reminders >= Math.max(totalClans * 5, 25) && !this.client.subscribers.has(interaction.guild.id)) {
-      return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
+    const maxReminders = Math.max(totalClans * 5, 25);
+    if (reminders >= maxReminders && !this.client.subscribers.has(interaction.guild.id)) {
+      return interaction.editReply(
+        this.i18n('command.reminders.create.max_limit', { maxReminders: maxReminders.toString(), lng: interaction.locale })
+      );
     }
 
     if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
@@ -448,8 +451,11 @@ export default class RemindersCreateCommand extends Command {
       .countDocuments({ guild: interaction.guild.id });
 
     const totalClans = await this.client.storage.getTotalClans(interaction.guild.id);
-    if (reminders >= Math.max(totalClans * 5, 25) && !this.client.subscribers.has(interaction.guild.id)) {
-      return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
+    const maxReminders = Math.max(totalClans * 5, 25);
+    if (reminders >= maxReminders && !this.client.subscribers.has(interaction.guild.id)) {
+      return interaction.editReply(
+        this.i18n('command.reminders.create.max_limit', { maxReminders: maxReminders.toString(), lng: interaction.locale })
+      );
     }
 
     if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
@@ -695,8 +701,11 @@ export default class RemindersCreateCommand extends Command {
       .countDocuments({ guild: interaction.guild.id });
 
     const totalClans = await this.client.storage.getTotalClans(interaction.guild.id);
-    if (reminders >= Math.max(totalClans * 5, 25) && !this.client.subscribers.has(interaction.guild.id)) {
-      return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
+    const maxReminders = Math.max(totalClans * 5, 25);
+    if (reminders >= maxReminders && !this.client.subscribers.has(interaction.guild.id)) {
+      return interaction.editReply(
+        this.i18n('command.reminders.create.max_limit', { maxReminders: maxReminders.toString(), lng: interaction.locale })
+      );
     }
 
     if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
