@@ -219,9 +219,6 @@ export default class StatsCommand extends Command {
           for (const attack of mode === 'attacks' ? (m.attacks ?? []) : []) {
             if (args.filter_farm_hits && attack.stars === 1 && attack.destructionPercentage < 50) continue;
 
-            member.attacks += 1;
-            member.stars += attack.stars;
-
             if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
             if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
 
@@ -229,19 +226,31 @@ export default class StatsCommand extends Command {
               const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
               if (defender.townhallLevel === m.townhallLevel) {
                 member.total += 1;
-                if (this.getStars(attack.stars, stars)) member.success += 1;
+                if (this.getStars(attack.stars, stars)) {
+                  member.attacks += 1;
+                  member.success += 1;
+                  member.stars += attack.stars;
+                }
               }
             } else if (typeof compare === 'object') {
               if (isValidTh(m.townhallLevel, compare.attackerTownHall)) {
                 const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
                 if (isValidTh(defender.townhallLevel, compare.defenderTownHall)) {
                   member.total += 1;
-                  if (this.getStars(attack.stars, stars)) member.success += 1;
+                  if (this.getStars(attack.stars, stars)) {
+                    member.attacks += 1;
+                    member.success += 1;
+                    member.stars += attack.stars;
+                  }
                 }
               }
             } else {
               member.total += 1;
-              if (this.getStars(attack.stars, stars)) member.success += 1;
+              if (this.getStars(attack.stars, stars)) {
+                member.attacks += 1;
+                member.stars += attack.stars;
+                member.success += 1;
+              }
             }
           }
 
@@ -331,6 +340,7 @@ export default class StatsCommand extends Command {
     }
 
     if (args.view === 'starsAvg') {
+      stats.sort((a, b) => b.avgStars - a.avgStars);
       embed.setDescription(
         Util.splitMessage(
           [
