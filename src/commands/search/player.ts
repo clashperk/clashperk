@@ -1,4 +1,4 @@
-import { Collections, FeatureFlags } from '@app/constants';
+import { Collections } from '@app/constants';
 import { APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -77,23 +77,23 @@ export default class PlayerCommand extends Command {
     };
 
     const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
-    const mainRow = new ActionRowBuilder<ButtonBuilder>()
+    const mainRow = new ActionRowBuilder<ButtonBuilder>();
+    const optionsRow = new ActionRowBuilder<ButtonBuilder>();
+    mainRow
       .addComponents(refreshButton)
+      .addComponents(
+        new ButtonBuilder().setLabel('Clan History').setEmoji(EMOJIS.SCROLL).setStyle(ButtonStyle.Secondary).setCustomId(customIds.history)
+      );
+
+    optionsRow
       .addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.units))
       .addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
       .addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
 
-    const isHistoryEnabled = this.client.isFeatureEnabled(FeatureFlags.CLAN_HISTORY, interaction.guildId);
-    if (isHistoryEnabled) {
-      mainRow.addComponents(
-        new ButtonBuilder().setLabel('Clan History').setEmoji(EMOJIS.SCROLL).setStyle(ButtonStyle.Secondary).setCustomId(customIds.history)
-      );
-    }
-
     if (interaction.isMessageComponent()) {
       return interaction.editReply({
         embeds: [embed],
-        components: [mainRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
+        components: [mainRow, optionsRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
       });
     }
 
@@ -112,7 +112,7 @@ export default class PlayerCommand extends Command {
 
     return interaction.editReply({
       embeds: [embed],
-      components: options.length > 1 ? [mainRow, menuRow] : [mainRow]
+      components: options.length > 1 ? [mainRow, optionsRow, menuRow] : [mainRow, optionsRow]
     });
   }
 
@@ -163,7 +163,6 @@ export default class PlayerCommand extends Command {
       }
     ]);
 
-    // convert achievements to object
     const achievements: Record<string, number> = {};
     for (const achievement of data.achievements) {
       achievements[achievement.name] = achievement.value;
