@@ -220,6 +220,9 @@ export default class StatsCommand extends Command {
             if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
             if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
 
+            // This helps to sort members with same rate
+            member.destruction += attack.destructionPercentage;
+
             if (typeof compare === 'string' && compare === 'equal') {
               const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
               if (defender.townhallLevel === m.townhallLevel) {
@@ -228,7 +231,6 @@ export default class StatsCommand extends Command {
                   member.attacks += 1;
                   member.success += 1;
                   member.stars += attack.stars;
-                  member.destruction += attack.destructionPercentage;
                 }
               }
             } else if (typeof compare === 'object') {
@@ -240,7 +242,6 @@ export default class StatsCommand extends Command {
                     member.attacks += 1;
                     member.success += 1;
                     member.stars += attack.stars;
-                    member.destruction += attack.destructionPercentage;
                   }
                 }
               }
@@ -250,7 +251,6 @@ export default class StatsCommand extends Command {
                 member.attacks += 1;
                 member.success += 1;
                 member.stars += attack.stars;
-                member.destruction += attack.destructionPercentage;
               }
             }
           }
