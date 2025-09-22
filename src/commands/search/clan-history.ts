@@ -73,7 +73,6 @@ export default class ClanHistoryCommand extends Command {
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
       .setTitle(`${data.name} (${data.tag})`)
-      .setAuthor({ name: 'Clan History (Beta Release)' })
       .setURL(`http://cprk.us/p/${data.tag.replace('#', '')}`)
       .setDescription(
         [
