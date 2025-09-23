@@ -8,6 +8,7 @@ import {
   TextBasedChannel
 } from 'discord.js';
 import ms from 'ms';
+import { camel } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
@@ -48,11 +49,16 @@ export default class DebugCommand extends Command {
     const clans = await this.client.storage.find(interaction.guild.id);
     const fetched = await this.client.coc._getClans(clans);
 
-    const cycle = await this.client.redis.connection.hGetAll('cycle').then((data) => ({
-      clans: Number(data.CLAN_LOOP || 0),
-      players: Number(data.PLAYER_LOOP || 0),
-      wars: Number(data.WAR_LOOP || 0)
-    }));
+    const timingMap = await this.client.redis.connection.hGetAll('loop_timings');
+    const timings = Object.entries(timingMap).reduce<Record<string, number>>(
+      (record, [key, value]) => {
+        if (!key.includes('_loop')) return record;
+        const payload = JSON.parse(value) as { timeTaken: number; timestamp: number };
+        record[camel(key)] = payload.timeTaken || 0;
+        return record;
+      },
+      { clanLoop: 0, playerLoop: 0, warLoop: 0 }
+    );
 
     const UEE_FOR_SLASH = interaction.appPermissions.has('UseExternalEmojis');
     const emojis = UEE_FOR_SLASH ? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY } : { cross: '❌', tick: '☑️', none: '⬛' };
@@ -86,12 +92,12 @@ export default class DebugCommand extends Command {
         '**Webhooks**',
         webhooks?.size ?? 0,
         '',
-        `**Loop Time ${cycle.clans && cycle.players && cycle.wars ? '' : '(Processing...)'}**`,
+        `**Loop Time ${timings.clanLoop && timings.playerLoop && timings.warLoop ? '' : '(Processing...)'}**`,
         `${emojis.none} \`\u200e ${'CLANS'.padStart(8, ' ')} \u200b ${'WARS'.padStart(8, ' ')} \u200b ${' PLAYERS'} \u200f\``,
-        `${emojis.tick} \`\u200e ${this.fixTime(cycle.clans).padStart(8, ' ')} \u200b ${this.fixTime(cycle.wars).padStart(
+        `${emojis.tick} \`\u200e ${this.fixTime(timings.clanLoop).padStart(8, ' ')} \u200b ${this.fixTime(timings.warLoop).padStart(
           8,
           ' '
-        )} \u200b ${this.fixTime(cycle.players).padStart(8, ' ')} \u200f\``,
+        )} \u200b ${this.fixTime(timings.playerLoop).padStart(8, ' ')} \u200f\``,
         '',
         '**Clan Status and Player Loop Info**',
         '*The war log must be made publicly accessible for the bot to function properly.*',
