@@ -11,6 +11,7 @@ import {
   WebhookClient,
   WebhookMessageCreateOptions
 } from 'discord.js';
+import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { clanGamesEmbedMaker } from '../helper/clan-games.helper.js';
 import { EMOJIS } from '../util/emojis.js';
@@ -38,8 +39,12 @@ export class ClanGamesLog extends RootLog {
 
   public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
     if (cache.message && new Date().getDate() === CLAN_GAMES_STARTING_DATE) {
-      const lastMonthIndex = new Date(Number(SnowflakeUtil.deconstruct(cache.message).timestamp)).getMonth();
-      if (lastMonthIndex < new Date().getMonth()) delete cache.message;
+      const messageDate = moment(Number(SnowflakeUtil.deconstruct(cache.message).timestamp)).startOf('month');
+      const currentDate = moment().startOf('month');
+
+      if (moment(messageDate).isBefore(moment(currentDate), 'month')) {
+        delete cache.message;
+      }
     }
 
     const embed = this.embed(cache, data);
@@ -104,8 +109,7 @@ export class ClanGamesLog extends RootLog {
   }
 
   private embed(cache: Cache, { clan, ...data }: Feed) {
-    const embed = clanGamesEmbedMaker(clan, { members: data.members, seasonId: this.seasonId, color: cache.color });
-    return embed;
+    return clanGamesEmbedMaker(clan, { members: data.members, seasonId: this.seasonId, color: cache.color });
   }
 
   private didStart() {
