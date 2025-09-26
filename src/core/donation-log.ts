@@ -244,9 +244,8 @@ export class DonationLog extends RootLog {
     if (this.timeouts.monthly) clearTimeout(this.timeouts.monthly);
     try {
       const interval = DonationLogFrequencyTypes.MONTHLY;
-      const season = moment(Season.ID);
-      const lte = Season.getLastMondayOfMonth(season.month() - 1, season.year());
-      const gte = Season.getLastMondayOfMonth(lte.getMonth() - 1, lte.getFullYear()).toISOString();
+      const { startTime: lte, endTime } = Season.getLastSeason();
+      const gte = endTime.toISOString();
 
       const timestamp = new Date(lte.getTime() + 10 * 60 * 1000);
       if (timestamp.getTime() > Date.now()) return;

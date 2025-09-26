@@ -4,7 +4,7 @@ import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookCli
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { padStart } from '../util/helper.js';
-import { Season, Util } from '../util/toolkit.js';
+import { Util } from '../util/toolkit.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 
@@ -57,7 +57,7 @@ export class LegendLog extends RootLog {
 
     const { startTime, endTime } = Util.getPreviousLegendTimestamp();
     const timestamp = new Date(endTime);
-    const seasonId = Season.generateID(Season.getLastMondayOfMonth(timestamp.getMonth(), timestamp.getFullYear(), timestamp));
+    const seasonId = moment(Util.getSeason(timestamp).endTime).format('YYYY-MM');
 
     const result = await this.client.db
       .collection(Collections.LEGEND_ATTACKS)

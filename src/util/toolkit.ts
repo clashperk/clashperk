@@ -1,6 +1,7 @@
+import { Util as CocUtil } from 'clashofclans.js';
 import moment from 'moment';
 
-export class Util {
+export class Util extends CocUtil {
   // Convert a JavaScript Date object to a Sheets serial date value
   public static dateToSerialDate(jsDate: Date) {
     const baseDate = new Date('1899-12-30').getTime();
@@ -100,6 +101,7 @@ export class Util {
     return `${startDate.getDate()} - ${endDate.getDate()} ${moment(startDate).format('MMM YYYY')}`;
   }
 
+  /** Returns today's start time and end time. */
   public static getCurrentLegendTimestamp() {
     const start =
       moment().hour() >= 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
@@ -107,33 +109,37 @@ export class Util {
     return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
   }
 
+  /** Returns the day count for today. */
   public static getLegendDay() {
     const { endTime } = this.getCurrentLegendTimestamp();
-    return moment(endTime).add(1, 'second').diff(moment(Season.startTimestamp), 'days');
+    return moment(endTime).add(1, 'second').diff(moment(Util.getSeason().startTime), 'days');
   }
 
+  /** Returns the day count for previous day. */
   public static getPreviousLegendDay() {
     const { endTime } = this.getPreviousLegendTimestamp();
-    const diff = moment(endTime).add(1, 'second').diff(moment(Season.startTimestamp), 'days');
+    const diff = moment(endTime).add(1, 'second').diff(moment(Util.getSeason().startTime), 'days');
     if (diff === 0) {
       const timestamp = moment(endTime).startOf('month').subtract(1, 'second').startOf('month').toDate();
       return moment(endTime)
         .add(1, 'second')
-        .diff(moment(Season.getLastMondayOfMonth(timestamp.getMonth(), timestamp.getFullYear(), timestamp)), 'days');
+        .diff(moment(Util.getSeason(timestamp).endTime), 'days');
     }
     return diff;
   }
 
+  /** Returns total number of days */
   public static getLegendDays() {
     return Array(Util.getLegendDay())
       .fill(0)
       .map((_, i) => {
-        const startTime = moment(Season.startTimestamp).startOf('day').add(i, 'days').add(5, 'hours');
+        const startTime = moment(Util.getSeason().startTime).startOf('day').add(i, 'days').add(5, 'hours');
         const endTime = startTime.clone().add(1, 'day').subtract(1, 'second');
         return { startTime: startTime.toDate().getTime(), endTime: endTime.toDate().getTime() };
       });
   }
 
+  /** Returns yesterday's start time and end time */
   public static getPreviousLegendTimestamp() {
     const { startTime } = this.getCurrentLegendTimestamp();
     const prevDay = moment(startTime).startOf('day').subtract(1, 'day').add(5, 'hours');
@@ -177,7 +183,7 @@ export class Util {
    * @returns {string[]} SeasonIds
    */
   public static getSeasonIds(): string[] {
-    return Array(Math.min(24))
+    return Array(18)
       .fill(0)
       .map((_, m) => {
         const now = new Date();
@@ -185,8 +191,18 @@ export class Util {
         now.setMonth(now.getMonth() - (m - 1), 0);
         return now;
       })
-      .filter((now) => now.getTime() >= new Date('2021-04').getTime())
       .map((now) => moment(now).format('YYYY-MM'));
+  }
+
+  public static getSeasons(): Date[] {
+    const { endTime } = Util.getSeason();
+    return Array(4)
+      .fill(0)
+      .map((_, idx) => {
+        const mts = moment(endTime);
+        mts.subtract(idx, 'months');
+        return Util.getSeasonEnd(mts.toDate(), idx === 0);
+      });
   }
 
   public static getWeekIds(limit = 6) {
@@ -213,7 +229,7 @@ export class Util {
         const now = new Date(Season.ID);
         now.setHours(0, 0, 0, 0);
         now.setMonth(now.getMonth() - month, 0);
-        return Season.generateID(now);
+        return moment(now).format('YYYY-MM');
       })
       .concat(Season.ID);
   }
@@ -223,7 +239,7 @@ export class Util {
    * @returns {string} SeasonId
    */
   public static getLastSeasonId(): string {
-    return Season.generateID(Season.startTimestamp);
+    return moment(Util.getSeason().startTime).format('YYYY-MM');
   }
 
   public static getCWLSeasonId() {
@@ -276,51 +292,15 @@ export class Util {
 }
 
 export class Season {
-  private static getSeasonEnd(month: number, year: number, autoFix = true): Date {
-    const now = new Date();
-    now.setUTCFullYear(year);
-    now.setUTCMonth(month, 0);
-    now.setUTCHours(5, 0, 0, 0);
-
-    const newDate = now.getUTCDay() === 0 ? now.getUTCDate() - 6 : now.getUTCDate() - (now.getUTCDay() - 1);
-    now.setUTCDate(newDate);
-
-    if (Date.now() >= now.getTime() && autoFix) {
-      return this.getSeasonEnd(month + 1, year);
-    }
-
-    return now;
-  }
-
-  public static getLastMondayOfMonth(month: number, year: number, date?: Date): Date {
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-    const lastMonday = new Date(lastDayOfMonth);
-    lastMonday.setDate(lastMonday.getDate() - ((lastMonday.getDay() + 6) % 7));
-    lastMonday.setHours(5, 0, 0, 0);
-    if (date && date.getTime() > lastMonday.getTime()) {
-      return this.getLastMondayOfMonth(month + 1, year, date);
-    }
-    return lastMonday;
-  }
-
   public static get ID() {
-    return this.getTimestamp.toISOString().slice(0, 7);
+    return Util.getSeasonId();
   }
 
-  public static get getTimestamp() {
-    const now = new Date();
-    return this.getSeasonEnd(now.getMonth() + 1, now.getFullYear());
-  }
-
-  public static get startTimestamp() {
-    return this.getSeasonEnd(this.getTimestamp.getMonth(), this.getTimestamp.getFullYear(), false);
-  }
-
-  public static get endTimestamp() {
-    return new Date(this.getTimestamp);
-  }
-
-  public static generateID(date: Date | string) {
-    return new Date(date).toISOString().slice(0, 7);
+  public static getLastSeason() {
+    const { startTime } = Util.getSeason();
+    return {
+      startTime: Util.getSeasonStart(startTime),
+      endTime: startTime
+    };
   }
 }

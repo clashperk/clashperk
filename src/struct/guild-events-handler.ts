@@ -4,7 +4,7 @@ import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, 
 import moment from 'moment';
 import { EMOJIS } from '../util/emojis.js';
 import { i18n } from '../util/i18n.js';
-import { Season, Util } from '../util/toolkit.js';
+import { Util } from '../util/toolkit.js';
 import { Client } from './client.js';
 
 export const imageMaps: Record<string, string> = {
@@ -79,7 +79,7 @@ export class GuildEventsHandler {
     const cwlSignupEndTime = moment(cwlStartTime).add(2, 'days').subtract(graceTime, 'milliseconds').toDate();
     const cwlEndTime = moment(cwlStartTime).add(9, 'days').subtract(graceTime, 'milliseconds').toDate();
 
-    const seasonEndTime = moment(Season.endTimestamp).subtract(graceTime, 'milliseconds').toDate();
+    const seasonEndTime = moment(Util.getSeason().endTime).subtract(graceTime, 'milliseconds').toDate();
 
     const { raidWeekEndTime: _raidWeekEndTime, raidWeekStartTime } = Util.geRaidWeekend(now);
     const raidWeekEndTime = moment(_raidWeekEndTime).subtract(graceTime, 'milliseconds').toDate();

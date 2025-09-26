@@ -215,15 +215,8 @@ export default class LegendDaysCommand extends Command {
 
   private async graph(data: APIPlayer) {
     const lastDayEnd = Util.getCurrentLegendTimestamp().startTime;
-    const seasonIds = Array(Math.min(3))
-      .fill(0)
-      .map((_, m) => {
-        const now = new Date(Season.ID);
-        now.setHours(0, 0, 0, 0);
-        now.setMonth(now.getMonth() - (m - 1), 0);
-        return Season.getLastMondayOfMonth(now.getMonth(), now.getFullYear());
-      })
-      .reverse();
+    const seasonIds = Util.getSeasons().slice(0, 3).reverse();
+
     const [, seasonStart, seasonEnd] = seasonIds;
     const [, lastSeasonEnd] = seasonIds;
 
@@ -243,7 +236,7 @@ export default class LegendDaysCommand extends Command {
           $match: {
             tag: data.tag,
             seasonId: {
-              $in: seasonIds.map((id) => Season.generateID(id))
+              $in: seasonIds.map((id) => moment(id).format('YYYY-MM'))
             }
           }
         },
