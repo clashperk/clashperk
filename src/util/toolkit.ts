@@ -293,6 +293,13 @@ export class Util extends CocUtil {
 
 export class Season {
   public static get ID() {
+    if (new Date() > new Date('2025-08-25T05:00:00.000Z') && new Date() <= new Date('2025-10-06T05:00:00.000Z')) {
+      return '2025-09';
+    }
+
+    if (new Date() > new Date('2025-10-06T05:00:00.000Z') && new Date() <= new Date('2025-10-27T05:00:00.000Z')) {
+      return '2025-10';
+    }
     return Util.getSeasonId();
   }
 
@@ -302,5 +309,24 @@ export class Season {
       startTime: Util.getSeasonStart(startTime),
       endTime: startTime
     };
+  }
+
+  public static getTimeframe(inputDate?: Date) {
+    const currentDate = inputDate ? moment(inputDate).toDate() : new Date();
+    if (currentDate > new Date('2025-08-25T05:00:00.000Z') && currentDate <= new Date('2025-10-06T05:00:00.000Z')) {
+      return {
+        startTime: new Date('2025-08-25T05:00:00.000Z'),
+        endTime: new Date('2025-10-06T04:59:59.999Z')
+      };
+    }
+
+    if (currentDate > new Date('2025-10-06T05:00:00.000Z') && currentDate <= new Date('2025-10-27T05:00:00.000Z')) {
+      return {
+        startTime: new Date('2025-10-06T05:00:00.000Z'),
+        endTime: new Date('2025-10-27T04:59:59.999Z')
+      };
+    }
+
+    return Util.getSeason(currentDate);
   }
 }

@@ -15,7 +15,7 @@ import { title, unique } from 'radash';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { Collections, FeatureFlags, Settings } from './constants.js';
-import { Util } from './toolkit.js';
+import { Season, Util } from './toolkit.js';
 
 export const hexToNanoId = (hex: ObjectId) => {
   return hex.toHexString().slice(-5).toUpperCase();
@@ -131,7 +131,7 @@ export const getMenuFromMessage = (interaction: ButtonInteraction, selected: str
 
 export const recoverDonations = async (clan: APIClan, seasonId: string) => {
   const client = container.resolve(Client);
-  const { endTime, startTime } = client.coc.util.getSeason(new Date(seasonId));
+  const { endTime, startTime } = Season.getTimeframe(new Date(seasonId));
 
   const isEnabled = client.isFeatureEnabled(FeatureFlags.DONATIONS_RECOVERY, 'global');
   if (!isEnabled) return;

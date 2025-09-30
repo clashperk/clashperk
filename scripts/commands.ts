@@ -31,16 +31,12 @@ await i18next.use(Backend).init({
 });
 
 function getSeasonIds() {
-  return Array(Math.min(18))
+  return Array(18)
     .fill(0)
     .map((_, m) => {
       const now = new Date(Season.ID);
       now.setHours(0, 0, 0, 0);
       now.setMonth(now.getMonth() - (m - 1), 0);
-      return now;
-    })
-    .filter((now) => now.getTime() >= new Date('2021-04').getTime())
-    .map((now) => {
       return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
     });
 }
@@ -59,7 +55,7 @@ function getWeekIds() {
   return weekIds;
 }
 
-const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[] = [
+const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GuildDirectory | ChannelType.GroupDM>[] = [
   ChannelType.GuildText,
   ChannelType.GuildAnnouncement,
   ChannelType.AnnouncementThread,
