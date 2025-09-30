@@ -63,7 +63,7 @@ export default class LegendDaysCommand extends Command {
       return interaction.editReply(`**${data.name} (${data.tag})** is not in the Legend League.`);
     }
 
-    const seasonId = Season.ID;
+    const seasonId = Season.oldId;
     const legend = await this.client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
 
     if (!legend) {
@@ -209,7 +209,7 @@ export default class LegendDaysCommand extends Command {
     ]);
 
     const season = this.client.coc.util.getSeason();
-    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
+    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.oldId})` });
     return embed;
   }
 
@@ -413,7 +413,7 @@ export default class LegendDaysCommand extends Command {
     const lastSeason = result.at(1);
     const prevFinalTrophies = lastSeason?.logs.at(-1)?.trophies ?? '';
 
-    if (season._id !== Season.ID) return null;
+    if (season._id !== Season.oldId) return null;
 
     const labels = Array.from({ length: moment(seasonEnd).diff(seasonStart, 'days') + 1 }, (_, i) =>
       moment(seasonStart).add(i, 'days').toDate()
@@ -464,7 +464,7 @@ export default class LegendDaysCommand extends Command {
   }
 
   private async logs(data: APIPlayer) {
-    const seasonId = Season.ID;
+    const seasonId = Season.oldId;
     const legend = await this.client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
 
     const logs = legend?.logs ?? [];
@@ -530,7 +530,7 @@ export default class LegendDaysCommand extends Command {
         } **${data.trophies}**`,
         ''
       ],
-      `**Legend Season Logs (${Season.ID})**`,
+      `**Legend Season Logs (${Season.oldId})**`,
       `- ${data.attackWins} ${pluralize('attack', data.attackWins)} and ${data.defenseWins} ${pluralize('defense', data.defenseWins)} won`,
       '',
       logDescription.join('\n')
@@ -542,7 +542,9 @@ export default class LegendDaysCommand extends Command {
     embed.setDescription(description);
 
     const season = this.client.coc.util.getSeason();
-    embed.setFooter({ text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
+    embed.setFooter({
+      text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.oldId})`
+    });
 
     return embed;
   }
@@ -649,7 +651,7 @@ export default class LegendDaysCommand extends Command {
       .aggregate<{ country: string; countryCode: string; players: { rank: number } }>([
         {
           $match: {
-            season: Season.ID
+            season: Season.oldId
           }
         },
         {

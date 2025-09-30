@@ -30,7 +30,7 @@ export default class LegendAttacksCommand extends Command {
     if (!resolved) return;
 
     const { clans, resolvedArgs } = resolved;
-    const seasonId = Season.ID;
+    const seasonId = Season.oldId;
 
     const legendMembers = clans
       .flatMap((clan) => clan.memberList)
@@ -166,7 +166,7 @@ export default class LegendAttacksCommand extends Command {
 
     const season = this.client.coc.util.getSeason();
     embed.setTimestamp();
-    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
+    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.oldId})` });
 
     return embed;
   }

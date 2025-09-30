@@ -303,6 +303,10 @@ export class Season {
     return Util.getSeasonId();
   }
 
+  public static get oldId() {
+    return Util.getSeasonId();
+  }
+
   public static getLastSeason() {
     const { startTime } = Util.getSeason();
     return {
