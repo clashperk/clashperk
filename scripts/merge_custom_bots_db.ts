@@ -12,12 +12,12 @@ import { mongoClient } from '../src/struct/database.js';
   const _bots = db.collection<CustomBotsEntity>(Collections.CUSTOM_BOTS);
   const _users = db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
 
-  const bots = await _bots.find().toArray();
+  const bots = await _bots.find({}).toArray();
 
   for (const bot of bots) {
     await _bots.updateOne({ serviceId: bot.serviceId }, { $set: { guildIds: [] } });
 
-    const user = await _users.findOne({ applicationId: bot.serviceId });
+    const user = await _users.findOne({ id: bot.patronId });
     if (!user) continue;
 
     for (const { id } of user.guilds) {
