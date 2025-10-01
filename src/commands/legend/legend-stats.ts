@@ -16,6 +16,7 @@ import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
+import { Season } from '../../util/toolkit.js';
 
 const solidColors = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4'];
 const colors = [
@@ -102,7 +103,7 @@ export default class LegendStatsCommand extends Command {
 
     container.addActionRowComponents((row) => row.addComponents(menu));
 
-    const { endTime, startTime } = this.client.coc.util.getSeason();
+    const { endTime, startTime } = Season.getSeason();
     const timestamps = Array.from({ length: moment(endTime).diff(startTime, 'days') + 1 }, (_, i) => moment(startTime).add(i, 'days'))
       .slice(1)
       .filter((mts) => mts.isSameOrBefore(moment()));
