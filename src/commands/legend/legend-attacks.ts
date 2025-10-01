@@ -164,7 +164,7 @@ export default class LegendAttacksCommand extends Command {
       ].join('\n')
     );
 
-    const season = this.client.coc.util.getSeason();
+    const season = Season.getSeason();
     embed.setTimestamp();
     embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.oldId})` });
 

@@ -14,7 +14,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
-import { getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
+import { aggregateLegendAttacks, getLegendAttack, getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
@@ -63,9 +63,7 @@ export default class LegendDaysCommand extends Command {
       return interaction.editReply(`**${data.name} (${data.tag})** is not in the Legend League.`);
     }
 
-    const seasonId = Season.oldId;
-    const legend = await this.client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
-
+    const legend = await getLegendAttack(data.tag);
     if (!legend) {
       return interaction.editReply(
         [`No data available for **${data.name} (${data.tag})**`, `Going forward, Legend statistics will be collected.`].join('\n')
@@ -214,199 +212,7 @@ export default class LegendDaysCommand extends Command {
   }
 
   private async graph(data: APIPlayer) {
-    const lastDayEnd = Util.getCurrentLegendTimestamp().startTime;
-    const seasonIds = Util.getSeasons().slice(0, 3).reverse();
-
-    const [, seasonStart, seasonEnd] = seasonIds;
-    const [, lastSeasonEnd] = seasonIds;
-
-    const result = await this.client.db
-      .collection(Collections.LEGEND_ATTACKS)
-      .aggregate<{
-        _id: string;
-        logs: {
-          timestamp: Date;
-          trophies: number | null;
-        }[];
-        avgGain: number;
-        avgOffense: number;
-        avgDefense: number;
-      }>([
-        {
-          $match: {
-            tag: data.tag,
-            seasonId: {
-              $in: seasonIds.map((id) => moment(id).format('YYYY-MM'))
-            }
-          }
-        },
-        {
-          $unwind: {
-            path: '$logs'
-          }
-        },
-        {
-          $set: {
-            ts: {
-              $toDate: '$logs.timestamp'
-            }
-          }
-        },
-        {
-          $set: {
-            ts: {
-              $dateTrunc: {
-                date: '$ts',
-                unit: 'day',
-                timezone: '-05:00'
-              }
-            }
-          }
-        },
-        {
-          $sort: {
-            ts: 1
-          }
-        },
-        {
-          $addFields: {
-            gain: {
-              $subtract: ['$logs.end', '$logs.start']
-            },
-            offense: {
-              $cond: {
-                if: {
-                  $gt: ['$logs.inc', 0]
-                },
-                then: '$logs.inc',
-                else: 0
-              }
-            },
-            defense: {
-              $cond: {
-                if: {
-                  $lte: ['$logs.inc', 0]
-                },
-                then: '$logs.inc',
-                else: 0
-              }
-            }
-          }
-        },
-        {
-          $group: {
-            _id: '$ts',
-            seasonId: {
-              $first: '$seasonId'
-            },
-            trophies: {
-              $last: '$logs.end'
-            },
-            gain: {
-              $sum: '$gain'
-            },
-            offense: {
-              $sum: '$offense'
-            },
-            defense: {
-              $sum: '$defense'
-            },
-            count: {
-              $sum: 1
-            }
-          }
-        },
-        {
-          $sort: {
-            _id: 1
-          }
-        },
-        {
-          $group: {
-            _id: '$seasonId',
-            logs: {
-              $push: {
-                timestamp: '$_id',
-                trophies: '$trophies',
-                defense: '$defense',
-                offense: '$offense',
-                gain: '$gain',
-                count: '$count'
-              }
-            }
-          }
-        },
-        {
-          $set: {
-            filtered_logs: {
-              $filter: {
-                input: '$logs',
-                as: 'log',
-                cond: {
-                  $or: [
-                    {
-                      $lt: [
-                        '$$log.timestamp',
-                        {
-                          $toDate: lastDayEnd
-                        }
-                      ]
-                    },
-                    {
-                      $gte: ['$$log.count', 16]
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          $project: {
-            avgOffense: {
-              $avg: {
-                $cond: {
-                  if: {
-                    $gt: [{ $size: '$filtered_logs' }, 0]
-                  },
-                  then: '$filtered_logs.offense',
-                  else: '$logs.offense'
-                }
-              }
-            },
-            avgDefense: {
-              $avg: {
-                $cond: {
-                  if: {
-                    $gt: [{ $size: '$filtered_logs' }, 0]
-                  },
-                  then: '$filtered_logs.defense',
-                  else: '$logs.defense'
-                }
-              }
-            },
-            avgGain: {
-              $avg: {
-                $cond: {
-                  if: {
-                    $gt: [{ $size: '$filtered_logs' }, 0]
-                  },
-                  then: '$filtered_logs.gain',
-                  else: '$logs.gain'
-                }
-              }
-            },
-            logs: 1,
-            _id: 1
-          }
-        },
-        {
-          $sort: {
-            _id: -1
-          }
-        }
-      ])
-      .toArray();
+    const { items: result, lastSeasonEnd, seasonEnd, seasonStart } = await aggregateLegendAttacks(data.tag);
     if (!result.length) return null;
 
     const season = result.at(0)!;
@@ -464,8 +270,7 @@ export default class LegendDaysCommand extends Command {
   }
 
   private async logs(data: APIPlayer) {
-    const seasonId = Season.oldId;
-    const legend = await this.client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
+    const legend = await getLegendAttack(data.tag);
 
     const logs = legend?.logs ?? [];
     const days = Util.getLegendDays();
@@ -496,16 +301,16 @@ export default class LegendDaysCommand extends Command {
       perDayLogs.length >= 32
         ? [
             '```',
-            'DAY   ATK    DEF   +/-   INIT  FINAL ',
+            'DAY ATK   DEF  +/-  INIT FINAL',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
               const def = padStart(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
               const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
               const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
               const final = padStart(day.final, 4);
-              const init = padStart(day.initial, 5);
+              const init = padStart(day.initial, 4);
               const n = (i + 1).toString().padStart(2, ' ');
-              return `\u200e${n}  ${atk}  ${def}  ${ng}  ${init}  ${final}`;
+              return `\u200e${n} ${atk} ${def} ${ng} ${init}  ${final}`;
             }),
             '```'
           ]
@@ -541,7 +346,7 @@ export default class LegendDaysCommand extends Command {
     embed.setURL(`http://cprk.us/c/${trimTag(data.tag)}`);
     embed.setDescription(description);
 
-    const season = this.client.coc.util.getSeason();
+    const season = Season.getSeason();
     embed.setFooter({
       text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.oldId})`
     });
