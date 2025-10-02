@@ -41,7 +41,7 @@ export default class LegendLeaderboardCommand extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    let seasonId = args.season ?? Season.ID;
+    let seasonId = args.season ?? Season.prevId;
 
     const isDefaultMessage = interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
     if (isDefaultMessage) {
@@ -86,7 +86,7 @@ export default class LegendLeaderboardCommand extends Command {
       sort_by: args.sort_by,
       limit: args.limit,
       is_bb: args.is_bb,
-      season: args.season && args.season !== Season.ID ? args.season : null,
+      season: args.season && args.season !== Season.prevId ? args.season : null,
       export_disabled: args.export_disabled
     };
 
@@ -146,7 +146,7 @@ export default class LegendLeaderboardCommand extends Command {
         )
     );
 
-    if (seasonId !== Season.ID && !args.season) {
+    if (seasonId !== Season.prevId && !args.season) {
       return interaction.editReply({ embeds: [embed], components: [] });
     }
 
