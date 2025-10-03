@@ -50,7 +50,6 @@ export const getLegendRankingEmbedMaker = async ({
     {}
   );
 
-  console.log({ seasonId, _players: _players.map((p) => p.tag) });
   const legends = await client.db
     .collection<Omit<LegendAttacksEntity, 'logs'>>(Collections.LEGEND_ATTACKS)
     .find({ tag: { $in: _players.map(({ tag }) => tag) }, seasonId }, { projection: { logs: 0, defenseLogs: 0, attackLogs: 0 } })
