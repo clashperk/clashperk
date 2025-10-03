@@ -16,7 +16,6 @@ import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
-import { Season } from '../../util/toolkit.js';
 
 const solidColors = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4'];
 const colors = [
@@ -48,9 +47,18 @@ export default class LegendStatsCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { is_eod?: boolean; ranks?: string[] }) {
-    const threshold = await this.getLegendThreshold(!!args.is_eod);
-    if (!threshold?.thresholds?.length) return interaction.followUp({ content: 'No data available.', flags: MessageFlags.Ephemeral });
+  public async exec(
+    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+    args: { is_eod?: boolean; ranks?: string[]; reference_date?: string }
+  ) {
+    if (args.reference_date && !moment(args.reference_date).isValid()) {
+      return interaction.followUp({ content: 'Invalid reference date provided.', flags: MessageFlags.Ephemeral });
+    }
+
+    const threshold = await this.getLegendThreshold(!!args.is_eod, args.reference_date);
+    if (!threshold?.thresholds?.length) {
+      return interaction.followUp({ content: 'No data available for this date.', flags: MessageFlags.Ephemeral });
+    }
 
     const container = new ContainerBuilder();
     container.setAccentColor(this.client.embed(interaction)!);
@@ -58,7 +66,7 @@ export default class LegendStatsCommand extends Command {
       [
         '## Legend Ranks Threshold',
         '',
-        args.is_eod
+        !threshold.isLive
           ? `### End of Day Ranks \n${time(moment(threshold.timestamp).toDate(), 'f')}`
           : `### Live Ranks \n${time(moment().toDate(), 'f')}`,
         '',
@@ -88,9 +96,15 @@ export default class LegendStatsCommand extends Command {
         .setCustomId(customIds.toggle)
     );
 
-    if (!args.is_eod) {
+    if (!threshold.isLive && args.reference_date) {
+      return interaction.editReply({ withComponents: true, components: [container] });
+    }
+
+    if (threshold.isLive) {
       return interaction.editReply({ withComponents: true, components: [container, row] });
     }
+
+    if (threshold.history.length < 3) return;
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId(customIds.rank)
@@ -103,16 +117,8 @@ export default class LegendStatsCommand extends Command {
 
     container.addActionRowComponents((row) => row.addComponents(menu));
 
-    const { endTime, startTime } = Season.getSeason();
-    const timestamps = Array.from({ length: moment(endTime).diff(startTime, 'days') + 1 }, (_, i) => moment(startTime).add(i, 'days'))
-      .slice(1)
-      .filter((mts) => mts.isSameOrBefore(moment()));
-
-    const thresholdRecords = await this.client.redis.getLegendThresholdRecords(
-      timestamps.map((mts) => `RAW:LEGEND-TROPHY-THRESHOLD:${mts.format('YYYY-MM-DD')}`)
-    );
-
-    const labels = timestamps.map((mts) => mts.format('DD MMM'));
+    const thresholdRecords = threshold.history;
+    const labels = thresholdRecords.map((record) => moment(record.timestamp).format('DD MMM'));
 
     const ranksToShow = args.ranks?.length ? args.ranks.map(Number) : [1, 100, 500, 1000, 5000, 10000, 50000];
     const compareMode = ranksToShow.length <= 3;
@@ -205,37 +211,54 @@ export default class LegendStatsCommand extends Command {
     return interaction.editReply({ withComponents: true, components: [container, row] });
   }
 
-  private async getLegendThreshold(isEod: boolean) {
-    const eodThresholds = await this.client.redis.getLegendThreshold('RAW:LEGEND-TROPHY-THRESHOLD');
-    if (!isEod) {
-      const res = await fetch('https://api.clashperk.com/tasks/legend-trophy-threshold', {
-        method: 'GET',
-        headers: {
-          'X-API-KEY': `${process.env.INTERNAL_API_KEY}`
-        }
-      });
-      const result = (await res.json()) as { rank: number; minTrophies: number }[];
+  private async getLegendThreshold(isEod: boolean, ref?: string) {
+    const res = await fetch('https://api.clashperk.com/v1/players/legend-ranking-thresholds', {
+      method: 'GET',
+      headers: {
+        'X-API-KEY': `${process.env.INTERNAL_API_KEY}`
+      }
+    });
+    if (!res.ok) throw new Error(res.statusText);
 
-      const thresholds = result.map((threshold) => {
-        const eod = eodThresholds?.thresholds.find((t) => t.rank === threshold.rank)?.minTrophies ?? threshold.minTrophies;
-        return { ...threshold, diff: threshold.minTrophies - eod };
-      });
+    const data = (await res.json()) as {
+      live: LegendRankingThresholdsDto;
+      eod: LegendRankingThresholdsDto | null;
+      history: LegendRankingThresholdsDto[];
+    };
 
-      return { timestamp: new Date().toISOString(), thresholds, hasDiff: !!eodThresholds };
+    if (ref && moment(ref).isValid()) {
+      const entry = data.history.findIndex((record) => moment(record.timestamp).startOf('day').isSame(moment(ref).startOf('day'), 'day'));
+      if (!(entry >= 0)) return null;
+
+      const [lastRecord, record] = [data.history[entry - 1], data.history[entry]];
+      return { ...this.compare(record, lastRecord), history: data.history, isLive: false };
     }
 
-    const lastEod = moment(moment().format('YYYY-MM-DD')).subtract(1, 'day').format('YYYY-MM-DD');
-    const lastEodThresholds = await this.client.redis.getLegendThreshold(`RAW:LEGEND-TROPHY-THRESHOLD:${lastEod}`);
-
-    if (eodThresholds) {
-      const thresholds = eodThresholds.thresholds.map((threshold) => {
-        const eod = lastEodThresholds?.thresholds.find((t) => t.rank === threshold.rank)?.minTrophies ?? threshold.minTrophies;
-        return { ...threshold, diff: threshold.minTrophies - eod };
-      });
-
-      return { timestamp: eodThresholds.timestamp, thresholds, hasDiff: !!lastEodThresholds };
+    if (data.eod && isEod) {
+      return { ...this.compare(data.eod, data.history.at(-2)), history: data.history, isLive: false };
+    }
+    if (data.eod && !isEod) {
+      return { ...this.compare(data.live, data.eod), history: data.history, isLive: true };
     }
 
     return null;
   }
+
+  private compare(target: LegendRankingThresholdsDto, reference?: LegendRankingThresholdsDto) {
+    const thresholds = target.thresholds.map((threshold) => {
+      const eod = reference?.thresholds.find((t) => t.rank === threshold.rank)?.minTrophies ?? threshold.minTrophies;
+      return { ...threshold, diff: threshold.minTrophies - eod };
+    });
+    return { timestamp: target.timestamp, thresholds, hasDiff: !!reference };
+  }
+}
+
+interface ThresholdsDto {
+  rank: number;
+  minTrophies: number;
+}
+
+interface LegendRankingThresholdsDto {
+  timestamp: string;
+  thresholds: ThresholdsDto[];
 }

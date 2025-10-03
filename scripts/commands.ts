@@ -3870,7 +3870,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         name: 'stats',
         description: command.legend.stats.description,
         description_localizations: translation('command.legend.stats.description'),
-        type: ApplicationCommandOptionType.Subcommand
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'reference_date',
+            description: 'The date to view the end-of-day thresholds (YYYY-MM-DD)',
+            type: ApplicationCommandOptionType.String
+          }
+        ]
       }
     ]
   },

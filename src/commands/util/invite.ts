@@ -1,5 +1,5 @@
 import { Settings, getInviteLink } from '@app/constants';
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, MessageFlags } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
 export default class InviteCommand extends Command {
@@ -40,6 +40,6 @@ export default class InviteCommand extends Command {
           additionalTexts.join('\n')
         ].join('\n')
       );
-    return interaction.reply({ embeds: [embed], ephemeral: interaction.inCachedGuild() });
+    return interaction.reply(interaction.inCachedGuild() ? { embeds: [embed], flags: MessageFlags.Ephemeral } : { embeds: [embed] });
   }
 }
