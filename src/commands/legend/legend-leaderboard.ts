@@ -80,13 +80,14 @@ export default class LegendLeaderboardCommand extends Command {
       return interaction.editReply('Successfully enabled auto updating Leaderboard.');
     }
 
+    const currentSeasonId = args.is_bb ? Season.ID : Season.oldId;
     const payload = {
       cmd: this.id,
       clans: resolvedArgs,
       sort_by: args.sort_by,
       limit: args.limit,
       is_bb: args.is_bb,
-      season: args.season && args.season !== Season.ID ? args.season : null,
+      season: args.season && args.season !== currentSeasonId ? args.season : null,
       export_disabled: args.export_disabled
     };
 
