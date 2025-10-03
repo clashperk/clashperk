@@ -106,24 +106,22 @@ export class Util extends CocUtil {
     const start =
       moment().hour() >= 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
 
-    return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
+    return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').toDate().getTime() };
   }
 
   /** Returns the day count for today. */
   public static getLegendDay() {
     const { endTime } = this.getCurrentLegendTimestamp();
-    return moment(endTime).add(1, 'second').diff(moment(Season.getSeason().startTime), 'days');
+    return moment(endTime).diff(moment(Season.getSeason().startTime), 'days');
   }
 
   /** Returns the day count for previous day. */
   public static getPreviousLegendDay() {
     const { endTime } = this.getPreviousLegendTimestamp();
-    const diff = moment(endTime).add(1, 'second').diff(moment(Season.getSeason().startTime), 'days');
+    const diff = moment(endTime).diff(moment(Season.getSeason().startTime), 'days');
     if (diff === 0) {
-      const timestamp = moment(endTime).startOf('month').subtract(1, 'second').startOf('month').toDate();
-      return moment(endTime)
-        .add(1, 'second')
-        .diff(moment(Season.getSeason(timestamp).endTime), 'days');
+      const timestamp = moment(endTime).startOf('month').startOf('month').toDate();
+      return moment(endTime).diff(moment(Season.getSeason(timestamp).endTime), 'days');
     }
     return diff;
   }
@@ -134,7 +132,7 @@ export class Util extends CocUtil {
       .fill(0)
       .map((_, i) => {
         const startTime = moment(Season.getSeason().startTime).startOf('day').add(i, 'days').add(5, 'hours');
-        const endTime = startTime.clone().add(1, 'day').subtract(1, 'second');
+        const endTime = startTime.clone().add(1, 'day');
         return { startTime: startTime.toDate().getTime(), endTime: endTime.toDate().getTime() };
       });
   }
@@ -143,7 +141,7 @@ export class Util extends CocUtil {
   public static getPreviousLegendTimestamp() {
     const { startTime } = this.getCurrentLegendTimestamp();
     const prevDay = moment(startTime).startOf('day').subtract(1, 'day').add(5, 'hours');
-    const nextDay = prevDay.clone().add(1, 'day').subtract(1, 'second');
+    const nextDay = prevDay.clone().add(1, 'day');
     return { startTime: prevDay.toDate().getTime(), endTime: nextDay.toDate().getTime() };
   }
 
@@ -320,14 +318,14 @@ export class Season {
     if (currentDate > new Date('2025-08-25T05:00:00.000Z') && currentDate <= new Date('2025-10-06T05:00:00.000Z')) {
       return {
         startTime: new Date('2025-08-25T05:00:00.000Z'),
-        endTime: new Date('2025-10-06T04:59:59.999Z')
+        endTime: new Date('2025-10-06T05:00:00.000Z')
       };
     }
 
     if (currentDate > new Date('2025-10-06T05:00:00.000Z') && currentDate <= new Date('2025-10-27T05:00:00.000Z')) {
       return {
         startTime: new Date('2025-10-06T05:00:00.000Z'),
-        endTime: new Date('2025-10-27T04:59:59.999Z')
+        endTime: new Date('2025-10-27T05:00:00.000Z')
       };
     }
 

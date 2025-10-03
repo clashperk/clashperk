@@ -206,8 +206,8 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    const season = this.client.coc.util.getSeason();
-    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.oldId})` });
+    const season = Season.getSeason();
+    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
     return embed;
   }
 
@@ -335,7 +335,7 @@ export default class LegendDaysCommand extends Command {
         } **${data.trophies}**`,
         ''
       ],
-      `**Legend Season Logs (${Season.oldId})**`,
+      `**Legend Season Logs (${Season.ID})**`,
       `- ${data.attackWins} ${pluralize('attack', data.attackWins)} and ${data.defenseWins} ${pluralize('defense', data.defenseWins)} won`,
       '',
       logDescription.join('\n')
@@ -348,7 +348,7 @@ export default class LegendDaysCommand extends Command {
 
     const season = Season.getSeason();
     embed.setFooter({
-      text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.oldId})`
+      text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})`
     });
 
     return embed;

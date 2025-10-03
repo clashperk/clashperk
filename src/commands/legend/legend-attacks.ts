@@ -166,7 +166,7 @@ export default class LegendAttacksCommand extends Command {
 
     const season = Season.getSeason();
     embed.setTimestamp();
-    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.oldId})` });
+    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
 
     return embed;
   }

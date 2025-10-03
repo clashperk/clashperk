@@ -7,6 +7,7 @@ import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { BLUE_NUMBERS } from '../util/emojis.js';
 import { escapeBackTick, padStart } from '../util/helper.js';
+import { Season } from '../util/toolkit.js';
 
 function calc(clanRank: number) {
   if (clanRank >= 41) return 3;
@@ -49,6 +50,7 @@ export const getLegendRankingEmbedMaker = async ({
     {}
   );
 
+  console.log({ seasonId, _players: _players.map((p) => p.tag) });
   const legends = await client.db
     .collection<Omit<LegendAttacksEntity, 'logs'>>(Collections.LEGEND_ATTACKS)
     .find({ tag: { $in: _players.map(({ tag }) => tag) }, seasonId }, { projection: { logs: 0, defenseLogs: 0, attackLogs: 0 } })
@@ -88,7 +90,7 @@ export const getLegendRankingEmbedMaker = async ({
 
   const embed = new EmbedBuilder();
   embed.setColor(client.embed(guild.id));
-  embed.setAuthor({ name: `Legend Leaderboard (${moment(seasonId).format('MMM YYYY')})` });
+  embed.setAuthor({ name: `Legend Leaderboard (${Season.ID})` });
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
 
@@ -148,14 +150,17 @@ export const getBbLegendRankingEmbedMaker = async ({
   const memberTags = _clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
   const _players = await client.redis.getPlayers(memberTags);
 
-  const playersMap = _players.reduce<Record<string, { clan?: APIPlayerClan; attackWins: number; townHallLevel: number }>>((prev, curr) => {
-    prev[curr.tag] = {
-      clan: curr.clan,
-      attackWins: curr.attackWins,
-      townHallLevel: curr.townHallLevel
-    };
-    return prev;
-  }, {});
+  const playersMap = _players.reduce<Record<string, { clan?: APIPlayerClan; attackWins: number; townHallLevel: number }>>(
+    (record, curr) => {
+      record[curr.tag] = {
+        clan: curr.clan,
+        attackWins: curr.attackWins,
+        townHallLevel: curr.townHallLevel
+      };
+      return record;
+    },
+    {}
+  );
 
   const result = await client.db
     .collection<{ name: string; tag: string; versusTrophies: { current: number }; builderHallLevel: number }>(Collections.PLAYER_SEASONS)
