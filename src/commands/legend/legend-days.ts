@@ -275,7 +275,7 @@ export default class LegendDaysCommand extends Command {
     const logs = legend?.logs ?? [];
     const days = Util.getLegendDays();
 
-    const perDayLogs = days.reduce<AggsEntry[]>((prev, { startTime, endTime }) => {
+    const perDayLogs = days.reduce<AggsEntry[]>((items, { startTime, endTime }) => {
       const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
       const attacks = mixedLogs.filter((en) => en.type === 'attack') ?? [];
       const defenses = mixedLogs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
@@ -292,8 +292,8 @@ export default class LegendDaysCommand extends Command {
       const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
       const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
 
-      prev.push({ attackCount, defenseCount, gain, loss, final: final?.end ?? '-', initial: initial?.start ?? '-' });
-      return prev;
+      items.push({ attackCount, defenseCount, gain, loss, final: final?.end ?? '-', initial: initial?.start ?? '-' });
+      return items;
     }, []);
 
     const weaponLevel = data.townHallWeaponLevel ? ATTACK_COUNTS[data.townHallWeaponLevel] : '';
@@ -456,7 +456,7 @@ export default class LegendDaysCommand extends Command {
       .aggregate<{ country: string; countryCode: string; players: { rank: number } }>([
         {
           $match: {
-            season: Season.oldId
+            season: Season.ID
           }
         },
         {

@@ -728,7 +728,7 @@ export const aggregateLegendAttacks = async (playerTag: string) => {
   return {
     items: [...current, ...prev],
     seasonStart: new Date('2025-08-25T05:00:00.000Z'),
-    seasonEnd: new Date('2025-09-06T05:00:00.000Z'),
+    seasonEnd: new Date('2025-10-06T05:00:00.000Z'),
     lastSeasonEnd: new Date('2025-08-25T05:00:00.000Z')
   };
 };
