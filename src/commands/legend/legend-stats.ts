@@ -1,5 +1,6 @@
 import {
   ActionRowBuilder,
+  AttachmentBuilder,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -14,27 +15,10 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
+import { createTrophyThresholdsGraph } from '../../struct/image-helper.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
 
-const solidColors = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4'];
-const colors = [
-  '#FF6384', // Rose Red
-  '#36A2EB', // Sky Blue
-  '#FFCE56', // Sunshine Yellow
-  '#4BC0C0', // Seafoam Teal
-  '#9966FF', // Lavender Purple
-  '#FF9F40', // Vivid Orange
-  '#00ADEF', // Bright Cyan
-  '#FF6B6B', // Soft Coral
-  '#7FDBFF', // Pastel Sky
-  '#B28DFF', // Light Violet
-  '#2ED9C3', // Fresh Teal
-  '#FFD166', // Golden Peach
-  '#C56CF0', // Dreamy Purple
-  '#F6707B', // Coral Pink
-  '#57D9A3' // Mint Green
-];
 const possibleRanks = [1, 3, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
 
 export default class LegendStatsCommand extends Command {
@@ -97,11 +81,11 @@ export default class LegendStatsCommand extends Command {
     );
 
     if (!threshold.isLive && args.reference_date) {
-      return interaction.editReply({ withComponents: true, components: [container] });
+      return interaction.editReply({ withComponents: true, components: [container], files: [] });
     }
 
     if (threshold.isLive) {
-      return interaction.editReply({ withComponents: true, components: [container, row] });
+      return interaction.editReply({ withComponents: true, components: [container, row], files: [] });
     }
 
     if (threshold.history.length < 3) return;
@@ -118,97 +102,34 @@ export default class LegendStatsCommand extends Command {
     container.addActionRowComponents((row) => row.addComponents(menu));
 
     const thresholdRecords = threshold.history;
-    const labels = thresholdRecords.map((record) => moment(record.timestamp).format('DD MMM'));
-
+    const labels = thresholdRecords.map((record) => record.timestamp);
     const ranksToShow = args.ranks?.length ? args.ranks.map(Number) : [1, 100, 500, 1000, 5000, 10000, 50000];
-    const compareMode = ranksToShow.length <= 3;
 
-    const datasets = ranksToShow.map((rank, i) => {
+    const datasets = ranksToShow.map((rank) => {
       return {
-        label: `#${rank}`,
+        name: `#${rank}`,
         data: thresholdRecords.map((entry) => {
           const t = entry.thresholds.find((th) => th.rank === rank);
           return t ? t.minTrophies : null;
-        }),
-        borderWidth: 2,
-        borderColor: compareMode ? solidColors[i] : colors[i % colors.length],
-        backgroundColor: compareMode ? solidColors[i] + '33' : colors[i % colors.length],
-        fill: compareMode,
-        tension: 0.2,
-        ...(compareMode && {
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          tension: 0.3,
-          pointBackgroundColor: solidColors[i],
-          pointHoverBackgroundColor: solidColors[i]
         })
       };
     });
 
-    const config = {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          title: {
-            display: true,
-            text: compareMode
-              ? `Legend League Trophy Thresholds (Rank ${ranksToShow.join(', ')})`
-              : 'Legend League Trophy Thresholds by Rank'
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false
-          },
-          legend: {
-            display: !compareMode,
-            position: 'top'
-          }
-        },
-        interaction: {
-          mode: 'nearest',
-          axis: 'x',
-          intersect: false
-        },
-        scales: {
-          y: {
-            beginAtZero: false
-          }
-        }
-      }
-    };
+    const { attachmentKey, file, name } = await createTrophyThresholdsGraph({
+      datasets,
+      labels,
+      title: 'Legend League Ranking Thresholds'
+    });
+    const rawFile = new AttachmentBuilder(file, { name });
 
-    const body = await fetch('https://quickchart.io/chart/create', {
-      body: JSON.stringify({
-        version: '4',
-        backgroundColor: '#ffffff',
-        width: 800,
-        height: 450,
-        devicePixelRatio: 2.0,
-        format: 'png',
-        chart: config
-      }),
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then((res) => res.json());
-
-    const url = (body as any).url as string;
-    const webLink = url.replace('chart/render', 'chart-maker/view');
-
-    const media = new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url));
+    const media = new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder({ media: { url: attachmentKey } }));
     container.addMediaGalleryComponents(media);
 
-    container.addActionRowComponents((row) =>
-      row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(webLink).setLabel('Open in Web'))
-    );
+    // container.addActionRowComponents((row) =>
+    //   row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(webLink).setLabel('Open in Web'))
+    // );
 
-    return interaction.editReply({ withComponents: true, components: [container, row] });
+    return interaction.editReply({ withComponents: true, components: [container, row], files: [rawFile] });
   }
 
   private async getLegendThreshold(isEod: boolean, ref?: string) {

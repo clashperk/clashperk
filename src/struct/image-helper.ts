@@ -105,3 +105,25 @@ export const getCWLSummaryImage = async ({
     attachmentKey: 'attachment://clan-war-league-ranking.jpeg' as const
   };
 };
+
+export const createTrophyThresholdsGraph = async ({ datasets, labels, title }: { datasets: any[]; labels: string[]; title: string }) => {
+  const arrayBuffer = await fetch(`${process.env.IMAGE_GEN_API_BASE_URL!}/clans/activity`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      labels: labels,
+      datasets,
+      offset: 0,
+      unit: 'day',
+      title
+    })
+  }).then((res) => res.arrayBuffer());
+
+  return {
+    file: Buffer.from(arrayBuffer),
+    name: 'legend-ranking-threshold.jpeg' as const,
+    attachmentKey: 'attachment://legend-ranking-threshold.jpeg' as const
+  };
+};
