@@ -127,6 +127,8 @@ export class Subscribers {
 
     const patrons = await this.collection.find().toArray();
     for (const patron of patrons) {
+      if (patron.id === '00000000') continue;
+
       const pledge = res.data.find((entry) => entry.relationships.user.data.id === patron.id) ?? null;
       await this.resyncPatron(patron, pledge);
     }
@@ -135,7 +137,7 @@ export class Subscribers {
   public async resyncPatron(patron: WithId<PatreonMembersEntity>, pledge: PatreonMember | null) {
     const isLifetime = !!(pledge && Object.values(CustomTiers).includes(pledge.attributes.note));
     const isGifted = !!(pledge && pledge.attributes.is_gifted);
-    const patronStatus = pledge?.attributes.patron_status ?? 'unknown_status';
+    const patronStatus = pledge ? (pledge.attributes.patron_status ?? 'unknown_status') : 'account_deleted';
 
     if (
       pledge &&
@@ -146,6 +148,7 @@ export class Subscribers {
         isGifted === patron.isGifted &&
         isLifetime === patron.isLifetime &&
         patron.note === pledge.attributes.note &&
+        patron.email === pledge.attributes.email &&
         patronStatus === patron.status
       )
     ) {
@@ -158,12 +161,19 @@ export class Subscribers {
             lifetimeSupport: pledge.attributes.campaign_lifetime_support_cents,
             isGifted,
             isLifetime,
+            email: pledge.attributes.email,
             note: pledge.attributes.note,
             status: patronStatus
           }
         }
       );
       this.client.logger.info(`Patreon Data Synced ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATREON' });
+    }
+
+    if (!pledge && patron.status !== 'account_deleted') {
+      await this.collection.updateOne({ _id: patron._id }, { $set: { status: patronStatus } });
+      this.client.logger.info(`Patreon Data Synced (deleted) ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATREON' });
+      await this.sendWebhook(patron, { label: 'Patreon Account Deleted', color: COLOR_CODES.RED, status: patronStatus });
     }
 
     const rewardId = pledge?.relationships.currently_entitled_tiers.data[0]?.id;
@@ -219,11 +229,14 @@ export class Subscribers {
       (patron.active && isFormer) ||
       (patron.active && isUnknown) ||
       (patron.active && isDeclined && this.gracePeriodExpired(new Date(pledge.attributes.last_charge_date))) ||
-      (patron.active && !pledge && patron.userId !== '00000000');
+      (patron.active && !pledge && patron.id !== '00000000');
 
     // Cancel Subscription
     if (canceled) {
-      await this.collection.updateOne({ id: patron.id }, { $set: { active: false, cancelled: isFormer, declined: isDeclined } });
+      await this.collection.updateOne(
+        { id: patron.id },
+        { $set: { active: false, cancelled: isFormer, declined: isDeclined, status: patronStatus } }
+      );
 
       for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
       if (patron.applicationId) await this.client.customBotManager.suspendService(patron.applicationId);
@@ -308,13 +321,16 @@ export class Subscribers {
       const webhook = new WebhookClient({ url: this.client.settings.get<string>('global', Settings.DEPLOYMENT_WEBHOOK_URL, null) });
 
       const embed = new EmbedBuilder()
-        .setTitle(label)
+        .setTitle(`${patron.username} (${patron.userId})`)
         .setColor(color)
         .setDescription(
           [
-            `**Username:** ${patron.username} (${patron.name})`,
-            `**ID:** ${patron.userId} (${patron.id})`,
-            `**Status:** ${status}`,
+            `<@${patron.userId}>`,
+            '',
+            `**Patron**`,
+            `${patron.name} (${patron.id})`,
+            '',
+            `**Status:** [${status}](https://www.patreon.com/members?query=${encodeURIComponent(patron.email || patron.name)})`,
             `**Pledge:** $${(patron.entitledAmount / 100).toFixed(2)}`,
             `**Lifetime:** $${(patron.lifetimeSupport / 100).toFixed(2)}`,
             `**Last Charged:** ${patron.lastChargeDate.toUTCString()}`,
@@ -324,6 +340,7 @@ export class Subscribers {
             `**Note:** ${patron.note || 'N/A'}`
           ].join('\n')
         )
+        .setFooter({ text: label })
         .setTimestamp();
 
       await webhook.send({ embeds: [embed] });
