@@ -1,6 +1,7 @@
-import { Collections, FeatureFlags, Settings } from '@app/constants';
+import { Collections, COLOR_CODES, FeatureFlags, Settings } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
-import { Interaction } from 'discord.js';
+import { captureException } from '@sentry/node';
+import { EmbedBuilder, Interaction, WebhookClient } from 'discord.js';
 import { Collection, WithId } from 'mongodb';
 import { timeoutSignal } from './clash-client.js';
 import { Client } from './client.js';
@@ -145,7 +146,7 @@ export class Subscribers {
         isGifted === patron.isGifted &&
         isLifetime === patron.isLifetime &&
         patron.note === pledge.attributes.note &&
-        patronStatus === patron.patronStatus
+        patronStatus === patron.status
       )
     ) {
       await this.collection.updateOne(
@@ -162,6 +163,7 @@ export class Subscribers {
           }
         }
       );
+      this.client.logger.info(`Patreon Data Synced ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATREON' });
     }
 
     const rewardId = pledge?.relationships.currently_entitled_tiers.data[0]?.id;
@@ -181,26 +183,41 @@ export class Subscribers {
         ) {
           await this.client.customBotManager.suspendService(patron.applicationId);
         }
+
+        this.client.logger.info(`Subscription Updated ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
+        await this.sendWebhook(patron, {
+          label: 'Subscription Updated',
+          color: COLOR_CODES.YELLOW,
+          status: patronStatus
+        });
       }
     }
 
     const isActive = pledge?.attributes.patron_status === 'active_patron' || isGifted || isLifetime;
 
     // Resume Subscription
-    if (!patron.active && (patron.declined || patron.cancelled) && isActive) {
+    if (!patron.active && isActive) {
       await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true, cancelled: false } });
 
       for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
       if (patron.applicationId) await this.client.customBotManager.resumeService(patron.applicationId);
 
       this.client.logger.info(`Subscription Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
+
+      await this.sendWebhook(patron, {
+        label: 'Subscription Resumed',
+        color: COLOR_CODES.GREEN,
+        status: patronStatus
+      });
     }
 
     const isFormer = pledge?.attributes.patron_status === 'former_patron' && !isActive;
     const isDeclined = pledge?.attributes.patron_status === 'declined_patron' && !isActive;
+    const isUnknown = !pledge?.attributes.patron_status && !isActive;
 
     const canceled =
       (patron.active && isFormer) ||
+      (patron.active && isUnknown) ||
       (patron.active && isDeclined && this.gracePeriodExpired(new Date(pledge.attributes.last_charge_date))) ||
       (patron.active && !pledge && patron.userId !== '00000000');
 
@@ -212,6 +229,15 @@ export class Subscribers {
       if (patron.applicationId) await this.client.customBotManager.suspendService(patron.applicationId);
 
       this.client.logger.info(`Subscription Canceled ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
+
+      await this.sendWebhook(patron, {
+        label: 'Subscription Canceled',
+        color: COLOR_CODES.RED,
+        status: patronStatus
+      });
+
+      // const user = await this.client.users.fetch(patron.userId);
+      // if (embed) await user.send({ embeds: [embed] });
     }
   }
 
@@ -276,6 +302,47 @@ export class Subscribers {
       return null;
     }
   }
+
+  public async sendWebhook(patron: PatreonMembersEntity, { status, label, color }: { status: string; label: string; color: number }) {
+    try {
+      const webhook = new WebhookClient({ url: this.client.settings.get<string>('global', Settings.DEPLOYMENT_WEBHOOK_URL, null) });
+
+      const embed = new EmbedBuilder()
+        .setTitle(label)
+        .setColor(color)
+        .setDescription(
+          [
+            `**Username:** ${patron.username} (${patron.name})`,
+            `**ID:** ${patron.userId} (${patron.id})`,
+            `**Status:** ${status}`,
+            `**Pledge:** $${(patron.entitledAmount / 100).toFixed(2)}`,
+            `**Lifetime:** $${(patron.lifetimeSupport / 100).toFixed(2)}`,
+            `**Last Charged:** ${patron.lastChargeDate.toUTCString()}`,
+            `**Is Gifted:** ${patron.isGifted}`,
+            `**Is Lifetime:** ${patron.isLifetime}`,
+            `**Bot ID:** ${patron.applicationId ?? 'N/A'}`,
+            `**Note:** ${patron.note || 'N/A'}`
+          ].join('\n')
+        )
+        .setTimestamp();
+
+      await webhook.send({ embeds: [embed] });
+
+      // const rest = new REST({ version: '10' }).setToken(process.env.MAIN_DISCORD_TOKEN!);
+      // const dmChannel = await rest.post(Routes.userChannels(), {
+      //   body: { recipient_id: patron.userId }
+      // });
+      // await rest.post(Routes.channelMessages((dmChannel as Record<string, string>).id), {
+      //   body: { embeds: [embed.toJSON()] }
+      // });
+
+      return embed;
+    } catch (error) {
+      captureException(error);
+      this.client.logger.error(error, { label: 'Subscriber' });
+      return null;
+    }
+  }
 }
 
 export interface PatreonMember {
@@ -287,7 +354,7 @@ export interface PatreonMember {
     note: CustomTiers;
     campaign_lifetime_support_cents: number;
     pledge_relationship_start: string;
-    patron_status: 'active_patron' | 'declined_patron' | 'former_patron' | null;
+    patron_status: 'active_patron' | 'declined_patron' | 'former_patron' | 'account_deleted' | null;
     last_charge_status: 'Paid' | 'Declined' | 'Deleted' | 'Pending' | 'Refunded' | 'Fraud' | 'Other' | null;
   };
   id: string;

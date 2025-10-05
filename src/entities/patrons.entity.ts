@@ -25,7 +25,7 @@ export interface PatreonMembersEntity {
   isGifted: boolean;
   isLifetime: boolean;
   note: CustomTiers;
-  patronStatus: string;
+  status: string;
 
   applicationId?: string;
 

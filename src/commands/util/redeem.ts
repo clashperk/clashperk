@@ -1,4 +1,4 @@
-import { Collections, Settings } from '@app/constants';
+import { Collections, COLOR_CODES, Settings } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
-import { CustomTiers, PatreonUser, guildLimits } from '../../struct/subscribers.js';
+import { CustomTiers, guildLimits, PatreonUser } from '../../struct/subscribers.js';
 
 const defaultClanLimit = 50;
 
@@ -39,7 +39,7 @@ export default class RedeemCommand extends Command {
     const data = await this.client.subscribers.fetchAPI();
     if (!data) {
       return interaction.editReply({
-        content: '**Something went wrong (unresponsive api), please [contact us.](https://discord.gg/ppuppun)**'
+        content: '**Something went wrong (unresponsive api), please [contact us.](<https://discord.gg/ppuppun>)**'
       });
     }
 
@@ -65,7 +65,7 @@ export default class RedeemCommand extends Command {
     }
 
     const collection = this.client.db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
-    const user = await collection.findOne({ id: patron.id });
+    let user = await collection.findOne({ id: patron.id });
 
     if (disable) {
       if (!user) return interaction.editReply('**You do not have an active subscription.**');
@@ -82,19 +82,19 @@ export default class RedeemCommand extends Command {
 
     const pledge = data.data.find((entry) => entry.relationships.user.data.id === patron.id);
     if (!pledge) {
-      return interaction.editReply('**Something went wrong (unknown pledge), please [contact us.](https://discord.gg/ppuppun)**');
+      return interaction.editReply('**Something went wrong (unknown pledge), please [contact us.](<https://discord.gg/ppuppun>)**');
     }
 
     const isGifted = !!pledge.attributes.is_gifted || Object.values(CustomTiers).includes(pledge.attributes.note);
 
     if (pledge.attributes.patron_status !== 'active_patron' && !isGifted) {
-      return interaction.editReply('**Something went wrong (declined pledge), please [contact us.](https://discord.gg/ppuppun)**');
+      return interaction.editReply('**Something went wrong (declined pledge), please [contact us.](<https://discord.gg/ppuppun>)**');
     }
 
     const rewardId = pledge.relationships.currently_entitled_tiers.data[0]?.id;
     if (!rewardId || !(rewardId in guildLimits)) {
       return interaction.editReply(
-        `**Something went wrong (unknown tier ${rewardId || '00000'}), please [contact us.](https://discord.gg/ppuppun)**`
+        `**Something went wrong (unknown tier ${rewardId || '00000'}), please [contact us.](<https://discord.gg/ppuppun>)**`
       );
     }
 
@@ -102,8 +102,10 @@ export default class RedeemCommand extends Command {
       .setColor(16345172)
       .setDescription([`Subscription enabled for **${interaction.guild.name}**`].join('\n'));
 
+    const patronStatus = pledge?.attributes.patron_status ?? 'unknown_status';
+
     if (!user) {
-      await collection.updateOne(
+      user = await collection.findOneAndUpdate(
         { id: patron.id },
         {
           $set: {
@@ -122,7 +124,7 @@ export default class RedeemCommand extends Command {
             redeemed: true,
             isGifted: !!pledge.attributes.is_gifted,
             note: pledge.attributes.note,
-            status: pledge.attributes.patron_status ?? 'unknown_status',
+            status: patronStatus,
             isLifetime: Object.values(CustomTiers).includes(pledge.attributes.note),
             active: true,
             declined: false,
@@ -133,8 +135,16 @@ export default class RedeemCommand extends Command {
             lastChargeDate: new Date(pledge.attributes.last_charge_date)
           }
         },
-        { upsert: true }
+        { upsert: true, returnDocument: 'after' }
       );
+
+      if (user) {
+        await this.client.subscribers.sendWebhook(user, {
+          status: patronStatus,
+          color: COLOR_CODES.PURPLE,
+          label: 'New Redemption'
+        });
+      }
 
       await this.client.subscribers.refresh();
       await this.sync(interaction.guild.id);
@@ -147,9 +157,10 @@ export default class RedeemCommand extends Command {
       const embed = new EmbedBuilder()
         .setColor(16345172)
         .setDescription(
-          ["You've already claimed your subscription!", 'If you think it is wrong, please [contact us.](https://discord.gg/ppuppun)'].join(
-            '\n'
-          )
+          [
+            "You've already claimed your subscription!",
+            'If you think it is wrong, please [contact us.](<https://discord.gg/ppuppun>)'
+          ].join('\n')
         );
       return this.disableRedemption(interaction, { select: false, user, message: { embeds: [embed] } });
     }
@@ -226,7 +237,7 @@ export default class RedeemCommand extends Command {
         const guild = user.guilds.find((guild) => guild.id === id);
         if (!guild) {
           await action.update({
-            content: '**Something went wrong (unknown server), please [contact us.](https://discord.gg/ppuppun)**'
+            content: '**Something went wrong (unknown server), please [contact us.](<https://discord.gg/ppuppun>)**'
           });
           return;
         }
