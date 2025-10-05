@@ -34,7 +34,7 @@ function getSeasonIds() {
   return Array(18)
     .fill(0)
     .map((_, m) => {
-      const now = new Date(Season.ID);
+      const now = new Date(Season.oldId);
       now.setHours(0, 0, 0, 0);
       now.setMonth(now.getMonth() - (m - 1), 0);
       return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
