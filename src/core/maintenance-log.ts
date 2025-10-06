@@ -25,6 +25,7 @@ export class MaintenanceLog {
       const timestamp = await this.client.redis.connection.get(this.redisKey);
       if (timestamp) {
         this.inMaintenance = Boolean(true);
+        this.client.inMaintenance = Boolean(true);
         this.startTime = new Date(Number(timestamp));
       }
     } catch {}
