@@ -57,11 +57,8 @@ export default class LegendStatsCommand extends Command {
         '',
         '`  RANK ` `TROPHY` ` DIFF `',
         ...threshold.thresholds.map(({ rank, minTrophies, diff }) => {
-          if (threshold.hasDiff) {
-            const sign = diff >= 0 ? '+' : '-';
-            return `\`${padStart(rank.toLocaleString(), 6)} \` \` ${minTrophies} \` \` ${sign}${padEnd(Math.abs(diff), 4)}\` `;
-          }
-          return `\`${padStart(rank.toLocaleString(), 6)} \` \` ${minTrophies} \``;
+          const sign = diff >= 0 ? '+' : '-';
+          return `\`${padStart(rank.toLocaleString(), 6)} \` \` ${minTrophies} \` \` ${sign}${padEnd(Math.abs(diff), 4)}\` `;
         })
       ].join('\n')
     );
@@ -168,20 +165,20 @@ export default class LegendStatsCommand extends Command {
       return { ...this.compare(data.eod, data.history.at(-2)), history: data.history, isLive: false };
     }
     if (data.eod && !isEod) {
-      const { startTime } = Season.getSeason();
-      const isResetDay = moment(data.eod.timestamp).isSame(moment(startTime).startOf('day'), 'day');
-      return { ...this.compare(data.live, isResetDay ? null : data.eod), history: data.history, isLive: true };
+      return { ...this.compare(data.live, data.eod), history: data.history, isLive: true };
     }
 
     return null;
   }
 
   private compare(target: LegendRankingThresholdsDto, reference?: LegendRankingThresholdsDto | null) {
+    const isResetDay = reference && Season.getSeason(target.timestamp).seasonId !== Season.getSeason(reference.timestamp).seasonId;
+
     const thresholds = target.thresholds.map((threshold) => {
       const eod = reference?.thresholds.find((t) => t.rank === threshold.rank)?.minTrophies ?? threshold.minTrophies;
-      return { ...threshold, diff: threshold.minTrophies - eod };
+      return { ...threshold, diff: threshold.minTrophies - (isResetDay ? 5000 : eod) };
     });
-    return { timestamp: target.timestamp, thresholds, hasDiff: !!reference };
+    return { timestamp: target.timestamp, thresholds };
   }
 }
 
