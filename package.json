@@ -1,6 +1,6 @@
 {
   "name": "clashperk",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "author": "",
   "license": "MIT",
   "description": "Clash of Clans Discord Bot",
@@ -25,7 +25,8 @@
     "check:locales": "tsx -r dotenv/config scripts/check_duplicate_locales.ts",
     "check:patreon": "tsx -r dotenv/config scripts/check_patreon_status_script.ts",
     "submodule": "git submodule init && git submodule update --remote",
-    "knip": "knip"
+    "knip": "knip",
+    "generate:api": "swagger-typescript-api generate -p http://localhost:8080/docs/json -o ./src/api --name config.ts --axios --route-types --extract-request-params --extract-response-body --extract-response-error --single-http-client --responses"
   },
   "dependencies": {
     "@clickhouse/client": "^1.12.0",
@@ -75,6 +76,7 @@
     "knip": "^5.58.1",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
+    "swagger-typescript-api": "^13.2.14",
     "tsc-alias": "^1.8.11",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"

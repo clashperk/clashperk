@@ -3,6 +3,7 @@ import { GlobalPlayersEntity, PlayersEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
+import { api, encode } from '../api/index.js';
 import { Client } from './client.js';
 
 export class ElasticIndexer {
@@ -152,6 +153,7 @@ export class ElasticIndexer {
         upsert: true
       }
     );
+    await api.players.addPlayerAccount({ playerTag: encode(player.tag) });
   }
 }
 
