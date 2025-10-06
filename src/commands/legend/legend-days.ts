@@ -87,8 +87,18 @@ export default class LegendDaysCommand extends Command {
     }
   }
 
+  private async getClan(clanTag: string) {
+    const clan = await this.client.redis.getClan(clanTag);
+    if (clan) return clan;
+
+    const { body, res } = await this.client.coc.getClan(clanTag);
+    if (res.ok && body) return body;
+
+    return null;
+  }
+
   private async embed(interaction: CommandInteraction, data: APIPlayer, legend: LegendAttacksEntity, _day?: number) {
-    const clan = data.clan ? await this.client.redis.getClan(data.clan.tag) : null;
+    const clan = data.clan ? await this.getClan(data.clan.tag) : null;
 
     const { startTime, endTime, day } = getLegendTimestampAgainstDay(_day);
     const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
