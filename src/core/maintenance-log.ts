@@ -11,6 +11,7 @@ export class MaintenanceLog {
   public inMaintenance: boolean;
   public startTime: Date | null;
   private client: Client;
+  private redisKey = 'maintenance_start_timestamp';
 
   public constructor(enqueuer: Enqueuer) {
     this.client = enqueuer.client;
@@ -20,31 +21,45 @@ export class MaintenanceLog {
   }
 
   public async init() {
-    setTimeout(this.init.bind(this), 30000).unref();
-
-    const { res } = await this.client.coc.getClans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
-    if (res.status === 503 && !this.inMaintenance) {
-      this.inMaintenance = Boolean(true);
-      this.client.enqueuer.flush();
-      this.startTime = new Date();
-      this.sendMessages();
-      this.client.inMaintenance = Boolean(true);
-      this.client.util.setMaintenanceBreak(false);
-    }
-
-    if (res.status === 200 && this.inMaintenance) {
-      const duration = Date.now() - this.startTime!.getTime();
-      if (duration > 60_000) {
-        this.inMaintenance = Boolean(false);
-        this.startTime = null;
-        this.sendMessages(duration);
-        this.client.enqueuer.init();
-        this.client.inMaintenance = Boolean(false);
-        this.client.util.setMaintenanceBreak(true);
+    try {
+      const timestamp = await this.client.redis.connection.get(this.redisKey);
+      if (timestamp) {
+        this.inMaintenance = Boolean(true);
+        this.startTime = new Date(Number(timestamp));
       }
-    }
+    } catch {}
 
-    return this;
+    return this.check();
+  }
+
+  private async check() {
+    try {
+      const { res } = await this.client.coc.getClans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
+      if (res.status === 503 && !this.inMaintenance) {
+        this.inMaintenance = Boolean(true);
+        this.client.enqueuer.flush();
+        this.startTime = new Date();
+        this.sendMessages();
+        this.client.inMaintenance = Boolean(true);
+        this.client.util.setMaintenanceBreak(false);
+        await this.updateTimestamp(this.startTime);
+      }
+
+      if (res.status === 200 && this.inMaintenance) {
+        const duration = Date.now() - this.startTime!.getTime();
+        if (duration > 60_000) {
+          this.inMaintenance = Boolean(false);
+          this.startTime = null;
+          this.sendMessages(duration);
+          this.client.enqueuer.init();
+          this.client.inMaintenance = Boolean(false);
+          this.client.util.setMaintenanceBreak(true);
+          await this.updateTimestamp(this.startTime);
+        }
+      }
+    } finally {
+      setTimeout(this.check.bind(this), 30000);
+    }
   }
 
   private sendMessages(dur = 0) {
@@ -83,5 +98,16 @@ export class MaintenanceLog {
 
   private dur(ms: number) {
     return moment.duration(ms).format('D[d], H[h], m[m]', { trim: 'both mid' });
+  }
+
+  private async updateTimestamp(timestamp: Date | null) {
+    this.startTime = timestamp;
+
+    try {
+      if (!timestamp) {
+        return await this.client.redis.connection.del(this.redisKey);
+      }
+      await this.client.redis.connection.set(this.redisKey, timestamp.getTime().toString());
+    } catch {}
   }
 }
