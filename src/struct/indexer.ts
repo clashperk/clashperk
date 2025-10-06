@@ -1,6 +1,6 @@
-import { Collections, LEGEND_LEAGUE_ID } from '@app/constants';
+import { Collections, LEGEND_LEAGUE_ID, UNRANKED_TIER_ID } from '@app/constants';
 import { GlobalPlayersEntity, PlayersEntity } from '@app/entities';
-import { APIPlayer, UnrankedLeagueData, UnrankedLeagueId } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from './client.js';
@@ -84,7 +84,7 @@ export class ElasticIndexer {
             trophies: player.trophies,
             donations: player.donations,
             attackWins: player.attackWins,
-            leagueId: player.league?.id ?? UnrankedLeagueId,
+            leagueId: player.leagueTier?.id ?? UNRANKED_TIER_ID,
             clanTag,
             trackingId
           }
@@ -143,7 +143,7 @@ export class ElasticIndexer {
         $set: {
           name: player.name,
           townHallLevel: player.townHallLevel,
-          leagueId: player.league?.id ?? (player.trophies >= 5000 ? LEGEND_LEAGUE_ID : UnrankedLeagueData.id),
+          leagueId: player.leagueTier?.id ?? (player.trophies >= 5000 ? LEGEND_LEAGUE_ID : UNRANKED_TIER_ID),
           clan: player.clan ? { name: player.clan.name, tag: player.clan.tag } : {},
           lastSearched: new Date()
         }

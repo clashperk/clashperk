@@ -137,7 +137,7 @@ export default class PlayerCommand extends Command {
           } **${data.trophies}** ${EMOJIS.WAR_STAR} **${data.warStars}**`
         ].join('\n')
       );
-    if (data.league?.iconUrls.small) embed.setThumbnail(data.league?.iconUrls.small);
+    if (data.leagueTier?.iconUrls.small) embed.setThumbnail(data.leagueTier?.iconUrls.small);
 
     embed.addFields([
       {

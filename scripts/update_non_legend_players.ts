@@ -18,7 +18,7 @@ const tags = JSON.parse((await readFile(pkgPath)).toString()) as string[];
 
   while (startIndex < tags.length) {
     const batch = tags.slice(startIndex, startIndex + batchSize);
-    await collection.updateMany({ tag: { $in: batch } }, { $set: { leagueId: 29000000 } });
+    await collection.updateMany({ tag: { $in: batch } }, { $set: { leagueId: 105000000 } });
     startIndex += batchSize;
     console.log(`Updated ${startIndex} players`);
   }

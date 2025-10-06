@@ -34,7 +34,7 @@ export default class LegendAttacksCommand extends Command {
 
     const legendMembers = clans
       .flatMap((clan) => clan.memberList)
-      .filter((member) => member.trophies >= 5000 || member.league?.id === LEGEND_LEAGUE_ID);
+      .filter((member) => member.trophies >= 5000 || member.leagueTier?.id === LEGEND_LEAGUE_ID);
     const playerTags = legendMembers.map((member) => member.tag);
 
     const embed = await this.getAttackLog({

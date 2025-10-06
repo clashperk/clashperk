@@ -1,6 +1,14 @@
-import { BUILDER_BASE_LEAGUE_MAPS, Collections, LEGEND_LEAGUE_ID, PLAYER_LEAGUE_MAPS, Settings, SUPER_SCRIPTS } from '@app/constants';
+import {
+  BUILDER_BASE_LEAGUE_MAPS,
+  Collections,
+  LEGEND_LEAGUE_ID,
+  PLAYER_LEAGUE_MAPS,
+  Settings,
+  SUPER_SCRIPTS,
+  UNRANKED_TIER_ID
+} from '@app/constants';
 import { AutoRoleDelaysEntity, ClanStoresEntity, PlayerLinksEntity } from '@app/entities';
-import { APIPlayer, UnrankedLeagueData } from 'clashofclans.js';
+import { APIPlayer } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits, Role, User } from 'discord.js';
 import { UpdateFilter, WithId } from 'mongodb';
 import { parallel, sift, unique } from 'radash';
@@ -578,7 +586,7 @@ export class RolesManager {
           tag: player.tag,
           townHallLevel: player.townHallLevel,
           builderHallLevel: player.builderHallLevel ?? 0,
-          leagueId: player.league?.id ?? UnrankedLeagueData.id,
+          leagueId: player.leagueTier?.id ?? UNRANKED_TIER_ID,
           builderLeagueId: player.builderBaseLeague?.id ?? 0,
           clanRole: player.role ?? null,
           clanName: player.clan?.name ?? null,

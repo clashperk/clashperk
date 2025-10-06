@@ -96,6 +96,16 @@ class MongoDbClient extends MongoClient {
         }
       ]),
 
+      db.collection(Collections.LEGEND_ATTACKS).createIndexes([
+        {
+          key: { tag: 1, seasonId: 1 },
+          unique: true
+        },
+        {
+          key: { seasonId: 1 }
+        }
+      ]),
+
       db.collection(Collections.CWL_GROUPS).createIndexes([
         {
           key: { 'clans.tag': 1, 'season': 1 }

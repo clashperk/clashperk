@@ -59,7 +59,7 @@ export default class LegendDaysCommand extends Command {
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       );
 
-    if (data.trophies <= 4900 && data.league?.id !== LEGEND_LEAGUE_ID) {
+    if (data.trophies <= 4900 && data.leagueTier?.id !== LEGEND_LEAGUE_ID) {
       return interaction.editReply(`**${data.name} (${data.tag})** is not in the Legend League.`);
     }
 
@@ -123,7 +123,7 @@ export default class LegendDaysCommand extends Command {
     embed.setDescription(
       [
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
-          data.league?.id === LEGEND_LEAGUE_ID ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
+          data.leagueTier?.id === LEGEND_LEAGUE_ID ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
         } **${data.trophies}**`,
         ''
       ].join('\n')
@@ -331,7 +331,7 @@ export default class LegendDaysCommand extends Command {
     const description = [
       ...[
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
-          data.league?.id === 29000022 ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
+          data.leagueTier?.id === 29000022 ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
         } **${data.trophies}**`,
         ''
       ],

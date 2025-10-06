@@ -110,7 +110,15 @@ export class Client extends DiscordClient {
         GuildEmojiManager: 0,
         ApplicationCommandManager: 0,
         ThreadMemberManager: 0,
-        MessageManager: 5,
+        ApplicationEmojiManager: 0,
+        EntitlementManager: 0,
+        GuildForumThreadManager: 0,
+        GuildTextThreadManager: 0,
+        ThreadManager: 0,
+        AutoModerationRuleManager: 0,
+        DMMessageManager: 0,
+        GuildMessageManager: 0,
+        MessageManager: 0,
         UserManager: {
           maxSize: 2,
           keepOverLimit: (user) => user.id === this.user!.id
@@ -120,10 +128,7 @@ export class Client extends DiscordClient {
           keepOverLimit: (member) => {
             return member.id === this.user?.id || this.cacheOverLimitGuilds.has(member.guild.id);
           }
-        },
-        AutoModerationRuleManager: 0,
-        DMMessageManager: 0,
-        GuildMessageManager: 5
+        }
       }),
       sweepers: {
         ...Options.DefaultSweeperSettings,

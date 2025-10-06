@@ -71,7 +71,7 @@ export class LegendLog extends RootLog {
     const attackingMembers = result.map((mem) => mem.tag);
 
     const clanMembers: LegendAttacksEntity[] = clan.memberList
-      .filter((mem) => !attackingMembers.includes(mem.tag) && (mem.league?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000))
+      .filter((mem) => !attackingMembers.includes(mem.tag) && (mem.leagueTier?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000))
       .map((mem) => ({
         name: mem.name,
         tag: mem.tag,

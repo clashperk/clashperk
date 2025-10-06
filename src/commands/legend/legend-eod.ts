@@ -49,7 +49,7 @@ export default class LegendEodFinishersCommand extends Command {
 
       legendMembers = resolved.clans
         .flatMap((clan) => clan.memberList)
-        .filter((member) => member.trophies >= 5000 || member.league?.id === LEGEND_LEAGUE_ID);
+        .filter((member) => member.trophies >= 5000 || member.leagueTier?.id === LEGEND_LEAGUE_ID);
       playerTags = legendMembers.map((member) => member.tag);
       clans = resolved.clans.map((clan) => ({ tag: clan.tag, name: clan.name }));
     }

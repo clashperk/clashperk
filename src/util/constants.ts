@@ -17,9 +17,9 @@ export const URL_REGEX = /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\
 
 export const UNRANKED_CAPITAL_LEAGUE_ID = 85000000;
 
-export const LEGEND_LEAGUE_ID = 29000022;
+export const LEGEND_LEAGUE_ID = 105000034;
 
-export const DIAMOND_LEAGUE_ID = 44000041;
+export const UNRANKED_TIER_ID = 105000000;
 
 export const UNRANKED_WAR_LEAGUE_ID = 48000000;
 
@@ -290,29 +290,41 @@ export const TOWN_HALL_LEVELS_FOR_ROLES = Array(MAX_TOWN_HALL_LEVEL)
   .map((_, i) => i + 1);
 
 export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
-  29000000: 'unranked',
-  29000001: 'bronze',
-  29000002: 'bronze',
-  29000003: 'bronze',
-  29000004: 'silver',
-  29000005: 'silver',
-  29000006: 'silver',
-  29000007: 'gold',
-  29000008: 'gold',
-  29000009: 'gold',
-  29000010: 'crystal',
-  29000011: 'crystal',
-  29000012: 'crystal',
-  29000013: 'master',
-  29000014: 'master',
-  29000015: 'master',
-  29000016: 'champion',
-  29000017: 'champion',
-  29000018: 'champion',
-  29000019: 'titan',
-  29000020: 'titan',
-  29000021: 'titan',
-  29000022: 'legend'
+  '105000000': 'unranked',
+  '105000001': 'skeleton',
+  '105000002': 'skeleton',
+  '105000003': 'skeleton',
+  '105000004': 'barbarian',
+  '105000005': 'barbarian',
+  '105000006': 'barbarian',
+  '105000007': 'archer',
+  '105000008': 'archer',
+  '105000009': 'archer',
+  '105000010': 'wizard',
+  '105000011': 'wizard',
+  '105000012': 'wizard',
+  '105000013': 'valkyrie',
+  '105000014': 'valkyrie',
+  '105000015': 'valkyrie',
+  '105000016': 'witch',
+  '105000017': 'witch',
+  '105000018': 'witch',
+  '105000019': 'golem',
+  '105000020': 'golem',
+  '105000021': 'golem',
+  '105000022': 'pekka',
+  '105000023': 'pekka',
+  '105000024': 'pekka',
+  '105000025': 'titan',
+  '105000026': 'titan',
+  '105000027': 'titan',
+  '105000028': 'dragon',
+  '105000029': 'dragon',
+  '105000030': 'dragon',
+  '105000031': 'electro',
+  '105000032': 'electro',
+  '105000033': 'electro',
+  '105000034': 'legend'
 };
 
 export const BUILDER_BASE_LEAGUE_MAPS: Record<string, string> = {
@@ -422,29 +434,41 @@ export const CAPITAL_LEAGUE_MAP: Record<string, string> = {
 };
 
 export const PLAYER_LEAGUE_MAP: Record<string, string> = {
-  29000000: 'Unranked',
-  29000001: 'Bronze League III',
-  29000002: 'Bronze League II',
-  29000003: 'Bronze League I',
-  29000004: 'Silver League III',
-  29000005: 'Silver League II',
-  29000006: 'Silver League I',
-  29000007: 'Gold League III',
-  29000008: 'Gold League II',
-  29000009: 'Gold League I',
-  29000010: 'Crystal League III',
-  29000011: 'Crystal League II',
-  29000012: 'Crystal League I',
-  29000013: 'Master League III',
-  29000014: 'Master League II',
-  29000015: 'Master League I',
-  29000016: 'Champion League III',
-  29000017: 'Champion League II',
-  29000018: 'Champion League I',
-  29000019: 'Titan League III',
-  29000020: 'Titan League II',
-  29000021: 'Titan League I',
-  29000022: 'Legend League'
+  '105000000': 'Unranked',
+  '105000001': 'Skeleton League 1',
+  '105000002': 'Skeleton League 2',
+  '105000003': 'Skeleton League 3',
+  '105000004': 'Barbarian League 4',
+  '105000005': 'Barbarian League 5',
+  '105000006': 'Barbarian League 6',
+  '105000007': 'Archer League 7',
+  '105000008': 'Archer League 8',
+  '105000009': 'Archer League 9',
+  '105000010': 'Wizard League 10',
+  '105000011': 'Wizard League 11',
+  '105000012': 'Wizard League 12',
+  '105000013': 'Valkyrie League 13',
+  '105000014': 'Valkyrie League 14',
+  '105000015': 'Valkyrie League 15',
+  '105000016': 'Witch League 16',
+  '105000017': 'Witch League 17',
+  '105000018': 'Witch League 18',
+  '105000019': 'Golem League 19',
+  '105000020': 'Golem League 20',
+  '105000021': 'Golem League 21',
+  '105000022': 'P.E.K.K.A League 22',
+  '105000023': 'P.E.K.K.A League 23',
+  '105000024': 'P.E.K.K.A League 24',
+  '105000025': 'Titan League 25',
+  '105000026': 'Titan League 26',
+  '105000027': 'Titan League 27',
+  '105000028': 'Dragon League 28',
+  '105000029': 'Dragon League 29',
+  '105000030': 'Dragon League 30',
+  '105000031': 'Electro League 31',
+  '105000032': 'Electro League 32',
+  '105000033': 'Electro League 33',
+  '105000034': 'Legend League'
 };
 
 export const WAR_LEAGUE_MAP: Record<string, string> = {

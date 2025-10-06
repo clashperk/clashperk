@@ -71,12 +71,12 @@ export function mapToPlayerInterface(player: PartialPlayer): APIPlayer {
       id: player.builderBaseLeagueId || 44000000,
       name: BUILDER_BASE_LEAGUES_MAP[player.builderBaseLeagueId] || 'Wood League V'
     },
-    league: {
+    leagueTier: {
       id: player.leagueId,
       name: PLAYER_LEAGUE_MAP[player.leagueId],
       iconUrls: {
         small: url,
-        medium: url
+        large: url
       }
     },
     builderBaseTrophies: player.builderBaseTrophies,

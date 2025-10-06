@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, UNRANKED_TIER_ID } from '@app/constants';
 import { FlagsEntity } from '@app/entities';
 import {
   APIMessage,
@@ -184,7 +184,7 @@ export class FlagAlertLog {
 
     embed.setDescription(
       [
-        `${TOWN_HALLS[player.townHallLevel]!} **${player.townHallLevel}** ${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]!} **${
+        `${TOWN_HALLS[player.townHallLevel]!} **${player.townHallLevel}** ${HOME_BASE_LEAGUES[player.leagueTier?.id ?? UNRANKED_TIER_ID]!} **${
           player.trophies
         }**`,
         '',

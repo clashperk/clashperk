@@ -1,4 +1,4 @@
-import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings } from '@app/constants';
+import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings, UNRANKED_TIER_ID } from '@app/constants';
 import { ClanLogType, ClanLogsEntity, FlagsEntity, LogAction, LogActions } from '@app/entities';
 import { APIPlayer, APIPlayerItem } from 'clashofclans.js';
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions, parseEmoji } from 'discord.js';
@@ -175,7 +175,7 @@ export class ClanLog extends RootLog {
       embed.setDescription(
         [
           `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
-          `${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]}**${player.trophies}**`,
+          `${HOME_BASE_LEAGUES[player.leagueTier?.id ?? UNRANKED_TIER_ID]}**${player.trophies}**`,
           `${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`,
           ['admin', 'leader', 'coLeader'].includes(member.role) ? `(${PLAYER_ROLES_MAP[member.role]})` : ''
         ].join(' ')
@@ -188,7 +188,7 @@ export class ClanLog extends RootLog {
       embed.setDescription(
         [
           `${TOWN_HALLS[player.townHallLevel]}**${player.townHallLevel}**`,
-          `${HOME_BASE_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
+          `${HOME_BASE_LEAGUES[player.leagueTier?.id ?? UNRANKED_TIER_ID]!}**${player.trophies}**`,
           `${this.formatHeroes(heroes)}`,
           `${heroes.length >= 2 ? '\n' : ''}${EMOJIS.WAR_STAR}**${player.warStars}**`,
           `${EMOJIS.TROOPS}${this.remainingUpgrades(player)}% Rushed`
