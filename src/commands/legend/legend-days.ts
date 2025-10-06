@@ -229,7 +229,7 @@ export default class LegendDaysCommand extends Command {
     const lastSeason = result.at(1);
     const prevFinalTrophies = lastSeason?.logs.at(-1)?.trophies ?? '';
 
-    if (season._id !== Season.oldId) return null;
+    if (season._id !== Season.ID) return null;
 
     const labels = Array.from({ length: moment(seasonEnd).diff(seasonStart, 'days') + 1 }, (_, i) =>
       moment(seasonStart).add(i, 'days').toDate()

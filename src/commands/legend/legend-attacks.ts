@@ -30,7 +30,7 @@ export default class LegendAttacksCommand extends Command {
     if (!resolved) return;
 
     const { clans, resolvedArgs } = resolved;
-    const seasonId = Season.oldId;
+    const seasonId = Season.ID;
 
     const legendMembers = clans
       .flatMap((clan) => clan.memberList)

@@ -469,7 +469,7 @@ export default class RemainingCommand extends Command {
 
     const result = await this.client.db
       .collection(Collections.LEGEND_ATTACKS)
-      .find({ tag: { $in: playerTags }, seasonId: Season.oldId })
+      .find({ tag: { $in: playerTags }, seasonId: Season.ID })
       .toArray();
     const { startTime, endTime } = getLegendTimestampAgainstDay();
 

@@ -41,7 +41,7 @@ export default class LegendLeaderboardCommand extends Command {
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    let seasonId = args.season ?? (args.is_bb ? Season.ID : Season.oldId);
+    let seasonId = args.season ?? Season.ID;
 
     const isDefaultMessage = interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
     if (isDefaultMessage) {
@@ -80,7 +80,7 @@ export default class LegendLeaderboardCommand extends Command {
       return interaction.editReply('Successfully enabled auto updating Leaderboard.');
     }
 
-    const currentSeasonId = args.is_bb ? Season.ID : Season.oldId;
+    const currentSeasonId = Season.ID;
     const payload = {
       cmd: this.id,
       clans: resolvedArgs,
@@ -147,7 +147,7 @@ export default class LegendLeaderboardCommand extends Command {
         )
     );
 
-    if (seasonId !== Season.oldId && !args.season) {
+    if (seasonId !== Season.ID && !args.season) {
       return interaction.editReply({ embeds: [embed], components: [] });
     }
 

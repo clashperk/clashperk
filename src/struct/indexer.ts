@@ -3,7 +3,7 @@ import { GlobalPlayersEntity, PlayersEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import { api, encode } from '../api/index.js';
+import { api, encode } from '../api/axios.js';
 import { Client } from './client.js';
 
 export class ElasticIndexer {

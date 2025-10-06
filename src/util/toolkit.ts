@@ -291,17 +291,6 @@ export class Util extends CocUtil {
 
 export class Season {
   public static get ID() {
-    if (new Date() > new Date('2025-08-25T05:00:00.000Z') && new Date() <= new Date('2025-10-06T05:00:00.000Z')) {
-      return '2025-09';
-    }
-
-    if (new Date() > new Date('2025-10-06T05:00:00.000Z') && new Date() <= new Date('2025-10-27T05:00:00.000Z')) {
-      return '2025-10';
-    }
-    return Util.getSeasonId();
-  }
-
-  public static get oldId() {
     return Util.getSeasonId();
   }
 
