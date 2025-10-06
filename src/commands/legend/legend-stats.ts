@@ -18,6 +18,7 @@ import { Command } from '../../lib/handlers.js';
 import { createTrophyThresholdsGraph } from '../../struct/image-helper.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padEnd, padStart } from '../../util/helper.js';
+import { Season } from '../../util/toolkit.js';
 
 const possibleRanks = [1, 3, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
 
@@ -88,7 +89,16 @@ export default class LegendStatsCommand extends Command {
       return interaction.editReply({ withComponents: true, components: [container, row], files: [] });
     }
 
-    if (threshold.history.length < 3) return;
+    const minLogs = 3;
+    const { startTime } = Season.getSeason();
+    const thresholdRecords =
+      moment().diff(startTime, 'days') >= minLogs
+        ? threshold.history.filter((record) => moment(record.timestamp).isAfter(startTime))
+        : threshold.history;
+
+    if (!(thresholdRecords.length >= minLogs)) {
+      return interaction.editReply({ withComponents: true, components: [container, row], files: [] });
+    }
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId(customIds.rank)
@@ -101,7 +111,6 @@ export default class LegendStatsCommand extends Command {
 
     container.addActionRowComponents((row) => row.addComponents(menu));
 
-    const thresholdRecords = threshold.history;
     const labels = thresholdRecords.map((record) => record.timestamp);
     const ranksToShow = args.ranks?.length ? args.ranks.map(Number) : [1, 100, 500, 1000, 5000, 10000, 50000];
 
@@ -159,13 +168,15 @@ export default class LegendStatsCommand extends Command {
       return { ...this.compare(data.eod, data.history.at(-2)), history: data.history, isLive: false };
     }
     if (data.eod && !isEod) {
-      return { ...this.compare(data.live, data.eod), history: data.history, isLive: true };
+      const { startTime } = Season.getSeason();
+      const isResetDay = moment(data.eod.timestamp).isSame(moment(startTime).startOf('day'), 'day');
+      return { ...this.compare(data.live, isResetDay ? null : data.eod), history: data.history, isLive: true };
     }
 
     return null;
   }
 
-  private compare(target: LegendRankingThresholdsDto, reference?: LegendRankingThresholdsDto) {
+  private compare(target: LegendRankingThresholdsDto, reference?: LegendRankingThresholdsDto | null) {
     const thresholds = target.thresholds.map((threshold) => {
       const eod = reference?.thresholds.find((t) => t.rank === threshold.rank)?.minTrophies ?? threshold.minTrophies;
       return { ...threshold, diff: threshold.minTrophies - eod };
