@@ -1,4 +1,4 @@
-import { Collections, DOT, Settings } from '@app/constants';
+import { Collections, DOT, getHttpStatusText, Settings } from '@app/constants';
 import { PlayerLinksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
@@ -47,6 +47,10 @@ export default class ProfileCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player?: string }) {
+    if (this.client.inMaintenance) {
+      return interaction.editReply({ content: getHttpStatusText(503, interaction.locale) });
+    }
+
     const whitelist = this.client.settings.get<string[]>('global', 'whitelist', []);
 
     if (args.player && !whitelist.includes(interaction.user.id)) {

@@ -391,6 +391,8 @@ export class ClanGamesScheduler {
     const now = new Date().getTime();
     for await (const schedule of cursor) {
       if (schedule.triggered) continue;
+      if (this.client.inMaintenance) continue;
+
       if (!this.client.guilds.cache.has(schedule.guild)) continue;
       if (this.queued.has(schedule._id.toHexString())) continue;
 
