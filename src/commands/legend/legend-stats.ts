@@ -55,10 +55,10 @@ export default class LegendStatsCommand extends Command {
           ? `### End of Day Ranks \n${time(moment(threshold.timestamp).toDate(), 'f')}`
           : `### Live Ranks \n${time(moment().toDate(), 'f')}`,
         '',
-        '`  RANK ` `TROPHY` ` DIFF `',
+        '`   RANK ` `TROPHY` ` DIFF `',
         ...threshold.thresholds.map(({ rank, minTrophies, diff }) => {
           const sign = diff >= 0 ? '+' : '-';
-          return `\`${padStart(rank.toLocaleString(), 6)} \` \` ${minTrophies} \` \` ${sign}${padEnd(Math.abs(diff), 4)}\` `;
+          return `\`${padStart(rank.toLocaleString(), 7)} \` \` ${minTrophies} \` \` ${sign}${padEnd(Math.abs(diff), 4)}\` `;
         })
       ].join('\n')
     );

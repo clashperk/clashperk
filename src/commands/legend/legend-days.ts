@@ -70,13 +70,9 @@ export default class LegendDaysCommand extends Command {
       );
     }
 
-    legend.streak = Math.max(legend.streak, await this.getStreak(data.tag));
+    const embed = args.prev ? await this.logs(data) : await this.embed(interaction, data, legend, args.day);
 
-    const embed = args.prev
-      ? (await this.logs(data)).setColor(this.client.embed(interaction))
-      : (await this.embed(interaction, data, legend, args.day)).setColor(this.client.embed(interaction));
-
-    embed.setTimestamp();
+    embed.setTimestamp().setColor(this.client.embed(interaction));
     await interaction.editReply({ embeds: [embed], components: [row], content: null, files: [] });
 
     const result = args.prev ? await this.graph(data) : null;
@@ -362,102 +358,6 @@ export default class LegendDaysCommand extends Command {
     });
 
     return embed;
-  }
-
-  private async getStreak(tag: string) {
-    const [legend] = await this.client.db
-      .collection(Collections.LEGEND_ATTACKS)
-      .aggregate<{ name: string; tag: string; streak: number }>([
-        {
-          $match: {
-            seasonId: {
-              $in: Util.getSeasonIds().slice(0, 3)
-            },
-            tag
-          }
-        },
-        {
-          $unwind: '$logs'
-        },
-        {
-          $match: {
-            'logs.type': 'attack'
-          }
-        },
-        {
-          $sort: {
-            'logs.timestamp': 1
-          }
-        },
-        {
-          $group: {
-            _id: '$tag',
-            name: {
-              $last: '$name'
-            },
-            logs: {
-              $push: '$logs.inc'
-            }
-          }
-        },
-        {
-          $set: {
-            streaks: {
-              $reduce: {
-                input: '$logs',
-                initialValue: {
-                  currentStreak: 0,
-                  maxStreak: 0
-                },
-                in: {
-                  $cond: [
-                    {
-                      $eq: ['$$this', 40]
-                    },
-                    {
-                      currentStreak: {
-                        $add: ['$$value.currentStreak', 1]
-                      },
-                      maxStreak: {
-                        $max: [
-                          '$$value.maxStreak',
-                          {
-                            $add: ['$$value.currentStreak', 1]
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      currentStreak: 0,
-                      maxStreak: 0
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            tag: '$_id',
-            name: '$name',
-            streak: {
-              $max: '$streaks.maxStreak'
-            }
-          }
-        },
-        {
-          $sort: {
-            streak: -1
-          }
-        },
-        {
-          $limit: 99
-        }
-      ])
-      .toArray();
-    return legend?.streak ?? 0;
   }
 
   private async rankings(tag: string) {
