@@ -291,7 +291,7 @@ export class Util extends CocUtil {
 
 export class Season {
   public static get ID() {
-    return Util.getSeasonId();
+    return this.getSeason().seasonId;
   }
 
   public static getLastSeason() {
@@ -328,9 +328,10 @@ export class Season {
       };
     }
 
+    const season = Util.getSeason(currentDate);
     return {
-      ...Util.getSeason(currentDate),
-      seasonId: Util.getSeasonId()
+      ...season,
+      seasonId: moment(season.startTime).format('YYYY-MM')
     };
   }
 }
