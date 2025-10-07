@@ -1,7 +1,6 @@
 import { Collections } from '@app/constants';
 import { PlayerSeasonsEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
-import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart, recoverDonations } from '../../util/helper.js';
@@ -55,7 +54,7 @@ export default class DonationsCommand extends Command {
 
     const { sort_by: sortBy, order_by: orderBy } = args;
     const season = args.season || Season.ID;
-    const isSameSeason = Season.ID === moment(season).format('YYYY-MM');
+    const isSameSeason = Season.ID === season;
 
     await recoverDonations(clan, season);
     const dbMembers = await this.client.db

@@ -68,11 +68,13 @@ export class RolesManager {
 
   async exec(clanTag: string, pollingInput: RolesManagerPollingInput) {
     if (pollingInput.state && pollingInput.state === 'inWar') return;
-    const memberTags = (pollingInput?.members ?? []).filter((mem) => OpTypes.includes(mem.op)).map((mem) => mem.tag);
+
+    const members = (pollingInput?.members ?? []).filter((mem) => OpTypes.includes(mem.op));
+    const memberTags = members.map((mem) => mem.tag);
     if (!memberTags.length) return;
+    const opTypes = Array.from(new Set(members.map((mem) => mem.op)));
 
     const guildIds = await this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).distinct('guild', { tag: clanTag });
-
     for (const guildId of guildIds) {
       if (!this.client.settings.get(guildId, Settings.USE_AUTO_ROLE, true)) continue;
       if (this.client.settings.hasCustomBot(guildId) && !this.client.isCustom()) continue;
@@ -86,27 +88,27 @@ export class RolesManager {
 
       this.queues.set(guildId, []);
 
-      await this.trigger({ memberTags, guildId });
+      await this.trigger({ memberTags, guildId, opTypes: `${opTypes.join(',')},${clanTag}` });
     }
   }
 
-  private async trigger({ guildId, memberTags }: { guildId: string; memberTags: string[] }) {
+  private async trigger({ guildId, memberTags, opTypes }: { guildId: string; memberTags: string[]; opTypes: string }) {
     try {
       await this.updateMany(guildId, { isDryRun: false, logging: false, forced: false, memberTags, reason: 'automatically updated' });
     } finally {
-      await this.postTriggerAction(guildId);
+      await this.postTriggerAction(guildId, opTypes);
     }
   }
 
-  private async postTriggerAction(guildId: string) {
+  private async postTriggerAction(guildId: string, opTypes: string) {
     const queuedMemberTags = this.queues.get(guildId);
     if (queuedMemberTags && queuedMemberTags.length) {
       // reset the queue
       this.queues.set(guildId, []);
 
       await this.delay(1000);
-      this.client.logger.log(`Completing remaining ${queuedMemberTags.length} queues`, { label: RolesManager.name });
-      await this.trigger({ guildId, memberTags: queuedMemberTags });
+      this.client.logger.log(`Completing remaining ${queuedMemberTags.length} queues (${opTypes})`, { label: RolesManager.name });
+      await this.trigger({ guildId, memberTags: queuedMemberTags, opTypes: `RE:[${opTypes}]` });
     } else {
       this.queues.delete(guildId);
     }
@@ -943,7 +945,7 @@ export class RolesManager {
         }
         this.queues.set(guildId, []);
 
-        await this.trigger({ memberTags, guildId });
+        await this.trigger({ memberTags, guildId, opTypes: 'ROLE_REFRESH' });
       }
     } finally {
       setTimeout(this._roleRefresh.bind(this), this.interval);
@@ -1024,6 +1026,7 @@ interface RolesManagerPollingInput {
   };
   members: {
     op: string;
+    meta: any;
     tag: string;
   }[];
 }
