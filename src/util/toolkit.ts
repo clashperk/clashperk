@@ -320,6 +320,14 @@ export class Season {
       };
     }
 
+    if (currentDate > new Date('2025-11-03T05:00:00.000Z') && currentDate <= new Date('2025-12-01T05:00:00.000Z')) {
+      return {
+        seasonId: '2025-11',
+        startTime: new Date('2025-11-03T05:00:00.000Z'),
+        endTime: new Date('2025-12-01T05:00:00.000Z')
+      };
+    }
+
     return {
       ...Util.getSeason(currentDate),
       seasonId: Util.getSeasonId()
