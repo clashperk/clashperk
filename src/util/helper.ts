@@ -129,9 +129,9 @@ export const getMenuFromMessage = (interaction: ButtonInteraction, selected: str
   return [];
 };
 
-export const recoverDonations = async (clan: APIClan, seasonId: string) => {
+export const recoverDonations = async (clan: APIClan, season: string) => {
   const client = container.resolve(Client);
-  const { endTime, startTime } = Season.getSeason(new Date(seasonId));
+  const { endTime, startTime, seasonId } = Season.getSeasonById(season);
 
   const isEnabled = client.isFeatureEnabled(FeatureFlags.DONATIONS_RECOVERY, 'global');
   if (!isEnabled) return;

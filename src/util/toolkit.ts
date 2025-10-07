@@ -295,43 +295,16 @@ export class Season {
   }
 
   public static getLastSeason() {
-    const { startTime } = Util.getSeason();
-    return {
-      startTime: Util.getSeasonStart(startTime),
-      endTime: startTime
-    };
+    const { seasonId } = Util.getSeason();
+    const lastSeasonId = moment(seasonId, 'YYYY-MM').subtract(1, 'month').format('YYYY-MM');
+    return Util.getSeasonById(lastSeasonId);
   }
 
   public static getSeason(inputDate?: Date | string) {
-    const currentDate = inputDate ? moment(inputDate).toDate() : new Date();
-    if (currentDate > new Date('2025-08-25T05:00:00.000Z') && currentDate <= new Date('2025-10-06T05:00:00.000Z')) {
-      return {
-        seasonId: '2025-09',
-        startTime: new Date('2025-08-25T05:00:00.000Z'),
-        endTime: new Date('2025-10-06T05:00:00.000Z')
-      };
-    }
+    return Util.getSeason(moment(inputDate).toDate());
+  }
 
-    if (currentDate > new Date('2025-10-06T05:00:00.000Z') && currentDate <= new Date('2025-11-03T05:00:00.000Z')) {
-      return {
-        seasonId: '2025-10',
-        startTime: new Date('2025-10-06T05:00:00.000Z'),
-        endTime: new Date('2025-11-03T05:00:00.000Z')
-      };
-    }
-
-    if (currentDate > new Date('2025-11-03T05:00:00.000Z') && currentDate <= new Date('2025-12-01T05:00:00.000Z')) {
-      return {
-        seasonId: '2025-11',
-        startTime: new Date('2025-11-03T05:00:00.000Z'),
-        endTime: new Date('2025-12-01T05:00:00.000Z')
-      };
-    }
-
-    const season = Util.getSeason(currentDate);
-    return {
-      ...season,
-      seasonId: moment(season.startTime).format('YYYY-MM')
-    };
+  public static getSeasonById(seasonId: string) {
+    return Util.getSeasonById(seasonId);
   }
 }
