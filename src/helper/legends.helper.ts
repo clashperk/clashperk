@@ -1,5 +1,4 @@
 import { Collections } from '@app/constants';
-import moment from 'moment';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { Season, Util } from '../util/toolkit.js';
@@ -21,9 +20,9 @@ export const aggregateLegendAttacks = async (playerTag: string) => {
   const client = container.resolve(Client);
   const lastDayEnd = Util.getCurrentLegendTimestamp().startTime;
 
-  const seasonIds = Util.getSeasons().slice(0, 3).reverse();
-  const [, seasonStart, seasonEnd] = seasonIds;
-  const [, lastSeasonEnd] = seasonIds;
+  const seasons = Util.getSeasons().slice(0, 3).reverse();
+  const [, seasonStart, seasonEnd] = seasons.map(({ endTime }) => endTime);
+  const [, lastSeasonEnd] = seasons.map(({ endTime }) => endTime);
 
   const items = await client.db
     .collection(Collections.LEGEND_ATTACKS)
@@ -41,7 +40,7 @@ export const aggregateLegendAttacks = async (playerTag: string) => {
         $match: {
           tag: playerTag,
           seasonId: {
-            $in: seasonIds.map((id) => moment(id).format('YYYY-MM'))
+            $in: seasons.map(({ seasonId }) => seasonId)
           }
         }
       },
@@ -212,15 +211,6 @@ export const aggregateLegendAttacks = async (playerTag: string) => {
       }
     ])
     .toArray();
-
-  if (new Date() <= new Date('2025-10-27T05:00:00.000Z')) {
-    return {
-      items,
-      seasonStart: new Date('2025-10-06T05:00:00.000Z'),
-      seasonEnd: new Date('2025-10-27T05:00:00.000Z'),
-      lastSeasonEnd: new Date('2025-10-06T05:00:00.000Z')
-    };
-  }
 
   return { items, seasonStart, seasonEnd, lastSeasonEnd };
 };

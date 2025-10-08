@@ -1524,7 +1524,12 @@ export const command = {
     }
   },
   clans: {
-    description: 'Show all linked clans.'
+    description: 'Show all linked clans.',
+    options: {
+      category: {
+        description: 'Filter clans by category.'
+      }
+    }
   },
   layout: {
     description: 'Post a village layout.',

@@ -1,5 +1,5 @@
 import { PlayerSeasonsEntity } from '@app/entities';
-import { APIClan, APIPlayer } from 'clashofclans.js';
+import { APIClan, APILeagueTier, APIPlayer } from 'clashofclans.js';
 import {
   ActionRow,
   ActionRowBuilder,
@@ -14,7 +14,7 @@ import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
 import { title, unique } from 'radash';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
-import { Collections, FeatureFlags, Settings } from './constants.js';
+import { Collections, FeatureFlags, Settings, UNRANKED_TIER_ID } from './constants.js';
 import { Season, Util } from './toolkit.js';
 
 export const hexToNanoId = (hex: ObjectId) => {
@@ -46,6 +46,18 @@ export const escapeBackTick = (text: string) => {
 
 export const localeSort = (a: string, b: string) => {
   return a.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.replace(/[^\x00-\xF7]+/g, ''));
+};
+
+export const leagueTierSort = (a?: APILeagueTier, b?: APILeagueTier) => {
+  return (b?.id || UNRANKED_TIER_ID) - (a?.id || UNRANKED_TIER_ID);
+};
+
+export const formatLeague = (league: string) => {
+  return league
+    .replace(/League/g, '')
+    .replace(/\./g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 };
 
 export const lastSeenTimestampFormat = (timestamp: number) => {

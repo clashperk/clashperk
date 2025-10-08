@@ -181,26 +181,18 @@ export class Util extends CocUtil {
    * @returns {string[]} SeasonIds
    */
   public static getSeasonIds(): string[] {
-    return Array(18)
-      .fill(0)
-      .map((_, m) => {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        now.setMonth(now.getMonth() - (m - 1), 0);
-        return now;
-      })
-      .map((now) => moment(now).format('YYYY-MM'));
+    const { seasonId } = Util.getSeason();
+    return Array.from({ length: 18 }).map((_, idx) => {
+      return moment(seasonId, 'YYYY-MM').subtract(idx, 'month').format('YYYY-MM');
+    });
   }
 
-  public static getSeasons(): Date[] {
-    const { endTime } = Util.getSeason();
-    return Array(4)
-      .fill(0)
-      .map((_, idx) => {
-        const mts = moment(endTime);
-        mts.subtract(idx, 'months');
-        return Util.getSeasonEnd(mts.toDate(), idx === 0);
-      });
+  public static getSeasons() {
+    const { seasonId } = Util.getSeason();
+    return Array.from({ length: 6 }).map((_, idx) => {
+      const lastSeasonId = moment(seasonId, 'YYYY-MM').subtract(idx, 'month').format('YYYY-MM');
+      return Util.getSeasonById(lastSeasonId);
+    });
   }
 
   public static getWeekIds(limit = 6) {

@@ -302,6 +302,8 @@ export default class LegendDaysCommand extends Command {
       return items;
     }, []);
 
+    const totalAttacks = perDayLogs.reduce((acc, cur) => acc + cur.attackCount, 0);
+
     const weaponLevel = data.townHallWeaponLevel ? ATTACK_COUNTS[data.townHallWeaponLevel] : '';
     const logDescription =
       perDayLogs.length >= 32
@@ -337,12 +339,12 @@ export default class LegendDaysCommand extends Command {
     const description = [
       ...[
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
-          data.leagueTier?.id === 29000022 ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
+          data.leagueTier?.id === LEGEND_LEAGUE_ID ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
         } **${data.trophies}**`,
         ''
       ],
       `**Legend Season Logs (${Season.ID})**`,
-      `- ${data.attackWins} ${pluralize('attack', data.attackWins)} and ${data.defenseWins} ${pluralize('defense', data.defenseWins)} won`,
+      `- ${data.attackWins || totalAttacks} ${pluralize('attack', data.attackWins)} and ${data.defenseWins} ${pluralize('defense', data.defenseWins)} won`,
       '',
       logDescription.join('\n')
     ].join('\n');

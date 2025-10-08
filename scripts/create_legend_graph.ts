@@ -17,13 +17,14 @@ async function graph(data: {
     tag: string;
   };
 }) {
+  console.log(Util.getSeasons());
   await mongoClient.connect().then(() => console.log('MongoDB Connected!'));
   const db = mongoClient.db('clashperk');
 
-  const seasonIds = Util.getSeasons().slice(0, 3).reverse();
+  const seasons = Util.getSeasons().slice(0, 3).reverse();
   const lastDayEnd = Util.getCurrentLegendTimestamp().startTime;
-  const [, seasonStart, seasonEnd] = seasonIds;
-  const [, lastSeasonEnd] = seasonIds;
+  const [, seasonStart, seasonEnd] = seasons.map(({ endTime }) => endTime);
+  const [, lastSeasonEnd] = seasons.map(({ endTime }) => endTime);
 
   const result = await db
     .collection(Collections.LEGEND_ATTACKS)
@@ -41,7 +42,7 @@ async function graph(data: {
         $match: {
           tag: data.tag,
           seasonId: {
-            $in: seasonIds.map((id) => moment(id).format('YYYY-MM'))
+            $in: seasons.map(({ seasonId }) => seasonId)
           }
         }
       },

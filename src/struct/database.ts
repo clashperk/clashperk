@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, LEGEND_LEAGUE_ID } from '@app/constants';
 import {
   AutoBoardLogsEntity,
   CapitalRaidSeasonsEntity,
@@ -320,7 +320,7 @@ class MongoDbClient extends MongoClient {
         {
           key: { lastSeen: 1 },
           expireAfterSeconds: 60 * 60 * 24 * 30 * 6, // 6 months
-          partialFilterExpression: { leagueId: { $lt: 29000022 } }
+          partialFilterExpression: { leagueId: { $lt: LEGEND_LEAGUE_ID } }
         }
       ]),
 
