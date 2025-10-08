@@ -56,8 +56,7 @@ export class LegendLog extends RootLog {
     if (!res.ok) return null;
 
     const { startTime, endTime } = Util.getPreviousLegendTimestamp();
-    const timestamp = new Date(endTime);
-    const seasonId = moment(Util.getSeason(timestamp).endTime).format('YYYY-MM');
+    const season = Util.getSeason(new Date(endTime));
 
     const result = await this.client.db
       .collection(Collections.LEGEND_ATTACKS)
@@ -65,7 +64,7 @@ export class LegendLog extends RootLog {
         tag: {
           $in: clan.memberList.map((mem) => mem.tag)
         },
-        seasonId
+        seasonId: season.seasonId
       })
       .toArray();
     const attackingMembers = result.map((mem) => mem.tag);
@@ -88,7 +87,7 @@ export class LegendLog extends RootLog {
 
         // not confirmed
         initial: mem.trophies,
-        seasonId,
+        seasonId: season.seasonId,
         trophies: mem.trophies
       }));
 
@@ -147,9 +146,8 @@ export class LegendLog extends RootLog {
       ].join('\n')
     );
 
-    const season = this.client.coc.util.getSeason(timestamp, false);
     embed.setFooter({
-      text: `End of Day ${Util.getPreviousLegendDay()}/${moment(season.endTime).diff(season.startTime, 'days')} (${seasonId})`
+      text: `End of Day ${Util.getPreviousLegendDay()}/${moment(season.endTime).diff(season.startTime, 'days')} (${season.seasonId})`
     });
 
     if (!members.length) return null;
