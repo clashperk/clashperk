@@ -1,6 +1,7 @@
 import { Settings } from '@app/constants';
 import { ClanStoresEntity } from '@app/entities';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
@@ -15,12 +16,21 @@ export default class ClansCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { category_filter?: 'include' | 'exclude' }) {
-    const clans = await this.client.storage.find(interaction.guildId);
+  public async exec(interaction: CommandInteraction<'cached'>, args: { category_filter?: 'include' | 'exclude'; category?: string }) {
+    let clans = await this.client.storage.find(interaction.guildId);
     if (!clans.length) {
       return interaction.editReply({
         content: this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
       });
+    }
+
+    const hasCategoryFilter = !!(args.category && ObjectId.isValid(args.category));
+    if (hasCategoryFilter) {
+      clans = clans.filter((clan) => clan.categoryId && clan.categoryId.toHexString() === args.category);
+    }
+
+    if (!clans.length && hasCategoryFilter) {
+      return interaction.editReply({ content: 'No clans found for the specified category.' });
     }
 
     const clansMap = await this.getClansMap(clans.map((clan) => clan.tag));
@@ -50,7 +60,7 @@ export default class ClansCommand extends Command {
 
     const chunk = clanGroups
       .filter(([categoryId]) => {
-        if (!args.category_filter || !clanCategoryExclusionList.length) return true;
+        if (hasCategoryFilter || !args.category_filter || !clanCategoryExclusionList.length) return true;
         if (args.category_filter === 'include') {
           return clanCategoryExclusionList.includes(categoryId);
         }
@@ -76,7 +86,8 @@ export default class ClansCommand extends Command {
     }
 
     const payload = {
-      cmd: this.id
+      cmd: this.id,
+      category: args.category
     };
     const customIds = {
       switch: this.createId({ ...payload, category_filter: args.category_filter === 'exclude' ? 'include' : 'exclude' }),
@@ -86,7 +97,7 @@ export default class ClansCommand extends Command {
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
     );
-    if (args.category_filter && clanCategoryExclusionList.length) {
+    if (args.category_filter && clanCategoryExclusionList.length && !hasCategoryFilter) {
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(customIds.switch)

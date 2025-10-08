@@ -22,7 +22,7 @@ import { Backend } from '../src/util/i18n.backend.js';
 import { defaultOptions, fallbackLng } from '../src/util/i18n.config.js';
 import { TranslationKey } from '../src/util/i18n.js';
 import { command, common } from '../src/util/locales.js';
-import { Season } from '../src/util/toolkit.js';
+import { Util } from '../src/util/toolkit.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
@@ -31,14 +31,9 @@ await i18next.use(Backend).init({
 });
 
 function getSeasonIds() {
-  return Array(18)
-    .fill(0)
-    .map((_, m) => {
-      const now = new Date(Season.ID);
-      now.setHours(0, 0, 0, 0);
-      now.setMonth(now.getMonth() - (m - 1), 0);
-      return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
-    });
+  return Util.getSeasonIds().map((seasonId) => {
+    return { name: moment(seasonId, 'YYYY-MM').format('MMM YYYY'), value: seasonId };
+  });
 }
 
 const SEASON_SINCE_CHOICES = getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }));
@@ -5030,7 +5025,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     name: 'clans',
     description: command.clans.description,
     description_localizations: translation('command.clans.description'),
-    dm_permission: false
+    dm_permission: false,
+    options: [
+      {
+        name: 'category',
+        description: command.clans.options.category.description,
+        type: ApplicationCommandOptionType.String,
+        autocomplete: true,
+        description_localizations: translation('command.clans.options.category.description')
+      }
+    ]
   },
   {
     name: 'layout',
