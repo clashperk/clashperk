@@ -59,6 +59,8 @@ export default class ExportClanMembersCommand extends Command {
       userId: string;
       clan: string;
       role: string;
+      trophies: number;
+      leagueTier: string;
       clanRank: number;
       townHallLevel: number;
       warPreference: 'in' | 'out' | undefined;
@@ -116,6 +118,8 @@ export default class ExportClanMembersCommand extends Command {
           userId: '',
           clan: clan.name,
           role: roleNames[player.role!],
+          trophies: player.trophies,
+          leagueTier: player.leagueTier?.name || 'Unranked',
           clanRank: n + 1,
           townHallLevel: player.townHallLevel,
           warPreference: player.warPreference,
@@ -160,6 +164,8 @@ export default class ExportClanMembersCommand extends Command {
           { name: 'ID', width: 160, align: 'LEFT' },
           { name: 'CLAN', width: 160, align: 'LEFT' },
           { name: 'ROLE', width: 100, align: 'LEFT' },
+          { name: 'Trophies', width: 100, align: 'LEFT' },
+          { name: 'League Tier', width: 160, align: 'LEFT' },
           { name: 'War Preference', width: 100, align: 'LEFT' },
           { name: 'Town-Hall', width: 100, align: 'RIGHT' },
           { name: 'Rushed %', width: 100, align: 'RIGHT' },
@@ -177,6 +183,8 @@ export default class ExportClanMembersCommand extends Command {
           m.userId,
           m.clan,
           m.role,
+          m.trophies,
+          m.leagueTier,
           m.warPreference,
           m.townHallLevel,
           m.rushed,

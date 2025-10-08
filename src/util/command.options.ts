@@ -21,8 +21,8 @@ export const MembersCommandOptions = {
   },
   trophies: {
     id: 'trophies',
-    label: 'Trophies',
-    description: 'Trophies of the clan members.'
+    label: 'Trophies and Leagues',
+    description: 'Trophies and Leagues of the clan members.'
   },
   joinDate: {
     id: 'join-date',

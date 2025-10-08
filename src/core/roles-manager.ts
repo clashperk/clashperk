@@ -1026,7 +1026,6 @@ interface RolesManagerPollingInput {
   };
   members: {
     op: string;
-    meta: any;
     tag: string;
   }[];
 }

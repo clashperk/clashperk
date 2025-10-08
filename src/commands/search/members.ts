@@ -234,10 +234,10 @@ export default class MembersCommand extends Command {
     if (args.option === options.trophies.id) {
       embed.setDescription(
         [
-          `\`\u200e # TROPHY \`  ${'NAME'}`,
+          `\`\u200e # TROPHY     LEAGUE \`  ${'NAME'}`,
           ...data.memberList.map((member, index) => {
-            const trophies = padStart(member.trophies, 5);
-            return `\`${padStart(index + 1, 2)}  ${trophies} \`  \u200e${escapeMarkdown(member.name)}`;
+            const trophies = padStart(member.trophies, 4);
+            return `\`${padStart(index + 1, 2)}  ${trophies} ${this.formatLeague(member.leagueTier?.name || 'Unranked')} \`  \u200e${escapeMarkdown(member.name)}`;
           })
         ].join('\n')
       );
@@ -466,6 +466,17 @@ export default class MembersCommand extends Command {
     }
 
     return playersMap;
+  }
+
+  private formatLeague(league: string) {
+    return padStart(
+      league
+        .replace(/League/g, '')
+        .replace(/\./g, '')
+        .replace(/\s+/g, ' ')
+        .trim(),
+      11
+    );
   }
 }
 
