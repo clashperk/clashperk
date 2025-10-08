@@ -1,9 +1,7 @@
-import { Collections } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { padStart } from '../../util/helper.js';
-import { Season, Util } from '../../util/toolkit.js';
+import { formatLeague, leagueTierSort, padStart } from '../../util/helper.js';
 
 export default class SummaryTrophiesCommand extends Command {
   public constructor() {
@@ -123,52 +121,38 @@ export default class SummaryTrophiesCommand extends Command {
         );
       }
     } else if (args.builder_base) {
-      const result = await this.client.db
-        .collection(Collections.PLAYER_SEASONS)
-        .find({ tag: { $in: memberTags }, season: Season.ID })
-        .toArray();
-      const players = result
-        .sort((a, b) => b.versusTrophies.current - a.versusTrophies.current)
-        .map((player) => ({
-          name: player.name,
-          tag: player.tag,
-          trophies: player.versusTrophies.current,
-          attackWins: Math.max(player.versusBattleWins.initial - player.versusBattleWins.current, player.builderBaseAttacksWon ?? 0)
-        }));
+      const players = await this.client.redis.getPlayers(memberTags);
+      players.sort((a, b) => (b.builderBaseTrophies || 0) - (a.builderBaseTrophies || 0));
 
-      embed.setAuthor({ name: 'Best Builder Base Trophies', iconURL: interaction.guild.iconURL()! });
       embed.setDescription(
         [
-          '```',
-          `\u200e # TROPHY WON  NAME`,
-          ...players.slice(0, limit).map((player, n) => {
-            const trophies = this.pad(player.trophies, 4);
-            const attacks = this.pad(player.attackWins, 3);
-            const name = Util.escapeBackTick(player.name);
-            return `\u200e${this.pad(n + 1)}  ${trophies}  ${attacks}  ${name}`;
-          }),
-          '```'
+          `\`\u200e # TROPHY     LEAGUE \`  ${'NAME'}`,
+          ...players.slice(0, limit).map((member, index) => {
+            const trophies = padStart(member.builderBaseTrophies || 0, 4);
+            const league = padStart(formatLeague(member.builderBaseLeague?.name || 'Unranked'), 12);
+            return `\`${padStart(index + 1, 2)}  ${trophies} ${league} \`  \u200e${escapeMarkdown(member.name)}`;
+          })
         ].join('\n')
       );
+
+      embed.setAuthor({ name: 'Builder Base Trophies Leaderboard' });
     } else {
-      const result = await this.client.redis.getPlayers(memberTags);
-      const players = result; // .filter((player) => player.trophies >= 5000 || player.league?.id === LEGEND_LEAGUE_ID);
+      const players = await this.client.redis.getPlayers(memberTags);
       players.sort((a, b) => b.trophies - a.trophies);
+      players.sort((a, b) => leagueTierSort(a.leagueTier, b.leagueTier));
 
-      embed.setAuthor({ name: 'Best Trophies', iconURL: interaction.guild.iconURL()! });
       embed.setDescription(
         [
-          '```',
-          `\u200e # TROPHY WON  NAME`,
-          ...players.slice(0, limit).map((player, n) => {
-            const trophies = this.pad(player.trophies, 4);
-            const attacks = this.pad(player.attackWins, 3);
-            const name = Util.escapeBackTick(player.name);
-            return `\u200e${this.pad(n + 1)}  ${trophies}  ${attacks}  ${name}`;
-          }),
-          '```'
+          `\`\u200e # TROPHY     LEAGUE \`  ${'NAME'}`,
+          ...players.slice(0, limit).map((member, index) => {
+            const trophies = padStart(member.trophies, 4);
+            const league = padStart(formatLeague(member.leagueTier?.name || 'Unranked'), 11);
+            return `\`${padStart(index + 1, 2)}  ${trophies} ${league} \`  \u200e${escapeMarkdown(member.name)}`;
+          })
         ].join('\n')
       );
+
+      embed.setAuthor({ name: 'Trophies Leaderboard' });
     }
 
     const payload = {

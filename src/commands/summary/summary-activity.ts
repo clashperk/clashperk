@@ -1,7 +1,8 @@
 import { Collections } from '@app/constants';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
+import { EMOJIS } from '../../util/emojis.js';
+import { padStart } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class SummaryCommand extends Command {
@@ -89,7 +90,7 @@ export default class SummaryCommand extends Command {
   private async aggregationQuery(playerTags: string[], season: string, ascOrder: boolean) {
     const db = this.client.db.collection(Collections.PLAYERS);
     const result = await db
-      .aggregate<{ name: string; tag: string; lastSeen?: Date; score?: number }>([
+      .aggregate<{ name: string; tag: string; lastSeen: Date; score: number }>([
         {
           $match: {
             tag: {
@@ -121,7 +122,7 @@ export default class SummaryCommand extends Command {
           }
         },
         {
-          $limit: 100
+          $limit: 99
         }
       ])
       .toArray();
@@ -144,26 +145,25 @@ export default class SummaryCommand extends Command {
 
     collection.sort((a, b) => b.total - a.total);
     const embed = new EmbedBuilder();
-    embed.setAuthor({ name: 'Clan Activity Summary', iconURL: interaction.guild.iconURL()! });
+    embed.setAuthor({ name: 'Clan Activity Summary' });
     embed.setDescription(
       [
-        'Daily average active members (AVG)',
-
-        `\u200e${EMOJIS.HASH}  \`AVG\`  \`SCORE\`  \` ${'CLAN NAME'.padEnd(15, ' ')}\``,
+        '**Daily Average Active Members (last 30d)**',
+        '',
+        `\u200e\` #  AVG  SCORE \`  CLAN NAME`,
         ...collection.map((clan, i) => {
-          const online = clan.online.toFixed(0).padStart(3, ' ');
-          const total = clan.total.toFixed(0).padStart(5, ' ');
-          return `\u200e${BLUE_NUMBERS[i + 1]}  \`${online}\`  \`${total}\`  \` ${clan.name.padEnd(15, ' ')}\``;
+          const online = padStart(clan.online.toFixed(0), 3);
+          const total = padStart(clan.total.toFixed(0), 5);
+          return `\u200e\`${padStart(i + 1, 2)}  ${online}  ${total} \` ${clan.name}`;
         })
       ].join('\n')
     );
-    embed.setFooter({ text: ['Based on the last 30 days of activities'].join('\n') });
     return embed;
   }
 
   private async getMembersEmbed(interaction: CommandInteraction<'cached'>, clans: any[], season: string, ascOrder: boolean) {
     const embed = new EmbedBuilder();
-    embed.setAuthor({ name: `${interaction.guild.name} Most Active Members` });
+    embed.setAuthor({ name: 'Most Active Members' });
 
     const clanList = await this.client.redis.getClans(clans.map((clan) => clan.tag));
     const clanMemberTags = clanList.flatMap((clan) => clan.memberList).map((m) => m.tag);
@@ -171,13 +171,13 @@ export default class SummaryCommand extends Command {
 
     embed.setDescription(
       [
-        `\`\`\`\n\u200eLAST-ON SCORE  NAME\n${members
-          .map((m) => `${this.getTime(m.lastSeen!.getTime())}  ${m.score!.toString().padStart(4, ' ')}  ${m.name}`)
-          .join('\n')}`,
-        '```'
+        `\u200e\` #  LAST-ON SCORE \` NAME`,
+        members
+          .map((m, idx) => `\u200e\`${padStart(idx + 1, 2)}  ${this.getTime(m.lastSeen.getTime())}  ${padStart(m.score, 4)} \`  ${m.name}`)
+          .join('\n')
       ].join('\n')
     );
-    embed.setFooter({ text: `Season ${season} ` });
+    embed.setFooter({ text: `Season ${season}` });
     return embed;
   }
 

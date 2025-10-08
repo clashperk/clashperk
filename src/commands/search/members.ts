@@ -16,7 +16,7 @@ import ms from 'ms';
 import { Args, Command } from '../../lib/handlers.js';
 import { MembersCommandOptions as options } from '../../util/command.options.js';
 import { EMOJIS, HERO_PETS } from '../../util/emojis.js';
-import { makeAbbr, padEnd, padStart } from '../../util/helper.js';
+import { formatLeague, leagueTierSort, makeAbbr, padEnd, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 const roleIds: { [key: string]: number } = {
@@ -232,12 +232,17 @@ export default class MembersCommand extends Command {
 
     // TROPHIES
     if (args.option === options.trophies.id) {
+      const members = [...data.memberList];
+      members.sort((a, b) => b.trophies - a.trophies);
+      members.sort((a, b) => leagueTierSort(a.leagueTier, b.leagueTier));
+
       embed.setDescription(
         [
           `\`\u200e # TROPHY     LEAGUE \`  ${'NAME'}`,
-          ...data.memberList.map((member, index) => {
+          ...members.map((member, index) => {
             const trophies = padStart(member.trophies, 4);
-            return `\`${padStart(index + 1, 2)}  ${trophies} ${this.formatLeague(member.leagueTier?.name || 'Unranked')} \`  \u200e${escapeMarkdown(member.name)}`;
+            const league = padStart(formatLeague(member.leagueTier?.name || 'Unranked'), 11);
+            return `\`${padStart(index + 1, 2)}  ${trophies} ${league} \`  \u200e${escapeMarkdown(member.name)}`;
           })
         ].join('\n')
       );
@@ -466,17 +471,6 @@ export default class MembersCommand extends Command {
     }
 
     return playersMap;
-  }
-
-  private formatLeague(league: string) {
-    return padStart(
-      league
-        .replace(/League/g, '')
-        .replace(/\./g, '')
-        .replace(/\s+/g, ' ')
-        .trim(),
-      11
-    );
   }
 }
 
