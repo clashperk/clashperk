@@ -28,7 +28,7 @@ export class ClientUtil {
     let guilds = 0;
 
     try {
-      const values = (await this.client.shard?.broadcastEval((client) => client.guilds.cache.size)) ?? [this.client.guilds.cache.size];
+      const values = (await this.client.cluster.broadcastEval((client) => client.guilds.cache.size)) ?? [this.client.guilds.cache.size];
       guilds = values.reduce((acc, val) => acc + val, 0);
     } catch {}
 

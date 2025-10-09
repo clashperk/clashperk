@@ -114,7 +114,7 @@ export class Subscribers {
 
   public async autoSyncSubscription(debug = false) {
     if (this.client.isCustom()) return null;
-    if (this.client.shard?.ids[0] !== 0) return null;
+    if (this.client.cluster.id !== 0) return null;
 
     const res = await this.fetchAPI();
     if (!res) return null;
@@ -264,7 +264,7 @@ export class Subscribers {
     const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: guildId }).toArray();
     for (const data of clans) {
       try {
-        await this.client.shard!.broadcastEval(
+        await this.client.cluster.broadcastEval(
           (client, data) => {
             if (client.guilds.cache.has(data.guild)) {
               // @ts-expect-error it exists

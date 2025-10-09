@@ -79,7 +79,7 @@ export class ClanGamesScheduler {
   }
 
   private async _insert() {
-    if ((this.client.shard?.ids[0] ?? 0) !== 0) return null;
+    if (this.client.cluster.id !== 0) return null;
     if (this.client.isCustom()) return null;
 
     const insertedSeasonId = this.client.settings.get('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, '0');
@@ -120,7 +120,7 @@ export class ClanGamesScheduler {
         name: clan.name,
         duration: reminder.duration,
         reminderId: reminder._id,
-        source: `bot_${this.client.shard?.ids[0] ?? 0}_${rand}`,
+        source: `bot_${rand}`,
         triggered: false,
         timestamp: new Date(ms),
         createdAt: new Date()

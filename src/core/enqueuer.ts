@@ -99,10 +99,7 @@ export class Enqueuer {
       }
     });
 
-    return this.client.redis.publisher.publish(
-      'connect',
-      JSON.stringify({ shardId: this.client.shard?.ids[0] ?? 0, shards: this.client.shard?.count ?? 1 })
-    );
+    return this.client.redis.publisher.publish('connect', JSON.stringify({}));
   }
 
   private async _loadClans(tag?: string) {

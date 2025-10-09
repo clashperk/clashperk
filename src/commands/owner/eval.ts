@@ -34,7 +34,7 @@ export default class EvalCommand extends Command {
     let evaled;
     try {
       const hrStart = process.hrtime();
-      evaled = await (shard ? this.client.shard!.broadcastEval((client, code) => eval(code), { context: code }) : eval(code));
+      evaled = await (shard ? this.client.cluster.broadcastEval((client, code) => eval(code), { context: code }) : eval(code));
       hrDiff = process.hrtime(hrStart);
     } catch (error) {
       return interaction.followUp({

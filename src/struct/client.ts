@@ -1,6 +1,7 @@
 import { FeatureFlags, Settings } from '@app/constants';
 import { createClient as createClickHouseClient } from '@clickhouse/client';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
+import { ClusterClient, getInfo } from 'discord-hybrid-sharding';
 import { BaseInteraction, Client as DiscordClient, GatewayIntentBits, Message, Options, User } from 'discord.js';
 import { Db, MongoClient } from 'mongodb';
 import { nanoid } from 'nanoid';
@@ -92,8 +93,13 @@ export class Client extends DiscordClient {
   public commands!: CommandsMap;
   public postHog: PostHog;
 
+  public cluster: ClusterClient<this>;
+
   public constructor() {
     super({
+      shardCount: getInfo().TOTAL_SHARDS,
+      shards: getInfo().SHARD_LIST,
+
       intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildWebhooks, GatewayIntentBits.GuildMessages],
       makeCache: Options.cacheWithLimits({
         ...Options.DefaultMakeCacheSettings,
@@ -154,6 +160,7 @@ export class Client extends DiscordClient {
     });
 
     this.ownerId = process.env.OWNER!;
+    this.cluster = new ClusterClient(this);
     container.register(Client, { useValue: this });
   }
 
@@ -241,6 +248,11 @@ export class Client extends DiscordClient {
       if (process.env.NODE_ENV === 'production') {
         await this.enqueue();
       }
+    });
+
+    this.on('clientReady', (client) => {
+      // @ts-expect-error cluster typings
+      client.cluster.triggerReady();
     });
 
     this.logger.info('Connecting to the Gateway', { label: 'DISCORD' });

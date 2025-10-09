@@ -63,7 +63,7 @@ export default class RateLimitListener extends Listener {
           `**URL:** ${decodeURIComponent(new URL(url).pathname).replace(/[\w-]{20,}/g, '-')}`
         ].join('\n')
       )
-      .setFooter({ text: `Shard ${this.client.shard?.ids[0] ?? 0}` })
+      .setFooter({ text: `Cluster ${this.client.cluster.id}` })
       .setTimestamp();
 
     return this.embeds.push(embed);

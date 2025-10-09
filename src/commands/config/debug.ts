@@ -1,3 +1,4 @@
+import { getInfo } from 'discord-hybrid-sharding';
 import {
   CommandInteraction,
   DMChannel,
@@ -75,7 +76,7 @@ export default class DebugCommand extends Command {
         '**Server ID**',
         `${interaction.guild.id}`,
         '**Shard ID**',
-        `[${interaction.guild.shard.id} / ${this.client.shard?.count ?? 1}]`,
+        `[${interaction.guild.shard.id} / ${getInfo().TOTAL_SHARDS}] (Cluster ${this.client.cluster.id})`,
         '**Channel**',
         `<#${interaction.channelId}> (${interaction.channelId})`,
         '**Patreon Status**',

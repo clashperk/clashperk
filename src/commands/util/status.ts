@@ -1,4 +1,5 @@
 import { Collections } from '@app/constants';
+import { getInfo } from 'discord-hybrid-sharding';
 import { CommandInteraction, EmbedBuilder, Guild, Message } from 'discord.js';
 import moment from 'moment';
 import { readFile } from 'node:fs/promises';
@@ -33,7 +34,7 @@ export default class StatusCommand extends Command {
 
   public async get(guild: Guild) {
     let [guilds, memory] = [0, 0];
-    const values = await this.client.shard?.broadcastEval((client) => [
+    const values = await this.client.cluster?.broadcastEval((client) => [
       client.guilds.cache.size,
       process.memoryUsage().heapUsed / 1024 / 1024
     ]);
@@ -97,7 +98,7 @@ export default class StatusCommand extends Command {
     embed.addFields(
       {
         name: 'Shard',
-        value: `${guild.shard.id}/${this.client.shard?.count ?? 1}`,
+        value: `${guild.shard.id}/${getInfo().TOTAL_SHARDS}`,
         inline: false
       },
       {

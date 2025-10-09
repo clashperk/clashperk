@@ -99,7 +99,7 @@ export class ClanWarScheduler {
           isFriendly: Boolean(data.isFriendly),
           duration: reminder.duration,
           reminderId: reminder._id,
-          source: `bot_${this.client.shard?.ids[0] ?? 0}_${rand}`,
+          source: `bot_${rand}`,
           triggered: false,
           timestamp: new Date(ms),
           createdAt: new Date()

@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import moment from 'moment';
 import util from 'node:util';
 import { Client } from '../struct/client.js';
+import { padStart } from './helper.js';
 
 const COLORS: Record<string, string> = {
   debug: 'yellow',
@@ -56,6 +57,7 @@ export class Logger {
   }
 
   private get shard() {
-    return this.client?.shard?.ids ? ` [SHARD${this.client.shard.ids[0]!.toString().padStart(2)}]` : ` [SHARD X]`;
+    const clusterId = this.client?.cluster?.id;
+    return typeof clusterId === 'number' ? ` [CLUSTER ${padStart(clusterId, 2)}]` : ` [CLUSTER  X]`;
   }
 }
