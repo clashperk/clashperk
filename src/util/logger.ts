@@ -58,6 +58,6 @@ export class Logger {
 
   private get shard() {
     const clusterId = this.client?.cluster?.id;
-    return typeof clusterId === 'number' ? ` [CLUSTER ${padStart(clusterId, 2)}]` : ` [CLUSTER  X]`;
+    return typeof clusterId === 'number' ? ` [CLUSTER${padStart(clusterId, 2)}]` : ` [CLUSTER X]`;
   }
 }
