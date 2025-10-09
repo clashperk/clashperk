@@ -465,7 +465,7 @@ export class ClanWarLog extends RootLog {
   }
 
   private async getSummaryImage(clanTag: string) {
-    const leagueGroup = await this.client.storage.getWarTags(clanTag, Season.ID);
+    const leagueGroup = await this.client.storage.getWarTags(clanTag, Season.monthId);
     if (!leagueGroup) return null;
 
     const body = await this.client.coc.aggregateClanWarLeague(clanTag, leagueGroup, true);

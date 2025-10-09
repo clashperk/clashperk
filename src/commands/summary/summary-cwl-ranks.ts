@@ -92,7 +92,7 @@ export default class SummaryCWLRanks extends Command {
     });
 
     if (!chunks.length) {
-      return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.ID }));
+      return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.monthId }));
     }
 
     const customId = this.createId({ cmd: this.id, clans: resolvedArgs, season: args.season });

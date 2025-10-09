@@ -32,8 +32,8 @@ export default class DonationsCommand extends Command {
       return interaction.editReply('Invalid date format, allowed formats are `YYYY-MM-DD` or `YYYY-MM-DD HH:mm`');
     }
 
-    const startTime = moment(args.start_date || moment(Season.ID)).toDate();
-    const endTime = moment(args.end_date || moment()).toDate();
+    const startTime = moment(args.start_date || Season.getSeason().startTime).toDate();
+    const endTime = moment(args.end_date || new Date()).toDate();
 
     if (moment(endTime).diff(moment(startTime), 'months') > 6) {
       return interaction.editReply('The date range cannot exceed 6 months.');

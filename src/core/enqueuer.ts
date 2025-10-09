@@ -16,6 +16,8 @@ import { LastSeenLog } from './last-seen-log.js';
 import { LegendLog } from './legend-log.js';
 import { MaintenanceLog } from './maintenance-log.js';
 
+const REDIS_PUB_SUB_CHANNEL = 'upstream_feed';
+
 export class Enqueuer {
   public cached = new Collection<string, Cached[]>();
 
@@ -49,7 +51,7 @@ export class Enqueuer {
   }
 
   private async broadcast() {
-    await this.client.redis.subscriber.subscribe('upstream_feed', async (message) => {
+    await this.client.redis.subscriber.subscribe(REDIS_PUB_SUB_CHANNEL, async (message) => {
       const data = JSON.parse(message);
 
       if (this.paused) return;
@@ -270,7 +272,7 @@ export class Enqueuer {
     this.lastSeenLog.cached.clear();
     this.legendLog.cached.clear();
 
-    await this.client.redis.subscriber.unsubscribe('channel');
+    await this.client.redis.subscriber.unsubscribe(REDIS_PUB_SUB_CHANNEL);
   }
 }
 

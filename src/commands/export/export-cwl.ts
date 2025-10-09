@@ -21,7 +21,7 @@ export default class ExportCWL extends Command {
     const command = this.handler.getCommand('export-cwl-lineup');
     if (command && args.lineup_only) return command.exec(interaction, args);
 
-    const season = args.season === Season.ID ? null : args.season;
+    const season = args.season === Season.monthId ? null : args.season;
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -29,7 +29,7 @@ export default class ExportCWL extends Command {
     for (const clan of clans) {
       const result = season ? null : await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (!result?.res.ok || result.body.state === 'notInWar') {
-        const data = await this.client.storage.getWarTags(clan.tag, season || moment().format('YYYY-MM'));
+        const data = await this.client.storage.getWarTags(clan.tag, season || Season.monthId);
         if (!data) continue;
         if (args.season && data.season !== args.season) continue;
         const { members, perRound, ranking } = await this.rounds(data, clan, { season });
@@ -60,7 +60,7 @@ export default class ExportCWL extends Command {
     }
 
     if (!chunks.length) {
-      return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.ID }));
+      return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.monthId }));
     }
 
     const sheets: CreateGoogleSheet[] = chunks

@@ -8,11 +8,11 @@ import {
 } from '@app/entities';
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
 import { ButtonInteraction, CommandInteraction, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
-import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { cluster, unique } from 'radash';
 import { i18n } from '../util/i18n.js';
+import { Season } from '../util/toolkit.js';
 import { Client } from './client.js';
 
 const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
@@ -307,7 +307,7 @@ export class StorageHandler {
     return webhook;
   }
 
-  public async getWarTags(tag: string, season: string = moment().format('YYYY-MM')): Promise<ClanWarLeagueGroupsEntity | null> {
+  public async getWarTags(tag: string, season: string = Season.monthId): Promise<ClanWarLeagueGroupsEntity | null> {
     return this.client.db
       .collection<ClanWarLeagueGroupsEntity>(Collections.CWL_GROUPS)
       .findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });
@@ -318,7 +318,7 @@ export class StorageHandler {
     if (rounds.length !== body.clans.length - 1) return null;
 
     const data = await this.client.db.collection(Collections.CWL_GROUPS).findOne({ 'clans.tag': tag }, { sort: { _id: -1 } });
-    if (data?.season === this.seasonID) return null;
+    if (data?.season === Season.monthId) return null;
     if (data && new Date().getMonth() <= new Date(data.season as string).getMonth()) return null;
 
     const warTags = body.clans.reduce<{ [key: string]: string[] }>((pre, clan) => {
@@ -548,9 +548,5 @@ export class StorageHandler {
     const cursor = this.client.db.collection(Collections.CWL_GROUPS).find().sort({ id: -1 }).limit(1);
     const uuid: number = (await cursor.next())?.id ?? 0;
     return uuid + 1;
-  }
-
-  private get seasonID() {
-    return new Date().toISOString().slice(0, 7);
   }
 }

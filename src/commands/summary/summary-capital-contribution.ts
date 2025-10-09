@@ -20,7 +20,7 @@ export default class SummaryCapitalContributionCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { season?: string; week?: string; clans?: string; clans_only?: boolean }
   ) {
-    const season = args.season ?? Season.ID;
+    const season = args.season ?? Season.monthId;
     const week = args.week;
 
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
@@ -34,7 +34,7 @@ export default class SummaryCapitalContributionCommand extends Command {
       .aggregate<{ clans: { name: string; tag: string; total: number }[]; members: { name: string; tag: string; total: number }[] }>([
         {
           $match: {
-            ...(week ? { createdAt: { $gt: startWeek, $lt: endWeek } } : { season: season }),
+            ...(week ? { createdAt: { $gt: startWeek, $lt: endWeek } } : { $gt: new Date(startWeek), $lt: new Date() }),
             'clan.tag': { $in: clans.map((clan) => clan.tag) }
           }
         },

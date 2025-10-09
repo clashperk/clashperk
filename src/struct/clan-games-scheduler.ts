@@ -15,7 +15,7 @@ import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
-import { Util } from '../util/toolkit.js';
+import { Season, Util } from '../util/toolkit.js';
 import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
 import { Client } from './client.js';
 
@@ -83,7 +83,7 @@ export class ClanGamesScheduler {
     if (this.client.isCustom()) return null;
 
     const insertedSeasonId = this.client.settings.get('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, '0');
-    const currentSeasonId = this.getSeasonId();
+    const currentSeasonId = Season.monthId;
 
     if (insertedSeasonId === currentSeasonId) return null;
 
@@ -158,11 +158,6 @@ export class ClanGamesScheduler {
     return this.queued.delete(id);
   }
 
-  private getSeasonId() {
-    const now = new Date();
-    return now.toISOString().slice(0, 7);
-  }
-
   private async query(clan: APIClan) {
     const fetched = await this.client.coc._getPlayers(clan.memberList);
     const clanMembers = fetched.map((data) => {
@@ -174,7 +169,7 @@ export class ClanGamesScheduler {
       .collection(Collections.CLAN_GAMES_POINTS)
       .aggregate<ClanGamesEntity>([
         {
-          $match: { tag: { $in: clan.memberList.map((mem) => mem.tag) }, season: this.getSeasonId() }
+          $match: { tag: { $in: clan.memberList.map((mem) => mem.tag) }, season: Season.monthId }
         },
         {
           $limit: 60

@@ -15,7 +15,7 @@ export default class SummaryClansCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string }) {
-    const season = args.season ?? Season.ID;
+    const season = args.season ?? Season.monthId;
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 

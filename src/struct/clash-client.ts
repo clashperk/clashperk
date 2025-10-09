@@ -11,6 +11,7 @@ import {
 } from 'clashofclans.js';
 import moment from 'moment';
 import { isWinner } from '../helper/cwl.helper.js';
+import { Season } from '../util/toolkit.js';
 import { Client } from './client.js';
 
 export function timeoutSignal(timeout: number, path: string) {
@@ -228,8 +229,7 @@ export class ClashClient extends RESTManager {
     const rounds = group.rounds.filter((r) => !r.warTags.includes('#0'));
     const warTags = rounds.map((round) => round.warTags).flat();
 
-    const seasonFormat = 'YYYY-MM';
-    if (moment().format(seasonFormat) !== moment(group.season).format(seasonFormat) && !isApiData) {
+    if (Season.monthId !== group.season && !isApiData) {
       return this.getDataFromArchive(clanTag, group.season, group);
     }
 

@@ -22,7 +22,7 @@ export default class SummaryMissedWarsCommand extends Command {
     if (!clans) return;
 
     const missed: Record<string, { name: string; tag: string; wars: number; missed: number }> = {};
-    const season = args.season ?? Season.ID;
+    const season = args.season ?? Season.monthId;
 
     for (const { tag } of clans) {
       const wars = await this.client.db
