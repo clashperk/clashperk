@@ -240,7 +240,7 @@ export class Client extends DiscordClient {
 
     await this.coc.autoLogin();
 
-    this.once('clientReady', async () => {
+    this.once('clientReady', async (client) => {
       // @ts-expect-error cluster typings
       client.cluster.triggerReady();
 
