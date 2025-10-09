@@ -3,8 +3,8 @@ import { Listener } from '../../lib/handlers.js';
 
 export default class ReadyListener extends Listener {
   public constructor() {
-    super('ready', {
-      event: 'ready',
+    super('clientReady', {
+      event: 'clientReady',
       emitter: 'client',
       category: 'client'
     });

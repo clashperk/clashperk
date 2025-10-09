@@ -240,7 +240,10 @@ export class Client extends DiscordClient {
 
     await this.coc.autoLogin();
 
-    this.once('ready', async () => {
+    this.once('clientReady', async () => {
+      // @ts-expect-error cluster typings
+      client.cluster.triggerReady();
+
       await this.analytics.flush();
       await this.settings.init({ globalOnly: false });
       await this.subscribers.refresh();
@@ -248,11 +251,6 @@ export class Client extends DiscordClient {
       if (process.env.NODE_ENV === 'production') {
         await this.enqueue();
       }
-    });
-
-    this.on('clientReady', (client) => {
-      // @ts-expect-error cluster typings
-      client.cluster.triggerReady();
     });
 
     this.logger.info('Connecting to the Gateway', { label: 'DISCORD' });
