@@ -19,16 +19,16 @@ export default class ExportCapital extends Command {
     if (!clans) return;
 
     const chunks = [];
-    for (const { tag, name } of clans) {
-      const weekends = await this.client.db
+    for (const clan of clans) {
+      const result = await this.client.db
         .collection(Collections.CAPITAL_RAID_SEASONS)
-        .find({ tag })
+        .find({ tag: clan.tag })
         .sort({ _id: -1 })
         .limit(10)
         .toArray();
 
-      const _weekends = [];
-      for (const clan of weekends) {
+      const weekends = [];
+      for (const clan of result) {
         const remark =
           clan.capitalLeague && clan._capitalLeague
             ? clan._capitalLeague.id > clan.capitalLeague.id
@@ -39,7 +39,7 @@ export default class ExportCapital extends Command {
             : 'Unknown';
         const trophyGained = (clan._clanCapitalPoints ?? 0) - (clan.clanCapitalPoints ?? 0);
 
-        _weekends.push({
+        weekends.push({
           name: clan.name,
           tag: clan.tag,
           status: remark,
@@ -57,9 +57,9 @@ export default class ExportCapital extends Command {
       }
 
       chunks.push({
-        name,
-        tag,
-        weekends: _weekends
+        name: clan.name,
+        tag: clan.tag,
+        weekends
       });
     }
     if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));

@@ -15,19 +15,20 @@ export default class ExportCapitalRaidsCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string; season?: string }) {
+  public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string }) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const chunks = [];
-    for (const { tag, name } of clans) {
-      const cursor = this.client.db
-        .collection(Collections.CAPITAL_RAID_SEASONS)
-        .find(args.season ? { tag, startDate: { $gte: new Date(args.season) } } : { tag })
-        .sort({ _id: -1 })
-        .limit(args.limit ?? 10);
+    const limit = Math.min(Math.max(args.limit || 4, 1), 52);
 
-      const weekends = await cursor.toArray();
+    const chunks = [];
+    for (const clan of clans) {
+      const weekends = await this.client.db
+        .collection(Collections.CAPITAL_RAID_SEASONS)
+        .find({ tag: clan.tag })
+        .sort({ _id: -1 })
+        .limit(limit)
+        .toArray();
 
       const membersMap: Record<
         string,
@@ -43,6 +44,7 @@ export default class ExportCapitalRaidsCommand extends Command {
           weekends: number;
         }
       > = {};
+
       for (const clan of weekends.reverse()) {
         for (const member of clan.members) {
           membersMap[member.tag] ??= {
@@ -68,8 +70,8 @@ export default class ExportCapitalRaidsCommand extends Command {
       }
 
       chunks.push({
-        name,
-        tag,
+        name: clan.name,
+        tag: clan.tag,
         members: Object.values(membersMap).sort((a, b) => b.attacksMissed - a.attacksMissed)
       });
     }

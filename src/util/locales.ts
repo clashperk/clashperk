@@ -679,7 +679,12 @@ export const command = {
       }
     },
     capital_raids: {
-      description: '[Experimental] Export capital raid attack stats.'
+      description: 'Export capital raid attack stats.',
+      options: {
+        limit: {
+          description: 'Number of raid weekends (Default: 4)'
+        }
+      }
     },
     capital: {
       description: 'Export clan capital weekends.'

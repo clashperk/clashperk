@@ -4653,13 +4653,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         type: ApplicationCommandOptionType.Subcommand,
         options: [
           {
-            name: 'season',
-            description: common.options.season_since.description,
-            description_localizations: translation('common.options.season_since.description'),
-            type: ApplicationCommandOptionType.String,
-            choices: getSeasonIds()
-          },
-          {
             name: 'clans',
             description: common.options.clans.description,
             description_localizations: translation('common.options.clans.description'),
@@ -4668,10 +4661,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
           },
           {
             name: 'limit',
-            description: command.export.options.wars.description,
-            max_value: 100,
+            description: command.export.capital_raids.options.limit.description,
+            max_value: 52,
             min_value: 1,
-            description_localizations: translation('command.export.options.wars.description'),
+            description_localizations: translation('command.export.capital_raids.options.limit.description'),
             type: ApplicationCommandOptionType.Integer
           }
         ]
