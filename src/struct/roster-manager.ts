@@ -4,6 +4,7 @@ import {
   DiscordErrorCodes,
   MAX_TOWN_HALL_LEVEL,
   Settings,
+  UNRANKED_TIER_ID,
   UNRANKED_WAR_LEAGUE_ID,
   WarType
 } from '@app/constants';
@@ -29,7 +30,7 @@ import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { EventEmitter } from 'node:events';
 import { parallel, unique } from 'radash';
 import { RosterCommandSortOptions } from '../util/command.options.js';
-import { EMOJIS, TOWN_HALLS } from '../util/emojis.js';
+import { EMOJIS, HOME_BASE_LEAGUES, TOWN_HALLS } from '../util/emojis.js';
 import { Util } from '../util/toolkit.js';
 import { Client } from './client.js';
 import Google, { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from './google.js';
@@ -160,6 +161,15 @@ export const rosterLayoutMap = {
     align: 'right',
     name: 'Trophies',
     description: 'The trophies of the player.'
+  },
+  'LEAGUE_ICONS': {
+    width: 1,
+    label: 'LEAGUE',
+    isEmoji: true,
+    key: 'leagueIcon',
+    align: 'left',
+    name: 'League Icon',
+    description: 'The league icon of the player.'
   }
 } as const;
 
@@ -249,6 +259,7 @@ export interface IRosterMember {
   townHallLevel: number;
   heroes: Record<string, number>;
   trophies: number;
+  leagueId: number;
   clan?: {
     tag: string;
     name: string;
@@ -598,6 +609,7 @@ export class RosterManager {
       warPreference: player.warPreference ?? null,
       role: player.role ?? null,
       trophies: player.trophies,
+      leagueId: player.leagueTier?.id ?? UNRANKED_TIER_ID,
       heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
       townHallLevel: player.townHallLevel,
       clan: player.clan ? { name: player.clan.name, tag: player.clan.tag } : null,
@@ -879,6 +891,7 @@ export class RosterManager {
         break;
       case 'TROPHIES':
         roster.members.sort((a, b) => b.trophies - a.trophies);
+        roster.members.sort((a, b) => b.leagueId - a.leagueId);
         break;
       default:
         roster.members.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
@@ -936,6 +949,7 @@ export class RosterManager {
 
           const townHallLevel = `${mem.townHallLevel}`.padStart(rosterLayoutMap.TH.width, ' ');
           const townHallIcon = TOWN_HALLS[mem.townHallLevel];
+          const leagueIcon = HOME_BASE_LEAGUES[mem.leagueId || UNRANKED_TIER_ID];
           const trophies = `${mem.trophies}`.padStart(rosterLayoutMap.TROPHIES.width, ' ');
           const heroes = `${this.sum(Object.values(mem.heroes))}`.padEnd(rosterLayoutMap.HERO_LEVEL.width, ' ');
           const role = (mem.role ? roleNames[mem.role] : ' ').padEnd(rosterLayoutMap.ROLE.width, ' ');
@@ -951,6 +965,7 @@ export class RosterManager {
             clanName,
             townHallLevel,
             townHallIcon,
+            leagueIcon,
             heroes,
             role,
             trophies,
@@ -1474,6 +1489,7 @@ export class RosterManager {
         warPreference: player.warPreference ?? null,
         role: player.role ?? null,
         trophies: player.trophies,
+        leagueId: player.leagueTier?.id ?? UNRANKED_TIER_ID,
         heroes: heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {}),
         clan: player.clan ? { tag: player.clan.tag, name: player.clan.name } : null,
         createdAt: new Date()

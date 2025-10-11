@@ -34,7 +34,7 @@ export default class SummaryCapitalContributionCommand extends Command {
       .aggregate<{ clans: { name: string; tag: string; total: number }[]; members: { name: string; tag: string; total: number }[] }>([
         {
           $match: {
-            ...(week ? { createdAt: { $gt: startWeek, $lt: endWeek } } : { $gt: new Date(startWeek), $lt: new Date() }),
+            ...(week ? { createdAt: { $gt: startWeek, $lt: endWeek } } : { createdAt: { $gt: new Date(startWeek), $lt: new Date() } }),
             'clan.tag': { $in: clans.map((clan) => clan.tag) }
           }
         },

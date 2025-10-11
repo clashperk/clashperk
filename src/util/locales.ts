@@ -526,6 +526,9 @@ export const command = {
         },
         log_channel: {
           description: 'Channel to log roster changes'
+        },
+        delete_log_channel: {
+          description: 'Whether to delete the log channel'
         }
       }
     },

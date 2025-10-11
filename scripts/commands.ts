@@ -2610,6 +2610,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
             description_localizations: translation('command.roster.edit.options.log_channel.description'),
             type: ApplicationCommandOptionType.Channel,
             channel_types: ChannelTypes
+          },
+          {
+            name: 'delete_log_channel',
+            description: command.roster.edit.options.delete_log_channel.description,
+            description_localizations: translation('command.roster.edit.options.delete_log_channel.description'),
+            type: ApplicationCommandOptionType.Boolean
           }
         ]
       },

@@ -15,18 +15,10 @@ class Manager extends ClusterManager {
 
   public constructor() {
     super(fileURLToPath(new URL('main.js', import.meta.url)), {
+      mode: 'process',
       totalShards: 'auto',
       shardsPerClusters: 2,
-      mode: 'process',
       token: process.env.DISCORD_TOKEN!
-    });
-
-    this.on('clusterCreate', (cluster) => {
-      this.logger.debug(`Creating cluster #${cluster.id}`, { label: ClusterManager.name });
-    });
-
-    this.on('clusterReady', (cluster) => {
-      this.logger.debug(`Ready cluster #${cluster.id}`, { label: ClusterManager.name });
     });
   }
 
@@ -40,7 +32,7 @@ class Manager extends ClusterManager {
       this._readyShards = this.clusters.size;
       this.log(`All Shards (${this.clusters.size}) Ready`);
     } catch (error) {
-      this.logger.error(error, { label: ClusterManager.name.toString() });
+      this.logger.error(error, { label: 'Cluster' });
 
       if (error.message === 'DISCORD_TOKEN_INVALID') {
         process.exit(1);
@@ -49,7 +41,7 @@ class Manager extends ClusterManager {
   }
 
   public log(message: string) {
-    this.logger.info(message, { label: ClusterManager.name });
+    this.logger.info(message, { label: 'Cluster' });
   }
 }
 

@@ -14,11 +14,11 @@ import {
 } from 'discord.js';
 import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
+import { isNumber } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { IRoster, RosterSortTypes, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
 import { RosterCommandSortOptions } from '../../util/command.options.js';
 import { createInteractionCollector } from '../../util/pagination.js';
-import { isNumber } from 'radash';
 
 export default class RosterEditCommand extends Command {
   public constructor() {
@@ -70,6 +70,7 @@ export default class RosterEditCommand extends Command {
       roster_image_url?: string;
       components_only?: boolean;
       log_channel?: TextChannel | AnyThreadChannel;
+      delete_log_channel?: boolean;
     }
   ) {
     if (args.roster === '*') return this.handleBulk(interaction);
@@ -146,6 +147,10 @@ export default class RosterEditCommand extends Command {
       }
       data.logChannelId = args.log_channel.id;
       data.webhook = { token: webhook.token!, id: webhook.id };
+    }
+    if (args.delete_log_channel && !args.log_channel) {
+      data.logChannelId = null;
+      data.webhook = null;
     }
 
     const selected = {
