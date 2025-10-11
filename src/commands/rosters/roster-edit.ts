@@ -79,7 +79,9 @@ export default class RosterEditCommand extends Command {
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+    if (!roster || roster.guildId !== interaction.guildId) {
+      return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+    }
 
     if (args.delete_roster) {
       await this.client.rosterManager.delete(rosterId);

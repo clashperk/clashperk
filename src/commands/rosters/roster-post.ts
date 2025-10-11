@@ -20,6 +20,9 @@ export default class RosterPostCommand extends Command {
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
     if (!roster) return interaction.followUp({ content: 'Roster not found.', flags: MessageFlags.Ephemeral });
+    if (roster.guildId !== interaction.guildId && !this.client.isOwner(interaction.user)) {
+      return interaction.followUp({ content: 'Roster not found.', flags: MessageFlags.Ephemeral });
+    }
 
     const updated =
       Date.now() - roster.lastUpdated.getTime() < 30 * 1000 && roster.members.length >= 65

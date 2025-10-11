@@ -34,7 +34,7 @@ export default class RosterGroupsModifyCommand extends Command {
 
     const categoryId = new ObjectId(args.group);
     const category = await this.client.rosterManager.getCategory(categoryId);
-    if (!category) return interaction.editReply({ content: 'User group was deleted.' });
+    if (!category || category.guildId !== interaction.guildId) return interaction.editReply({ content: 'User group was deleted.' });
 
     if (args.delete_group) {
       await this.client.rosterManager.deleteCategory(category._id);

@@ -27,7 +27,7 @@ export default class RosterPingCommand extends Command {
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.editReply({ content: 'Roster not found.' });
+    if (!roster || roster.guildId !== interaction.guildId) return interaction.editReply({ content: 'Roster not found.' });
 
     if (!roster.clan) {
       return interaction.editReply({

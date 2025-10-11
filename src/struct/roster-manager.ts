@@ -164,7 +164,7 @@ export const rosterLayoutMap = {
   },
   'LEAGUE_ICONS': {
     width: 1,
-    label: 'LEAGUE',
+    label: EMOJIS.TROPHY,
     isEmoji: true,
     key: 'leagueIcon',
     align: 'left',
@@ -175,6 +175,7 @@ export const rosterLayoutMap = {
 
 export const DEFAULT_ROSTER_LAYOUT = '#/TH_ICON/DISCORD/NAME/CLAN';
 export const DEFAULT_TROPHY_ROSTER_LAYOUT = '#/TH_ICON/TROPHIES/NAME';
+
 export interface IRoster {
   name: string;
   guildId: string;
@@ -892,6 +893,9 @@ export class RosterManager {
         break;
       case 'TROPHIES':
         roster.members.sort((a, b) => b.trophies - a.trophies);
+        break;
+      case 'LEAGUES':
+        roster.members.sort((a, b) => b.trophies - a.trophies);
         roster.members.sort((a, b) => b.leagueId - a.leagueId);
         break;
       default:
@@ -1012,6 +1016,22 @@ export class RosterManager {
     const rosterRole = roster.roleId ? `Role <@&${roster.roleId}>\n` : '';
     const footer = `${rosterRole}${total}${minTownHall}${maxTownHall}`;
 
+    embed.setDescription(description);
+    if (roster.rosterImage) embed.setImage(roster.rosterImage);
+
+    const embeds: EmbedBuilder[] = [embed];
+    if (rest.length && roster.members.length <= ROSTER_MAX_LIMIT) {
+      for (const value of Util.splitMessage(rest[0], { maxLength: 1024 })) {
+        embed.addFields({ name: '\u200e', value });
+      }
+    } else {
+      rest.forEach((value) => {
+        const _embed = new EmbedBuilder(embed.toJSON()).setDescription(value);
+        if (roster.rosterImage) _embed.setImage(roster.rosterImage);
+        embeds.push(_embed);
+      });
+    }
+
     if (roster.startTime && roster.startTime > new Date()) {
       embed.addFields({
         name: '\u200e',
@@ -1029,22 +1049,6 @@ export class RosterManager {
       });
     } else {
       embed.addFields({ name: '\u200e', value: `${footer}` });
-    }
-
-    embed.setDescription(description);
-    if (roster.rosterImage) embed.setImage(roster.rosterImage);
-
-    const embeds: EmbedBuilder[] = [embed];
-    if (rest.length && roster.members.length <= ROSTER_MAX_LIMIT) {
-      for (const value of Util.splitMessage(rest[0], { maxLength: 1024 })) {
-        embed.addFields({ name: '\u200e', value });
-      }
-    } else {
-      rest.forEach((value) => {
-        const _embed = new EmbedBuilder(embed.toJSON()).setDescription(value);
-        if (roster.rosterImage) _embed.setImage(roster.rosterImage);
-        embeds.push(_embed);
-      });
     }
 
     return multi ? embeds : embed;

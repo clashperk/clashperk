@@ -26,7 +26,7 @@ export default class RosterDeleteCommand extends Command {
 
     await interaction.editReply({ content: 'Deleting roster...' });
     const roster = await this.client.rosterManager.clear(rosterId);
-    if (!roster) return interaction.editReply({ content: 'Roster was deleted.' });
+    if (!roster || roster.guildId !== interaction.guildId) return interaction.editReply({ content: 'Roster was deleted.' });
 
     await this.client.rosterManager.delete(rosterId);
     return interaction.editReply({ content: 'Roster deleted successfully.' });

@@ -23,7 +23,9 @@ export default class RosterSignupCommand extends Command {
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+    if (!roster || roster.guildId !== interaction.guildId) {
+      return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+    }
 
     const isClosed = this.client.rosterManager.isClosed(roster);
     if (isClosed) {

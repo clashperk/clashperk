@@ -82,6 +82,10 @@ export const RosterCommandSortOptions = [
   {
     name: 'Trophies',
     value: 'TROPHIES'
+  },
+  {
+    name: 'Leagues',
+    value: 'LEAGUES'
   }
 ] as const;
 
