@@ -29,7 +29,12 @@ export default class VerifyPlayerCommand extends Command {
 
     const { body } = await this.client.coc.verifyPlayerToken(data.tag, token);
     if (body.status !== 'ok') {
-      return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
+      return interaction.editReply({
+        content: [
+          this.i18n('command.verify.invalid_token', { lng: interaction.locale }),
+          'https://media.clashperk.com/assets/How_to_get_API_Token.gif'
+        ].join('\n')
+      });
     }
 
     const collection = this.client.db.collection(Collections.PLAYER_LINKS);

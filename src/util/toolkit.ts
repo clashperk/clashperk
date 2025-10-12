@@ -283,4 +283,15 @@ export class Season {
   public static getSeasonById(seasonId: string) {
     return Util.getSeasonById(seasonId);
   }
+
+  public static get tournamentID() {
+    const { startTime, id } = Util.getTournamentWindow();
+
+    const date = new Date();
+    if (date.getDay() === 1 && date.getHours() > 5) {
+      return moment(startTime).subtract(7, 'days').format('YYYY-MM-DD');
+    }
+
+    return id;
+  }
 }

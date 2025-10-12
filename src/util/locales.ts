@@ -815,7 +815,7 @@ export const command = {
       }
     },
     success: 'Verification successful! {{info}}',
-    invalid_token: 'You must provide a valid API Token that can be found in the game settings. \nhttps://i.imgur.com/8dsoUB8.jpg'
+    invalid_token: 'You must provide a valid API Token that can be found in the game settings.'
   },
   timezone: {
     description: 'Set your timezone offset for /activity command.',

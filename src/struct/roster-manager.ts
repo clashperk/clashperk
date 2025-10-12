@@ -904,12 +904,12 @@ export class RosterManager {
     }
 
     const membersGroup = Object.entries(
-      roster.members.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
-        const key = curr.categoryId?.toHexString();
+      roster.members.reduce<Record<string, IRosterMember[]>>((record, mem) => {
+        const key = mem.categoryId?.toHexString();
         const categoryId = key && key in categoriesMap ? key : 'none';
-        prev[categoryId] ??= [];
-        prev[categoryId].push(curr);
-        return prev;
+        record[categoryId] ??= [];
+        record[categoryId].push(mem);
+        return record;
       }, {})
     );
 

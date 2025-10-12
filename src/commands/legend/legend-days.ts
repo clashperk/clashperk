@@ -1,4 +1,4 @@
-import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
+import { ATTACK_COUNTS, BattlesPerWeek, Collections, LEGEND_LEAGUE_ID, UNRANKED_TIER_ID } from '@app/constants';
 import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
@@ -41,7 +41,10 @@ export default class LegendDaysCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction, args: { tag?: string; user?: User; prev?: boolean; day?: number; graph?: boolean }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User; prev?: boolean; day?: number; graph?: boolean }
+  ) {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
@@ -60,12 +63,13 @@ export default class LegendDaysCommand extends Command {
       );
 
     if (data.trophies <= 4900 && data.leagueTier?.id !== LEGEND_LEAGUE_ID) {
-      return interaction.editReply(`**${data.name} (${data.tag})** is not in the Legend League.`);
+      if (await this.rankedBattles(interaction, data)) return;
+      return interaction.followUp(`**${data.name} (${data.tag})** is not in the Legend League. \n**Ranked battle logs are coming soon!**`);
     }
 
     const legend = await getLegendAttack(data.tag);
     if (!legend) {
-      return interaction.editReply(
+      return interaction.followUp(
         [`No data available for **${data.name} (${data.tag})**`, `Going forward, Legend statistics will be collected.`].join('\n')
       );
     }
@@ -396,6 +400,93 @@ export default class LegendDaysCommand extends Command {
     else if (clanRank >= 21) return 12;
     else if (clanRank >= 11) return 25;
     return 50;
+  }
+
+  private async rankedBattles(interaction: CommandInteraction<'cached'>, player: APIPlayer) {
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT
+            name,
+            tag,
+            diff,
+            trophies,
+            attacks,
+            defenses,
+            leagueId,
+            createdAt
+          FROM player_trophy_records
+          WHERE tag = {tag: String} AND weekId = {weekId: String}
+          ORDER BY createdAt DESC
+        `,
+        query_params: { tag: player.tag, weekId: Season.tournamentID }
+      })
+      .then((res) =>
+        res.json<{ name: string; tag: string; trophies: number; diff: number; attacks: number; defenses: number; createdAt: string }>()
+      );
+
+    const leagueId = player.leagueTier?.id ?? UNRANKED_TIER_ID;
+
+    if (!rows.data.length || leagueId === UNRANKED_TIER_ID) return null;
+
+    const embed = new EmbedBuilder()
+      .setColor(this.client.embed(interaction))
+      .setTitle(`${escapeMarkdown(player.name)} (${player.tag})`)
+      .setURL(`http://cprk.us/p/${trimTag(player.tag)}`);
+
+    embed.setDescription(
+      [`${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}** ${EMOJIS.TROPHY} **${player.trophies}**`].join('\n')
+    );
+
+    const { globalRank, countryRank } = await this.rankings(player.tag);
+    const [last] = rows.data;
+
+    const isBugged = last.attacks === 0 && last.defenses === 0;
+    embed.setThumbnail(player.leagueTier?.iconUrls?.large ?? null);
+    embed.addFields({
+      name: `**Overview**`,
+      value: [
+        `- ${player.trophies} trophies gained`,
+        isBugged ? '' : `- ${last.attacks} attacks won`,
+        isBugged ? '' : `- ${last.defenses} defenses won`,
+        isBugged ? '' : `- ${Math.max(0, BattlesPerWeek[leagueId] - last.attacks)} attacks remaining`
+      ].join('\n')
+    });
+
+    embed.addFields([
+      {
+        name: '**Ranking**',
+        value: [
+          `- Global Rank: ${globalRank ?? 'N/A'}`,
+          `- Local Rank: ${
+            countryRank ? `${countryRank.players.rank} (${countryRank.country} :flag_${countryRank.countryCode.toLowerCase()}:)` : 'N/A'
+          }`
+        ].join('\n')
+      }
+    ]);
+
+    embed.addFields([
+      {
+        name: '**Logs**',
+        value: rows.data
+          .reverse()
+          .map((row) => {
+            return `\` +${padStart(row.diff, 3)} \` ${time(moment(row.createdAt).toDate(), 'R')}`;
+          })
+          .join('\n')
+      }
+    ]);
+
+    embed.setFooter({ text: 'BETA RELEASE! More features are coming soon!' });
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setCustomId(JSON.stringify({ cmd: this.id, tag: player.tag }))
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    return interaction.editReply({ embeds: [embed], components: [row], content: null });
   }
 }
 
