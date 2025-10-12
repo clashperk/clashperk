@@ -1,4 +1,4 @@
-import { ATTACK_COUNTS, BattlesPerWeek, Collections, LEGEND_LEAGUE_ID, UNRANKED_TIER_ID } from '@app/constants';
+import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID, UNRANKED_TIER_ID } from '@app/constants';
 import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
@@ -439,17 +439,15 @@ export default class LegendDaysCommand extends Command {
     );
 
     const { globalRank, countryRank } = await this.rankings(player.tag);
-    const [last] = rows.data;
 
-    const isBugged = last.attacks === 0 && last.defenses === 0;
+    const isBugged = player.attackWins === 0 && player.defenseWins === 0;
     embed.setThumbnail(player.leagueTier?.iconUrls?.large ?? null);
     embed.addFields({
       name: `**Overview**`,
       value: [
         `- ${player.trophies} trophies gained`,
-        isBugged ? '' : `- ${last.attacks} attacks won`,
-        isBugged ? '' : `- ${last.defenses} defenses won`,
-        isBugged ? '' : `- ${Math.max(0, BattlesPerWeek[leagueId] - last.attacks)} attacks remaining`
+        isBugged ? '' : `- ${player.attackWins} attacks won`,
+        isBugged ? '' : `- ${player.defenseWins} defenses won`
       ].join('\n')
     });
 
@@ -477,7 +475,13 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    embed.setFooter({ text: 'BETA RELEASE! More features are coming soon!' });
+    const { startTime, endTime } = Util.getTournamentWindow();
+    embed.addFields([
+      {
+        name: 'Weekly Tournament',
+        value: `${time(startTime, 'D')} - ${time(endTime, 'D')} (${time(endTime, 'R')})`
+      }
+    ]);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
