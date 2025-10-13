@@ -64,14 +64,16 @@ export default class LegendDaysCommand extends Command {
 
     if (data.trophies <= 4900 && data.leagueTier?.id !== LEGEND_LEAGUE_ID) {
       if (await this.rankedBattles(interaction, data)) return;
-      return interaction.followUp(`**${data.name} (${data.tag})** is not in the Legend League. \n**Ranked battle logs are coming soon!**`);
+      return interaction.followUp({
+        content: `**${data.name} (${data.tag})** is not in the Legend League. \n**Ranked battle logs are coming soon!**`
+      });
     }
 
     const legend = await getLegendAttack(data.tag);
     if (!legend) {
-      return interaction.followUp(
-        [`No data available for **${data.name} (${data.tag})**`, `Going forward, Legend statistics will be collected.`].join('\n')
-      );
+      return interaction.followUp({
+        content: [`No data available for **${data.name} (${data.tag})**`, `Going forward, Legend statistics will be collected.`].join('\n')
+      });
     }
 
     const embed = args.prev ? await this.logs(data) : await this.embed(interaction, data, legend, args.day);
