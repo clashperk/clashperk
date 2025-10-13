@@ -108,8 +108,8 @@ export default class LegendDaysCommand extends Command {
     const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
 
     const member = (clan?.memberList ?? []).find((en) => en.tag === data.tag);
-    const clanRank = member?.clanRank ?? 0;
-    const percentage = this.calc(clanRank);
+    // const clanRank = member?.clanRank ?? 0;
+    // const percentage = this.calc(clanRank);
 
     const [initial] = logs;
     const [current] = logs.slice(-1);
@@ -173,8 +173,8 @@ export default class LegendDaysCommand extends Command {
           name: '**Clan**',
           value: [
             `- ${clan ? `[${clan.name} (${clan.tag})](http://cprk.us/c/${trimTag(clan.tag)})` : 'N/A'}`,
-            `- Rank in Clan: ${member.clanRank}`,
-            `- Clan Points Contribution: ${Math.floor((member.trophies * percentage) / 100)} (${percentage}%)`
+            `- Rank in Clan: ${member.clanRank}`
+            // `- Clan Points Contribution: ${Math.floor((member.trophies * percentage) / 100)} (${percentage}%)`
           ].join('\n')
         }
       ]);
@@ -442,12 +442,15 @@ export default class LegendDaysCommand extends Command {
 
     const { globalRank, countryRank } = await this.rankings(player.tag);
 
+    const [last] = rows.data;
+    const { startTime, endTime } = Util.getTournamentWindowById(Season.tournamentID);
     const isBugged = player.attackWins === 0 && player.defenseWins === 0;
+
     embed.setThumbnail(player.leagueTier?.iconUrls?.large ?? null);
     embed.addFields({
-      name: `**Overview**`,
+      name: `**Overview (${moment(startTime).format('D MMM')} - ${moment(endTime).format('D MMM')})**`,
       value: [
-        `- ${player.trophies} trophies gained`,
+        `- ${Math.max(last.trophies, player.trophies)} trophies gained`,
         isBugged ? '' : `- ${player.attackWins} attacks won`,
         isBugged ? '' : `- ${player.defenseWins} defenses won`
       ].join('\n')
@@ -477,13 +480,15 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    const { startTime, endTime } = Util.getTournamentWindow();
-    embed.addFields([
-      {
-        name: 'Weekly Tournament',
-        value: `${time(startTime, 'D')} - ${time(endTime, 'D')} (${time(endTime, 'R')})`
-      }
-    ]);
+    if (new Date().getDay() === 1 && new Date().getHours() > 5) {
+      const { startTime, endTime } = Util.getTournamentWindow();
+      embed.addFields([
+        {
+          name: 'Upcoming Tournament',
+          value: `${time(startTime, 'D')} - ${time(endTime, 'D')}`
+        }
+      ]);
+    }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
