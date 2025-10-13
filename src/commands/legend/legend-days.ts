@@ -441,18 +441,21 @@ export default class LegendDaysCommand extends Command {
     );
 
     const { globalRank, countryRank } = await this.rankings(player.tag);
+    const { startTime, endTime } = Util.getTournamentWindowById(Season.tournamentID);
 
     const [last] = rows.data;
-    const { startTime, endTime } = Util.getTournamentWindowById(Season.tournamentID);
-    const isBugged = player.attackWins === 0 && player.defenseWins === 0;
+    const attackWins = Math.max(last.attacks, player.attackWins);
+    const defenseWins = Math.max(last.defenses, player.defenseWins);
+    const trophies = Math.max(last.trophies, player.trophies);
+    const isBugged = attackWins === 0 && defenseWins === 0;
 
     embed.setThumbnail(player.leagueTier?.iconUrls?.large ?? null);
     embed.addFields({
       name: `**Overview (${moment(startTime).format('D MMM')} - ${moment(endTime).format('D MMM')})**`,
       value: [
-        `- ${Math.max(last.trophies, player.trophies)} trophies gained`,
-        isBugged ? '' : `- ${player.attackWins} attacks won`,
-        isBugged ? '' : `- ${player.defenseWins} defenses won`
+        `- ${trophies} trophies gained`,
+        isBugged ? '' : `- ${attackWins} attacks won`,
+        isBugged ? '' : `- ${defenseWins} defenses won`
       ].join('\n')
     });
 
