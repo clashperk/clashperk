@@ -424,12 +424,20 @@ export default class LegendDaysCommand extends Command {
         query_params: { tag: player.tag, weekId: Season.tournamentID }
       })
       .then((res) =>
-        res.json<{ name: string; tag: string; trophies: number; diff: number; attacks: number; defenses: number; createdAt: string }>()
+        res.json<{
+          name: string;
+          tag: string;
+          trophies: number;
+          leagueId: number;
+          diff: number;
+          attacks: number;
+          defenses: number;
+          createdAt: string;
+        }>()
       );
 
     const leagueId = player.leagueTier?.id ?? UNRANKED_TIER_ID;
-
-    if (!rows.data.length || leagueId === UNRANKED_TIER_ID) return null;
+    if (!rows.data.length || leagueId === UNRANKED_TIER_ID || !player.leagueTier) return null;
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
@@ -439,9 +447,9 @@ export default class LegendDaysCommand extends Command {
     embed.setDescription(
       [`${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}** ${EMOJIS.TROPHY} **${player.trophies}**`].join('\n')
     );
+    embed.setThumbnail(player.leagueTier.iconUrls.small);
 
     const { globalRank, countryRank } = await this.rankings(player.tag);
-    const { startTime, endTime } = Util.getTournamentWindowById(Season.tournamentID);
 
     const [last] = rows.data;
     const attackWins = Math.max(last.attacks, player.attackWins);
@@ -449,15 +457,35 @@ export default class LegendDaysCommand extends Command {
     const trophies = Math.max(last.trophies, player.trophies);
     const isBugged = attackWins === 0 && defenseWins === 0;
 
-    embed.setThumbnail(player.leagueTier?.iconUrls?.large ?? null);
-    embed.addFields({
-      name: `**Overview (${moment(startTime).format('D MMM')} - ${moment(endTime).format('D MMM')})**`,
-      value: [
-        `- ${trophies} trophies gained`,
-        isBugged ? '' : `- ${attackWins} attacks won`,
-        isBugged ? '' : `- ${defenseWins} defenses won`
-      ].join('\n')
-    });
+    const isResetDay = new Date().getDay() === 1 && new Date().getHours() > 5;
+    if (!isResetDay) {
+      const { startTime, endTime } = Util.getTournamentWindow();
+      embed.addFields({
+        name: `Overview (${moment(startTime).format('D MMM')} - ${moment(endTime).format('D MMM')})`,
+        value: [
+          `- ${trophies} trophies gained`,
+          isBugged ? '' : `- ${attackWins} attacks won`,
+          isBugged ? '' : `- ${defenseWins} defenses won`
+        ].join('\n')
+      });
+    }
+
+    const lastTournament = await this.getLastTournament(player.tag);
+    if (lastTournament.result) {
+      embed.addFields({
+        name: `Last Tournament (${moment(lastTournament.startTime).format('D MMM')} - ${moment(lastTournament.endTime).format('D MMM')})`,
+        value: [
+          `- ${trophies} trophies gained`,
+          isBugged ? '' : `- ${attackWins} attacks won`,
+          isBugged ? '' : `- ${defenseWins} defenses won`,
+          leagueId > last.leagueId
+            ? `- Promoted to **${player.leagueTier?.name}**`
+            : leagueId < last.leagueId
+              ? `- Demoted to **${player.leagueTier?.name}**`
+              : ''
+        ].join('\n')
+      });
+    }
 
     embed.addFields([
       {
@@ -483,7 +511,7 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    if (new Date().getDay() === 1 && new Date().getHours() > 5) {
+    if (isResetDay) {
       const { startTime, endTime } = Util.getTournamentWindow();
       embed.addFields([
         {
@@ -501,6 +529,49 @@ export default class LegendDaysCommand extends Command {
     );
 
     return interaction.editReply({ embeds: [embed], components: [row], content: null });
+  }
+
+  private async getLastTournament(playerTag: string) {
+    const lastWeek = moment(Util.getTournamentWindow().startTime).subtract(7, 'days').format('YYYY-MM-DD');
+    const { id, startTime, endTime } = Util.getTournamentWindowById(lastWeek);
+
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT
+            anyLast(name) AS name,
+            tag,
+            sum(diff) AS diff,
+            anyLast(trophies) AS trophies,
+            anyLast(attacks) AS attacks,
+            anyLast(defenses) AS defenses,
+            anyLast(leagueId) AS leagueId,
+            max(createdAt) AS createdAt
+          FROM player_trophy_records
+          WHERE tag = {tag: String} AND weekId = {weekId: String}
+          GROUP BY tag;
+      `,
+        query_params: { tag: playerTag, weekId: id }
+      })
+      .then((res) =>
+        res.json<{
+          name: string;
+          tag: string;
+          trophies: number;
+          leagueId: number;
+          diff: number;
+          attacks: number;
+          defenses: number;
+          createdAt: string;
+        }>()
+      );
+
+    return {
+      result: rows.data.at(0) ?? null,
+      startTime,
+      endTime,
+      id
+    };
   }
 }
 

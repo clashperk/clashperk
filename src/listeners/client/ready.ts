@@ -16,8 +16,6 @@ export default class ReadyListener extends Listener {
       { label: 'READY' }
     );
 
-    this.client.util.setPresence();
-
     const applicationCommands = await this.client.application?.commands.fetch();
     const commands = applicationCommands!
       .filter((command) => command.type === ApplicationCommandType.ChatInput)

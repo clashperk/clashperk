@@ -17,7 +17,6 @@ async function graph(data: {
     tag: string;
   };
 }) {
-  console.log(Util.getSeasons());
   await mongoClient.connect().then(() => console.log('MongoDB Connected!'));
   const db = mongoClient.db('clashperk');
 
