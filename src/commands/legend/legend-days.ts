@@ -18,7 +18,7 @@ import { aggregateLegendAttacks, getLegendAttack, getLegendTimestampAgainstDay }
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
-import { padStart, trimTag } from '../../util/helper.js';
+import { formatLeague, padStart, trimTag } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class LegendDaysCommand extends Command {
@@ -476,13 +476,13 @@ export default class LegendDaysCommand extends Command {
         name: `Last Tournament (${moment(lastTournament.startTime).format('D MMM')} - ${moment(lastTournament.endTime).format('D MMM')})`,
         value: [
           `- ${trophies} trophies gained`,
-          isBugged ? '' : `- ${attackWins} attacks won`,
-          isBugged ? '' : `- ${defenseWins} defenses won`,
-          leagueId > last.leagueId
-            ? `- Promoted to **${player.leagueTier?.name}**`
-            : leagueId < last.leagueId
-              ? `- Demoted to **${player.leagueTier?.name}**`
-              : `- Stayed in **${player.leagueTier?.name}**`
+          isBugged ? '' : `- ${lastTournament.result.attacks} attacks won`,
+          isBugged ? '' : `- ${lastTournament.result.defenses} defenses won`,
+          leagueId > lastTournament.result.leagueId
+            ? `- Promoted to **${formatLeague(player.leagueTier?.name)} (${EMOJIS.UP_KEY} ${leagueId - lastTournament.result.leagueId})**`
+            : leagueId < lastTournament.result.leagueId
+              ? `- Demoted to **${formatLeague(player.leagueTier?.name)} (${EMOJIS.DOWN_KEY} ${lastTournament.result.leagueId - leagueId})**`
+              : `- Stayed in **${formatLeague(player.leagueTier?.name)}**`
         ].join('\n')
       });
     }
@@ -505,7 +505,7 @@ export default class LegendDaysCommand extends Command {
         value: rows.data
           .reverse()
           .map((row) => {
-            return `\` +${padStart(row.diff, 3)} \` ${time(moment(row.createdAt).toDate(), 'R')}`;
+            return `\`${padStart(`+${row.diff}`, 4)} \` ${time(moment(row.createdAt).toDate(), 'R')}`;
           })
           .join('\n')
       }
