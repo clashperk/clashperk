@@ -482,7 +482,7 @@ export default class LegendDaysCommand extends Command {
             ? `- Promoted to **${player.leagueTier?.name}**`
             : leagueId < last.leagueId
               ? `- Demoted to **${player.leagueTier?.name}**`
-              : ''
+              : `- Stayed in **${player.leagueTier?.name}**`
         ].join('\n')
       });
     }
