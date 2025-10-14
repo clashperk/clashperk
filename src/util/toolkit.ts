@@ -287,11 +287,15 @@ export class Season {
   public static get tournamentID() {
     const { startTime, id } = Util.getTournamentWindow();
 
-    const date = new Date();
-    if (date.getDay() === 1 && date.getHours() > 5) {
+    if (this.isTournamentReset) {
       return moment(startTime).subtract(7, 'days').format('YYYY-MM-DD');
     }
 
     return id;
+  }
+
+  public static get isTournamentReset() {
+    const date = new Date();
+    return (date.getDay() === 1 && date.getHours() > 5) || (date.getDay() === 2 && date.getHours() < 5);
   }
 }
