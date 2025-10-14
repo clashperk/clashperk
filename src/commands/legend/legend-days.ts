@@ -466,10 +466,11 @@ export default class LegendDaysCommand extends Command {
 
     embed.addFields([
       {
-        name: '**Logs**',
+        name: logs.length > 10 ? '**Logs (last 10)**' : '**Logs**',
         value: !logs.length
           ? '-'
           : logs
+              .slice(0, 10)
               .reverse()
               .map((row) => {
                 return `\`${padStart(`+${row.diff}`, 4)} \` ${time(moment(row.createdAt).toDate(), 'R')}`;
