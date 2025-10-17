@@ -450,6 +450,9 @@ export const EMOJIS = {
   SCROLL: '📜' as const,
   MAINTENANCE: '🛠️' as const,
   INFO: 'ℹ️' as const,
+  WHITE_CHECK_MARK: '✅',
+  RED_CHECK_MARK: '❌',
+  LINK: '🔗' as const,
   LEGEND_LEAGUE: '<:legend:696301773513818162>',
   WAR: '<:WAR:1131676276994879529>',
 
@@ -479,9 +482,6 @@ export const EMOJIS = {
   OK: '<:GreenTick:824673558663921734>',
   WRONG: '<:RedCross:696314714535231538>',
   EMPTY: '<:EmptyBlock:699639532013748326>',
-
-  WHITE_CHECK_MARK: '✅',
-  RED_CHECK_MARK: '❌',
 
   EQUIPMENT: '<:Equipment:1216044689635934218>',
 

@@ -123,6 +123,7 @@ export const enum Collections {
   PLAYER_SEASONS = 'PlayerSeasons',
   CAPITAL_CONTRIBUTIONS = 'CapitalContributions',
   CAPITAL_RAID_SEASONS = 'CapitalRaidSeasons',
+  LAYOUTS = 'Layouts',
 
   BOT_GROWTH = 'BotGrowth',
   BOT_USAGE = 'BotUsage',
@@ -193,7 +194,8 @@ export const enum Settings {
   DISABLED_PATREON_IDS = 'disabledPatreonIds',
   USE_GROUPED_TODO_LIST = 'useGroupedTodoList',
   TROPHY_ROLES = 'trophyRoles',
-  ALLOW_LAYOUT_VOTING = 'allowLayoutVoting'
+  ALLOW_LAYOUT_VOTING = 'allowLayoutVoting',
+  ALLOW_LAYOUT_TRACKING = 'allowLayoutTracking'
 }
 
 export enum ElasticIndex {

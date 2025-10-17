@@ -62,7 +62,7 @@ export default class LegendDaysCommand extends Command {
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       );
 
-    if (data.trophies <= 4900 && data.leagueTier?.id !== LEGEND_LEAGUE_ID) {
+    if (data.leagueTier?.id !== LEGEND_LEAGUE_ID) {
       if (await this.rankedBattles(interaction, data)) return;
       return interaction.followUp({
         content: `**${data.name} (${data.tag})** is not in the Legend League. \n**Ranked battle logs are coming soon!**`

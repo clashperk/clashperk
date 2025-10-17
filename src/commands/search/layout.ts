@@ -1,4 +1,5 @@
-import { Settings } from '@app/constants';
+import { Collections, Settings } from '@app/constants';
+import { LayoutsEntity } from '@app/entities';
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -14,9 +15,12 @@ import {
   ModalBuilder,
   ModalSubmitInteraction,
   PermissionFlagsBits,
+  TextDisplayBuilder,
   TextInputBuilder,
   TextInputStyle
 } from 'discord.js';
+import pluralize from 'pluralize';
+import { shake } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
@@ -32,23 +36,24 @@ export default class LayoutCommand extends Command {
     });
   }
 
+  public get collection() {
+    return this.client.db.collection<LayoutsEntity>(Collections.LAYOUTS);
+  }
+
   public async pre(interaction: BaseInteraction) {
     this.defer = !interaction.isButton();
   }
 
-  public async exec(
-    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: {
-      screenshot: string;
-      notes?: string;
-      has_description?: boolean;
-      layout_link?: string;
-      army_link?: string;
-      render_army?: boolean;
-      allow_voting?: boolean;
-    }
-  ) {
+  public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: LayoutCommandArgs) {
     args.layout_link &&= args.layout_link.trim();
+
+    if (interaction.isButton() && args.display_link) {
+      return this.displayLink(interaction, args);
+    }
+
+    if (interaction.isButton() && args.display_viewers) {
+      return this.viewDownloader(interaction);
+    }
 
     if (!interaction.isButton()) {
       return this.handleSubmit(interaction, args);
@@ -59,6 +64,9 @@ export default class LayoutCommand extends Command {
     if (!isAdmin) {
       return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'You are not allowed to edit this layout.' });
     }
+
+    const layout = await this.collection.findOne({ messageIds: interaction.message.id, guildId: interaction.guild.id });
+    if (layout) args.downloads = layout.downloader.length;
 
     const modalCustomId = this.client.uuid(interaction.user.id);
     const customIds = {
@@ -73,7 +81,7 @@ export default class LayoutCommand extends Command {
       .setStyle(TextInputStyle.Paragraph)
       .setMaxLength(200)
       .setRequired(true);
-    const link = this.getUrlFromInteractionComponents(interaction);
+    const link = this.getUrlFromInteractionComponents(interaction) || layout?.link;
     if (link) linkInput.setValue(link);
 
     const descriptionInput = new TextInputBuilder()
@@ -113,15 +121,7 @@ export default class LayoutCommand extends Command {
 
   public async handleSubmit(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | ModalSubmitInteraction<'cached'>,
-    args: {
-      screenshot: string;
-      notes?: string;
-      layout_link?: string;
-      army_link?: string;
-      render_army?: boolean;
-      upvote?: number;
-      allow_voting?: boolean;
-    }
+    args: LayoutCommandArgs
   ) {
     if (!args.layout_link || !LAYOUT_REGEX.test(args.layout_link)) {
       return interaction.followUp({ flags: MessageFlags.Ephemeral, content: 'Invalid layout link was provided.' });
@@ -147,20 +147,50 @@ export default class LayoutCommand extends Command {
     const level = levelString.replace('TH', '');
     const buildingLabel = ['HV', 'BB2', 'WB'].includes(layoutType) ? layoutTypes[layoutType] : layoutTypes[`CC:${buildingType}`];
 
-    const row = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Copy Layout').setURL(args.layout_link))
-      .addComponents(
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Primary)
-          .setCustomId(this.createId({ cmd: this.id, defer: false, has_description: !!args.notes }))
-          .setLabel('Edit')
-      );
+    if (typeof args.allow_tracking === 'boolean' && this.client.util.isManager(interaction.member)) {
+      await this.client.settings.set(interaction.guild, Settings.ALLOW_LAYOUT_TRACKING, args.allow_tracking);
+    }
+    const isDownloadEnabled = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_LAYOUT_TRACKING, false);
+
+    const layout = await this.collection.findOne({ guildId: interaction.guild.id, layoutId });
+    const row = this.getComponents({
+      ...args,
+      allow_tracking: isDownloadEnabled,
+      downloads: layout?.downloader?.length || args.downloads || 0
+    });
 
     const msg = await interaction.editReply({
       components: [row],
       content: args.notes || `**${buildingLabel} ${level} Layout**`,
       ...(args.screenshot && { files: [new AttachmentBuilder(args.screenshot)] })
     });
+
+    await this.collection.updateOne(
+      { layoutId, guildId: interaction.guild.id },
+      {
+        $set: shake({
+          label: `${buildingLabel} ${level} Layout`,
+          notes: args.notes || null,
+          link: args.layout_link,
+          imageUrl: args.screenshot,
+          updatedAt: new Date()
+        }),
+        $addToSet: {
+          messageIds: msg.id
+        },
+        $setOnInsert: {
+          userId: interaction.isButton() ? interaction.message.interactionMetadata?.user.id || interaction.user.id : interaction.user.id,
+          downloads: 0,
+          downloader: [],
+          votes: {
+            up: [],
+            down: []
+          },
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
 
     if (typeof args.allow_voting === 'boolean' && this.client.util.isManager(interaction.member)) {
       await this.client.settings.set(interaction.guild, Settings.ALLOW_LAYOUT_VOTING, args.allow_voting);
@@ -176,6 +206,107 @@ export default class LayoutCommand extends Command {
     }
   }
 
+  private async displayLink(interaction: ButtonInteraction<'cached'>, args: LayoutCommandArgs) {
+    const updated = await this.collection.findOneAndUpdate(
+      { messageIds: interaction.message.id, guildId: interaction.guild.id },
+      { $addToSet: { downloader: interaction.user.id } },
+      { returnDocument: 'after' }
+    );
+    if (!updated) return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'Layout data not found.' });
+
+    const customId = this.client.uuid();
+    const modal = new ModalBuilder()
+      .setTitle('Copy Layout')
+      .setCustomId(customId)
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          [
+            updated.notes || `# ${updated.label}`,
+            '\u200b',
+            'Click the link below to copy the layout:',
+            '',
+            `${updated.link}`,
+            '',
+            'Thank you for using ClashPerk! ❤️'
+          ].join('\n')
+        )
+      );
+
+    try {
+      await interaction.showModal(modal);
+
+      const row = this.getComponents({ ...args, allow_tracking: true, downloads: updated?.downloader?.length || 0 });
+      await interaction.editReply({ components: [row] });
+
+      const modalSubmitInteraction = await interaction.awaitModalSubmit({
+        time: 10 * 60 * 1000,
+        filter: (action) => action.customId === customId
+      });
+
+      return await modalSubmitInteraction.deferUpdate();
+    } catch (error) {
+      if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+        throw error;
+      }
+    }
+  }
+
+  private async viewDownloader(interaction: ButtonInteraction<'cached'>) {
+    const layout = await this.collection.findOne({ messageIds: interaction.message.id, guildId: interaction.guild.id });
+    if (!layout) {
+      return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'Layout data not found.' });
+    }
+
+    return interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: `Total Downloads: ${layout.downloader.length}\n\n${layout.downloader
+        .map((id, index) => `${index + 1}. <@${id}>`)
+        .join('\n')}`
+    });
+  }
+
+  private getComponents(args: LayoutCommandArgs) {
+    const row = new ActionRowBuilder<ButtonBuilder>();
+
+    const editButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Primary)
+      .setCustomId(this.createId({ cmd: this.id, defer: false, has_description: !!args.notes }))
+      .setLabel('Edit');
+
+    if (args.allow_tracking) {
+      const viewersButton = new ButtonBuilder()
+        .setStyle(ButtonStyle.Primary)
+        .setCustomId(
+          this.createId({
+            cmd: this.id,
+            defer: false,
+            display_viewers: true
+          })
+        )
+        .setLabel(`${args.downloads || 0} ${pluralize('Download', args.downloads || 0)}`);
+
+      row.addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Secondary)
+          .setLabel('Copy Layout')
+          .setEmoji(EMOJIS.LINK)
+          .setCustomId(
+            this.createId({
+              cmd: this.id,
+              defer: false,
+              display_link: true
+            })
+          )
+      );
+      row.addComponents(editButton, viewersButton);
+    } else {
+      row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Copy Layout').setURL(args.layout_link!));
+      row.addComponents(editButton);
+    }
+
+    return row;
+  }
+
   private getUrlFromInteractionComponents(interaction: ButtonInteraction) {
     const actionRow = interaction.message.components[0];
     if (actionRow.type === ComponentType.ActionRow) {
@@ -185,4 +316,18 @@ export default class LayoutCommand extends Command {
       }
     }
   }
+}
+
+export interface LayoutCommandArgs {
+  screenshot: string;
+  notes?: string;
+  has_description?: boolean;
+  layout_link?: string;
+  army_link?: string;
+  render_army?: boolean;
+  allow_voting?: boolean;
+  allow_tracking?: boolean;
+  display_link?: boolean;
+  downloads?: number;
+  display_viewers?: boolean;
 }

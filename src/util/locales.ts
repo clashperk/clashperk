@@ -1553,6 +1553,9 @@ export const command = {
       },
       allow_voting: {
         description: 'Whether to allow voting on the layout.'
+      },
+      allow_tracking: {
+        description: 'Whether to allow tracking layout copies.'
       }
     }
   },

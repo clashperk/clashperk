@@ -115,7 +115,7 @@ export class RedisService {
     if (softId.length <= 100) return softId;
 
     const customId = `CMD:${nanoid()}`;
-    this.connection.set(customId, JSON.stringify(payload), { EX: 60 * 60 * 24 * 100 });
+    this.connection.set(customId, JSON.stringify(payload), { EX: 60 * 60 * 24 * 100 }); // 100 days
 
     return customId;
   }

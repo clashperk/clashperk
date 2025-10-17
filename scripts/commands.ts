@@ -5068,6 +5068,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
         description: command.layout.options.allow_voting.description,
         description_localizations: translation('command.layout.options.allow_voting.description'),
         type: ApplicationCommandOptionType.Boolean
+      },
+      {
+        name: 'allow_tracking',
+        description: command.layout.options.allow_tracking.description,
+        description_localizations: translation('command.layout.options.allow_tracking.description'),
+        type: ApplicationCommandOptionType.Boolean
       }
     ]
   },
