@@ -892,6 +892,7 @@ export class RosterManager {
         roster.members.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
         break;
       case 'TROPHIES':
+        roster.members.sort((a, b) => b.leagueId - a.leagueId);
         roster.members.sort((a, b) => b.trophies - a.trophies);
         break;
       case 'LEAGUES':

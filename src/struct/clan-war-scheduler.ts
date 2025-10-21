@@ -14,6 +14,7 @@ import {
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { shuffle, unique } from 'radash';
+import type { ExclusionConfig } from '../commands/reminders/reminders-config.js';
 import { ORANGE_NUMBERS } from '../util/emojis.js';
 import { Util } from '../util/toolkit.js';
 import { ReminderDeleteReasons } from './capital-raid-scheduler.js';
@@ -273,6 +274,11 @@ export class ClanWarScheduler {
       )
     ].join('\n');
 
+    const config = this.getExclusionConfig(reminder.guild);
+    if (config.type && config.warsExclusionUserIds?.length) {
+      return [`${text} \n\n-# Ping Exclusion Enabled`, userIds];
+    }
+
     return [text, userIds];
   }
 
@@ -301,6 +307,12 @@ export class ClanWarScheduler {
     }
 
     const text = [`\u200e🔔 **${clanNick} (War ${prefix} ${warTiming})**`, `📨 ${reminder.message}`].join('\n');
+
+    const config = this.getExclusionConfig(reminder.guild);
+    if (config.type && config.warsExclusionUserIds?.length) {
+      return [`${text} \n\n-# Ping Exclusion Enabled`, []];
+    }
+
     return [text, []];
   }
 
@@ -420,14 +432,7 @@ export class ClanWarScheduler {
   ): MessageMentionOptions {
     if (reminder.duration === 0 || reminder.silent) return { parse: ['users', 'roles'] };
 
-    const config = this.client.settings.get<{ type: 'optIn' | 'optOut'; wars: string; warsExclusionUserIds: string[] }>(
-      reminder.guild,
-      Settings.REMINDER_EXCLUSION,
-      {
-        type: 'optIn',
-        warsExclusionUserIds: []
-      }
-    );
+    const config = this.getExclusionConfig(reminder.guild);
 
     const guild = this.client.guilds.cache.get(reminder.guild);
     if (!config.wars || !guild) return { parse: ['users'] };
@@ -437,6 +442,13 @@ export class ClanWarScheduler {
     }
 
     return { parse: [], users: userIds.filter((id) => !config.warsExclusionUserIds.includes(id)) };
+  }
+
+  private getExclusionConfig(guildId: string): ExclusionConfig {
+    return this.client.settings.get<ExclusionConfig>(guildId, Settings.REMINDER_EXCLUSION, {
+      type: 'optIn',
+      warsExclusionUserIds: []
+    });
   }
 
   private async _refresh() {

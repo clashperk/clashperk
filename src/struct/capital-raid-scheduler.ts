@@ -14,6 +14,7 @@ import {
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { unique } from 'radash';
+import type { ExclusionConfig } from '../commands/reminders/reminders-config.js';
 import { Util } from '../util/toolkit.js';
 import { Client } from './client.js';
 
@@ -295,6 +296,11 @@ export class CapitalRaidScheduler {
         .join('\n')
     ].join('\n');
 
+    const config = this.getExclusionConfig(reminder.guild);
+    if (config.type && config.raidsExclusionUserIds?.length) {
+      return [`${text} \n\n-# Ping Exclusion Enabled`, userIds];
+    }
+
     return [text, userIds];
   }
 
@@ -396,14 +402,7 @@ export class CapitalRaidScheduler {
   }
 
   private allowedMentions(reminder: RaidRemindersEntity, userIds: string[]): MessageMentionOptions {
-    const config = this.client.settings.get<{ type: 'optIn' | 'optOut'; raids: string; raidsExclusionUserIds: string[] }>(
-      reminder.guild,
-      Settings.REMINDER_EXCLUSION,
-      {
-        type: 'optIn',
-        raidsExclusionUserIds: []
-      }
-    );
+    const config = this.getExclusionConfig(reminder.guild);
 
     const guild = this.client.guilds.cache.get(reminder.guild);
     if (!config.raids || !guild) return { parse: ['users'] };
@@ -413,6 +412,13 @@ export class CapitalRaidScheduler {
     }
 
     return { parse: [], users: userIds.filter((id) => !config.raidsExclusionUserIds.includes(id)) };
+  }
+
+  private getExclusionConfig(guildId: string): ExclusionConfig {
+    return this.client.settings.get<ExclusionConfig>(guildId, Settings.REMINDER_EXCLUSION, {
+      type: 'optIn',
+      raidsExclusionUserIds: []
+    });
   }
 
   private async _refresh() {

@@ -168,7 +168,7 @@ export default class RemindersConfigCommand extends Command {
   }
 }
 
-interface ExclusionConfig {
+export interface ExclusionConfig {
   type: 'optIn' | 'optOut';
   wars: string;
   games: string;
