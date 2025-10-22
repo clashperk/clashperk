@@ -22,6 +22,7 @@ export const ReminderDeleteReasons = {
   REMINDER_NOT_FOUND: 'reminder_not_found',
   REMINDER_DISABLED: 'reminder_disabled',
   CHANNEL_NOT_FOUND: 'channel_not_found',
+  WAR_ID_UNMATCHED: 'war_id_unmatched',
   TOO_LATE: 'too_late',
   CHANNEL_MISSING_PERMISSIONS: 'channel_missing_permissions',
   REMINDER_SENT_SUCCESSFULLY: 'reminder_sent_successfully',

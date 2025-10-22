@@ -78,6 +78,11 @@ export class ClanWarScheduler {
     this.client.logger.log(`Schedular restored for ${guildId}`, { label: ClanWarScheduler.name });
   }
 
+  private createWarId(data: APIClanWar) {
+    const dateString = moment(data.preparationStartTime).toISOString().slice(0, 16);
+    return `${dateString}-${[data.clan.tag, data.opponent.tag].sort((a, b) => a.localeCompare(b)).join('-')}`;
+  }
+
   public async create(reminder: ClanWarRemindersEntity) {
     for (const tag of reminder.clans) {
       const wars = await this.client.coc.getCurrentWars(tag);
@@ -88,11 +93,10 @@ export class ClanWarScheduler {
 
         const ms = endTime.getTime() - reminder.duration;
         if (Date.now() > new Date(ms).getTime()) continue;
-        const key = `${data.clan.tag}-${reminder._id.toHexString()}-${reminder.duration}`;
 
         await this.schedulers.insertOne({
           _id: new ObjectId(),
-          key,
+          key: this.createWarId(data),
           guild: reminder.guild,
           tag: data.clan.tag,
           name: data.clan.name,
@@ -326,8 +330,9 @@ export class ClanWarScheduler {
       if (!this.client.channels.cache.has(reminder.channel)) return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
 
       const warType = schedule.warTag ? 'cwl' : schedule.isFriendly ? 'friendly' : 'normal';
-      if (reminder.warTypes && !reminder.warTypes.includes(warType))
+      if (reminder.warTypes && !reminder.warTypes.includes(warType)) {
         return await this.delete(schedule, ReminderDeleteReasons.INVALID_WAR_TYPE);
+      }
 
       const { body: data, res } = schedule.warTag
         ? await this.client.coc.getClanWarLeagueRound(schedule.warTag)
@@ -338,10 +343,15 @@ export class ClanWarScheduler {
       if (data.state === 'warEnded' && schedule.duration !== 0) return await this.delete(schedule, ReminderDeleteReasons.WAR_ENDED);
 
       if (this.wasInMaintenance(schedule, data)) {
+        if (schedule.key !== this.createWarId(data)) {
+          return await this.delete(schedule, ReminderDeleteReasons.WAR_ID_UNMATCHED);
+        }
+
         this.client.logger.info(
           `Reminder shifted [${schedule.tag}] ${schedule.timestamp.toISOString()} => ${moment(data.endTime).toDate().toISOString()}`,
           { label: 'REMINDER' }
         );
+
         return await this.schedulers.updateOne(
           { _id: schedule._id },
           { $set: { timestamp: new Date(moment(data.endTime).toDate().getTime() - schedule.duration) } }

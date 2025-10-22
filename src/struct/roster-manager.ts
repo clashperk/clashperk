@@ -995,21 +995,20 @@ export class RosterManager {
       .join(' ')
       .replace(/` `/g, ' ');
 
-    const [description, ...rest] = Util.splitMessage(
-      [
-        heading,
-        ...groups.flatMap(({ categoryLabel, members }) => [
-          `${categoryLabel} - ${members.length}`,
-          ...members.map((member) => {
-            return layouts
-              .map((layout) => (layout.isEmoji ? member[layout.key] : `\`${member[layout.key]}\``))
-              .join(' ')
-              .replace(/` `/g, ' ');
-          })
-        ])
-      ].join('\n'),
-      { maxLength: 4096 }
-    );
+    const rosterContent = [
+      heading,
+      ...groups.flatMap(({ categoryLabel, members }) => [
+        `${categoryLabel} - ${members.length}`,
+        ...members.map((member) => {
+          return layouts
+            .map((layout) => (layout.isEmoji ? member[layout.key] : `\`${member[layout.key]}\``))
+            .join(' ')
+            .replace(/` `/g, ' ');
+        })
+      ])
+    ].join('\n');
+
+    const [description, ...rest] = Util.splitMessage(rosterContent, { maxLength: 4096 });
 
     const total = `Total ${roster.members.length}/${roster.maxMembers || ROSTER_MAX_LIMIT}`;
     const minTownHall = roster.minTownHall ? ` | Min. TH${roster.minTownHall}` : '';
@@ -1021,16 +1020,18 @@ export class RosterManager {
     if (roster.rosterImage) embed.setImage(roster.rosterImage);
 
     const embeds: EmbedBuilder[] = [embed];
-    if (rest.length && roster.members.length <= ROSTER_MAX_LIMIT) {
-      for (const value of Util.splitMessage(rest[0], { maxLength: 1024 })) {
-        embed.addFields({ name: '\u200e', value });
-      }
-    } else {
+    if ((rest.length && roster.members.length >= ROSTER_MAX_LIMIT) || rosterContent.length >= 5800) {
       rest.forEach((value) => {
-        const _embed = new EmbedBuilder(embed.toJSON()).setDescription(value);
-        if (roster.rosterImage) _embed.setImage(roster.rosterImage);
-        embeds.push(_embed);
+        const embedBuilder = new EmbedBuilder(embed.toJSON());
+        embedBuilder.setDescription(value);
+        if (roster.rosterImage) {
+          embedBuilder.setImage(roster.rosterImage);
+        }
+
+        embeds.push(embedBuilder);
       });
+    } else {
+      embed.addFields(...rest.map((value) => ({ name: '\u200e', value })));
     }
 
     if (roster.startTime && roster.startTime > new Date()) {
