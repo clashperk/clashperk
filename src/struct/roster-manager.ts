@@ -1030,8 +1030,10 @@ export class RosterManager {
 
         embeds.push(embedBuilder);
       });
-    } else {
-      embed.addFields(...rest.map((value) => ({ name: '\u200e', value })));
+    } else if (rest.length) {
+      for (const value of Util.splitMessage(rest.join('\n'), { maxLength: 1024 })) {
+        embed.addFields({ name: '\u200e', value });
+      }
     }
 
     if (roster.startTime && roster.startTime > new Date()) {
