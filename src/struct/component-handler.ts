@@ -24,6 +24,7 @@ export default class ComponentHandler {
     const parsed = await this.parseCommandId(interaction.customId);
     if (!parsed) return false;
 
+    if (parsed.cmd === 'layout') parsed.cmd = 'layout-post'
     const command = this.client.commandHandler.getCommand(parsed.cmd);
     if (!command) return false;
 
