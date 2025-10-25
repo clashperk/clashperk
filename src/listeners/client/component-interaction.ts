@@ -1,5 +1,5 @@
 import { Settings } from '@app/constants';
-import { Interaction, MessageComponentInteraction, MessageFlags } from 'discord.js';
+import { Interaction, MessageComponentInteraction, MessageFlags, TextDisplayBuilder } from 'discord.js';
 import { Listener } from '../../lib/handlers.js';
 import ComponentHandler from '../../struct/component-handler.js';
 
@@ -49,6 +49,9 @@ export default class ComponentInteractionListener extends Listener {
     );
 
     const content = this.i18n('common.component.expired', { lng: interaction.locale });
+    if (interaction.message.flags.has(MessageFlags.IsComponentsV2)) {
+      return interaction.update({ components: [new TextDisplayBuilder({ content })] });
+    }
 
     if (isEmpty) {
       return interaction.update({ components: [], content });

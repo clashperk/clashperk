@@ -1540,22 +1540,30 @@ export const command = {
     }
   },
   layout: {
-    description: 'Post a village layout.',
-    options: {
-      screenshot: {
-        description: 'Screenshot of the layout.'
-      },
-      layout_link: {
-        description: 'Shareable link of the layout.'
-      },
-      notes: {
-        description: 'Custom notes of the layout.'
-      },
-      allow_voting: {
-        description: 'Whether to allow voting on the layout.'
-      },
-      allow_tracking: {
-        description: 'Whether to allow tracking layout copies.'
+    description: 'Manage and share village layouts.',
+    post: {
+      description: 'Post your village layout to showcase it to the community.',
+      options: {
+        screenshot: {
+          description: 'Upload a screenshot showing your village layout.'
+        },
+        layout_link: {
+          description: 'Provide a shareable link to your layout.'
+        },
+        notes: {
+          description: 'Add custom notes or details about your layout.'
+        }
+      }
+    },
+    config: {
+      description: 'Adjust settings related to layout posting and interactions.',
+      options: {
+        allow_voting: {
+          description: 'Enable or disable voting on posted layouts.'
+        },
+        allow_tracking: {
+          description: 'Enable or disable tracking of layout copies.'
+        }
       }
     }
   },

@@ -5042,38 +5042,54 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
     dm_permission: false,
     options: [
       {
-        name: 'screenshot',
-        description: command.layout.options.screenshot.description,
-        description_localizations: translation('command.layout.options.screenshot.description'),
-        required: true,
-        type: ApplicationCommandOptionType.Attachment
+        name: 'post',
+        description: command.layout.post.description,
+        description_localizations: translation('command.layout.post.description'),
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'screenshot',
+            description: command.layout.post.options.screenshot.description,
+            description_localizations: translation('command.layout.post.options.screenshot.description'),
+            required: true,
+            type: ApplicationCommandOptionType.Attachment
+          },
+          {
+            name: 'layout_link',
+            description: command.layout.post.options.layout_link.description,
+            description_localizations: translation('command.layout.post.options.layout_link.description'),
+            required: true,
+            max_length: 200,
+            type: ApplicationCommandOptionType.String
+          },
+          {
+            name: 'notes',
+            description: command.layout.post.options.notes.description,
+            description_localizations: translation('command.layout.post.options.notes.description'),
+            max_length: 2000,
+            type: ApplicationCommandOptionType.String
+          }
+        ]
       },
       {
-        name: 'layout_link',
-        description: command.layout.options.layout_link.description,
-        description_localizations: translation('command.layout.options.layout_link.description'),
-        required: true,
-        max_length: 200,
-        type: ApplicationCommandOptionType.String
-      },
-      {
-        name: 'notes',
-        description: command.layout.options.notes.description,
-        description_localizations: translation('command.layout.options.notes.description'),
-        max_length: 2000,
-        type: ApplicationCommandOptionType.String
-      },
-      {
-        name: 'allow_voting',
-        description: command.layout.options.allow_voting.description,
-        description_localizations: translation('command.layout.options.allow_voting.description'),
-        type: ApplicationCommandOptionType.Boolean
-      },
-      {
-        name: 'allow_tracking',
-        description: command.layout.options.allow_tracking.description,
-        description_localizations: translation('command.layout.options.allow_tracking.description'),
-        type: ApplicationCommandOptionType.Boolean
+        name: 'config',
+        description: command.layout.config.description,
+        description_localizations: translation('command.layout.config.description'),
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: 'allow_voting',
+            description: command.layout.config.options.allow_voting.description,
+            description_localizations: translation('command.layout.config.options.allow_voting.description'),
+            type: ApplicationCommandOptionType.Boolean
+          },
+          {
+            name: 'allow_tracking',
+            description: command.layout.config.options.allow_tracking.description,
+            description_localizations: translation('command.layout.config.options.allow_tracking.description'),
+            type: ApplicationCommandOptionType.Boolean
+          }
+        ]
       }
     ]
   },

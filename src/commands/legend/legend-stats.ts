@@ -14,6 +14,7 @@ import {
   time
 } from 'discord.js';
 import moment from 'moment';
+import { api } from '../../api/axios.js';
 import { Command } from '../../lib/handlers.js';
 import { createTrophyThresholdsGraph } from '../../struct/image-helper.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -139,19 +140,7 @@ export default class LegendStatsCommand extends Command {
   }
 
   private async getLegendThreshold(isEod: boolean, ref?: string) {
-    const res = await fetch('https://api.clashperk.com/v1/players/legend-ranking-thresholds', {
-      method: 'GET',
-      headers: {
-        'X-API-KEY': `${process.env.INTERNAL_API_KEY}`
-      }
-    });
-    if (!res.ok) throw new Error(res.statusText);
-
-    const data = (await res.json()) as {
-      live: LegendRankingThresholdsDto;
-      eod: LegendRankingThresholdsDto | null;
-      history: LegendRankingThresholdsDto[];
-    };
+    const { data } = await api.legends.getLegendRankingThresholds();
 
     if (ref && moment(ref).isValid()) {
       const entry = data.history.findIndex((record) => moment(record.timestamp).startOf('day').isSame(moment(ref).startOf('day'), 'day'));

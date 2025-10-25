@@ -29,7 +29,8 @@ const LAYOUT_REGEX = /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?acti
 
 export default class LayoutCommand extends Command {
   public constructor() {
-    super('layout', {
+    super('layout-post', {
+      aliases: ['layout'],
       category: 'search',
       channel: 'guild',
       defer: true
@@ -55,7 +56,10 @@ export default class LayoutCommand extends Command {
       return this.viewDownloader(interaction);
     }
 
-    if (!interaction.isButton()) {
+    const layoutTemplate = this.client.settings.get<string>(interaction.guild, Settings.LAYOUT_TEMPLATE);
+    if (layoutTemplate && !args.notes) args.notes = layoutTemplate;
+
+    if (interaction.isCommand()) {
       return this.handleSubmit(interaction, args);
     }
 
@@ -81,6 +85,7 @@ export default class LayoutCommand extends Command {
       .setStyle(TextInputStyle.Paragraph)
       .setMaxLength(200)
       .setRequired(true);
+
     const link = this.getUrlFromInteractionComponents(interaction) || layout?.link;
     if (link) linkInput.setValue(link);
 
@@ -89,9 +94,16 @@ export default class LayoutCommand extends Command {
       .setLabel('Notes')
       .setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
       .setStyle(TextInputStyle.Paragraph)
-      .setMaxLength(2000)
+      .setMaxLength(1800)
       .setRequired(false);
-    if (interaction.message.content && args.has_description) descriptionInput.setValue(interaction.message.content);
+
+    if (interaction.message.content && args.has_description) {
+      descriptionInput.setValue(interaction.message.content);
+    }
+
+    if (!layout?.notes && layoutTemplate) {
+      descriptionInput.setValue(layoutTemplate);
+    }
 
     modal.addComponents(
       new ActionRowBuilder<TextInputBuilder>().addComponents(linkInput),
@@ -147,15 +159,12 @@ export default class LayoutCommand extends Command {
     const level = levelString.replace('TH', '');
     const buildingLabel = ['HV', 'BB2', 'WB'].includes(layoutType) ? layoutTypes[layoutType] : layoutTypes[`CC:${buildingType}`];
 
-    if (typeof args.allow_tracking === 'boolean' && this.client.util.isManager(interaction.member)) {
-      await this.client.settings.set(interaction.guild, Settings.ALLOW_LAYOUT_TRACKING, args.allow_tracking);
-    }
-    const isDownloadEnabled = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_LAYOUT_TRACKING, false);
+    const allowLayoutTracking = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_LAYOUT_TRACKING, false);
 
     const layout = await this.collection.findOne({ guildId: interaction.guild.id, layoutId });
     const row = this.getComponents({
       ...args,
-      allow_tracking: isDownloadEnabled,
+      allow_layout_tracking: allowLayoutTracking,
       downloads: layout?.downloader?.length || args.downloads || 0
     });
 
@@ -192,9 +201,6 @@ export default class LayoutCommand extends Command {
       { upsert: true }
     );
 
-    if (typeof args.allow_voting === 'boolean' && this.client.util.isManager(interaction.member)) {
-      await this.client.settings.set(interaction.guild, Settings.ALLOW_LAYOUT_VOTING, args.allow_voting);
-    }
     const isVotingEnabled = this.client.settings.get(interaction.guild, Settings.ALLOW_LAYOUT_VOTING, false);
 
     if (interaction.appPermissions.has(PermissionFlagsBits.AddReactions) && isVotingEnabled) {
@@ -235,7 +241,7 @@ export default class LayoutCommand extends Command {
     try {
       await interaction.showModal(modal);
 
-      const row = this.getComponents({ ...args, allow_tracking: true, downloads: updated?.downloader?.length || 0 });
+      const row = this.getComponents({ ...args, allow_layout_tracking: true, downloads: updated?.downloader?.length || 0 });
       await interaction.editReply({ components: [row] });
 
       const modalSubmitInteraction = await interaction.awaitModalSubmit({
@@ -273,7 +279,7 @@ export default class LayoutCommand extends Command {
       .setCustomId(this.createId({ cmd: this.id, defer: false, has_description: !!args.notes }))
       .setLabel('Edit');
 
-    if (args.allow_tracking) {
+    if (args.allow_layout_tracking) {
       const viewersButton = new ButtonBuilder()
         .setStyle(ButtonStyle.Primary)
         .setCustomId(
@@ -323,11 +329,9 @@ export interface LayoutCommandArgs {
   notes?: string;
   has_description?: boolean;
   layout_link?: string;
-  army_link?: string;
-  render_army?: boolean;
-  allow_voting?: boolean;
-  allow_tracking?: boolean;
   display_link?: boolean;
-  downloads?: number;
   display_viewers?: boolean;
+
+  downloads?: number;
+  allow_layout_tracking?: boolean;
 }

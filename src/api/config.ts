@@ -143,51 +143,6 @@ export interface CommandsUsageLogItemsDto {
   items: CommandsUsageLogDto[];
 }
 
-export interface ThresholdsDto {
-  rank: number;
-  minTrophies: number;
-}
-
-export interface LegendRankingThresholdsSnapShotDto {
-  timestamp: string;
-  thresholds: ThresholdsDto[];
-}
-
-export interface LegendRankingThresholdsDto {
-  live: LegendRankingThresholdsSnapShotDto;
-  eod: LegendRankingThresholdsSnapShotDto | null;
-  history: LegendRankingThresholdsSnapShotDto[];
-}
-
-export interface GetLegendAttacksInputDto {
-  /**
-   * @maxItems 100
-   * @minItems 1
-   * @example ["#2PP"]
-   */
-  playerTags: string[];
-}
-
-export interface LegendAttackLogDto {
-  timestamp: number;
-  start: number;
-  end: number;
-  diff: number;
-  type: string;
-}
-
-export interface LegendAttacksDto {
-  tag: string;
-  name: string;
-  seasonId: string;
-  trophies: number;
-  logs: LegendAttackLogDto[];
-}
-
-export interface LegendAttacksItemsDto {
-  items: LegendAttacksDto[];
-}
-
 export interface GlobalClanEntity {
   tag: string;
   name: string;
@@ -255,6 +210,75 @@ export interface AggregateAttackHistoryDto {
   total3Stars: number;
   totalMissed: number;
   totalStars: number;
+}
+
+export interface ThresholdsDto {
+  rank: number;
+  minTrophies: number;
+}
+
+export interface LegendRankingThresholdsSnapShotDto {
+  timestamp: string;
+  thresholds: ThresholdsDto[];
+}
+
+export interface LegendRankingThresholdsDto {
+  live: LegendRankingThresholdsSnapShotDto;
+  eod: LegendRankingThresholdsSnapShotDto | null;
+  history: LegendRankingThresholdsSnapShotDto[];
+}
+
+export interface LeaderboardByTagsInputDto {
+  /**
+   * @maxItems 100
+   * @minItems 0
+   * @example ["#2PP"]
+   */
+  playerTags: string[];
+  /** @example 1 */
+  minRank: number;
+  /** @example 100 */
+  maxRank: number;
+}
+
+export interface LeaderboardByTagsDto {
+  tag: string;
+  name: string;
+  rank: number;
+  trophies: number;
+}
+
+export interface LeaderboardByTagsItemsDto {
+  items: LeaderboardByTagsDto[];
+}
+
+export interface GetLegendAttacksInputDto {
+  /**
+   * @maxItems 100
+   * @minItems 1
+   * @example ["#2PP"]
+   */
+  playerTags: string[];
+}
+
+export interface LegendAttackLogDto {
+  timestamp: number;
+  start: number;
+  end: number;
+  diff: number;
+  type: string;
+}
+
+export interface LegendAttacksDto {
+  tag: string;
+  name: string;
+  seasonId: string;
+  trophies: number;
+  logs: LegendAttackLogDto[];
+}
+
+export interface LegendAttacksItemsDto {
+  items: LegendAttacksDto[];
 }
 
 export interface ClanWarLeagueRound {
@@ -396,16 +420,6 @@ export interface GetCommandsUsageLogsParams {
 
 export type GetCommandsUsageLogsData = CommandsUsageLogItemsDto;
 
-export type GetLegendRankingThresholdsData = LegendRankingThresholdsDto;
-
-export type GetLegendAttacksData = LegendAttacksItemsDto;
-
-export interface GetLegendAttacksByPlayerTagParams {
-  playerTag: string;
-}
-
-export type GetLegendAttacksByPlayerTagData = LegendAttacksDto;
-
 export interface GetClanHistoryParams {
   playerTag: string;
 }
@@ -440,13 +454,27 @@ export interface AddPlayerAccountParams {
 
 export type AddPlayerAccountData = any;
 
+export type GetLegendRankingThresholdsData = LegendRankingThresholdsDto;
+
+export type GetLeaderboardData = LeaderboardByTagsItemsDto;
+
+export type GetLegendAttacksData = LegendAttacksItemsDto;
+
+export interface GetLegendAttacksByPlayerTagParams {
+  playerTag: string;
+}
+
+export type GetLegendAttacksByPlayerTagData = LegendAttacksDto;
+
 export interface GetRosterParams {
   rosterId: string;
 }
 
 export type GetRosterData = any;
 
-export type RunTaskData = any;
+export type BulkAddLegendPlayersData = any;
+
+export type SeedLegendPlayersData = object;
 
 export interface GetUserParams {
   userId: string;
@@ -720,56 +748,6 @@ export namespace Players {
   /**
    * No description
    * @tags Players
-   * @name GetLegendRankingThresholds
-   * @request GET:/players/legend-ranking-thresholds
-   * @secure
-   * @response `200` `GetLegendRankingThresholdsData`
-   */
-  export namespace GetLegendRankingThresholds {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetLegendRankingThresholdsData;
-  }
-
-  /**
-   * No description
-   * @tags Players
-   * @name GetLegendAttacks
-   * @request POST:/players/legend-attacks/query
-   * @secure
-   * @response `200` `GetLegendAttacksData`
-   */
-  export namespace GetLegendAttacks {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = GetLegendAttacksInputDto;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetLegendAttacksData;
-  }
-
-  /**
-   * No description
-   * @tags Players
-   * @name GetLegendAttacksByPlayerTag
-   * @request GET:/players/{playerTag}/legend-attacks
-   * @secure
-   * @response `200` `GetLegendAttacksByPlayerTagData`
-   */
-  export namespace GetLegendAttacksByPlayerTag {
-    export type RequestParams = {
-      playerTag: string;
-    };
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetLegendAttacksByPlayerTagData;
-  }
-
-  /**
-   * No description
-   * @tags Players
    * @name GetClanHistory
    * @request GET:/players/{playerTag}/history
    * @secure
@@ -852,6 +830,70 @@ export namespace Players {
   }
 }
 
+export namespace Legends {
+  /**
+   * No description
+   * @tags Legends
+   * @name GetLegendRankingThresholds
+   * @request GET:/legends/ranking-thresholds
+   * @response `200` `GetLegendRankingThresholdsData`
+   */
+  export namespace GetLegendRankingThresholds {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetLegendRankingThresholdsData;
+  }
+
+  /**
+   * No description
+   * @tags Legends
+   * @name GetLeaderboard
+   * @request POST:/legends/leaderboard/query
+   * @response `201` `GetLeaderboardData`
+   */
+  export namespace GetLeaderboard {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = LeaderboardByTagsInputDto;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetLeaderboardData;
+  }
+
+  /**
+   * No description
+   * @tags Legends
+   * @name GetLegendAttacks
+   * @request POST:/legends/attacks/query
+   * @response `200` `GetLegendAttacksData`
+   */
+  export namespace GetLegendAttacks {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = GetLegendAttacksInputDto;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetLegendAttacksData;
+  }
+
+  /**
+   * No description
+   * @tags Legends
+   * @name GetLegendAttacksByPlayerTag
+   * @request GET:/legends/{playerTag}/attacks
+   * @response `200` `GetLegendAttacksByPlayerTagData`
+   */
+  export namespace GetLegendAttacksByPlayerTag {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetLegendAttacksByPlayerTagData;
+  }
+}
+
 export namespace Rosters {
   /**
    * No description
@@ -875,17 +917,33 @@ export namespace Tasks {
   /**
    * No description
    * @tags Tasks
-   * @name RunTask
-   * @request POST:/tasks
+   * @name BulkAddLegendPlayers
+   * @request POST:/tasks/bulk-add-legend-players
    * @secure
-   * @response `201` `RunTaskData`
+   * @response `201` `BulkAddLegendPlayersData`
    */
-  export namespace RunTask {
+  export namespace BulkAddLegendPlayers {
     export type RequestParams = {};
     export type RequestQuery = {};
     export type RequestBody = never;
     export type RequestHeaders = {};
-    export type ResponseBody = RunTaskData;
+    export type ResponseBody = BulkAddLegendPlayersData;
+  }
+
+  /**
+   * No description
+   * @tags Tasks
+   * @name SeedLegendPlayers
+   * @request POST:/tasks/seed-legend-players
+   * @secure
+   * @response `201` `SeedLegendPlayersData`
+   */
+  export namespace SeedLegendPlayers {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = SeedLegendPlayersData;
   }
 }
 
@@ -1443,68 +1501,6 @@ export class Api<SecurityDataType extends unknown> {
      * No description
      *
      * @tags Players
-     * @name GetLegendRankingThresholds
-     * @request GET:/players/legend-ranking-thresholds
-     * @secure
-     * @response `200` `GetLegendRankingThresholdsData`
-     */
-    getLegendRankingThresholds: (params: RequestParams = {}) =>
-      this.http.request<GetLegendRankingThresholdsData, any>({
-        path: `/players/legend-ranking-thresholds`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Players
-     * @name GetLegendAttacks
-     * @request POST:/players/legend-attacks/query
-     * @secure
-     * @response `200` `GetLegendAttacksData`
-     */
-    getLegendAttacks: (
-      data: GetLegendAttacksInputDto,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetLegendAttacksData, any>({
-        path: `/players/legend-attacks/query`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Players
-     * @name GetLegendAttacksByPlayerTag
-     * @request GET:/players/{playerTag}/legend-attacks
-     * @secure
-     * @response `200` `GetLegendAttacksByPlayerTagData`
-     */
-    getLegendAttacksByPlayerTag: (
-      { playerTag, ...query }: GetLegendAttacksByPlayerTagParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetLegendAttacksByPlayerTagData, any>({
-        path: `/players/${playerTag}/legend-attacks`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Players
      * @name GetClanHistory
      * @request GET:/players/{playerTag}/history
      * @secure
@@ -1586,6 +1582,84 @@ export class Api<SecurityDataType extends unknown> {
         ...params,
       }),
   };
+  legends = {
+    /**
+     * No description
+     *
+     * @tags Legends
+     * @name GetLegendRankingThresholds
+     * @request GET:/legends/ranking-thresholds
+     * @response `200` `GetLegendRankingThresholdsData`
+     */
+    getLegendRankingThresholds: (params: RequestParams = {}) =>
+      this.http.request<GetLegendRankingThresholdsData, any>({
+        path: `/legends/ranking-thresholds`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Legends
+     * @name GetLeaderboard
+     * @request POST:/legends/leaderboard/query
+     * @response `201` `GetLeaderboardData`
+     */
+    getLeaderboard: (
+      data: LeaderboardByTagsInputDto,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetLeaderboardData, any>({
+        path: `/legends/leaderboard/query`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Legends
+     * @name GetLegendAttacks
+     * @request POST:/legends/attacks/query
+     * @response `200` `GetLegendAttacksData`
+     */
+    getLegendAttacks: (
+      data: GetLegendAttacksInputDto,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetLegendAttacksData, any>({
+        path: `/legends/attacks/query`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Legends
+     * @name GetLegendAttacksByPlayerTag
+     * @request GET:/legends/{playerTag}/attacks
+     * @response `200` `GetLegendAttacksByPlayerTagData`
+     */
+    getLegendAttacksByPlayerTag: (
+      { playerTag, ...query }: GetLegendAttacksByPlayerTagParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetLegendAttacksByPlayerTagData, any>({
+        path: `/legends/${playerTag}/attacks`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+  };
   rosters = {
     /**
      * No description
@@ -1610,16 +1684,34 @@ export class Api<SecurityDataType extends unknown> {
      * No description
      *
      * @tags Tasks
-     * @name RunTask
-     * @request POST:/tasks
+     * @name BulkAddLegendPlayers
+     * @request POST:/tasks/bulk-add-legend-players
      * @secure
-     * @response `201` `RunTaskData`
+     * @response `201` `BulkAddLegendPlayersData`
      */
-    runTask: (params: RequestParams = {}) =>
-      this.http.request<RunTaskData, any>({
-        path: `/tasks`,
+    bulkAddLegendPlayers: (params: RequestParams = {}) =>
+      this.http.request<BulkAddLegendPlayersData, any>({
+        path: `/tasks/bulk-add-legend-players`,
         method: "POST",
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Tasks
+     * @name SeedLegendPlayers
+     * @request POST:/tasks/seed-legend-players
+     * @secure
+     * @response `201` `SeedLegendPlayersData`
+     */
+    seedLegendPlayers: (params: RequestParams = {}) =>
+      this.http.request<SeedLegendPlayersData, any>({
+        path: `/tasks/seed-legend-players`,
+        method: "POST",
+        secure: true,
+        format: "json",
         ...params,
       }),
   };

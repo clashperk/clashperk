@@ -195,7 +195,8 @@ export const enum Settings {
   USE_GROUPED_TODO_LIST = 'useGroupedTodoList',
   TROPHY_ROLES = 'trophyRoles',
   ALLOW_LAYOUT_VOTING = 'allowLayoutVoting',
-  ALLOW_LAYOUT_TRACKING = 'allowLayoutTracking'
+  ALLOW_LAYOUT_TRACKING = 'allowLayoutTracking',
+  LAYOUT_TEMPLATE = 'layoutTemplate'
 }
 
 export enum ElasticIndex {
