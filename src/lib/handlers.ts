@@ -158,7 +158,7 @@ export class CommandHandler extends BaseHandler {
   }
 
   public getCommand(commandName: string): Command | null {
-    if (commandName === 'layout') commandName = 'layout-post';
+    if (commandName === 'layout') commandName = 'layout-config';
     const alias = this.aliases.get(commandName);
     if (!alias) return null;
 
