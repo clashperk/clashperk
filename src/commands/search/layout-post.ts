@@ -30,7 +30,6 @@ const LAYOUT_REGEX = /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?acti
 export default class LayoutCommand extends Command {
   public constructor() {
     super('layout-post', {
-      aliases: ['layout'],
       category: 'search',
       channel: 'guild',
       defer: true

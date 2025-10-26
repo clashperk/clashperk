@@ -17,6 +17,10 @@ export interface CustomIdProps {
 
 const deferredDisallowed = ['link-add'];
 
+const deletedCommands: Record<string, string> = {
+  layout: 'layout-post'
+};
+
 export default class ComponentHandler {
   public constructor(private readonly client: Client) {}
 
@@ -24,7 +28,7 @@ export default class ComponentHandler {
     const parsed = await this.parseCommandId(interaction.customId);
     if (!parsed) return false;
 
-    const command = this.client.commandHandler.getCommand(parsed.cmd);
+    const command = this.client.commandHandler.getCommand(deletedCommands[parsed.cmd] || parsed.cmd);
     if (!command) return false;
 
     if (!interaction.inCachedGuild() && command.channel !== 'dm') return true;
