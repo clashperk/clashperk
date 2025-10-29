@@ -15,6 +15,7 @@
     "dev": "node -r dotenv/config dist/src/index.js",
     "release": "./scripts/release.sh",
     "prebuild": "rimraf dist",
+    "release:abort": "./scripts/abort_release.sh",
     "build": "tsc && tsc-alias",
     "postbuild": "node -r dotenv/config dist/scripts/export_locale_script.js",
     "test": "eslint .",
