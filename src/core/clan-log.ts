@@ -1,7 +1,17 @@
 import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings, UNRANKED_TIER_ID } from '@app/constants';
 import { ClanLogType, ClanLogsEntity, FlagsEntity, LogAction, LogActions } from '@app/entities';
 import { APIPlayer, APIPlayerItem } from 'clashofclans.js';
-import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions, parseEmoji } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  Collection,
+  EmbedBuilder,
+  PermissionsString,
+  WebhookClient,
+  WebhookMessageCreateOptions,
+  parseEmoji
+} from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALLS } from '../util/emojis.js';
@@ -79,10 +89,18 @@ export class ClanLog extends RootLog {
       const result = await this.getPlayerLogEmbed(cache, member, data);
       if (!result) continue;
 
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setLabel('View Profile')
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(this.client.redis.createCustomId({ cmd: 'player', tag: member.tag, ephemeral: true }))
+      );
+
       await this.send(cache, webhook, {
         content: result.content,
         embeds: [result.embed],
-        threadId: cache.threadId
+        threadId: cache.threadId,
+        components: [row]
       });
 
       await Util.delay(delay);

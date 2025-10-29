@@ -6,6 +6,8 @@ import {
   ButtonStyle,
   CommandInteraction,
   ContainerBuilder,
+  DiscordjsError,
+  DiscordjsErrorCodes,
   MessageFlags,
   ModalBuilder,
   SectionBuilder,
@@ -112,17 +114,23 @@ export default class LayoutConfigCommand extends Command {
 
         await action.showModal(modal);
 
-        const modalSubmitInteraction = await action.awaitModalSubmit({
-          time: 10 * 60 * 1000,
-          filter: (subAction) => subAction.customId === modalCustomId
-        });
+        try {
+          const modalSubmitInteraction = await action.awaitModalSubmit({
+            time: 10 * 60 * 1000,
+            filter: (subAction) => subAction.customId === modalCustomId
+          });
 
-        const newTemplate = modalSubmitInteraction.fields.getTextInputValue(modalCustomId);
-        await this.client.settings.set(interaction.guild, Settings.LAYOUT_TEMPLATE, newTemplate?.trim() || null);
-        await modalSubmitInteraction.deferUpdate();
+          const newTemplate = modalSubmitInteraction.fields.getTextInputValue(modalCustomId);
+          await this.client.settings.set(interaction.guild, Settings.LAYOUT_TEMPLATE, newTemplate?.trim() || null);
+          await modalSubmitInteraction.deferUpdate();
 
-        const container = getEmbed();
-        return interaction.editReply({ components: [container], withComponents: true });
+          const container = getEmbed();
+          return interaction.editReply({ components: [container], withComponents: true });
+        } catch (error) {
+          if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+            throw error;
+          }
+        }
       }
     });
   }

@@ -55,7 +55,10 @@ export class Enqueuer {
       const data = JSON.parse(message);
 
       if (this.paused) return;
-      if (this.queue.remaining >= 2000) return;
+      if (this.queue.remaining >= 2000) {
+        this.client.logger.warn(`Queue is full (${this.queue.remaining}), skipping log processing...`, { label: 'Enqueuer' });
+        return;
+      }
 
       await this.queue.wait();
       try {
