@@ -357,7 +357,7 @@ export default class LegendDaysCommand extends Command {
 
     const embed = new EmbedBuilder();
     embed.setTitle(`${escapeMarkdown(data.name)} (${data.tag})`);
-    embed.setURL(`http://cprk.us/c/${trimTag(data.tag)}`);
+    embed.setURL(`http://cprk.us/p/${trimTag(data.tag)}`);
     embed.setDescription(description);
 
     const season = Season.getSeason();
@@ -394,14 +394,6 @@ export default class LegendDaysCommand extends Command {
       globalRank: ranks.find(({ countryCode }) => countryCode === 'global')?.players.rank ?? null,
       countryRank: ranks.find(({ countryCode }) => countryCode !== 'global') ?? null
     };
-  }
-
-  private calc(clanRank: number) {
-    if (clanRank >= 41) return 3;
-    else if (clanRank >= 31) return 10;
-    else if (clanRank >= 21) return 12;
-    else if (clanRank >= 11) return 25;
-    return 50;
   }
 
   private async rankedBattles(interaction: CommandInteraction<'cached'>, player: APIPlayer) {
