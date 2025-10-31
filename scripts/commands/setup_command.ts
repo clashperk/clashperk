@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { ChannelTypes, translation } from './@helper.js';
+import { channelTypes, translation } from './@helper.js';
 
 export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'setup',
@@ -60,7 +60,7 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.setup.enable.options.channel.description,
           description_localizations: translation('command.setup.enable.options.channel.description'),
           type: ApplicationCommandOptionType.Channel,
-          channel_types: ChannelTypes
+          channel_types: channelTypes
         },
         {
           name: 'color',
@@ -250,7 +250,7 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.setup.enable.options.channel.description,
           description_localizations: translation('command.setup.enable.options.channel.description'),
           type: ApplicationCommandOptionType.Channel,
-          channel_types: ChannelTypes
+          channel_types: channelTypes
         },
         {
           name: 'color',
@@ -310,9 +310,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'channel',
           description: command.setup.disable.options.channel.description,
-          channel_types: ChannelTypes,
           description_localizations: translation('command.setup.disable.options.channel.description'),
-          type: ApplicationCommandOptionType.Channel
+          type: ApplicationCommandOptionType.Channel,
+          channel_types: channelTypes
         }
       ]
     }

@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { ChannelTypes, translation } from './@helper.js';
+import { channelTypes, translation } from './@helper.js';
 
 export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'reminders',
@@ -74,7 +74,7 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.reminders.create.options.channel.description,
           description_localizations: translation('command.reminders.create.options.channel.description'),
           type: ApplicationCommandOptionType.Channel,
-          channel_types: ChannelTypes
+          channel_types: channelTypes
         }
       ]
     },
@@ -171,7 +171,7 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.reminders.create.options.channel.description,
           description_localizations: translation('command.reminders.create.options.channel.description'),
           type: ApplicationCommandOptionType.Channel,
-          channel_types: ChannelTypes
+          channel_types: channelTypes
         },
         {
           name: 'reminder_id',

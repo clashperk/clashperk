@@ -13,7 +13,6 @@ export const TIMEZONE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description: command.timezone.options.location.description,
       description_localizations: translation('command.timezone.options.location.description'),
       type: ApplicationCommandOptionType.String,
-      // autocomplete: true,
       required: true
     }
   ]

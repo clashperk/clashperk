@@ -1,4 +1,4 @@
-import { ChannelType } from 'discord.js';
+import { ApplicationIntegrationType, ChannelType, InteractionContextType } from 'discord.js';
 import i18next from 'i18next';
 import moment from 'moment';
 import { fileURLToPath } from 'url';
@@ -35,7 +35,7 @@ export function getRaidWeekIds() {
   return weekIds;
 }
 
-export const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GuildDirectory | ChannelType.GroupDM>[] = [
+export const channelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GuildDirectory | ChannelType.GroupDM>[] = [
   ChannelType.GuildText,
   ChannelType.GuildAnnouncement,
   ChannelType.AnnouncementThread,
@@ -44,20 +44,9 @@ export const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.Gui
   ChannelType.GuildMedia
 ];
 
-const IntegrationTypes = {
-  GUILD_INSTALL: 0,
-  USER_INSTALL: 1
-} as const;
-
-const ContextTypes = {
-  GUILD: 0,
-  BOT_DM: 1,
-  PRIVATE_CHANNEL: 2
-} as const;
-
 export const userInstallable = {
-  integration_types: [IntegrationTypes.GUILD_INSTALL, IntegrationTypes.USER_INSTALL],
-  contexts: [ContextTypes.GUILD, ContextTypes.BOT_DM, ContextTypes.PRIVATE_CHANNEL]
+  integration_types: [ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall],
+  contexts: [InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel]
 };
 
 export const translation = (text: TranslationKey): Record<string, string> => {

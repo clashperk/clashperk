@@ -2,7 +2,7 @@ import { MAX_TOWN_HALL_LEVEL } from '@app/constants';
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { RosterCommandSortOptions, RosterManageActions } from '../../src/util/command.options.js';
 import { command, common } from '../../src/util/locales.js';
-import { ChannelTypes, translation } from './@helper.js';
+import { channelTypes, translation } from './@helper.js';
 
 export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'roster',
@@ -428,7 +428,7 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.roster.edit.options.log_channel.description,
           description_localizations: translation('command.roster.edit.options.log_channel.description'),
           type: ApplicationCommandOptionType.Channel,
-          channel_types: ChannelTypes
+          channel_types: channelTypes
         },
         {
           name: 'delete_log_channel',
