@@ -113,13 +113,14 @@ export class ClientUtil {
     return channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks', 'ViewChannel']);
   }
 
-  public async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-    const isTrustedFlag = this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
+  public async isTrustedGuild(interaction: CommandInteraction) {
+    if (!interaction.inCachedGuild()) return false;
 
+    const isTrustedFlag = this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
     if (!isManager) return false;
 
-    return isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+    return isTrustedFlag || this.client.settings.get(interaction.guildId, Settings.IS_TRUSTED_GUILD, false);
   }
 
   public async createOrUpdateSheet({ sheets, guild, clans, label, sheetType }: CreateSheetProps) {
