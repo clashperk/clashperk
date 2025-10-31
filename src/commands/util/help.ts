@@ -2,6 +2,7 @@ import { CommandCategories } from '@app/constants';
 import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
+  ApplicationCommandSubCommand,
   ApplicationCommandType,
   ButtonBuilder,
   ButtonStyle,
@@ -63,15 +64,17 @@ export default class HelpCommand extends Command {
     const command = commands.find((command) => command.rootName === args.command || command.name === args.command);
     if (!command) return this.commandMenu(interaction, commands, args);
 
-    const embed = new EmbedBuilder()
-      .setColor(this.client.embed(interaction))
-      .setDescription(
-        [
-          `## </${command.name}:${command.id}> ${command.isRestricted ? EMOJIS.OWNER : ''}`,
-          '\u200b',
-          `${this.translate(command.translationKey, interaction.locale) || command.description}`
-        ].join('\n')
-      );
+    const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+    embed.setDescription(
+      [
+        `## </${command.name}:${command.id}> ${command.isRestricted ? EMOJIS.OWNER : ''}`,
+        '\u200b',
+        `${this.translate(command.translationKey, interaction.locale) || command.description}`,
+        //
+        command.options.length ? '### Options' : '',
+        ...command.options.map((option) => `\`${option.name}\` -- ${option.description}\n`)
+      ].join('\n')
+    );
 
     return interaction.editReply({ embeds: [embed] });
   }
@@ -102,13 +105,6 @@ export default class HelpCommand extends Command {
 
     const fields = Object.values(categoryMap);
     commandCategories.sort((a, b) => fields.indexOf(a.category) - fields.indexOf(b.category));
-
-    // const _a = commands.map((cmd) => cmd.name);
-    // const _b = commandCategories
-    // 	.map((cmd) => cmd.commandGroups)
-    // 	.flat(5)
-    // 	.map((cmd) => cmd.name);
-    // console.log(diff(_a, _b));
 
     if (!args.category || (args.category && !fields.includes(args.category))) args.category = categoryMap.search;
 
@@ -186,8 +182,8 @@ export default class HelpCommand extends Command {
               return option.options.map((subOption) => {
                 const _name = `${command.name} ${option.name} ${subOption.name}`;
                 const _translationKey = this.formatKey(_name);
-                const _root = this.client.commandHandler.getCommand(command.name);
-                const _cmd = this.client.commandHandler.getCommand(`${command.name}-${option.name}-${subOption.name}`);
+                const _root = this.handler.getCommand(command.name);
+                const _cmd = this.handler.getCommand(`${command.name}-${option.name}-${subOption.name}`);
 
                 return {
                   id: command.id,
@@ -196,7 +192,8 @@ export default class HelpCommand extends Command {
                   description: subOption.description,
                   category: _root?.category ?? _cmd?.category ?? CommandCategories.SEARCH,
                   isRestricted: _cmd?.userPermissions?.length,
-                  translationKey: _translationKey
+                  translationKey: _translationKey,
+                  options: subOption.options?.map((option) => ({ name: option.name, description: option.description })) ?? []
                 };
               });
             }
@@ -212,13 +209,18 @@ export default class HelpCommand extends Command {
               description: option.description,
               category: _root?.category ?? _cmd?.category ?? CommandCategories.SEARCH,
               isRestricted: _cmd?.userPermissions?.length,
-              translationKey: _translationKey
+              translationKey: _translationKey,
+              options:
+                (option as ApplicationCommandSubCommand).options?.map((option) => ({
+                  name: option.name,
+                  description: option.description
+                })) ?? []
             };
           });
         if (subCommandGroups.length) return [...subCommandGroups];
 
         const _translationKey = this.formatKey(command.name);
-        const _root = this.client.commandHandler.getCommand(command.name);
+        const _root = this.handler.getCommand(command.name);
 
         return [
           {
@@ -228,7 +230,8 @@ export default class HelpCommand extends Command {
             category: _root?.category ?? CommandCategories.SEARCH,
             isRestricted: _root?.userPermissions?.length,
             description: command.description,
-            translationKey: _translationKey
+            translationKey: _translationKey,
+            options: command.options.map((option) => ({ name: option.name, description: option.description }))
           }
         ];
       });
@@ -251,6 +254,6 @@ export default class HelpCommand extends Command {
   }
 
   private formatKey(str: string) {
-    return str.replace(/ /g, '.').replace(/-/g, '_');
+    return str.replace(/\s+/g, '.').replace(/-/g, '_');
   }
 }
