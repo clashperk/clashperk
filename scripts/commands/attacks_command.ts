@@ -1,0 +1,35 @@
+import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
+import { command, common } from '../../src/util/locales.js';
+import { getSeasonIds, translation } from './@helper.js';
+
+export const ATTACKS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
+  name: 'attacks',
+  description: command.attacks.description,
+  dm_permission: false,
+  description_localizations: translation('command.attacks.description'),
+  options: [
+    {
+      name: 'clan',
+      description: common.options.clan.tag.description,
+      description_localizations: translation('common.options.clan.tag.description'),
+      type: ApplicationCommandOptionType.String,
+      autocomplete: true,
+      required: false
+    },
+    {
+      name: 'user',
+      description: common.options.clan.user.description,
+      description_localizations: translation('common.options.clan.user.description'),
+      type: ApplicationCommandOptionType.User,
+      required: false
+    },
+    {
+      name: 'season',
+      description: command.attacks.options.season.description,
+      description_localizations: translation('command.attacks.options.season.description'),
+      type: ApplicationCommandOptionType.String,
+      required: false,
+      choices: getSeasonIds()
+    }
+  ]
+};

@@ -40,13 +40,13 @@ export default class ProfileCommand extends Command {
     super('profile', {
       aliases: ['whois'],
       category: 'profile',
-      channel: 'guild',
+      channel: 'dm',
       clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
       defer: true
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { user?: User; player?: string }) {
+  public async exec(interaction: CommandInteraction, args: { user?: User; player?: string }) {
     if (this.client.inMaintenance) {
       return interaction.editReply({ content: getHttpStatusText(503, interaction.locale) });
     }
@@ -209,6 +209,13 @@ export default class ProfileCommand extends Command {
       }
     });
 
+    if (!interaction.inCachedGuild()) {
+      for (const embed of embeds) {
+        await interaction.followUp({ embeds: [embed] });
+      }
+      return;
+    }
+
     if (embeds.length > 1) {
       return handlePagination(interaction, embeds, (action) => this.export(action, links, user));
     }
@@ -244,7 +251,7 @@ export default class ProfileCommand extends Command {
       row.addComponents(new ButtonBuilder().setCustomId(customIds.change).setLabel('Set Default Account').setStyle(ButtonStyle.Success));
     }
 
-    const changeDefaultAccount = async (action: StringSelectMenuInteraction<'cached'>) => {
+    const changeDefaultAccount = async (action: StringSelectMenuInteraction) => {
       await action.deferUpdate();
 
       const firstAccount = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ userId: user.id }, { sort: { order: 1 } });
@@ -324,7 +331,7 @@ export default class ProfileCommand extends Command {
     return this.client.users.fetch(userId);
   }
 
-  private async export(interaction: ButtonInteraction<'cached'>, players: LinkData[], user: User) {
+  private async export(interaction: ButtonInteraction, players: LinkData[], user: User) {
     const sheets: CreateGoogleSheet[] = [
       {
         columns: [
@@ -353,7 +360,7 @@ export default class ProfileCommand extends Command {
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Linked Accounts]`, sheets);
+    const spreadsheet = await createGoogleSheet('Linked Accounts', sheets);
     return interaction.editReply({
       content: `**Linked Accounts [${user.displayName} (${user.id})]**`,
       components: getExportComponents(spreadsheet)
