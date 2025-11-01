@@ -662,7 +662,7 @@ export const command = {
         }
       }
     },
-    user: {
+    users: {
       description: 'Export Discord members',
       options: {
         role: {

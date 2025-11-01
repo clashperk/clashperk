@@ -1,6 +1,8 @@
 import { createDecipheriv } from 'crypto';
-import { RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'discord.js';
+import { ApplicationCommand, RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'discord.js';
+import { writeFileSync } from 'fs';
 import { inspect } from 'util';
+import { flattenApplicationCommands } from '../src/helper/commands.helper.js';
 import { COMMANDS, HIDDEN_COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
@@ -37,6 +39,11 @@ function commandStructureValidationCheck(obj: Record<string, any>) {
   }
 }
 
+async function exportCommands(commands: ApplicationCommand[]) {
+  const raw = await flattenApplicationCommands(commands);
+  writeFileSync('./scripts/commands_export.json', JSON.stringify(raw, null, 2));
+}
+
 const applicationGuildCommands = async (token: string, guildId: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
   console.log(`Building guild application commands for ${guildId}`);
   const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
@@ -65,6 +72,7 @@ const applicationCommands = async (token: string, commands: RESTPostAPIApplicati
 
   if (res.ok) {
     console.log(JSON.stringify(data));
+    exportCommands(data as ApplicationCommand[]);
   } else {
     console.log(inspect(data, { depth: Infinity }));
     commands.map(commandStructureValidationCheck);
@@ -116,7 +124,8 @@ const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJ
 (async () => {
   const token = process.env.DISCORD_TOKEN!;
   if (process.argv.includes('--gh-action')) {
-    return applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS]);
+    await applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS]);
+    return;
   }
 
   if (process.argv.includes('--custom-bot')) {
@@ -129,5 +138,5 @@ const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJ
     return;
   }
 
-  return applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS, ...HIDDEN_COMMANDS]);
+  await applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS, ...HIDDEN_COMMANDS]);
 })();

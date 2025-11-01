@@ -1,0 +1,3833 @@
+[
+  {
+    "id": "1118793553980686406",
+    "name": "/player",
+    "rootName": "player",
+    "mappedId": "player",
+    "translationKey": "player",
+    "description_long": "Shows comprehensive overview of a player (including war attack history)",
+    "formatted": "</player:1118793553980686406>",
+    "description": "Player summary and overview.",
+    "options": [
+      {
+        "name": "tag",
+        "description": "Player tag or name.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Player by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686407",
+    "name": "/units",
+    "rootName": "units",
+    "mappedId": "units",
+    "translationKey": "units",
+    "description_long": null,
+    "formatted": "</units:1118793553980686407>",
+    "description": "Shows home village and builder base units of a player (with max/min levels)",
+    "options": [
+      {
+        "name": "player",
+        "description": "Player tag or name.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Player by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686408",
+    "name": "/upgrades",
+    "rootName": "upgrades",
+    "mappedId": "upgrades",
+    "translationKey": "upgrades",
+    "description_long": null,
+    "formatted": "</upgrades:1118793553980686408>",
+    "description": "Remaining upgrades of a player with upgrading cost.",
+    "options": [
+      {
+        "name": "player",
+        "description": "Player tag or name.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Player by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686409",
+    "name": "/rushed",
+    "rootName": "rushed",
+    "mappedId": "rushed",
+    "translationKey": "rushed",
+    "description_long": null,
+    "formatted": "</rushed:1118793553980686409>",
+    "description": "Rushed units and rushed % of a player or clan members.",
+    "options": [
+      {
+        "name": "player",
+        "description": "Player tag or name.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Player by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "clan",
+        "description": "Displays rushed units of a clan.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686410",
+    "name": "/profile",
+    "rootName": "profile",
+    "mappedId": "profile",
+    "translationKey": "profile",
+    "description_long": null,
+    "formatted": "</profile:1118793553980686410>",
+    "description": "Shows linked accounts and clan of a user.",
+    "options": [
+      {
+        "name": "user",
+        "description": "User ID or @user mention.",
+        "type": "User"
+      },
+      {
+        "name": "player",
+        "description": "Player tag or name.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686411",
+    "name": "/verify",
+    "rootName": "verify",
+    "mappedId": "verify",
+    "translationKey": "verify",
+    "description_long": null,
+    "formatted": "</verify:1118793553980686411>",
+    "description": "Verify and link a player account using an API token.",
+    "options": [
+      {
+        "name": "player",
+        "description": "Tag of the player to verify.",
+        "type": "String"
+      },
+      {
+        "name": "token",
+        "description": "API token that can be found in the game settings.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686412",
+    "name": "/clan",
+    "rootName": "clan",
+    "mappedId": "clan",
+    "translationKey": "clan",
+    "description_long": null,
+    "formatted": "</clan:1118793553980686412>",
+    "description": "Shows comprehensive overview of a clan.",
+    "options": [
+      {
+        "name": "tag",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "by_player_tag",
+        "description": "Get clan by a player tag.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686413",
+    "name": "/compo",
+    "rootName": "compo",
+    "mappedId": "compo",
+    "translationKey": "compo",
+    "description_long": null,
+    "formatted": "</compo:1118793553980686413>",
+    "description": "Shows Town Hall composition of a clan.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686414",
+    "name": "/boosts",
+    "rootName": "boosts",
+    "mappedId": "boosts",
+    "translationKey": "boosts",
+    "description_long": null,
+    "formatted": "</boosts:1118793553980686414>",
+    "description": "Displays active super troops of clan members.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793553980686415",
+    "name": "/lastseen",
+    "rootName": "lastseen",
+    "mappedId": "lastseen",
+    "translationKey": "lastseen",
+    "description_long": null,
+    "formatted": "</lastseen:1118793553980686415>",
+    "description": "The last seen time and activities of clan members.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118940",
+    "name": "/activity",
+    "rootName": "activity",
+    "mappedId": "activity",
+    "translationKey": "activity",
+    "description_long": null,
+    "formatted": "</activity:1118793554119118940>",
+    "description": "Shows a graph of hourly-active clan members.",
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases (Maximum 3)",
+        "type": "String"
+      },
+      {
+        "name": "days",
+        "description": "The number of days is displayed in the graph.",
+        "type": "Integer"
+      },
+      {
+        "name": "limit",
+        "description": "Number of clans to show in the graph.",
+        "type": "Integer"
+      },
+      {
+        "name": "timezone",
+        "description": "Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118941",
+    "name": "/clan-games",
+    "rootName": "clan-games",
+    "mappedId": "clan-games",
+    "translationKey": "clan_games",
+    "description_long": null,
+    "formatted": "</clan-games:1118793554119118941>",
+    "description": "Clan games scoreboard of clan members.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "season",
+        "description": "The season to show the scoreboard for.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118942",
+    "name": "/capital raids",
+    "rootName": "capital",
+    "mappedId": "capital-raids",
+    "translationKey": "capital.raids",
+    "formatted": "</capital raids:1118793554119118942>",
+    "description": "Shows raid weekend scores of clan members.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "week",
+        "description": "Retrieve data for the specified raid weekend.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118942",
+    "name": "/capital contribution",
+    "rootName": "capital",
+    "mappedId": "capital-contribution",
+    "translationKey": "capital.contribution",
+    "formatted": "</capital contribution:1118793554119118942>",
+    "description": "Shows clan capital contribution of clan members.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "week",
+        "description": "The week to show contributions for.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118943",
+    "name": "/attacks",
+    "rootName": "attacks",
+    "mappedId": "attacks",
+    "translationKey": "attacks",
+    "description_long": null,
+    "formatted": "</attacks:1118793554119118943>",
+    "description": "Displays attack and defense info of clan members.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "season",
+        "description": "The season to show attacks for.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118944",
+    "name": "/members",
+    "rootName": "members",
+    "mappedId": "members",
+    "translationKey": "members",
+    "description_long": "List clan members sorted by heroes, trophies, war preferences, discord links, clan roles, player tags, attacks, etc.",
+    "formatted": "</members:1118793554119118944>",
+    "description": "Get a clan member list with heroes, trophies, war preferences and much more.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "option",
+        "description": "Select an option",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118945",
+    "name": "/stats attacks",
+    "rootName": "stats",
+    "mappedId": "stats-attacks",
+    "translationKey": "stats.attacks",
+    "formatted": "</stats attacks:1118793554119118945>",
+    "description": "Shows attack success rates of clan members.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "roster",
+        "description": "Stats of a roster.",
+        "type": "String"
+      },
+      {
+        "name": "compare",
+        "description": "Compare Town Halls (e.g. 14vs13, *vs15, all, equal)",
+        "type": "String"
+      },
+      {
+        "name": "stars",
+        "description": "War stars earned. (Default: 3)",
+        "type": "String"
+      },
+      {
+        "name": "type",
+        "description": "War Type [e.g. Regular, CWL, Friendly] (Default: Regular and CWL)",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data since the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "days",
+        "description": "Number of days to include (last x days of wars)",
+        "type": "Integer"
+      },
+      {
+        "name": "wars",
+        "description": "Number of last wars to include.",
+        "type": "Integer"
+      },
+      {
+        "name": "attempt",
+        "description": "Fresh attacks or clean-up attacks. (Default: Both)",
+        "type": "String"
+      },
+      {
+        "name": "filter_farm_hits",
+        "description": "Filter out farm hits (1 star and < 50% destruction)",
+        "type": "Boolean"
+      },
+      {
+        "name": "clan_only",
+        "description": "Only include the specified clan's war attacks.",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118945",
+    "name": "/stats defense",
+    "rootName": "stats",
+    "mappedId": "stats-defense",
+    "translationKey": "stats.defense",
+    "formatted": "</stats defense:1118793554119118945>",
+    "description": "Shows defense failure rates of clan members.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "roster",
+        "description": "Stats of a roster.",
+        "type": "String"
+      },
+      {
+        "name": "compare",
+        "description": "Compare Town Halls (e.g. 14vs13, *vs15, all, equal)",
+        "type": "String"
+      },
+      {
+        "name": "stars",
+        "description": "War stars earned. (Default: 3)",
+        "type": "String"
+      },
+      {
+        "name": "type",
+        "description": "War Type [e.g. Regular, CWL, Friendly] (Default: Regular and CWL)",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data since the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "attempt",
+        "description": "Fresh attacks or clean-up attacks. (Default: Both)",
+        "type": "String"
+      },
+      {
+        "name": "clan_only",
+        "description": "Only show defense stats for the clan.",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118946",
+    "name": "/donations",
+    "rootName": "donations",
+    "mappedId": "donations",
+    "translationKey": "donations",
+    "description_long": null,
+    "formatted": "</donations:1118793554119118946>",
+    "description": "Shows donations and donations received of clan members.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Donation history of a linked user.",
+        "type": "User"
+      },
+      {
+        "name": "season",
+        "description": "The season to show donations for.",
+        "type": "String"
+      },
+      {
+        "name": "start_date",
+        "description": "Starting date (YYYY-MM-DD)",
+        "type": "String"
+      },
+      {
+        "name": "end_date",
+        "description": "Ending date (YYYY-MM-DD)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118947",
+    "name": "/war",
+    "rootName": "war",
+    "mappedId": "war",
+    "translationKey": "war",
+    "description_long": null,
+    "formatted": "</war:1118793554119118947>",
+    "description": "Shows war summary and overview of a clan.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "war_id",
+        "description": "Search by war ID.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118948",
+    "name": "/caller assign",
+    "rootName": "caller",
+    "mappedId": "caller-assign",
+    "translationKey": "caller.assign",
+    "formatted": "</caller assign:1118793554119118948>",
+    "description": "Set a target for a player in the current war.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "defense_target",
+        "description": "The base target # of your opponent.",
+        "type": "Integer"
+      },
+      {
+        "name": "offense_target",
+        "description": "The base target # of your clan.",
+        "type": "Integer"
+      },
+      {
+        "name": "notes",
+        "description": "Notes to add to the target.",
+        "type": "String"
+      },
+      {
+        "name": "hours",
+        "description": "The number of hours to set the target for.",
+        "type": "Number"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118948",
+    "name": "/caller clear",
+    "rootName": "caller",
+    "mappedId": "caller-clear",
+    "translationKey": "caller.clear",
+    "formatted": "</caller clear:1118793554119118948>",
+    "description": "Clear the target for a player in the current war.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "defense_target",
+        "description": "The base target # of your opponent.",
+        "type": "Number"
+      }
+    ]
+  },
+  {
+    "id": "1118793554119118949",
+    "name": "/remaining",
+    "rootName": "remaining",
+    "mappedId": "remaining",
+    "translationKey": "remaining",
+    "description_long": null,
+    "formatted": "</remaining:1118793554119118949>",
+    "description": "Shows remaining or missed war hits of a clan.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "type",
+        "description": "The type of remaining tasks to show.",
+        "type": "String"
+      },
+      {
+        "name": "player",
+        "description": "Remaining attacks of a player.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Remaining attacks of a linked user.",
+        "type": "User"
+      },
+      {
+        "name": "war_id",
+        "description": "Search by war ID.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077151",
+    "name": "/lineup",
+    "rootName": "lineup",
+    "mappedId": "lineup",
+    "translationKey": "lineup",
+    "description_long": null,
+    "formatted": "</lineup:1118793554291077151>",
+    "description": "Displays war line-up of a clan.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077152",
+    "name": "/warlog",
+    "rootName": "warlog",
+    "mappedId": "warlog",
+    "translationKey": "warlog",
+    "description_long": null,
+    "formatted": "</warlog:1118793554291077152>",
+    "description": "Shows the last 10 clan war logs.",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077153",
+    "name": "/history",
+    "rootName": "history",
+    "mappedId": "history",
+    "translationKey": "history",
+    "description_long": null,
+    "formatted": "</history:1118793554291077153>",
+    "description": "Clan Games, Capital Raids, Donations, and CWL attacks history.",
+    "options": [
+      {
+        "name": "option",
+        "description": "Select an option",
+        "type": "String"
+      },
+      {
+        "name": "clans",
+        "description": "Select clans for the history.",
+        "type": "String"
+      },
+      {
+        "name": "player",
+        "description": "Select a player for the history.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Select a user for the history.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077154",
+    "name": "/cwl roster",
+    "rootName": "cwl",
+    "mappedId": "cwl-roster",
+    "translationKey": "cwl.roster",
+    "formatted": "</cwl roster:1118793554291077154>",
+    "description": "CWL roster and town hall distribution.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077154",
+    "name": "/cwl round",
+    "rootName": "cwl",
+    "mappedId": "cwl-round",
+    "translationKey": "cwl.round",
+    "formatted": "</cwl round:1118793554291077154>",
+    "description": "CWL summary for the current round.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "CWL season",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077154",
+    "name": "/cwl lineup",
+    "rootName": "cwl",
+    "mappedId": "cwl-lineup",
+    "translationKey": "cwl.lineup",
+    "formatted": "</cwl lineup:1118793554291077154>",
+    "description": "Shows CWL lineup for a round (sorted by town hall and heroes).",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077154",
+    "name": "/cwl stars",
+    "rootName": "cwl",
+    "mappedId": "cwl-stars",
+    "translationKey": "cwl.stars",
+    "formatted": "</cwl stars:1118793554291077154>",
+    "description": "Shows CWL member ranking by stars.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "CWL season",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077154",
+    "name": "/cwl attacks",
+    "rootName": "cwl",
+    "mappedId": "cwl-attacks",
+    "translationKey": "cwl.attacks",
+    "formatted": "</cwl attacks:1118793554291077154>",
+    "description": "Shows an overview of attacks for different CWL rounds.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "CWL season",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077154",
+    "name": "/cwl stats",
+    "rootName": "cwl",
+    "mappedId": "cwl-stats",
+    "translationKey": "cwl.stats",
+    "formatted": "</cwl stats:1118793554291077154>",
+    "description": "Shows an overview of all CWL rounds and group standings.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "CWL season",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077154",
+    "name": "/cwl members",
+    "rootName": "cwl",
+    "mappedId": "cwl-members",
+    "translationKey": "cwl.members",
+    "formatted": "</cwl members:1118793554291077154>",
+    "description": "Shows a list of all CWL participants.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077155",
+    "name": "/link create",
+    "rootName": "link",
+    "mappedId": "link-create",
+    "translationKey": "link.create",
+    "formatted": "</link create:1118793554291077155>",
+    "description": "Links a player account/clan to a Discord account.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "player_tag",
+        "description": "The player tag to link.",
+        "type": "String"
+      },
+      {
+        "name": "clan_tag",
+        "description": "The default clan tag to link.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "User account to link to the tag.",
+        "type": "User"
+      },
+      {
+        "name": "is_default",
+        "description": "Whether to set this as the default account.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077155",
+    "name": "/link list",
+    "rootName": "link",
+    "mappedId": "link-list",
+    "translationKey": "link.list",
+    "formatted": "</link list:1118793554291077155>",
+    "description": "List all player links of a clan.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077155",
+    "name": "/link delete",
+    "rootName": "link",
+    "mappedId": "link-delete",
+    "translationKey": "link.delete",
+    "formatted": "</link delete:1118793554291077155>",
+    "description": "Deletes a player account/clan from a Discord account.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "player_tag",
+        "description": "The player tag to unlink.",
+        "type": "String"
+      },
+      {
+        "name": "clan_tag",
+        "description": "The clan tag to unlink.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077156",
+    "name": "/timezone",
+    "rootName": "timezone",
+    "mappedId": "timezone",
+    "translationKey": "timezone",
+    "description_long": null,
+    "formatted": "</timezone:1118793554291077156>",
+    "description": "Set your timezone offset for /activity command.",
+    "options": [
+      {
+        "name": "location",
+        "description": "Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077157",
+    "name": "/flag create",
+    "rootName": "flag",
+    "mappedId": "flag-create",
+    "translationKey": "flag.create",
+    "formatted": "</flag create:1118793554291077157>",
+    "description": "Create a player flag to mark the player as banned or flagged.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "flag_type",
+        "description": "The type of the flag (ban or strike)",
+        "type": "String"
+      },
+      {
+        "name": "player",
+        "description": "The tag of a player to flag.",
+        "type": "String"
+      },
+      {
+        "name": "reason",
+        "description": "Reason for the flag.",
+        "type": "String"
+      },
+      {
+        "name": "flag_expiry_days",
+        "description": "Flag expiry days (auto deletes the flag)",
+        "type": "Integer"
+      },
+      {
+        "name": "flag_impact",
+        "description": "Number of flags this should count as",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077157",
+    "name": "/flag list",
+    "rootName": "flag",
+    "mappedId": "flag-list",
+    "translationKey": "flag.list",
+    "formatted": "</flag list:1118793554291077157>",
+    "description": "List all player flags.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "flag_type",
+        "description": "The type of the flag (ban or strike)",
+        "type": "String"
+      },
+      {
+        "name": "player",
+        "description": "Show all flags against a player",
+        "type": "String"
+      },
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077157",
+    "name": "/flag delete",
+    "rootName": "flag",
+    "mappedId": "flag-delete",
+    "translationKey": "flag.delete",
+    "formatted": "</flag delete:1118793554291077157>",
+    "description": "Delete a player flag.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "flag_type",
+        "description": "The type of the flag (ban or strike)",
+        "type": "String"
+      },
+      {
+        "name": "player",
+        "description": "The tag of a player to delete.",
+        "type": "String"
+      },
+      {
+        "name": "flag_ref",
+        "description": "Flag reference of this player.",
+        "type": "String"
+      },
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077158",
+    "name": "/setup enable",
+    "rootName": "setup",
+    "mappedId": "setup-enable",
+    "translationKey": "setup.enable",
+    "formatted": "</setup enable:1118793554291077158>",
+    "description": "Enable a feature on the server or add a clan.",
+    "description_long": "Enable a feature on the server (War Feed, Last Seen, Clan Games, Legend Log, Capital Log, Clan Feed, Join/Leave Log, Clan Embed, Donation Log) or add a clan or link a clan to a channel.",
+    "options": [
+      {
+        "name": "action",
+        "description": "Select an option",
+        "type": "String"
+      },
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "category",
+        "description": "Category of the clan. (select from the menu or type your own)",
+        "type": "String"
+      },
+      {
+        "name": "channel",
+        "description": "Channel to send updates to (defaults to the current channel)",
+        "type": "Channel"
+      },
+      {
+        "name": "color",
+        "description": "Hex color code (only for donation log, clan games, last seen and clan embed)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077158",
+    "name": "/setup list",
+    "rootName": "setup",
+    "mappedId": "setup-list",
+    "translationKey": "setup.list",
+    "formatted": "</setup list:1118793554291077158>",
+    "description": "List all enabled features and clans.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Select the clans to list.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077158",
+    "name": "/setup buttons",
+    "rootName": "setup",
+    "mappedId": "setup-buttons",
+    "translationKey": "setup.buttons",
+    "formatted": "</setup buttons:1118793554291077158>",
+    "description": "Setup buttons for the server.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "button_type",
+        "description": "Select the button type to setup",
+        "type": "String"
+      },
+      {
+        "name": "embed_color",
+        "description": "Hex color code for the embed",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077158",
+    "name": "/setup events",
+    "rootName": "setup",
+    "mappedId": "setup-events",
+    "translationKey": "setup.events",
+    "formatted": "</setup events:1118793554291077158>",
+    "description": "Setup automatic events for the server.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "disable",
+        "description": "Disable the events schedular.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077158",
+    "name": "/setup server-logs",
+    "rootName": "setup",
+    "mappedId": "setup-server-logs",
+    "translationKey": "setup.server_logs",
+    "formatted": "</setup server-logs:1118793554291077158>",
+    "description": "Setup automatic logs for the server.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "log_type",
+        "description": "Select the log type to setup.",
+        "type": "String"
+      },
+      {
+        "name": "disable",
+        "description": "Whether to disable the log.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077158",
+    "name": "/setup clan-logs",
+    "rootName": "setup",
+    "mappedId": "setup-clan-logs",
+    "translationKey": "setup.clan_logs",
+    "formatted": "</setup clan-logs:1118793554291077158>",
+    "description": "Setup automatic logs for the clan.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Select the clan to setup logs.",
+        "type": "String"
+      },
+      {
+        "name": "action",
+        "description": "What logs to enable or disable.",
+        "type": "String"
+      },
+      {
+        "name": "channel",
+        "description": "Channel to send updates to (defaults to the current channel)",
+        "type": "Channel"
+      },
+      {
+        "name": "color",
+        "description": "Hex color code (only for donation log, clan games, last seen and clan embed)",
+        "type": "String"
+      },
+      {
+        "name": "ping_role",
+        "description": "Ping this role in the logs (only for town hall upgrade log)",
+        "type": "Role"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077158",
+    "name": "/setup disable",
+    "rootName": "setup",
+    "mappedId": "setup-disable",
+    "translationKey": "setup.disable",
+    "formatted": "</setup disable:1118793554291077158>",
+    "description": "Disable a feature on the server or remove a clan.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "action",
+        "description": "Select an option",
+        "type": "String"
+      },
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "channel",
+        "description": "Channel to be removed.",
+        "type": "Channel"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077159",
+    "name": "/alias create",
+    "rootName": "alias",
+    "mappedId": "alias-create",
+    "translationKey": "alias.create",
+    "formatted": "</alias create:1118793554291077159>",
+    "description": "Creates a clan alias (short code or abbreviation) or clan nickname.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "alias_name",
+        "description": "Name of the alias.",
+        "type": "String"
+      },
+      {
+        "name": "clan_nickname",
+        "description": "Nickname of the clan (Experimental)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077159",
+    "name": "/alias list",
+    "rootName": "alias",
+    "mappedId": "alias-list",
+    "translationKey": "alias.list",
+    "formatted": "</alias list:1118793554291077159>",
+    "description": "List all clan aliases.",
+    "description_long": null,
+    "options": []
+  },
+  {
+    "id": "1118793554291077159",
+    "name": "/alias delete",
+    "rootName": "alias",
+    "mappedId": "alias-delete",
+    "translationKey": "alias.delete",
+    "formatted": "</alias delete:1118793554291077159>",
+    "description": "Deletes a clan alias.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "alias",
+        "description": "Tag of a clan or name of an alias",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1202306245831430235",
+    "name": "/category create",
+    "rootName": "category",
+    "mappedId": "category-create",
+    "translationKey": "category.create",
+    "formatted": "</category create:1202306245831430235>",
+    "description": "Create a new clan category.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "category_name",
+        "description": "Name of the clan category.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1202306245831430235",
+    "name": "/category list",
+    "rootName": "category",
+    "mappedId": "category-list",
+    "translationKey": "category.list",
+    "formatted": "</category list:1202306245831430235>",
+    "description": "List all clan categories.",
+    "description_long": null,
+    "options": []
+  },
+  {
+    "id": "1202306245831430235",
+    "name": "/category edit",
+    "rootName": "category",
+    "mappedId": "category-edit",
+    "translationKey": "category.edit",
+    "formatted": "</category edit:1202306245831430235>",
+    "description": "Edit a clan category.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "category",
+        "description": "Select a clan category.",
+        "type": "String"
+      },
+      {
+        "name": "category_name",
+        "description": "Name of the clan category.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1202306245831430235",
+    "name": "/category delete",
+    "rootName": "category",
+    "mappedId": "category-delete",
+    "translationKey": "category.delete",
+    "formatted": "</category delete:1202306245831430235>",
+    "description": "Delete a clan category.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "category",
+        "description": "Select a clan category.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster create",
+    "rootName": "roster",
+    "mappedId": "roster-create",
+    "translationKey": "roster.create",
+    "formatted": "</roster create:1118793554760847365>",
+    "description": "Create a roster",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan of the roster",
+        "type": "String"
+      },
+      {
+        "name": "name",
+        "description": "Name of the roster",
+        "type": "String"
+      },
+      {
+        "name": "category",
+        "description": "Category of the roster",
+        "type": "String"
+      },
+      {
+        "name": "import_members",
+        "description": "Whether to import members from the clan",
+        "type": "Boolean"
+      },
+      {
+        "name": "allow_unlinked",
+        "description": "Whether to allow unlinked members",
+        "type": "Boolean"
+      },
+      {
+        "name": "max_members",
+        "description": "Roster size",
+        "type": "Integer"
+      },
+      {
+        "name": "max_accounts_per_user",
+        "description": "Max accounts per user",
+        "type": "Integer"
+      },
+      {
+        "name": "min_town_hall",
+        "description": "Minimum Town Hall level",
+        "type": "Integer"
+      },
+      {
+        "name": "max_town_hall",
+        "description": "Maximum Town Hall level",
+        "type": "Integer"
+      },
+      {
+        "name": "min_hero_level",
+        "description": "Minimum combined Hero level",
+        "type": "Integer"
+      },
+      {
+        "name": "roster_role",
+        "description": "Roster role",
+        "type": "Role"
+      },
+      {
+        "name": "sort_by",
+        "description": "Sorting order of the roster member list",
+        "type": "String"
+      },
+      {
+        "name": "start_time",
+        "description": "Roster start time (YYYY-MM-DD HH:mm, in 24 hours format)",
+        "type": "String"
+      },
+      {
+        "name": "end_time",
+        "description": "Roster end time (YYYY-MM-DD HH:mm, in 24 hours format)",
+        "type": "String"
+      },
+      {
+        "name": "timezone",
+        "description": "Search timezone by city or country (e.g. London, Singapore, India, Sydney)",
+        "type": "String"
+      },
+      {
+        "name": "allow_group_selection",
+        "description": "Whether to allow members to select group",
+        "type": "Boolean"
+      },
+      {
+        "name": "allow_multi_signup",
+        "description": "Whether to allow multiple roster signups",
+        "type": "Boolean"
+      },
+      {
+        "name": "use_clan_alias",
+        "description": "Whether to use clan alias in the roster (created by /alias command)",
+        "type": "Boolean"
+      },
+      {
+        "name": "roster_image_url",
+        "description": "Image to be used in the roster embed",
+        "type": "String"
+      },
+      {
+        "name": "color_code",
+        "description": "Hex color code of the roster embed",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster post",
+    "rootName": "roster",
+    "mappedId": "roster-post",
+    "translationKey": "roster.post",
+    "formatted": "</roster post:1118793554760847365>",
+    "description": "Post a roster to signup or view members",
+    "description_long": null,
+    "options": [
+      {
+        "name": "roster",
+        "description": "Select a roster to post",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster clone",
+    "rootName": "roster",
+    "mappedId": "roster-clone",
+    "translationKey": "roster.clone",
+    "formatted": "</roster clone:1118793554760847365>",
+    "description": "Clone a roster to create a new one",
+    "description_long": null,
+    "options": [
+      {
+        "name": "roster",
+        "description": "Select a roster to clone",
+        "type": "String"
+      },
+      {
+        "name": "name",
+        "description": "Name of the cloned roster",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster list",
+    "rootName": "roster",
+    "mappedId": "roster-list",
+    "translationKey": "roster.list",
+    "formatted": "</roster list:1118793554760847365>",
+    "description": "Search rosters or list all rosters and groups",
+    "description_long": null,
+    "options": [
+      {
+        "name": "name",
+        "description": "Search rosters by name",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Search rosters by user",
+        "type": "User"
+      },
+      {
+        "name": "player",
+        "description": "Search rosters by player",
+        "type": "String"
+      },
+      {
+        "name": "clan",
+        "description": "Search rosters by clan",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster edit",
+    "rootName": "roster",
+    "mappedId": "roster-edit",
+    "translationKey": "roster.edit",
+    "formatted": "</roster edit:1118793554760847365>",
+    "description": "Edit a roster",
+    "description_long": null,
+    "options": [
+      {
+        "name": "roster",
+        "description": "Select a roster to edit",
+        "type": "String"
+      },
+      {
+        "name": "name",
+        "description": "Name of the roster",
+        "type": "String"
+      },
+      {
+        "name": "category",
+        "description": "Category of the roster",
+        "type": "String"
+      },
+      {
+        "name": "clan",
+        "description": "Clan of the roster",
+        "type": "String"
+      },
+      {
+        "name": "detach_clan",
+        "description": "Detach clan from the roster",
+        "type": "Boolean"
+      },
+      {
+        "name": "allow_unlinked",
+        "description": "Whether to allow unlinked members",
+        "type": "Boolean"
+      },
+      {
+        "name": "max_members",
+        "description": "Roster size",
+        "type": "Integer"
+      },
+      {
+        "name": "max_accounts_per_user",
+        "description": "Max accounts per user",
+        "type": "Integer"
+      },
+      {
+        "name": "min_town_hall",
+        "description": "Minimum Town Hall level",
+        "type": "Integer"
+      },
+      {
+        "name": "max_town_hall",
+        "description": "Maximum Town Hall level",
+        "type": "Integer"
+      },
+      {
+        "name": "min_hero_level",
+        "description": "Minimum combined Hero level",
+        "type": "Integer"
+      },
+      {
+        "name": "roster_role",
+        "description": "Roster role",
+        "type": "Role"
+      },
+      {
+        "name": "sort_by",
+        "description": "Sorting order of the roster member list",
+        "type": "String"
+      },
+      {
+        "name": "delete_role",
+        "description": "Whether to delete the roster role",
+        "type": "Boolean"
+      },
+      {
+        "name": "start_time",
+        "description": "Roster start time (YYYY-MM-DD HH:mm, in 24 hours format)",
+        "type": "String"
+      },
+      {
+        "name": "end_time",
+        "description": "Roster end time (YYYY-MM-DD HH:mm, in 24 hours format)",
+        "type": "String"
+      },
+      {
+        "name": "timezone",
+        "description": "Search timezone by city or country (e.g. London, Singapore, India, Sydney)",
+        "type": "String"
+      },
+      {
+        "name": "allow_group_selection",
+        "description": "Whether to allow members to select group",
+        "type": "Boolean"
+      },
+      {
+        "name": "allow_multi_signup",
+        "description": "Whether to allow multiple roster signups",
+        "type": "Boolean"
+      },
+      {
+        "name": "use_clan_alias",
+        "description": "Whether to use clan alias in the roster (created by /alias command)",
+        "type": "Boolean"
+      },
+      {
+        "name": "roster_image_url",
+        "description": "Image to be used in the roster embed",
+        "type": "String"
+      },
+      {
+        "name": "color_code",
+        "description": "Hex color code of the roster embed",
+        "type": "String"
+      },
+      {
+        "name": "log_channel",
+        "description": "Channel to log roster changes",
+        "type": "Channel"
+      },
+      {
+        "name": "delete_log_channel",
+        "description": "Whether to delete the log channel",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster delete",
+    "rootName": "roster",
+    "mappedId": "roster-delete",
+    "translationKey": "roster.delete",
+    "formatted": "</roster delete:1118793554760847365>",
+    "description": "Permanently delete a roster.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "roster",
+        "description": "Select a roster to delete",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster manage",
+    "rootName": "roster",
+    "mappedId": "roster-manage",
+    "translationKey": "roster.manage",
+    "formatted": "</roster manage:1118793554760847365>",
+    "description": "Add or remove users or change their group or roster",
+    "description_long": null,
+    "options": [
+      {
+        "name": "roster",
+        "description": "Select a roster to manage",
+        "type": "String"
+      },
+      {
+        "name": "action",
+        "description": "Select an action to perform",
+        "type": "String"
+      },
+      {
+        "name": "player",
+        "description": "Select a player to manage",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Select a user to manage",
+        "type": "User"
+      },
+      {
+        "name": "from_clan",
+        "description": "Select a clan to add players from",
+        "type": "String"
+      },
+      {
+        "name": "from_current_wars",
+        "description": "Choose a clan to add players from the ongoing wars.",
+        "type": "String"
+      },
+      {
+        "name": "target_group",
+        "description": "Group of the user to move to",
+        "type": "String"
+      },
+      {
+        "name": "target_roster",
+        "description": "Roster of the user to move to",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster groups create",
+    "rootName": "roster",
+    "mappedId": "roster-groups-create",
+    "translationKey": "roster.groups.create",
+    "formatted": "</roster groups create:1118793554760847365>",
+    "description": "Create a group",
+    "description_long": null,
+    "options": [
+      {
+        "name": "name",
+        "description": "Name of the group",
+        "type": "String"
+      },
+      {
+        "name": "group_role",
+        "description": "Role of the group",
+        "type": "Role"
+      },
+      {
+        "name": "selectable",
+        "description": "Whether to allow members to select this group",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster groups modify",
+    "rootName": "roster",
+    "mappedId": "roster-groups-modify",
+    "translationKey": "roster.groups.modify",
+    "formatted": "</roster groups modify:1118793554760847365>",
+    "description": "Modify or delete a group",
+    "description_long": null,
+    "options": [
+      {
+        "name": "group",
+        "description": "Select a group to modify",
+        "type": "String"
+      },
+      {
+        "name": "name",
+        "description": "Name of the group",
+        "type": "String"
+      },
+      {
+        "name": "order",
+        "description": "Order of the group",
+        "type": "Integer"
+      },
+      {
+        "name": "group_role",
+        "description": "Role of the group",
+        "type": "Role"
+      },
+      {
+        "name": "selectable",
+        "description": "Whether to allow members to select this group",
+        "type": "Boolean"
+      },
+      {
+        "name": "delete_role",
+        "description": "Whether to delete the role of the group",
+        "type": "Boolean"
+      },
+      {
+        "name": "delete_group",
+        "description": "Whether to delete the group",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847365",
+    "name": "/roster ping",
+    "rootName": "roster",
+    "mappedId": "roster-ping",
+    "translationKey": "roster.ping",
+    "formatted": "</roster ping:1118793554760847365>",
+    "description": "Ping members in the roster",
+    "description_long": null,
+    "options": [
+      {
+        "name": "roster",
+        "description": "Select a roster to ping",
+        "type": "String"
+      },
+      {
+        "name": "message",
+        "description": "Message for the members",
+        "type": "String"
+      },
+      {
+        "name": "ping_option",
+        "description": "Select a ping option",
+        "type": "String"
+      },
+      {
+        "name": "group",
+        "description": "Select a group to ping (overwrites ping_option)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole clan-roles",
+    "rootName": "autorole",
+    "mappedId": "autorole-clan-roles",
+    "translationKey": "autorole.clan_roles",
+    "formatted": "</autorole clan-roles:1118793554291077160>",
+    "description": "Manage automatic role management for clan roles.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "leader_role",
+        "description": "The Leader role.",
+        "type": "Role"
+      },
+      {
+        "name": "co_leader_role",
+        "description": "The Co-Leader role.",
+        "type": "Role"
+      },
+      {
+        "name": "elder_role",
+        "description": "The Elder role.",
+        "type": "Role"
+      },
+      {
+        "name": "member_role",
+        "description": "The Member role (below Elder)",
+        "type": "Role"
+      },
+      {
+        "name": "everyone_role",
+        "description": "Clan role for everyone in the clan.",
+        "type": "Role"
+      },
+      {
+        "name": "only_verified",
+        "description": "Roles will be given to the verified players only. (API token verification is required)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole town-hall",
+    "rootName": "autorole",
+    "mappedId": "autorole-town-hall",
+    "translationKey": "autorole.town_hall",
+    "formatted": "</autorole town-hall:1118793554291077160>",
+    "description": "Manage automatic role management for town hall levels.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "th_1",
+        "description": "Town Hall 1 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_2",
+        "description": "Town Hall 2 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_3",
+        "description": "Town Hall 3 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_4",
+        "description": "Town Hall 4 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_5",
+        "description": "Town Hall 5 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_6",
+        "description": "Town Hall 6 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_7",
+        "description": "Town Hall 7 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_8",
+        "description": "Town Hall 8 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_9",
+        "description": "Town Hall 9 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_10",
+        "description": "Town Hall 10 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_11",
+        "description": "Town Hall 11 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_12",
+        "description": "Town Hall 12 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_13",
+        "description": "Town Hall 13 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_14",
+        "description": "Town Hall 14 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_15",
+        "description": "Town Hall 15 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_16",
+        "description": "Town Hall 16 role.",
+        "type": "Role"
+      },
+      {
+        "name": "th_17",
+        "description": "Town Hall 17 role.",
+        "type": "Role"
+      },
+      {
+        "name": "allow_non_family_accounts",
+        "description": "Whether to give roles to the members that are not in the family clans.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole builder-hall",
+    "rootName": "autorole",
+    "mappedId": "autorole-builder-hall",
+    "translationKey": "autorole.builder_hall",
+    "formatted": "</autorole builder-hall:1118793554291077160>",
+    "description": "Manage automatic Builder Hall roles.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "bh_1",
+        "description": "Builder Hall 1 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_2",
+        "description": "Builder Hall 2 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_3",
+        "description": "Builder Hall 3 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_4",
+        "description": "Builder Hall 4 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_5",
+        "description": "Builder Hall 5 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_6",
+        "description": "Builder Hall 6 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_7",
+        "description": "Builder Hall 7 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_8",
+        "description": "Builder Hall 8 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_9",
+        "description": "Builder Hall 9 role.",
+        "type": "Role"
+      },
+      {
+        "name": "bh_10",
+        "description": "Builder Hall 10 role.",
+        "type": "Role"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole leagues",
+    "rootName": "autorole",
+    "mappedId": "autorole-leagues",
+    "translationKey": "autorole.leagues",
+    "formatted": "</autorole leagues:1118793554291077160>",
+    "description": "Manage automatic role management for leagues.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "unranked",
+        "description": "Unranked league role.",
+        "type": "Role"
+      },
+      {
+        "name": "skeleton",
+        "description": "Skeleton league role.",
+        "type": "Role"
+      },
+      {
+        "name": "barbarian",
+        "description": "Barbarian league role.",
+        "type": "Role"
+      },
+      {
+        "name": "archer",
+        "description": "Archer league role.",
+        "type": "Role"
+      },
+      {
+        "name": "wizard",
+        "description": "Wizard league role.",
+        "type": "Role"
+      },
+      {
+        "name": "valkyrie",
+        "description": "Valkyrie league role.",
+        "type": "Role"
+      },
+      {
+        "name": "witch",
+        "description": "Witch league role.",
+        "type": "Role"
+      },
+      {
+        "name": "golem",
+        "description": "Golem league role.",
+        "type": "Role"
+      },
+      {
+        "name": "pekka",
+        "description": "Pekka league role.",
+        "type": "Role"
+      },
+      {
+        "name": "titan",
+        "description": "Titan league role.",
+        "type": "Role"
+      },
+      {
+        "name": "dragon",
+        "description": "Dragon league role.",
+        "type": "Role"
+      },
+      {
+        "name": "electro",
+        "description": "Electro league role.",
+        "type": "Role"
+      },
+      {
+        "name": "legend",
+        "description": "Legend league role.",
+        "type": "Role"
+      },
+      {
+        "name": "5200_5249",
+        "description": "Trophy range 5200 - 5249 role.",
+        "type": "Role"
+      },
+      {
+        "name": "5250_5499",
+        "description": "Trophy range 5250 - 5499 role.",
+        "type": "Role"
+      },
+      {
+        "name": "5500_5749",
+        "description": "Trophy range 5500 - 5749 role.",
+        "type": "Role"
+      },
+      {
+        "name": "5750_5999",
+        "description": "Trophy range 5750 - 5999 role.",
+        "type": "Role"
+      },
+      {
+        "name": "6000_8000",
+        "description": "Trophy range 6000 - 8000 role.",
+        "type": "Role"
+      },
+      {
+        "name": "allow_non_family_accounts",
+        "description": "Whether to give roles to the members that are not in the family clans.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole builder-leagues",
+    "rootName": "autorole",
+    "mappedId": "autorole-builder-leagues",
+    "translationKey": "autorole.builder_leagues",
+    "formatted": "</autorole builder-leagues:1118793554291077160>",
+    "description": "Set builder base league roles.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "wood",
+        "description": "Wood league role.",
+        "type": "Role"
+      },
+      {
+        "name": "clay",
+        "description": "Clay league role.",
+        "type": "Role"
+      },
+      {
+        "name": "stone",
+        "description": "Stone league role.",
+        "type": "Role"
+      },
+      {
+        "name": "copper",
+        "description": "Copper league role.",
+        "type": "Role"
+      },
+      {
+        "name": "brass",
+        "description": "Brass league role.",
+        "type": "Role"
+      },
+      {
+        "name": "iron",
+        "description": "Iron league role.",
+        "type": "Role"
+      },
+      {
+        "name": "steel",
+        "description": "Steel league role.",
+        "type": "Role"
+      },
+      {
+        "name": "titanium",
+        "description": "Titanium league role.",
+        "type": "Role"
+      },
+      {
+        "name": "platinum",
+        "description": "Platinum league role.",
+        "type": "Role"
+      },
+      {
+        "name": "emerald",
+        "description": "Emerald league role.",
+        "type": "Role"
+      },
+      {
+        "name": "ruby",
+        "description": "Ruby league role.",
+        "type": "Role"
+      },
+      {
+        "name": "diamond",
+        "description": "Diamond league role.",
+        "type": "Role"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole wars",
+    "rootName": "autorole",
+    "mappedId": "autorole-wars",
+    "translationKey": "autorole.wars",
+    "formatted": "</autorole wars:1118793554291077160>",
+    "description": "Set automatic war roles.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "role",
+        "description": "The war role.",
+        "type": "Role"
+      },
+      {
+        "name": "clan",
+        "description": "The clan for which to set the war role.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole eos-push",
+    "rootName": "autorole",
+    "mappedId": "autorole-eos-push",
+    "translationKey": "autorole.eos_push",
+    "formatted": "</autorole eos-push:1118793554291077160>",
+    "description": "Set end of season push roles.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "role",
+        "description": "The end of season push role.",
+        "type": "Role"
+      },
+      {
+        "name": "clans",
+        "description": "The clans for which to set the end of season push role.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole family",
+    "rootName": "autorole",
+    "mappedId": "autorole-family",
+    "translationKey": "autorole.family",
+    "formatted": "</autorole family:1118793554291077160>",
+    "description": "Set family roles.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "family_leaders_role",
+        "description": "Family leaders role (Leaders and Co-Leaders)",
+        "type": "Role"
+      },
+      {
+        "name": "family_role",
+        "description": "Family role.",
+        "type": "Role"
+      },
+      {
+        "name": "exclusive_family_role",
+        "description": "Exclusive family role (all linked accounts are in the family)",
+        "type": "Role"
+      },
+      {
+        "name": "guest_role",
+        "description": "Guest role (not in the family)",
+        "type": "Role"
+      },
+      {
+        "name": "verified_role",
+        "description": "Verified role (API token verified)",
+        "type": "Role"
+      },
+      {
+        "name": "account_linked_role",
+        "description": "Account linked role (account linked but may not be verified)",
+        "type": "Role"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole list",
+    "rootName": "autorole",
+    "mappedId": "autorole-list",
+    "translationKey": "autorole.list",
+    "formatted": "</autorole list:1118793554291077160>",
+    "description": "List all auto roles and settings.",
+    "description_long": null,
+    "options": []
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole disable",
+    "rootName": "autorole",
+    "mappedId": "autorole-disable",
+    "translationKey": "autorole.disable",
+    "formatted": "</autorole disable:1118793554291077160>",
+    "description": "Disable automatic clan roles.",
+    "description_long": "Disable automatic role management for clan roles, town hall levels, or leagues.",
+    "options": [
+      {
+        "name": "type",
+        "description": "Type of roles to disable.",
+        "type": "String"
+      },
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole refresh",
+    "rootName": "autorole",
+    "mappedId": "autorole-refresh",
+    "translationKey": "autorole.refresh",
+    "formatted": "</autorole refresh:1118793554291077160>",
+    "description": "Refresh roles manually.",
+    "description_long": "Refresh roles manually. (Use this command if the roles are not updated automatically)",
+    "options": [
+      {
+        "name": "user_or_role",
+        "description": "Refresh an individual user or a role.",
+        "type": "Mentionable"
+      },
+      {
+        "name": "is_test_run",
+        "description": "Test run to see the changes without applying.",
+        "type": "Boolean"
+      },
+      {
+        "name": "force_refresh",
+        "description": "Whether to bypass delays and force refresh roles.",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1118793554291077160",
+    "name": "/autorole config",
+    "rootName": "autorole",
+    "mappedId": "autorole-config",
+    "translationKey": "autorole.config",
+    "formatted": "</autorole config:1118793554291077160>",
+    "description": "Manage automatic roles settings.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "auto_update_roles",
+        "description": "Whether to update roles automatically.",
+        "type": "String"
+      },
+      {
+        "name": "role_removal_delays",
+        "description": "Whether to delay the removal of roles.",
+        "type": "String"
+      },
+      {
+        "name": "role_addition_delays",
+        "description": "Whether to delay the addition of roles.",
+        "type": "String"
+      },
+      {
+        "name": "delay_exclusion_roles",
+        "description": "Roles that are excluded from delays.",
+        "type": "String"
+      },
+      {
+        "name": "always_force_refresh_roles",
+        "description": "Whether to enforce role refresh for individual users by default.",
+        "type": "Boolean"
+      },
+      {
+        "name": "allow_not_linked",
+        "description": "Whether to allow not linked players to get roles.",
+        "type": "Boolean"
+      },
+      {
+        "name": "verified_only_clan_roles",
+        "description": "Whether to grant clans roles to verified players only.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419904",
+    "name": "/reminders create",
+    "rootName": "reminders",
+    "mappedId": "reminders-create",
+    "translationKey": "reminders.create",
+    "formatted": "</reminders create:1118793554471419904>",
+    "description": "Create reminders for clan wars, capital raids or clan games.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "type",
+        "description": "Type of the reminder.",
+        "type": "String"
+      },
+      {
+        "name": "duration",
+        "description": "Remaining duration to mention members (e.g. 6h, 12h, 1d, 2d)",
+        "type": "String"
+      },
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "message",
+        "description": "Reminder message for the notification.",
+        "type": "String"
+      },
+      {
+        "name": "exclude_participant_list",
+        "description": "Whether to exclude participant list and only include the message (clan wars only)",
+        "type": "Boolean"
+      },
+      {
+        "name": "channel",
+        "description": "Reminder channel for the notification.",
+        "type": "Channel"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419904",
+    "name": "/reminders edit",
+    "rootName": "reminders",
+    "mappedId": "reminders-edit",
+    "translationKey": "reminders.edit",
+    "formatted": "</reminders edit:1118793554471419904>",
+    "description": "Edit a reminder by ID (do /reminders list to get the ID)",
+    "description_long": null,
+    "options": [
+      {
+        "name": "type",
+        "description": "Type of the reminder.",
+        "type": "String"
+      },
+      {
+        "name": "id",
+        "description": "Reminder ID (use /reminders list to get the ID)",
+        "type": "String"
+      },
+      {
+        "name": "duration",
+        "description": "Remaining duration to mention members (e.g. 6h, 12h, 1d, 2d)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419904",
+    "name": "/reminders list",
+    "rootName": "reminders",
+    "mappedId": "reminders-list",
+    "translationKey": "reminders.list",
+    "formatted": "</reminders list:1118793554471419904>",
+    "description": "List all war reminders for clan wars, capital raids or clan games.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "type",
+        "description": "Type of the reminder.",
+        "type": "String"
+      },
+      {
+        "name": "compact_list",
+        "description": "Show a compact list of the reminders and disable ephemeral.",
+        "type": "Boolean"
+      },
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "channel",
+        "description": "Reminder channel for the notification.",
+        "type": "Channel"
+      },
+      {
+        "name": "reminder_id",
+        "description": "List a reminder by ID (do /reminders list to get the ID)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419904",
+    "name": "/reminders delete",
+    "rootName": "reminders",
+    "mappedId": "reminders-delete",
+    "translationKey": "reminders.delete",
+    "formatted": "</reminders delete:1118793554471419904>",
+    "description": "Delete a reminder by ID (do /reminders list to get the ID)",
+    "description_long": null,
+    "options": [
+      {
+        "name": "type",
+        "description": "Type of the reminder.",
+        "type": "String"
+      },
+      {
+        "name": "id",
+        "description": "Reminder ID (use /reminders list to get the ID)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419904",
+    "name": "/reminders now",
+    "rootName": "reminders",
+    "mappedId": "reminders-now",
+    "translationKey": "reminders.now",
+    "formatted": "</reminders now:1118793554471419904>",
+    "description": "Create an instant reminder to notify members.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "type",
+        "description": "Type of the reminder.",
+        "type": "String"
+      },
+      {
+        "name": "message",
+        "description": "Reminder message for the notification.",
+        "type": "String"
+      },
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419904",
+    "name": "/reminders config",
+    "rootName": "reminders",
+    "mappedId": "reminders-config",
+    "translationKey": "reminders.config",
+    "formatted": "</reminders config:1118793554471419904>",
+    "description": "Create an instant reminder to notify members.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "reminder_ping_exclusion",
+        "description": "Set reminder ping exclusion settings.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419905",
+    "name": "/legend attacks",
+    "rootName": "legend",
+    "mappedId": "legend-attacks",
+    "translationKey": "legend.attacks",
+    "formatted": "</legend attacks:1118793554471419905>",
+    "description": "Shows per-day legend attacks for a clan.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Player by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "day",
+        "description": "The league day.",
+        "type": "Number"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419905",
+    "name": "/legend days",
+    "rootName": "legend",
+    "mappedId": "legend-days",
+    "translationKey": "legend.days",
+    "formatted": "</legend days:1118793554471419905>",
+    "description": "Shows per-day legend attacks for a player.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "player",
+        "description": "Player by @user mention or ID.",
+        "type": "String"
+      },
+      {
+        "name": "user",
+        "description": "Clan by @user mention or ID.",
+        "type": "User"
+      },
+      {
+        "name": "day",
+        "description": "The league day.",
+        "type": "Number"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419905",
+    "name": "/legend leaderboard",
+    "rootName": "legend",
+    "mappedId": "legend-leaderboard",
+    "translationKey": "legend.leaderboard",
+    "formatted": "</legend leaderboard:1118793554471419905>",
+    "description": "Shows legend leaderboard.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "limit",
+        "description": "Limit the number of results.",
+        "type": "Number"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "enable_auto_updating",
+        "description": "Enable auto updating (every 30-60 mins)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419905",
+    "name": "/legend stats",
+    "rootName": "legend",
+    "mappedId": "legend-stats",
+    "translationKey": "legend.stats",
+    "formatted": "</legend stats:1118793554471419905>",
+    "description": "Shows statistics of legend ranks and trophies.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "reference_date",
+        "description": "The date to view the end-of-day thresholds (YYYY-MM-DD)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1254479577594597458",
+    "name": "/leaderboard clans",
+    "rootName": "leaderboard",
+    "mappedId": "leaderboard-clans",
+    "translationKey": "leaderboard.clans",
+    "formatted": "</leaderboard clans:1254479577594597458>",
+    "description": "Top clans leaderboard.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "location",
+        "description": "Location of the leaderboard",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1254479577594597458",
+    "name": "/leaderboard players",
+    "rootName": "leaderboard",
+    "mappedId": "leaderboard-players",
+    "translationKey": "leaderboard.players",
+    "formatted": "</leaderboard players:1254479577594597458>",
+    "description": "Top players leaderboard.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "location",
+        "description": "Location of the leaderboard",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1254479577594597458",
+    "name": "/leaderboard capital",
+    "rootName": "leaderboard",
+    "mappedId": "leaderboard-capital",
+    "translationKey": "leaderboard.capital",
+    "formatted": "</leaderboard capital:1254479577594597458>",
+    "description": "Top capital leaderboard.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "location",
+        "description": "Location of the leaderboard",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary best",
+    "rootName": "summary",
+    "mappedId": "summary-best",
+    "translationKey": "summary.best",
+    "formatted": "</summary best:1118793554471419906>",
+    "description": "Shows a summary of best members.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "limit",
+        "description": "Number of members to show (Default: 5)",
+        "type": "Integer"
+      },
+      {
+        "name": "order",
+        "description": "Order of the list.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary wars",
+    "rootName": "summary",
+    "mappedId": "summary-wars",
+    "translationKey": "summary.wars",
+    "formatted": "</summary wars:1118793554471419906>",
+    "description": "Shows a summary of current wars.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary compo",
+    "rootName": "summary",
+    "mappedId": "summary-compo",
+    "translationKey": "summary.compo",
+    "formatted": "</summary compo:1118793554471419906>",
+    "description": "Shows a summary of Town Hall composition.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary cwl-ranks",
+    "rootName": "summary",
+    "mappedId": "summary-cwl-ranks",
+    "translationKey": "summary.cwl_ranks",
+    "formatted": "</summary cwl-ranks:1118793554471419906>",
+    "description": "Shows a summary of CWL ranks.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary cwl-status",
+    "rootName": "summary",
+    "mappedId": "summary-cwl-status",
+    "translationKey": "summary.cwl_status",
+    "formatted": "</summary cwl-status:1118793554471419906>",
+    "description": "Shows a summary of CWL spin status.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary leagues",
+    "rootName": "summary",
+    "mappedId": "summary-leagues",
+    "translationKey": "summary.leagues",
+    "formatted": "</summary leagues:1118793554471419906>",
+    "description": "Shows a summary of clan leagues.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary donations",
+    "rootName": "summary",
+    "mappedId": "summary-donations",
+    "translationKey": "summary.donations",
+    "formatted": "</summary donations:1118793554471419906>",
+    "description": "Shows a summary of donations.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary clans",
+    "rootName": "summary",
+    "mappedId": "summary-clans",
+    "translationKey": "summary.clans",
+    "formatted": "</summary clans:1118793554471419906>",
+    "description": "Shows a summary of family clans.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary attacks",
+    "rootName": "summary",
+    "mappedId": "summary-attacks",
+    "translationKey": "summary.attacks",
+    "formatted": "</summary attacks:1118793554471419906>",
+    "description": "Shows a summary of multiplayer attacks and defenses.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary trophies",
+    "rootName": "summary",
+    "mappedId": "summary-trophies",
+    "translationKey": "summary.trophies",
+    "formatted": "</summary trophies:1118793554471419906>",
+    "description": "Shows a summary of trophies.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "limit",
+        "description": "Limit the number of members.",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary war-results",
+    "rootName": "summary",
+    "mappedId": "summary-war-results",
+    "translationKey": "summary.war_results",
+    "formatted": "</summary war-results:1118793554471419906>",
+    "description": "Shows a summary of seasonal war results.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary missed-wars",
+    "rootName": "summary",
+    "mappedId": "summary-missed-wars",
+    "translationKey": "summary.missed_wars",
+    "formatted": "</summary missed-wars:1118793554471419906>",
+    "description": "Shows a summary of missed wars.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "war_type",
+        "description": "Regular, CWL or Friendly Wars (defaults to Regular)",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data since the specified season.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary capital-raids",
+    "rootName": "summary",
+    "mappedId": "summary-capital-raids",
+    "translationKey": "summary.capital_raids",
+    "formatted": "</summary capital-raids:1118793554471419906>",
+    "description": "Shows information about capital raids.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "week",
+        "description": "Retrieve data for the specified raid weekend.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary capital-contribution",
+    "rootName": "summary",
+    "mappedId": "summary-capital-contribution",
+    "translationKey": "summary.capital_contribution",
+    "formatted": "</summary capital-contribution:1118793554471419906>",
+    "description": "Shows a summary of capital contributions.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "week",
+        "description": "The week to show capital contributions for.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary activity",
+    "rootName": "summary",
+    "mappedId": "summary-activity",
+    "translationKey": "summary.activity",
+    "formatted": "</summary activity:1118793554471419906>",
+    "description": "Shows a summary of clan activity (last seen).",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419906",
+    "name": "/summary clan-games",
+    "rootName": "summary",
+    "mappedId": "summary-clan-games",
+    "translationKey": "summary.clan_games",
+    "formatted": "</summary clan-games:1118793554471419906>",
+    "description": "Shows a summary of clan games scores.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "season",
+        "description": "Retrieve data for the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "clans",
+        "description": "Clan tag or name or alias.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export wars",
+    "rootName": "export",
+    "mappedId": "export-wars",
+    "translationKey": "export.wars",
+    "formatted": "</export wars:1118793554471419907>",
+    "description": "Export War stats to Excel.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "war_type",
+        "description": "Regular, CWL or Friendly Wars (defaults to Regular)",
+        "type": "String"
+      },
+      {
+        "name": "start_date",
+        "description": "Starting date (YYYY-MM-DD)",
+        "type": "String"
+      },
+      {
+        "name": "end_date",
+        "description": "Ending date (YYYY-MM-DD)",
+        "type": "String"
+      },
+      {
+        "name": "limit",
+        "description": "Number of wars (Default: 25)",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export cwl",
+    "rootName": "export",
+    "mappedId": "export-cwl",
+    "translationKey": "export.cwl",
+    "formatted": "</export cwl:1118793554471419907>",
+    "description": "Export CWL stats to Excel.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data since the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "wars",
+        "description": "Number of wars (Default: 25)",
+        "type": "Integer"
+      },
+      {
+        "name": "lineup_only",
+        "description": "Export only the lineup.",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export season",
+    "rootName": "export",
+    "mappedId": "export-season",
+    "translationKey": "export.season",
+    "formatted": "</export season:1118793554471419907>",
+    "description": "Export comprehensive seasonal stats of clan members.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data since the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "include_past_members",
+        "description": "Include past members of the clan.",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export members",
+    "rootName": "export",
+    "mappedId": "export-members",
+    "translationKey": "export.members",
+    "formatted": "</export members:1118793554471419907>",
+    "description": "Export a comprehensive version of clan member stats.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data since the specified season.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export clans",
+    "rootName": "export",
+    "mappedId": "export-clans",
+    "translationKey": "export.clans",
+    "formatted": "</export clans:1118793554471419907>",
+    "description": "Export all linked clans.",
+    "description_long": null,
+    "options": []
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export users",
+    "rootName": "export",
+    "mappedId": "export-users",
+    "translationKey": "export.users",
+    "formatted": "</export users:1118793554471419907>",
+    "description": "Export Discord members",
+    "description_long": null,
+    "options": [
+      {
+        "name": "role",
+        "description": "Role to filter users.",
+        "type": "Role"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export attack-log",
+    "rootName": "export",
+    "mappedId": "export-attack-log",
+    "translationKey": "export.attack_log",
+    "formatted": "</export attack-log:1118793554471419907>",
+    "description": "Export war attack history.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "war_type",
+        "description": "Regular or friendly wars (defaults to Regular)",
+        "type": "String"
+      },
+      {
+        "name": "limit",
+        "description": "Number of wars (Default: 25)",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export missed",
+    "rootName": "export",
+    "mappedId": "export-missed",
+    "translationKey": "export.missed",
+    "formatted": "</export missed:1118793554471419907>",
+    "description": "Export missed attack history.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "war_type",
+        "description": "Regular, CWL or Friendly Wars (defaults to Regular)",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data since the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "limit",
+        "description": "Number of wars (Default: 25)",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export capital-raids",
+    "rootName": "export",
+    "mappedId": "export-capital-raids",
+    "translationKey": "export.capital_raids",
+    "formatted": "</export capital-raids:1118793554471419907>",
+    "description": "Export capital raid attack stats.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "limit",
+        "description": "Number of raid weekends (Default: 4)",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export last-wars",
+    "rootName": "export",
+    "mappedId": "export-last-wars",
+    "translationKey": "export.last_wars",
+    "formatted": "</export last-wars:1118793554471419907>",
+    "description": "Export participation history (last played wars)",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      },
+      {
+        "name": "war_type",
+        "description": "Regular or CWL",
+        "type": "String"
+      },
+      {
+        "name": "season",
+        "description": "Retrieve data since the specified season.",
+        "type": "String"
+      },
+      {
+        "name": "limit",
+        "description": "Number of wars (Default: 25)",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export capital",
+    "rootName": "export",
+    "mappedId": "export-capital",
+    "translationKey": "export.capital",
+    "formatted": "</export capital:1118793554471419907>",
+    "description": "Export clan capital weekends.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clans",
+        "description": "Clan tags or aliases to filter clans.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419907",
+    "name": "/export rosters",
+    "rootName": "export",
+    "mappedId": "export-rosters",
+    "translationKey": "export.rosters",
+    "formatted": "</export rosters:1118793554471419907>",
+    "description": "Export all rosters.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "category",
+        "description": "Roster category.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419908",
+    "name": "/search",
+    "rootName": "search",
+    "mappedId": "search",
+    "translationKey": "search",
+    "description_long": null,
+    "formatted": "</search:1118793554471419908>",
+    "description": "Search clans by name.",
+    "options": [
+      {
+        "name": "name",
+        "description": "Clan name (must be 3 characters long)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419909",
+    "name": "/army",
+    "rootName": "army",
+    "mappedId": "army",
+    "translationKey": "army",
+    "description_long": null,
+    "formatted": "</army:1118793554471419909>",
+    "description": "Parse an army composition link.",
+    "options": [
+      {
+        "name": "link",
+        "description": "Army composition link.",
+        "type": "String"
+      },
+      {
+        "name": "army_name",
+        "description": "An optional name for this army.",
+        "type": "String"
+      },
+      {
+        "name": "tips",
+        "description": "Some tips (type anything)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419910",
+    "name": "/nickname config",
+    "rootName": "nickname",
+    "mappedId": "nickname-config",
+    "translationKey": "nickname.config",
+    "formatted": "</nickname config:1118793554471419910>",
+    "description": "Configure automatic server nickname settings.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "family_nickname_format",
+        "description": "Set family nickname format (e.g. {CLAN} | {ALIAS} | {TH} | {ROLE} | {NAME})",
+        "type": "String"
+      },
+      {
+        "name": "non_family_nickname_format",
+        "description": "Set non-family nickname format (e.g. {NAME} | {TH})",
+        "type": "String"
+      },
+      {
+        "name": "change_nicknames",
+        "description": "Whether to update nicknames automatically.",
+        "type": "String"
+      },
+      {
+        "name": "account_preference_for_naming",
+        "description": "Whether to use the default account or the best account in the family.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419911",
+    "name": "/events",
+    "rootName": "events",
+    "mappedId": "events",
+    "translationKey": "events",
+    "description_long": null,
+    "formatted": "</events:1118793554471419911>",
+    "description": "Shows the next in-game events.",
+    "options": []
+  },
+  {
+    "id": "1118793554471419912",
+    "name": "/help",
+    "rootName": "help",
+    "mappedId": "help",
+    "translationKey": "help",
+    "description_long": null,
+    "formatted": "</help:1118793554471419912>",
+    "description": "Get a list of commands or info about a specific command.",
+    "options": [
+      {
+        "name": "command",
+        "description": "Name of the command.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554471419913",
+    "name": "/redeem",
+    "rootName": "redeem",
+    "mappedId": "redeem",
+    "translationKey": "redeem",
+    "description_long": null,
+    "formatted": "</redeem:1118793554471419913>",
+    "description": "Redeem or manage a Patreon subscription. (if you wish to support us)",
+    "options": [
+      {
+        "name": "disable",
+        "description": "Disable subscription for a server (if subscribed)",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1118793554760847360",
+    "name": "/invite",
+    "rootName": "invite",
+    "mappedId": "invite",
+    "translationKey": "invite",
+    "description_long": null,
+    "formatted": "</invite:1118793554760847360>",
+    "description": "Get the bot invite and support server link.",
+    "options": []
+  },
+  {
+    "id": "1118793554760847361",
+    "name": "/debug",
+    "rootName": "debug",
+    "mappedId": "debug",
+    "translationKey": "debug",
+    "description_long": null,
+    "formatted": "</debug:1118793554760847361>",
+    "description": "Displays some basic debug information.",
+    "options": []
+  },
+  {
+    "id": "1118793554760847362",
+    "name": "/config",
+    "rootName": "config",
+    "mappedId": "config",
+    "translationKey": "config",
+    "description_long": null,
+    "formatted": "</config:1118793554760847362>",
+    "description": "Configure server settings.",
+    "options": [
+      {
+        "name": "bot_manager_role",
+        "description": "Role that can manage the bot.",
+        "type": "Role"
+      },
+      {
+        "name": "roster_manager_role",
+        "description": "Role that can manage the roster members.",
+        "type": "Role"
+      },
+      {
+        "name": "flags_manager_role",
+        "description": "Role that can manage the flags.",
+        "type": "Role"
+      },
+      {
+        "name": "links_manager_role",
+        "description": "Role that can manage the Discord links.",
+        "type": "Role"
+      },
+      {
+        "name": "color_code",
+        "description": "Hex color code (e.g #ed4245)",
+        "type": "String"
+      },
+      {
+        "name": "webhook_limit",
+        "description": "The maximum number of webhooks that can be created in a channel.",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1250123783222591658",
+    "name": "/whitelist",
+    "rootName": "whitelist",
+    "mappedId": "whitelist",
+    "translationKey": "whitelist",
+    "description_long": null,
+    "formatted": "</whitelist:1250123783222591658>",
+    "description": "Whitelist a role or user to use specific commands.",
+    "options": [
+      {
+        "name": "user_or_role",
+        "description": "User or role to whitelist.",
+        "type": "Mentionable"
+      },
+      {
+        "name": "command",
+        "description": "Command to whitelist.",
+        "type": "String"
+      },
+      {
+        "name": "clear",
+        "description": "Clear the whitelist.",
+        "type": "Boolean"
+      },
+      {
+        "name": "list",
+        "description": "List all whitelisted users and roles.",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1201962649370239017",
+    "name": "/clans",
+    "rootName": "clans",
+    "mappedId": "clans",
+    "translationKey": "clans",
+    "description_long": null,
+    "formatted": "</clans:1201962649370239017>",
+    "description": "Show all linked clans.",
+    "options": [
+      {
+        "name": "category",
+        "description": "Filter clans by category.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1205914754686779413",
+    "name": "/layout post",
+    "rootName": "layout",
+    "mappedId": "layout-post",
+    "translationKey": "layout.post",
+    "formatted": "</layout post:1205914754686779413>",
+    "description": "Post your village layout to showcase it to the community.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "screenshot",
+        "description": "Upload a screenshot showing your village layout.",
+        "type": "Attachment"
+      },
+      {
+        "name": "layout_link",
+        "description": "Provide a shareable link to your layout.",
+        "type": "String"
+      },
+      {
+        "name": "notes",
+        "description": "Add custom notes or details about your layout.",
+        "type": "String"
+      }
+    ]
+  },
+  {
+    "id": "1205914754686779413",
+    "name": "/layout config",
+    "rootName": "layout",
+    "mappedId": "layout-config",
+    "translationKey": "layout.config",
+    "formatted": "</layout config:1205914754686779413>",
+    "description": "Adjust settings related to layout posting and interactions.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "allow_voting",
+        "description": "Enable or disable voting on posted layouts.",
+        "type": "Boolean"
+      },
+      {
+        "name": "allow_tracking",
+        "description": "Enable or disable tracking of layout copies.",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1128719999431868528",
+    "name": "/bot-personalizer",
+    "rootName": "bot-personalizer",
+    "mappedId": "bot-personalizer",
+    "translationKey": "bot_personalizer",
+    "description_long": null,
+    "formatted": "</bot-personalizer:1128719999431868528>",
+    "description": "Build your own Discord bot!",
+    "options": [
+      {
+        "name": "opt_out",
+        "description": "Opt-out from the custom bot and delete related services.",
+        "type": "Boolean"
+      }
+    ]
+  },
+  {
+    "id": "1387131304344158258",
+    "name": "/status",
+    "rootName": "status",
+    "mappedId": "status",
+    "translationKey": "status",
+    "description_long": null,
+    "formatted": "</status:1387131304344158258>",
+    "description": "Shows information about the bot's status.",
+    "options": []
+  },
+  {
+    "id": "1387131304344158259",
+    "name": "/patreon",
+    "rootName": "patreon",
+    "mappedId": "patreon",
+    "translationKey": "patreon",
+    "description_long": null,
+    "formatted": "</patreon:1387131304344158259>",
+    "description": "Shows information about the bot's Patreon.",
+    "options": []
+  },
+  {
+    "id": "1387131304344158260",
+    "name": "/usage",
+    "rootName": "usage",
+    "mappedId": "usage",
+    "translationKey": "usage",
+    "description_long": null,
+    "formatted": "</usage:1387131304344158260>",
+    "description": "You can't use it anyway, so why explain?",
+    "options": [
+      {
+        "name": "chart",
+        "description": "It does something, yeah?",
+        "type": "Boolean"
+      },
+      {
+        "name": "limit",
+        "description": "It does something, yeah?",
+        "type": "Integer"
+      }
+    ]
+  },
+  {
+    "id": "1387131304344158261",
+    "name": "/eval",
+    "rootName": "eval",
+    "mappedId": "eval",
+    "translationKey": "eval",
+    "description_long": null,
+    "formatted": "</eval:1387131304344158261>",
+    "description": "You can't use it anyway, so why explain?",
+    "options": [
+      {
+        "name": "code",
+        "description": "Code to evaluate.",
+        "type": "String"
+      },
+      {
+        "name": "shard",
+        "description": "Whether to run the code on all shards or just the current one.",
+        "type": "Boolean"
+      },
+      {
+        "name": "depth",
+        "description": "Depth of the returned object.",
+        "type": "Number"
+      }
+    ]
+  }
+]

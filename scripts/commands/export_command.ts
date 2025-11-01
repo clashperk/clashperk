@@ -163,14 +163,14 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
     },
     {
       name: 'users',
-      description: command.export.user.description,
-      description_localizations: translation('command.export.user.description'),
+      description: command.export.users.description,
+      description_localizations: translation('command.export.users.description'),
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: 'role',
-          description: command.export.user.options.role.description,
-          description_localizations: translation('command.export.user.options.role.description'),
+          description: command.export.users.options.role.description,
+          description_localizations: translation('command.export.users.options.role.description'),
           type: ApplicationCommandOptionType.Role
         }
       ]

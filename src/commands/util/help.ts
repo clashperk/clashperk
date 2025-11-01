@@ -1,16 +1,7 @@
 import { CommandCategories } from '@app/constants';
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ApplicationCommandSubCommand,
-  ApplicationCommandType,
-  ButtonBuilder,
-  ButtonStyle,
-  CommandInteraction,
-  EmbedBuilder,
-  StringSelectMenuBuilder
-} from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder } from 'discord.js';
 import i18next from 'i18next';
+import { flattenApplicationCommands } from '../../helper/commands.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 
@@ -41,7 +32,8 @@ interface CommandInfo {
   rootName: string;
   description: string;
   category: string;
-  isRestricted?: number;
+  isRestricted: boolean;
+  formatted: string;
   translationKey: string;
 }
 
@@ -67,7 +59,7 @@ export default class HelpCommand extends Command {
     const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
     embed.setDescription(
       [
-        `## </${command.name}:${command.id}> ${command.isRestricted ? EMOJIS.OWNER : ''}`,
+        `## ${command.formatted} ${command.isRestricted ? EMOJIS.OWNER : ''}`,
         '\u200b',
         `${this.translate(command.translationKey, interaction.locale) || command.description}`,
         //
@@ -123,7 +115,7 @@ export default class HelpCommand extends Command {
               const _commands = commands.map((command) => {
                 const description = this.translate(command.translationKey, interaction.locale) || command.description;
                 const icon = ` ${command.isRestricted ? EMOJIS.OWNER : ''}`;
-                return `### </${command.name}:${command.id}>${icon}\n${description}`;
+                return `### ${command.formatted}${icon}\n${description}`;
               });
               return _commands.join('\n');
             })
@@ -172,71 +164,21 @@ export default class HelpCommand extends Command {
         ? (await this.client.application?.commands.fetch({ guildId: interaction.guildId }))!
         : (await this.client.application?.commands.fetch())!;
 
-    const commands = applicationCommands
-      .filter((command) => command.type === ApplicationCommandType.ChatInput)
-      .map((command) => {
-        const subCommandGroups = command.options
-          .filter((option) => [ApplicationCommandOptionType.SubcommandGroup, ApplicationCommandOptionType.Subcommand].includes(option.type))
-          .flatMap((option) => {
-            if (option.type === ApplicationCommandOptionType.SubcommandGroup && option.options?.length) {
-              return option.options.map((subOption) => {
-                const _name = `${command.name} ${option.name} ${subOption.name}`;
-                const _translationKey = this.formatKey(_name);
-                const _root = this.handler.getCommand(command.name);
-                const _cmd = this.handler.getCommand(`${command.name}-${option.name}-${subOption.name}`);
+    const items = await flattenApplicationCommands([...applicationCommands.values()]);
+    const commands = items.map((command) => {
+      const translationKey = this.formatKey(command.mappedId);
+      const baseCommand = this.handler.getCommand(command.name);
+      const targetCommand = this.handler.getCommand(command.mappedId);
 
-                return {
-                  id: command.id,
-                  name: _name,
-                  rootName: command.name,
-                  description: subOption.description,
-                  category: _root?.category ?? _cmd?.category ?? CommandCategories.SEARCH,
-                  isRestricted: _cmd?.userPermissions?.length,
-                  translationKey: _translationKey,
-                  options: subOption.options?.map((option) => ({ name: option.name, description: option.description })) ?? []
-                };
-              });
-            }
-            const _name = `${command.name} ${option.name}`;
-            const _translationKey = this.formatKey(_name);
-            const _root = this.client.commandHandler.getCommand(command.name);
-            const _cmd = this.client.commandHandler.getCommand(`${command.name}-${option.name}`);
+      return {
+        ...command,
+        translationKey,
+        category: baseCommand?.category ?? targetCommand?.category ?? CommandCategories.SEARCH,
+        isRestricted: !!targetCommand?.userPermissions?.length
+      };
+    });
 
-            return {
-              id: command.id,
-              name: _name,
-              rootName: command.name,
-              description: option.description,
-              category: _root?.category ?? _cmd?.category ?? CommandCategories.SEARCH,
-              isRestricted: _cmd?.userPermissions?.length,
-              translationKey: _translationKey,
-              options:
-                (option as ApplicationCommandSubCommand).options?.map((option) => ({
-                  name: option.name,
-                  description: option.description
-                })) ?? []
-            };
-          });
-        if (subCommandGroups.length) return [...subCommandGroups];
-
-        const _translationKey = this.formatKey(command.name);
-        const _root = this.handler.getCommand(command.name);
-
-        return [
-          {
-            id: command.id,
-            name: command.name,
-            rootName: command.name,
-            category: _root?.category ?? CommandCategories.SEARCH,
-            isRestricted: _root?.userPermissions?.length,
-            description: command.description,
-            translationKey: _translationKey,
-            options: command.options.map((option) => ({ name: option.name, description: option.description }))
-          }
-        ];
-      });
-
-    return commands.flat();
+    return commands;
   }
 
   private translate(key: string, lng: string) {
