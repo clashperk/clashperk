@@ -1,5 +1,6 @@
 import {
   ApplicationCommand,
+  ApplicationCommandChoicesOption,
   ApplicationCommandOption,
   ApplicationCommandOptionType,
   ApplicationCommandSubCommand,
@@ -12,7 +13,8 @@ function flatOptions(options?: readonly ApplicationCommandOption[]) {
     options?.map((option) => ({
       name: option.name,
       description: option.description,
-      type: ApplicationCommandOptionType[option.type]
+      type: ApplicationCommandOptionType[option.type],
+      choices: ((option as ApplicationCommandChoicesOption<string>).choices || []).map((choice) => choice.name)
     })) ?? []
   );
 }
