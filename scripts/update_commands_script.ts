@@ -40,8 +40,9 @@ function commandStructureValidationCheck(obj: Record<string, any>) {
 }
 
 async function exportCommands(commands: ApplicationCommand[]) {
-  const raw = await flattenApplicationCommands(commands);
-  writeFileSync('./scripts/commands_export.json', JSON.stringify(raw, null, 2));
+  const result = await flattenApplicationCommands(commands);
+  result.sort((a, b) => a.name.localeCompare(b.name));
+  writeFileSync('./scripts/commands_export.json', JSON.stringify(result, null, 2));
 }
 
 const applicationGuildCommands = async (token: string, guildId: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
