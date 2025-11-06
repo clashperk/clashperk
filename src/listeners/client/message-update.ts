@@ -12,7 +12,7 @@ export default class MessageUpdateListener extends Listener {
   }
 
   public async exec(oldMessage: Message, newMessage: Message) {
-    if (!(oldMessage.author?.id === this.client.user?.id && newMessage.author.id === this.client.user.id)) return;
+    if (!(oldMessage.author?.id === this.client.user.id && newMessage.author.id === this.client.user.id)) return;
 
     const oldMessageComponentIds = this.flattenCustomIds(oldMessage);
     const newMessageComponentIds = this.flattenCustomIds(newMessage);

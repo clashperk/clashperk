@@ -280,7 +280,7 @@ export class StorageHandler {
 
     const clans = await this.getWebhookWorkloads(channel.guild.id);
     const estimated = channelWebhooks
-      .filter((webhook) => webhook.applicationId === this.client.user!.id)
+      .filter((webhook) => webhook.applicationId === this.client.user.id)
       .map((webhook) => webhook.id)
       .map((webhookId) => {
         const count = clans.reduce((counter, clan) => {
@@ -300,8 +300,8 @@ export class StorageHandler {
     if (channelWebhooks.size >= 10) return null;
 
     const webhook = await channel.createWebhook({
-      name: this.client.user!.displayName,
-      avatar: this.client.user!.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
+      name: this.client.user.displayName,
+      avatar: this.client.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
     });
     this.client.logger.log(`Created webhook for ${channel.guild.name}#${channel.name}`, { label: 'HOOK' });
     return webhook;

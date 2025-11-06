@@ -65,13 +65,13 @@ export default class DebugCommand extends Command {
     const emojis = UEE_FOR_SLASH ? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY } : { cross: '❌', tick: '☑️', none: '⬛' };
 
     const webhookChannel = channel.isThread() ? channel.parent! : channel;
-    const webhooks = webhookChannel.permissionsFor(this.client.user!.id)?.has(['ManageWebhooks', 'ViewChannel'])
+    const webhooks = webhookChannel.permissionsFor(this.client.user.id)?.has(['ManageWebhooks', 'ViewChannel'])
       ? await webhookChannel.fetchWebhooks()
       : null;
 
     const chunks = Util.splitMessage(
       [
-        `**${this.client.user!.displayName} Debug Menu**`,
+        `**${this.client.user.displayName} Debug Menu**`,
         '',
         '**Server ID**',
         `${interaction.guild.id}`,

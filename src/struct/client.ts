@@ -127,12 +127,12 @@ export class Client extends DiscordClient<true> {
         MessageManager: 0,
         UserManager: {
           maxSize: 2,
-          keepOverLimit: (user) => user.id === this.user!.id
+          keepOverLimit: (user) => user.id === this.user.id
         },
         GuildMemberManager: {
           maxSize: 2,
           keepOverLimit: (member) => {
-            return member.id === this.user!.id || this.cacheOverLimitGuilds.has(member.guild.id);
+            return member.id === this.user.id || this.cacheOverLimitGuilds.has(member.guild.id);
           }
         }
       }),
@@ -144,7 +144,7 @@ export class Client extends DiscordClient<true> {
         },
         guildMembers: {
           interval: 5 * 60,
-          filter: () => (member) => member.id !== this.user!.id && !this.cacheOverLimitGuilds.has(member.guild.id)
+          filter: () => (member) => member.id !== this.user.id && !this.cacheOverLimitGuilds.has(member.guild.id)
         }
       }
     });
@@ -165,7 +165,7 @@ export class Client extends DiscordClient<true> {
   }
 
   public get applicationId() {
-    return this.user!.id!;
+    return this.user.id!;
   }
 
   public isFeatureEnabled(flag: FeatureFlags, distinctId: string | 'global') {
@@ -178,11 +178,11 @@ export class Client extends DiscordClient<true> {
   }
 
   public isCustom() {
-    return !['635462521729581058', '526971716711350273', '1228022517667467367'].includes(this.user!.id);
+    return !['635462521729581058', '526971716711350273', '1228022517667467367'].includes(this.user.id);
   }
 
   public isPrimary() {
-    return this.user!.id === '526971716711350273';
+    return this.user.id === '526971716711350273';
   }
 
   public embed(guildRef: Message | string | BaseInteraction | null) {

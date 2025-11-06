@@ -30,11 +30,11 @@ export default class BlacklistCommand extends Command {
       if (blacklist.length === 0) this.client.settings.delete('global', Settings.USER_BLACKLIST);
       else this.client.settings.set('global', Settings.USER_BLACKLIST, blacklist);
 
-      return message.channel.send(`**${user.displayName}** has been removed from the ${this.client.user!.displayName}'s blacklist.`);
+      return message.channel.send(`**${user.displayName}** has been removed from the ${this.client.user.displayName}'s blacklist.`);
     }
 
     blacklist.push(user.id);
     this.client.settings.set('global', Settings.USER_BLACKLIST, blacklist);
-    return message.channel.send(`**${user.displayName}** has been blacklisted from using ${this.client.user!.displayName}'s command.`);
+    return message.channel.send(`**${user.displayName}** has been blacklisted from using ${this.client.user.displayName}'s command.`);
   }
 }

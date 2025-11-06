@@ -327,7 +327,8 @@ export const UNITS_MAP_BY_NAME: Record<string, number> = {
   'Noble Iron': 130,
   'Ice Block Spell': 131,
   'Metal Pants': 132,
-  'Action Figure': 133
+  'Action Figure': 133,
+  'Meteor Staff': 134
 };
 
 const ACHIEVEMENT_LIST = Object.entries(ACHIEVEMENTS_MAP_BY_NAME).reduce<{ name: string; id: string }[]>((record, [name, id]) => {

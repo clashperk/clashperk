@@ -20,7 +20,7 @@ export default class InviteCommand extends Command {
       const missingServers = emojiServers.filter((id) => !guildIds.includes(id));
 
       const inviteLinks = missingServers.map((guildId, idx) => {
-        return `[- Emoji Server (${idx + 1})](${getInviteLink(this.client.user!.id, guildId, true)})`;
+        return `[- Emoji Server (${idx + 1})](${getInviteLink(this.client.user.id, guildId, true)})`;
       });
 
       if (inviteLinks.length) additionalTexts.push('**Invite to the Following Emoji Servers**');
@@ -28,12 +28,12 @@ export default class InviteCommand extends Command {
     }
 
     const embed = new EmbedBuilder()
-      .setAuthor({ name: this.client.user!.displayName, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
+      .setAuthor({ name: this.client.user.displayName, iconURL: this.client.user.displayAvatarURL({ extension: 'png' }) })
       .setDescription(
         [
           'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. Thanks in advance!',
           '',
-          `**[Add to Discord](${getInviteLink(this.client.user!.id)})**`,
+          `**[Add to Discord](${getInviteLink(this.client.user.id)})**`,
           '',
           '**[Support Server](https://discord.gg/ppuppun)** | **[Subscribe on Patreon](https://www.patreon.com/clashperk)**',
           '',

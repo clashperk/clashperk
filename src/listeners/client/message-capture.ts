@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
-import { Listener } from '../../lib/handlers.js';
 import moment from 'moment';
+import { Listener } from '../../lib/handlers.js';
 
 export default class MessageCaptureListener extends Listener {
   public constructor() {
@@ -13,7 +13,7 @@ export default class MessageCaptureListener extends Listener {
 
   public async exec(message: Message) {
     if (!message.applicationId) return;
-    if (message.applicationId !== this.client.user?.id) return;
+    if (message.applicationId !== this.client.user.id) return;
 
     const key = `MSG_SENT:${moment().format('YYYY-MM-DD')}`;
     await this.client.redis.connection

@@ -37,7 +37,7 @@ export class ClientUtil {
 
     if (!guilds) return null;
 
-    return this.client.user?.setPresence({
+    return this.client.user.setPresence({
       status: 'online',
       activities: [
         {
@@ -70,9 +70,9 @@ export class ClientUtil {
   }
 
   public setMaintenanceBreak(cleared = false) {
-    if (cleared) return this.client.user!.setPresence({ status: 'online', activities: [] });
+    if (cleared) return this.client.user.setPresence({ status: 'online', activities: [] });
 
-    return this.client.user?.setPresence({
+    return this.client.user.setPresence({
       status: 'online',
       activities: [
         {
@@ -88,13 +88,13 @@ export class ClientUtil {
     if (channel) {
       if (
         channel.isThread() &&
-        channel.permissionsFor(this.client.user!.id)!.has(permissions) &&
+        channel.permissionsFor(this.client.user.id)!.has(permissions) &&
         this.hasWebhookPermission(channel.parent!)
       ) {
         return { isThread: true, channel, parent: channel.parent! };
       }
 
-      if (!channel.isThread() && channel.permissionsFor(this.client.user!)?.has(permissions) && this.hasWebhookPermission(channel)) {
+      if (!channel.isThread() && channel.permissionsFor(this.client.user)?.has(permissions) && this.hasWebhookPermission(channel)) {
         return { isThread: false, channel, parent: channel };
       }
     }
@@ -134,7 +134,7 @@ export class ClientUtil {
   }
 
   public hasWebhookPermission(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel) {
-    return channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks', 'ViewChannel']);
+    return channel.permissionsFor(this.client.user.id)!.has(['ManageWebhooks', 'ViewChannel']);
   }
 
   public async isTrustedGuild(interaction: CommandInteraction) {

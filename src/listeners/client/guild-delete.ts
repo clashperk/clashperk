@@ -70,8 +70,8 @@ export default class GuildDeleteListener extends Listener {
         .setTimestamp();
       return webhook.send({
         embeds: [embed],
-        username: this.client.user!.displayName,
-        avatarURL: this.client.user!.displayAvatarURL({ forceStatic: false }),
+        username: this.client.user.displayName,
+        avatarURL: this.client.user.displayAvatarURL({ forceStatic: false }),
         content: `**Total ${guilds} | Growth ${await this.growth()}**`
       });
     }
@@ -95,7 +95,7 @@ export default class GuildDeleteListener extends Listener {
   }
 
   private async onDelete(guildId: string) {
-    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user!.id });
+    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user.id });
     if (!app) return;
 
     return this.client.settings.deleteCustomBot(guildId);

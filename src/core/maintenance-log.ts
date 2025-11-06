@@ -77,7 +77,7 @@ export class MaintenanceLog {
       if (this.client.settings.hasCustomBot(setting.guildId) && !this.client.isCustom()) continue;
 
       const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
-      if (channel?.isTextBased() && channel.permissionsFor(this.client.user!)?.has(['SendMessages', 'ViewChannel', 'UseExternalEmojis'])) {
+      if (channel?.isTextBased() && channel.permissionsFor(this.client.user)?.has(['SendMessages', 'ViewChannel', 'UseExternalEmojis'])) {
         const message = i18n(this.inMaintenance ? 'common.maintenance_start' : 'common.maintenance_end', {
           lng: channel.guild.preferredLocale,
           duration: `(Started ${this.dur(dur)} ago)`

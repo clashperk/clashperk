@@ -37,7 +37,7 @@ export default class UsageCommand extends Command {
     const maxDigit = Math.max(...commands.map((cmd) => cmd.uses.toString().length));
     const usage = await this.usage();
     const embed = new EmbedBuilder()
-      .setAuthor({ name: `${this.client.user!.displayName}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
+      .setAuthor({ name: `${this.client.user.displayName}`, iconURL: this.client.user.displayAvatarURL({ extension: 'png' }) })
       .setColor(this.client.embed(interaction))
       .setTitle('Usage')
       .setFooter({ text: `${total.toLocaleString()}x Total • Since April 2019` });

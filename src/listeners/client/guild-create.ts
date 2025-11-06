@@ -74,8 +74,8 @@ export default class GuildCreateListener extends Listener {
         .setTimestamp();
       return webhook.send({
         embeds: [embed],
-        username: this.client.user!.displayName,
-        avatarURL: this.client.user!.displayAvatarURL({ extension: 'png' }),
+        username: this.client.user.displayName,
+        avatarURL: this.client.user.displayAvatarURL({ extension: 'png' }),
         content: `**Total ${guilds.toLocaleString()} | Growth ${await this.growth()}**`
       });
     }
@@ -94,7 +94,7 @@ export default class GuildCreateListener extends Listener {
       const channel = guild.channels.cache.get(guild.systemChannelId) as TextChannel;
       if (
         channel
-          .permissionsFor(this.client.user!.id)
+          .permissionsFor(this.client.user.id)
           ?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.ViewChannel])
       ) {
         return channel.send({ embeds: [embed] });
@@ -106,7 +106,7 @@ export default class GuildCreateListener extends Listener {
       .sort((a, b) => a.createdAt!.getTime() - b.createdAt!.getTime())
       .filter((channel) =>
         channel
-          .permissionsFor(this.client.user!.id)!
+          .permissionsFor(this.client.user.id)!
           .has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.ViewChannel])
       )
       .first();
@@ -128,7 +128,7 @@ export default class GuildCreateListener extends Listener {
     const patron = await this.client.subscribers.getMemberByGuildId(guild.id);
     if (!patron?.applicationId) return;
 
-    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user!.id });
+    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user.id });
     if (!app) return;
 
     const commands = await this.client.customBotManager.createCommands(app.serviceId, guild.id, app.token);
@@ -142,7 +142,7 @@ export default class GuildCreateListener extends Listener {
   }
 
   private async onReady() {
-    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user!.id });
+    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user.id });
     if (!app || app.isLive) return;
 
     return this.client.customBotManager.handleOnReady(app);

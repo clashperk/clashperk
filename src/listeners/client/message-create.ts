@@ -34,14 +34,13 @@ export default class MessageCreateListener extends Listener {
     if (message.channel.type === ChannelType.DM || message.channel.type === ChannelType.GroupDM) return;
     if (this.inhibitor(message)) return;
 
-    if (message.channel.isThread() && !message.channel.permissionsFor(this.client.user!)?.has(PermissionFlagsBits.SendMessagesInThreads))
+    if (message.channel.isThread() && !message.channel.permissionsFor(this.client.user)?.has(PermissionFlagsBits.SendMessagesInThreads))
       return;
-    if (!message.channel.permissionsFor(this.client.user!)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]))
-      return;
+    if (!message.channel.permissionsFor(this.client.user)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel])) return;
 
     if (REGEX.test(message.content)) return this.linkParser(message);
 
-    const parsed = [`<@${this.client.user!.id}>`, `<@!${this.client.user!.id}>`]
+    const parsed = [`<@${this.client.user.id}>`, `<@!${this.client.user.id}>`]
       .map((mention) => this.parseWithPrefix(message, mention))
       .find((_) => _);
     if (!parsed) return;

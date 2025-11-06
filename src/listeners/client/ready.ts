@@ -12,11 +12,11 @@ export default class ReadyListener extends Listener {
 
   public async exec() {
     this.client.logger.info(
-      `${this.client.user!.displayName} (${this.client.user!.id}) [${(process.env.NODE_ENV ?? 'development').toUpperCase()}]`,
+      `${this.client.user.displayName} (${this.client.user.id}) [${(process.env.NODE_ENV ?? 'development').toUpperCase()}]`,
       { label: 'READY' }
     );
 
-    const applicationCommands = await this.client.application!.commands.fetch();
+    const applicationCommands = await this.client.application.commands.fetch();
     const commands = await flattenApplicationCommands([...applicationCommands.values()]);
 
     commands.map((cmd) => {
@@ -30,7 +30,7 @@ export default class ReadyListener extends Listener {
   }
 
   private async onReady() {
-    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user!.id });
+    const app = await this.client.customBotManager.findBot({ serviceId: this.client.user.id });
     if (!app) return;
 
     await this.client.customBotManager.checkGuild(app);
