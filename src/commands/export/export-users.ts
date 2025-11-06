@@ -41,7 +41,7 @@ export default class ExportUsersCommand extends Command {
       });
     }
 
-    let guildMembers = await interaction.guild.members.fetch();
+    let guildMembers = await this.client.util.getGuildMembers(interaction);
     if (args.role) {
       guildMembers = guildMembers.filter((member) => !member.user.bot && member.roles.cache.has(args.role!.id));
     } else {

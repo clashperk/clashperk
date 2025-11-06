@@ -137,7 +137,7 @@ export default class ExportClanMembersCommand extends Command {
     }
 
     const linksMap = await this.client.resolver.getLinkedUsersMap(members);
-    const guildMembers = await interaction.guild.members.fetch();
+    const guildMembers = await this.client.util.getGuildMembers(interaction);
 
     for (const member of members) {
       const link = linksMap[member.tag];

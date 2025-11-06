@@ -1216,8 +1216,8 @@ export class RosterManager {
       const guild = this.client.guilds.cache.get(roster.guildId);
       if (!guild) return null;
 
-      const members = await guild.members.fetch().catch(() => null);
-      if (!members) return null;
+      const members = await this.client.util.getGuildMembers(guild);
+      if (!members.size) return null;
 
       for (const member of members.values()) {
         const _roles = (rolesMap[member.id] ?? []).filter((id) => this.hasPermission(guild, id));

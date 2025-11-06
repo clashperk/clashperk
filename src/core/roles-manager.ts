@@ -303,7 +303,8 @@ export class RolesManager {
   }
 
   private async getTargetedGuildMembers(guild: Guild, memberTags?: string[]) {
-    const guildMembers = await guild.members.fetch().catch(() => EMPTY_GUILD_MEMBER_COLLECTION);
+    const guildMembers = await this.client.util.getGuildMembers(guild);
+
     if (!memberTags) {
       const linkedPlayers = await this.getLinkedPlayersByUserId(guildMembers.map((m) => m.id));
       const linkedUserIds = Object.keys(linkedPlayers);
@@ -324,7 +325,7 @@ export class RolesManager {
   private async getTargetedGuildMembersForUserOrRole(guild: Guild, userOrRole: User | Role) {
     let guildMembers = EMPTY_GUILD_MEMBER_COLLECTION;
     if (userOrRole instanceof Role) {
-      const members = await guild.members.fetch().catch(() => EMPTY_GUILD_MEMBER_COLLECTION);
+      const members = await this.client.util.getGuildMembers(guild);
       guildMembers = members.filter((member) => member.roles.cache.has(userOrRole.id));
     } else {
       const guildMember = await guild.members.fetch(userOrRole.id).catch(() => null);

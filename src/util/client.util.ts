@@ -1,7 +1,10 @@
 import { SheetType } from '@app/entities';
+import { captureException } from '@sentry/node';
 import {
   ActivityType,
+  BaseInteraction,
   ChannelType,
+  Collection,
   CommandInteraction,
   ForumChannel,
   Guild,
@@ -43,6 +46,27 @@ export class ClientUtil {
         }
       ]
     });
+  }
+
+  public async getGuildMembers(interaction: BaseInteraction<'cached'> | Guild): Promise<Collection<string, GuildMember>> {
+    const guild = interaction instanceof Guild ? interaction : interaction.guild;
+    if (this.client.cacheOverLimitGuilds.has(guild.id)) {
+      return guild.members.cache;
+    }
+
+    this.client.cacheOverLimitGuilds.add(guild.id);
+    setTimeout(() => {
+      this.client.cacheOverLimitGuilds.delete(guild.id);
+    }, 45000);
+
+    try {
+      return await guild.members.fetch();
+    } catch (error) {
+      captureException(error);
+      this.client.cacheOverLimitGuilds.delete(guild.id);
+      this.client.logger.error(error, { label: 'ClientUtil' });
+      return new Collection<string, GuildMember>(); // returning nil collection
+    }
   }
 
   public setMaintenanceBreak(cleared = false) {

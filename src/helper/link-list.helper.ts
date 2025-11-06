@@ -32,7 +32,7 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
     else members.push({ tag: member.tag, userId: member.userId, name: clanMember.name, verified: member.verified });
   }
 
-  const guildMembers = await guild.members.fetch();
+  const guildMembers = await client.util.getGuildMembers(guild);
   // players linked and on the guild.
   const onDiscord = members.filter((mem) => guildMembers.has(mem.userId));
   // linked to discord but not on the guild.

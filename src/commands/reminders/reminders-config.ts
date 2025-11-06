@@ -146,8 +146,8 @@ export default class RemindersConfigCommand extends Command {
 
     if (!config.wars && !config.raids && !config.games) return;
 
-    const members = await guild.members.fetch().catch(() => null);
-    if (!members) return null;
+    const members = await this.client.util.getGuildMembers(guild);
+    if (!members.size) return null;
 
     if (config.wars) {
       const userIds = members.filter((mem) => mem.roles.cache.has(config.wars)).map((mem) => mem.id);

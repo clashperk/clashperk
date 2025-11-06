@@ -90,7 +90,7 @@ export default class LinkListCommand extends Command {
       if (user) members.push({ tag: mem.tag, userId: user.userId, name: mem.name, verified: user.verified, displayName: user.displayName });
     }
 
-    const guildMembers = await interaction.guild.members.fetch();
+    const guildMembers = await this.client.util.getGuildMembers(interaction);
 
     const clanMembers = clan.memberList.map((member) => {
       const link = members.find((mem) => mem.tag === member.tag);

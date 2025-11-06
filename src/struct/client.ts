@@ -32,7 +32,7 @@ import { StatsHandler } from './stats-handler.js';
 import { StorageHandler } from './storage-handler.js';
 import { Subscribers } from './subscribers.js';
 
-export class Client extends DiscordClient {
+export class Client extends DiscordClient<true> {
   public commandHandler = new CommandHandler(this, {
     directory: fileURLToPath(new URL('../commands', import.meta.url))
   });
@@ -132,7 +132,7 @@ export class Client extends DiscordClient {
         GuildMemberManager: {
           maxSize: 2,
           keepOverLimit: (member) => {
-            return member.id === this.user?.id || this.cacheOverLimitGuilds.has(member.guild.id);
+            return member.id === this.user!.id || this.cacheOverLimitGuilds.has(member.guild.id);
           }
         }
       }),
