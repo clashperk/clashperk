@@ -3,6 +3,7 @@ import { RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { ACTIVITY_COMMAND } from './commands/activity_command.js';
 import { ALIAS_COMMAND } from './commands/alias_command.js';
 import { ARMY_COMMAND } from './commands/army_command.js';
+import { ASK_COMMAND } from './commands/ask_command.js';
 import { ATTACKS_COMMAND } from './commands/attacks_command.js';
 import { AUTOROLE_COMMAND } from './commands/autorole_command.js';
 import { BOOSTS_COMMAND } from './commands/boosts_command.js';
@@ -124,6 +125,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 
 export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [BOT_PERSONALIZER_COMMAND];
 
-export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [STATUS_COMMAND, PATREON_COMMAND, USAGE_COMMAND, EVAL_COMMAND];
+export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
+  STATUS_COMMAND,
+  PATREON_COMMAND,
+  USAGE_COMMAND,
+  EVAL_COMMAND,
+  ASK_COMMAND
+];
 
 export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [];

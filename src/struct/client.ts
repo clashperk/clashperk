@@ -124,17 +124,7 @@ export class Client extends DiscordClient<true> {
         AutoModerationRuleManager: 0,
         DMMessageManager: 0,
         GuildMessageManager: 0,
-        MessageManager: 0,
-        UserManager: {
-          maxSize: 2,
-          keepOverLimit: (user) => user.id === this.user.id
-        },
-        GuildMemberManager: {
-          maxSize: 2,
-          keepOverLimit: (member) => {
-            return member.id === this.user.id || this.cacheOverLimitGuilds.has(member.guild.id);
-          }
-        }
+        MessageManager: 0
       }),
       sweepers: {
         ...Options.DefaultSweeperSettings,
@@ -145,6 +135,10 @@ export class Client extends DiscordClient<true> {
         guildMembers: {
           interval: 5 * 60,
           filter: () => (member) => member.id !== this.user.id && !this.cacheOverLimitGuilds.has(member.guild.id)
+        },
+        users: {
+          interval: 5 * 60,
+          filter: () => (user) => user.id !== this.user.id
         }
       }
     });
