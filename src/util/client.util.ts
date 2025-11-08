@@ -60,12 +60,17 @@ export class ClientUtil {
     }, 45000);
 
     try {
-      return await guild.members.fetch();
+      try {
+        return await guild.members.fetch({ time: 5000 });
+      } catch (error) {
+        throw new Error(error.message);
+      }
     } catch (error) {
       captureException(error);
       this.client.cacheOverLimitGuilds.delete(guild.id);
       this.client.logger.error(error, { label: 'ClientUtil' });
-      return new Collection<string, GuildMember>(); // returning nil collection
+
+      return guild.members.cache;
     }
   }
 
