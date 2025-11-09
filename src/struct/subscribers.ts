@@ -307,7 +307,7 @@ export class Subscribers {
         headers: { authorization: `Bearer ${process.env.PATREON_API_KEY}` },
         signal: timeoutSignal(10_000, 'GET /campaigns/:id/members')
       });
-      const result = (await res.json()) as { data: PatreonMember[]; included: PatreonUser[] };
+      const result = (await res.json()) as PatreonApiOutput;
       return result?.data ? result : null;
     } catch (error) {
       this.client.logger.log('Failed to fetch Patreon API', { label: 'PATREON' });
@@ -405,4 +405,9 @@ export interface PatreonUser {
   };
   id: string;
   type: string;
+}
+
+export interface PatreonApiOutput {
+  data: PatreonMember[];
+  included: PatreonUser[];
 }

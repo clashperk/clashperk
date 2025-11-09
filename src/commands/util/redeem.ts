@@ -36,17 +36,27 @@ export default class RedeemCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, { disable }: { disable?: boolean }) {
-    const data = await this.client.subscribers.fetchAPI();
-    if (!data) {
+    const result = await this.client.subscribers.fetchAPI();
+    if (!result) {
       return interaction.editReply({
         content: '**Something went wrong (unresponsive api), please [contact us.](<https://discord.gg/ppuppun>)**'
       });
     }
 
+    const order: Record<string, number> = {};
+    result.data.sort((a, b) => {
+      return new Date(b.attributes.last_charge_date).getTime() - new Date(a.attributes.last_charge_date).getTime();
+    });
+    result.data.forEach((item, index) => {
+      order[item.id] = index;
+    });
+    result.included.sort((a, b) => order[a.id] - order[b.id]);
+
     const disabledUserIds = this.client.settings.get<string[]>('global', Settings.DISABLED_PATREON_IDS, []);
-    const patron = data.included.find(
+    const patron = result.included.find(
       (entry) => !disabledUserIds.includes(entry.id) && entry.attributes.social_connections?.discord?.user_id === interaction.user.id
     );
+
     if (!patron) {
       const embed = new EmbedBuilder()
         .setColor(16345172)
@@ -68,11 +78,7 @@ export default class RedeemCommand extends Command {
     let user = await collection.findOne({ id: patron.id });
 
     if (disable) {
-      if (!user) return interaction.editReply('**You do not have an active subscription.**');
-      if (!user.guilds.length) {
-        return interaction.editReply('**You do not have an active subscription.**');
-      }
-
+      if (!user || !user.guilds.length) return interaction.editReply('**You do not have an active subscription.**');
       return this.disableRedemption(interaction, { select: true, user, message: { content: '**Manage Patreon Subscriptions**' } });
     }
 
@@ -80,7 +86,7 @@ export default class RedeemCommand extends Command {
       return interaction.editReply('**This server already has an active subscription.**');
     }
 
-    const pledge = data.data.find((entry) => entry.relationships.user.data.id === patron.id);
+    const pledge = result.data.find((entry) => entry.relationships.user.data.id === patron.id);
     if (!pledge) {
       return interaction.editReply('**Something went wrong (unknown pledge), please [contact us.](<https://discord.gg/ppuppun>)**');
     }

@@ -1,5 +1,5 @@
 import { SheetType } from '@app/entities';
-import { captureException } from '@sentry/node';
+import { captureException, setContext } from '@sentry/node';
 import {
   ActivityType,
   BaseInteraction,
@@ -22,6 +22,8 @@ import { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from '../stru
 import { Collections, FeatureFlags, Settings } from './constants.js';
 
 export class ClientUtil {
+  private readonly fetchRecords: Record<string, Date> = {};
+
   public constructor(private readonly client: Client) {}
 
   public async setPresence() {
@@ -61,13 +63,21 @@ export class ClientUtil {
 
     try {
       try {
-        return await guild.members.fetch({ time: 5000 });
+        const members = await guild.members.fetch({ time: 5000 });
+        this.fetchRecords[guild.id] = new Date();
+        return members;
       } catch (error) {
         throw new Error(error.message);
       }
     } catch (error) {
+      setContext('guild_members_fetch_errored', {
+        guildId: guild.id,
+        member_count: guild.memberCount,
+        cached_member_count: guild.members.cache.size,
+        last_fetched_at: this.fetchRecords[guild.id],
+        errored_at: new Date()
+      });
       captureException(error);
-      this.client.cacheOverLimitGuilds.delete(guild.id);
       this.client.logger.error(error, { label: 'ClientUtil' });
 
       return guild.members.cache;
