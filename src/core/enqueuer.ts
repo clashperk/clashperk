@@ -53,7 +53,7 @@ export class Enqueuer {
   private async broadcast() {
     await this.client.redis.subscriber.subscribe(REDIS_PUB_SUB_CHANNEL, async (message) => {
       const data = JSON.parse(message);
-      
+
       const clanTag = data.tag || data.clanTag;
       if (this.paused || !this.cached.has(clanTag)) return;
 
