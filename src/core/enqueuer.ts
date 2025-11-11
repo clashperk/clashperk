@@ -53,8 +53,9 @@ export class Enqueuer {
   private async broadcast() {
     await this.client.redis.subscriber.subscribe(REDIS_PUB_SUB_CHANNEL, async (message) => {
       const data = JSON.parse(message);
-
-      if (this.paused || !this.cached.has(data.tag)) return;
+      
+      const clanTag = data.tag || data.clanTag;
+      if (this.paused || !this.cached.has(clanTag)) return;
 
       if (this.queue.remaining >= 2000) {
         this.client.logger.warn(`Queue is full (${this.queue.remaining}), skipping log processing...`, { label: 'Enqueuer' });
