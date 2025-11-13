@@ -249,7 +249,7 @@ export default class RedeemCommand extends Command {
         }
         await action.deferUpdate();
         await collection.updateOne({ _id: user._id }, { $pull: { guilds: { id } } });
-        await this.client.subscribers.deleteGuild(id);
+        await this.client.subscribers.deleteGuild(id, user.id);
         await action.editReply({ components: [], content: `Subscription disabled for **${guild.name} (${guild.id})**` });
       }
     });

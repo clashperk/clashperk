@@ -184,7 +184,7 @@ export class Subscribers {
 
       if (pledge.attributes.patron_status === 'active_patron') {
         for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
-        for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
+        for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id, patron.id);
 
         if (
           ![rewards.gold, rewards.gold_deprecated].includes(rewardId) &&
@@ -238,7 +238,7 @@ export class Subscribers {
         { $set: { active: false, cancelled: isFormer, declined: isDeclined, status: patronStatus } }
       );
 
-      for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
+      for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id, patron.id);
       if (patron.applicationId) await this.client.customBotManager.suspendService(patron.applicationId);
 
       this.client.logger.info(`Subscription Canceled ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
@@ -281,7 +281,10 @@ export class Subscribers {
     }
   }
 
-  public async deleteGuild(guildId: string) {
+  public async deleteGuild(guildId: string, patronId: string) {
+    const otherSubscription = await this.collection.findOne({ 'active': true, 'id': { $ne: patronId }, 'guilds.id': guildId });
+    if (otherSubscription) return;
+
     await this.client.settings.delete(guildId, Settings.CLAN_LIMIT);
     await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild: guildId }, { $set: { patron: false } });
 
