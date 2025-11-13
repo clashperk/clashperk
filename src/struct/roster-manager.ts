@@ -839,18 +839,17 @@ export class RosterManager {
       else member.clan = null;
     });
 
-    const value = await this.rosters.findOneAndUpdate(
+    const updated = await this.rosters.findOneAndUpdate(
       { _id: roster._id },
       { $set: { members, clan, lastUpdated: new Date() } },
       { returnDocument: 'after' }
     );
 
-    if (value) {
-      // skipping await so we don't block the event loop
-      this.updateBulkRoles({ roster: value, rolesMap, addRoles: true });
+    if (updated) {
+      this.updateBulkRoles({ roster: updated, rolesMap, addRoles: true });
     }
 
-    return value;
+    return updated;
   }
 
   public getRosterEmbed(roster: IRoster, categories: WithId<IRosterCategory>[], multi: true): EmbedBuilder[];
@@ -1216,6 +1215,42 @@ export class RosterManager {
       const guild = this.client.guilds.cache.get(roster.guildId);
       if (!guild) return null;
 
+      const aggregated = await this.rosters
+        .aggregate<{
+          _id: ObjectId;
+          roleId?: string;
+          members: { userId: string; categoryId?: ObjectId };
+        }>([
+          { $match: { guildId: guild.id, closed: false } },
+          { $unwind: { path: '$members', preserveNullAndEmptyArrays: true } },
+          { $project: { _id: 1, roleId: 1, members: { userId: 1, categoryId: 1 } } }
+        ])
+        .toArray();
+
+      const categories = await this.getCategories(guild.id);
+      const categoryRolesMap = Object.fromEntries(categories.map((category) => [category._id.toHexString(), category.roleId]));
+      const rosterRolesMap: Record<string, string[]> = {};
+      const rosterSystemRoles = new Set<string>();
+
+      for (const roster of aggregated) {
+        if (roster.roleId) rosterSystemRoles.add(roster.roleId);
+
+        if (!roster.members?.userId) continue;
+
+        rosterRolesMap[roster.members.userId] ??= [];
+        if (roster.roleId) {
+          rosterRolesMap[roster.members.userId].push(roster.roleId);
+        }
+        const categoryId = roster.members.categoryId?.toHexString() || null;
+        if (categoryId && categoryRolesMap[categoryId]) {
+          rosterRolesMap[roster.members.userId].push(categoryRolesMap[categoryId]);
+        }
+      }
+
+      for (const category of categories) {
+        if (category.roleId) rosterSystemRoles.add(category.roleId);
+      }
+
       const members = await this.client.util.getGuildMembers(guild);
       if (!members.size) return null;
 
@@ -1238,6 +1273,12 @@ export class RosterManager {
           const roles = [roster.roleId].filter((id) => this.hasPermission(guild, id) && member.roles.cache.has(id));
           if (roles.length) excluded.push(...roles);
         }
+
+        const allowedRoles = rosterRolesMap[member.id] || [];
+        const excludedRoles = member.roles.cache.filter(
+          (role) => this.hasPermission(guild, role.id) && rosterSystemRoles.has(role.id) && !allowedRoles.includes(role.id)
+        );
+        if (excludedRoles) excluded.push(...excludedRoles.map((role) => role.id));
 
         if (!excluded.length && !included.length) continue;
 
