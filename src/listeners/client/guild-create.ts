@@ -31,6 +31,7 @@ export default class GuildCreateListener extends Listener {
     this.client.util.setPresence();
     this.client.logger.log(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
+    await this.client.settings.loadGuild(guild.id);
     await this.intro(guild).catch(() => null);
 
     if (this.client.isCustom()) {

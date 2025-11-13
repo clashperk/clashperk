@@ -30,6 +30,7 @@ export default class GuildDeleteListener extends Listener {
     this.client.util.setPresence();
     this.client.logger.log(`${guild.name} (${guild.id})`, { label: 'GUILD_DELETE' });
 
+    await this.client.settings.loadGuild(guild.id);
     await this.delete(guild);
 
     if (this.client.isCustom()) {

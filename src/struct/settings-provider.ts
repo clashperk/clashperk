@@ -89,6 +89,14 @@ export class SettingsProvider {
     }
   }
 
+  public async loadGuild(guildId: string) {
+    const cursor = this.settingsCollection.find({ guildId }, { projection: { _id: 0 } });
+
+    for await (const data of cursor) {
+      this.settings.set(data.guildId, data);
+    }
+  }
+
   public async addToWhitelist(
     guild: string | Guild,
     { userOrRoleId, isRole, commandId }: { userOrRoleId: string; isRole: boolean; commandId: string }
