@@ -3,7 +3,7 @@ import i18next from 'i18next';
 
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
-export const MAX_TOWN_HALL_LEVEL = 17;
+export const MAX_TOWN_HALL_LEVEL = 18;
 
 export const MAX_BUILDER_HALL_LEVEL = 10;
 
