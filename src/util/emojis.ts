@@ -28,7 +28,8 @@ export const ELIXIR_TROOPS: Record<string, string> = {
   'Dragon Rider': '<:DragonRider:854290952888909834>',
   'Electro Titan': '<:ElectroTitan:1029113633243922572>',
   'Root Rider': '<:RootRider:1184210445544992788>',
-  'Thrower': '<:Thrower:1310580248857018410>'
+  'Thrower': '<:Thrower:1310580248857018410>',
+  'Meteor Golem': '<:MeteorGolem:1440589809356898396>'
 };
 
 export const HERO_PETS: Record<string, string> = {
@@ -116,7 +117,8 @@ export const ELIXIR_SPELLS: Record<string, string> = {
   'Clone Spell': '<:Clone:696302107950710795>',
   'Invisibility Spell': '<:Invisible:787186410032463882>',
   'Recall Spell': '<:Recall:1029115194552623227>',
-  'Revive Spell': '<:Revive:1310678415707475999>'
+  'Revive Spell': '<:Revive:1310678415707475999>',
+  'Totem Spell': '<:Totem:1440588711493369866>'
 };
 
 export const DARK_SPELLS: Record<string, string> = {
