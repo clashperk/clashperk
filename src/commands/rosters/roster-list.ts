@@ -111,7 +111,8 @@ export default class RosterListCommand extends Command {
                 ...member.rosters.map((roster) => {
                   const closed = roster.isClosed ? '[CLOSED]' : '-';
                   const memberCount = `${roster.memberCount}/${roster.maxMembers ?? ROSTER_MAX_LIMIT}`;
-                  return `  - ${escapeMarkdown(`\u200e${rosterLabel(roster, true)} ${closed} (${memberCount})`)}`;
+                  const role = roster.roleId ? `- <@&${roster.roleId}>` : '';
+                  return `  - ${escapeMarkdown(`\u200e${rosterLabel(roster, true)} ${closed} (${memberCount})`)} ${role}`;
                 })
               ].join('\n');
             })
