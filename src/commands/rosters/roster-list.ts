@@ -58,9 +58,10 @@ export default class RosterListCommand extends Command {
       rosterEmbed.setDescription(
         rosters
           .map((roster, i) => {
+            const role = roster.roleId ? `- <@&${roster.roleId}>` : '';
             const closed = this.client.rosterManager.isClosed(roster) ? '[CLOSED]' : '';
             const memberCount = `${roster.memberCount}/${roster.maxMembers ?? ROSTER_MAX_LIMIT}`;
-            return `**${i + 1}.** ${escapeMarkdown(`\u200e${rosterLabel(roster)}${closed} (${memberCount})`)}`;
+            return `**${i + 1}.** ${escapeMarkdown(`\u200e${rosterLabel(roster)}${closed} (${memberCount})`)} ${role}`;
           })
           .join('\n')
       );
