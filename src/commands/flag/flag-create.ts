@@ -2,6 +2,7 @@ import { Collections, Settings } from '@app/constants';
 import { FlagsEntity } from '@app/entities';
 import { AutocompleteInteraction, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
+import pluralize from 'pluralize';
 import { Command } from '../../lib/handlers.js';
 
 export default class FlagCreateCommand extends Command {
@@ -21,7 +22,14 @@ export default class FlagCreateCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { reason?: string; player?: string; flag_type: 'ban' | 'strike'; flag_expiry_days?: number; flag_impact?: number }
+    args: {
+      reason?: string;
+      player?: string;
+      flag_type: 'ban' | 'strike';
+      flag_expiry_days?: number;
+      flag_impact?: number;
+      dm_user?: boolean;
+    }
   ) {
     const tags = (await this.client.resolver.resolveArgs(args.player)).filter((tag) => this.client.coc.isValidTag(tag));
     if (!tags.length) return interaction.editReply('No players were found against this query.');
@@ -67,6 +75,18 @@ export default class FlagCreateCommand extends Command {
         expiresAt: args.flag_expiry_days ? moment().add(args.flag_expiry_days, 'days').toDate() : null,
         createdAt: new Date()
       });
+
+      try {
+        const link = args.dm_user && (await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag: player.tag }));
+        const user = link && (await this.client.users.fetch(link.userId));
+        if (user) {
+          await user.send(
+            `You have received a **${args.flag_type}** on **${interaction.guild.name}** for **${player.name} (${player.tag})**${
+              (args.flag_impact ?? 1) >= 2 ? `, with a weight of x${args.flag_impact}` : ``
+            }${args.flag_expiry_days ? `, expiring in ${args.flag_expiry_days} ${pluralize('day', args.flag_expiry_days)}` : ``}, for the following reason: ${args.reason}.`
+          );
+        }
+      } catch {}
     }
     await this.client.db.collection<FlagsEntity>(Collections.FLAGS).insertMany(newFlags);
 

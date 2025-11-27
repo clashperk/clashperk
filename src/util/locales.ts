@@ -719,6 +719,9 @@ export const command = {
         },
         flag_impact: {
           description: 'Number of flags this should count as'
+        },
+        dm_user: {
+          description: 'Whether to DM the user about the flag'
         }
       },
       no_reason: 'You must provide a reason for the flag.',

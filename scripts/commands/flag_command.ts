@@ -51,6 +51,12 @@ export const FLAG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String
         },
         {
+          name: 'dm_user',
+          description: command.flag.create.options.dm_user.description,
+          description_localizations: translation('command.flag.create.options.dm_user.description'),
+          type: ApplicationCommandOptionType.Boolean
+        },
+        {
           name: 'flag_expiry_days',
           description: command.flag.create.options.flag_expiry_days.description,
           description_localizations: translation('command.flag.create.options.flag_expiry_days.description'),

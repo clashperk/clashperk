@@ -791,6 +791,12 @@
         "choices": []
       },
       {
+        "name": "th_18",
+        "description": "Town Hall 18 role.",
+        "type": "Role",
+        "choices": []
+      },
+      {
         "name": "allow_non_family_accounts",
         "description": "Whether to give roles to the members that are not in the family clans.",
         "type": "String",
@@ -912,12 +918,12 @@
         "description": "The week to show contributions for.",
         "type": "String",
         "choices": [
+          "21 Nov, 2025",
+          "14 Nov, 2025",
+          "07 Nov, 2025",
           "31 Oct, 2025",
           "24 Oct, 2025",
-          "17 Oct, 2025",
-          "10 Oct, 2025",
-          "03 Oct, 2025",
-          "26 Sep, 2025"
+          "17 Oct, 2025"
         ]
       }
     ]
@@ -944,12 +950,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
+          "21 Nov, 2025",
+          "14 Nov, 2025",
+          "07 Nov, 2025",
           "31 Oct, 2025",
           "24 Oct, 2025",
-          "17 Oct, 2025",
-          "10 Oct, 2025",
-          "03 Oct, 2025",
-          "26 Sep, 2025"
+          "17 Oct, 2025"
         ]
       }
     ]
@@ -1877,6 +1883,12 @@
         "name": "reason",
         "description": "Reason for the flag.",
         "type": "String",
+        "choices": []
+      },
+      {
+        "name": "dm_user",
+        "description": "Whether to DM the user about the flag",
+        "type": "Boolean",
         "choices": []
       },
       {
@@ -3923,12 +3935,12 @@
         "description": "The week to show capital contributions for.",
         "type": "String",
         "choices": [
+          "21 Nov, 2025",
+          "14 Nov, 2025",
+          "07 Nov, 2025",
           "31 Oct, 2025",
           "24 Oct, 2025",
-          "17 Oct, 2025",
-          "10 Oct, 2025",
-          "03 Oct, 2025",
-          "26 Sep, 2025"
+          "17 Oct, 2025"
         ]
       }
     ]
@@ -3949,12 +3961,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
+          "21 Nov, 2025",
+          "14 Nov, 2025",
+          "07 Nov, 2025",
           "31 Oct, 2025",
           "24 Oct, 2025",
-          "17 Oct, 2025",
-          "10 Oct, 2025",
-          "03 Oct, 2025",
-          "26 Sep, 2025"
+          "17 Oct, 2025"
         ]
       }
     ]
