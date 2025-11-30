@@ -2,14 +2,14 @@ import { captureException, setContext } from '@sentry/node';
 import { AxiosError } from 'axios';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
-import { Api, HttpClient } from './config.js';
+import { Api, HttpClient } from './generated.js';
 
 const httpClient = new HttpClient({
   baseURL: `${process.env.INTERNAL_API_BASE_URL}/v1`,
   securityWorker: () => {
     return {
       headers: {
-        'x-api-key': `${process.env.INTERNAL_API_KEY}`
+        'x-api-key': process.env.INTERNAL_API_KEY
       }
     };
   }

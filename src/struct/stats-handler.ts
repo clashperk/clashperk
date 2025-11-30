@@ -20,28 +20,21 @@ export class StatsHandler {
     const guilds = values.reduce((prev, curr) => prev + curr, 0);
     if (!guilds) return;
 
-    const clans = await this.client.db.collection(Collections.CLAN_STORES).estimatedDocumentCount();
-    const players = await this.client.db.collection(Collections.PLAYERS).estimatedDocumentCount();
+    const [clans, players] = await Promise.all([
+      this.client.db.collection(Collections.CLAN_STORES).estimatedDocumentCount(),
+      this.client.db.collection(Collections.PLAYERS).estimatedDocumentCount()
+    ]);
 
-    const collection = this.client.db.collection(Collections.BOT_STATS);
-    await collection.updateOne({ name: 'GUILDS' }, { $set: { count: guilds } });
-    await collection.updateOne({ name: 'PLAYERS' }, { $set: { count: players } });
-    await collection.updateOne({ name: 'CLANS' }, { $set: { count: clans } });
-  }
-
-  public message(id: string) {
-    if (this.messages.has(id)) return null;
-    this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000).unref());
-
-    return this.client.db.collection(Collections.BOT_GUILDS).updateOne(
-      { guild: id },
-      {
-        $max: { updatedAt: new Date() },
-        $min: { createdAt: new Date() },
-        $inc: { usage: 0 }
-      },
-      { upsert: true }
-    );
+    await this.client.db
+      .collection(Collections.BOT_STATS)
+      .bulkWrite(
+        [
+          { updateOne: { filter: { name: 'GUILDS' }, update: { $set: { count: guilds } } } },
+          { updateOne: { filter: { name: 'PLAYERS' }, update: { $set: { count: players } } } },
+          { updateOne: { filter: { name: 'CLANS' }, update: { $set: { count: clans } } } }
+        ],
+        { ordered: false }
+      );
   }
 
   public async interactions(interaction: BaseInteraction<'cached'>, command: string) {
@@ -60,7 +53,7 @@ export class StatsHandler {
     await this.client.db.collection(Collections.BOT_COMMANDS).updateOne({ command }, { $inc: { total: 1, uses: 1 } }, { upsert: true });
   }
 
-  public historic(command: string) {
+  private historic(command: string) {
     return this.client.db.collection(Collections.BOT_USAGE).updateOne(
       { key: this.key },
       {
@@ -147,52 +140,21 @@ export class StatsHandler {
     );
   }
 
-  public async localeSuggested(interaction: BaseInteraction) {
-    if (['en-GB', 'en-US'].includes(interaction.locale)) return true;
-    const user = await this.client.db.collection(Collections.BOT_USERS).findOneAndUpdate(
-      { user: interaction.user.id },
-      {
-        $set: {
-          suggestedAt: new Date()
-        }
-      },
-      {
-        returnDocument: 'before'
-      }
-    );
-    if (!user) return true;
-    return Boolean(user.suggestedAt && (user.suggestedAt.getTime() as number) + 3 * 24 * 60 * 60 * 1000 > Date.now());
-  }
-
-  public async featureSuggested(interaction: BaseInteraction) {
-    const user = await this.client.db.collection(Collections.BOT_USERS).findOneAndUpdate(
-      { user: interaction.user.id },
-      {
-        $set: {
-          suggestedAt: new Date()
-        }
-      },
-      {
-        returnDocument: 'before'
-      }
-    );
-    if (!user) return true;
-    return Boolean(user.suggestedAt && (user.suggestedAt.getTime() as number) + 7 * 24 * 60 * 60 * 1000 > Date.now());
-  }
-
   public guilds(guild: Guild, usage = 1) {
     return this.client.db.collection(Collections.BOT_GUILDS).updateOne(
       { guild: guild.id },
       {
+        $setOnInsert: {
+          createdAt: new Date()
+        },
         $set: {
           guild: guild.id,
           name: guild.name,
+          updatedAt: new Date(),
           locale: guild.preferredLocale,
           memberCount: guild.approximateMemberCount || guild.memberCount
         },
-        $inc: { usage },
-        $max: { updatedAt: new Date() },
-        $min: { createdAt: new Date() }
+        $inc: { usage }
       },
       { upsert: true }
     );
