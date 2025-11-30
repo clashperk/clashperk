@@ -365,22 +365,6 @@ export interface CommandsUsageLogItemsDto {
   items: CommandsUsageLogDto[];
 }
 
-export type GetHelloData = string;
-
-export type GetHelloError = ErrorResponseDto;
-
-export type GetHealthData = any;
-
-export type GetHealthError = ErrorResponseDto;
-
-export type CacheStatusCheckPostData = any;
-
-export type CacheStatusCheckPostError = ErrorResponseDto;
-
-export type CacheStatusCheckGetData = any;
-
-export type CacheStatusCheckGetError = ErrorResponseDto;
-
 export type LoginData = LoginOkDto;
 
 export type LoginError = ErrorResponseDto;
@@ -617,22 +601,6 @@ export type GetGuildClansData = any;
 
 export type GetGuildClansError = ErrorResponseDto;
 
-export type BulkAddLegendPlayersData = any;
-
-export type BulkAddLegendPlayersError = ErrorResponseDto;
-
-export type SeedLegendPlayersData = object;
-
-export type SeedLegendPlayersError = ErrorResponseDto;
-
-export type MigrateLegendPlayersData = any;
-
-export type MigrateLegendPlayersError = ErrorResponseDto;
-
-export type UpdateLegendPlayersData = any;
-
-export type UpdateLegendPlayersError = ErrorResponseDto;
-
 export type ExportClanMembersData = any;
 
 export type ExportClanMembersError = ErrorResponseDto;
@@ -668,70 +636,6 @@ export interface GetCommandsUsageLogsParams {
 export type GetCommandsUsageLogsData = CommandsUsageLogItemsDto;
 
 export type GetCommandsUsageLogsError = ErrorResponseDto;
-
-export interface HandleDiscordInteractionsParams {
-  message: string;
-}
-
-export type HandleDiscordInteractionsData = object;
-
-export type HandleDiscordInteractionsError = ErrorResponseDto;
-
-export type HandlePatreonWebhookData = any;
-
-export type HandlePatreonWebhookError = ErrorResponseDto;
-
-export namespace Health {
-  /**
-   * No description
-   * @tags App
-   * @name GetHealth
-   * @request GET:/health
-   * @response `200` `GetHealthData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace GetHealth {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetHealthData;
-  }
-}
-
-export namespace CacheStatusCheck {
-  /**
-   * No description
-   * @tags App
-   * @name CacheStatusCheckPost
-   * @request POST:/cache-status-check
-   * @response `201` `CacheStatusCheckPostData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace CacheStatusCheckPost {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = CacheStatusCheckPostData;
-  }
-
-  /**
-   * No description
-   * @tags App
-   * @name CacheStatusCheckGet
-   * @request GET:/cache-status-check
-   * @response `200` `CacheStatusCheckGetData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace CacheStatusCheckGet {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = CacheStatusCheckGetData;
-  }
-}
 
 export namespace Auth {
   /**
@@ -1339,76 +1243,6 @@ export namespace Guilds {
   }
 }
 
-export namespace Tasks {
-  /**
-   * No description
-   * @tags Tasks
-   * @name BulkAddLegendPlayers
-   * @request POST:/tasks/bulk-add-legend-players
-   * @secure
-   * @response `201` `BulkAddLegendPlayersData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace BulkAddLegendPlayers {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = BulkAddLegendPlayersData;
-  }
-
-  /**
-   * No description
-   * @tags Tasks
-   * @name SeedLegendPlayers
-   * @request POST:/tasks/seed-legend-players
-   * @secure
-   * @response `201` `SeedLegendPlayersData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace SeedLegendPlayers {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = SeedLegendPlayersData;
-  }
-
-  /**
-   * No description
-   * @tags Tasks
-   * @name MigrateLegendPlayers
-   * @request POST:/tasks/migrate-legend-players
-   * @secure
-   * @response `201` `MigrateLegendPlayersData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace MigrateLegendPlayers {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = MigrateLegendPlayersData;
-  }
-
-  /**
-   * No description
-   * @tags Tasks
-   * @name UpdateLegendPlayers
-   * @request POST:/tasks/update-legend-players
-   * @secure
-   * @response `201` `UpdateLegendPlayersData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace UpdateLegendPlayers {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = UpdateLegendPlayersData;
-  }
-}
-
 export namespace Exports {
   /**
    * No description
@@ -1469,45 +1303,6 @@ export namespace Metrics {
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = GetCommandsUsageLogsData;
-  }
-}
-
-export namespace Webhook {
-  /**
-   * No description
-   * @tags Webhook
-   * @name HandleDiscordInteractions
-   * @request POST:/webhook/discord/interactions
-   * @response `200` `HandleDiscordInteractionsData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace HandleDiscordInteractions {
-    export type RequestParams = {};
-    export type RequestQuery = {
-      message: string;
-    };
-    export type RequestBody = never;
-    export type RequestHeaders = {
-      "X-Signature-Ed25519": string;
-      "X-Signature-Timestamp": string;
-    };
-    export type ResponseBody = HandleDiscordInteractionsData;
-  }
-
-  /**
-   * No description
-   * @tags Webhook
-   * @name HandlePatreonWebhook
-   * @request POST:/webhook/patreon/incoming
-   * @response `201` `HandlePatreonWebhookData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace HandlePatreonWebhook {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = HandlePatreonWebhookData;
   }
 }
 
@@ -1707,73 +1502,6 @@ export class Api<SecurityDataType extends unknown> {
     this.http = http;
   }
 
-  /**
-   * No description
-   *
-   * @tags App
-   * @name GetHello
-   * @request GET:/
-   * @response `200` `GetHelloData`
-   * @response `500` `ErrorResponseDto`
-   */
-  getHello = (params: RequestParams = {}) =>
-    this.http.request<GetHelloData, GetHelloError>({
-      path: `/`,
-      method: "GET",
-      format: "json",
-      ...params,
-    });
-
-  health = {
-    /**
-     * No description
-     *
-     * @tags App
-     * @name GetHealth
-     * @request GET:/health
-     * @response `200` `GetHealthData`
-     * @response `500` `ErrorResponseDto`
-     */
-    getHealth: (params: RequestParams = {}) =>
-      this.http.request<GetHealthData, GetHealthError>({
-        path: `/health`,
-        method: "GET",
-        ...params,
-      }),
-  };
-  cacheStatusCheck = {
-    /**
-     * No description
-     *
-     * @tags App
-     * @name CacheStatusCheckPost
-     * @request POST:/cache-status-check
-     * @response `201` `CacheStatusCheckPostData`
-     * @response `500` `ErrorResponseDto`
-     */
-    cacheStatusCheckPost: (params: RequestParams = {}) =>
-      this.http.request<CacheStatusCheckPostData, CacheStatusCheckPostError>({
-        path: `/cache-status-check`,
-        method: "POST",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags App
-     * @name CacheStatusCheckGet
-     * @request GET:/cache-status-check
-     * @response `200` `CacheStatusCheckGetData`
-     * @response `500` `ErrorResponseDto`
-     */
-    cacheStatusCheckGet: (params: RequestParams = {}) =>
-      this.http.request<CacheStatusCheckGetData, CacheStatusCheckGetError>({
-        path: `/cache-status-check`,
-        method: "GET",
-        ...params,
-      }),
-  };
   auth = {
     /**
      * No description
@@ -2447,80 +2175,6 @@ export class Api<SecurityDataType extends unknown> {
         ...params,
       }),
   };
-  tasks = {
-    /**
-     * No description
-     *
-     * @tags Tasks
-     * @name BulkAddLegendPlayers
-     * @request POST:/tasks/bulk-add-legend-players
-     * @secure
-     * @response `201` `BulkAddLegendPlayersData`
-     * @response `500` `ErrorResponseDto`
-     */
-    bulkAddLegendPlayers: (params: RequestParams = {}) =>
-      this.http.request<BulkAddLegendPlayersData, BulkAddLegendPlayersError>({
-        path: `/tasks/bulk-add-legend-players`,
-        method: "POST",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Tasks
-     * @name SeedLegendPlayers
-     * @request POST:/tasks/seed-legend-players
-     * @secure
-     * @response `201` `SeedLegendPlayersData`
-     * @response `500` `ErrorResponseDto`
-     */
-    seedLegendPlayers: (params: RequestParams = {}) =>
-      this.http.request<SeedLegendPlayersData, SeedLegendPlayersError>({
-        path: `/tasks/seed-legend-players`,
-        method: "POST",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Tasks
-     * @name MigrateLegendPlayers
-     * @request POST:/tasks/migrate-legend-players
-     * @secure
-     * @response `201` `MigrateLegendPlayersData`
-     * @response `500` `ErrorResponseDto`
-     */
-    migrateLegendPlayers: (params: RequestParams = {}) =>
-      this.http.request<MigrateLegendPlayersData, MigrateLegendPlayersError>({
-        path: `/tasks/migrate-legend-players`,
-        method: "POST",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Tasks
-     * @name UpdateLegendPlayers
-     * @request POST:/tasks/update-legend-players
-     * @secure
-     * @response `201` `UpdateLegendPlayersData`
-     * @response `500` `ErrorResponseDto`
-     */
-    updateLegendPlayers: (params: RequestParams = {}) =>
-      this.http.request<UpdateLegendPlayersData, UpdateLegendPlayersError>({
-        path: `/tasks/update-legend-players`,
-        method: "POST",
-        secure: true,
-        ...params,
-      }),
-  };
   exports = {
     /**
      * No description
@@ -2559,47 +2213,6 @@ export class Api<SecurityDataType extends unknown> {
         query: query,
         secure: true,
         format: "json",
-        ...params,
-      }),
-  };
-  webhook = {
-    /**
-     * No description
-     *
-     * @tags Webhook
-     * @name HandleDiscordInteractions
-     * @request POST:/webhook/discord/interactions
-     * @response `200` `HandleDiscordInteractionsData`
-     * @response `500` `ErrorResponseDto`
-     */
-    handleDiscordInteractions: (
-      query: HandleDiscordInteractionsParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        HandleDiscordInteractionsData,
-        HandleDiscordInteractionsError
-      >({
-        path: `/webhook/discord/interactions`,
-        method: "POST",
-        query: query,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Webhook
-     * @name HandlePatreonWebhook
-     * @request POST:/webhook/patreon/incoming
-     * @response `201` `HandlePatreonWebhookData`
-     * @response `500` `ErrorResponseDto`
-     */
-    handlePatreonWebhook: (params: RequestParams = {}) =>
-      this.http.request<HandlePatreonWebhookData, HandlePatreonWebhookError>({
-        path: `/webhook/patreon/incoming`,
-        method: "POST",
         ...params,
       }),
   };
