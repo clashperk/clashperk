@@ -605,38 +605,6 @@ export type ExportClanMembersData = any;
 
 export type ExportClanMembersError = ErrorResponseDto;
 
-export interface GetCommandsUsageLogsParams {
-  /**
-   * Date string or timestamp in milliseconds
-   * @format date-time
-   */
-  startDate?: string;
-  /**
-   * Date string or timestamp in milliseconds
-   * @format date-time
-   */
-  endDate?: string;
-  userId?: string;
-  guildId?: string;
-  commandId?: string;
-  query?: string;
-  /**
-   * @min 1
-   * @max 1000
-   * @default 100
-   */
-  limit: number;
-  /**
-   * @min 0
-   * @default 0
-   */
-  offset: number;
-}
-
-export type GetCommandsUsageLogsData = CommandsUsageLogItemsDto;
-
-export type GetCommandsUsageLogsError = ErrorResponseDto;
-
 export namespace Auth {
   /**
    * No description
@@ -1015,6 +983,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name GetRoster
    * @request GET:/rosters/{guildId}/{rosterId}
+   * @secure
    * @response `200` `GetRosterData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1034,6 +1003,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name UpdateRoster
    * @request PATCH:/rosters/{guildId}/{rosterId}
+   * @secure
    * @response `200` `UpdateRosterData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1053,6 +1023,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name DeleteRoster
    * @request DELETE:/rosters/{guildId}/{rosterId}
+   * @secure
    * @response `200` `DeleteRosterData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1072,6 +1043,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name GetRosters
    * @request GET:/rosters/{guildId}/{rosterId}/list
+   * @secure
    * @response `200` `GetRostersData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1091,6 +1063,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name CreateRoster
    * @request POST:/rosters/{guildId}/create
+   * @secure
    * @response `201` `CreateRosterData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1110,6 +1083,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name CloneRoster
    * @request POST:/rosters/{guildId}/{rosterId}/clone
+   * @secure
    * @response `201` `CloneRosterData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1129,6 +1103,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name AddRosterMembers
    * @request PUT:/rosters/{guildId}/{rosterId}/members
+   * @secure
    * @response `200` `AddRosterMembersData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1148,6 +1123,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name DeleteRosterMembers
    * @request DELETE:/rosters/{guildId}/{rosterId}/members
+   * @secure
    * @response `200` `DeleteRosterMembersData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1167,6 +1143,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name RefreshRosterMembers
    * @request POST:/rosters/{guildId}/{rosterId}/members/refresh
+   * @secure
    * @response `201` `RefreshRosterMembersData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1186,6 +1163,7 @@ export namespace Rosters {
    * @tags Rosters
    * @name ManageRoster
    * @request PUT:/rosters/{guildId}/{rosterId}/members/transfer
+   * @secure
    * @response `200` `ManageRosterData`
    * @response `500` `ErrorResponseDto`
    */
@@ -1258,51 +1236,6 @@ export namespace Exports {
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = ExportClanMembersData;
-  }
-}
-
-export namespace Metrics {
-  /**
-   * No description
-   * @tags Metrics
-   * @name GetCommandsUsageLogs
-   * @request GET:/metrics/commands-usage-logs
-   * @secure
-   * @response `200` `GetCommandsUsageLogsData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace GetCommandsUsageLogs {
-    export type RequestParams = {};
-    export type RequestQuery = {
-      /**
-       * Date string or timestamp in milliseconds
-       * @format date-time
-       */
-      startDate?: string;
-      /**
-       * Date string or timestamp in milliseconds
-       * @format date-time
-       */
-      endDate?: string;
-      userId?: string;
-      guildId?: string;
-      commandId?: string;
-      query?: string;
-      /**
-       * @min 1
-       * @max 1000
-       * @default 100
-       */
-      limit: number;
-      /**
-       * @min 0
-       * @default 0
-       */
-      offset: number;
-    };
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetCommandsUsageLogsData;
   }
 }
 
@@ -1947,6 +1880,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name GetRoster
      * @request GET:/rosters/{guildId}/{rosterId}
+     * @secure
      * @response `200` `GetRosterData`
      * @response `500` `ErrorResponseDto`
      */
@@ -1957,6 +1891,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<GetRosterData, GetRosterError>({
         path: `/rosters/${guildId}/${rosterId}`,
         method: "GET",
+        secure: true,
         ...params,
       }),
 
@@ -1966,6 +1901,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name UpdateRoster
      * @request PATCH:/rosters/{guildId}/{rosterId}
+     * @secure
      * @response `200` `UpdateRosterData`
      * @response `500` `ErrorResponseDto`
      */
@@ -1976,6 +1912,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<UpdateRosterData, UpdateRosterError>({
         path: `/rosters/${guildId}/${rosterId}`,
         method: "PATCH",
+        secure: true,
         ...params,
       }),
 
@@ -1985,6 +1922,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name DeleteRoster
      * @request DELETE:/rosters/{guildId}/{rosterId}
+     * @secure
      * @response `200` `DeleteRosterData`
      * @response `500` `ErrorResponseDto`
      */
@@ -1995,6 +1933,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<DeleteRosterData, DeleteRosterError>({
         path: `/rosters/${guildId}/${rosterId}`,
         method: "DELETE",
+        secure: true,
         ...params,
       }),
 
@@ -2004,6 +1943,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name GetRosters
      * @request GET:/rosters/{guildId}/{rosterId}/list
+     * @secure
      * @response `200` `GetRostersData`
      * @response `500` `ErrorResponseDto`
      */
@@ -2014,6 +1954,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<GetRostersData, GetRostersError>({
         path: `/rosters/${guildId}/${rosterId}/list`,
         method: "GET",
+        secure: true,
         ...params,
       }),
 
@@ -2023,6 +1964,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name CreateRoster
      * @request POST:/rosters/{guildId}/create
+     * @secure
      * @response `201` `CreateRosterData`
      * @response `500` `ErrorResponseDto`
      */
@@ -2033,6 +1975,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<CreateRosterData, CreateRosterError>({
         path: `/rosters/${guildId}/create`,
         method: "POST",
+        secure: true,
         ...params,
       }),
 
@@ -2042,6 +1985,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name CloneRoster
      * @request POST:/rosters/{guildId}/{rosterId}/clone
+     * @secure
      * @response `201` `CloneRosterData`
      * @response `500` `ErrorResponseDto`
      */
@@ -2052,6 +1996,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<CloneRosterData, CloneRosterError>({
         path: `/rosters/${guildId}/${rosterId}/clone`,
         method: "POST",
+        secure: true,
         ...params,
       }),
 
@@ -2061,6 +2006,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name AddRosterMembers
      * @request PUT:/rosters/{guildId}/{rosterId}/members
+     * @secure
      * @response `200` `AddRosterMembersData`
      * @response `500` `ErrorResponseDto`
      */
@@ -2071,6 +2017,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<AddRosterMembersData, AddRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members`,
         method: "PUT",
+        secure: true,
         ...params,
       }),
 
@@ -2080,6 +2027,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name DeleteRosterMembers
      * @request DELETE:/rosters/{guildId}/{rosterId}/members
+     * @secure
      * @response `200` `DeleteRosterMembersData`
      * @response `500` `ErrorResponseDto`
      */
@@ -2090,6 +2038,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<DeleteRosterMembersData, DeleteRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members`,
         method: "DELETE",
+        secure: true,
         ...params,
       }),
 
@@ -2099,6 +2048,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name RefreshRosterMembers
      * @request POST:/rosters/{guildId}/{rosterId}/members/refresh
+     * @secure
      * @response `201` `RefreshRosterMembersData`
      * @response `500` `ErrorResponseDto`
      */
@@ -2109,6 +2059,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<RefreshRosterMembersData, RefreshRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members/refresh`,
         method: "POST",
+        secure: true,
         ...params,
       }),
 
@@ -2118,6 +2069,7 @@ export class Api<SecurityDataType extends unknown> {
      * @tags Rosters
      * @name ManageRoster
      * @request PUT:/rosters/{guildId}/{rosterId}/members/transfer
+     * @secure
      * @response `200` `ManageRosterData`
      * @response `500` `ErrorResponseDto`
      */
@@ -2128,6 +2080,7 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<ManageRosterData, ManageRosterError>({
         path: `/rosters/${guildId}/${rosterId}/members/transfer`,
         method: "PUT",
+        secure: true,
         ...params,
       }),
   };
@@ -2189,30 +2142,6 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<ExportClanMembersData, ExportClanMembersError>({
         path: `/exports/members`,
         method: "POST",
-        ...params,
-      }),
-  };
-  metrics = {
-    /**
-     * No description
-     *
-     * @tags Metrics
-     * @name GetCommandsUsageLogs
-     * @request GET:/metrics/commands-usage-logs
-     * @secure
-     * @response `200` `GetCommandsUsageLogsData`
-     * @response `500` `ErrorResponseDto`
-     */
-    getCommandsUsageLogs: (
-      query: GetCommandsUsageLogsParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetCommandsUsageLogsData, GetCommandsUsageLogsError>({
-        path: `/metrics/commands-usage-logs`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
         ...params,
       }),
   };

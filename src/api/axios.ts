@@ -6,6 +6,7 @@ import { Api, HttpClient } from './generated.js';
 
 const httpClient = new HttpClient({
   baseURL: `${process.env.INTERNAL_API_BASE_URL}/v1`,
+  secure: true,
   securityWorker: () => {
     return {
       headers: {
