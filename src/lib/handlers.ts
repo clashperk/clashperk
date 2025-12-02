@@ -309,6 +309,8 @@ export class CommandHandler extends BaseHandler {
   }
 
   public preInhibitor(interaction: BaseInteraction, command: Command) {
+    command.pre(interaction, {});
+
     const reason = this.client.inhibitorHandler.run(interaction, command);
     if (reason) {
       this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, reason);
