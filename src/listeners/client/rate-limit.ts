@@ -43,10 +43,22 @@ export default class RateLimitListener extends Listener {
     return this.webhook;
   }
 
-  public exec({ limit, method, route, global, hash, majorParameter, timeToReset, url }: RateLimitData) {
+  public exec({
+    limit,
+    method,
+    route,
+    global,
+    hash,
+    majorParameter,
+    timeToReset,
+    url
+  }: RateLimitData) {
     this.count += 1;
     if (this.count >= 5) return this.client.enqueuer.pause(true);
-    this.client.logger.warn({ timeToReset, limit, method, url, route, global, hash, majorParameter }, { label: 'RATE_LIMIT' });
+    this.client.logger.warn(
+      { timeToReset, limit, method, url, route, global, hash, majorParameter },
+      { label: 'RATE_LIMIT' }
+    );
 
     const webhook = this.getWebhook();
     if (webhook && url.includes(webhook.id)) return;

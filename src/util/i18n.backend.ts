@@ -31,18 +31,25 @@ export class Backend implements BackendModule<Backend.Options> {
   }
 
   private async readPaths(language: string, namespace: string): Promise<ResourceKey> {
-    if (this.paths.length === 1) return Backend.readPath(Backend.resolvePath(language, namespace, this.paths[0]));
+    if (this.paths.length === 1)
+      return Backend.readPath(Backend.resolvePath(language, namespace, this.paths[0]));
 
-    const results = await Promise.allSettled(this.paths.map((path) => Backend.readPath(Backend.resolvePath(language, namespace, path))));
+    const results = await Promise.allSettled(
+      this.paths.map((path) => Backend.readPath(Backend.resolvePath(language, namespace, path)))
+    );
     return Backend.handleResults(results);
   }
 
   private readPathsSync(language: string, namespace: string): ResourceKey {
-    if (this.paths.length === 1) return Backend.readPathSync(Backend.resolvePath(language, namespace, this.paths[0]));
+    if (this.paths.length === 1)
+      return Backend.readPathSync(Backend.resolvePath(language, namespace, this.paths[0]));
 
     const results = this.paths.map((path) => {
       try {
-        return { status: 'fulfilled', value: Backend.readPathSync(Backend.resolvePath(language, namespace, path)) } as const;
+        return {
+          status: 'fulfilled',
+          value: Backend.readPathSync(Backend.resolvePath(language, namespace, path))
+        } as const;
       } catch (error) {
         return { status: 'rejected', reason: error } as const;
       }
@@ -69,13 +76,18 @@ export class Backend implements BackendModule<Backend.Options> {
       );
     }
 
-    return Object.assign({}, ...filtered.map((result) => (result as PromiseFulfilledResult<ResourceKey>).value));
+    return Object.assign(
+      {},
+      ...filtered.map((result) => (result as PromiseFulfilledResult<ResourceKey>).value)
+    );
   }
 
   private static resolvePath(language: string, namespace: string, path: PathResolvable) {
     if (typeof path === 'function') return path(language, namespace);
     if (typeof path !== 'string') path = fileURLToPath(path);
-    return path.replaceAll(/\{\{(?:lng|ns)\}\}/g, (match) => (match === '{{lng}}' ? language : namespace));
+    return path.replaceAll(/\{\{(?:lng|ns)\}\}/g, (match) =>
+      match === '{{lng}}' ? language : namespace
+    );
   }
 }
 

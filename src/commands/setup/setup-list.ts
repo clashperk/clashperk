@@ -1,6 +1,13 @@
 import { Collections } from '@app/constants';
 import { ClanLogType, ClanStoresEntity } from '@app/entities';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, MessageFlags } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  MessageFlags
+} from 'discord.js';
 import { WithId } from 'mongodb';
 import { cluster, title as toTitle } from 'radash';
 import { Command } from '../../lib/handlers.js';
@@ -21,8 +28,13 @@ export default class SetupListCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; list?: boolean; logs?: boolean }) {
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; list?: boolean; logs?: boolean }
+  ) {
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const customIds = {
@@ -31,8 +43,14 @@ export default class SetupListCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.clans).setStyle(ButtonStyle.Primary).setLabel('Linked Clans'),
-      new ButtonBuilder().setCustomId(customIds.logs).setStyle(ButtonStyle.Primary).setLabel('Enabled Logs')
+      new ButtonBuilder()
+        .setCustomId(customIds.clans)
+        .setStyle(ButtonStyle.Primary)
+        .setLabel('Linked Clans'),
+      new ButtonBuilder()
+        .setCustomId(customIds.logs)
+        .setStyle(ButtonStyle.Primary)
+        .setLabel('Enabled Logs')
     );
 
     if ((args.clans && clans.length) || args.logs) {
@@ -90,7 +108,10 @@ export default class SetupListCommand extends Command {
     return [embed];
   }
 
-  private async getFeatures(interaction: CommandInteraction<'cached'>, clans: WithId<ClanStoresEntity>[]) {
+  private async getFeatures(
+    interaction: CommandInteraction<'cached'>,
+    clans: WithId<ClanStoresEntity>[]
+  ) {
     const logTypes = Object.keys(logActionsMap) as ClanLogType[];
     const logs = await this.client.db
       .collection(Collections.CLAN_LOGS)
@@ -99,7 +120,8 @@ export default class SetupListCommand extends Command {
 
     const fetched = clans.map((clan) => {
       const features = logs.filter((en) => en.clanTag === clan.tag);
-      const channels = clan.channels?.map((id) => this.client.channels.cache.get(id)?.toString()) ?? [];
+      const channels =
+        clan.channels?.map((id) => this.client.channels.cache.get(id)?.toString()) ?? [];
 
       return {
         name: clan.name,

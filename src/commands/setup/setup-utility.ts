@@ -24,9 +24,15 @@ export default class SetupUtilityCommand extends Command {
     }[args.option];
 
     if (!command) {
-      return interaction.reply({ content: 'This command is no longer supported.', flags: MessageFlags.Ephemeral });
+      return interaction.reply({
+        content: 'This command is no longer supported.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
-    return interaction.reply({ content: `This command is no longer supported. Use ${command} instead.`, flags: MessageFlags.Ephemeral });
+    return interaction.reply({
+      content: `This command is no longer supported. Use ${command} instead.`,
+      flags: MessageFlags.Ephemeral
+    });
   }
 }

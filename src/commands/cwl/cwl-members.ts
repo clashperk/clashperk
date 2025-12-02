@@ -22,19 +22,30 @@ export default class CWLMembersCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
     const { body, res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.editReply(
-        this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        this.i18n('command.cwl.still_searching', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       );
     }
 
     if (!res.ok) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
 
     const clanMembers = body.clans.find((_clan) => _clan.tag === clan.tag)!.members;
@@ -47,9 +58,10 @@ export default class CWLMembersCommand extends Command {
     }));
 
     let members = '';
-    const embed = new EmbedBuilder()
-      .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `${clan.name} (${clan.tag}) ~ ${memberList.length}`, iconURL: clan.badgeUrls.medium });
+    const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setAuthor({
+      name: `${clan.name} (${clan.tag}) ~ ${memberList.length}`,
+      iconURL: clan.badgeUrls.medium
+    });
 
     for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
       members += `\u200e${this.padStart(member.townHallLevel)} ${this.heroes(member.heroes)

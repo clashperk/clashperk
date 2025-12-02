@@ -32,7 +32,10 @@ export default class WarHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.player) {
       const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return null;
@@ -82,7 +85,10 @@ export default class WarHistoryCommand extends Command {
             wars.sort((a, b) => a.endTime.getTime() - b.endTime.getTime());
             const participated = wars.filter((war) => war.attack).length;
             const totalStars = wars.reduce((acc, war) => acc + (war.attack?.stars ?? 0), 0);
-            const totalDestruction = wars.reduce((acc, war) => acc + (war.attack?.destructionPercentage ?? 0), 0);
+            const totalDestruction = wars.reduce(
+              (acc, war) => acc + (war.attack?.destructionPercentage ?? 0),
+              0
+            );
             const season = moment(seasonId).format('MMM YYYY').toString();
             const [{ member }] = wars;
             return [
@@ -116,7 +122,10 @@ export default class WarHistoryCommand extends Command {
     return handlePagination(interaction, embeds);
   }
 
-  private async getIndividualWars(interaction: CommandInteraction<'cached'>, players: { name: string; tag: string }[]) {
+  private async getIndividualWars(
+    interaction: CommandInteraction<'cached'>,
+    players: { name: string; tag: string }[]
+  ) {
     const result = await Promise.all(players.map((player) => this.getWars(player.tag, player)));
     if (!result.length) {
       return interaction.editReply('No war history available at this moment.');
@@ -125,18 +134,20 @@ export default class WarHistoryCommand extends Command {
   }
 
   private async getWars(tag: string, player: { name: string; tag: string }) {
-    const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<APIClanWar & { warType: number; id: number }>([
-      {
-        $match: {
-          startTime: {
-            $gte: moment().startOf('month').subtract(6, 'month').toDate()
-          },
-          warType: WarType.REGULAR,
-          $or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }]
-        }
-      },
-      { $sort: { _id: -1 } }
-    ]);
+    const cursor = this.client.db
+      .collection(Collections.CLAN_WARS)
+      .aggregate<APIClanWar & { warType: number; id: number }>([
+        {
+          $match: {
+            startTime: {
+              $gte: moment().startOf('month').subtract(6, 'month').toDate()
+            },
+            warType: WarType.REGULAR,
+            $or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }]
+          }
+        },
+        { $sort: { _id: -1 } }
+      ]);
 
     const attacks = [];
     const wars: WarHistory[] = [];
@@ -144,8 +155,14 @@ export default class WarHistoryCommand extends Command {
       data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
       data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
 
-      const clanMember = data.clan.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
-      const member = clanMember ?? data.opponent.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
+      const clanMember = data.clan.members
+        .map((mem, i) => ({ ...mem, mapPosition: i + 1 }))
+        .find((m) => m.tag === tag);
+      const member =
+        clanMember ??
+        data.opponent.members
+          .map((mem, i) => ({ ...mem, mapPosition: i + 1 }))
+          .find((m) => m.tag === tag);
       if (!member) continue;
 
       const clan = clanMember ? data.clan : data.opponent;
@@ -273,8 +290,14 @@ export default class WarHistoryCommand extends Command {
       });
     }
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [War Attack History]`, sheets);
-    return interaction.editReply({ content: '**War Attacks History (last 6 months)**', components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [War Attack History]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: '**War Attacks History (last 6 months)**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 }
 

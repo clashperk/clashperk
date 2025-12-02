@@ -43,12 +43,17 @@ export class Logger {
     return this.write(message, { label, tag: 'warn' });
   }
 
-  private write(message: string | unknown, { error, label, tag }: { error?: boolean; label?: string; tag: string }) {
+  private write(
+    message: string | unknown,
+    { error, label, tag }: { error?: boolean; label?: string; tag: string }
+  ) {
     const timestamp = chalk.cyan(moment().utcOffset('+05:30').format('DD-MM-YYYY kk:mm:ss'));
     const content = this.clean(message);
     const stream = error ? process.stderr : process.stdout;
     const color = COLORS[tag] as 'red' | 'cyan' | 'yellow' | 'magenta';
-    stream.write(`[${timestamp}]${this.shard} ${chalk[color].bold(TAGS[tag])} » ${label ? `[${label}] » ` : ''}${content}\n`);
+    stream.write(
+      `[${timestamp}]${this.shard} ${chalk[color].bold(TAGS[tag])} » ${label ? `[${label}] » ` : ''}${content}\n`
+    );
   }
 
   private clean(message: string | unknown) {

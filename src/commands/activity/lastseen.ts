@@ -1,4 +1,12 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  CommandInteraction,
+  MessageType,
+  User
+} from 'discord.js';
 import { getClanSwitchingMenu } from '../../helper/clans.helper.js';
 import { lastSeenEmbedMaker } from '../../helper/last-seen.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
@@ -30,16 +38,32 @@ export default class LastSeenCommand extends Command {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
-    const isLinked = await this.client.storage.getClan({ guildId: interaction.guild.id, clanTag: clan.tag });
+    const isLinked = await this.client.storage.getClan({
+      guildId: interaction.guild.id,
+      clanTag: clan.tag
+    });
     if (!isLinked && interaction.guild.id !== '509784317598105619') {
       return interaction.editReply(
-        this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_found', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
-    const embed = await lastSeenEmbedMaker(clan, { color: this.client.embed(interaction), scoreView: args.score });
-    if (interaction.isCommand() || (interaction.isMessageComponent() && interaction.message.type === MessageType.ChatInputCommand)) {
-      embed.setFooter({ text: embed.data.footer!.text, iconURL: interaction.user.displayAvatarURL() });
+    const embed = await lastSeenEmbedMaker(clan, {
+      color: this.client.embed(interaction),
+      scoreView: args.score
+    });
+    if (
+      interaction.isCommand() ||
+      (interaction.isMessageComponent() &&
+        interaction.message.type === MessageType.ChatInputCommand)
+    ) {
+      embed.setFooter({
+        text: embed.data.footer!.text,
+        iconURL: interaction.user.displayAvatarURL()
+      });
     }
 
     const row = new ActionRowBuilder<ButtonBuilder>()

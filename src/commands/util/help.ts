@@ -1,5 +1,12 @@
 import { CommandCategories } from '@app/constants';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  StringSelectMenuBuilder
+} from 'discord.js';
 import i18next from 'i18next';
 import { flattenApplicationCommands } from '../../helper/commands.helper.js';
 import { Command } from '../../lib/handlers.js';
@@ -53,7 +60,9 @@ export default class HelpCommand extends Command {
   ) {
     const commands = await this.getCommands(interaction);
 
-    const command = commands.find((command) => command.rootName === args.command || command.name === args.command);
+    const command = commands.find(
+      (command) => command.rootName === args.command || command.name === args.command
+    );
     if (!command) return this.commandMenu(interaction, commands, args);
 
     const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
@@ -98,7 +107,8 @@ export default class HelpCommand extends Command {
     const fields = Object.values(categoryMap);
     commandCategories.sort((a, b) => fields.indexOf(a.category) - fields.indexOf(b.category));
 
-    if (!args.category || (args.category && !fields.includes(args.category))) args.category = categoryMap.search;
+    if (!args.category || (args.category && !fields.includes(args.category)))
+      args.category = categoryMap.search;
 
     const embeds: EmbedBuilder[] = [];
     for (const { category, commandGroups } of commandCategories) {
@@ -113,7 +123,8 @@ export default class HelpCommand extends Command {
           commandGroups
             .map((commands) => {
               const _commands = commands.map((command) => {
-                const description = this.translate(command.translationKey, interaction.locale) || command.description;
+                const description =
+                  this.translate(command.translationKey, interaction.locale) || command.description;
                 const icon = ` ${command.isRestricted ? EMOJIS.OWNER : ''}`;
                 return `### ${command.formatted}${icon}\n${description}`;
               });
@@ -143,7 +154,10 @@ export default class HelpCommand extends Command {
         )
     );
     const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.expand).setEmoji(EMOJIS.PRINT)
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.expand)
+        .setEmoji(EMOJIS.PRINT)
     );
 
     if (embeds.length === 1) {
@@ -153,7 +167,10 @@ export default class HelpCommand extends Command {
     return this.onExport(interaction, embeds);
   }
 
-  private async onExport(interaction: CommandInteraction<'cached'>, [embed, ...embeds]: EmbedBuilder[]) {
+  private async onExport(
+    interaction: CommandInteraction<'cached'>,
+    [embed, ...embeds]: EmbedBuilder[]
+  ) {
     await interaction.editReply({ embeds: [embed], components: [] });
     for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
   }

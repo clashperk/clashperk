@@ -62,7 +62,10 @@ export class RootLog {
   }
 
   public updateWebhook(cache: Cache, webhook: WebhookClient, channelId: string) {
-    return this.collection.updateOne({ _id: cache._id }, { $set: { channelId, webhook: { id: webhook.id, token: webhook.token } } });
+    return this.collection.updateOne(
+      { _id: cache._id },
+      { $set: { channelId, webhook: { id: webhook.id, token: webhook.token } } }
+    );
   }
 
   public deleteWebhook(cache: Cache) {
@@ -99,11 +102,17 @@ export class RootLog {
     return msg;
   }
 
-  public async sendMessage(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
+  public async sendMessage(
+    cache: Cache,
+    webhook: WebhookClient,
+    payload: WebhookMessageCreateOptions
+  ) {
     try {
       return await webhook.send(payload);
     } catch (error) {
-      if ([DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)) {
+      if (
+        [DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)
+      ) {
         await this.deleteWebhook(cache);
       }
 
@@ -111,7 +120,11 @@ export class RootLog {
     }
   }
 
-  public async editMessage(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
+  public async editMessage(
+    cache: Cache,
+    webhook: WebhookClient,
+    payload: WebhookMessageCreateOptions
+  ) {
     if (!cache.message) return this.sendMessage(cache, webhook, payload);
 
     try {
@@ -122,7 +135,9 @@ export class RootLog {
         return this.sendMessage(cache, webhook, payload);
       }
 
-      if ([DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)) {
+      if (
+        [DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)
+      ) {
         await this.deleteWebhook(cache);
       }
 
@@ -130,7 +145,10 @@ export class RootLog {
     }
   }
 
-  public async getWebhook(cache: Cache, channel: TextChannel | NewsChannel | ForumChannel | MediaChannel): Promise<WebhookClient | null> {
+  public async getWebhook(
+    cache: Cache,
+    channel: TextChannel | NewsChannel | ForumChannel | MediaChannel
+  ): Promise<WebhookClient | null> {
     if (cache.webhook) return cache.webhook;
     if (cache.retries && cache.deleted && cache.retries > WEBHOOK_RETRY_THRESHOLD) return null;
 

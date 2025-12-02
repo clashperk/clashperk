@@ -14,7 +14,9 @@ function flatOptions(options?: readonly ApplicationCommandOption[]) {
       name: option.name,
       description: option.description,
       type: ApplicationCommandOptionType[option.type],
-      choices: ((option as ApplicationCommandChoicesOption<string>).choices || []).map((choice) => choice.name)
+      choices: ((option as ApplicationCommandChoicesOption<string>).choices || []).map(
+        (choice) => choice.name
+      )
     })) ?? []
   );
 }
@@ -38,12 +40,22 @@ export async function flattenApplicationCommands(items: ApplicationCommand[]) {
     .filter((command) => command.type === ApplicationCommandType.ChatInput)
     .map((command) => {
       const subCommandGroups = (command.options ?? [])
-        .filter((option) => [ApplicationCommandOptionType.SubcommandGroup, ApplicationCommandOptionType.Subcommand].includes(option.type))
+        .filter((option) =>
+          [
+            ApplicationCommandOptionType.SubcommandGroup,
+            ApplicationCommandOptionType.Subcommand
+          ].includes(option.type)
+        )
         .flatMap((option) => {
           // SUB_COMMAND GROUP
-          if (option.type === ApplicationCommandOptionType.SubcommandGroup && option.options?.length) {
+          if (
+            option.type === ApplicationCommandOptionType.SubcommandGroup &&
+            option.options?.length
+          ) {
             return option.options.map((subOption) => {
-              const translationKey = getTranslationKey(`${command.name} ${option.name} ${subOption.name}`);
+              const translationKey = getTranslationKey(
+                `${command.name} ${option.name} ${subOption.name}`
+              );
               return {
                 id: command.id,
                 name: `/${command.name} ${option.name} ${subOption.name}`,

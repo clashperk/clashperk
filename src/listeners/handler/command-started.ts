@@ -69,7 +69,8 @@ export default class CommandStartedListener extends Listener {
       guildName: interaction.guild?.name ?? (interaction.inGuild() ? '_unknown' : '_dm'),
       guildLocale: interaction.guild?.preferredLocale ?? null,
       isCommand: interaction.isCommand(),
-      isUserInstalled: !interaction.inGuild() || (interaction.inGuild() && !interaction.inCachedGuild()),
+      isUserInstalled:
+        !interaction.inGuild() || (interaction.inGuild() && !interaction.inCachedGuild()),
       interactionType: InteractionType[interaction.type],
       args: JSON.stringify(flattenArgs(args)),
       applicationId: this.client.applicationId,
@@ -82,8 +83,16 @@ export default class CommandStartedListener extends Listener {
         displayName: interaction.user.displayName,
         username: interaction.user.username
       },
-      guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name, locale: interaction.guildLocale } : null,
-      channel: interaction.channel ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] } : interaction.channelId,
+      guild: interaction.guild
+        ? {
+            id: interaction.guild.id,
+            name: interaction.guild.name,
+            locale: interaction.guildLocale
+          }
+        : null,
+      channel: interaction.channel
+        ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
+        : interaction.channelId,
       command: {
         id: command.id,
         category: command.category
@@ -106,7 +115,9 @@ export default class CommandStartedListener extends Listener {
     });
     setContext('command_started', context);
 
-    const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
+    const label = interaction.guild
+      ? `${interaction.guild.name}/${interaction.user.displayName}`
+      : `${interaction.user.displayName}`;
     this.client.logger.log(`${command.id}`, { label });
     return this.counter(interaction, command);
   }

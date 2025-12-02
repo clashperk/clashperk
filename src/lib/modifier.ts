@@ -18,10 +18,18 @@ function isEphemeral(interaction: CommandInteraction | MessageComponentInteracti
     return !interaction.appPermissions.has([PermissionFlagsBits.SendMessagesInThreads]);
   }
 
-  return !interaction.appPermissions.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]);
+  return !interaction.appPermissions.has([
+    PermissionFlagsBits.SendMessages,
+    PermissionFlagsBits.ViewChannel
+  ]);
 }
 
-for (const Interaction of [CommandInteraction, ContextMenuCommandInteraction, MessageComponentInteraction, ModalSubmitInteraction]) {
+for (const Interaction of [
+  CommandInteraction,
+  ContextMenuCommandInteraction,
+  MessageComponentInteraction,
+  ModalSubmitInteraction
+]) {
   const _deferReply = Interaction.prototype.deferReply;
   const _followUp = Interaction.prototype.followUp;
   const _reply = Interaction.prototype.reply;

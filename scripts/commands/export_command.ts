@@ -100,7 +100,9 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'lineup_only',
           description: command.export.cwl.options.lineup_only.description,
-          description_localizations: translation('command.export.cwl.options.lineup_only.description'),
+          description_localizations: translation(
+            'command.export.cwl.options.lineup_only.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         }
       ]
@@ -191,7 +193,9 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'war_type',
           description: command.export.wars.options.war_type.description,
-          description_localizations: translation('command.export.wars.options.war_type.description'),
+          description_localizations: translation(
+            'command.export.wars.options.war_type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -296,7 +300,9 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.export.capital_raids.options.limit.description,
           max_value: 52,
           min_value: 1,
-          description_localizations: translation('command.export.capital_raids.options.limit.description'),
+          description_localizations: translation(
+            'command.export.capital_raids.options.limit.description'
+          ),
           type: ApplicationCommandOptionType.Integer
         }
       ]
@@ -317,7 +323,9 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'war_type',
           description: command.export.last_wars.options.war_type.description,
-          description_localizations: translation('command.export.last_wars.options.war_type.description'),
+          description_localizations: translation(
+            'command.export.last_wars.options.war_type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -371,7 +379,9 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'category',
           description: command.export.rosters.options.category.description,
-          description_localizations: translation('command.export.rosters.options.category.description'),
+          description_localizations: translation(
+            'command.export.rosters.options.category.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {

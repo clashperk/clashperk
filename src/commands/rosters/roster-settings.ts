@@ -12,8 +12,16 @@ import {
 import { ObjectId } from 'mongodb';
 import pluralize from 'pluralize';
 import { Command } from '../../lib/handlers.js';
-import { RosterSortTypes, rosterClan, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
-import { RosterManageActions, RosterCommandSortOptions as sortingItems } from '../../util/command.options.js';
+import {
+  RosterSortTypes,
+  rosterClan,
+  rosterLabel,
+  rosterLayoutMap
+} from '../../struct/roster-manager.js';
+import {
+  RosterManageActions,
+  RosterCommandSortOptions as sortingItems
+} from '../../util/command.options.js';
 import { getExportComponents } from '../../util/helper.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -27,13 +35,20 @@ export default class RosterEditCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; signup_disabled: boolean }) {
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { roster: string; signup_disabled: boolean }
+  ) {
+    if (!ObjectId.isValid(args.roster))
+      return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
     if (!roster || roster.guildId !== interaction.guildId) {
-      return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'Roster was deleted.',
+        flags: MessageFlags.Ephemeral
+      });
     }
     const customIds = {
       select: this.client.uuid(interaction.user.id),
@@ -124,22 +139,32 @@ export default class RosterEditCommand extends Command {
         ])
     );
 
-    const message = await interaction.followUp({ components: [menuRow], flags: MessageFlags.Ephemeral });
+    const message = await interaction.followUp({
+      components: [menuRow],
+      flags: MessageFlags.Ephemeral
+    });
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
     const closeRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
       const updated = await this.client.rosterManager.close(rosterId);
-      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+      if (!updated)
+        return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
       await action.update({ content: 'Roster closed!', components: [] });
 
       const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-      const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
+      const row = this.client.rosterManager.getRosterComponents({
+        roster: updated,
+        signupDisabled: args.signup_disabled
+      });
       return interaction.editReply({ embeds: [embed], components: [row] });
     };
 
     const openRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
       if (roster.endTime && new Date(roster.endTime) < new Date()) {
-        return action.reply({ content: 'This roster cannot be opened as the closing time has passed.', flags: MessageFlags.Ephemeral });
+        return action.reply({
+          content: 'This roster cannot be opened as the closing time has passed.',
+          flags: MessageFlags.Ephemeral
+        });
       }
 
       if (!roster.allowMultiSignup && roster.members.length > 0 && roster.closed) {
@@ -161,17 +186,24 @@ export default class RosterEditCommand extends Command {
       }
 
       const updated = await this.client.rosterManager.open(rosterId);
-      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+      if (!updated)
+        return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
       await action.update({ content: 'Roster opened!', components: [] });
 
       const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-      const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
+      const row = this.client.rosterManager.getRosterComponents({
+        roster: updated,
+        signupDisabled: args.signup_disabled
+      });
       return interaction.editReply({ embeds: [embed], components: [row] });
     };
 
     const selectClear = async (action: StringSelectMenuInteraction<'cached'>) => {
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setCustomId(customIds.clear).setLabel('Confirm').setStyle(ButtonStyle.Danger)
+        new ButtonBuilder()
+          .setCustomId(customIds.clear)
+          .setLabel('Confirm')
+          .setStyle(ButtonStyle.Danger)
       );
       await action.update({
         content: [
@@ -185,11 +217,17 @@ export default class RosterEditCommand extends Command {
     };
 
     const getLink = async (action: StringSelectMenuInteraction<'cached'>) => {
-      const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+      const token = this.client.util.createToken({
+        userId: interaction.user.id,
+        guildId: interaction.guild.id
+      });
       const url = `https://clashperk.com/rosters?roster=${roster._id.toHexString()}&bot=${this.client.isCustom() ? 'custom' : 'public'}&token=${token}`;
 
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setURL(url).setLabel('Manage Roster on the Web').setStyle(ButtonStyle.Link)
+        new ButtonBuilder()
+          .setURL(url)
+          .setLabel('Manage Roster on the Web')
+          .setStyle(ButtonStyle.Link)
       );
 
       return action.update({
@@ -200,12 +238,16 @@ export default class RosterEditCommand extends Command {
 
     const clearRoster = async (action: ButtonInteraction<'cached'>) => {
       const updated = await this.client.rosterManager.clear(rosterId);
-      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+      if (!updated)
+        return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
       await action.update({ content: 'Roster cleared!', components: [] });
 
       const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-      const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
+      const row = this.client.rosterManager.getRosterComponents({
+        roster: updated,
+        signupDisabled: args.signup_disabled
+      });
       return interaction.editReply({ embeds: [embed], components: [row] });
     };
 
@@ -214,7 +256,9 @@ export default class RosterEditCommand extends Command {
       await interaction.editReply({ embeds: [embed], components: [] });
       await action.update({ content: 'Roster message archived!', components: [] });
 
-      const { res, body: clan } = roster.clan ? await this.client.coc.getClan(roster.clan.tag) : { res: null, body: null };
+      const { res, body: clan } = roster.clan
+        ? await this.client.coc.getClan(roster.clan.tag)
+        : { res: null, body: null };
 
       const sheet = await this.client.rosterManager.exportSheet({
         name: interaction.guild.name,
@@ -233,20 +277,30 @@ export default class RosterEditCommand extends Command {
         components: []
       });
 
-      const row = this.client.rosterManager.getRosterComponents({ roster, signupDisabled: !args.signup_disabled });
+      const row = this.client.rosterManager.getRosterComponents({
+        roster,
+        signupDisabled: !args.signup_disabled
+      });
       return interaction.editReply({ components: [row] });
     };
 
     const exportSheet = async (action: StringSelectMenuInteraction<'cached'>) => {
-      if (!roster.members.length) return action.reply({ content: 'Roster is empty.', flags: MessageFlags.Ephemeral });
+      if (!roster.members.length)
+        return action.reply({ content: 'Roster is empty.', flags: MessageFlags.Ephemeral });
 
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setLabel('Updating spreadsheet...').setStyle(ButtonStyle.Link).setURL('https://google.com').setDisabled(true)
+        new ButtonBuilder()
+          .setLabel('Updating spreadsheet...')
+          .setStyle(ButtonStyle.Link)
+          .setURL('https://google.com')
+          .setDisabled(true)
       );
       const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
       await action.update({ embeds: [embed], components: [row] });
 
-      const { res, body: clan } = roster.clan ? await this.client.coc.getClan(roster.clan.tag) : { res: null, body: null };
+      const { res, body: clan } = roster.clan
+        ? await this.client.coc.getClan(roster.clan.tag)
+        : { res: null, body: null };
 
       const sheet = await this.client.rosterManager.exportSheet({
         name: interaction.guild.name,
@@ -262,24 +316,34 @@ export default class RosterEditCommand extends Command {
     const selectSortBy = async (action: StringSelectMenuInteraction<'cached'>) => {
       selected.sortBy = action.values.at(0)! as RosterSortTypes;
       const updated = await this.client.rosterManager.edit(rosterId, { sortBy: selected.sortBy });
-      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+      if (!updated)
+        return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
       await action.deferUpdate();
 
       const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-      const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
+      const row = this.client.rosterManager.getRosterComponents({
+        roster: updated,
+        signupDisabled: args.signup_disabled
+      });
       return interaction.editReply({ embeds: [embed], components: [row] });
     };
 
     const selectLayout = async (action: StringSelectMenuInteraction<'cached'>) => {
       selected.layoutIds = action.values;
-      const updated = await this.client.rosterManager.edit(rosterId, { layout: selected.layoutIds.join('/') });
-      if (!updated) return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+      const updated = await this.client.rosterManager.edit(rosterId, {
+        layout: selected.layoutIds.join('/')
+      });
+      if (!updated)
+        return action.reply({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
 
       await action.deferUpdate();
 
       const embed = this.client.rosterManager.getRosterEmbed(updated, categories);
-      const row = this.client.rosterManager.getRosterComponents({ roster: updated, signupDisabled: args.signup_disabled });
+      const row = this.client.rosterManager.getRosterComponents({
+        roster: updated,
+        signupDisabled: args.signup_disabled
+      });
       return interaction.editReply({ embeds: [embed], components: [row] });
     };
 
@@ -290,13 +354,23 @@ export default class RosterEditCommand extends Command {
         .setPlaceholder('Select a custom layout!')
         .setMinValues(3)
         .setMaxValues(5)
-        .setOptions(keys.map(([key, { name, description }]) => ({ label: name, description, value: key })));
-      const layoutMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(layoutMenu);
+        .setOptions(
+          keys.map(([key, { name, description }]) => ({ label: name, description, value: key }))
+        );
+      const layoutMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        layoutMenu
+      );
 
       const sortMenu = new StringSelectMenuBuilder()
         .setCustomId(customIds.sort)
         .setPlaceholder('Select roster sorting key!')
-        .setOptions(sortingItems.map((option) => ({ label: option.name, value: option.value, default: roster.sortBy === option.value })));
+        .setOptions(
+          sortingItems.map((option) => ({
+            label: option.name,
+            value: option.value,
+            default: roster.sortBy === option.value
+          }))
+        );
       const sortMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(sortMenu);
 
       return action.update({
@@ -324,7 +398,10 @@ export default class RosterEditCommand extends Command {
       },
       onSelect: async (action: StringSelectMenuInteraction<'cached'>) => {
         const value = action.values.at(0)!;
-        if (!this.client.util.isManager(action.member, Settings.ROSTER_MANAGER_ROLE) && !['export'].includes(value)) {
+        if (
+          !this.client.util.isManager(action.member, Settings.ROSTER_MANAGER_ROLE) &&
+          !['export'].includes(value)
+        ) {
           return action.reply({
             flags: MessageFlags.Ephemeral,
             content: this.i18n('common.missing_manager_role', { lng: action.locale })

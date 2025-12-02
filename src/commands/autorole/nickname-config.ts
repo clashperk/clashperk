@@ -51,16 +51,33 @@ export default class NicknameConfigCommand extends Command {
       account_preference_for_naming?: NicknamingAccountPreference;
     }
   ) {
-    let familyFormat = this.client.settings.get<string>(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, '');
-    if (args.family_nickname_format && familyFormat !== args.family_nickname_format) familyFormat = args.family_nickname_format;
+    let familyFormat = this.client.settings.get<string>(
+      interaction.guildId,
+      Settings.FAMILY_NICKNAME_FORMAT,
+      ''
+    );
+    if (args.family_nickname_format && familyFormat !== args.family_nickname_format)
+      familyFormat = args.family_nickname_format;
 
-    let nonFamilyFormat = this.client.settings.get<string>(interaction.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT, '');
+    let nonFamilyFormat = this.client.settings.get<string>(
+      interaction.guildId,
+      Settings.NON_FAMILY_NICKNAME_FORMAT,
+      ''
+    );
     if (args.non_family_nickname_format && nonFamilyFormat !== args.non_family_nickname_format)
       nonFamilyFormat = args.non_family_nickname_format;
 
     if (args.family_nickname_format && !/^none$/i.test(args.family_nickname_format)) {
-      if (/{NAME}|{PLAYER_NAME}|{DISCORD_NAME}|{DISCORD_USERNAME}|{USERNAME}|{DISCORD}/gi.test(familyFormat)) {
-        this.client.settings.set(interaction.guildId, Settings.FAMILY_NICKNAME_FORMAT, familyFormat);
+      if (
+        /{NAME}|{PLAYER_NAME}|{DISCORD_NAME}|{DISCORD_USERNAME}|{USERNAME}|{DISCORD}/gi.test(
+          familyFormat
+        )
+      ) {
+        this.client.settings.set(
+          interaction.guildId,
+          Settings.FAMILY_NICKNAME_FORMAT,
+          familyFormat
+        );
       } else {
         return interaction.editReply(
           `Invalid **family nickname** format \`${familyFormat}\`, it must include \`{PLAYER_NAME}\` or \`{DISCORD_NAME}\` or \`{DISCORD_USERNAME}\``
@@ -73,16 +90,28 @@ export default class NicknameConfigCommand extends Command {
     }
 
     if (args.non_family_nickname_format && !/^none$/i.test(args.non_family_nickname_format)) {
-      if (/{CLAN}|{CLAN_NAME}|{ALIAS}|{CLAN_ALIAS}|{ALIASES}|{CLAN_ALIASES}|{ROLE}|{CLAN_ROLE}/gi.test(nonFamilyFormat)) {
+      if (
+        /{CLAN}|{CLAN_NAME}|{ALIAS}|{CLAN_ALIAS}|{ALIASES}|{CLAN_ALIASES}|{ROLE}|{CLAN_ROLE}/gi.test(
+          nonFamilyFormat
+        )
+      ) {
         return interaction.editReply(
           `Invalid **non-family nickname** format \`${nonFamilyFormat}\`, it must **not** include \`{CLAN}\` \`{CLAN_NAME}\` \`{ALIAS}\` \`{CLAN_ALIAS}\` \`{ROLE}\` \`{CLAN_ROLE}\``
         );
-      } else if (!/{NAME}|{PLAYER_NAME}|{DISCORD_NAME}|{DISCORD_USERNAME}|{USERNAME}|{DISCORD}/gi.test(nonFamilyFormat)) {
+      } else if (
+        !/{NAME}|{PLAYER_NAME}|{DISCORD_NAME}|{DISCORD_USERNAME}|{USERNAME}|{DISCORD}/gi.test(
+          nonFamilyFormat
+        )
+      ) {
         return interaction.editReply(
           `Invalid **non-family nickname** format \`${nonFamilyFormat}\`, it must include \`{PLAYER_NAME}\` or \`{DISCORD_NAME}\` or \`{DISCORD_USERNAME}\``
         );
       } else {
-        this.client.settings.set(interaction.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT, nonFamilyFormat);
+        this.client.settings.set(
+          interaction.guildId,
+          Settings.NON_FAMILY_NICKNAME_FORMAT,
+          nonFamilyFormat
+        );
       }
     }
 
@@ -91,12 +120,24 @@ export default class NicknameConfigCommand extends Command {
     }
 
     if (typeof args.change_nicknames === 'boolean') {
-      await this.client.settings.set(interaction.guildId, Settings.AUTO_NICKNAME, Boolean(args.change_nicknames));
+      await this.client.settings.set(
+        interaction.guildId,
+        Settings.AUTO_NICKNAME,
+        Boolean(args.change_nicknames)
+      );
     }
-    const enabledAuto = this.client.settings.get<boolean>(interaction.guildId, Settings.AUTO_NICKNAME, false);
+    const enabledAuto = this.client.settings.get<boolean>(
+      interaction.guildId,
+      Settings.AUTO_NICKNAME,
+      false
+    );
 
     if (args.account_preference_for_naming) {
-      await this.client.settings.set(interaction.guildId, Settings.NICKNAMING_ACCOUNT_PREFERENCE, args.account_preference_for_naming);
+      await this.client.settings.set(
+        interaction.guildId,
+        Settings.NICKNAMING_ACCOUNT_PREFERENCE,
+        args.account_preference_for_naming
+      );
     }
 
     const accountPreference = this.client.settings.get<NicknamingAccountPreference>(
@@ -105,15 +146,15 @@ export default class NicknameConfigCommand extends Command {
       NicknamingAccountPreference.DEFAULT_OR_BEST_ACCOUNT
     );
 
-    const state = this.client.settings.get<Partial<{ leader: string; coLeader: string; admin: string; member: string }>>(
-      interaction.guild,
-      Settings.ROLE_REPLACEMENT_LABELS,
-      {}
-    );
+    const state = this.client.settings.get<
+      Partial<{ leader: string; coLeader: string; admin: string; member: string }>
+    >(interaction.guild, Settings.ROLE_REPLACEMENT_LABELS, {});
 
     const container = new ContainerBuilder();
     container.setAccentColor(this.client.embed(interaction)!);
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent('## Server Nickname Settings'));
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent('## Server Nickname Settings')
+    );
 
     const settings = [
       { name: 'Family Nickname Format', value: `\`${familyFormat || 'None'}\`` },
@@ -122,10 +163,14 @@ export default class NicknameConfigCommand extends Command {
       { name: 'Account Preference', value: `\`${title(accountPreference)}\`` }
     ];
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(settings.map((config) => `**${config.name}**\n${config.value}`).join('\n'))
+      new TextDisplayBuilder().setContent(
+        settings.map((config) => `**${config.name}**\n${config.value}`).join('\n')
+      )
     );
 
-    container.addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Large));
+    container.addSeparatorComponents((separator) =>
+      separator.setSpacing(SeparatorSpacingSize.Large)
+    );
 
     const customIds = {
       labels: this.client.uuid(),
@@ -135,7 +180,10 @@ export default class NicknameConfigCommand extends Command {
       member: this.client.uuid()
     };
 
-    const labelButton = new ButtonBuilder().setLabel('Set Role Labels').setCustomId(customIds.labels).setStyle(ButtonStyle.Secondary);
+    const labelButton = new ButtonBuilder()
+      .setLabel('Set Role Labels')
+      .setCustomId(customIds.labels)
+      .setStyle(ButtonStyle.Secondary);
     const labelsText = new TextDisplayBuilder();
     const section = new SectionBuilder();
 
@@ -154,7 +202,9 @@ export default class NicknameConfigCommand extends Command {
 
     section.addTextDisplayComponents(labelsText).setButtonAccessory(labelButton);
     container.addSectionComponents(section);
-    container.addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Small));
+    container.addSeparatorComponents((separator) =>
+      separator.setSpacing(SeparatorSpacingSize.Small)
+    );
 
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
@@ -253,10 +303,19 @@ export default class NicknameConfigCommand extends Command {
 
           mutateLabelsText();
 
-          await this.client.settings.set(interaction.guild, Settings.ROLE_REPLACEMENT_LABELS, state);
+          await this.client.settings.set(
+            interaction.guild,
+            Settings.ROLE_REPLACEMENT_LABELS,
+            state
+          );
           await modalSubmit.editReply({ withComponents: true, components: [container] });
         } catch (e) {
-          if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          if (
+            !(
+              e instanceof DiscordjsError &&
+              e.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          ) {
             throw e;
           }
         }

@@ -14,7 +14,10 @@ export default class SummaryClansCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { season?: string; clans?: string }
+  ) {
     const season = args.season ?? Season.monthId;
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
@@ -57,7 +60,10 @@ export default class SummaryClansCommand extends Command {
     return interaction.editReply({ embeds: [embed] });
   }
 
-  private async getWars(tag: string, season: string): Promise<{ result: boolean; stars: number[] }[]> {
+  private async getWars(
+    tag: string,
+    season: string
+  ): Promise<{ result: boolean; stars: number[] }[]> {
     return this.client.db
       .collection(Collections.CLAN_WARS)
       .aggregate<{ result: boolean; stars: number[] }>([
@@ -92,11 +98,15 @@ export default class SummaryClansCommand extends Command {
                     then: false
                   },
                   {
-                    case: { $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
+                    case: {
+                      $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage']
+                    },
                     then: true
                   },
                   {
-                    case: { $lt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
+                    case: {
+                      $lt: ['$clan.destructionPercentage', '$opponent.destructionPercentage']
+                    },
                     then: false
                   }
                 ],

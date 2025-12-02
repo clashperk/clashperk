@@ -1,6 +1,14 @@
 import { Collections } from '@app/constants';
 import { PlayerSeasonsEntity } from '@app/entities';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
+  User
+} from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart, recoverDonations } from '../../util/helper.js';
@@ -49,7 +57,9 @@ export default class DonationsCommand extends Command {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
     if (clan.members < 1) {
-      return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
+      return interaction.editReply(
+        this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name })
+      );
     }
 
     const { sort_by: sortBy, order_by: orderBy } = args;
@@ -58,7 +68,9 @@ export default class DonationsCommand extends Command {
 
     await recoverDonations(clan, season);
     const dbMembers = await this.client.db
-      .collection<Pick<PlayerSeasonsEntity, 'tag' | 'clans' | 'townHallLevel'>>(Collections.PLAYER_SEASONS)
+      .collection<Pick<PlayerSeasonsEntity, 'tag' | 'clans' | 'townHallLevel'>>(
+        Collections.PLAYER_SEASONS
+      )
       .find(
         { season, __clans: clan.tag, tag: { $in: clan.memberList.map((m) => m.tag) } },
         { projection: { tag: 1, clans: 1, townHallLevel: 1 } }
@@ -66,7 +78,9 @@ export default class DonationsCommand extends Command {
       .toArray();
 
     if (!dbMembers.length && !isSameSeason) {
-      return interaction.editReply(this.i18n('command.donations.no_season_data', { lng: interaction.locale, season }));
+      return interaction.editReply(
+        this.i18n('command.donations.no_season_data', { lng: interaction.locale, season })
+      );
     }
 
     const members: {
@@ -97,7 +111,10 @@ export default class DonationsCommand extends Command {
     for (const mem of clan.memberList) {
       const m = dbMembers.find((m) => m.tag === mem.tag);
       if (m) {
-        const curr = m.clans?.[clan.tag] ?? { donations: { current: 0, total: 0 }, donationsReceived: { current: 0, total: 0 } };
+        const curr = m.clans?.[clan.tag] ?? {
+          donations: { current: 0, total: 0 },
+          donationsReceived: { current: 0, total: 0 }
+        };
         let donated = isSameSeason
           ? mem.donations >= curr.donations.current
             ? curr.donations.total + (mem.donations - curr.donations.current)
@@ -107,7 +124,8 @@ export default class DonationsCommand extends Command {
 
         let received = isSameSeason
           ? mem.donationsReceived >= curr.donationsReceived.current
-            ? curr.donationsReceived.total + (mem.donationsReceived - curr.donationsReceived.current)
+            ? curr.donationsReceived.total +
+              (mem.donationsReceived - curr.donationsReceived.current)
             : curr.donationsReceived.total
           : curr.donationsReceived.total;
         received = Math.max(mem.donationsReceived, received);
@@ -210,7 +228,11 @@ export default class DonationsCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customId.refresh).setEmoji(EMOJIS.REFRESH).setDisabled(!isSameSeason)
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customId.refresh)
+        .setEmoji(EMOJIS.REFRESH)
+        .setDisabled(!isSameSeason)
     );
 
     const sortingRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(

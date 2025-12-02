@@ -31,12 +31,23 @@ export default class MessageCreateListener extends Listener {
     if (!message.guild) return;
     if (message.author.bot) return;
 
-    if (message.channel.type === ChannelType.DM || message.channel.type === ChannelType.GroupDM) return;
+    if (message.channel.type === ChannelType.DM || message.channel.type === ChannelType.GroupDM)
+      return;
     if (this.inhibitor(message)) return;
 
-    if (message.channel.isThread() && !message.channel.permissionsFor(this.client.user)?.has(PermissionFlagsBits.SendMessagesInThreads))
+    if (
+      message.channel.isThread() &&
+      !message.channel
+        .permissionsFor(this.client.user)
+        ?.has(PermissionFlagsBits.SendMessagesInThreads)
+    )
       return;
-    if (!message.channel.permissionsFor(this.client.user)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel])) return;
+    if (
+      !message.channel
+        .permissionsFor(this.client.user)
+        ?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel])
+    )
+      return;
 
     if (REGEX.test(message.content)) return this.linkParser(message);
 
@@ -49,7 +60,9 @@ export default class MessageCreateListener extends Listener {
     if (!command) return;
 
     if (command.ownerOnly && !this.client.isOwner(message.author.id)) {
-      this.client.logger.log(`${command.id} ~ text-command`, { label: `${message.guild.name}/${message.author.displayName}` });
+      this.client.logger.log(`${command.id} ~ text-command`, {
+        label: `${message.guild.name}/${message.author.displayName}`
+      });
       return;
     }
 
@@ -60,7 +73,9 @@ export default class MessageCreateListener extends Listener {
       keys.forEach((key, index) => (resolved[key] = contents[index]));
       if (!keys.length) resolved.content = content;
 
-      this.client.logger.log(`${command.id}`, { label: `${message.guild.name}/${message.author.displayName}` });
+      this.client.logger.log(`${command.id}`, {
+        label: `${message.guild.name}/${message.author.displayName}`
+      });
       await command.run(message, resolved);
     } catch (error) {
       this.client.logger.error(`${command.id} ~ ${error as string}`, {

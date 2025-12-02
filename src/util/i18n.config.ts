@@ -14,7 +14,9 @@ const allowedLocales = {
   // 'hu': 'hu-HU' // Hungarian/Magyar
 };
 
-export const fallbackLng = Object.fromEntries(Object.entries(allowedLocales).map(([lngCode, locale]) => [lngCode, [locale, 'en-US']]));
+export const fallbackLng = Object.fromEntries(
+  Object.entries(allowedLocales).map(([lngCode, locale]) => [lngCode, [locale, 'en-US']])
+);
 
 export const defaultOptions: InitOptions = {
   debug: false,

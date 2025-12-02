@@ -85,10 +85,18 @@ export default class SummaryBestCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: { season?: string; limit?: number; clans?: string; order?: 'asc' | 'desc'; selected?: string[] }
+    args: {
+      season?: string;
+      limit?: number;
+      clans?: string;
+      order?: 'asc' | 'desc';
+      selected?: string[];
+    }
   ) {
     const seasonId = args.season ?? Season.ID;
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
@@ -127,7 +135,12 @@ export default class SummaryBestCommand extends Command {
               $subtract: ['$spellsDonations.current', '$spellsDonations.initial']
             },
             _sieges: {
-              $multiply: [{ $subtract: ['$siegeMachinesDonations.current', '$siegeMachinesDonations.initial'] }, 30]
+              $multiply: [
+                {
+                  $subtract: ['$siegeMachinesDonations.current', '$siegeMachinesDonations.initial']
+                },
+                30
+              ]
             },
             _warStars: {
               $subtract: ['$clanWarStars.current', '$clanWarStars.initial']
@@ -147,7 +160,11 @@ export default class SummaryBestCommand extends Command {
             // },
             _versusTrophies: '$versusTrophies.current',
             _versusAttackWins: {
-              $max: [{ $subtract: ['$versusBattleWins.current', '$versusBattleWins.initial'] }, '$builderBaseAttacksWon', 0]
+              $max: [
+                { $subtract: ['$versusBattleWins.current', '$versusBattleWins.initial'] },
+                '$builderBaseAttacksWon',
+                0
+              ]
             },
             _capitalLoot: {
               $subtract: ['$clanCapitalRaids.current', '$clanCapitalRaids.initial']
@@ -577,14 +594,23 @@ export default class SummaryBestCommand extends Command {
       .setTimestamp()
       .setColor(this.client.embed(interaction))
       .setFooter({ text: `Season ${seasonId}` })
-      .setAuthor({ name: `${interaction.guild.name} Best Players`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
+      .setAuthor({
+        name: `${interaction.guild.name} Best Players`,
+        iconURL: interaction.guild.iconURL({ forceStatic: false })!
+      });
 
-    const _fields = Object.keys(fields).filter((field) => (field === '_clanGamesCompletionTime' && order === 'asc' ? false : true));
-    const filtered = _fields.filter((field) => (args.selected ? args.selected.includes(field) : true));
+    const _fields = Object.keys(fields).filter((field) =>
+      field === '_clanGamesCompletionTime' && order === 'asc' ? false : true
+    );
+    const filtered = _fields.filter((field) =>
+      args.selected ? args.selected.includes(field) : true
+    );
 
     for (const field of filtered) {
       const key = field as keyof typeof fields;
-      const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
+      const members = aggregated[key]
+        .filter((n) => !isNaN(n.value))
+        .slice(0, Number(args.limit ?? 5));
 
       if (!members.length) {
         embed.addFields({
@@ -630,7 +656,10 @@ export default class SummaryBestCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(customIds.refresh)
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(customIds.order)
         .setStyle(ButtonStyle.Secondary)
@@ -661,7 +690,10 @@ export default class SummaryBestCommand extends Command {
     );
 
     const isSameSeason = seasonId === Season.ID;
-    return interaction.editReply({ embeds: [embed], components: isSameSeason ? [row, menuRow] : [menuRow] });
+    return interaction.editReply({
+      embeds: [embed],
+      components: isSameSeason ? [row, menuRow] : [menuRow]
+    });
   }
 
   private _formatTime(diff: number) {

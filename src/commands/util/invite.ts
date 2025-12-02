@@ -28,7 +28,10 @@ export default class InviteCommand extends Command {
     }
 
     const embed = new EmbedBuilder()
-      .setAuthor({ name: this.client.user.displayName, iconURL: this.client.user.displayAvatarURL({ extension: 'png' }) })
+      .setAuthor({
+        name: this.client.user.displayName,
+        iconURL: this.client.user.displayAvatarURL({ extension: 'png' })
+      })
       .setDescription(
         [
           'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. Thanks in advance!',
@@ -40,6 +43,10 @@ export default class InviteCommand extends Command {
           additionalTexts.join('\n')
         ].join('\n')
       );
-    return interaction.reply(interaction.inCachedGuild() ? { embeds: [embed], flags: MessageFlags.Ephemeral } : { embeds: [embed] });
+    return interaction.reply(
+      interaction.inCachedGuild()
+        ? { embeds: [embed], flags: MessageFlags.Ephemeral }
+        : { embeds: [embed] }
+    );
   }
 }

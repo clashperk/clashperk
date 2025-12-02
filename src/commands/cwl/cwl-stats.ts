@@ -38,7 +38,10 @@ export default class CWLStatsCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User; season?: string }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
@@ -49,26 +52,41 @@ export default class CWLStatsCommand extends Command {
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
-        content: this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        content: this.i18n('command.cwl.still_searching', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       });
     }
 
-    const isIncorrectSeason = !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike = args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
+    const isIncorrectSeason =
+      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
+    const entityLike =
+      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
     const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
 
     if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
-        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        content: this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       });
     }
 
-    const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
+    const aggregated = await this.client.coc.aggregateClanWarLeague(
+      clan.tag,
+      { ...entityLike, leagues: group?.leagues ?? {} },
+      isApiData
+    );
     if (!aggregated) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
-        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        content: this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       });
     }
 
@@ -216,7 +234,10 @@ export default class CWLStatsCommand extends Command {
     if (!collection.length && body.season !== Util.getCWLSeasonId()) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
-        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        content: this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       });
     }
     if (!collection.length) {
@@ -306,11 +327,18 @@ export default class CWLStatsCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
+      new ButtonBuilder()
+        .setCustomId(customIds.refresh)
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
     );
 
     const menu = await getClanSwitchingMenu(interaction, customIds.clans, clanTag);
-    await interaction.editReply({ embeds: [...embeds, embed], components: menu ? [row, menu] : [row], files: [] });
+    await interaction.editReply({
+      embeds: [...embeds, embed],
+      components: menu ? [row, menu] : [row],
+      files: []
+    });
     if (!leagueId) return null;
 
     const { file, name, attachmentKey } = await getCWLSummaryImage({
@@ -326,7 +354,11 @@ export default class CWLStatsCommand extends Command {
     const rawFile = new AttachmentBuilder(file, { name });
     embed.setImage(attachmentKey);
 
-    return interaction.editReply({ files: [rawFile], embeds: [...embeds, embed], components: menu ? [row, menu] : [row] });
+    return interaction.editReply({
+      files: [rawFile],
+      embeds: [...embeds, embed],
+      components: menu ? [row, menu] : [row]
+    });
   }
 
   private dest(dest: number, padding: number) {

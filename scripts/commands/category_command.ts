@@ -18,7 +18,9 @@ export const CATEGORY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'category_name',
           max_length: 36,
           description: command.category.options.category_name.description,
-          description_localizations: translation('command.category.options.category_name.description'),
+          description_localizations: translation(
+            'command.category.options.category_name.description'
+          ),
           required: true,
           type: ApplicationCommandOptionType.String
         }
@@ -48,7 +50,9 @@ export const CATEGORY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'category_name',
           max_length: 36,
           description: command.category.options.category_name.description,
-          description_localizations: translation('command.category.options.category_name.description'),
+          description_localizations: translation(
+            'command.category.options.category_name.description'
+          ),
           type: ApplicationCommandOptionType.String
         }
       ]

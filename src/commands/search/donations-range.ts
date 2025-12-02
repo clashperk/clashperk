@@ -1,4 +1,13 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, time, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  escapeMarkdown,
+  time,
+  User
+} from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
@@ -28,8 +37,13 @@ export default class DonationsCommand extends Command {
     const clan = await this.client.resolver.resolveClan(interaction, args?.tag ?? args.user?.id);
     if (!clan) return;
 
-    if ((args.start_date && !moment(args.start_date, true).isValid()) || (args.end_date && !moment(args.end_date, true).isValid())) {
-      return interaction.editReply('Invalid date format, allowed formats are `YYYY-MM-DD` or `YYYY-MM-DD HH:mm`');
+    if (
+      (args.start_date && !moment(args.start_date, true).isValid()) ||
+      (args.end_date && !moment(args.end_date, true).isValid())
+    ) {
+      return interaction.editReply(
+        'Invalid date format, allowed formats are `YYYY-MM-DD` or `YYYY-MM-DD HH:mm`'
+      );
     }
 
     const startTime = moment(args.start_date || Season.getSeason().startTime).toDate();
@@ -119,7 +133,14 @@ export default class DonationsCommand extends Command {
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(this.createId({ cmd: this.id, tag: args.tag, start_date: args.start_date, end_date: args.end_date }))
+        .setCustomId(
+          this.createId({
+            cmd: this.id,
+            tag: args.tag,
+            start_date: args.start_date,
+            end_date: args.end_date
+          })
+        )
         .setEmoji(EMOJIS.REFRESH)
         .setStyle(ButtonStyle.Secondary)
     );

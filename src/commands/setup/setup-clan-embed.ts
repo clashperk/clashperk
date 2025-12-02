@@ -1,4 +1,11 @@
-import { Collections, DEEP_LINK_TYPES, FeatureFlags, Flags, missingPermissions, URL_REGEX } from '@app/constants';
+import {
+  Collections,
+  DEEP_LINK_TYPES,
+  FeatureFlags,
+  Flags,
+  missingPermissions,
+  URL_REGEX
+} from '@app/constants';
 import { ClanLogType } from '@app/entities';
 import {
   ActionRowBuilder,
@@ -53,9 +60,16 @@ export default class ClanEmbedCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    { clan, color, channel }: { clan: string; color?: number; channel: TextChannel | AnyThreadChannel }
+    {
+      clan,
+      color,
+      channel
+    }: { clan: string; color?: number; channel: TextChannel | AnyThreadChannel }
   ) {
-    const data = await this.client.resolver.enforceSecurity(interaction, { tag: clan, collection: Collections.CLAN_LOGS });
+    const data = await this.client.resolver.enforceSecurity(interaction, {
+      tag: clan,
+      collection: Collections.CLAN_LOGS
+    });
     if (!data) return;
 
     const permission = missingPermissions(channel, interaction.guild.members.me!, this.permissions);
@@ -69,9 +83,11 @@ export default class ClanEmbedCommand extends Command {
       );
     }
 
-    const existing = await this.client.db
-      .collection(Collections.CLAN_LOGS)
-      .findOne({ clanTag: data.tag, guildId: interaction.guild.id, logType: ClanLogType.CLAN_EMBED_LOG });
+    const existing = await this.client.db.collection(Collections.CLAN_LOGS).findOne({
+      clanTag: data.tag,
+      guildId: interaction.guild.id,
+      logType: ClanLogType.CLAN_EMBED_LOG
+    });
 
     const customIds = {
       customize: this.client.uuid(interaction.user.id),
@@ -80,31 +96,54 @@ export default class ClanEmbedCommand extends Command {
       fields: this.client.uuid(interaction.user.id)
     };
 
-    const state: Partial<{ description: string; bannerImage: string; accepts: string; rulesText: string; fields: ClanEmbedFieldValues[] }> =
-      {
-        description: existing?.metadata?.description ?? 'auto',
-        bannerImage: existing?.metadata?.bannerImage ?? null,
-        accepts: existing?.metadata?.accepts ?? 'auto',
-        rulesText: existing?.metadata?.rulesText ?? null,
-        fields: existing?.metadata?.fields ?? ['*']
-      };
+    const state: Partial<{
+      description: string;
+      bannerImage: string;
+      accepts: string;
+      rulesText: string;
+      fields: ClanEmbedFieldValues[];
+    }> = {
+      description: existing?.metadata?.description ?? 'auto',
+      bannerImage: existing?.metadata?.bannerImage ?? null,
+      accepts: existing?.metadata?.accepts ?? 'auto',
+      rulesText: existing?.metadata?.rulesText ?? null,
+      fields: existing?.metadata?.fields ?? ['*']
+    };
 
     let embed = await clanEmbedMaker(data, { color, ...state });
 
-    const customizeButton = new ButtonBuilder().setLabel('Customize').setStyle(ButtonStyle.Primary).setCustomId(customIds.customize);
-    const confirmButton = new ButtonBuilder().setLabel('Confirm').setStyle(ButtonStyle.Success).setCustomId(customIds.confirm);
+    const customizeButton = new ButtonBuilder()
+      .setLabel('Customize')
+      .setStyle(ButtonStyle.Primary)
+      .setCustomId(customIds.customize);
+    const confirmButton = new ButtonBuilder()
+      .setLabel('Confirm')
+      .setStyle(ButtonStyle.Success)
+      .setCustomId(customIds.confirm);
 
     const menu = new StringSelectMenuBuilder()
-      .setOptions(ClanEmbedFieldOptions.map(({ label, value }) => ({ label, value, default: state.fields?.includes(value) })))
+      .setOptions(
+        ClanEmbedFieldOptions.map(({ label, value }) => ({
+          label,
+          value,
+          default: state.fields?.includes(value)
+        }))
+      )
       .setCustomId(customIds.fields)
       .setMaxValues(ClanEmbedFieldOptions.length)
       .setPlaceholder(`Select the Fields`);
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(customizeButton, confirmButton);
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      customizeButton,
+      confirmButton
+    );
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
     if (existing) {
-      const resendButton = new ButtonBuilder().setLabel('Resend').setStyle(ButtonStyle.Secondary).setCustomId(customIds.resend);
+      const resendButton = new ButtonBuilder()
+        .setLabel('Resend')
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.resend);
       const linkButton = new ButtonBuilder().setLabel('Jump').setStyle(ButtonStyle.Link);
       if (existing.messageId) {
         linkButton.setURL(messageLink(existing.channelId, existing.messageId, existing.guildId));
@@ -112,13 +151,22 @@ export default class ClanEmbedCommand extends Command {
       buttonRow.addComponents(resendButton, linkButton);
     }
 
-    const message = await interaction.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
+    const message = await interaction.editReply({
+      embeds: [embed],
+      components: [buttonRow, menuRow]
+    });
 
     const onFieldsCustomization = async (action: StringSelectMenuInteraction<'cached'>) => {
       await action.deferUpdate();
 
       state.fields = action.values as ClanEmbedFieldValues[];
-      menu.setOptions(ClanEmbedFieldOptions.map(({ label, value }) => ({ label, value, default: state.fields?.includes(value) })));
+      menu.setOptions(
+        ClanEmbedFieldOptions.map(({ label, value }) => ({
+          label,
+          value,
+          default: state.fields?.includes(value)
+        }))
+      );
       menuRow.setComponents(menu);
 
       embed = await clanEmbedMaker(data, {
@@ -139,11 +187,15 @@ export default class ClanEmbedCommand extends Command {
         bannerImage: this.client.uuid(action.user.id)
       };
 
-      const modal = new ModalBuilder().setCustomId(modalCustomIds.modal).setTitle(`${data.name} | Clan Embed`);
+      const modal = new ModalBuilder()
+        .setCustomId(modalCustomIds.modal)
+        .setTitle(`${data.name} | Clan Embed`);
       const descriptionInput = new TextInputBuilder()
         .setCustomId(modalCustomIds.description)
         .setLabel('Description')
-        .setPlaceholder('Enter a custom description. \nOr type "auto" to use the in-game clan description.')
+        .setPlaceholder(
+          'Enter a custom description. \nOr type "auto" to use the in-game clan description.'
+        )
         .setStyle(TextInputStyle.Paragraph)
         .setMaxLength(1200)
         .setRequired(false);
@@ -152,7 +204,9 @@ export default class ClanEmbedCommand extends Command {
       const requirementsInput = new TextInputBuilder()
         .setCustomId(modalCustomIds.requirements)
         .setLabel('Requirements Text (Deprecated)')
-        .setPlaceholder('Enter a custom requirement text. \nOr type "auto" to use the in-game settings.')
+        .setPlaceholder(
+          'Enter a custom requirement text. \nOr type "auto" to use the in-game settings.'
+        )
         .setStyle(TextInputStyle.Paragraph)
         .setMaxLength(600)
         .setRequired(false);
@@ -172,7 +226,9 @@ export default class ClanEmbedCommand extends Command {
       const rulesInput = new TextInputBuilder()
         .setCustomId(modalCustomIds.rules)
         .setLabel('Clan Rules')
-        .setPlaceholder('Type in your clan\'s rules here. They\'ll pop up when you click the "Clan Rules" button!')
+        .setPlaceholder(
+          'Type in your clan\'s rules here. They\'ll pop up when you click the "Clan Rules" button!'
+        )
         .setStyle(TextInputStyle.Paragraph)
         .setMaxLength(2000)
         .setRequired(false);
@@ -186,7 +242,10 @@ export default class ClanEmbedCommand extends Command {
         new ActionRowBuilder<TextInputBuilder>().addComponents(bannerImageInput)
       );
 
-      const isRulesTextEnabled = this.client.isFeatureEnabled(FeatureFlags.CLAN_RULES_BUTTON, interaction.guild.id);
+      const isRulesTextEnabled = this.client.isFeatureEnabled(
+        FeatureFlags.CLAN_RULES_BUTTON,
+        interaction.guild.id
+      );
       if (isRulesTextEnabled) {
         modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(rulesInput));
       }
@@ -223,13 +282,22 @@ export default class ClanEmbedCommand extends Command {
 
         await modalSubmit.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
       } catch (error) {
-        if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+        if (
+          !(
+            error instanceof DiscordjsError &&
+            error.code === DiscordjsErrorCodes.InteractionCollectorError
+          )
+        ) {
           throw error;
         }
       }
     };
 
-    const mutate = async (messageId: string, channelId: string, webhook: { id: string; token: string }) => {
+    const mutate = async (
+      messageId: string,
+      channelId: string,
+      webhook: { id: string; token: string }
+    ) => {
       const id = await this.client.storage.register(interaction, {
         op: Flags.CLAN_EMBED_LOG,
         guild: interaction.guild.id,
@@ -277,13 +345,23 @@ export default class ClanEmbedCommand extends Command {
       });
     };
 
-    const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
+    const webhook = await this.client.storage.getWebhook(
+      channel.isThread() ? channel.parent! : channel
+    );
     if (!webhook) {
-      return interaction.editReply(this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() }));
+      return interaction.editReply(
+        this.i18n('common.too_many_webhooks', {
+          lng: interaction.locale,
+          channel: channel.toString()
+        })
+      );
     }
 
     const getEmbedButtons = () => {
-      const isRulesTextEnabled = this.client.isFeatureEnabled(FeatureFlags.CLAN_RULES_BUTTON, interaction.guild.id);
+      const isRulesTextEnabled = this.client.isFeatureEnabled(
+        FeatureFlags.CLAN_RULES_BUTTON,
+        interaction.guild.id
+      );
       if (!isRulesTextEnabled) return [];
 
       const rulesButton = new ButtonBuilder()

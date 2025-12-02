@@ -43,7 +43,9 @@ export default class ExportUsersCommand extends Command {
 
     let guildMembers = await this.client.util.getGuildMembers(interaction);
     if (args.role) {
-      guildMembers = guildMembers.filter((member) => !member.user.bot && member.roles.cache.has(args.role!.id));
+      guildMembers = guildMembers.filter(
+        (member) => !member.user.bot && member.roles.cache.has(args.role!.id)
+      );
     } else {
       guildMembers = guildMembers.filter((member) => !member.user.bot);
     }
@@ -128,8 +130,14 @@ export default class ExportUsersCommand extends Command {
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Discord Members]`, sheets);
-    return interaction.editReply({ content: `**Discord Members Export**`, components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Discord Members]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: `**Discord Members Export**`,
+      components: getExportComponents(spreadsheet)
+    });
   }
 }
 

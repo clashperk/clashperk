@@ -30,8 +30,13 @@ export default class SetupCustomBotCommand extends Command {
   }
 
   private isEligible(patron: WithId<PatreonMembersEntity>) {
-    if (patron.rewardId === rewards.gold || patron.rewardId === rewards.gold_deprecated) return true;
-    return [CustomTiers.LIFETIME_CUSTOM_BOT, CustomTiers.SPONSORED_CUSTOM_BOT, CustomScopes.CUSTOM_BOT].includes(patron.note);
+    if (patron.rewardId === rewards.gold || patron.rewardId === rewards.gold_deprecated)
+      return true;
+    return [
+      CustomTiers.LIFETIME_CUSTOM_BOT,
+      CustomTiers.SPONSORED_CUSTOM_BOT,
+      CustomScopes.CUSTOM_BOT
+    ].includes(patron.note);
   }
 
   private isAllowedGuild(patron: PatreonMembersEntity, guildId: string) {
@@ -45,8 +50,9 @@ export default class SetupCustomBotCommand extends Command {
 
     const patron = await this.client.subscribers.findOne(interaction.user.id);
     const isEligible =
-      Boolean(patron && this.isEligible(patron) && this.isAllowedGuild(patron, interaction.guildId)) ||
-      this.client.isOwner(interaction.user.id);
+      Boolean(
+        patron && this.isEligible(patron) && this.isAllowedGuild(patron, interaction.guildId)
+      ) || this.client.isOwner(interaction.user.id);
 
     if (patron && patron.applicationId && args.opt_out) {
       await this.client.customBotManager.deleteService(patron.applicationId);
@@ -63,9 +69,17 @@ export default class SetupCustomBotCommand extends Command {
     }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.token).setLabel("Let's start!").setDisabled(!isEligible).setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
-        .setURL(isEligible ? 'https://discord.com/developers/applications' : 'https://www.patreon.com/clashperk')
+        .setCustomId(customIds.token)
+        .setLabel("Let's start!")
+        .setDisabled(!isEligible)
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setURL(
+          isEligible
+            ? 'https://discord.com/developers/applications'
+            : 'https://www.patreon.com/clashperk'
+        )
         .setLabel(isEligible ? 'Developer Portal' : 'Subscribe on Patreon')
         .setStyle(ButtonStyle.Link)
     );
@@ -105,7 +119,10 @@ export default class SetupCustomBotCommand extends Command {
         await modalSubmit.deferUpdate();
 
         if (!patron) {
-          return await modalSubmit.editReply({ content: `You must be a Patreon member to deploy your own bot!`, components: [] });
+          return await modalSubmit.editReply({
+            content: `You must be a Patreon member to deploy your own bot!`,
+            components: []
+          });
         }
 
         const botToken = modalSubmit.fields.getTextInputValue(customIds.token);
@@ -119,33 +136,53 @@ export default class SetupCustomBotCommand extends Command {
         }
 
         if (!this.client.customBotManager.hasIntents(app)) {
-          return await modalSubmit.editReply({ content: `The bot does not have the all the intents enabled.`, components: [] });
+          return await modalSubmit.editReply({
+            content: `The bot does not have the all the intents enabled.`,
+            components: []
+          });
         }
 
         if (this.client.customBotManager.isPublic(app)) {
-          return await modalSubmit.editReply({ content: `The bot is public! You must keep the bot private.`, components: [] });
+          return await modalSubmit.editReply({
+            content: `The bot is public! You must keep the bot private.`,
+            components: []
+          });
         }
 
-        const timeTaken = () => moment.duration(Date.now() - now).format('h[h], m[m], s[s]', { trim: 'both mid' });
+        const timeTaken = () =>
+          moment.duration(Date.now() - now).format('h[h], m[m], s[s]', { trim: 'both mid' });
 
         const messages: string[] = [];
-        messages.push(`${EMOJIS.OK} Setting up **[${app.name} (${app.id})](${getInviteLink(app.id)})**`);
+        messages.push(
+          `${EMOJIS.OK} Setting up **[${app.name} (${app.id})](${getInviteLink(app.id)})**`
+        );
         await modalSubmit.editReply({
           content: [...messages, `${EMOJIS.OK} Creating application commands...`].join('\n'),
           components: []
         });
 
-        const commands = await this.client.customBotManager.createCommands(app.id, interaction.guildId, botToken);
+        const commands = await this.client.customBotManager.createCommands(
+          app.id,
+          interaction.guildId,
+          botToken
+        );
         if (!commands.length) {
           const member = await interaction.guild.members.fetch(app.id).catch(() => null);
           messages.push(`${EMOJIS.WRONG} Failed to create application commands...`);
-          if (!member) messages.push(`\n[Click here to invite the bot](${getInviteLink(app.id)}) and try again.`);
+          if (!member)
+            messages.push(
+              `\n[Click here to invite the bot](${getInviteLink(app.id)}) and try again.`
+            );
 
-          messages.push(`\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`);
+          messages.push(
+            `\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`
+          );
           return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
         }
 
-        messages.push(`${EMOJIS.OK} Created ${commands.length} application commands. [took ${timeTaken()}]`);
+        messages.push(
+          `${EMOJIS.OK} Created ${commands.length} application commands. [took ${timeTaken()}]`
+        );
         await modalSubmit.editReply({
           content: [...messages, `${EMOJIS.LOADING} Deploying application...`].join('\n'),
           components: []
@@ -162,7 +199,9 @@ export default class SetupCustomBotCommand extends Command {
 
         if (!service) {
           messages.push(`${EMOJIS.WRONG} Failed to deploy application...`);
-          messages.push(`\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`);
+          messages.push(
+            `\nContact us on [Support Server](<https://discord.gg/ppuppun>) for assistance.`
+          );
           return await modalSubmit.editReply({ content: messages.join('\n'), components: [] });
         }
 
@@ -173,7 +212,9 @@ export default class SetupCustomBotCommand extends Command {
         );
         return modalSubmit.editReply({ content: messages.join('\n'), components: [] });
       } catch (e) {
-        if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+        if (
+          !(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)
+        ) {
           throw e;
         }
       }

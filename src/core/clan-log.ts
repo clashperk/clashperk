@@ -1,4 +1,11 @@
-import { COLOR_CODES, Collections, DEEP_LINK_TYPES, PLAYER_ROLES_MAP, Settings, UNRANKED_TIER_ID } from '@app/constants';
+import {
+  COLOR_CODES,
+  Collections,
+  DEEP_LINK_TYPES,
+  PLAYER_ROLES_MAP,
+  Settings,
+  UNRANKED_TIER_ID
+} from '@app/constants';
 import { ClanLogType, ClanLogsEntity, FlagsEntity, LogAction, LogActions } from '@app/entities';
 import { APIPlayer, APIPlayerItem } from 'clashofclans.js';
 import {
@@ -14,7 +21,14 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
-import { BLUE_NUMBERS, EMOJIS, HEROES, HOME_BASE_LEAGUES, RED_NUMBERS, TOWN_HALLS } from '../util/emojis.js';
+import {
+  BLUE_NUMBERS,
+  EMOJIS,
+  HEROES,
+  HOME_BASE_LEAGUES,
+  RED_NUMBERS,
+  TOWN_HALLS
+} from '../util/emojis.js';
 import { unitsFlatten } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';
 import { RAW_TROOPS_FILTERED } from '../util/troops.js';
@@ -78,7 +92,9 @@ export class ClanLog extends RootLog {
       return this.getClanLogEmbed(cache, webhook, data);
     }
 
-    const members = data.members.filter((member) => (Object.values(LogActions) as string[]).includes(member.op));
+    const members = data.members.filter((member) =>
+      (Object.values(LogActions) as string[]).includes(member.op)
+    );
     if (!members.length) return null;
 
     const delay = members.length >= 5 ? 2000 : 250;
@@ -93,7 +109,9 @@ export class ClanLog extends RootLog {
         new ButtonBuilder()
           .setLabel('View Profile')
           .setStyle(ButtonStyle.Secondary)
-          .setCustomId(this.client.redis.createCustomId({ cmd: 'player', tag: member.tag, ephemeral: true }))
+          .setCustomId(
+            this.client.redis.createCustomId({ cmd: 'player', tag: member.tag, ephemeral: true })
+          )
       );
 
       await this.send(cache, webhook, {
@@ -126,7 +144,9 @@ export class ClanLog extends RootLog {
     if (!cache.deepLink || cache.deepLink === DEEP_LINK_TYPES.OPEN_IN_COS) {
       embed.setURL(`https://www.clashofstats.com/players/${player.tag.slice(1)}`);
     } else {
-      embed.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
+      embed.setURL(
+        `https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`
+      );
     }
 
     if (member.op === LogActions.NAME_CHANGE) {
@@ -170,7 +190,9 @@ export class ClanLog extends RootLog {
 
     if (member.op === LogActions.CAPITAL_GOLD_CONTRIBUTION) {
       embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badgeUrl });
-      embed.setDescription(`${EMOJIS.CAPITAL_GOLD} Contributed **${member.contributed.toLocaleString()}** Capital Gold`);
+      embed.setDescription(
+        `${EMOJIS.CAPITAL_GOLD} Contributed **${member.contributed.toLocaleString()}** Capital Gold`
+      );
     }
 
     if (member.op === LogActions.CAPITAL_GOLD_RAID) {
@@ -187,7 +209,10 @@ export class ClanLog extends RootLog {
           iconURL: data.clan.badge
         });
       } else {
-        embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
+        embed.setFooter({
+          text: `Left ${data.clan.name} [${data.memberList.length}/50]`,
+          iconURL: data.clan.badge
+        });
       }
 
       embed.setDescription(
@@ -195,13 +220,18 @@ export class ClanLog extends RootLog {
           `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
           `${HOME_BASE_LEAGUES[player.leagueTier?.id ?? UNRANKED_TIER_ID]}**${player.trophies}**`,
           `${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`,
-          ['admin', 'leader', 'coLeader'].includes(member.role) ? `(${PLAYER_ROLES_MAP[member.role]})` : ''
+          ['admin', 'leader', 'coLeader'].includes(member.role)
+            ? `(${PLAYER_ROLES_MAP[member.role]})`
+            : ''
         ].join(' ')
       );
     }
 
     if (member.op === LogActions.JOINED) {
-      embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
+      embed.setFooter({
+        text: `Joined ${data.clan.name} [${data.memberList.length}/50]`,
+        iconURL: data.clan.badge
+      });
       const heroes = player.heroes.filter((hero) => hero.village === 'home');
       embed.setDescription(
         [
@@ -258,13 +288,17 @@ export class ClanLog extends RootLog {
     if (data.type === LogActions.CAPITAL_LEAGUE_CHANGE) {
       const isPromoted = this.isPromoted(data.clan.capitalLeague, data.clan.oldCapitalLeague);
       embed.setColor(isPromoted ? COLOR_CODES.DARK_GREEN : COLOR_CODES.DARK_RED);
-      embed.setDescription(`Capital League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.capitalLeague.name}**`);
+      embed.setDescription(
+        `Capital League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.capitalLeague.name}**`
+      );
     }
 
     if (data.type === LogActions.WAR_LEAGUE_CHANGE) {
       const isPromoted = this.isPromoted(data.clan.warLeague, data.clan.oldWarLeague);
       embed.setColor(isPromoted ? COLOR_CODES.DARK_GREEN : COLOR_CODES.DARK_RED);
-      embed.setDescription(`War League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.warLeague.name}**`);
+      embed.setDescription(
+        `War League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.warLeague.name}**`
+      );
     }
 
     return this.send(cache, webhook, {
@@ -276,7 +310,9 @@ export class ClanLog extends RootLog {
   private async getDonationLogEmbed(cache: Cache, webhook: WebhookClient, data: Feed) {
     const embed = new EmbedBuilder()
       .setTitle(`${data.clan.name} (${data.clan.tag})`)
-      .setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
+      .setURL(
+        `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`
+      )
       .setThumbnail(data.clan.badgeUrl)
       .setFooter({ text: `${data.clan.members}/50`, iconURL: data.clan.badgeUrl })
       .setTimestamp()
@@ -292,9 +328,15 @@ export class ClanLog extends RootLog {
               .map((m) => {
                 if (m.donations > (this.client.isCustom() ? 100 : 200)) {
                   const [div, mod] = this.divMod(m.donations);
-                  const list = [`\u200e${TOWN_HALLS[m.townHallLevel]} ${BLUE_NUMBERS[(div > 900 ? 900 : div).toString()]} ${m.name}`];
+                  const list = [
+                    `\u200e${TOWN_HALLS[m.townHallLevel]} ${BLUE_NUMBERS[(div > 900 ? 900 : div).toString()]} ${m.name}`
+                  ];
                   if (mod > 0) {
-                    return list.concat(`\u200e${TOWN_HALLS[m.townHallLevel]} ${BLUE_NUMBERS[mod.toString()]} ${m.name}`).join('\n');
+                    return list
+                      .concat(
+                        `\u200e${TOWN_HALLS[m.townHallLevel]} ${BLUE_NUMBERS[mod.toString()]} ${m.name}`
+                      )
+                      .join('\n');
                   }
                   return list.join('\n');
                 }
@@ -317,9 +359,15 @@ export class ClanLog extends RootLog {
               .map((m) => {
                 if (m.donationsReceived > (this.client.isCustom() ? 100 : 200)) {
                   const [div, mod] = this.divMod(m.donationsReceived);
-                  const list = [`\u200e${TOWN_HALLS[m.townHallLevel]} ${RED_NUMBERS[(div > 900 ? 900 : div).toString()]} ${m.name}`];
+                  const list = [
+                    `\u200e${TOWN_HALLS[m.townHallLevel]} ${RED_NUMBERS[(div > 900 ? 900 : div).toString()]} ${m.name}`
+                  ];
                   if (mod > 0) {
-                    return list.concat(`\u200e${TOWN_HALLS[m.townHallLevel]} ${RED_NUMBERS[mod.toString()]!} ${m.name}`).join('\n');
+                    return list
+                      .concat(
+                        `\u200e${TOWN_HALLS[m.townHallLevel]} ${RED_NUMBERS[mod.toString()]!} ${m.name}`
+                      )
+                      .join('\n');
                   }
                   return list.join('\n');
                 }
@@ -339,7 +387,9 @@ export class ClanLog extends RootLog {
   }
 
   private formatHeroes(heroes: APIPlayerItem[]) {
-    return heroes.length ? `${heroes.map((hero) => `${HEROES[hero.name]}**${hero.level}**`).join(' ')}` : ``;
+    return heroes.length
+      ? `${heroes.map((hero) => `${HEROES[hero.name]}**${hero.level}**`).join(' ')}`
+      : ``;
   }
 
   private divMod(num: number) {
@@ -357,7 +407,9 @@ export class ClanLog extends RootLog {
     const apiTroops = unitsFlatten(data, { withEquipment: true });
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         if (unit.village === 'home') {
           prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
           prev.total += unit.levels[data.townHallLevel - 2];
@@ -374,7 +426,9 @@ export class ClanLog extends RootLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: ClanLog.name
+      });
       return null;
     }
   }

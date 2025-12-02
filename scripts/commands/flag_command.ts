@@ -59,7 +59,9 @@ export const FLAG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'flag_expiry_days',
           description: command.flag.create.options.flag_expiry_days.description,
-          description_localizations: translation('command.flag.create.options.flag_expiry_days.description'),
+          description_localizations: translation(
+            'command.flag.create.options.flag_expiry_days.description'
+          ),
           type: ApplicationCommandOptionType.Integer,
           max_value: 100 * 365,
           min_value: 1
@@ -67,7 +69,9 @@ export const FLAG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'flag_impact',
           description: command.flag.create.options.flag_impact.description,
-          description_localizations: translation('command.flag.create.options.flag_impact.description'),
+          description_localizations: translation(
+            'command.flag.create.options.flag_impact.description'
+          ),
           type: ApplicationCommandOptionType.Integer,
           max_value: 100,
           min_value: 1
@@ -151,7 +155,9 @@ export const FLAG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'flag_ref',
           description: command.flag.delete.options.flag_ref.description,
-          description_localizations: translation('command.flag.delete.options.flag_ref.description'),
+          description_localizations: translation(
+            'command.flag.delete.options.flag_ref.description'
+          ),
           type: ApplicationCommandOptionType.String,
           required: true,
           autocomplete: true

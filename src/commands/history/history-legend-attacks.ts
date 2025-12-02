@@ -15,7 +15,10 @@ export default class LegendAttacksHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { result } = await this.getHistory(interaction, playerTags);
@@ -67,7 +70,9 @@ export default class LegendAttacksHistoryCommand extends Command {
     for (const { logs, name, tag } of players) {
       const days = Util.getLegendDays();
       const perDayLogs = days.reduce<PerDayLog[]>((prev, { startTime, endTime }, i) => {
-        const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+        const mixedLogs = logs.filter(
+          (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
+        );
         const attacks = mixedLogs.filter((en) => en.inc > 0);
         const defenses = mixedLogs.filter((en) => en.inc <= 0);
 
@@ -119,7 +124,11 @@ export default class LegendAttacksHistoryCommand extends Command {
           ...days.map((_, n) => ({ name: `Day ${n + 1}`, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...days.map((_, i) => r.records[i + 1]?.attackCount ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...days.map((_, i) => r.records[i + 1]?.attackCount ?? 0)
+        ])
       },
       {
         title: `Defense`,
@@ -129,7 +138,11 @@ export default class LegendAttacksHistoryCommand extends Command {
           ...days.map((_, n) => ({ name: `Day ${n + 1}`, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...days.map((_, i) => r.records[i + 1]?.defenseCount ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...days.map((_, i) => r.records[i + 1]?.defenseCount ?? 0)
+        ])
       },
       {
         title: `Gain`,
@@ -159,12 +172,22 @@ export default class LegendAttacksHistoryCommand extends Command {
           ...days.map((_, n) => ({ name: `Day ${n + 1}`, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...days.map((_, i) => r.records[i + 1]?.netGain ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...days.map((_, i) => r.records[i + 1]?.netGain ?? 0)
+        ])
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Legend Attacks History]`, sheets);
-    return interaction.editReply({ content: '**Legend Attacks History**', components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Legend Attacks History]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: '**Legend Attacks History**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 }
 

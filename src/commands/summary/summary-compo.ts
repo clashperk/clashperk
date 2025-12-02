@@ -44,10 +44,18 @@ export default class SummaryCompoCommand extends Command {
     const _clans = await this.client.coc._getClans(clans);
 
     const overall: { tag: string; townHallLevel: number }[] = [];
-    const aggregated: { name: string; tag: string; weight: number; compo: Record<string, number> }[] = [];
+    const aggregated: {
+      name: string;
+      tag: string;
+      weight: number;
+      compo: Record<string, number>;
+    }[] = [];
 
     for (const clan of _clans) {
-      const players = clan.memberList.map((mem) => ({ tag: mem.tag, townHallLevel: mem.townHallLevel }));
+      const players = clan.memberList.map((mem) => ({
+        tag: mem.tag,
+        townHallLevel: mem.townHallLevel
+      }));
       overall.push(...players);
 
       const reduced = players.reduce<{ [key: string]: number }>((count, member) => {
@@ -66,7 +74,11 @@ export default class SummaryCompoCommand extends Command {
     const embeds = [];
     for (const clans of cluster(aggregated, 15)) {
       const embed = new EmbedBuilder().setTitle('Family TownHall Compo');
-      embed.setDescription(clans.map((clan) => `**${clan.name} (${clan.tag})**\n${fromReduced(clan.compo)}`).join('\n\n'));
+      embed.setDescription(
+        clans
+          .map((clan) => `**${clan.name} (${clan.tag})**\n${fromReduced(clan.compo)}`)
+          .join('\n\n')
+      );
       embeds.push(embed);
     }
 

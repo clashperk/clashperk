@@ -1,6 +1,13 @@
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
 import { ClanLogsEntity, ClanLogType, LegendAttacksEntity } from '@app/entities';
-import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
+import {
+  Collection,
+  EmbedBuilder,
+  escapeMarkdown,
+  PermissionsString,
+  WebhookClient,
+  WebhookMessageCreateOptions
+} from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { padStart } from '../util/helper.js';
@@ -46,7 +53,9 @@ export class LegendLog extends RootLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: LegendLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: LegendLog.name
+      });
       return null;
     }
   }
@@ -70,7 +79,11 @@ export class LegendLog extends RootLog {
     const attackingMembers = result.map((mem) => mem.tag);
 
     const clanMembers: LegendAttacksEntity[] = clan.memberList
-      .filter((mem) => !attackingMembers.includes(mem.tag) && (mem.leagueTier?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000))
+      .filter(
+        (mem) =>
+          !attackingMembers.includes(mem.tag) &&
+          (mem.leagueTier?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000)
+      )
       .map((mem) => ({
         name: mem.name,
         tag: mem.tag,
@@ -93,11 +106,14 @@ export class LegendLog extends RootLog {
 
     const members = [];
     for (const legend of [...result, ...clanMembers]) {
-      const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+      const logs = legend.logs.filter(
+        (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
+      );
       if (logs.length === 0) continue;
 
       const attacks = logs.filter((en) => en.type === 'attack');
-      const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+      const defenses =
+        logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
 
       const [initial] = logs;
       const [current] = logs.slice(-1);
@@ -131,7 +147,9 @@ export class LegendLog extends RootLog {
 
     const embed = new EmbedBuilder()
       .setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
-      .setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
+      .setURL(
+        `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`
+      )
       .setColor(this.client.embed(cache.guild));
 
     embed.setDescription(
@@ -139,8 +157,14 @@ export class LegendLog extends RootLog {
         '**Legend League Attacks**',
         `\`GAIN  LOSS  FINAL \` **NAME**`,
         ...members.slice(0, 99).map((mem) => {
-          const attacks = padStart(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`, 5);
-          const defense = padStart(`-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`, 5);
+          const attacks = padStart(
+            `+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`,
+            5
+          );
+          const defense = padStart(
+            `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`,
+            5
+          );
           return `\`${attacks} ${defense}  ${padStart(mem.current.end, 4)} \` \u200e${escapeMarkdown(mem.name)}`;
         })
       ].join('\n')
@@ -171,7 +195,10 @@ export class LegendLog extends RootLog {
         if (this.queued.has(log._id.toHexString())) continue;
 
         this.queued.add(log._id.toHexString());
-        await this.exec(log.clanTag, { logType: log.logType, channel: log.channelId } satisfies Feed);
+        await this.exec(log.clanTag, {
+          logType: log.logType,
+          channel: log.channelId
+        } satisfies Feed);
         this.queued.delete(log._id.toHexString());
         await Util.delay(3000);
       }

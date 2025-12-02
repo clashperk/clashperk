@@ -1,5 +1,11 @@
 import { Collections } from '@app/constants';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { escapeBackTick, padStart } from '../../util/helper.js';
@@ -17,13 +23,20 @@ export default class SummaryCapitalRaidsCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { week?: string; clans?: string; clans_only?: boolean; layout?: 'avg_loot' | 'medals_earned' | 'players_rank' }
+    args: {
+      week?: string;
+      clans?: string;
+      clans_only?: boolean;
+      layout?: 'avg_loot' | 'medals_earned' | 'players_rank';
+    }
   ) {
     const { weekId } = this.raidWeek();
     let { week } = args;
     if (!week) week = weekId;
 
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const { clansGroup, membersGroup } = await this.queryFromDB(week, clans);
@@ -102,14 +115,22 @@ export default class SummaryCapitalRaidsCommand extends Command {
       refresh: this.createId(payload),
       layout: this.createId({
         ...payload,
-        layout: args.layout === 'avg_loot' ? 'players_rank' : args.layout === 'medals_earned' ? 'avg_loot' : 'medals_earned',
+        layout:
+          args.layout === 'avg_loot'
+            ? 'players_rank'
+            : args.layout === 'medals_earned'
+              ? 'avg_loot'
+              : 'medals_earned',
         clans_only: true
       }),
       toggle: this.createId({ ...payload, clans_only: !args.clans_only })
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
         .setStyle(ButtonStyle.Primary)
@@ -119,7 +140,13 @@ export default class SummaryCapitalRaidsCommand extends Command {
     if (args.clans_only) {
       row.addComponents(
         new ButtonBuilder()
-          .setLabel(args.layout === 'avg_loot' ? 'Participation' : args.layout === 'medals_earned' ? 'Avg. Loot/Hit' : 'Loot/Hit/Medals')
+          .setLabel(
+            args.layout === 'avg_loot'
+              ? 'Participation'
+              : args.layout === 'medals_earned'
+                ? 'Avg. Loot/Hit'
+                : 'Loot/Hit/Medals'
+          )
           .setStyle(ButtonStyle.Secondary)
           .setCustomId(customIds.layout)
       );
@@ -132,8 +159,22 @@ export default class SummaryCapitalRaidsCommand extends Command {
     const result = await this.client.db
       .collection(Collections.CAPITAL_RAID_SEASONS)
       .aggregate<{
-        clans: { name: string; tag: string; attacks: number; looted: number; attackLimit: number; medals: number; players: number }[];
-        members: { name: string; tag: string; attacks: number; attackLimit: number; capitalResourcesLooted: number }[];
+        clans: {
+          name: string;
+          tag: string;
+          attacks: number;
+          looted: number;
+          attackLimit: number;
+          medals: number;
+          players: number;
+        }[];
+        members: {
+          name: string;
+          tag: string;
+          attacks: number;
+          attackLimit: number;
+          capitalResourcesLooted: number;
+        }[];
       }>([
         {
           $match: {
@@ -220,7 +261,8 @@ export default class SummaryCapitalRaidsCommand extends Command {
     const today = new Date();
     const weekDay = today.getUTCDay();
     const hours = today.getUTCHours();
-    const isRaidWeek = (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
+    const isRaidWeek =
+      (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
     today.setUTCDate(today.getUTCDate() - today.getUTCDay());
     if (weekDay < 5 || (weekDay <= 5 && hours < 7)) today.setDate(today.getUTCDate() - 7);
     today.setUTCDate(today.getUTCDate() + 5);

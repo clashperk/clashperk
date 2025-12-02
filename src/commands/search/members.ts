@@ -57,13 +57,20 @@ export default class MembersCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; option?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User; option?: string }
+  ) {
     const command = args.option && this.handler.getCommand(args.option);
-    if (command) return this.handler.exec(interaction, command, { tag: args.tag, with_options: true });
+    if (command)
+      return this.handler.exec(interaction, command, { tag: args.tag, with_options: true });
 
     const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!data) return;
-    if (!data.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
+    if (!data.members)
+      return interaction.editReply(
+        this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name })
+      );
 
     const fetched = await this.client.coc._getPlayers(data.memberList);
     const members = fetched.map((m) => ({
@@ -76,11 +83,16 @@ export default class MembersCommand extends Command {
       },
       townHallLevel: m.townHallLevel,
       heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
-      pets: m.troops.filter((troop) => troop.name in PETS).sort((a, b) => PETS[a.name] - PETS[b.name])
+      pets: m.troops
+        .filter((troop) => troop.name in PETS)
+        .sort((a, b) => PETS[a.name] - PETS[b.name])
     }));
 
     members
-      .sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
+      .sort(
+        (a, b) =>
+          b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0)
+      )
       .sort((a, b) => b.townHallLevel - a.townHallLevel);
 
     const embed = new EmbedBuilder()
@@ -107,7 +119,12 @@ export default class MembersCommand extends Command {
       embed.setDescription(
         [
           `\`${'ROLE'}  ${'TAG'.padEnd(10, ' ')} \`  ${'**NAME**'}`,
-          members.map((mem) => `\`${padEnd(mem.role.name, 4)}  ${padEnd(mem.tag, 10)} \`  \u200e${escapeMarkdown(mem.name)}`).join('\n')
+          members
+            .map(
+              (mem) =>
+                `\`${padEnd(mem.role.name, 4)}  ${padEnd(mem.tag, 10)} \`  \u200e${escapeMarkdown(mem.name)}`
+            )
+            .join('\n')
         ].join('\n')
       );
     }
@@ -259,7 +276,10 @@ export default class MembersCommand extends Command {
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh).setStyle(ButtonStyle.Secondary)
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setCustomId(customIds.refresh)
+        .setStyle(ButtonStyle.Secondary)
     );
     const menu = new StringSelectMenuBuilder()
       .setPlaceholder('Select an option!')
@@ -370,7 +390,11 @@ export default class MembersCommand extends Command {
       index: 'join_leave_events',
       query: {
         bool: {
-          filter: [{ terms: { op: ['JOINED', 'LEFT'] } }, { match: { clan_tag: clan.tag } }, { terms: { tag: players.map((p) => p.tag) } }]
+          filter: [
+            { terms: { op: ['JOINED', 'LEFT'] } },
+            { match: { clan_tag: clan.tag } },
+            { terms: { tag: players.map((p) => p.tag) } }
+          ]
         }
       },
       size: 0,

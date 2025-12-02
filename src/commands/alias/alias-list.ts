@@ -13,7 +13,9 @@ export default class AliasListCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>) {
-    const clans = (await this.client.storage.find(interaction.guildId)).filter((clan) => clan.alias || clan.nickname);
+    const clans = (await this.client.storage.find(interaction.guildId)).filter(
+      (clan) => clan.alias || clan.nickname
+    );
 
     const chunks = Util.splitMessage(
       [
@@ -30,6 +32,7 @@ export default class AliasListCommand extends Command {
       ].join('\n')
     );
 
-    for (const content of chunks) await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+    for (const content of chunks)
+      await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
   }
 }

@@ -27,9 +27,17 @@ export default class ExportWarAttackLogCommand extends Command {
     let num = Number(args.limit ?? 25);
     num = Math.min(100, num);
 
-    const query: Filter<ClanWarsEntity> = args.season ? { startTime: { $gte: new Date(args.season) } } : {};
+    const query: Filter<ClanWarsEntity> = args.season
+      ? { startTime: { $gte: new Date(args.season) } }
+      : {};
     if (!args.war_type) query.warType = { $in: [WarType.REGULAR, WarType.CWL] };
-    else query.warType = args.war_type === 'cwl' ? WarType.CWL : args.war_type === 'friendly' ? WarType.FRIENDLY : WarType.REGULAR;
+    else
+      query.warType =
+        args.war_type === 'cwl'
+          ? WarType.CWL
+          : args.war_type === 'friendly'
+            ? WarType.FRIENDLY
+            : WarType.REGULAR;
 
     const chunks = [];
 
@@ -96,7 +104,12 @@ export default class ExportWarAttackLogCommand extends Command {
               enemyClanName: opponent.name,
               startTime: war.startTime,
               teamSize: war.teamSize,
-              warType: war.warType === WarType.CWL ? 'cwl' : war.warType === WarType.FRIENDLY ? 'friendly' : 'normal'
+              warType:
+                war.warType === WarType.CWL
+                  ? 'cwl'
+                  : war.warType === WarType.FRIENDLY
+                    ? 'friendly'
+                    : 'normal'
             });
           }
         }
@@ -133,7 +146,12 @@ export default class ExportWarAttackLogCommand extends Command {
               enemyClanName: opponent.name,
               startTime: war.startTime,
               teamSize: war.teamSize,
-              warType: war.warType === WarType.CWL ? 'cwl' : war.warType === WarType.FRIENDLY ? 'friendly' : 'normal'
+              warType:
+                war.warType === WarType.CWL
+                  ? 'cwl'
+                  : war.warType === WarType.FRIENDLY
+                    ? 'friendly'
+                    : 'normal'
             });
           }
         }
@@ -146,7 +164,8 @@ export default class ExportWarAttackLogCommand extends Command {
       });
     }
 
-    if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!chunks.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const sheets: CreateGoogleSheet[] = chunks.map((chunk) => ({
       columns: [

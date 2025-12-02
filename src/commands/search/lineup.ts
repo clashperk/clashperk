@@ -1,5 +1,12 @@
 import { APIClanWarMember, APIWarClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  User
+} from 'discord.js';
 import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/emojis.js';
@@ -30,7 +37,10 @@ export default class LineupCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; player_list?: boolean }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User; player_list?: boolean }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
@@ -42,7 +52,9 @@ export default class LineupCommand extends Command {
       const { res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
         // TODO: Fix
-        return this.handler.exec(interaction, this.handler.getCommand('cwl-lineup')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-lineup')!, {
+          tag: clan.tag
+        });
       }
       embed.setDescription('Private WarLog');
       return interaction.editReply({ embeds: [embed] });
@@ -55,7 +67,9 @@ export default class LineupCommand extends Command {
       const { res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
         // TODO: Fix
-        return this.handler.exec(interaction, this.handler.getCommand('cwl-lineup')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-lineup')!, {
+          tag: clan.tag
+        });
       }
       embed.setDescription(this.i18n('command.lineup.not_in_war', { lng: interaction.locale }));
       return interaction.editReply({ embeds: [embed] });
@@ -78,7 +92,10 @@ export default class LineupCommand extends Command {
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setCustomId(customIds.toggle)
         .setLabel(args.player_list ? 'Compare' : 'Player List')
@@ -104,7 +121,9 @@ export default class LineupCommand extends Command {
         `\u200e${EMOJIS.HASH} \`TH HERO \u2002  \u2002 TH HERO \``,
         linups
           .map((lineup, i) => {
-            const desc = lineup.map((en) => `${this.pad(en.t, 2)} ${this.pad(en.h, 4)}`).join(' \u2002vs\u2002 ');
+            const desc = lineup
+              .map((en) => `${this.pad(en.t, 2)} ${this.pad(en.h, 4)}`)
+              .join(' \u2002vs\u2002 ');
             return `${BLUE_NUMBERS[i + 1]} \`${desc} \``;
           })
           .join('\n')
@@ -126,7 +145,10 @@ export default class LineupCommand extends Command {
         .setDescription(
           data.clan.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`)
+            .map(
+              (m, i) =>
+                `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`
+            )
             .join('\n')
         )
         .setFooter({ text: `${states[state]}` }),
@@ -140,7 +162,10 @@ export default class LineupCommand extends Command {
         .setDescription(
           data.opponent.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`)
+            .map(
+              (m, i) =>
+                `\u200e\`${padStart(i + 1, 2)}\` [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`
+            )
             .join('\n')
         )
         .setFooter({ text: `${states[state]}` })

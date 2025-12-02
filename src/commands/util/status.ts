@@ -39,14 +39,19 @@ export default class StatusCommand extends Command {
       process.memoryUsage().heapUsed / 1024 / 1024
     ]);
 
-    for (const value of values ?? [[this.client.guilds.cache.size, process.memoryUsage().heapUsed / 1024 / 1024]]) {
+    for (const value of values ?? [
+      [this.client.guilds.cache.size, process.memoryUsage().heapUsed / 1024 / 1024]
+    ]) {
       guilds += value[0];
       memory += value[1];
     }
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(guild.id))
-      .setAuthor({ name: `${this.client.user.displayName}`, iconURL: this.client.user.displayAvatarURL({ extension: 'png' }) })
+      .setAuthor({
+        name: `${this.client.user.displayName}`,
+        iconURL: this.client.user.displayAvatarURL({ extension: 'png' })
+      })
       .addFields({
         name: 'Memory Usage',
         value: `${memory.toFixed(2)} MB`,
@@ -62,7 +67,9 @@ export default class StatusCommand extends Command {
     embed.addFields(
       {
         name: 'Uptime',
-        value: moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }),
+        value: moment
+          .duration(process.uptime() * 1000)
+          .format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }),
         inline: false
       },
       {

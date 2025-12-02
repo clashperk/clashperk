@@ -1,5 +1,11 @@
 import { APIClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder
+} from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { Util } from '../../util/toolkit.js';
@@ -15,7 +21,10 @@ export default class SummaryClansCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; display?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; display?: string }
+  ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -24,13 +33,19 @@ export default class SummaryClansCommand extends Command {
 
     if (!_clans.length) {
       return interaction.editReply(
-        this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_found', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
     const overall: { tag: string; townHallLevel: number }[] = [];
     for (const clan of _clans) {
-      const players = clan.memberList.map((mem) => ({ tag: mem.tag, townHallLevel: mem.townHallLevel }));
+      const players = clan.memberList.map((mem) => ({
+        tag: mem.tag,
+        townHallLevel: mem.townHallLevel
+      }));
       overall.push(...players);
     }
 
@@ -60,7 +75,10 @@ export default class SummaryClansCommand extends Command {
       const logs = await this.getJoinLeaveLogs(interaction, _clans);
       const embed = new EmbedBuilder()
         .setColor(this.client.embed(interaction))
-        .setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
+        .setAuthor({
+          name: `${interaction.guild.name} Clans`,
+          iconURL: interaction.guild.iconURL()!
+        })
         .setDescription(
           [
             `**Join/Leave History (last 30 days)**`,
@@ -101,7 +119,10 @@ export default class SummaryClansCommand extends Command {
       index: 'join_leave_events',
       query: {
         bool: {
-          filter: [{ terms: { clan_tag: clans.map((clan) => clan.tag) } }, { range: { created_at: { gte } } }]
+          filter: [
+            { terms: { clan_tag: clans.map((clan) => clan.tag) } },
+            { range: { created_at: { gte } } }
+          ]
         }
       },
       size: 0,
@@ -125,7 +146,9 @@ export default class SummaryClansCommand extends Command {
 
     const { buckets } = (aggregations?.clans ?? []) as { buckets: AggsBucket[] };
     const clanMap = buckets
-      .flatMap((bucket) => bucket.events.buckets.map(({ doc_count, key }) => ({ bucket, doc_count, key })))
+      .flatMap((bucket) =>
+        bucket.events.buckets.map(({ doc_count, key }) => ({ bucket, doc_count, key }))
+      )
       .reduce<Record<string, Record<string, number>>>((acc, { bucket, doc_count, key }) => {
         acc[bucket.key] ??= {};
         acc[bucket.key][key] = doc_count;

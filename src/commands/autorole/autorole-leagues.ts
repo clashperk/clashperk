@@ -36,7 +36,10 @@ export default class AutoLeagueRoleCommand extends Command {
     const clans = await this.client.storage.find(interaction.guildId);
     if (!clans.length) {
       return interaction.editReply(
-        this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_linked', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
@@ -57,7 +60,10 @@ export default class AutoLeagueRoleCommand extends Command {
       }
     }
 
-    const selectedLeagueRoles = Object.entries(rolesMap).map(([league, role]) => ({ league, role }));
+    const selectedLeagueRoles = Object.entries(rolesMap).map(([league, role]) => ({
+      league,
+      role
+    }));
     const selectedTrophyRoles = Object.entries(trophyRanges).map(([key, role]) => {
       const [min, max] = key.split('_').map(Number);
       return { min, max, role, key };
@@ -65,18 +71,27 @@ export default class AutoLeagueRoleCommand extends Command {
     const selectedRoles = [...selectedLeagueRoles, ...selectedTrophyRoles];
 
     if (typeof args.allowExternal === 'boolean') {
-      await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, Boolean(args.allowExternal));
+      await this.client.settings.set(
+        interaction.guildId,
+        Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE,
+        Boolean(args.allowExternal)
+      );
       if (!selectedRoles.length) {
         return interaction.editReply('League roles settings updated.');
       }
     }
 
     if (!selectedRoles.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'You must select at least one role.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (selectedRoles.some((r) => this.isSystemRole(r.role, interaction.guild))) {
-      const systemRoles = selectedRoles.filter(({ role }) => this.isSystemRole(role, interaction.guild));
+      const systemRoles = selectedRoles.filter(({ role }) =>
+        this.isSystemRole(role, interaction.guild)
+      );
       return interaction.editReply(
         `${this.i18n('command.autorole.no_system_roles', { lng: interaction.locale })} (${systemRoles
           .map((r) => `<@&${r.role.id}>`)
@@ -85,13 +100,26 @@ export default class AutoLeagueRoleCommand extends Command {
     }
 
     if (selectedRoles.some((r) => this.isHigherRole(r.role, interaction.guild))) {
-      return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale })
+      );
     }
 
-    const leagueRolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.LEAGUE_ROLES, {});
-    const trophyRolesConfig = this.client.settings.get<Record<string, TrophyRolesConfig>>(interaction.guildId, Settings.TROPHY_ROLES, {});
+    const leagueRolesConfig = this.client.settings.get<Record<string, string>>(
+      interaction.guildId,
+      Settings.LEAGUE_ROLES,
+      {}
+    );
+    const trophyRolesConfig = this.client.settings.get<Record<string, TrophyRolesConfig>>(
+      interaction.guildId,
+      Settings.TROPHY_ROLES,
+      {}
+    );
 
-    Object.assign(leagueRolesConfig, Object.fromEntries(selectedLeagueRoles.map((selected) => [selected.league, selected.role.id])));
+    Object.assign(
+      leagueRolesConfig,
+      Object.fromEntries(selectedLeagueRoles.map((selected) => [selected.league, selected.role.id]))
+    );
     Object.assign(
       trophyRolesConfig,
       Object.fromEntries(
@@ -127,11 +155,16 @@ export default class AutoLeagueRoleCommand extends Command {
       content: [
         '**League Roles**',
         leagueRoles
-          .map(({ league, role }) => `${league.replace(/\b(\w)/g, (char) => char.toUpperCase())} ${role ? `<@&${role}>` : ''}`)
+          .map(
+            ({ league, role }) =>
+              `${league.replace(/\b(\w)/g, (char) => char.toUpperCase())} ${role ? `<@&${role}>` : ''}`
+          )
           .join('\n'),
         '',
         '**Trophy Roles**',
-        trophyRoles.map(({ min, max, role }) => `${min} - ${max} ${role ? `<@&${role}>` : ''}`).join('\n'),
+        trophyRoles
+          .map(({ min, max, role }) => `${min} - ${max} ${role ? `<@&${role}>` : ''}`)
+          .join('\n'),
         '',
         args.allowExternal ? '' : '(Family Only) Roles will be given to family members only.'
       ].join('\n')

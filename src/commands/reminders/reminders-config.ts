@@ -1,5 +1,13 @@
 import { Settings } from '@app/constants';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild, RoleSelectMenuBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  Guild,
+  RoleSelectMenuBuilder
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -13,15 +21,22 @@ export default class RemindersConfigCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { reminder_ping_exclusion?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { reminder_ping_exclusion?: string }
+  ) {
     if (args.reminder_ping_exclusion === 'disable') {
       await this.client.settings.delete(interaction.guild, Settings.REMINDER_EXCLUSION);
       return interaction.editReply({ content: `Reminder ping exclusion disabled.` });
     }
 
-    const config = this.client.settings.get<Record<string, string>>(interaction.guild, Settings.REMINDER_EXCLUSION, {
-      type: 'optIn'
-    });
+    const config = this.client.settings.get<Record<string, string>>(
+      interaction.guild,
+      Settings.REMINDER_EXCLUSION,
+      {
+        type: 'optIn'
+      }
+    );
     const customIds = {
       wars: this.client.uuid(interaction.user.id),
       raids: this.client.uuid(interaction.user.id),
@@ -31,26 +46,47 @@ export default class RemindersConfigCommand extends Command {
     };
     const clanWarRemRole = new RoleSelectMenuBuilder().setMinValues(0).setCustomId(customIds.wars);
     const capitalRemRole = new RoleSelectMenuBuilder().setMinValues(0).setCustomId(customIds.raids);
-    const clanGamesRemRole = new RoleSelectMenuBuilder().setMinValues(0).setCustomId(customIds.games);
-    const clanWarRoleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(clanWarRemRole);
-    const capitalRaidRoleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(capitalRemRole);
-    const clanGamesRoleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(clanGamesRemRole);
+    const clanGamesRemRole = new RoleSelectMenuBuilder()
+      .setMinValues(0)
+      .setCustomId(customIds.games);
+    const clanWarRoleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+      clanWarRemRole
+    );
+    const capitalRaidRoleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+      capitalRemRole
+    );
+    const clanGamesRoleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+      clanGamesRemRole
+    );
 
     const optInOutButton = new ButtonBuilder()
       .setStyle(ButtonStyle.Success)
       .setLabel(`Use ${config.type === 'optIn' ? 'OptOut' : 'OptIn'} Mode`)
       .setCustomId(customIds.type);
-    const doneButton = new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel('Done').setCustomId(customIds.done);
+    const doneButton = new ButtonBuilder()
+      .setStyle(ButtonStyle.Primary)
+      .setLabel('Done')
+      .setCustomId(customIds.done);
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(optInOutButton, doneButton);
 
     const mutate = () => {
-      const config = this.client.settings.get<Record<string, string>>(interaction.guild, Settings.REMINDER_EXCLUSION, {
-        type: 'optIn'
-      });
+      const config = this.client.settings.get<Record<string, string>>(
+        interaction.guild,
+        Settings.REMINDER_EXCLUSION,
+        {
+          type: 'optIn'
+        }
+      );
 
-      clanWarRemRole.setPlaceholder(`Clan War Reminder ${config.type === 'optIn' ? 'OptIn' : 'OptOut'} Role`);
-      capitalRemRole.setPlaceholder(`Capital Raid Reminder ${config.type === 'optIn' ? 'OptIn' : 'OptOut'} Role`);
-      clanGamesRemRole.setPlaceholder(`Clan Games Reminder ${config.type === 'optIn' ? 'OptIn' : 'OptOut'} Role`);
+      clanWarRemRole.setPlaceholder(
+        `Clan War Reminder ${config.type === 'optIn' ? 'OptIn' : 'OptOut'} Role`
+      );
+      capitalRemRole.setPlaceholder(
+        `Capital Raid Reminder ${config.type === 'optIn' ? 'OptIn' : 'OptOut'} Role`
+      );
+      clanGamesRemRole.setPlaceholder(
+        `Clan Games Reminder ${config.type === 'optIn' ? 'OptIn' : 'OptOut'} Role`
+      );
 
       const embed = new EmbedBuilder().setDescription(
         [
@@ -85,9 +121,13 @@ export default class RemindersConfigCommand extends Command {
       interaction,
       customIds,
       onRoleSelect: async (action) => {
-        const config = this.client.settings.get<Partial<ExclusionConfig>>(interaction.guild, Settings.REMINDER_EXCLUSION, {
-          type: 'optIn'
-        });
+        const config = this.client.settings.get<Partial<ExclusionConfig>>(
+          interaction.guild,
+          Settings.REMINDER_EXCLUSION,
+          {
+            type: 'optIn'
+          }
+        );
         const role = action.roles.first();
 
         if (action.customId === customIds.wars) {
@@ -105,13 +145,20 @@ export default class RemindersConfigCommand extends Command {
         await this.client.settings.set(interaction.guild, Settings.REMINDER_EXCLUSION, config);
 
         const embed = mutate();
-        return action.update({ components: [clanWarRoleRow, capitalRaidRoleRow, clanGamesRoleRow, row], embeds: [embed] });
+        return action.update({
+          components: [clanWarRoleRow, capitalRaidRoleRow, clanGamesRoleRow, row],
+          embeds: [embed]
+        });
       },
       onClick: async (action) => {
         if (action.customId === customIds.type) {
-          const config = this.client.settings.get<Partial<ExclusionConfig>>(interaction.guild, Settings.REMINDER_EXCLUSION, {
-            type: 'optIn'
-          });
+          const config = this.client.settings.get<Partial<ExclusionConfig>>(
+            interaction.guild,
+            Settings.REMINDER_EXCLUSION,
+            {
+              type: 'optIn'
+            }
+          );
 
           optInOutButton.setLabel(`Use ${config.type === 'optIn' ? 'OptOut' : 'OptIn'} Mode`);
           await this.client.settings.set(interaction.guild, Settings.REMINDER_EXCLUSION, {
@@ -120,7 +167,10 @@ export default class RemindersConfigCommand extends Command {
           });
 
           const embed = mutate();
-          return action.update({ components: [clanWarRoleRow, capitalRaidRoleRow, clanGamesRoleRow, row], embeds: [embed] });
+          return action.update({
+            components: [clanWarRoleRow, capitalRaidRoleRow, clanGamesRoleRow, row],
+            embeds: [embed]
+          });
         }
 
         if (action.customId === customIds.done) {
@@ -150,17 +200,23 @@ export default class RemindersConfigCommand extends Command {
     if (!members.size) return null;
 
     if (config.wars) {
-      const userIds = members.filter((mem) => mem.roles.cache.has(config.wars)).map((mem) => mem.id);
+      const userIds = members
+        .filter((mem) => mem.roles.cache.has(config.wars))
+        .map((mem) => mem.id);
       config.warsExclusionUserIds = userIds;
     }
 
     if (config.games) {
-      const userIds = members.filter((mem) => mem.roles.cache.has(config.games)).map((mem) => mem.id);
+      const userIds = members
+        .filter((mem) => mem.roles.cache.has(config.games))
+        .map((mem) => mem.id);
       config.gamesExclusionUserIds = userIds;
     }
 
     if (config.raids) {
-      const userIds = members.filter((mem) => mem.roles.cache.has(config.raids)).map((mem) => mem.id);
+      const userIds = members
+        .filter((mem) => mem.roles.cache.has(config.raids))
+        .map((mem) => mem.id);
       config.raidsExclusionUserIds = userIds;
     }
 

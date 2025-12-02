@@ -37,22 +37,27 @@ export const getLegendRankingEmbedMaker = async ({
   const memberTags = _clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
   const _players = await client.redis.getPlayers(memberTags);
 
-  const playersMap = _players.reduce<Record<string, { townHallLevel: number; attackWins: number; clan?: APIPlayerClan; trophies: number }>>(
-    (record, curr) => {
-      record[curr.tag] = {
-        townHallLevel: curr.townHallLevel,
-        attackWins: curr.attackWins,
-        clan: curr.clan,
-        trophies: curr.trophies
-      };
-      return record;
-    },
-    {}
-  );
+  const playersMap = _players.reduce<
+    Record<
+      string,
+      { townHallLevel: number; attackWins: number; clan?: APIPlayerClan; trophies: number }
+    >
+  >((record, curr) => {
+    record[curr.tag] = {
+      townHallLevel: curr.townHallLevel,
+      attackWins: curr.attackWins,
+      clan: curr.clan,
+      trophies: curr.trophies
+    };
+    return record;
+  }, {});
 
   const legends = await client.db
     .collection<Omit<LegendAttacksEntity, 'logs'>>(Collections.LEGEND_ATTACKS)
-    .find({ tag: { $in: _players.map(({ tag }) => tag) }, seasonId }, { projection: { logs: 0, defenseLogs: 0, attackLogs: 0 } })
+    .find(
+      { tag: { $in: _players.map(({ tag }) => tag) }, seasonId },
+      { projection: { logs: 0, defenseLogs: 0, attackLogs: 0 } }
+    )
     .toArray();
 
   let players = legends
@@ -93,7 +98,10 @@ export const getLegendRankingEmbedMaker = async ({
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
 
-  const isProjectionEnabled = client.isFeatureEnabled(FeatureFlags.CLAN_POINTS_PROJECTION, guild.id);
+  const isProjectionEnabled = client.isFeatureEnabled(
+    FeatureFlags.CLAN_POINTS_PROJECTION,
+    guild.id
+  );
 
   if (players.length) {
     embed.setDescription(
@@ -118,7 +126,9 @@ export const getLegendRankingEmbedMaker = async ({
     embed.setDescription(
       [
         ...players.slice(0, 50).map((player, idx) => {
-          const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
+          const name = escapeMarkdown(
+            `${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`
+          );
           return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
         }),
         '',
@@ -149,20 +159,24 @@ export const getBbLegendRankingEmbedMaker = async ({
   const memberTags = _clans.map((clan) => clan.memberList.map((member) => member.tag)).flat();
   const _players = await client.redis.getPlayers(memberTags);
 
-  const playersMap = _players.reduce<Record<string, { clan?: APIPlayerClan; attackWins: number; townHallLevel: number }>>(
-    (record, curr) => {
-      record[curr.tag] = {
-        clan: curr.clan,
-        attackWins: curr.attackWins,
-        townHallLevel: curr.townHallLevel
-      };
-      return record;
-    },
-    {}
-  );
+  const playersMap = _players.reduce<
+    Record<string, { clan?: APIPlayerClan; attackWins: number; townHallLevel: number }>
+  >((record, curr) => {
+    record[curr.tag] = {
+      clan: curr.clan,
+      attackWins: curr.attackWins,
+      townHallLevel: curr.townHallLevel
+    };
+    return record;
+  }, {});
 
   const result = await client.db
-    .collection<{ name: string; tag: string; versusTrophies: { current: number }; builderHallLevel: number }>(Collections.PLAYER_SEASONS)
+    .collection<{
+      name: string;
+      tag: string;
+      versusTrophies: { current: number };
+      builderHallLevel: number;
+    }>(Collections.PLAYER_SEASONS)
     .find(
       { season: seasonId, tag: { $in: _players.map(({ tag }) => tag) } },
       { projection: { name: 1, tag: 1, versusTrophies: 1, builderHallLevel: 1 } }
@@ -200,7 +214,9 @@ export const getBbLegendRankingEmbedMaker = async ({
       players
         .slice(0, 50)
         .map((player, idx) => {
-          const name = escapeMarkdown(`${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`);
+          const name = escapeMarkdown(
+            `${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`
+          );
           return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
         })
         .join('\n')

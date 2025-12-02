@@ -27,9 +27,13 @@ export default class LastWarsExport extends Command {
     let num = Number(args.limit ?? 25);
     num = Math.min(100, num);
     const clanList = await this.client.coc._getClans(clans);
-    const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
+    const memberList = clanList
+      .map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name })))
+      .flat();
 
-    const query: Filter<ClanWarsEntity> = args.season ? { startTime: { $gte: new Date(args.season) } } : {};
+    const query: Filter<ClanWarsEntity> = args.season
+      ? { startTime: { $gte: new Date(args.season) } }
+      : {};
     if (args.war_type) {
       query.warType = args.war_type === 'cwl' ? WarType.CWL : WarType.REGULAR;
     } else {
@@ -140,7 +144,8 @@ export default class LastWarsExport extends Command {
       duration?: string;
     }[] = [..._members, ..._missing];
 
-    if (!rows.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!rows.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const sheets: CreateGoogleSheet[] = [
       {
@@ -157,7 +162,13 @@ export default class LastWarsExport extends Command {
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Last Played Wars]`, sheets);
-    return interaction.editReply({ content: `**Last Played Wars (Last ${num})**`, components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Last Played Wars]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: `**Last Played Wars (Last ${num})**`,
+      components: getExportComponents(spreadsheet)
+    });
   }
 }

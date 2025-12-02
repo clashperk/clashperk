@@ -2,7 +2,12 @@ import { Settings, UNRANKED_WAR_LEAGUE_ID, URL_REGEX } from '@app/constants';
 import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Args, Command } from '../../lib/handlers.js';
-import { DEFAULT_TROPHY_ROSTER_LAYOUT, IRoster, RosterSortTypes, rosterLayoutMap } from '../../struct/roster-manager.js';
+import {
+  DEFAULT_TROPHY_ROSTER_LAYOUT,
+  IRoster,
+  RosterSortTypes,
+  rosterLayoutMap
+} from '../../struct/roster-manager.js';
 
 // /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2})$/
 
@@ -74,8 +79,12 @@ export default class RosterCreateCommand extends Command {
       guildId: interaction.guild.id,
       closed: false,
       category: args.category || 'GENERAL',
-      allowMultiSignup: Boolean(args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true),
-      allowCategorySelection: Boolean(args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true),
+      allowMultiSignup: Boolean(
+        args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true
+      ),
+      allowCategorySelection: Boolean(
+        args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true
+      ),
       allowUnlinked: Boolean(args.allow_unlinked ?? defaultSettings.allowUnlinked ?? false),
       maxMembers: args.max_members ?? defaultSettings.maxMembers,
       sortBy: args.sort_by ?? defaultSettings.sortBy,
@@ -85,7 +94,10 @@ export default class RosterCreateCommand extends Command {
       maxTownHall: args.max_town_hall ?? defaultSettings.maxTownHall,
       useClanAlias: args.use_clan_alias ?? defaultSettings.useClanAlias,
       maxAccountsPerUser: args.max_accounts_per_user ?? null,
-      rosterImage: args.roster_image_url && URL_REGEX.test(args.roster_image_url) ? args.roster_image_url : null,
+      rosterImage:
+        args.roster_image_url && URL_REGEX.test(args.roster_image_url)
+          ? args.roster_image_url
+          : null,
       roleId: args.roster_role?.id ?? null,
       colorCode: args.color_code ?? defaultSettings.colorCode,
       members: [],
@@ -123,7 +135,8 @@ export default class RosterCreateCommand extends Command {
     if (args.start_time && moment(args.start_time).isValid()) {
       const timezoneId = await this.client.rosterManager.getTimezoneId(interaction, args.timezone);
       data.startTime = this.client.rosterManager.convertTime(args.start_time, timezoneId);
-      if (data.startTime < new Date()) return interaction.editReply('Start time cannot be in the past.');
+      if (data.startTime < new Date())
+        return interaction.editReply('Start time cannot be in the past.');
       if (data.startTime < moment().add(5, 'minutes').toDate()) {
         return interaction.editReply('Start time must be at least 5 minutes from now.');
       }
@@ -132,14 +145,16 @@ export default class RosterCreateCommand extends Command {
     if (args.end_time && moment(args.end_time).isValid()) {
       const timezoneId = await this.client.rosterManager.getTimezoneId(interaction, args.timezone);
       data.endTime = this.client.rosterManager.convertTime(args.end_time, timezoneId);
-      if (data.endTime < new Date()) return interaction.editReply('End time cannot be in the past.');
+      if (data.endTime < new Date())
+        return interaction.editReply('End time cannot be in the past.');
       if (data.endTime < moment().add(5, 'minutes').toDate()) {
         return interaction.editReply('End time must be at least 5 minutes from now.');
       }
     }
 
     if (data.endTime && data.startTime) {
-      if (data.endTime < data.startTime) return interaction.editReply('End time cannot be before start time.');
+      if (data.endTime < data.startTime)
+        return interaction.editReply('End time cannot be before start time.');
       if (data.endTime.getTime() - data.startTime.getTime() < 600000)
         return interaction.editReply('Roster must be at least 10 minutes long.');
     }
@@ -147,7 +162,8 @@ export default class RosterCreateCommand extends Command {
     const roster = await this.client.rosterManager.create(data);
     this.client.rosterManager.setDefaultSettings(interaction.guild.id, roster);
 
-    if (args.import_members && clan) this.client.rosterManager.importMembers(roster, clan.memberList);
+    if (args.import_members && clan)
+      this.client.rosterManager.importMembers(roster, clan.memberList);
 
     const embed = this.client.rosterManager.getRosterInfoEmbed(roster);
     embed.setDescription(

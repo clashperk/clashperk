@@ -1,6 +1,15 @@
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
 import { LegendAttacksEntity } from '@app/entities';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, Guild, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  escapeMarkdown,
+  Guild,
+  User
+} from 'discord.js';
 import moment from 'moment';
 import { getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Command } from '../../lib/handlers.js';
@@ -106,11 +115,14 @@ export default class LegendAttacksCommand extends Command {
 
     const members = [];
     for (const legend of [...result, ...clanMembers]) {
-      const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+      const logs = legend.logs.filter(
+        (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
+      );
       if (logs.length === 0) continue;
 
       const attacks = logs.filter((en) => en.type === 'attack');
-      const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+      const defenses =
+        logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
 
       const [initial] = logs;
       const [current] = logs.slice(-1);
@@ -157,8 +169,14 @@ export default class LegendAttacksCommand extends Command {
         clans.length === 1 ? '**Legend League Attacks**' : '',
         `\`GAIN  LOSS  FINAL \` **NAME**`,
         ...members.slice(0, 99).map((mem) => {
-          const attacks = padStart(`+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`, 5);
-          const defense = padStart(`-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`, 5);
+          const attacks = padStart(
+            `+${mem.trophiesFromAttacks}${ATTACK_COUNTS[Math.min(8, mem.attackCount)]}`,
+            5
+          );
+          const defense = padStart(
+            `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`,
+            5
+          );
           return `\`${attacks} ${defense}  ${padStart(mem.current.end, 4)} \` \u200e${escapeMarkdown(mem.name)}`;
         })
       ].join('\n')
@@ -166,16 +184,24 @@ export default class LegendAttacksCommand extends Command {
 
     const season = Season.getSeason();
     embed.setTimestamp();
-    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
+    embed.setFooter({
+      text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})`
+    });
 
     return embed;
   }
 
-  private async getClans(interaction: CommandInteraction<'cached'>, args: { clans?: string; user?: User }) {
-    const isSingleTag = args.clans && this.client.coc.isValidTag(this.client.coc.fixTag(args.clans));
+  private async getClans(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; user?: User }
+  ) {
+    const isSingleTag =
+      args.clans && this.client.coc.isValidTag(this.client.coc.fixTag(args.clans));
 
     if (args.clans && !isSingleTag) {
-      const { resolvedArgs, clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+      const { resolvedArgs, clans } = await this.client.storage.handleSearch(interaction, {
+        args: args.clans
+      });
       if (!clans) return;
 
       const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));

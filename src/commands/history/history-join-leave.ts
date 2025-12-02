@@ -14,7 +14,10 @@ export default class JoinLeaveHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { result } = await this.getHistory(interaction, playerTags);
@@ -120,7 +123,10 @@ export default class JoinLeaveHistoryCommand extends Command {
     return { embeds: [], result };
   }
 
-  private async export(interaction: ButtonInteraction<'cached'> | CommandInteraction<'cached'>, result: AggregatedResult[]) {
+  private async export(
+    interaction: ButtonInteraction<'cached'> | CommandInteraction<'cached'>,
+    result: AggregatedResult[]
+  ) {
     const sheets: CreateGoogleSheet[] = [
       {
         title: `Join/Leave History`,
@@ -132,12 +138,25 @@ export default class JoinLeaveHistoryCommand extends Command {
           { name: 'CLAN TAG', align: 'LEFT', width: 160 },
           { name: 'CREATED AT', align: 'LEFT', width: 160 }
         ],
-        rows: result.map((r) => [r.name, r.tag, r.op, r.clan_name, r.clan_tag, new Date(r.created_at)])
+        rows: result.map((r) => [
+          r.name,
+          r.tag,
+          r.op,
+          r.clan_name,
+          r.clan_tag,
+          new Date(r.created_at)
+        ])
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Join/Leave History]`, sheets);
-    return interaction.editReply({ content: '**Join/Leave history of last 30 days**', components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Join/Leave History]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: '**Join/Leave history of last 30 days**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 }
 

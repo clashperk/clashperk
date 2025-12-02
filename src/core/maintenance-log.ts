@@ -35,7 +35,10 @@ export class MaintenanceLog {
 
   private async check() {
     try {
-      const { res } = await this.client.coc.getClans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
+      const { res } = await this.client.coc.getClans({
+        minMembers: Math.floor(Math.random() * 40) + 10,
+        limit: 1
+      });
       if (res.status === 503 && !this.inMaintenance) {
         this.inMaintenance = Boolean(true);
         this.client.enqueuer.flush();
@@ -77,11 +80,19 @@ export class MaintenanceLog {
       if (this.client.settings.hasCustomBot(setting.guildId) && !this.client.isCustom()) continue;
 
       const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
-      if (channel?.isTextBased() && channel.permissionsFor(this.client.user)?.has(['SendMessages', 'ViewChannel', 'UseExternalEmojis'])) {
-        const message = i18n(this.inMaintenance ? 'common.maintenance_start' : 'common.maintenance_end', {
-          lng: channel.guild.preferredLocale,
-          duration: `(Started ${this.dur(dur)} ago)`
-        });
+      if (
+        channel?.isTextBased() &&
+        channel
+          .permissionsFor(this.client.user)
+          ?.has(['SendMessages', 'ViewChannel', 'UseExternalEmojis'])
+      ) {
+        const message = i18n(
+          this.inMaintenance ? 'common.maintenance_start' : 'common.maintenance_end',
+          {
+            lng: channel.guild.preferredLocale,
+            duration: `(Started ${this.dur(dur)} ago)`
+          }
+        );
         await channel.send(`**${EMOJIS.COC_LOGO} ${message}**`);
       }
     }
@@ -89,7 +100,8 @@ export class MaintenanceLog {
 
   private async sendSupportServerMessage(dur = 0) {
     const channel = this.client.channels.cache.get(SUPPORT_SERVER_GENERAL_CHANNEL_ID);
-    if (channel) await (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
+    if (channel)
+      await (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
   }
 
   private getMessage(dur = 0) {

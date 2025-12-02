@@ -5,7 +5,10 @@ import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { lastSeenTimestampFormat, padStart } from '../util/helper.js';
 
-export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { color?: number | null; scoreView?: boolean }) => {
+export const lastSeenEmbedMaker = async (
+  clan: APIClan,
+  { color, scoreView }: { color?: number | null; scoreView?: boolean }
+) => {
   const client = container.resolve(Client);
 
   const db = client.db.collection(Collections.PLAYERS);
@@ -64,7 +67,9 @@ export const lastSeenEmbedMaker = async (clan: APIClan, { color, scoreView }: { 
   });
 
   _members.sort((a, b) => a.lastSeen - b.lastSeen);
-  const members = _members.filter((m) => m.lastSeen > 0).concat(_members.filter((m) => m.lastSeen === 0));
+  const members = _members
+    .filter((m) => m.lastSeen > 0)
+    .concat(_members.filter((m) => m.lastSeen === 0));
 
   const embed = new EmbedBuilder();
   embed.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });

@@ -19,13 +19,24 @@ export default class ExportWarsCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { limit?: number; clans?: string; war_type?: 'regular-and-cwl' | 'regular' | 'friendly'; start_date?: string; end_date?: string }
+    args: {
+      limit?: number;
+      clans?: string;
+      war_type?: 'regular-and-cwl' | 'regular' | 'friendly';
+      start_date?: string;
+      end_date?: string;
+    }
   ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    if ((args.start_date && !moment(args.start_date, true).isValid()) || (args.end_date && !moment(args.end_date, true).isValid())) {
-      return interaction.editReply('Invalid date format, allowed formats are `YYYY-MM-DD` or `YYYY-MM-DD HH:mm`');
+    if (
+      (args.start_date && !moment(args.start_date, true).isValid()) ||
+      (args.end_date && !moment(args.end_date, true).isValid())
+    ) {
+      return interaction.editReply(
+        'Invalid date format, allowed formats are `YYYY-MM-DD` or `YYYY-MM-DD HH:mm`'
+      );
     }
 
     const startTime = moment(args.start_date || moment().subtract(30, 'days')).toDate();
@@ -137,7 +148,8 @@ export default class ExportWarsCommand extends Command {
       });
     }
 
-    if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!chunks.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const sheets: CreateGoogleSheet[] = chunks.map((chunk) => ({
       columns: [

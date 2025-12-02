@@ -16,6 +16,8 @@ export default class ExternalEmojiInhibitor extends Inhibitor {
 
     if (command) return false; // Intentionally disabled
 
-    return !interaction.channel.permissionsFor(interaction.guild.roles.everyone.id)?.has(PermissionFlagsBits.UseExternalEmojis);
+    return !interaction.channel
+      .permissionsFor(interaction.guild.roles.everyone.id)
+      ?.has(PermissionFlagsBits.UseExternalEmojis);
   }
 }

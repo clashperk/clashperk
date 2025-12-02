@@ -18,7 +18,10 @@ export default class ExportSeason extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string; include_past_members?: boolean }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { season?: string; clans?: string; include_past_members?: boolean }
+  ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -36,7 +39,11 @@ export default class ExportSeason extends Command {
       _members.push(...clan.memberList.map((mem) => ({ ...mem, clanTag: clan.tag })));
     }
 
-    const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season, !!args.include_past_members)))).flat();
+    const members = (
+      await Promise.all(
+        _clans.map((clan) => this.aggregationQuery(clan, season, !!args.include_past_members))
+      )
+    ).flat();
 
     const linksMap = await this.client.resolver.getLinkedUsersMap(_members);
     const guildMembers = await this.client.util.getGuildMembers(interaction);
@@ -107,8 +114,12 @@ export default class ExportSeason extends Command {
           m.userId,
           _membersMap.get(m.tag) === m.clanTag ? m.clans?.[m.clanTag]?.name : '',
           m.townHallLevel,
-          sum(Object.values(m.clans ?? {}), (clan) => (_clanTags.includes(clan.tag) ? clan.donations.total : 0)),
-          sum(Object.values(m.clans ?? {}), (clan) => (_clanTags.includes(clan.tag) ? clan.donationsReceived.total : 0)),
+          sum(Object.values(m.clans ?? {}), (clan) =>
+            _clanTags.includes(clan.tag) ? clan.donations.total : 0
+          ),
+          sum(Object.values(m.clans ?? {}), (clan) =>
+            _clanTags.includes(clan.tag) ? clan.donationsReceived.total : 0
+          ),
           m.attackWins,
           m.versusBattleWins.current - m.versusBattleWins.initial,
           m.trophies.current - m.trophies.initial,
@@ -131,81 +142,86 @@ export default class ExportSeason extends Command {
       sheetType: SheetType.SEASON
     });
 
-    return interaction.editReply({ content: `**Season Export (${season})**`, components: getExportComponents(spreadsheet) });
+    return interaction.editReply({
+      content: `**Season Export (${season})**`,
+      components: getExportComponents(spreadsheet)
+    });
   }
 
   private async aggregationQuery(clan: APIClan, seasonId: string, includePastMembers: boolean) {
-    const cursor = this.client.db.collection(Collections.PLAYER_SEASONS).aggregate<PlayerSeasonModelAggregated>([
-      {
-        $match: {
-          season: seasonId,
-          __clans: clan.tag,
-          ...(!includePastMembers && { tag: { $in: clan.memberList.map((mem) => mem.tag) } })
-        }
-      },
-      {
-        $lookup: {
-          from: Collections.PLAYERS,
-          localField: 'tag',
-          foreignField: 'tag',
-          as: 'lastSeen',
-          pipeline: [{ $project: { seasons: 1 } }]
-        }
-      },
-      {
-        $unwind: {
-          path: '$lastSeen',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $set: {
-          score: `$lastSeen.seasons.${seasonId}`,
-          clans: {
-            [clan.tag]: `$clans.${clan.tag}`
-          },
-          clanTag: clan.tag
-        }
-      },
-      {
-        $sort: {
-          score: -1
-        }
-      },
-      {
-        $limit: 150
-      },
-      {
-        $unset: 'lastSeen'
-      },
-      {
-        $lookup: {
-          from: Collections.CLAN_GAMES_POINTS,
-          localField: 'tag',
-          foreignField: 'tag',
-          as: 'clanGamesPoints',
-          pipeline: [
-            {
-              $match: {
-                season: seasonId
-              }
+    const cursor = this.client.db
+      .collection(Collections.PLAYER_SEASONS)
+      .aggregate<PlayerSeasonModelAggregated>([
+        {
+          $match: {
+            season: seasonId,
+            __clans: clan.tag,
+            ...(!includePastMembers && { tag: { $in: clan.memberList.map((mem) => mem.tag) } })
+          }
+        },
+        {
+          $lookup: {
+            from: Collections.PLAYERS,
+            localField: 'tag',
+            foreignField: 'tag',
+            as: 'lastSeen',
+            pipeline: [{ $project: { seasons: 1 } }]
+          }
+        },
+        {
+          $unwind: {
+            path: '$lastSeen',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $set: {
+            score: `$lastSeen.seasons.${seasonId}`,
+            clans: {
+              [clan.tag]: `$clans.${clan.tag}`
             },
-            {
-              $project: {
-                initial: 1,
-                current: 1
+            clanTag: clan.tag
+          }
+        },
+        {
+          $sort: {
+            score: -1
+          }
+        },
+        {
+          $limit: 150
+        },
+        {
+          $unset: 'lastSeen'
+        },
+        {
+          $lookup: {
+            from: Collections.CLAN_GAMES_POINTS,
+            localField: 'tag',
+            foreignField: 'tag',
+            as: 'clanGamesPoints',
+            pipeline: [
+              {
+                $match: {
+                  season: seasonId
+                }
+              },
+              {
+                $project: {
+                  initial: 1,
+                  current: 1
+                }
               }
-            }
-          ]
+            ]
+          }
+        },
+        {
+          $unwind: {
+            path: '$clanGamesPoints',
+            preserveNullAndEmptyArrays: true
+          }
         }
-      },
-      {
-        $unwind: {
-          path: '$clanGamesPoints',
-          preserveNullAndEmptyArrays: true
-        }
-      }
-    ]);
+      ]);
 
     return cursor.toArray();
   }

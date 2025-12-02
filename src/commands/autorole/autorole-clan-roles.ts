@@ -27,7 +27,10 @@ export default class AutoClanRoleCommand extends Command {
       only_verified: boolean;
     }
   ) {
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+    const { clans } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans,
+      required: true
+    });
     if (!clans) return;
 
     const { everyone_role, member_role, elder_role, co_leader_role, leader_role } = args;
@@ -35,14 +38,21 @@ export default class AutoClanRoleCommand extends Command {
     const selected = roles.filter((role) => role) as Role[];
 
     if (typeof args.only_verified === 'boolean') {
-      await this.client.settings.set(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, Boolean(args.only_verified));
+      await this.client.settings.set(
+        interaction.guildId,
+        Settings.VERIFIED_ONLY_CLAN_ROLES,
+        Boolean(args.only_verified)
+      );
       if (!selected.length) {
         return interaction.editReply('Clan roles settings updated.');
       }
     }
 
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'You must select at least one role.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (selected.some((role) => this.isSystemRole(role, interaction.guild))) {
@@ -55,7 +65,9 @@ export default class AutoClanRoleCommand extends Command {
     }
 
     if (selected.some((role) => this.isHigherRole(role, interaction.guild))) {
-      return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale })
+      );
     }
 
     const rolesSettings: Record<string, string> = {};
@@ -69,7 +81,10 @@ export default class AutoClanRoleCommand extends Command {
     if (Object.keys(rolesSettings).length) {
       await this.client.db
         .collection(Collections.CLAN_STORES)
-        .updateMany({ tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id }, { $set: { ...rolesSettings } });
+        .updateMany(
+          { tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id },
+          { $set: { ...rolesSettings } }
+        );
     }
 
     this.client.storage.updateClanLinks(interaction.guildId);

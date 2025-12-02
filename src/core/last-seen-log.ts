@@ -83,7 +83,9 @@ export class LastSeenLog extends RootLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: LastSeenLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: LastSeenLog.name
+      });
       return null;
     }
   }
@@ -92,7 +94,9 @@ export class LastSeenLog extends RootLog {
     try {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: LastSeenLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: LastSeenLog.name
+      });
       return null;
     }
   }
@@ -136,7 +140,10 @@ export class LastSeenLog extends RootLog {
         if (this.queued.has(logId)) continue;
 
         this.queued.add(logId);
-        await this.exec(log.clanTag, { logType: ClanLogType.LAST_SEEN_EMBED_LOG, channel: log.channelId } satisfies Feed);
+        await this.exec(log.clanTag, {
+          logType: ClanLogType.LAST_SEEN_EMBED_LOG,
+          channel: log.channelId
+        } satisfies Feed);
         this.queued.delete(logId);
         await Util.delay(3000);
       }

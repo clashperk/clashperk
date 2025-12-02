@@ -38,7 +38,10 @@ export class RedisService {
     try {
       const raw = await this.connection.get(key);
       if (!raw) return null;
-      return JSON.parse(raw) as { timestamp: string; thresholds: { rank: number; minTrophies: number }[] };
+      return JSON.parse(raw) as {
+        timestamp: string;
+        thresholds: { rank: number; minTrophies: number }[];
+      };
     } catch {
       return null;
     }
@@ -47,8 +50,13 @@ export class RedisService {
   public async getLegendThresholdRecords(keys: string[]) {
     try {
       const results = await this.connection.mGet(keys);
-      const thresholds = results.filter((result) => result).map((result) => JSON.parse(result as string));
-      return thresholds as { timestamp: string; thresholds: { rank: number; minTrophies: number }[] }[];
+      const thresholds = results
+        .filter((result) => result)
+        .map((result) => JSON.parse(result as string));
+      return thresholds as {
+        timestamp: string;
+        thresholds: { rank: number; minTrophies: number }[];
+      }[];
     } catch {
       return [];
     }
@@ -107,7 +115,11 @@ export class RedisService {
     return raw
       .flat()
       .filter((value): value is string => !!value)
-      .map((value) => JSON.parse(value)) as unknown as { tag: string; weekId: string; clan: { tag: string } }[];
+      .map((value) => JSON.parse(value)) as unknown as {
+      tag: string;
+      weekId: string;
+      clan: { tag: string };
+    }[];
   }
 
   public createCustomId(payload: CustomIdProps) {

@@ -18,7 +18,10 @@ export default class CapitalRaidsHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { embeds, result } = await this.getHistory(interaction, playerTags);
@@ -172,7 +175,11 @@ export default class CapitalRaidsHistoryCommand extends Command {
           ...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.attacks ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...weekendIds.map((id) => r.raids[id]?.attacks ?? 0)
+        ])
       },
       {
         title: `Capital Loot History`,
@@ -182,7 +189,11 @@ export default class CapitalRaidsHistoryCommand extends Command {
           ...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.capitalResourcesLooted ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...weekendIds.map((id) => r.raids[id]?.capitalResourcesLooted ?? 0)
+        ])
       },
       {
         title: `Capital Medals History`,
@@ -192,12 +203,22 @@ export default class CapitalRaidsHistoryCommand extends Command {
           ...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.raids[id]?.reward ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...weekendIds.map((id) => r.raids[id]?.reward ?? 0)
+        ])
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Capital Raid History]`, sheets);
-    return interaction.editReply({ content: '**Capital Raid History**', components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Capital Raid History]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: '**Capital Raid History**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 
   private padding(num: number) {

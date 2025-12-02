@@ -15,7 +15,9 @@ export class StatsHandler {
     if (this.client.isCustom() || !this.client.isPrimary()) return;
 
     const values = this.client.cluster
-      ? ((await this.client.cluster.fetchClientValues('guilds.cache.size').catch(() => [0])) as number[])
+      ? ((await this.client.cluster
+          .fetchClientValues('guilds.cache.size')
+          .catch(() => [0])) as number[])
       : [this.client.guilds.cache.size];
     const guilds = values.reduce((prev, curr) => prev + curr, 0);
     if (!guilds) return;
@@ -50,7 +52,9 @@ export class StatsHandler {
       },
       { upsert: true }
     );
-    await this.client.db.collection(Collections.BOT_COMMANDS).updateOne({ command }, { $inc: { total: 1, uses: 1 } }, { upsert: true });
+    await this.client.db
+      .collection(Collections.BOT_COMMANDS)
+      .updateOne({ command }, { $inc: { total: 1, uses: 1 } }, { upsert: true });
   }
 
   private historic(command: string) {
@@ -73,7 +77,9 @@ export class StatsHandler {
   }
 
   public async commands(command: string) {
-    await this.client.db.collection(Collections.BOT_STATS).updateOne({ name: 'COMMANDS_USED' }, { $inc: { count: 1 } }, { upsert: true });
+    await this.client.db
+      .collection(Collections.BOT_STATS)
+      .updateOne({ name: 'COMMANDS_USED' }, { $inc: { count: 1 } }, { upsert: true });
 
     return this.historic(command);
   }

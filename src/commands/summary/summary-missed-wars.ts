@@ -1,5 +1,11 @@
 import { Collections, WarType } from '@app/constants';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/toolkit.js';
@@ -18,7 +24,9 @@ export default class SummaryMissedWarsCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { clans?: string; season?: string; war_type?: string; is_reversed?: boolean }
   ) {
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const missed: Record<string, { name: string; tag: string; wars: number; missed: number }> = {};
@@ -46,7 +54,9 @@ export default class SummaryMissedWarsCommand extends Command {
       for (const war of wars) {
         const clan = war.clan.tag === tag ? war.clan : war.opponent;
         for (const m of clan.members) {
-          const mem = missed[m.tag] ? missed[m.tag] : (missed[m.tag] = { name: m.name, tag: m.tag, wars: 0, missed: 0 });
+          const mem = missed[m.tag]
+            ? missed[m.tag]
+            : (missed[m.tag] = { name: m.name, tag: m.tag, wars: 0, missed: 0 });
           mem.wars += 1;
           if (m.attacks?.length === war.attacksPerMember) continue;
           mem.missed += war.attacksPerMember - (m.attacks?.length ?? 0);
@@ -82,7 +92,10 @@ export default class SummaryMissedWarsCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setCustomId(customIds.toggle)
         .setStyle(ButtonStyle.Secondary)
@@ -92,15 +105,25 @@ export default class SummaryMissedWarsCommand extends Command {
     return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
-  private getEmbed(members: { name: string; tag: string; wars: number; missed: number }[], season: string) {
+  private getEmbed(
+    members: { name: string; tag: string; wars: number; missed: number }[],
+    season: string
+  ) {
     const [content] = Util.splitMessage(
       [
         '\u200e # MISS WARS  NAME',
-        ...members.slice(0, 99).map((m, i) => `\u200e${this.pad(i + 1, 2)} ${this.pad(m.missed)} ${this.pad(m.wars)}  ${m.name}`)
+        ...members
+          .slice(0, 99)
+          .map(
+            (m, i) =>
+              `\u200e${this.pad(i + 1, 2)} ${this.pad(m.missed)} ${this.pad(m.wars)}  ${m.name}`
+          )
       ].join('\n'),
       { maxLength: 4000 }
     );
-    return new EmbedBuilder().setTitle(`Missed Wars Summary (${season})`).setDescription(`\`\`\`\n${content}\`\`\``);
+    return new EmbedBuilder()
+      .setTitle(`Missed Wars Summary (${season})`)
+      .setDescription(`\`\`\`\n${content}\`\`\``);
   }
 
   private pad(num: number, padding = 4) {

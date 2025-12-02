@@ -1,4 +1,7 @@
-import { MsearchMultiSearchItem, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types.js';
+import {
+  MsearchMultiSearchItem,
+  QueryDslQueryContainer
+} from '@elastic/elasticsearch/lib/api/types.js';
 
 import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex } from '@app/constants';
 import { UserTimezone } from '@app/entities';
@@ -127,8 +130,12 @@ export default class AutocompleteInteractionListener extends Listener {
           displayName: interaction.user.displayName,
           username: interaction.user.username
         },
-        guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : interaction.guildId,
-        channel: interaction.channel ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] } : interaction.channelId,
+        guild: interaction.guild
+          ? { id: interaction.guild.id, name: interaction.guild.name }
+          : interaction.guildId,
+        channel: interaction.channel
+          ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
+          : interaction.channelId,
         command: interaction.commandName,
         interaction: {
           id: interaction.id,
@@ -160,7 +167,10 @@ export default class AutocompleteInteractionListener extends Listener {
       }
       case 'clans': {
         if (interaction.commandName === 'activity' && !query) {
-          return this.client.autocomplete.clanAutoComplete(interaction, { withCategory: true, isMulti: true });
+          return this.client.autocomplete.clanAutoComplete(interaction, {
+            withCategory: true,
+            isMulti: true
+          });
         }
         return this.clansAutocomplete(interaction, focused);
       }
@@ -181,7 +191,11 @@ export default class AutocompleteInteractionListener extends Listener {
         if (interaction.commandName === 'roster' && subCommand === 'manage') {
           return this.client.autocomplete.handle(interaction);
         }
-        if (interaction.commandName === 'flag' && subCommand && ['delete', 'create', 'list'].includes(subCommand)) {
+        if (
+          interaction.commandName === 'flag' &&
+          subCommand &&
+          ['delete', 'create', 'list'].includes(subCommand)
+        ) {
           return this.client.autocomplete.handle(interaction);
         }
         return this.playerTagAutocomplete(interaction, focused);
@@ -201,7 +215,11 @@ export default class AutocompleteInteractionListener extends Listener {
       case 'target_roster':
       case 'roster': {
         const subCommand = interaction.options.getSubcommand(false);
-        if (interaction.commandName === 'roster' && subCommand === 'manage' && focused === 'target_roster') {
+        if (
+          interaction.commandName === 'roster' &&
+          subCommand === 'manage' &&
+          focused === 'target_roster'
+        ) {
           return this.client.autocomplete.handle(interaction);
         }
         return this.rosterAutocomplete(interaction, focused, subCommand === 'edit');
@@ -209,7 +227,11 @@ export default class AutocompleteInteractionListener extends Listener {
       case 'target_group':
       case 'group': {
         const subCommand = interaction.options.getSubcommand(false);
-        if (interaction.commandName === 'roster' && subCommand === 'manage' && focused === 'target_group') {
+        if (
+          interaction.commandName === 'roster' &&
+          subCommand === 'manage' &&
+          focused === 'target_group'
+        ) {
           return this.client.autocomplete.handle(interaction);
         }
         return this.rosterCategoryAutocomplete(interaction, focused);
@@ -277,8 +299,12 @@ export default class AutocompleteInteractionListener extends Listener {
       }
     ]);
 
-    const [user, result] = await Promise.all([collection.findOne({ userId: interaction.user.id }), cursor.toArray()]);
-    if (user?.timezone && !query) result.unshift({ _id: user.timezone.id, timezone: user.timezone });
+    const [user, result] = await Promise.all([
+      collection.findOne({ userId: interaction.user.id }),
+      cursor.toArray()
+    ]);
+    if (user?.timezone && !query)
+      result.unshift({ _id: user.timezone.id, timezone: user.timezone });
 
     if (!result.length && query) {
       const raw = await Google.timezone(query);
@@ -295,12 +321,18 @@ export default class AutocompleteInteractionListener extends Listener {
       }
     }
 
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
-      label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
-    });
+    this.client.logger.debug(
+      `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
+      {
+        label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
+      }
+    );
 
-    const timezones = result.filter((timezone, index, self) => self.findIndex((t) => t._id === timezone._id) === index);
-    if (!timezones.length) return interaction.respond([{ value: '0', name: 'No timezones found.' }]);
+    const timezones = result.filter(
+      (timezone, index, self) => self.findIndex((t) => t._id === timezone._id) === index
+    );
+    if (!timezones.length)
+      return interaction.respond([{ value: '0', name: 'No timezones found.' }]);
     return interaction.respond(
       timezones.map(({ timezone }) => ({
         value: timezone.id,
@@ -309,7 +341,11 @@ export default class AutocompleteInteractionListener extends Listener {
     );
   }
 
-  private async rosterAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string, allowBulk: boolean) {
+  private async rosterAutocomplete(
+    interaction: AutocompleteInteraction<'cached'>,
+    focused: string,
+    allowBulk: boolean
+  ) {
     const filter: Filter<IRoster> = {
       guildId: interaction.guild.id
     };
@@ -326,9 +362,12 @@ export default class AutocompleteInteractionListener extends Listener {
 
     const rosters = await cursor.limit(24).toArray();
 
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
+    this.client.logger.debug(
+      `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
+      {
+        label: `${interaction.guild.name}/${interaction.user.displayName}`
+      }
+    );
     if (!rosters.length) return interaction.respond([{ value: '0', name: 'No rosters found.' }]);
 
     const options = rosters.map((roster) => ({
@@ -343,7 +382,10 @@ export default class AutocompleteInteractionListener extends Listener {
     return interaction.respond(options);
   }
 
-  private async rosterCategoryAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+  private async rosterCategoryAutocomplete(
+    interaction: AutocompleteInteraction<'cached'>,
+    focused: string
+  ) {
     const filter: Filter<IRosterCategory> = {
       guildId: interaction.guild.id
     };
@@ -360,13 +402,20 @@ export default class AutocompleteInteractionListener extends Listener {
 
     const categories = await cursor.limit(24).toArray();
 
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
+    this.client.logger.debug(
+      `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
+      {
+        label: `${interaction.guild.name}/${interaction.user.displayName}`
+      }
+    );
 
-    if (!categories.length) return interaction.respond([{ value: '0', name: 'No categories found.' }]);
+    if (!categories.length)
+      return interaction.respond([{ value: '0', name: 'No categories found.' }]);
     return interaction.respond(
-      categories.map((category) => ({ value: category._id.toHexString(), name: `${category.displayName}`.slice(0, 100) }))
+      categories.map((category) => ({
+        value: category._id.toHexString(),
+        name: `${category.displayName}`.slice(0, 100)
+      }))
     );
   }
 
@@ -378,20 +427,30 @@ export default class AutocompleteInteractionListener extends Listener {
       ?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     const now = Date.now();
-    const aliases = clans.filter((clan) => clan.alias && (query ? new RegExp(`.*${query}.*`, 'i').test(clan.alias) : true)).slice(0, 24);
+    const aliases = clans
+      .filter(
+        (clan) => clan.alias && (query ? new RegExp(`.*${query}.*`, 'i').test(clan.alias) : true)
+      )
+      .slice(0, 24);
 
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
+    this.client.logger.debug(
+      `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
+      {
+        label: `${interaction.guild.name}/${interaction.user.displayName}`
+      }
+    );
 
     if (!aliases.length) return interaction.respond([{ value: '0', name: 'No aliases found.' }]);
-    return interaction.respond(aliases.map((clan) => ({ value: clan.alias!, name: `${clan.alias!} - ${clan.name}` })));
+    return interaction.respond(
+      aliases.map((clan) => ({ value: clan.alias!, name: `${clan.alias!} - ${clan.name}` }))
+    );
   }
 
   private async durationAutocomplete(interaction: AutocompleteInteraction, focused: string) {
     const cmd = interaction.options.getString('type');
     const dur = interaction.options.getString(focused)?.trim();
-    const matchedDur = dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
+    const matchedDur =
+      dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
 
     if (dur && !isNaN(parseInt(dur, 10))) {
       const duration = parseInt(dur, 10);
@@ -405,7 +464,9 @@ export default class AutocompleteInteractionListener extends Listener {
         return interaction.respond(this.getTimes(times, matchedDur, cmd));
       }
 
-      const times = ['h', '.25h', '.5h', '.75h'].map((num) => this.getLabel(ms(`${duration}${num}`)));
+      const times = ['h', '.25h', '.5h', '.75h'].map((num) =>
+        this.getLabel(ms(`${duration}${num}`))
+      );
       return interaction.respond(this.getTimes(times, matchedDur, cmd));
     }
 
@@ -481,11 +542,16 @@ export default class AutocompleteInteractionListener extends Listener {
             }
           ]
         });
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
-      label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
-    });
+    this.client.logger.debug(
+      `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
+      {
+        label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
+      }
+    );
 
-    let players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])
+    let players = (
+      result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[]
+    )
       .map((res) => res.hits.hits.map((hit) => hit._source!))
       .flat()
       .filter((player) => player.name && player.tag);
@@ -499,13 +565,22 @@ export default class AutocompleteInteractionListener extends Listener {
       return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
     }
 
-    return interaction.respond(players.map((player) => ({ value: player.tag, name: `${player.name} (${player.tag})` })));
+    return interaction.respond(
+      players.map((player) => ({ value: player.tag, name: `${player.name} (${player.tag})` }))
+    );
   }
 
   private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-    const query = interaction.options.getString(focused)?.trim()?.replace(/^\*$/, '')?.slice(0, 500);
+    const query = interaction.options
+      .getString(focused)
+      ?.trim()
+      ?.replace(/^\*$/, '')
+      ?.slice(0, 500);
     if (!query) {
-      return this.client.autocomplete.clanAutoComplete(interaction, { withCategory: false, isMulti: true });
+      return this.client.autocomplete.clanAutoComplete(interaction, {
+        withCategory: false,
+        isMulti: true
+      });
     }
 
     const userId = interaction.user.id;
@@ -559,11 +634,21 @@ export default class AutocompleteInteractionListener extends Listener {
           ]
         });
 
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
+    this.client.logger.debug(
+      `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
+      {
+        label: `${interaction.guild.name}/${interaction.user.displayName}`
+      }
+    );
 
-    let clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
+    let clans = (
+      result.responses as MsearchMultiSearchItem<{
+        name: string;
+        tag: string;
+        guildId?: string;
+        userId?: string;
+      }>[]
+    )
       .map((res) => res.hits.hits.map((hit) => hit._source!))
       .flat()
       .filter((clan) => clan.name && clan.tag);
@@ -578,7 +663,9 @@ export default class AutocompleteInteractionListener extends Listener {
       return interaction.respond([{ value: '0', name: 'Enter clan tags or names!' }]);
     }
 
-    const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` }));
+    const response = clans
+      .slice(0, 24)
+      .map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` }));
     if (response.length > 1) {
       const clanTags = clans.map((clan) => clan.tag).join(',');
       response.unshift({
@@ -589,14 +676,20 @@ export default class AutocompleteInteractionListener extends Listener {
     return interaction.respond(response);
   }
 
-  private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+  private async clanTagAutocomplete(
+    interaction: AutocompleteInteraction<'cached'>,
+    focused: string
+  ) {
     const query = interaction.options.getString(focused)?.trim()?.slice(0, 500);
 
     const userId = interaction.user.id;
     const guildId = interaction.guild.id;
 
     if (!query) {
-      return this.client.autocomplete.clanAutoComplete(interaction, { withCategory: false, isMulti: false });
+      return this.client.autocomplete.clanAutoComplete(interaction, {
+        withCategory: false,
+        isMulti: false
+      });
     }
 
     const now = Date.now();
@@ -640,11 +733,21 @@ export default class AutocompleteInteractionListener extends Listener {
       ]
     });
 
-    this.client.logger.debug(`${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`, {
-      label: `${interaction.guild.name}/${interaction.user.displayName}`
-    });
+    this.client.logger.debug(
+      `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
+      {
+        label: `${interaction.guild.name}/${interaction.user.displayName}`
+      }
+    );
 
-    let clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
+    let clans = (
+      result.responses as MsearchMultiSearchItem<{
+        name: string;
+        tag: string;
+        guildId?: string;
+        userId?: string;
+      }>[]
+    )
       .map((res) => res.hits.hits.map((hit) => hit._source!))
       .flat()
       .filter((clan) => clan.name && clan.tag);
@@ -657,7 +760,9 @@ export default class AutocompleteInteractionListener extends Listener {
       }
       return interaction.respond([{ value: '0', name: 'Enter a clan tag!' }]);
     }
-    return interaction.respond(clans.map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` })));
+    return interaction.respond(
+      clans.map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` }))
+    );
   }
 
   private isValidQuery(query: string) {

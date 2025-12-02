@@ -1,5 +1,11 @@
 import { Settings } from '@app/constants';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder
+} from 'discord.js';
 import ms from 'ms';
 import { title } from 'radash';
 import { Command } from '../../lib/handlers.js';
@@ -36,7 +42,11 @@ export default class AutoRoleListCommand extends Command {
     const clans = await this.client.storage.find(interaction.guildId);
     const rolesMap = await this.client.rolesManager.getGuildRolesMap(interaction.guildId);
 
-    const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
+    const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(
+      interaction.guild,
+      Settings.ALLOW_EXTERNAL_ACCOUNTS,
+      false
+    );
     const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(
       interaction.guildId,
       Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE,
@@ -44,9 +54,15 @@ export default class AutoRoleListCommand extends Command {
     );
 
     const leagueRoles = Array.from(new Set(Object.values(rolesMap.leagueRoles).filter((id) => id)));
-    const builderLeagueRoles = Array.from(new Set(Object.values(rolesMap.builderLeagueRoles).filter((id) => id)));
-    const townHallRoles = Array.from(new Set(Object.values(rolesMap.townHallRoles).filter((id) => id)));
-    const builderHallRoles = Array.from(new Set(Object.values(rolesMap.builderHallRoles).filter((id) => id)));
+    const builderLeagueRoles = Array.from(
+      new Set(Object.values(rolesMap.builderLeagueRoles).filter((id) => id))
+    );
+    const townHallRoles = Array.from(
+      new Set(Object.values(rolesMap.townHallRoles).filter((id) => id))
+    );
+    const builderHallRoles = Array.from(
+      new Set(Object.values(rolesMap.builderHallRoles).filter((id) => id))
+    );
 
     const _clanRolesAggregated = Object.values(rolesMap.clanRoles ?? {})
       .map((_rMap) => Object.entries(_rMap.roles))
@@ -74,7 +90,10 @@ export default class AutoRoleListCommand extends Command {
     const clanRoleList = clans
       .map((clan) => {
         const roleSet = rolesMap.clanRoles[clan.tag];
-        const flattenRolesMap = Object.entries({ ...(roleSet?.roles ?? {}), warRole: roleSet?.warRoleId })
+        const flattenRolesMap = Object.entries({
+          ...(roleSet?.roles ?? {}),
+          warRole: roleSet?.warRoleId
+        })
           .sort(([a], [b]) => _rolesPriority[a] - _rolesPriority[b])
           .reduce<Record<string, { roleId: string; roles: string[] }>>((prev, [role, roleId]) => {
             if (role && roleId && role in _rolesPriority) {
@@ -140,21 +159,32 @@ export default class AutoRoleListCommand extends Command {
         ].join('\n')
       );
 
-      embed.addFields({ name: 'War Roles', value: warRoles.map((id) => `<@&${id}>`).join(' ') || 'None' });
       embed.addFields({
-        name: 'TownHall Roles' + (townHallRoles.length && !allowNonFamilyTownHallRoles ? ' (Family Only)' : ''),
+        name: 'War Roles',
+        value: warRoles.map((id) => `<@&${id}>`).join(' ') || 'None'
+      });
+      embed.addFields({
+        name:
+          'TownHall Roles' +
+          (townHallRoles.length && !allowNonFamilyTownHallRoles ? ' (Family Only)' : ''),
         value: [townHallRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
       });
       embed.addFields({
-        name: 'BuilderHall Roles' + (builderHallRoles.length && !allowNonFamilyTownHallRoles ? ' (Family Only)' : ''),
+        name:
+          'BuilderHall Roles' +
+          (builderHallRoles.length && !allowNonFamilyTownHallRoles ? ' (Family Only)' : ''),
         value: [builderHallRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
       });
       embed.addFields({
-        name: 'League Roles' + (leagueRoles.length && !allowNonFamilyLeagueRoles ? ' (Family Only)' : ''),
+        name:
+          'League Roles' +
+          (leagueRoles.length && !allowNonFamilyLeagueRoles ? ' (Family Only)' : ''),
         value: [leagueRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
       });
       embed.addFields({
-        name: 'Builder League Roles' + (builderLeagueRoles.length && !allowNonFamilyLeagueRoles ? ' (Family Only)' : ''),
+        name:
+          'Builder League Roles' +
+          (builderLeagueRoles.length && !allowNonFamilyLeagueRoles ? ' (Family Only)' : ''),
         value: [builderLeagueRoles.map((id) => `<@&${id}>`).join(' ') || 'None'].join(' ')
       });
       embed.addFields({
@@ -162,7 +192,10 @@ export default class AutoRoleListCommand extends Command {
         value: rolesMap.familyLeadersRoles.map((id) => this.getRoleOrNone(id)).join(', ') || 'None'
       });
       embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
-      embed.addFields({ name: 'Exclusive Family Role', value: this.getRoleOrNone(rolesMap.exclusiveFamilyRoleId) });
+      embed.addFields({
+        name: 'Exclusive Family Role',
+        value: this.getRoleOrNone(rolesMap.exclusiveFamilyRoleId)
+      });
       embed.addFields({
         name: 'EOS Push Role',
         value:
@@ -171,14 +204,36 @@ export default class AutoRoleListCommand extends Command {
             : 'None'
       });
       embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
-      embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
-      embed.addFields({ name: 'Account Linked Role', value: this.getRoleOrNone(rolesMap.accountLinkedRoleId) });
+      embed.addFields({
+        name: 'Verified Role',
+        value: this.getRoleOrNone(rolesMap.verifiedRoleId)
+      });
+      embed.addFields({
+        name: 'Account Linked Role',
+        value: this.getRoleOrNone(rolesMap.accountLinkedRoleId)
+      });
     }
 
-    const roleRemovalDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
-    const roleAdditionDelays = this.client.settings.get<number>(interaction.guild, Settings.ROLE_ADDITION_DELAYS, 0);
-    const useAutoRole = this.client.settings.get<boolean>(interaction.guild, Settings.USE_AUTO_ROLE, true);
-    const requiresVerification = this.client.settings.get<boolean>(interaction.guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
+    const roleRemovalDelays = this.client.settings.get<number>(
+      interaction.guild,
+      Settings.ROLE_REMOVAL_DELAYS,
+      0
+    );
+    const roleAdditionDelays = this.client.settings.get<number>(
+      interaction.guild,
+      Settings.ROLE_ADDITION_DELAYS,
+      0
+    );
+    const useAutoRole = this.client.settings.get<boolean>(
+      interaction.guild,
+      Settings.USE_AUTO_ROLE,
+      true
+    );
+    const requiresVerification = this.client.settings.get<boolean>(
+      interaction.guildId,
+      Settings.VERIFIED_ONLY_CLAN_ROLES,
+      false
+    );
 
     const footerTexts: string[] = [];
     if (roleAdditionDelays) {

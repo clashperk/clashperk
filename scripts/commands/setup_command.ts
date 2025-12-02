@@ -50,7 +50,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'category',
           description: command.setup.enable.options.category.description,
-          description_localizations: translation('command.setup.enable.options.category.description'),
+          description_localizations: translation(
+            'command.setup.enable.options.category.description'
+          ),
           type: ApplicationCommandOptionType.String,
           max_length: 36,
           autocomplete: true
@@ -58,7 +60,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'channel',
           description: command.setup.enable.options.channel.description,
-          description_localizations: translation('command.setup.enable.options.channel.description'),
+          description_localizations: translation(
+            'command.setup.enable.options.channel.description'
+          ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
         },
@@ -98,7 +102,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'button_type',
           required: true,
           description: command.setup.buttons.options.button_type.description,
-          description_localizations: translation('command.setup.buttons.options.button_type.description'),
+          description_localizations: translation(
+            'command.setup.buttons.options.button_type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -121,7 +127,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'embed_color',
           description: command.setup.buttons.options.embed_color.description,
-          description_localizations: translation('command.setup.buttons.options.embed_color.description'),
+          description_localizations: translation(
+            'command.setup.buttons.options.embed_color.description'
+          ),
           type: ApplicationCommandOptionType.String
         }
       ]
@@ -136,7 +144,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'disable',
           description: command.setup.events.options.disable.description,
-          description_localizations: translation('command.setup.events.options.disable.description'),
+          description_localizations: translation(
+            'command.setup.events.options.disable.description'
+          ),
           type: ApplicationCommandOptionType.String,
           required: false,
           choices: [
@@ -165,7 +175,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'log_type',
           required: true,
           description: command.setup.server_logs.options.log_type.description,
-          description_localizations: translation('command.setup.server_logs.options.log_type.description'),
+          description_localizations: translation(
+            'command.setup.server_logs.options.log_type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -193,7 +205,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'disable',
           description: command.setup.server_logs.options.disable.description,
-          description_localizations: translation('command.setup.server_logs.options.disable.description'),
+          description_localizations: translation(
+            'command.setup.server_logs.options.disable.description'
+          ),
           type: ApplicationCommandOptionType.String,
           required: false,
           choices: [
@@ -221,7 +235,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'clan',
           description: command.setup.clan_logs.options.clan.description,
-          description_localizations: translation('command.setup.clan_logs.options.clan.description'),
+          description_localizations: translation(
+            'command.setup.clan_logs.options.clan.description'
+          ),
           required: true,
           autocomplete: true,
           type: ApplicationCommandOptionType.String
@@ -229,7 +245,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'action',
           description: command.setup.clan_logs.options.action.description,
-          description_localizations: translation('command.setup.clan_logs.options.action.description'),
+          description_localizations: translation(
+            'command.setup.clan_logs.options.action.description'
+          ),
           type: ApplicationCommandOptionType.String,
           required: false,
           choices: [
@@ -248,7 +266,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'channel',
           description: command.setup.enable.options.channel.description,
-          description_localizations: translation('command.setup.enable.options.channel.description'),
+          description_localizations: translation(
+            'command.setup.enable.options.channel.description'
+          ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
         },
@@ -310,7 +330,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'channel',
           description: command.setup.disable.options.channel.description,
-          description_localizations: translation('command.setup.disable.options.channel.description'),
+          description_localizations: translation(
+            'command.setup.disable.options.channel.description'
+          ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
         }

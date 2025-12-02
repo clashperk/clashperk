@@ -9,7 +9,15 @@ import {
 } from '@app/constants';
 import { AutoRoleDelaysEntity, ClanStoresEntity, PlayerLinksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
-import { Collection, Guild, GuildMember, GuildMemberEditOptions, PermissionFlagsBits, Role, User } from 'discord.js';
+import {
+  Collection,
+  Guild,
+  GuildMember,
+  GuildMemberEditOptions,
+  PermissionFlagsBits,
+  Role,
+  User
+} from 'discord.js';
 import { UpdateFilter, WithId } from 'mongodb';
 import { parallel, sift, unique } from 'radash';
 import { Client } from '../struct/client.js';
@@ -74,7 +82,9 @@ export class RolesManager {
     if (!memberTags.length) return;
     const opTypes = Array.from(new Set(members.map((mem) => mem.op)));
 
-    const guildIds = await this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).distinct('guild', { tag: clanTag });
+    const guildIds = await this.client.db
+      .collection<ClanStoresEntity>(Collections.CLAN_STORES)
+      .distinct('guild', { tag: clanTag });
     for (const guildId of guildIds) {
       if (!this.client.settings.get(guildId, Settings.USE_AUTO_ROLE, true)) continue;
       if (this.client.settings.hasCustomBot(guildId) && !this.client.isCustom()) continue;
@@ -92,9 +102,23 @@ export class RolesManager {
     }
   }
 
-  private async trigger({ guildId, memberTags, opTypes }: { guildId: string; memberTags: string[]; opTypes: string }) {
+  private async trigger({
+    guildId,
+    memberTags,
+    opTypes
+  }: {
+    guildId: string;
+    memberTags: string[];
+    opTypes: string;
+  }) {
     try {
-      await this.updateMany(guildId, { isDryRun: false, logging: false, forced: false, memberTags, reason: 'automatically updated' });
+      await this.updateMany(guildId, {
+        isDryRun: false,
+        logging: false,
+        forced: false,
+        memberTags,
+        reason: 'automatically updated'
+      });
     } finally {
       await this.postTriggerAction(guildId, opTypes);
     }
@@ -107,7 +131,12 @@ export class RolesManager {
       this.queues.set(guildId, []);
 
       await this.delay(1000);
-      this.client.logger.log(`Completing remaining ${queuedMemberTags.length} queues (${opTypes})`, { label: RolesManager.name });
+      this.client.logger.log(
+        `Completing remaining ${queuedMemberTags.length} queues (${opTypes})`,
+        {
+          label: RolesManager.name
+        }
+      );
       await this.trigger({ guildId, memberTags: queuedMemberTags, opTypes: `RE:[${opTypes}]` });
     } else {
       this.queues.delete(guildId);
@@ -115,21 +144,68 @@ export class RolesManager {
   }
 
   public async getGuildRolesMap(guildId: string): Promise<GuildRolesDto> {
-    const clans = await this.client.db.collection<ClanStoresEntity>(Collections.CLAN_STORES).find({ guild: guildId }).toArray();
+    const clans = await this.client.db
+      .collection<ClanStoresEntity>(Collections.CLAN_STORES)
+      .find({ guild: guildId })
+      .toArray();
 
-    const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, false);
-    const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
-    const townHallRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.TOWN_HALL_ROLES, {});
-    const builderHallRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.BUILDER_HALL_ROLES, {});
-    const leagueRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.LEAGUE_ROLES, {});
-    const builderLeagueRoles = this.client.settings.get<Record<string, string>>(guildId, Settings.BUILDER_LEAGUE_ROLES, {});
+    const allowNonFamilyLeagueRoles = this.client.settings.get<boolean>(
+      guildId,
+      Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE,
+      false
+    );
+    const allowNonFamilyTownHallRoles = this.client.settings.get<boolean>(
+      guildId,
+      Settings.ALLOW_EXTERNAL_ACCOUNTS,
+      false
+    );
+    const townHallRoles = this.client.settings.get<Record<string, string>>(
+      guildId,
+      Settings.TOWN_HALL_ROLES,
+      {}
+    );
+    const builderHallRoles = this.client.settings.get<Record<string, string>>(
+      guildId,
+      Settings.BUILDER_HALL_ROLES,
+      {}
+    );
+    const leagueRoles = this.client.settings.get<Record<string, string>>(
+      guildId,
+      Settings.LEAGUE_ROLES,
+      {}
+    );
+    const builderLeagueRoles = this.client.settings.get<Record<string, string>>(
+      guildId,
+      Settings.BUILDER_LEAGUE_ROLES,
+      {}
+    );
     const familyRoleId = this.client.settings.get<string>(guildId, Settings.FAMILY_ROLE, null);
-    const exclusiveFamilyRoleId = this.client.settings.get<string>(guildId, Settings.EXCLUSIVE_FAMILY_ROLE, null);
-    const familyLeadersRoles = this.client.settings.get<string[]>(guildId, Settings.FAMILY_LEADERS_ROLE, []);
-    const verifiedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_VERIFIED_ROLE, null);
-    const accountLinkedRoleId = this.client.settings.get<string>(guildId, Settings.ACCOUNT_LINKED_ROLE, null);
+    const exclusiveFamilyRoleId = this.client.settings.get<string>(
+      guildId,
+      Settings.EXCLUSIVE_FAMILY_ROLE,
+      null
+    );
+    const familyLeadersRoles = this.client.settings.get<string[]>(
+      guildId,
+      Settings.FAMILY_LEADERS_ROLE,
+      []
+    );
+    const verifiedRoleId = this.client.settings.get<string>(
+      guildId,
+      Settings.ACCOUNT_VERIFIED_ROLE,
+      null
+    );
+    const accountLinkedRoleId = this.client.settings.get<string>(
+      guildId,
+      Settings.ACCOUNT_LINKED_ROLE,
+      null
+    );
     const guestRoleId = this.client.settings.get<string>(guildId, Settings.GUEST_ROLE, null);
-    const trophyRoles = this.client.settings.get<Record<string, TrophyRolesConfig>>(guildId, Settings.TROPHY_ROLES, {});
+    const trophyRoles = this.client.settings.get<Record<string, TrophyRolesConfig>>(
+      guildId,
+      Settings.TROPHY_ROLES,
+      {}
+    );
 
     const clanRoles = clans.reduce<GuildRolesDto['clanRoles']>((prev, curr) => {
       const roles = curr.roles ?? {};
@@ -150,9 +226,17 @@ export class RolesManager {
       );
     }
 
-    const verifiedOnlyClanRoles = this.client.settings.get<boolean>(guildId, Settings.VERIFIED_ONLY_CLAN_ROLES, false);
+    const verifiedOnlyClanRoles = this.client.settings.get<boolean>(
+      guildId,
+      Settings.VERIFIED_ONLY_CLAN_ROLES,
+      false
+    );
     const eosPushClans = this.client.settings.get<string[]>(guildId, Settings.EOS_PUSH_CLANS, []);
-    const eosPushClanRoles = this.client.settings.get<string[]>(guildId, Settings.EOS_PUSH_CLAN_ROLES, []);
+    const eosPushClanRoles = this.client.settings.get<string[]>(
+      guildId,
+      Settings.EOS_PUSH_CLAN_ROLES,
+      []
+    );
 
     const clanTags = clans.map((clan) => clan.tag);
     const warClanTags = clans.filter((clan) => clan.warRole).map((clan) => clan.tag);
@@ -223,14 +307,22 @@ export class RolesManager {
 
     let rolesToInclude: string[] = [];
 
-    const playerClanTags = players.filter((player) => player.clanTag).map((player) => player.clanTag!);
+    const playerClanTags = players
+      .filter((player) => player.clanTag)
+      .map((player) => player.clanTag!);
     const inFamily = rolesMap.clanTags.some((clanTag) => playerClanTags.includes(clanTag));
     const isFamilyLeader = players.some(
       (player) =>
-        player.clanTag && player.clanRole && ['leader', 'coLeader'].includes(player.clanRole) && rolesMap.clanTags.includes(player.clanTag)
+        player.clanTag &&
+        player.clanRole &&
+        ['leader', 'coLeader'].includes(player.clanRole) &&
+        rolesMap.clanTags.includes(player.clanTag)
     );
     const isExclusiveFamily =
-      players.length > 0 && players.every((player) => player.clanTag && player.clanRole && rolesMap.clanTags.includes(player.clanTag));
+      players.length > 0 &&
+      players.every(
+        (player) => player.clanTag && player.clanRole && rolesMap.clanTags.includes(player.clanTag)
+      );
 
     for (const player of players) {
       for (const clanTag in rolesMap.clanRoles) {
@@ -258,11 +350,17 @@ export class RolesManager {
       }
 
       // Town Hall Roles
-      if (rolesMap.allowNonFamilyTownHallRoles || (inFamily && !rolesMap.allowNonFamilyTownHallRoles)) {
+      if (
+        rolesMap.allowNonFamilyTownHallRoles ||
+        (inFamily && !rolesMap.allowNonFamilyTownHallRoles)
+      ) {
         rolesToInclude.push(rolesMap.townHallRoles[player.townHallLevel]);
       }
       // Builder Hall Roles
-      if (rolesMap.allowNonFamilyTownHallRoles || (inFamily && !rolesMap.allowNonFamilyTownHallRoles)) {
+      if (
+        rolesMap.allowNonFamilyTownHallRoles ||
+        (inFamily && !rolesMap.allowNonFamilyTownHallRoles)
+      ) {
         rolesToInclude.push(rolesMap.builderHallRoles[player.builderHallLevel]);
       }
       // League Roles
@@ -271,12 +369,16 @@ export class RolesManager {
       }
       // Builder League Roles
       if (rolesMap.allowNonFamilyLeagueRoles || (inFamily && !rolesMap.allowNonFamilyLeagueRoles)) {
-        rolesToInclude.push(rolesMap.builderLeagueRoles[BUILDER_BASE_LEAGUE_MAPS[player.builderLeagueId]]);
+        rolesToInclude.push(
+          rolesMap.builderLeagueRoles[BUILDER_BASE_LEAGUE_MAPS[player.builderLeagueId]]
+        );
       }
 
       // Trophy Ranges
       if (rolesMap.trophyRoles.length && player.trophies >= 5000) {
-        const trophyRange = rolesMap.trophyRoles.find((range) => player.trophies >= range.min && player.trophies <= range.max);
+        const trophyRange = rolesMap.trophyRoles.find(
+          (range) => player.trophies >= range.min && player.trophies <= range.max
+        );
         if (trophyRange) {
           rolesToInclude.push(trophyRange.roleId);
         }
@@ -329,7 +431,9 @@ export class RolesManager {
       guildMembers = members.filter((member) => member.roles.cache.has(userOrRole.id));
     } else {
       const guildMember = await guild.members.fetch(userOrRole.id).catch(() => null);
-      guildMembers = guildMember ? EMPTY_GUILD_MEMBER_COLLECTION.clone().set(guildMember.id, guildMember) : EMPTY_GUILD_MEMBER_COLLECTION;
+      guildMembers = guildMember
+        ? EMPTY_GUILD_MEMBER_COLLECTION.clone().set(guildMember.id, guildMember)
+        : EMPTY_GUILD_MEMBER_COLLECTION;
     }
 
     const linkedPlayers = await this.getLinkedPlayersByUserId(guildMembers.map((m) => m.id));
@@ -369,7 +473,8 @@ export class RolesManager {
     const { targetedRoles, warRoles } = this.getTargetedRoles(rolesMap);
     const inWarMap = warRoles.length ? await this.getWarRolesMap(rolesMap.warClanTags) : {};
 
-    const isEosRole = userOrRole instanceof Role && rolesMap.eosPushClanRoles.includes(userOrRole.id);
+    const isEosRole =
+      userOrRole instanceof Role && rolesMap.eosPushClanRoles.includes(userOrRole.id);
 
     const { guildMembers, linkedPlayers, linkedUserIds } =
       userOrRole && !isEosRole
@@ -379,7 +484,9 @@ export class RolesManager {
     const targetedMembers = guildMembers.filter(
       (m) =>
         !m.user.bot &&
-        (m.roles.cache.hasAny(...targetedRoles) || linkedUserIds.includes(m.id) || (userOrRole && userOrRole instanceof User))
+        (m.roles.cache.hasAny(...targetedRoles) ||
+          linkedUserIds.includes(m.id) ||
+          (userOrRole && userOrRole instanceof User))
     );
     if (!targetedMembers.size) return null;
 
@@ -429,7 +536,9 @@ export class RolesManager {
 
       if (!nicknameOnly && (roleUpdate.excluded.length || roleUpdate.included.length)) {
         const existingRoleIds = member.roles.cache.map((role) => role.id);
-        const roleIdsToSet = [...existingRoleIds, ...roleUpdate.included].filter((id) => !roleUpdate.excluded.includes(id));
+        const roleIdsToSet = [...existingRoleIds, ...roleUpdate.included].filter(
+          (id) => !roleUpdate.excluded.includes(id)
+        );
 
         editOptions._updated = true;
         editOptions.roles = roleIdsToSet;
@@ -451,7 +560,12 @@ export class RolesManager {
         const _nickname = member.nickname;
         const editedMember = await member.edit(editOptions);
 
-        if (!rolesOnly && nickUpdate.action === NickActions.SET_NAME && _nickname && _nickname === editedMember.nickname) {
+        if (
+          !rolesOnly &&
+          nickUpdate.action === NickActions.SET_NAME &&
+          _nickname &&
+          _nickname === editedMember.nickname
+        ) {
           changeLog.nickname = null;
         }
       }
@@ -463,7 +577,11 @@ export class RolesManager {
       }
       if (!logEntry && logging) break;
 
-      if ((roleUpdate.excluded.length || roleUpdate.included.length || nickUpdate.nickname) && !isDryRun) await this.delay(1000);
+      if (
+        (roleUpdate.excluded.length || roleUpdate.included.length || nickUpdate.nickname) &&
+        !isDryRun
+      )
+        await this.delay(1000);
     }
 
     return this.changeLogs[guildId] ?? null;
@@ -481,7 +599,9 @@ export class RolesManager {
   }
 
   private async getWarRolesMap(clanTags: string[]) {
-    const result = await Promise.all(clanTags.map((clanTag) => this.client.coc.getCurrentWars(clanTag)));
+    const result = await Promise.all(
+      clanTags.map((clanTag) => this.client.coc.getCurrentWars(clanTag))
+    );
     const membersMap: Record<string, string[]> = {};
 
     for (const war of result.flat()) {
@@ -500,14 +620,21 @@ export class RolesManager {
   }
 
   private async getPlayers(playerLinks: PlayerLinksEntity[]) {
-    const verifiedPlayersMap = Object.fromEntries(playerLinks.map((player) => [player.tag, player.verified]));
+    const verifiedPlayersMap = Object.fromEntries(
+      playerLinks.map((player) => [player.tag, player.verified])
+    );
     const fetched = await parallel(25, playerLinks, async (link) => {
       const { body, res } = await this.client.coc.getPlayer(link.tag);
       return res.status === 404 ? 'deleted' : !res.ok || !body ? 'failed' : body;
     });
 
-    const filtered = fetched.filter((result): result is APIPlayer => result !== 'deleted' && result !== 'failed');
-    const players = filtered.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
+    const filtered = fetched.filter(
+      (result): result is APIPlayer => result !== 'deleted' && result !== 'failed'
+    );
+    const players = filtered.map((player) => ({
+      ...player,
+      verified: verifiedPlayersMap[player.tag]
+    }));
     const hasFailed = fetched.some((result) => result === 'failed');
 
     return [players, hasFailed] as const;
@@ -600,7 +727,11 @@ export class RolesManager {
         }) satisfies PlayerRolesInput
     );
 
-    const exclusion = this.client.settings.get<ExclusionListConfig>(member.guild, Settings.DELAY_EXCLUSION_LIST, {});
+    const exclusion = this.client.settings.get<ExclusionListConfig>(
+      member.guild,
+      Settings.DELAY_EXCLUSION_LIST,
+      {}
+    );
 
     const playerRolesMap = this.getPlayerRoles(playerList, rolesMap);
     return this.handleRoleDeletionDelays({
@@ -636,13 +767,23 @@ export class RolesManager {
     forced: boolean;
     rolesExcludedFromDelays: string[];
   }) {
-    const deletionDelay = this.client.settings.get<number>(member.guild, Settings.ROLE_REMOVAL_DELAYS, 0);
-    const additionDelay = this.client.settings.get<number>(member.guild, Settings.ROLE_ADDITION_DELAYS, 0);
+    const deletionDelay = this.client.settings.get<number>(
+      member.guild,
+      Settings.ROLE_REMOVAL_DELAYS,
+      0
+    );
+    const additionDelay = this.client.settings.get<number>(
+      member.guild,
+      Settings.ROLE_ADDITION_DELAYS,
+      0
+    );
     if ((!deletionDelay && !additionDelay) || forced) {
       return this.checkRoles({ member, rolesToExclude, rolesToInclude });
     }
 
-    const collection = this.client.db.collection<AutoRoleDelaysEntity>(Collections.AUTO_ROLE_DELAYS);
+    const collection = this.client.db.collection<AutoRoleDelaysEntity>(
+      Collections.AUTO_ROLE_DELAYS
+    );
     const delay = await collection.findOne({ guildId: member.guild.id, userId: member.user.id });
 
     const freeToDelete: string[] = [...rolesExcludedFromDelays];
@@ -699,8 +840,12 @@ export class RolesManager {
 
     return this.checkRoles({
       member,
-      rolesToInclude: additionDelay ? rolesToInclude.filter((id) => freeToAdd.includes(id)) : rolesToInclude,
-      rolesToExclude: deletionDelay ? rolesToExclude.filter((id) => freeToDelete.includes(id)) : rolesToExclude
+      rolesToInclude: additionDelay
+        ? rolesToInclude.filter((id) => freeToAdd.includes(id))
+        : rolesToInclude,
+      rolesToExclude: deletionDelay
+        ? rolesToExclude.filter((id) => freeToDelete.includes(id))
+        : rolesToExclude
     });
   }
 
@@ -712,8 +857,14 @@ export class RolesManager {
     );
 
     const defaultAccount = players.at(0);
-    const inFamilyPlayers = players.filter((player) => player.clan && rolesMap.clanTags.includes(player.clan.tag));
-    inFamilyPlayers.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
+    const inFamilyPlayers = players.filter(
+      (player) => player.clan && rolesMap.clanTags.includes(player.clan.tag)
+    );
+    inFamilyPlayers.sort(
+      (a, b) =>
+        b.townHallLevel ** (b.townHallWeaponLevel ?? 1) -
+        a.townHallLevel ** (a.townHallWeaponLevel ?? 1)
+    );
     inFamilyPlayers.sort((a, b) => sumHeroes(b) - sumHeroes(a));
     inFamilyPlayers.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
@@ -748,21 +899,36 @@ export class RolesManager {
 
   public preNicknameUpdate(players: APIPlayer[], member: GuildMember, rolesMap: GuildRolesDto) {
     if (member.id === member.guild.ownerId) return { action: NickActions.DECLINED };
-    if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames)) return { action: NickActions.DECLINED };
-    if (member.guild.members.me.roles.highest.position <= member.roles.highest.position) return { action: NickActions.DECLINED };
+    if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageNicknames))
+      return { action: NickActions.DECLINED };
+    if (member.guild.members.me.roles.highest.position <= member.roles.highest.position)
+      return { action: NickActions.DECLINED };
 
-    const isNickNamingEnabled = this.client.settings.get<boolean>(rolesMap.guildId, Settings.AUTO_NICKNAME, false);
+    const isNickNamingEnabled = this.client.settings.get<boolean>(
+      rolesMap.guildId,
+      Settings.AUTO_NICKNAME,
+      false
+    );
     if (!isNickNamingEnabled) return { action: NickActions.NO_ACTION };
 
     if (!players.length) return { action: NickActions.UNSET };
     const { player, inFamilyPlayers } = this.getPreferredPlayer(players, rolesMap);
     if (!player) return { action: NickActions.UNSET };
 
-    const familyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.FAMILY_NICKNAME_FORMAT);
-    const nonFamilyFormat = this.client.settings.get<string>(rolesMap.guildId, Settings.NON_FAMILY_NICKNAME_FORMAT);
+    const familyFormat = this.client.settings.get<string>(
+      rolesMap.guildId,
+      Settings.FAMILY_NICKNAME_FORMAT
+    );
+    const nonFamilyFormat = this.client.settings.get<string>(
+      rolesMap.guildId,
+      Settings.NON_FAMILY_NICKNAME_FORMAT
+    );
 
     const inFamily = player.clan && rolesMap.clanTags.includes(player.clan.tag);
-    const clanAlias = player.clan && inFamily ? rolesMap.clanRoles[player.clan.tag]?.alias || makeAbbr(player.clan.name) : null;
+    const clanAlias =
+      player.clan && inFamily
+        ? rolesMap.clanRoles[player.clan.tag]?.alias || makeAbbr(player.clan.name)
+        : null;
 
     const sortedClanAliases = inFamilyPlayers
       .map((player) => ({
@@ -801,17 +967,28 @@ export class RolesManager {
   private checkRoles({ member, rolesToExclude, rolesToInclude }: AddRoleInput) {
     if (member.user.bot) return { included: [], excluded: [] };
     if (!rolesToExclude.length && !rolesToInclude.length) return { included: [], excluded: [] };
-    if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) return { included: [], excluded: [] };
+    if (!member.guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles))
+      return { included: [], excluded: [] };
 
-    const excluded = rolesToExclude.filter((id) => this.checkRole(member.guild, id) && member.roles.cache.has(id));
-    const included = rolesToInclude.filter((id) => this.checkRole(member.guild, id) && !member.roles.cache.has(id));
+    const excluded = rolesToExclude.filter(
+      (id) => this.checkRole(member.guild, id) && member.roles.cache.has(id)
+    );
+    const included = rolesToInclude.filter(
+      (id) => this.checkRole(member.guild, id) && !member.roles.cache.has(id)
+    );
 
     return { included, excluded };
   }
 
   private checkRole(guild: Guild, roleId: string) {
     const role = guild.roles.cache.get(roleId);
-    return guild.members.me && role && !role.managed && guild.members.me.roles.highest.position > role.position && role.id !== guild.id;
+    return (
+      guild.members.me &&
+      role &&
+      !role.managed &&
+      guild.members.me.roles.highest.position > role.position &&
+      role.id !== guild.id
+    );
   }
 
   private getHighestRole(
@@ -848,12 +1025,19 @@ export class RolesManager {
     },
     format: string
   ) {
-    const roleLabels = this.client.settings.get<Record<string, string>>(guildId, Settings.ROLE_REPLACEMENT_LABELS, {});
+    const roleLabels = this.client.settings.get<Record<string, string>>(
+      guildId,
+      Settings.ROLE_REPLACEMENT_LABELS,
+      {}
+    );
     return format
       .replace(/{NAME}|{PLAYER_NAME}/gi, player.name)
       .replace(/{TH}|{TOWN_HALL}/gi, player.townHallLevel.toString())
       .replace(/{TH_SMALL}|{TOWN_HALL_SMALL}/gi, this.getTownHallSuperScript(player.townHallLevel))
-      .replace(/{ROLE}|{CLAN_ROLE}/gi, player.role ? roleLabels[player.role] || defaultRoleLabels[player.role] : '')
+      .replace(
+        /{ROLE}|{CLAN_ROLE}/gi,
+        player.role ? roleLabels[player.role] || defaultRoleLabels[player.role] : ''
+      )
       .replace(/{ALIAS}|{CLAN_ALIAS}/gi, player.alias ?? '')
       .replace(/{ALIASES}|{CLAN_ALIASES}/gi, player.aliases ?? '')
       .replace(/{CLAN}|{CLAN_NAME}/gi, player.clan ?? '')
@@ -875,7 +1059,10 @@ export class RolesManager {
   }
 
   public getFilteredChangeLogs(queue: RolesChangeLog | null) {
-    const roleChanges = queue?.changes.filter(({ excluded, included, nickname }) => included.length || excluded.length || nickname) ?? [];
+    const roleChanges =
+      queue?.changes.filter(
+        ({ excluded, included, nickname }) => included.length || excluded.length || nickname
+      ) ?? [];
     return roleChanges;
   }
 
@@ -892,7 +1079,9 @@ export class RolesManager {
   }
 
   private async _roleRefresh() {
-    const collection = this.client.db.collection<AutoRoleDelaysEntity>(Collections.AUTO_ROLE_DELAYS);
+    const collection = this.client.db.collection<AutoRoleDelaysEntity>(
+      Collections.AUTO_ROLE_DELAYS
+    );
     const cursor = collection.aggregate<{ _id: string; delays: WithId<AutoRoleDelaysEntity>[] }>([
       {
         $match: {
@@ -917,12 +1106,23 @@ export class RolesManager {
         if (!this.client.settings.get(guildId, Settings.USE_AUTO_ROLE, true)) continue;
         if (this.client.settings.hasCustomBot(guildId) && !this.client.isCustom()) continue;
 
-        const deletionDelay = this.client.settings.get<number>(guildId, Settings.ROLE_REMOVAL_DELAYS, 0);
-        const additionDelay = this.client.settings.get<number>(guildId, Settings.ROLE_ADDITION_DELAYS, 0);
+        const deletionDelay = this.client.settings.get<number>(
+          guildId,
+          Settings.ROLE_REMOVAL_DELAYS,
+          0
+        );
+        const additionDelay = this.client.settings.get<number>(
+          guildId,
+          Settings.ROLE_ADDITION_DELAYS,
+          0
+        );
         if (!deletionDelay && !additionDelay) continue;
 
         const invalidDelays = delays.filter((delay) => {
-          const roles = [...Object.values(delay.deletionDelays ?? {}), ...Object.values(delay.additionDelays ?? {})];
+          const roles = [
+            ...Object.values(delay.deletionDelays ?? {}),
+            ...Object.values(delay.additionDelays ?? {})
+          ];
           return !roles.length;
         });
         if (invalidDelays.length) {
@@ -930,7 +1130,10 @@ export class RolesManager {
         }
 
         const expiredDelays = delays.filter((delay) => {
-          const roles = [...Object.values(delay.deletionDelays ?? {}), ...Object.values(delay.additionDelays ?? {})];
+          const roles = [
+            ...Object.values(delay.deletionDelays ?? {}),
+            ...Object.values(delay.additionDelays ?? {})
+          ];
           return roles.filter((_delayed) => Date.now() > _delayed).length;
         });
         if (!expiredDelays.length) continue;

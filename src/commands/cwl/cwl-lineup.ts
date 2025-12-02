@@ -1,5 +1,13 @@
 import { APIClan, APIClanWarLeagueGroup, APIClanWarMember, APIWarClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
+  User
+} from 'discord.js';
 import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS, HERO_PETS, WHITE_NUMBERS } from '../../util/emojis.js';
@@ -29,19 +37,30 @@ export default class CWLLineupCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
     const { body, res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.editReply(
-        this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        this.i18n('command.cwl.still_searching', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       );
     }
 
     if (!res.ok) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
 
     return this.rounds(interaction, { body, clan, args });
@@ -77,7 +96,8 @@ export default class CWLLineupCommand extends Command {
       }
     }
 
-    if (!chunks.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
+    if (!chunks.length)
+      return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 
     const state = args.state ?? 'preparation';
     const data = chunks.find((ch) => ch.state === state) ?? chunks.slice(-1).at(0)!;
@@ -100,7 +120,10 @@ export default class CWLLineupCommand extends Command {
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setCustomId(customIds.toggle)
         .setLabel(args.player_list ? 'Compare' : 'Player List')
@@ -165,7 +188,12 @@ export default class CWLLineupCommand extends Command {
     );
   }
 
-  private async getComparisonLineup(state: string, round: number, clan: APIWarClan, opponent: APIWarClan) {
+  private async getComparisonLineup(
+    state: string,
+    round: number,
+    clan: APIWarClan,
+    opponent: APIWarClan
+  ) {
     const lineups = await this.rosters(
       clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
       opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
@@ -181,7 +209,9 @@ export default class CWLLineupCommand extends Command {
         `\u200e${EMOJIS.HASH} \`TH HERO \u2002  \u2002 TH HERO \``,
         lineups
           .map((lineup, i) => {
-            const desc = lineup.map((en) => `${padStart(en.t, 2)} ${padStart(en.h, 4)}`).join(' \u2002vs\u2002 ');
+            const desc = lineup
+              .map((en) => `${padStart(en.t, 2)} ${padStart(en.h, 4)}`)
+              .join(' \u2002vs\u2002 ');
             return `${BLUE_NUMBERS[i + 1]} \`${desc} \``;
           })
           .join('\n')
@@ -192,7 +222,11 @@ export default class CWLLineupCommand extends Command {
     return [embed];
   }
 
-  private getLineupList(state: string, round: number, data: { clan: APIWarClan; opponent: APIWarClan }) {
+  private getLineupList(
+    state: string,
+    round: number,
+    data: { clan: APIWarClan; opponent: APIWarClan }
+  ) {
     const embeds = [
       new EmbedBuilder()
         .setAuthor({
@@ -203,7 +237,10 @@ export default class CWLLineupCommand extends Command {
         .setDescription(
           data.clan.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`)
+            .map(
+              (m, i) =>
+                `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`
+            )
             .join('\n')
         )
         .setFooter({ text: `Round #${round} (${states[state]})` }),
@@ -217,7 +254,10 @@ export default class CWLLineupCommand extends Command {
         .setDescription(
           data.opponent.members
             .sort((a, b) => a.mapPosition - b.mapPosition)
-            .map((m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`)
+            .map(
+              (m, i) =>
+                `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](http://cprk.us/p/${m.tag.replace('#', '')})`
+            )
             .join('\n')
         )
         .setFooter({ text: `Round #${round} (${states[state]})` })

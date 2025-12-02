@@ -99,7 +99,11 @@ export class SettingsProvider {
 
   public async addToWhitelist(
     guild: string | Guild,
-    { userOrRoleId, isRole, commandId }: { userOrRoleId: string; isRole: boolean; commandId: string }
+    {
+      userOrRoleId,
+      isRole,
+      commandId
+    }: { userOrRoleId: string; isRole: boolean; commandId: string }
   ) {
     const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
     const record = this.settings.get(guildId) || {};
@@ -121,10 +125,17 @@ export class SettingsProvider {
     record[SettingsEnum.COMMAND_WHITELIST] = unique(whiteList, (list) => list.key);
 
     this.settings.set(guildId, record);
-    return this.settingsCollection.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: whiteList } }, { upsert: true });
+    return this.settingsCollection.updateOne(
+      { guildId },
+      { $set: { [SettingsEnum.COMMAND_WHITELIST]: whiteList } },
+      { upsert: true }
+    );
   }
 
-  public async clearWhitelist(guild: string | Guild, { userOrRoleId, commandId }: { userOrRoleId: string; commandId: string }) {
+  public async clearWhitelist(
+    guild: string | Guild,
+    { userOrRoleId, commandId }: { userOrRoleId: string; commandId: string }
+  ) {
     const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
     const record = this.settings.get(guildId) || {};
 
@@ -140,7 +151,10 @@ export class SettingsProvider {
     record[SettingsEnum.COMMAND_WHITELIST] = filtered;
 
     this.settings.set(guildId, record);
-    return this.settingsCollection.updateOne({ guildId }, { $set: { [SettingsEnum.COMMAND_WHITELIST]: filtered } });
+    return this.settingsCollection.updateOne(
+      { guildId },
+      { $set: { [SettingsEnum.COMMAND_WHITELIST]: filtered } }
+    );
   }
 
   public get<T>(guild: string | Guild, key: string, defaultValue?: any): T {
@@ -158,7 +172,11 @@ export class SettingsProvider {
     const data = this.settings.get(guildId) || {};
     data[key] = value;
     this.settings.set(guildId, data);
-    return this.settingsCollection.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
+    return this.settingsCollection.updateOne(
+      { guildId },
+      { $set: { [key]: value } },
+      { upsert: true }
+    );
   }
 
   public async push(guild: string | Guild, key: string, items: string[]) {
@@ -173,7 +191,11 @@ export class SettingsProvider {
     record[key] = unique(value);
 
     this.settings.set(guildId, record);
-    return this.settingsCollection.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
+    return this.settingsCollection.updateOne(
+      { guildId },
+      { $set: { [key]: value } },
+      { upsert: true }
+    );
   }
 
   public async delete(guild: string | Guild, key: string) {
@@ -210,7 +232,9 @@ export class SettingsProvider {
     if (guild instanceof Guild) return guild.id;
     if (guild === 'global' || guild === null) return 'global';
     if (/^\d+$/.test(guild)) return guild;
-    throw new TypeError('Invalid guild specified. Must be a Guild instance, guild ID, "global", or null.');
+    throw new TypeError(
+      'Invalid guild specified. Must be a Guild instance, guild ID, "global", or null.'
+    );
   }
 }
 

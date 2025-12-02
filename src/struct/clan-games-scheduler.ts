@@ -1,5 +1,9 @@
 import { Collections, Settings } from '@app/constants';
-import { ClanGamesEntity, ClanGamesRemindersEntity, ClanGamesSchedulersEntity } from '@app/entities';
+import {
+  ClanGamesEntity,
+  ClanGamesRemindersEntity,
+  ClanGamesSchedulersEntity
+} from '@app/entities';
 import { APIClan } from 'clashofclans.js';
 import {
   APIMessage,
@@ -66,7 +70,11 @@ export class ClanGamesScheduler {
         const id: string = change.documentKey._id.toHexString();
         if (this.queued.has(id)) this.clear(id);
         const schedule = change.fullDocument;
-        if (schedule && !schedule.triggered && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
+        if (
+          schedule &&
+          !schedule.triggered &&
+          schedule.timestamp.getTime() < Date.now() + this.refreshRate
+        ) {
           this.queue(schedule);
         }
       }
@@ -83,7 +91,11 @@ export class ClanGamesScheduler {
     if (this.client.cluster.id !== 0) return null;
     if (this.client.isCustom()) return null;
 
-    const insertedSeasonId = this.client.settings.get('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, '0');
+    const insertedSeasonId = this.client.settings.get(
+      'global',
+      Settings.CLAN_GAMES_REMINDER_TIMESTAMP,
+      '0'
+    );
     const currentSeasonId = Season.monthId;
 
     if (insertedSeasonId === currentSeasonId) return null;
@@ -91,7 +103,9 @@ export class ClanGamesScheduler {
     const { startTime, endTime } = this.timings();
     if (!(Date.now() >= startTime && Date.now() <= endTime)) return null;
 
-    this.client.logger.info(`Inserting new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
+    this.client.logger.info(`Inserting new clan games schedules for season ${currentSeasonId}`, {
+      label: 'ClanGamesScheduler'
+    });
 
     const cursor = this.reminders.find();
     for await (const reminder of cursor) {
@@ -99,7 +113,9 @@ export class ClanGamesScheduler {
     }
 
     this.client.settings.set('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, currentSeasonId);
-    this.client.logger.info(`Inserted new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
+    this.client.logger.info(`Inserted new clan games schedules for season ${currentSeasonId}`, {
+      label: 'ClanGamesScheduler'
+    });
   }
 
   public async create(reminder: ClanGamesRemindersEntity) {
@@ -163,7 +179,13 @@ export class ClanGamesScheduler {
     const fetched = await this.client.coc._getPlayers(clan.memberList);
     const clanMembers = fetched.map((data) => {
       const value = data.achievements.find((a) => a.name === 'Games Champion')?.value ?? 0;
-      return { tag: data.tag, name: data.name, points: value, role: data.role, townHallLevel: data.townHallLevel };
+      return {
+        tag: data.tag,
+        name: data.name,
+        points: value,
+        role: data.role,
+        townHallLevel: data.townHallLevel
+      };
     });
 
     const dbMembers = await this.client.db
@@ -193,7 +215,10 @@ export class ClanGamesScheduler {
   }
 
   public async getReminderText(
-    reminder: Pick<ClanGamesRemindersEntity, 'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers' | 'linkedOnly'>,
+    reminder: Pick<
+      ClanGamesRemindersEntity,
+      'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers' | 'linkedOnly'
+    >,
     schedule: Pick<ClanGamesSchedulersEntity, 'tag'>
   ): Promise<[string | null, string[]]> {
     const { res, body: clan } = await this.client.coc.getClan(schedule.tag);
@@ -205,7 +230,10 @@ export class ClanGamesScheduler {
 
     const members = clanMembers
       .filter((mem) => {
-        return mem.points < (reminder.minPoints === 0 ? Util.getClanGamesMaxPoints() : reminder.minPoints);
+        return (
+          mem.points <
+          (reminder.minPoints === 0 ? Util.getClanGamesMaxPoints() : reminder.minPoints)
+        );
       })
       .filter((m) => (reminder.allMembers ? m.points >= 0 : m.points >= 1))
       .filter((mem) => (maxParticipants >= 50 ? mem.points >= 1 : true))
@@ -251,7 +279,9 @@ export class ClanGamesScheduler {
     });
 
     const { endTime } = this.timings();
-    const warTiming = moment.duration(endTime - Date.now()).format('D[d] H[h], m[m]', { trim: 'both mid' });
+    const warTiming = moment
+      .duration(endTime - Date.now())
+      .format('D[d] H[h], m[m]', { trim: 'both mid' });
 
     const clanNick = await this.client.storage.getNickname(reminder.guild, clan.tag, clan.name);
 
@@ -287,7 +317,8 @@ export class ClanGamesScheduler {
       const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
       if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_NOT_FOUND);
 
-      if (!this.client.channels.cache.has(reminder.channel)) return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
+      if (!this.client.channels.cache.has(reminder.channel))
+        return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
 
       const { endTime } = this.timings();
       if (endTime < Date.now()) return await this.delete(schedule, ReminderDeleteReasons.TOO_LATE);
@@ -306,10 +337,13 @@ export class ClanGamesScheduler {
       ]);
       if (channel) {
         if (channel.isThread) reminder.threadId = channel.channel.id;
-        const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
+        const webhook = reminder.webhook
+          ? new WebhookClient(reminder.webhook)
+          : await this.webhook(channel.parent, reminder);
 
         for (const content of Util.splitMessage(`${text}\n\u200b`)) {
-          if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
+          if (webhook)
+            await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
         }
       } else {
         return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
@@ -356,24 +390,36 @@ export class ClanGamesScheduler {
     }
   }
 
-  private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<ClanGamesRemindersEntity>) {
+  private async webhook(
+    channel: TextChannel | NewsChannel | ForumChannel | MediaChannel,
+    reminder: WithId<ClanGamesRemindersEntity>
+  ) {
     const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
     if (webhook) {
       reminder.webhook = { id: webhook.id, token: webhook.token! };
-      await this.reminders.updateOne({ _id: reminder._id }, { $set: { webhook: { id: webhook.id, token: webhook.token! } } });
+      await this.reminders.updateOne(
+        { _id: reminder._id },
+        { $set: { webhook: { id: webhook.id, token: webhook.token! } } }
+      );
       return new WebhookClient({ id: webhook.id, token: webhook.token! });
     }
     return null;
   }
 
-  private allowedMentions(reminder: ClanGamesRemindersEntity, userIds: string[]): MessageMentionOptions {
+  private allowedMentions(
+    reminder: ClanGamesRemindersEntity,
+    userIds: string[]
+  ): MessageMentionOptions {
     const config = this.getExclusionConfig(reminder.guild);
 
     const guild = this.client.guilds.cache.get(reminder.guild);
     if (!config.games || !guild) return { parse: ['users'] };
 
     if (config.type === 'optIn') {
-      return { parse: [], users: userIds.filter((id) => config.gamesExclusionUserIds.includes(id)) };
+      return {
+        parse: [],
+        users: userIds.filter((id) => config.gamesExclusionUserIds.includes(id))
+      };
     }
 
     return { parse: [], users: userIds.filter((id) => !config.gamesExclusionUserIds.includes(id)) };
@@ -387,7 +433,9 @@ export class ClanGamesScheduler {
   }
 
   private async _refresh() {
-    const cursor = this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } });
+    const cursor = this.schedulers.find({
+      timestamp: { $lt: new Date(Date.now() + this.refreshRate) }
+    });
 
     const now = new Date().getTime();
     for await (const schedule of cursor) {

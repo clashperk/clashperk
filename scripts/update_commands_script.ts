@@ -1,5 +1,10 @@
 import { createDecipheriv } from 'crypto';
-import { ApplicationCommand, RESTPostAPIApplicationCommandsJSONBody, RouteBases, Routes } from 'discord.js';
+import {
+  ApplicationCommand,
+  RESTPostAPIApplicationCommandsJSONBody,
+  RouteBases,
+  Routes
+} from 'discord.js';
 import { writeFileSync } from 'fs';
 import { inspect } from 'util';
 import { flattenApplicationCommands } from '../src/helper/commands.helper.js';
@@ -27,9 +32,13 @@ function commandStructureValidationCheck(obj: Record<string, any>) {
   }
 
   if (obj.description_localizations) {
-    for (const [locale, description] of Object.entries(obj.description_localizations as Record<string, string>)) {
+    for (const [locale, description] of Object.entries(
+      obj.description_localizations as Record<string, string>
+    )) {
       if (description.length > 100) {
-        console.log(`Locale: ${locale}, Description: ${description}, Length: ${description.length}`);
+        console.log(
+          `Locale: ${locale}, Description: ${description}, Length: ${description.length}`
+        );
       }
     }
   }
@@ -53,21 +62,35 @@ async function exportCommands(commands: ApplicationCommand[]) {
   writeFileSync('./scripts/commands_export.json', JSON.stringify(items, null, 2));
 }
 
-const applicationGuildCommands = async (token: string, guildId: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
+const applicationGuildCommands = async (
+  token: string,
+  guildId: string,
+  commands: RESTPostAPIApplicationCommandsJSONBody[]
+) => {
   console.log(`Building guild application commands for ${guildId}`);
-  const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bot ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(commands)
-  });
-  await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
+  const res = await fetch(
+    `${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bot ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(commands)
+    }
+  );
+  await res
+    .json()
+    .then((data) =>
+      res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))
+    );
   console.log(`Updated ${COMMANDS.length} Guild Application Commands`);
 };
 
-const applicationCommands = async (token: string, commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
+const applicationCommands = async (
+  token: string,
+  commands: RESTPostAPIApplicationCommandsJSONBody[]
+) => {
   console.log('Building global application commands', getClientId(token));
   const res = await fetch(`${RouteBases.api}${Routes.applicationCommands(getClientId(token))}`, {
     method: 'PUT',
@@ -102,7 +125,11 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
   const body = (await res.json()) as { payload: string };
   if (!body.payload) console.log(body);
 
-  const applications = JSON.parse(decrypt(body.payload)) as { serviceId: string; token: string; guildIds: string[] }[];
+  const applications = JSON.parse(decrypt(body.payload)) as {
+    serviceId: string;
+    token: string;
+    guildIds: string[];
+  }[];
   for (const application of applications) {
     for (const guildId of [...application.guildIds, CUSTOM_BOT_SERVER_ID]) {
       await applicationGuildCommands(application.token, guildId, commands);
@@ -143,9 +170,17 @@ const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJ
   }
 
   if (process.argv.includes('--private')) {
-    await applicationGuildCommands(process.env.PROD_TOKEN!, SUPPORT_SERVER_ID, [...PRIVATE_COMMANDS, ...HIDDEN_COMMANDS]);
+    await applicationGuildCommands(process.env.PROD_TOKEN!, SUPPORT_SERVER_ID, [
+      ...PRIVATE_COMMANDS,
+      ...HIDDEN_COMMANDS
+    ]);
     return;
   }
 
-  await applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS, ...PRIVATE_COMMANDS, ...HIDDEN_COMMANDS]);
+  await applicationCommands(token, [
+    ...COMMANDS,
+    ...MAIN_BOT_ONLY_COMMANDS,
+    ...PRIVATE_COMMANDS,
+    ...HIDDEN_COMMANDS
+  ]);
 })();

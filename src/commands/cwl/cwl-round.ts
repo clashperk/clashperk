@@ -36,7 +36,10 @@ export default class CWLRoundCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User; season?: string }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
@@ -46,22 +49,41 @@ export default class CWLRoundCommand extends Command {
     ]);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.editReply(
-        this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        this.i18n('command.cwl.still_searching', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       );
     }
 
-    const isIncorrectSeason = !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike = args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
+    const isIncorrectSeason =
+      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
+    const entityLike =
+      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
     const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
 
     if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
 
-    const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
+    const aggregated = await this.client.coc.aggregateClanWarLeague(
+      clan.tag,
+      { ...entityLike, leagues: group?.leagues ?? {} },
+      isApiData
+    );
 
     if (!aggregated) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
 
     return this.rounds(interaction, {
@@ -92,16 +114,18 @@ export default class CWLRoundCommand extends Command {
         const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
         const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
         const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
-        embed.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium }).addFields([
-          {
-            name: 'War Against',
-            value: `\u200e${opponent.name} (${opponent.tag})`
-          },
-          {
-            name: 'Team Size',
-            value: `${data.teamSize}`
-          }
-        ]);
+        embed
+          .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
+          .addFields([
+            {
+              name: 'War Against',
+              value: `\u200e${opponent.name} (${opponent.tag})`
+            },
+            {
+              name: 'Team Size',
+              value: `${data.teamSize}`
+            }
+          ]);
         if (data.state === 'warEnded') {
           const endTimestamp = new Date(moment(data.endTime).toDate());
           embed.addFields([
@@ -176,13 +200,20 @@ export default class CWLRoundCommand extends Command {
     }
 
     if (!chunks.length && body.season !== Util.getCWLSeasonId()) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
     if (!chunks.length) {
       return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
     }
 
-    const round = chunks.find((c) => (args.round ? c.round === Number(args.round) : c.state === 'inWar')) ?? chunks.slice(-1).at(0)!;
+    const round =
+      chunks.find((c) => (args.round ? c.round === Number(args.round) : c.state === 'inWar')) ??
+      chunks.slice(-1).at(0)!;
     const selectedRound = args.round ?? round.round;
 
     const payload = {
@@ -198,7 +229,10 @@ export default class CWLRoundCommand extends Command {
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh)
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh)
     );
 
     const options = chunks
@@ -207,7 +241,10 @@ export default class CWLRoundCommand extends Command {
         ...option,
         default: option.value === selectedRound.toString()
       }));
-    const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(customIds.rounds).setPlaceholder('Select a round!');
+    const menu = new StringSelectMenuBuilder()
+      .addOptions(options)
+      .setCustomId(customIds.rounds)
+      .setPlaceholder('Select a round!');
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
     return interaction.editReply({ embeds: [round.embed], components: [buttonRow, menuRow] });
@@ -225,7 +262,9 @@ export default class CWLRoundCommand extends Command {
       .sort((a, b) => b.level - a.level);
 
     return cluster(townHalls, 5)
-      .map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`).join(' '))
+      .map((chunks) =>
+        chunks.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`).join(' ')
+      )
       .join('\n');
   }
 }

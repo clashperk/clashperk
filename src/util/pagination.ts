@@ -67,10 +67,16 @@ export function dynamicPagination(
   }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder()
+      .setCustomId(customIds.refresh)
+      .setEmoji(EMOJIS.REFRESH)
+      .setStyle(ButtonStyle.Secondary)
   );
 
-  return interaction.editReply({ embeds: [embeds[pageIndex]], components: rows?.length ? [...rows, pagingRow] : [row, pagingRow] });
+  return interaction.editReply({
+    embeds: [embeds[pageIndex]],
+    components: rows?.length ? [...rows, pagingRow] : [row, pagingRow]
+  });
 }
 
 export const handlePagination = async (
@@ -111,7 +117,10 @@ export const handlePagination = async (
     row.addComponents(indexButton);
   }
 
-  const exportButton = new ButtonBuilder().setCustomId(customIds.export).setEmoji(EMOJIS.EXPORT).setStyle(ButtonStyle.Secondary);
+  const exportButton = new ButtonBuilder()
+    .setCustomId(customIds.export)
+    .setEmoji(EMOJIS.EXPORT)
+    .setStyle(ButtonStyle.Secondary);
   if (typeof onExport === 'function') row.addComponents(exportButton);
 
   let index = 0;
@@ -123,7 +132,8 @@ export const handlePagination = async (
   const msg = await interaction.editReply(payload);
 
   const collector = msg.createMessageComponentCollector({
-    filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    filter: (action) =>
+      Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
     time: 10 * 60 * 1000
   });
 
@@ -198,7 +208,10 @@ export const handleMessagePagination = async (
     row.addComponents(indexButton);
   }
 
-  const exportButton = new ButtonBuilder().setCustomId(customIds.export).setEmoji('🖨️').setStyle(ButtonStyle.Secondary);
+  const exportButton = new ButtonBuilder()
+    .setCustomId(customIds.export)
+    .setEmoji('🖨️')
+    .setStyle(ButtonStyle.Secondary);
   if (typeof onExport === 'function' && embeds.length > 1) row.addComponents(exportButton);
 
   let index = 0;
@@ -210,7 +223,8 @@ export const handleMessagePagination = async (
   const msg = await message.edit(payload);
 
   const collector = msg.createMessageComponentCollector({
-    filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interactionUserId,
+    filter: (action) =>
+      Object.values(customIds).includes(action.customId) && action.user.id === interactionUserId,
     time: 10 * 60 * 1000
   });
 
@@ -276,7 +290,8 @@ export const createInteractionCollector = ({
 
   const collector = message.createMessageComponentCollector({
     time: 10 * 60 * 1000,
-    filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
+    filter: (action) =>
+      Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
   });
 
   collector.on('collect', async (action) => {

@@ -18,12 +18,22 @@ export default class TargetCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { tag?: string; user?: User; offense_target: number; defense_target: number; note?: string; hours?: number; command: string }
+    args: {
+      tag?: string;
+      user?: User;
+      offense_target: number;
+      defense_target: number;
+      note?: string;
+      hours?: number;
+      command: string;
+    }
   ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
     if (clan.members < 1) {
-      return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
+      return interaction.editReply(
+        this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name })
+      );
     }
 
     const { res, body: war } = await this.client.coc.getCurrentWar(clan.tag);
@@ -35,8 +45,12 @@ export default class TargetCommand extends Command {
     }
 
     const warId = this.createWarId(war);
-    const offenseTags = war.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => m.tag);
-    const defenseTags = war.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => m.tag);
+    const offenseTags = war.clan.members
+      .sort((a, b) => a.mapPosition - b.mapPosition)
+      .map((m) => m.tag);
+    const defenseTags = war.opponent.members
+      .sort((a, b) => a.mapPosition - b.mapPosition)
+      .map((m) => m.tag);
 
     if (args.defense_target > defenseTags.length) {
       return interaction.editReply('Invalid defensive target.');

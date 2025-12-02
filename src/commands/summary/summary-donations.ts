@@ -29,11 +29,19 @@ export default class DonationSummaryCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: { season?: string; clans?: string; sort_by?: SortType[]; order_by?: OrderType; clans_only?: boolean }
+    args: {
+      season?: string;
+      clans?: string;
+      sort_by?: SortType[];
+      order_by?: OrderType;
+      clans_only?: boolean;
+    }
   ) {
     const season = args.season ?? Season.ID;
 
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const fetched = await this.client.coc._getClans(clans);
@@ -74,10 +82,14 @@ export default class DonationSummaryCommand extends Command {
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customId.refresh).setEmoji(EMOJIS.REFRESH)
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customId.refresh)
+        .setEmoji(EMOJIS.REFRESH)
     );
 
-    const splitted = embedLength(topPlayersEmbed.toJSON()) + embedLength(topClansEmbed.toJSON()) > 6000;
+    const splitted =
+      embedLength(topPlayersEmbed.toJSON()) + embedLength(topClansEmbed.toJSON()) > 6000;
     if (splitted) {
       buttonRow.addComponents(
         new ButtonBuilder()
@@ -141,7 +153,9 @@ export default class DonationSummaryCommand extends Command {
     );
 
     return interaction.editReply({
-      embeds: splitted ? [args.clans_only ? topClansEmbed : topPlayersEmbed] : [topClansEmbed, topPlayersEmbed],
+      embeds: splitted
+        ? [args.clans_only ? topClansEmbed : topPlayersEmbed]
+        : [topClansEmbed, topPlayersEmbed],
       components: [buttonRow, sortingRow, orderingRow]
     });
   }
@@ -168,9 +182,10 @@ export default class DonationSummaryCommand extends Command {
       orderBy?: OrderType;
     }
   ) {
-    const embed = new EmbedBuilder()
-      .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `${interaction.guild.name} Top Donations`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
+    const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setAuthor({
+      name: `${interaction.guild.name} Top Donations`,
+      iconURL: interaction.guild.iconURL({ forceStatic: false })!
+    });
 
     const orders = [];
     for (const key of sortBy ?? ['donations']) {
@@ -290,7 +305,8 @@ export default class DonationSummaryCommand extends Command {
     }
   ) {
     const orders = [];
-    for (const key of sortBy ?? ['donations']) orders.push({ $sort: { [key]: orderBy === 'asc' ? 1 : -1 } });
+    for (const key of sortBy ?? ['donations'])
+      orders.push({ $sort: { [key]: orderBy === 'asc' ? 1 : -1 } });
 
     let members = await this.client.db
       .collection(Collections.PLAYER_SEASONS)
@@ -384,7 +400,9 @@ export default class DonationSummaryCommand extends Command {
           Util.splitMessage(
             members
               .map((mem, i) => {
-                const icon = (isTH ? ORANGE_NUMBERS : BLUE_NUMBERS)[isTH ? mem.townHallLevel : i + 1];
+                const icon = (isTH ? ORANGE_NUMBERS : BLUE_NUMBERS)[
+                  isTH ? mem.townHallLevel : i + 1
+                ];
                 const don = this.donation(mem.donations, memDp);
                 const rec = this.donation(mem.donationsReceived, memRp);
                 return `${icon} \`\u200e${don} ${rec}  ${Util.escapeBackTick(mem.name).padEnd(15, ' ')}\u200f\``;

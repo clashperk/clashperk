@@ -21,6 +21,9 @@ export default class PermissionInhibitor extends Inhibitor {
       return !interaction.appPermissions.has([PermissionFlagsBits.SendMessagesInThreads]);
     }
 
-    return !interaction.appPermissions.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]);
+    return !interaction.appPermissions.has([
+      PermissionFlagsBits.SendMessages,
+      PermissionFlagsBits.ViewChannel
+    ]);
   }
 }

@@ -58,7 +58,12 @@ export class Enqueuer {
       if (this.paused || !this.cached.has(clanTag)) return;
 
       if (this.queue.remaining >= 2000) {
-        this.client.logger.warn(`Queue is full (${this.queue.remaining}), skipping log processing...`, { label: 'Enqueuer' });
+        this.client.logger.warn(
+          `Queue is full (${this.queue.remaining}), skipping log processing...`,
+          {
+            label: 'Enqueuer'
+          }
+        );
         return;
       }
 
@@ -68,7 +73,10 @@ export class Enqueuer {
           case Flags.DONATION_LOG:
             break;
           case Flags.CLAN_FEED_LOG:
-            await Promise.all([this.flagAlertLog.exec(data.tag, data), this.clanLog.exec(data.tag, data)]);
+            await Promise.all([
+              this.flagAlertLog.exec(data.tag, data),
+              this.clanLog.exec(data.tag, data)
+            ]);
             this.client.rolesManager.exec(data.tag, data);
             break;
           case Flags.CLAN_EMBED_LOG:
@@ -221,7 +229,10 @@ export class Enqueuer {
       )
       .toArray();
 
-    const logs = await this.client.db.collection(Collections.CLAN_LOGS).find({ guildId: data.guild, clanTag: data.tag }).toArray();
+    const logs = await this.client.db
+      .collection(Collections.CLAN_LOGS)
+      .find({ guildId: data.guild, clanTag: data.tag })
+      .toArray();
     for (const log of logs) this.deleteLog(log._id.toHexString());
 
     if (!clans.length) {

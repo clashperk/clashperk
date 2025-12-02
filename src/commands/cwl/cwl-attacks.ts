@@ -49,7 +49,10 @@ export default class CWLAttacksCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User; season?: string }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
@@ -59,22 +62,41 @@ export default class CWLAttacksCommand extends Command {
     ]);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.editReply(
-        this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        this.i18n('command.cwl.still_searching', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       );
     }
 
-    const isIncorrectSeason = !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike = args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
+    const isIncorrectSeason =
+      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
+    const entityLike =
+      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
     const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
 
     if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
 
-    const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
+    const aggregated = await this.client.coc.aggregateClanWarLeague(
+      clan.tag,
+      { ...entityLike, leagues: group?.leagues ?? {} },
+      isApiData
+    );
 
     if (!aggregated) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
 
     return this.rounds(interaction, {
@@ -112,10 +134,16 @@ export default class CWLAttacksCommand extends Command {
 
         if (['warEnded', 'inWar'].includes(data.state)) {
           const endTimestamp = new Date(moment(data.endTime).toDate());
-          const attackers: { name: string; stars: number; destruction: number; mapPosition: number }[] = [];
+          const attackers: {
+            name: string;
+            stars: number;
+            destruction: number;
+            mapPosition: number;
+          }[] = [];
           const slackers: { name: string; mapPosition: number; townHallLevel: number }[] = [];
 
-          const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
+          const clanMembers =
+            data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
           const starTypes = [] as number[];
           clanMembers
             .sort((a, b) => a.mapPosition - b.mapPosition)
@@ -177,12 +205,18 @@ export default class CWLAttacksCommand extends Command {
                 embed.data.description,
                 '',
                 `**${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-                slackers.map((mem) => `\`\u200e${this.index(mem.mapPosition)} ${this.padEnd(mem.name)}\``).join('\n')
+                slackers
+                  .map((mem) => `\`\u200e${this.index(mem.mapPosition)} ${this.padEnd(mem.name)}\``)
+                  .join('\n')
               ].join('\n')
             );
           } else {
             embed.setDescription(
-              [embed.data.description, '', `**No ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`].join('\n')
+              [
+                embed.data.description,
+                '',
+                `**No ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`
+              ].join('\n')
             );
           }
 
@@ -192,7 +226,9 @@ export default class CWLAttacksCommand extends Command {
                 embed.data.description,
                 '',
                 '**Attack Summary**',
-                starCounts.map(([star, count]) => `**${emojiStars[star]} ${WHITE_NUMBERS[count]}**`).join(' ')
+                starCounts
+                  .map(([star, count]) => `**${emojiStars[star]} ${WHITE_NUMBERS[count]}**`)
+                  .join(' ')
               ].join('\n')
             );
           }
@@ -228,7 +264,12 @@ export default class CWLAttacksCommand extends Command {
     }
 
     if (!chunks.length && body.season !== Util.getCWLSeasonId()) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
     if (!chunks.length) {
       return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
@@ -239,10 +280,16 @@ export default class CWLAttacksCommand extends Command {
       .setColor(this.client.embed(interaction))
       .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
       .setDescription(
-        ['**All Missed Attacks**', '', members.map((mem) => `${RED_NUMBERS[mem.count]} ${escapeMarkdown(mem.name)}`).join('\n')].join('\n')
+        [
+          '**All Missed Attacks**',
+          '',
+          members.map((mem) => `${RED_NUMBERS[mem.count]} ${escapeMarkdown(mem.name)}`).join('\n')
+        ].join('\n')
       );
 
-    const round = chunks.find((c) => (args.round ? c.round === Number(args.round) : c.state === 'inWar')) ?? chunks.slice(-1).at(0)!;
+    const round =
+      chunks.find((c) => (args.round ? c.round === Number(args.round) : c.state === 'inWar')) ??
+      chunks.slice(-1).at(0)!;
     const selectedRound = args.round ?? round.round;
 
     const payload = {
@@ -262,7 +309,10 @@ export default class CWLAttacksCommand extends Command {
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setLabel(args.missed ? 'Return to Attacks' : 'All Missed Attacks')
         .setStyle(ButtonStyle.Secondary)
@@ -275,10 +325,16 @@ export default class CWLAttacksCommand extends Command {
         ...option,
         default: option.value === selectedRound.toString()
       }));
-    const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(customIds.rounds).setPlaceholder('Select a round!');
+    const menu = new StringSelectMenuBuilder()
+      .addOptions(options)
+      .setCustomId(customIds.rounds)
+      .setPlaceholder('Select a round!');
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
 
-    return interaction.editReply({ embeds: [embed], components: args.missed ? [buttonRow] : [buttonRow, menuRow] });
+    return interaction.editReply({
+      embeds: [embed],
+      components: args.missed ? [buttonRow] : [buttonRow, menuRow]
+    });
   }
 
   private padEnd(name: string) {

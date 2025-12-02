@@ -13,7 +13,9 @@ export const getLegendTimestampAgainstDay = (day?: number) => {
 
 export const getLegendAttack = async (playerTag: string) => {
   const client = container.resolve(Client);
-  return await client.db.collection(Collections.LEGEND_ATTACKS).findOne({ tag: playerTag, seasonId: Season.ID });
+  return await client.db
+    .collection(Collections.LEGEND_ATTACKS)
+    .findOne({ tag: playerTag, seasonId: Season.ID });
 };
 
 export const aggregateLegendAttacks = async (playerTag: string) => {

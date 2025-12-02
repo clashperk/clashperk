@@ -35,7 +35,10 @@ export default class CapitalRaidsCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; card?: boolean; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; week?: string; card?: boolean; user?: User }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
@@ -51,7 +54,9 @@ export default class CapitalRaidsCommand extends Command {
     const data = raid.items.find((item) => moment(item.startTime).format('YYYY-MM-DD') === weekId);
 
     if (args.card) {
-      const season = await this.client.db.collection(Collections.CAPITAL_RAID_SEASONS).findOne({ weekId, tag: clan.tag });
+      const season = await this.client.db
+        .collection(Collections.CAPITAL_RAID_SEASONS)
+        .findOne({ weekId, tag: clan.tag });
 
       if (!data) {
         return interaction.followUp({
@@ -63,7 +68,9 @@ export default class CapitalRaidsCommand extends Command {
       const raidsCompleted = this.client.coc.calcRaidCompleted(data.attackLog);
 
       const hasTrophyCard = Boolean(
-        season?.clanCapitalPoints && season._clanCapitalPoints && season._clanCapitalPoints !== season.clanCapitalPoints
+        season?.clanCapitalPoints &&
+          season._clanCapitalPoints &&
+          season._clanCapitalPoints !== season.clanCapitalPoints
       );
 
       const query = new URLSearchParams({
@@ -81,9 +88,12 @@ export default class CapitalRaidsCommand extends Command {
 
       await interaction.followUp({
         files: [
-          new AttachmentBuilder(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-medals-card?${query.toString()}`, {
-            name: 'capital-raid-weekend-card.jpeg'
-          })
+          new AttachmentBuilder(
+            `${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-medals-card?${query.toString()}`,
+            {
+              name: 'capital-raid-weekend-card.jpeg'
+            }
+          )
         ]
       });
 
@@ -103,13 +113,19 @@ export default class CapitalRaidsCommand extends Command {
         query.set('trophiesEarned', `${trophiesEarned < 0 ? '' : '+'}${trophiesEarned}`);
         query.set('trophies', season._clanCapitalPoints!.toString());
         query.set('globalRank', globalRank ? `Global Rank: ${globalRank}` : '');
-        query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');
+        query.set(
+          'localRank',
+          countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : ''
+        );
 
         return interaction.followUp({
           files: [
-            new AttachmentBuilder(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-trophies-card?${query.toString()}`, {
-              name: 'capital-raid-trophy-card.jpeg'
-            })
+            new AttachmentBuilder(
+              `${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-trophies-card?${query.toString()}`,
+              {
+                name: 'capital-raid-trophy-card.jpeg'
+              }
+            )
           ]
         });
       }
@@ -143,7 +159,9 @@ export default class CapitalRaidsCommand extends Command {
         }
       ]);
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(refreshButton).addComponents(downloadButton);
+    const row = new ActionRowBuilder<ButtonBuilder>()
+      .addComponents(refreshButton)
+      .addComponents(downloadButton);
     new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
     if (interaction.isButton()) row.setComponents(refreshButton);
 
@@ -152,7 +170,11 @@ export default class CapitalRaidsCommand extends Command {
     const members = raidSeason?.members ?? data?.members ?? [];
     if (!members.length || !data) {
       return interaction.followUp({
-        content: this.i18n('command.capital.raids.no_data', { weekId, clan: clan.name, lng: interaction.locale })
+        content: this.i18n('command.capital.raids.no_data', {
+          weekId,
+          clan: clan.name,
+          lng: interaction.locale
+        })
       });
     }
 
@@ -187,11 +209,16 @@ export default class CapitalRaidsCommand extends Command {
   }
 
   private async aggregateCapitalRaids(clan: APIClan, weekId: string) {
-    const season = await this.client.db.collection(Collections.CAPITAL_RAID_SEASONS).findOne({ weekId, tag: clan.tag });
+    const season = await this.client.db
+      .collection(Collections.CAPITAL_RAID_SEASONS)
+      .findOne({ weekId, tag: clan.tag });
     if (!season) return null;
     if (!season.members.length) return null;
 
-    const members = season.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
+    const members = season.members.map((m) => ({
+      ...m,
+      attackLimit: m.attackLimit + m.bonusAttackLimit
+    }));
     clan.memberList.forEach((member) => {
       const raidMember = members.find((mem) => mem.tag === member.tag);
       if (!raidMember) {
@@ -223,7 +250,12 @@ export default class CapitalRaidsCommand extends Command {
     locale: string;
     raidSeason: APICapitalRaidSeason;
     previousAttacks: number[];
-    members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[];
+    members: {
+      name: string;
+      capitalResourcesLooted: number;
+      attacks: number;
+      attackLimit: number;
+    }[];
   }) {
     const startDate = moment(weekId).toDate();
     const endDate = moment(weekId).clone().add(3, 'days').toDate();
@@ -292,10 +324,17 @@ export default class CapitalRaidsCommand extends Command {
     }
 
     defensive.attacksPerRaid = Number(
-      (defensive.attacksPerClan.reduce((acc, cur) => acc + cur, 0) / defensive.attacksPerClan.length).toFixed(2)
+      (
+        defensive.attacksPerClan.reduce((acc, cur) => acc + cur, 0) /
+        defensive.attacksPerClan.length
+      ).toFixed(2)
     );
 
-    defensive.lootPerRaid = Number((defensive.lootPerClan.reduce((acc, cur) => acc + cur, 0) / defensive.lootPerClan.length).toFixed(2));
+    defensive.lootPerRaid = Number(
+      (
+        defensive.lootPerClan.reduce((acc, cur) => acc + cur, 0) / defensive.lootPerClan.length
+      ).toFixed(2)
+    );
     defensive.lootPerAttack = Number((defensive.totalLoot / defensive.totalAttacks).toFixed(2));
 
     for (const attack of raidSeason.attackLog) {
@@ -310,10 +349,17 @@ export default class CapitalRaidsCommand extends Command {
     }
 
     offensive.attacksPerRaid = Number(
-      (offensive.attacksPerClan.reduce((acc, cur) => acc + cur, 0) / offensive.attacksPerClan.length).toFixed(2)
+      (
+        offensive.attacksPerClan.reduce((acc, cur) => acc + cur, 0) /
+        offensive.attacksPerClan.length
+      ).toFixed(2)
     );
 
-    offensive.lootPerRaid = Number((offensive.lootPerClan.reduce((acc, cur) => acc + cur, 0) / offensive.lootPerClan.length).toFixed(2));
+    offensive.lootPerRaid = Number(
+      (
+        offensive.lootPerClan.reduce((acc, cur) => acc + cur, 0) / offensive.lootPerClan.length
+      ).toFixed(2)
+    );
     offensive.lootPerAttack = Number((offensive.totalLoot / offensive.totalAttacks).toFixed(2));
     offensive.projectedLoot = Number((offensive.lootPerAttack * 300).toFixed(2));
 
@@ -349,13 +395,16 @@ export default class CapitalRaidsCommand extends Command {
   }
 
   private async performanceCard(body: any) {
-    const res = await fetch(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-performance-card`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    }).then((res) => res.json());
+    const res = await fetch(
+      `${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-performance-card`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      }
+    ).then((res) => res.json());
     return `${process.env.IMAGE_GEN_API_BASE_URL!}/${(res as { id: string }).id as string}`;
   }
 
@@ -363,7 +412,8 @@ export default class CapitalRaidsCommand extends Command {
     const today = new Date();
     const weekDay = today.getUTCDay();
     const hours = today.getUTCHours();
-    const isRaidWeek = (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
+    const isRaidWeek =
+      (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
     today.setUTCDate(today.getUTCDate() - today.getUTCDay());
     if (weekDay < 5 || (weekDay <= 5 && hours < 7)) today.setDate(today.getUTCDate() - 7);
     today.setUTCDate(today.getUTCDate() + 5);

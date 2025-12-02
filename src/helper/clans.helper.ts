@@ -1,4 +1,10 @@
-import { ActionRowBuilder, CommandInteraction, MessageComponentInteraction, MessageType, StringSelectMenuBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  CommandInteraction,
+  MessageComponentInteraction,
+  MessageType,
+  StringSelectMenuBuilder
+} from 'discord.js';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 

@@ -17,8 +17,17 @@ export default class GuildMemberAddListener extends Listener {
 
     if (this.client.settings.get(member.guild, Settings.USE_AUTO_ROLE, true)) {
       await Util.delay(3000);
-      const autoRoleAllowNotLinked = this.client.settings.get<boolean>(member.guild, Settings.AUTO_ROLE_ALLOW_NOT_LINKED, true);
-      await this.client.rolesManager.updateOne(member.user, member.guild.id, true, autoRoleAllowNotLinked);
+      const autoRoleAllowNotLinked = this.client.settings.get<boolean>(
+        member.guild,
+        Settings.AUTO_ROLE_ALLOW_NOT_LINKED,
+        true
+      );
+      await this.client.rolesManager.updateOne(
+        member.user,
+        member.guild.id,
+        true,
+        autoRoleAllowNotLinked
+      );
     }
   }
 }

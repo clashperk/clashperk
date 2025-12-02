@@ -34,7 +34,10 @@ export default class RushedCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction | ButtonInteraction<'cached'>, args: { clan?: string; tag?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction | ButtonInteraction<'cached'>,
+    args: { clan?: string; tag?: string; user?: User }
+  ) {
     if (args.clan && interaction.inCachedGuild()) {
       const clan = await this.client.resolver.resolveClan(interaction, args.clan);
       if (!clan) return null;
@@ -61,12 +64,30 @@ export default class RushedCommand extends Command {
       player: JSON.stringify({ ...payload, cmd: 'player' })
     };
 
-    const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
+    const refreshButton = new ButtonBuilder()
+      .setEmoji(EMOJIS.REFRESH)
+      .setStyle(ButtonStyle.Secondary)
+      .setCustomId(customIds.refresh);
     const mainRow = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(refreshButton)
-      .addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.units))
-      .addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
-      .addComponents(new ButtonBuilder().setLabel('Profile').setStyle(ButtonStyle.Primary).setCustomId(customIds.player));
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Units')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.units)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Upgrades')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.upgrades)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Profile')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.player)
+      );
 
     if (interaction.isMessageComponent()) {
       return interaction.editReply({
@@ -85,10 +106,16 @@ export default class RushedCommand extends Command {
     }));
 
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
+      new StringSelectMenuBuilder()
+        .setCustomId(customIds.accounts)
+        .setPlaceholder('Select an account!')
+        .addOptions(options)
     );
 
-    return interaction.editReply({ embeds: [embed], components: options.length > 1 ? [mainRow, menuRow] : [mainRow] });
+    return interaction.editReply({
+      embeds: [embed],
+      components: options.length > 1 ? [mainRow, menuRow] : [mainRow]
+    });
   }
 
   private embed(data: APIPlayer, locale: string) {
@@ -96,15 +123,23 @@ export default class RushedCommand extends Command {
 
     const apiTroops = unitsFlatten(data, { withEquipment: true });
     const Troops = RAW_TROOPS_WITH_ICONS.filter((unit) => {
-      const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
-      const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
+      const apiTroop = apiTroops.find(
+        (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+      );
+      const homeTroops =
+        unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
       // const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
       // return Boolean(homeTroops || builderTroops);
       return Boolean(homeTroops);
     });
 
     const TroopsObj = Troops.reduce<TroopJSON>((prev, curr) => {
-      const unlockBuilding = curr.category === 'hero' ? (curr.village === 'home' ? 'Town Hall' : 'Builder Hall') : curr.unlock.building;
+      const unlockBuilding =
+        curr.category === 'hero'
+          ? curr.village === 'home'
+            ? 'Town Hall'
+            : 'Builder Hall'
+          : curr.unlock.building;
       if (!(unlockBuilding in prev)) prev[unlockBuilding] = [];
       prev[unlockBuilding].push(curr);
       return prev;
@@ -163,7 +198,9 @@ export default class RushedCommand extends Command {
                 .map((chunks) =>
                   chunks
                     .map((unit) => {
-                      const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+                      const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[
+                        unit.name
+                      ];
                       const level = this.padStart(unit.level);
                       const maxLevel = this.padEnd(unit.hallMaxLevel);
                       return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
@@ -193,14 +230,24 @@ export default class RushedCommand extends Command {
     if (embed.data.fields?.length) {
       embed.setFooter({ text: `Total ${this.totalPercentage(data.townHallLevel, Troops.length)}` });
     } else {
-      embed.setDescription(this.i18n('command.rushed.no_rushed', { lng: locale, townhall: data.townHallLevel.toString() }));
+      embed.setDescription(
+        this.i18n('command.rushed.no_rushed', {
+          lng: locale,
+          townhall: data.townHallLevel.toString()
+        })
+      );
     }
     return embed;
   }
 
-  private async clan(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, data: APIClan) {
+  private async clan(
+    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+    data: APIClan
+  ) {
     if (data.members < 1) {
-      return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
+      return interaction.editReply(
+        this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name })
+      );
     }
 
     const fetched = await this.client.coc._getPlayers(data.memberList);
@@ -209,17 +256,22 @@ export default class RushedCommand extends Command {
       members.push({ name: obj.name, rushed: this.reduce(obj), townHallLevel: obj.townHallLevel });
     }
 
-    const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` }).setDescription(
-      [
-        'Rushed Percentage',
-        '```\u200eTH   LAB  HERO  NAME',
-        members
-          .sort((a, b) => Number(b.rushed.overall) - Number(a.rushed.overall))
-          .map((en) => `${this.padding(en.townHallLevel)}  ${this.per(en.rushed.lab)}  ${this.per(en.rushed.hero)}  ${en.name}`)
-          .join('\n'),
-        '```'
-      ].join('\n')
-    );
+    const embed = new EmbedBuilder()
+      .setAuthor({ name: `${data.name} (${data.tag})` })
+      .setDescription(
+        [
+          'Rushed Percentage',
+          '```\u200eTH   LAB  HERO  NAME',
+          members
+            .sort((a, b) => Number(b.rushed.overall) - Number(a.rushed.overall))
+            .map(
+              (en) =>
+                `${this.padding(en.townHallLevel)}  ${this.per(en.rushed.lab)}  ${this.per(en.rushed.hero)}  ${en.name}`
+            )
+            .join('\n'),
+          '```'
+        ].join('\n')
+      );
 
     return interaction.editReply({ embeds: [embed] });
   }
@@ -253,7 +305,9 @@ export default class RushedCommand extends Command {
     const apiTroops = unitsFlatten(data, { withEquipment: true });
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         if (unit.village === 'home' && unit.category !== 'hero') {
           prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
           prev.total += unit.levels[data.townHallLevel - 2];
@@ -270,7 +324,9 @@ export default class RushedCommand extends Command {
     const apiTroops = unitsFlatten(data, { withEquipment: true });
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         if (unit.category === 'hero' && unit.village === 'home') {
           prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
           prev.total += unit.levels[data.townHallLevel - 2];
@@ -287,7 +343,9 @@ export default class RushedCommand extends Command {
     const apiTroops = unitsFlatten(data, { withEquipment: true });
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         if (unit.village === 'home') {
           prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
           prev.total += unit.levels[data.townHallLevel - 2];
@@ -301,7 +359,9 @@ export default class RushedCommand extends Command {
   }
 
   private totalPercentage(hallLevel: number, rushed: number) {
-    const totalTroops = RAW_TROOPS_FILTERED.filter((unit) => unit.village === 'home' && unit.levels[hallLevel - 2] > 0);
+    const totalTroops = RAW_TROOPS_FILTERED.filter(
+      (unit) => unit.village === 'home' && unit.levels[hallLevel - 2] > 0
+    );
     return `${rushed}/${totalTroops.length} (${((rushed * 100) / totalTroops.length).toFixed(2)}%)`;
   }
 }

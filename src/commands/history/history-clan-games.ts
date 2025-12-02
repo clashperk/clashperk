@@ -18,7 +18,10 @@ export default class ClanGamesHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { embeds, result } = await this.getHistory(interaction, playerTags);
@@ -115,7 +118,11 @@ export default class ClanGamesHistoryCommand extends Command {
 
     result.sort((a, b) => b.seasons.length - a.seasons.length);
 
-    const displayClanTag = this.client.settings.get<boolean>(interaction.guild, Settings.DISPLAY_CLAN_TAG, false);
+    const displayClanTag = this.client.settings.get<boolean>(
+      interaction.guild,
+      Settings.DISPLAY_CLAN_TAG,
+      false
+    );
 
     const embeds: EmbedBuilder[] = [];
     for (const chunk of cluster(result, 10)) {
@@ -180,12 +187,22 @@ export default class ClanGamesHistoryCommand extends Command {
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.seasons[id]?.points ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...seasonIds.map((id) => r.seasons[id]?.points ?? 0)
+        ])
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`[${interaction.guild.name}] Clan Games History`, sheets);
-    return interaction.editReply({ content: '**Clan Games History**', components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `[${interaction.guild.name}] Clan Games History`,
+      sheets
+    );
+    return interaction.editReply({
+      content: '**Clan Games History**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 }
 

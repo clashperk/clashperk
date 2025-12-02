@@ -152,7 +152,8 @@ export default class ExportClanMembersCommand extends Command {
     members.sort((a, b) => sum(b.heroes, (x) => x.level) - sum(a.heroes, (x) => x.level));
     members.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-    if (!members.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!members.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const sheets: CreateGoogleSheet[] = [
       {
@@ -205,7 +206,13 @@ export default class ExportClanMembersCommand extends Command {
           { name: 'Rushed %', width: 100, align: 'RIGHT' },
           ...TROOP_LIST.map((name) => ({ name, width: 100, align: 'RIGHT' }))
         ],
-        rows: members.map((m) => [m.name, m.tag, m.townHallLevel, m.rushed, ...m.troops.map((h) => h.level)])
+        rows: members.map((m) => [
+          m.name,
+          m.tag,
+          m.townHallLevel,
+          m.rushed,
+          ...m.troops.map((h) => h.level)
+        ])
       },
       {
         title: 'Equipment',
@@ -215,7 +222,12 @@ export default class ExportClanMembersCommand extends Command {
           { name: 'Town-Hall', width: 100, align: 'RIGHT' },
           ...EQUIPMENT_LIST.map((name) => ({ name, width: 100, align: 'RIGHT' }))
         ],
-        rows: members.map((m) => [m.name, m.tag, m.townHallLevel, ...m.equipment.map((h) => h.level)])
+        rows: members.map((m) => [
+          m.name,
+          m.tag,
+          m.townHallLevel,
+          ...m.equipment.map((h) => h.level)
+        ])
       }
     ];
 
@@ -234,14 +246,19 @@ export default class ExportClanMembersCommand extends Command {
   }
 
   private getAchievements(data: APIPlayer) {
-    return achievements.map((name) => ({ name, value: data.achievements.find((en) => en.name === name)?.value ?? 0 }));
+    return achievements.map((name) => ({
+      name,
+      value: data.achievements.find((en) => en.name === name)?.value ?? 0
+    }));
   }
 
   private rushedPercentage(data: APIPlayer) {
     const apiTroops = this.apiTroops(data);
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         if (unit.village === 'home') {
           prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
           prev.total += unit.levels[data.townHallLevel - 2];
@@ -258,7 +275,9 @@ export default class ExportClanMembersCommand extends Command {
     const apiTroops = this.apiTroops(data);
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         if (unit.category !== 'hero' && unit.village === 'home') {
           prev.levels += apiTroop?.level ?? 0;
           prev.total += unit.levels[data.townHallLevel - 1];
@@ -275,7 +294,9 @@ export default class ExportClanMembersCommand extends Command {
     const apiTroops = this.apiTroops(data);
     const rem = RAW_TROOPS_FILTERED.reduce(
       (prev, unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         if (unit.category === 'hero' && unit.village === 'home') {
           prev.levels += apiTroop?.level ?? 0;
           prev.total += unit.levels[data.townHallLevel - 1];

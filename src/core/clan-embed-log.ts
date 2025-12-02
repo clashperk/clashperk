@@ -1,7 +1,12 @@
 import { Collections } from '@app/constants';
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import { Util } from 'clashofclans.js';
-import { Collection, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
+import {
+  Collection,
+  PermissionsString,
+  WebhookClient,
+  WebhookMessageCreateOptions
+} from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
 import { clanEmbedMaker } from '../helper/clan-embed.helper.js';
 import { Enqueuer } from './enqueuer.js';
@@ -53,7 +58,9 @@ export class ClanEmbedLog extends RootLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanEmbedLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: ClanEmbedLog.name
+      });
       return null;
     }
   }
@@ -62,7 +69,9 @@ export class ClanEmbedLog extends RootLog {
     try {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanEmbedLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: ClanEmbedLog.name
+      });
       return null;
     }
   }
@@ -113,7 +122,10 @@ export class ClanEmbedLog extends RootLog {
         if (this.queued.has(logId)) continue;
 
         this.queued.add(logId);
-        await this.exec(log.clanTag, { logType: ClanLogType.CLAN_EMBED_LOG, channel: log.channelId } satisfies Feed);
+        await this.exec(log.clanTag, {
+          logType: ClanLogType.CLAN_EMBED_LOG,
+          channel: log.channelId
+        } satisfies Feed);
         this.queued.delete(logId);
         await Util.delay(3000);
       }

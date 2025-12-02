@@ -64,14 +64,18 @@ export default class RosterManageCommand extends Command {
       target_group?: string;
     }
   ) {
-    if (!ObjectId.isValid(args.roster)) return interaction.respond([{ name: 'Invalid roster ID.', value: '0' }]);
+    if (!ObjectId.isValid(args.roster))
+      return interaction.respond([{ name: 'Invalid roster ID.', value: '0' }]);
     if (!args.action) return interaction.respond([{ name: 'No action was selected.', value: '0' }]);
 
     const rosterId = new ObjectId(args.roster);
     const focused = interaction.options.getFocused(true);
 
     if (focused.name === 'target_roster') {
-      if (args.action !== 'change-roster') return interaction.respond([{ name: 'This option is only for changing roster.', value: '0' }]);
+      if (args.action !== 'change-roster')
+        return interaction.respond([
+          { name: 'This option is only for changing roster.', value: '0' }
+        ]);
 
       const filter: Filter<IRoster> = {
         guildId: interaction.guild.id,
@@ -119,7 +123,8 @@ export default class RosterManageCommand extends Command {
       if (!args.target_group) cursor.sort({ _id: -1 });
 
       const categories = await cursor.limit(24).toArray();
-      if (!categories.length) return interaction.respond([{ value: '0', name: 'No categories found.' }]);
+      if (!categories.length)
+        return interaction.respond([{ value: '0', name: 'No categories found.' }]);
 
       return interaction.respond(
         categories.map((category) => ({
@@ -152,7 +157,10 @@ export default class RosterManageCommand extends Command {
       return interaction.respond(choices);
     }
 
-    const [clans, roster] = await Promise.all([this.client.storage.find(interaction.guild.id), this.client.rosterManager.get(rosterId)]);
+    const [clans, roster] = await Promise.all([
+      this.client.storage.find(interaction.guild.id),
+      this.client.rosterManager.get(rosterId)
+    ]);
     if (!roster) return interaction.respond([{ name: 'Roster was deleted.', value: '0' }]);
 
     const query: Filter<PlayersEntity> = {
@@ -165,11 +173,16 @@ export default class RosterManageCommand extends Command {
 
     if (args.player) {
       const text = args.player.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      query.$or = [{ name: { $regex: `.*${text}.*`, $options: 'i' } }, { tag: { $regex: `.*${text}.*`, $options: 'i' } }];
+      query.$or = [
+        { name: { $regex: `.*${text}.*`, $options: 'i' } },
+        { tag: { $regex: `.*${text}.*`, $options: 'i' } }
+      ];
     }
 
     const signedUp = roster.members.map((member) => member.tag);
-    const cursor = this.client.db.collection<PlayersEntity>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
+    const cursor = this.client.db
+      .collection<PlayersEntity>(Collections.PLAYERS)
+      .find(query, { projection: { name: 1, tag: 1 } });
     if (!args.player) cursor.sort({ lastSeen: -1 });
     const players = await cursor.limit(24).toArray();
     if (!players.length) return interaction.respond([{ name: 'No players found.', value: '0' }]);
@@ -194,7 +207,8 @@ export default class RosterManageCommand extends Command {
       action: 'add-user' | 'del-user' | 'change-roster' | 'change-category' | '/';
     }
   ) {
-    if (!ObjectId.isValid(args.roster)) return interaction.editReply({ content: 'Invalid roster ID.' });
+    if (!ObjectId.isValid(args.roster))
+      return interaction.editReply({ content: 'Invalid roster ID.' });
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
@@ -261,7 +275,10 @@ export default class RosterManageCommand extends Command {
             )
         );
 
-        const message = await interaction.editReply({ content: 'Select a CWL Round to add Players from.', components: [row] });
+        const message = await interaction.editReply({
+          content: 'Select a CWL Round to add Players from.',
+          components: [row]
+        });
 
         return createInteractionCollector({
           customIds,
@@ -284,7 +301,11 @@ export default class RosterManageCommand extends Command {
       }
 
       if (!args.player) {
-        return this.addUsers(interaction, { roster, user: args.user, categoryId: args.target_group });
+        return this.addUsers(interaction, {
+          roster,
+          user: args.user,
+          categoryId: args.target_group
+        });
       }
 
       const player = await this.client.resolver.resolvePlayer(interaction, args.player);
@@ -315,7 +336,8 @@ export default class RosterManageCommand extends Command {
       }
       const playerTag = this.client.coc.fixTag(args.player);
 
-      if (!ObjectId.isValid(args.target_roster)) return interaction.editReply({ content: 'Invalid target roster ID.' });
+      if (!ObjectId.isValid(args.target_roster))
+        return interaction.editReply({ content: 'Invalid target roster ID.' });
       const newRosterId = new ObjectId(args.target_roster);
 
       if (args.target_group && !ObjectId.isValid(args.target_group)) {
@@ -375,15 +397,24 @@ export default class RosterManageCommand extends Command {
       });
       if (!swapped) return null;
 
-      return interaction.editReply({ content: 'Players moved to the new user group.', components: [] });
+      return interaction.editReply({
+        content: 'Players moved to the new user group.',
+        components: []
+      });
     }
   }
 
   private async changeCategory(
     interaction: CommandInteraction<'cached'>,
-    { roster, playerTag, user, categoryId }: { roster: WithId<IRoster>; playerTag?: string; user?: User; categoryId?: string }
+    {
+      roster,
+      playerTag,
+      user,
+      categoryId
+    }: { roster: WithId<IRoster>; playerTag?: string; user?: User; categoryId?: string }
   ) {
-    if (categoryId && !ObjectId.isValid(categoryId)) return interaction.editReply({ content: 'Invalid target group ID.' });
+    if (categoryId && !ObjectId.isValid(categoryId))
+      return interaction.editReply({ content: 'Invalid target group ID.' });
 
     const playerCustomIds: Record<string, string> = {
       0: this.client.uuid(interaction.user.id),
@@ -413,7 +444,9 @@ export default class RosterManageCommand extends Command {
     }
     if (categoryId) {
       selected.categoryId = categoryId;
-      selected.targetCategory = await this.client.rosterManager.getCategory(new ObjectId(categoryId));
+      selected.targetCategory = await this.client.rosterManager.getCategory(
+        new ObjectId(categoryId)
+      );
     }
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
@@ -466,7 +499,10 @@ export default class RosterManageCommand extends Command {
       return _playerRows;
     };
 
-    const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(0);
+    const userMenu = new UserSelectMenuBuilder()
+      .setCustomId(customIds.user)
+      .setPlaceholder('Select User')
+      .setMinValues(0);
     const userRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userMenu);
 
     const confirmButton = new ButtonBuilder()
@@ -486,7 +522,11 @@ export default class RosterManageCommand extends Command {
       .setCustomId(customIds.category)
       .setStyle(ButtonStyle.Secondary);
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, categorySelectButton, deselectButton);
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      confirmButton,
+      categorySelectButton,
+      deselectButton
+    );
 
     const headerTexts = [
       '**Changing User Group**',
@@ -500,7 +540,11 @@ export default class RosterManageCommand extends Command {
       let messageTexts = [...headerTexts, ''];
 
       if (selected.targetCategory) {
-        messageTexts = [...messageTexts, '- Group selected:', `  - **\u200e${selected.targetCategory.displayName}**`];
+        messageTexts = [
+          ...messageTexts,
+          '- Group selected:',
+          `  - **\u200e${selected.targetCategory.displayName}**`
+        ];
       }
 
       if (selected.user) {
@@ -575,7 +619,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const selectUser = async (action: UserSelectMenuInteraction<'cached'>) => {
@@ -586,7 +633,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ..._playerRows, buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ..._playerRows, buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const playerTagsMap: Record<string, string[]> = {};
@@ -596,7 +646,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const chooseCategory = async (action: ButtonInteraction<'cached'>) => {
@@ -611,7 +664,9 @@ export default class RosterManageCommand extends Command {
             default: selected.categoryId === category._id.toHexString()
           }))
         );
-      const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+      const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        rosterMenu
+      );
 
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
       return action.update({ components: [rosterMenuRow, buttonRow] });
@@ -621,13 +676,20 @@ export default class RosterManageCommand extends Command {
       selected.categoryId = action.values.at(0)!;
 
       const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
-      if (!target) return action.reply({ content: 'Target group was deleted.', flags: MessageFlags.Ephemeral });
+      if (!target)
+        return action.reply({
+          content: 'Target group was deleted.',
+          flags: MessageFlags.Ephemeral
+        });
 
       selected.targetCategory = target;
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetCategory));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     createInteractionCollector({
@@ -657,10 +719,18 @@ export default class RosterManageCommand extends Command {
       user,
       categoryId,
       rosterId
-    }: { roster: WithId<IRoster>; playerTag?: string; user?: User; categoryId?: string; rosterId?: string }
+    }: {
+      roster: WithId<IRoster>;
+      playerTag?: string;
+      user?: User;
+      categoryId?: string;
+      rosterId?: string;
+    }
   ) {
-    if (rosterId && !ObjectId.isValid(rosterId)) return interaction.editReply({ content: 'Invalid target roster ID.' });
-    if (categoryId && !ObjectId.isValid(categoryId)) return interaction.editReply({ content: 'Invalid target group ID.' });
+    if (rosterId && !ObjectId.isValid(rosterId))
+      return interaction.editReply({ content: 'Invalid target roster ID.' });
+    if (categoryId && !ObjectId.isValid(categoryId))
+      return interaction.editReply({ content: 'Invalid target group ID.' });
 
     const playerCustomIds: Record<string, string> = {
       0: this.client.uuid(interaction.user.id),
@@ -694,15 +764,22 @@ export default class RosterManageCommand extends Command {
     }
     if (categoryId) {
       selected.categoryId = categoryId;
-      selected.targetCategory = await this.client.rosterManager.getCategory(new ObjectId(categoryId));
+      selected.targetCategory = await this.client.rosterManager.getCategory(
+        new ObjectId(categoryId)
+      );
     }
     if (rosterId) {
       selected.rosterId = rosterId;
       selected.targetRoster = await this.client.rosterManager.get(new ObjectId(rosterId));
     }
 
-    const rosters = await this.client.rosterManager.query({ guildId: interaction.guild.id, _id: { $ne: roster._id }, closed: false });
-    if (!rosters.length) return interaction.editReply({ content: 'No rosters found.', components: [] });
+    const rosters = await this.client.rosterManager.query({
+      guildId: interaction.guild.id,
+      _id: { $ne: roster._id },
+      closed: false
+    });
+    if (!rosters.length)
+      return interaction.editReply({ content: 'No rosters found.', components: [] });
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
 
@@ -753,7 +830,10 @@ export default class RosterManageCommand extends Command {
       return _playerRows;
     };
 
-    const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(0);
+    const userMenu = new UserSelectMenuBuilder()
+      .setCustomId(customIds.user)
+      .setPlaceholder('Select User')
+      .setMinValues(0);
     const userRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userMenu);
 
     const confirmButton = new ButtonBuilder()
@@ -768,14 +848,20 @@ export default class RosterManageCommand extends Command {
       .setStyle(ButtonStyle.Danger)
       .setDisabled(false);
 
-    const rosterSelectButton = new ButtonBuilder().setLabel('Select Roster').setCustomId(customIds.roster).setStyle(ButtonStyle.Secondary);
+    const rosterSelectButton = new ButtonBuilder()
+      .setLabel('Select Roster')
+      .setCustomId(customIds.roster)
+      .setStyle(ButtonStyle.Secondary);
 
     const categorySelectButton = new ButtonBuilder()
       .setLabel('Select Group')
       .setCustomId(customIds.category)
       .setStyle(ButtonStyle.Secondary);
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, rosterSelectButton);
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      confirmButton,
+      rosterSelectButton
+    );
     if (categories.length) buttonRow.addComponents(categorySelectButton);
     buttonRow.addComponents(deselectButton);
 
@@ -790,11 +876,19 @@ export default class RosterManageCommand extends Command {
       const options = getOptions();
       let messageTexts = [...headerTexts, ''];
       if (selected.targetRoster) {
-        messageTexts = [...messageTexts, '- Roster selected:', `  - **\u200e${rosterLabel(selected.targetRoster)}**`];
+        messageTexts = [
+          ...messageTexts,
+          '- Roster selected:',
+          `  - **\u200e${rosterLabel(selected.targetRoster)}**`
+        ];
       }
 
       if (selected.targetCategory) {
-        messageTexts = [...messageTexts, '- Group selected:', `  - **\u200e${selected.targetCategory.displayName}**`];
+        messageTexts = [
+          ...messageTexts,
+          '- Group selected:',
+          `  - **\u200e${selected.targetCategory.displayName}**`
+        ];
       }
 
       if (selected.user) {
@@ -865,9 +959,10 @@ export default class RosterManageCommand extends Command {
 
       const errored = result.some((res) => !res.success);
       if (errored) {
-        const content = ['**Failed to move a few accounts!**', ...result.filter((res) => !res.success).map((res) => res.message)].join(
-          '\n'
-        );
+        const content = [
+          '**Failed to move a few accounts!**',
+          ...result.filter((res) => !res.success).map((res) => res.message)
+        ].join('\n');
         return action.editReply({ content, embeds: [], components: [] });
       }
       return action.editReply({ content: 'Players moved successfully.', components: [] });
@@ -884,7 +979,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const selectUser = async (action: UserSelectMenuInteraction<'cached'>) => {
@@ -895,7 +993,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ..._playerRows, buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ..._playerRows, buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const playerTagsMap: Record<string, string[]> = {};
@@ -905,7 +1006,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const chooseCategory = async (action: ButtonInteraction<'cached'>) => {
@@ -920,7 +1024,9 @@ export default class RosterManageCommand extends Command {
             default: selected.categoryId === category._id.toHexString()
           }))
         );
-      const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+      const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        rosterMenu
+      );
 
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
       return action.update({ components: [rosterMenuRow, buttonRow] });
@@ -939,7 +1045,9 @@ export default class RosterManageCommand extends Command {
             default: selected.rosterId === roster._id.toHexString()
           }))
         );
-      const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+      const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        rosterMenu
+      );
 
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
       return action.update({ components: [rosterMenuRow, buttonRow] });
@@ -949,28 +1057,45 @@ export default class RosterManageCommand extends Command {
       selected.categoryId = action.values.at(0)!;
 
       const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
-      if (!target) return action.reply({ content: 'Target group was deleted.', flags: MessageFlags.Ephemeral });
+      if (!target)
+        return action.reply({
+          content: 'Target group was deleted.',
+          flags: MessageFlags.Ephemeral
+        });
 
       selected.targetCategory = target;
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const selectRoster = async (action: StringSelectMenuInteraction<'cached'>) => {
       selected.rosterId = action.values.at(0)!;
       if (roster._id.toHexString() === selected.rosterId) {
-        return action.reply({ content: 'You cannot move a user to the same roster.', flags: MessageFlags.Ephemeral });
+        return action.reply({
+          content: 'You cannot move a user to the same roster.',
+          flags: MessageFlags.Ephemeral
+        });
       }
       const target = await this.client.rosterManager.get(new ObjectId(selected.rosterId));
-      if (!target) return action.reply({ content: 'Target roster was deleted.', flags: MessageFlags.Ephemeral });
+      if (!target)
+        return action.reply({
+          content: 'Target roster was deleted.',
+          flags: MessageFlags.Ephemeral
+        });
 
       selected.targetRoster = target;
       confirmButton.setDisabled(!(selected.playerTags.length && selected.targetRoster));
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     createInteractionCollector({
@@ -1073,7 +1198,10 @@ export default class RosterManageCommand extends Command {
       return _playerRows;
     };
 
-    const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(0);
+    const userMenu = new UserSelectMenuBuilder()
+      .setCustomId(customIds.user)
+      .setPlaceholder('Select User')
+      .setMinValues(0);
     const userRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userMenu);
 
     const confirmButton = new ButtonBuilder()
@@ -1081,9 +1209,15 @@ export default class RosterManageCommand extends Command {
       .setCustomId(customIds.confirm)
       .setStyle(ButtonStyle.Primary)
       .setDisabled(!selected.playerTags.length);
-    const deselectButton = new ButtonBuilder().setLabel('Deselect').setCustomId(customIds.deselect).setStyle(ButtonStyle.Danger);
+    const deselectButton = new ButtonBuilder()
+      .setLabel('Deselect')
+      .setCustomId(customIds.deselect)
+      .setStyle(ButtonStyle.Danger);
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, deselectButton);
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      confirmButton,
+      deselectButton
+    );
 
     const headerTexts = [
       '**Removing Roster Users**',
@@ -1128,7 +1262,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!selected.playerTags.length);
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const selectUsers = async (action: UserSelectMenuInteraction<'cached'>) => {
@@ -1139,7 +1276,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!selected.playerTags.length);
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ..._playerRows, buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ..._playerRows, buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const deselect = async (action: ButtonInteraction<'cached'>) => {
@@ -1150,7 +1290,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!selected.playerTags.length);
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const confirm = async (action: ButtonInteraction<'cached'>) => {
@@ -1230,7 +1373,10 @@ export default class RosterManageCommand extends Command {
     };
 
     if (clan) {
-      const players = await this.client.rosterManager.getClanMemberLinks(clan.playerTags, roster.allowUnlinked);
+      const players = await this.client.rosterManager.getClanMemberLinks(
+        clan.playerTags,
+        roster.allowUnlinked
+      );
       selected.players = players;
       selected.playerTags = players.map((player) => player.tag);
     }
@@ -1251,7 +1397,9 @@ export default class RosterManageCommand extends Command {
 
     if (categoryId) {
       selected.categoryId = categoryId;
-      selected.targetCategory = await this.client.rosterManager.getCategory(new ObjectId(categoryId));
+      selected.targetCategory = await this.client.rosterManager.getCategory(
+        new ObjectId(categoryId)
+      );
     }
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
@@ -1294,7 +1442,10 @@ export default class RosterManageCommand extends Command {
       return _playerRows;
     };
 
-    const userMenu = new UserSelectMenuBuilder().setCustomId(customIds.user).setPlaceholder('Select User').setMinValues(1);
+    const userMenu = new UserSelectMenuBuilder()
+      .setCustomId(customIds.user)
+      .setPlaceholder('Select User')
+      .setMinValues(1);
     if (clan && selected.players.length) {
       userMenu.setPlaceholder(clan.name);
       userMenu.setDisabled(true);
@@ -1325,7 +1476,10 @@ export default class RosterManageCommand extends Command {
       .setStyle(ButtonStyle.Danger)
       .setDisabled(false);
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, bulkAddButton);
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      confirmButton,
+      bulkAddButton
+    );
     if (categories.length) buttonRow.addComponents(categorySelectButton);
     buttonRow.addComponents(deselectButton);
 
@@ -1341,7 +1495,11 @@ export default class RosterManageCommand extends Command {
       let messageTexts = [...headerTexts, ''];
 
       if (selected.targetCategory) {
-        messageTexts = [...messageTexts, '- Group selected:', `  - **\u200e${selected.targetCategory.displayName}**`];
+        messageTexts = [
+          ...messageTexts,
+          '- Group selected:',
+          `  - **\u200e${selected.targetCategory.displayName}**`
+        ];
       }
 
       if (selected.user) {
@@ -1387,7 +1545,10 @@ export default class RosterManageCommand extends Command {
       confirmButton.setDisabled(!selected.playerTags.length);
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const selectUsers = async (action: UserSelectMenuInteraction<'cached'>) => {
@@ -1412,7 +1573,10 @@ export default class RosterManageCommand extends Command {
       }
 
       const messageTexts = getTexts();
-      return action.editReply({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.editReply({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const bulkAdd = async (action: ButtonInteraction<'cached'>) => {
@@ -1457,9 +1621,14 @@ export default class RosterManageCommand extends Command {
         confirmButton.setDisabled(!selected.playerTags.length);
 
         const messageTexts = getTexts();
-        return await modalSubmit.editReply({ components: [buttonRow], content: messageTexts.join('\n') });
+        return await modalSubmit.editReply({
+          components: [buttonRow],
+          content: messageTexts.join('\n')
+        });
       } catch (e) {
-        if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+        if (
+          !(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)
+        ) {
           throw e;
         }
       }
@@ -1469,13 +1638,20 @@ export default class RosterManageCommand extends Command {
       selected.categoryId = action.values.at(0)!;
 
       const target = await this.client.rosterManager.getCategory(new ObjectId(selected.categoryId));
-      if (!target) return action.reply({ content: 'Target group was deleted.', flags: MessageFlags.Ephemeral });
+      if (!target)
+        return action.reply({
+          content: 'Target group was deleted.',
+          flags: MessageFlags.Ephemeral
+        });
 
       selected.targetCategory = target;
       confirmButton.setDisabled(!selected.playerTags.length);
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const chooseCategory = async (action: ButtonInteraction<'cached'>) => {
@@ -1490,7 +1666,9 @@ export default class RosterManageCommand extends Command {
             default: selected.categoryId === category._id.toHexString()
           }))
         );
-      const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rosterMenu);
+      const rosterMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        rosterMenu
+      );
 
       confirmButton.setDisabled(!selected.playerTags.length);
       return action.update({ components: [rosterMenuRow, buttonRow] });
@@ -1507,7 +1685,10 @@ export default class RosterManageCommand extends Command {
       userMenu.setPlaceholder('Select User');
 
       const messageTexts = getTexts();
-      return action.update({ components: [userRow, ...playerRows(), buttonRow], content: messageTexts.join('\n') });
+      return action.update({
+        components: [userRow, ...playerRows(), buttonRow],
+        content: messageTexts.join('\n')
+      });
     };
 
     const confirm = async (action: ButtonInteraction<'cached'>) => {
@@ -1547,7 +1728,10 @@ export default class RosterManageCommand extends Command {
 
       const errored = result.some((res) => !res.success);
       if (errored) {
-        const content = ['**Failed to add a few players!**', ...result.filter((res) => !res.success).map((res) => res.message)].join('\n');
+        const content = [
+          '**Failed to add a few players!**',
+          ...result.filter((res) => !res.success).map((res) => res.message)
+        ].join('\n');
         // TODO: Fix
         return action.editReply({
           content: content.length > 2000 ? Util.splitMessage(content)[0] : content,

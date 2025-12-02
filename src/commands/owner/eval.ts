@@ -29,12 +29,17 @@ export default class EvalCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction, { code, depth, shard }: { code: string; depth?: number; shard?: boolean }) {
+  public async exec(
+    interaction: CommandInteraction,
+    { code, depth, shard }: { code: string; depth?: number; shard?: boolean }
+  ) {
     let hrDiff;
     let evaled;
     try {
       const hrStart = process.hrtime();
-      evaled = await (shard ? this.client.cluster.broadcastEval((client, code) => eval(code), { context: code }) : eval(code));
+      evaled = await (shard
+        ? this.client.cluster.broadcastEval((client, code) => eval(code), { context: code })
+        : eval(code));
       hrDiff = process.hrtime(hrStart);
     } catch (error) {
       return interaction.followUp({
@@ -45,7 +50,9 @@ export default class EvalCommand extends Command {
 
     const result = this._result(evaled, hrDiff, depth, shard);
     if (Array.isArray(result)) {
-      return result.slice(0, 5).map((content) => interaction.followUp({ content, flags: MessageFlags.Ephemeral }));
+      return result
+        .slice(0, 5)
+        .map((content) => interaction.followUp({ content, flags: MessageFlags.Ephemeral }));
     }
     return interaction.followUp({ content: result as string, flags: MessageFlags.Ephemeral });
   }
@@ -58,24 +65,34 @@ export default class EvalCommand extends Command {
 
     const split = inspected.split('\n');
     const last = inspected.length - 1;
-    const prependPart = !inspected.startsWith('{') && !inspected.startsWith('[') && !inspected.startsWith("'") ? split[0] : inspected[0];
+    const prependPart =
+      !inspected.startsWith('{') && !inspected.startsWith('[') && !inspected.startsWith("'")
+        ? split[0]
+        : inspected[0];
     const appendPart =
-      inspected[last] !== '}' && inspected[last] !== ']' && inspected[last] !== "'" ? split[split.length - 1] : inspected[last];
+      inspected[last] !== '}' && inspected[last] !== ']' && inspected[last] !== "'"
+        ? split[split.length - 1]
+        : inspected[last];
     const prepend = `\`\`\`js\n${prependPart}\n`;
     const append = `\n${appendPart}\n\`\`\``;
 
-    return Util.splitMessage(`*Executed in ${this.totalTime(hrDiff).toFixed(2)}ms* \`\`\`js\n${inspected}\`\`\``, {
-      maxLength: 1900,
-      prepend,
-      append
-    });
+    return Util.splitMessage(
+      `*Executed in ${this.totalTime(hrDiff).toFixed(2)}ms* \`\`\`js\n${inspected}\`\`\``,
+      {
+        maxLength: 1900,
+        prepend,
+        append
+      }
+    );
   }
 
   private get replaceToken() {
     if (!this._replaceToken) {
       const token = this.client.token!.split('').join('[^]{0,2}');
       const revToken = this.client.token!.split('').reverse().join('[^]{0,2}');
-      Object.defineProperty(this, '_replaceToken', { value: new RegExp(`${token}|${revToken}`, 'g') });
+      Object.defineProperty(this, '_replaceToken', {
+        value: new RegExp(`${token}|${revToken}`, 'g')
+      });
     }
     return this._replaceToken;
   }

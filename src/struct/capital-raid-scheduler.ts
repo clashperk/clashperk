@@ -49,7 +49,8 @@ export class CapitalRaidScheduler {
     const today = new Date();
     const weekDay = today.getUTCDay();
     const hours = today.getUTCHours();
-    const isRaidWeek = (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
+    const isRaidWeek =
+      (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
     today.setUTCDate(today.getUTCDate() - today.getUTCDay());
     if (weekDay < 5 || (weekDay <= 5 && hours < 7)) today.setDate(today.getUTCDate() - 7);
     today.setUTCDate(today.getUTCDate() + 5);
@@ -84,7 +85,11 @@ export class CapitalRaidScheduler {
         const id: string = change.documentKey._id.toHexString();
         if (this.queued.has(id)) this.clear(id);
         const schedule = change.fullDocument;
-        if (schedule && !schedule.triggered && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
+        if (
+          schedule &&
+          !schedule.triggered &&
+          schedule.timestamp.getTime() < Date.now() + this.refreshRate
+        ) {
           this.queue(schedule);
         }
       }
@@ -180,7 +185,10 @@ export class CapitalRaidScheduler {
   }
 
   public async getReminderText(
-    reminder: Pick<RaidRemindersEntity, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly' | 'minThreshold'>,
+    reminder: Pick<
+      RaidRemindersEntity,
+      'roles' | 'remaining' | 'guild' | 'message' | 'allMembers' | 'linkedOnly' | 'minThreshold'
+    >,
     schedule: Pick<RaidSchedulersEntity, 'tag'>,
     data: Required<APICapitalRaidSeason>
   ): Promise<[string | null, string[]]> {
@@ -217,7 +225,14 @@ export class CapitalRaidScheduler {
           townHallLevel: player.townHallLevel
         };
       })
-      .concat(missingMembers.map((mem) => ({ ...mem, role: 'member', isParticipating: true, townHallLevel: MAX_TOWN_HALL_LEVEL })))
+      .concat(
+        missingMembers.map((mem) => ({
+          ...mem,
+          role: 'member',
+          isParticipating: true,
+          townHallLevel: MAX_TOWN_HALL_LEVEL
+        }))
+      )
       .filter((player) => player.townHallLevel > 5)
       .filter((m) => !unwantedMembers.includes(m.tag))
       .filter((m) => (reminder.allMembers ? m.attacks >= 0 : m.attacks >= 1))
@@ -311,11 +326,13 @@ export class CapitalRaidScheduler {
       const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
       if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_NOT_FOUND);
 
-      if (!this.client.channels.cache.has(reminder.channel)) return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
+      if (!this.client.channels.cache.has(reminder.channel))
+        return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
 
       const data = await this.getLastRaidSeason(schedule.tag);
       if (!data) return this.clear(id);
-      if (this.toDate(data.endTime).getTime() < Date.now()) return await this.delete(schedule, ReminderDeleteReasons.TOO_LATE);
+      if (this.toDate(data.endTime).getTime() < Date.now())
+        return await this.delete(schedule, ReminderDeleteReasons.TOO_LATE);
 
       if (this.wasInMaintenance(schedule, data)) {
         this.client.logger.info(
@@ -324,7 +341,11 @@ export class CapitalRaidScheduler {
         );
         return await this.schedulers.updateOne(
           { _id: schedule._id },
-          { $set: { timestamp: new Date(moment(data.endTime).toDate().getTime() - schedule.duration) } }
+          {
+            $set: {
+              timestamp: new Date(moment(data.endTime).toDate().getTime() - schedule.duration)
+            }
+          }
         );
       }
 
@@ -342,10 +363,13 @@ export class CapitalRaidScheduler {
       ]);
       if (channel) {
         if (channel.isThread) reminder.threadId = channel.channel.id;
-        const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
+        const webhook = reminder.webhook
+          ? new WebhookClient(reminder.webhook)
+          : await this.webhook(channel.parent, reminder);
 
         for (const content of Util.splitMessage(`${text}\n\u200b`)) {
-          if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
+          if (webhook)
+            await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
         }
       } else {
         return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
@@ -392,11 +416,17 @@ export class CapitalRaidScheduler {
     }
   }
 
-  private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<RaidRemindersEntity>) {
+  private async webhook(
+    channel: TextChannel | NewsChannel | ForumChannel | MediaChannel,
+    reminder: WithId<RaidRemindersEntity>
+  ) {
     const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
     if (webhook) {
       reminder.webhook = { id: webhook.id, token: webhook.token! };
-      await this.reminders.updateOne({ _id: reminder._id }, { $set: { webhook: { id: webhook.id, token: webhook.token! } } });
+      await this.reminders.updateOne(
+        { _id: reminder._id },
+        { $set: { webhook: { id: webhook.id, token: webhook.token! } } }
+      );
       return new WebhookClient({ id: webhook.id, token: webhook.token! });
     }
     return null;
@@ -409,7 +439,10 @@ export class CapitalRaidScheduler {
     if (!config.raids || !guild) return { parse: ['users'] };
 
     if (config.type === 'optIn') {
-      return { parse: [], users: userIds.filter((id) => config.raidsExclusionUserIds.includes(id)) };
+      return {
+        parse: [],
+        users: userIds.filter((id) => config.raidsExclusionUserIds.includes(id))
+      };
     }
 
     return { parse: [], users: userIds.filter((id) => !config.raidsExclusionUserIds.includes(id)) };
@@ -423,7 +456,9 @@ export class CapitalRaidScheduler {
   }
 
   private async _refresh() {
-    const cursor = this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } });
+    const cursor = this.schedulers.find({
+      timestamp: { $lt: new Date(Date.now() + this.refreshRate) }
+    });
 
     const now = new Date().getTime();
     for await (const schedule of cursor) {

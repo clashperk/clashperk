@@ -1,6 +1,12 @@
 import { Collections, Settings } from '@app/constants';
 import { FlagsEntity } from '@app/entities';
-import { AutocompleteInteraction, CommandInteraction, EmbedBuilder, escapeMarkdown, time } from 'discord.js';
+import {
+  AutocompleteInteraction,
+  CommandInteraction,
+  EmbedBuilder,
+  escapeMarkdown,
+  time
+} from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
 import { Command } from '../../lib/handlers.js';
@@ -31,15 +37,19 @@ export default class FlagCreateCommand extends Command {
       dm_user?: boolean;
     }
   ) {
-    const tags = (await this.client.resolver.resolveArgs(args.player)).filter((tag) => this.client.coc.isValidTag(tag));
+    const tags = (await this.client.resolver.resolveArgs(args.player)).filter((tag) =>
+      this.client.coc.isValidTag(tag)
+    );
     if (!tags.length) return interaction.editReply('No players were found against this query.');
 
     if (!args.reason) return interaction.editReply('You must provide a reason to flag.');
-    if (args.reason.length > 900) return interaction.editReply('Reason must be 1024 or fewer in length.');
+    if (args.reason.length > 900)
+      return interaction.editReply('Reason must be 1024 or fewer in length.');
 
-    const flagCount = await this.client.db
-      .collection(Collections.FLAGS)
-      .countDocuments({ guild: interaction.guild.id, $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }] });
+    const flagCount = await this.client.db.collection(Collections.FLAGS).countDocuments({
+      guild: interaction.guild.id,
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }]
+    });
     if (flagCount >= 1000 && !this.client.subscribers.has(interaction.guild.id)) {
       const embed = new EmbedBuilder().setDescription(
         [
@@ -72,12 +82,16 @@ export default class FlagCreateCommand extends Command {
         name: player.name,
         flagImpact: args.flag_impact ?? 1,
         reason: escapeMarkdown(args.reason),
-        expiresAt: args.flag_expiry_days ? moment().add(args.flag_expiry_days, 'days').toDate() : null,
+        expiresAt: args.flag_expiry_days
+          ? moment().add(args.flag_expiry_days, 'days').toDate()
+          : null,
         createdAt: new Date()
       });
 
       try {
-        const link = args.dm_user && (await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag: player.tag }));
+        const link =
+          args.dm_user &&
+          (await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag: player.tag }));
         const user = link && (await this.client.users.fetch(link.userId));
         if (user) {
           await user.send(
@@ -115,7 +129,12 @@ export default class FlagCreateCommand extends Command {
         `**Reason**\n${flag.reason}`,
         '',
         '**Players**',
-        newFlags.map((flag) => `\u200e[${flag.name} (${flag.tag})](http://cprk.us/p/${flag.tag.replace('#', '')})`).join('\n')
+        newFlags
+          .map(
+            (flag) =>
+              `\u200e[${flag.name} (${flag.tag})](http://cprk.us/p/${flag.tag.replace('#', '')})`
+          )
+          .join('\n')
       ].join('\n')
     );
 

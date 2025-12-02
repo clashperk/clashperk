@@ -12,25 +12,45 @@ export default class AutoTownHallRoleCommand extends Command {
       category: 'roles',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
-      clientPermissions: ['EmbedLinks', 'ManageRoles', 'SendMessagesInThreads', 'SendMessages', 'ViewChannel', 'UseExternalEmojis'],
+      clientPermissions: [
+        'EmbedLinks',
+        'ManageRoles',
+        'SendMessagesInThreads',
+        'SendMessages',
+        'ViewChannel',
+        'UseExternalEmojis'
+      ],
       defer: true
     });
   }
 
-  public refine(interaction: ButtonInteraction | CommandInteraction, args: { user_or_role?: Role | User }) {
+  public refine(
+    interaction: ButtonInteraction | CommandInteraction,
+    args: { user_or_role?: Role | User }
+  ) {
     return {
       ...this.options,
-      roleKey: args.user_or_role && args.user_or_role instanceof User ? Settings.LINKS_MANAGER_ROLE : null,
+      roleKey:
+        args.user_or_role && args.user_or_role instanceof User ? Settings.LINKS_MANAGER_ROLE : null,
       ephemeral: interaction.isButton()
     } satisfies CommandOptions;
   }
 
   public async exec(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: { is_test_run?: boolean; user_or_role?: User | Role; force_refresh?: boolean; nickname_only?: boolean }
+    args: {
+      is_test_run?: boolean;
+      user_or_role?: User | Role;
+      force_refresh?: boolean;
+      nickname_only?: boolean;
+    }
   ) {
     if (interaction.isButton() || (args.user_or_role && args.user_or_role instanceof User)) {
-      args.force_refresh ??= this.client.settings.get<boolean>(interaction.guild, Settings.FORCE_REFRESH_ROLES, false);
+      args.force_refresh ??= this.client.settings.get<boolean>(
+        interaction.guild,
+        Settings.FORCE_REFRESH_ROLES,
+        false
+      );
     }
 
     const inProgress = this.client.rolesManager.getChangeLogs(interaction.guildId);
@@ -80,7 +100,8 @@ export default class AutoTownHallRoleCommand extends Command {
         changes.forEach(({ included, excluded, nickname, userId, displayName }, itemIndex) => {
           const values = [`> \u200e${displayName} | <@${userId}>`];
           if (included.length) values.push(`**+** ${included.map((id) => `<@&${id}>`).join(' ')}`);
-          if (excluded.length) values.push(`**-** ~~${excluded.map((id) => `<@&${id}>`).join(' ')}~~`);
+          if (excluded.length)
+            values.push(`**-** ~~${excluded.map((id) => `<@&${id}>`).join(' ')}~~`);
           if (nickname) values.push(nickname);
 
           roleChangeEmbed.addFields({
@@ -96,9 +117,14 @@ export default class AutoTownHallRoleCommand extends Command {
       }
 
       if (closed) {
-        return handleMessagePagination(interaction.user.id, message, embeds.length ? embeds : [embed], (action) => {
-          this.onExport(action, embeds);
-        });
+        return handleMessagePagination(
+          interaction.user.id,
+          message,
+          embeds.length ? embeds : [embed],
+          (action) => {
+            this.onExport(action, embeds);
+          }
+        );
       } else {
         return message.edit({ embeds: [embeds.length ? embeds.at(-1)! : embed] });
       }
@@ -136,7 +162,10 @@ export default class AutoTownHallRoleCommand extends Command {
     }
   }
 
-  private async onExport(interaction: ButtonInteraction<'cached'>, [embed, ...embeds]: EmbedBuilder[]) {
+  private async onExport(
+    interaction: ButtonInteraction<'cached'>,
+    [embed, ...embeds]: EmbedBuilder[]
+  ) {
     await interaction.editReply({ embeds: [embed], components: [] });
     for (const embed of embeds) await interaction.followUp({ embeds: [embed] });
   }

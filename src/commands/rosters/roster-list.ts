@@ -1,5 +1,11 @@
 import { Settings } from '@app/constants';
-import { ButtonInteraction, CommandInteraction, EmbedBuilder, User, escapeMarkdown } from 'discord.js';
+import {
+  ButtonInteraction,
+  CommandInteraction,
+  EmbedBuilder,
+  User,
+  escapeMarkdown
+} from 'discord.js';
 import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
 import { IRoster, ROSTER_MAX_LIMIT, rosterLabel } from '../../struct/roster-manager.js';
@@ -35,12 +41,26 @@ export default class RosterListCommand extends Command {
 
     const isQuery = Object.keys(query).length > 1;
     const filter = args.user
-      ? { $filter: { input: '$members', as: 'member', cond: { $eq: ['$$member.userId', args.user.id] } } }
+      ? {
+          $filter: {
+            input: '$members',
+            as: 'member',
+            cond: { $eq: ['$$member.userId', args.user.id] }
+          }
+        }
       : args.player
-        ? { $filter: { input: '$members', as: 'member', cond: { $eq: ['$$member.tag', args.player] } } }
+        ? {
+            $filter: {
+              input: '$members',
+              as: 'member',
+              cond: { $eq: ['$$member.tag', args.player] }
+            }
+          }
         : null;
 
-    const cursor = this.client.rosterManager.rosters.aggregate<WithId<IRoster & { memberCount: number }>>([
+    const cursor = this.client.rosterManager.rosters.aggregate<
+      WithId<IRoster & { memberCount: number }>
+    >([
       { $match: { ...query } },
       {
         $set: {
@@ -53,7 +73,9 @@ export default class RosterListCommand extends Command {
     const rosters = await cursor.toArray();
 
     const embeds: EmbedBuilder[] = [];
-    const rosterEmbed = new EmbedBuilder().setColor(this.client.embed(interaction)).setTitle('Rosters');
+    const rosterEmbed = new EmbedBuilder()
+      .setColor(this.client.embed(interaction))
+      .setTitle('Rosters');
     if (rosters.length) {
       rosterEmbed.setDescription(
         rosters
@@ -132,7 +154,9 @@ export default class RosterListCommand extends Command {
     }
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
-    const groupEmbed = new EmbedBuilder().setColor(this.client.embed(interaction)).setTitle('User Groups');
+    const groupEmbed = new EmbedBuilder()
+      .setColor(this.client.embed(interaction))
+      .setTitle('User Groups');
     if (categories.length) {
       groupEmbed.setDescription(
         categories

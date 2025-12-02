@@ -22,8 +22,14 @@ export default class ErrorListener extends Listener {
     });
   }
 
-  public async exec(error: Error, interaction: Exclude<Interaction, AutocompleteInteraction>, command?: Command) {
-    const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.displayName}` : `${interaction.user.displayName}`;
+  public async exec(
+    error: Error,
+    interaction: Exclude<Interaction, AutocompleteInteraction>,
+    command?: Command
+  ) {
+    const label = interaction.guild
+      ? `${interaction.guild.name}/${interaction.user.displayName}`
+      : `${interaction.user.displayName}`;
 
     this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
     console.error(inspect(error, { depth: Infinity }));
@@ -35,9 +41,15 @@ export default class ErrorListener extends Listener {
         username: interaction.user.username
       },
       guild: interaction.guild
-        ? { id: interaction.guild.id, name: interaction.guild.name, locale: interaction.guildLocale }
+        ? {
+            id: interaction.guild.id,
+            name: interaction.guild.name,
+            locale: interaction.guildLocale
+          }
         : interaction.guildId,
-      channel: interaction.channel ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] } : interaction.channelId,
+      channel: interaction.channel
+        ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
+        : interaction.channelId,
       command: {
         id: command?.id,
         category: command?.category

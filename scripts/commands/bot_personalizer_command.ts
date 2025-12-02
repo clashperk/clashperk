@@ -11,7 +11,9 @@ export const BOT_PERSONALIZER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = 
     {
       name: 'opt_out',
       description: command.bot_personalizer.options.opt_out.description,
-      description_localizations: translation('command.bot_personalizer.options.opt_out.description'),
+      description_localizations: translation(
+        'command.bot_personalizer.options.opt_out.description'
+      ),
       type: ApplicationCommandOptionType.Boolean
     }
   ]

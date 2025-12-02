@@ -1,5 +1,10 @@
 import { Settings } from '@app/constants';
-import { Interaction, MessageComponentInteraction, MessageFlags, TextDisplayBuilder } from 'discord.js';
+import {
+  Interaction,
+  MessageComponentInteraction,
+  MessageFlags,
+  TextDisplayBuilder
+} from 'discord.js';
 import { Listener } from '../../lib/handlers.js';
 import ComponentHandler from '../../struct/component-handler.js';
 
@@ -27,7 +32,9 @@ export default class ComponentInteractionListener extends Listener {
     const userIds = this.client.components.get(interaction.customId);
     if (userIds?.length && userIds.includes(interaction.user.id)) return;
     if (userIds?.length && !userIds.includes(interaction.user.id)) {
-      this.client.logger.log(`[${interaction.guild!.name}/${interaction.user.displayName}]`, { label: 'COMPONENT_BLOCKED' });
+      this.client.logger.log(`[${interaction.guild!.name}/${interaction.user.displayName}]`, {
+        label: 'COMPONENT_BLOCKED'
+      });
       return interaction.reply({
         content: this.i18n('common.component.unauthorized', { lng: interaction.locale }),
         flags: MessageFlags.Ephemeral
@@ -37,9 +44,12 @@ export default class ComponentInteractionListener extends Listener {
     if (this.client.components.has(interaction.customId)) return;
     if (await this.componentHandler.exec(interaction)) return;
 
-    this.client.logger.log(`[${interaction.guild!.name}/${interaction.user.displayName}] -> ${interaction.customId}`, {
-      label: 'COMPONENT_EXPIRED'
-    });
+    this.client.logger.log(
+      `[${interaction.guild!.name}/${interaction.user.displayName}] -> ${interaction.customId}`,
+      {
+        label: 'COMPONENT_EXPIRED'
+      }
+    );
 
     const isEmpty = !(
       interaction.message.attachments.size ||

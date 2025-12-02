@@ -18,7 +18,10 @@ export default class LootHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { embeds, result } = await this.getHistory(interaction, playerTags);
@@ -172,7 +175,11 @@ export default class LootHistoryCommand extends Command {
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.darkLoot ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...seasonIds.map((id) => r.records[id]?.darkLoot ?? 0)
+        ])
       },
       {
         title: `Elixir`,
@@ -182,7 +189,11 @@ export default class LootHistoryCommand extends Command {
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.elixirLoot ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...seasonIds.map((id) => r.records[id]?.elixirLoot ?? 0)
+        ])
       },
       {
         title: `Dark`,
@@ -192,12 +203,19 @@ export default class LootHistoryCommand extends Command {
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.darkLoot ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...seasonIds.map((id) => r.records[id]?.darkLoot ?? 0)
+        ])
       }
     ];
 
     const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Loot History]`, sheets);
-    return interaction.editReply({ content: '**Loot History**', components: getExportComponents(spreadsheet) });
+    return interaction.editReply({
+      content: '**Loot History**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 }
 

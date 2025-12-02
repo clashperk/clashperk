@@ -15,7 +15,10 @@ export default class ExportCapitalRaidsCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { limit?: number; clans?: string }
+  ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -75,7 +78,8 @@ export default class ExportCapitalRaidsCommand extends Command {
         members: Object.values(membersMap).sort((a, b) => b.attacksMissed - a.attacksMissed)
       });
     }
-    if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!chunks.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const sheets: CreateGoogleSheet[] = chunks.map((chunk) => ({
       columns: [
@@ -103,7 +107,13 @@ export default class ExportCapitalRaidsCommand extends Command {
       title: `${chunk.name} (${chunk.tag})`
     }));
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Capital Raids]`, sheets);
-    return interaction.editReply({ content: `**Capital Raids Export**`, components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Capital Raids]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: `**Capital Raids Export**`,
+      components: getExportComponents(spreadsheet)
+    });
   }
 }

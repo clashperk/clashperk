@@ -1,5 +1,10 @@
 import { APIClan } from 'clashofclans.js';
-import { ActionRowBuilder, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  CommandInteraction,
+  EmbedBuilder,
+  StringSelectMenuBuilder
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -16,11 +21,15 @@ export default class ClanSearchCommand extends Command {
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { name?: string }) {
     if (!args.name) {
-      return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.search.no_results', { lng: interaction.locale })
+      );
     }
     const { body, res } = await this.client.coc.getClans({ name: args.name, limit: 100 });
     if (!(res.ok && body.items.length)) {
-      return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.search.no_results', { lng: interaction.locale })
+      );
     }
 
     const embed = new EmbedBuilder()
@@ -52,10 +61,15 @@ export default class ClanSearchCommand extends Command {
     const items = body.items as APIClan[];
     const row = new ActionRowBuilder<StringSelectMenuBuilder>();
     row.setComponents(
-      this.paginatedMenu(items, 0, customIds).setPlaceholder(`Page ${1} of ${Math.ceil(items.length / 25)} (Total: ${items.length})`)
+      this.paginatedMenu(items, 0, customIds).setPlaceholder(
+        `Page ${1} of ${Math.ceil(items.length / 25)} (Total: ${items.length})`
+      )
     );
 
-    const message = await interaction.editReply({ embeds: [embed], components: this.client.isOwner(interaction.user.id) ? [row] : [] });
+    const message = await interaction.editReply({
+      embeds: [embed],
+      components: this.client.isOwner(interaction.user.id) ? [row] : []
+    });
 
     createInteractionCollector({
       customIds,
@@ -75,15 +89,31 @@ export default class ClanSearchCommand extends Command {
     });
   }
 
-  private paginatedMenu(items: APIClan[], pageIndex: number, customIds: Record<string, string>): StringSelectMenuBuilder {
+  private paginatedMenu(
+    items: APIClan[],
+    pageIndex: number,
+    customIds: Record<string, string>
+  ): StringSelectMenuBuilder {
     const perPage = items.length <= 25 ? items.length : pageIndex === 0 ? 24 : 23;
 
-    const options: MenuType[] = items.slice(pageIndex, perPage).map((item) => ({ value: item.tag, label: `${item.name} (${item.tag})` }));
+    const options: MenuType[] = items
+      .slice(pageIndex, perPage)
+      .map((item) => ({ value: item.tag, label: `${item.name} (${item.tag})` }));
     if (pageIndex > 0) {
-      options.unshift({ value: `${pageIndex - 1}`, label: 'Previous', emoji: '◀️', description: 'Load previous page of results' });
+      options.unshift({
+        value: `${pageIndex - 1}`,
+        label: 'Previous',
+        emoji: '◀️',
+        description: 'Load previous page of results'
+      });
     }
     if (items.length > 25 && items.length > perPage) {
-      options.push({ value: `${pageIndex + 1}`, label: 'Next', emoji: '▶️', description: 'Load next page of results' });
+      options.push({
+        value: `${pageIndex + 1}`,
+        label: 'Next',
+        emoji: '▶️',
+        description: 'Load next page of results'
+      });
     }
 
     const menu = new StringSelectMenuBuilder()

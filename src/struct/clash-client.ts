@@ -58,7 +58,9 @@ export class ClashClient extends RESTManager {
           !(path.includes('war') && status === 404)
         ) {
           if (status === 500) {
-            this.client.logger.debug(`${status} ${path} ${JSON.stringify(body)}`, { label: 'HTTP' });
+            this.client.logger.debug(`${status} ${path} ${JSON.stringify(body)}`, {
+              label: 'HTTP'
+            });
           } else {
             this.client.logger.debug(`${status} ${path}`, { label: 'HTTP' });
           }
@@ -159,7 +161,9 @@ export class ClashClient extends RESTManager {
       1000 * 60 * 15,
       1000 * 60 * 5
     ];
-    return friendlyWarTimes.includes(this.toDate(data.startTime).getTime() - this.toDate(data.preparationStartTime).getTime());
+    return friendlyWarTimes.includes(
+      this.toDate(data.startTime).getTime() - this.toDate(data.preparationStartTime).getTime()
+    );
   }
 
   private toDate(ISO: string | Date) {
@@ -174,7 +178,9 @@ export class ClashClient extends RESTManager {
     return super.getCapitalRaidSeasons(tag, { limit });
   }
 
-  public async getCurrentWars(clanTag: string): Promise<(APIClanWar & { warTag?: string; round?: number; isFriendly?: boolean })[]> {
+  public async getCurrentWars(
+    clanTag: string
+  ): Promise<(APIClanWar & { warTag?: string; round?: number; isFriendly?: boolean })[]> {
     const date = new Date().getUTCDate();
     if (!(date >= 1 && date <= 10)) {
       return this._getCurrentWar(clanTag);
@@ -225,7 +231,11 @@ export class ClashClient extends RESTManager {
     return { warTag, ...body, ...res };
   }
 
-  public async aggregateClanWarLeague(clanTag: string, group: ClanWarLeagueGroupsEntity, isApiData: boolean) {
+  public async aggregateClanWarLeague(
+    clanTag: string,
+    group: ClanWarLeagueGroupsEntity,
+    isApiData: boolean
+  ) {
     const rounds = group.rounds.filter((r) => !r.warTags.includes('#0'));
     const warTags = rounds.map((round) => round.warTags).flat();
 
@@ -246,7 +256,11 @@ export class ClashClient extends RESTManager {
     } satisfies ClanWarLeagueGroupAggregated;
   }
 
-  public async getDataFromArchive(clanTag: string, season: string, group?: ClanWarLeagueGroupsEntity) {
+  public async getDataFromArchive(
+    clanTag: string,
+    season: string,
+    group?: ClanWarLeagueGroupsEntity
+  ) {
     const res = await fetch(
       `https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clanTag)}/cwl/seasons/${season}`,
       {
@@ -270,12 +284,17 @@ export class ClashClient extends RESTManager {
     { defenderTag, attackerTag, order }: { defenderTag: string; attackerTag: string; order: number }
   ) {
     const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defenderTag);
-    const isFresh = defenderDefenses.length === 0 || order === Math.min(...defenderDefenses.map((def) => def.order));
+    const isFresh =
+      defenderDefenses.length === 0 ||
+      order === Math.min(...defenderDefenses.map((def) => def.order));
     if (isFresh) return null;
 
     return (
       attacks
-        .filter((atk) => atk.defenderTag === defenderTag && atk.order < order && atk.attackerTag !== attackerTag)
+        .filter(
+          (atk) =>
+            atk.defenderTag === defenderTag && atk.order < order && atk.attackerTag !== attackerTag
+        )
         .sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
         .at(0) ?? null
     );

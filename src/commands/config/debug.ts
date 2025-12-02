@@ -35,7 +35,9 @@ export default class DebugCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    { channel }: { channel: Exclude<TextBasedChannel, DMChannel | PartialDMChannel | PartialGroupDMChannel> }
+    {
+      channel
+    }: { channel: Exclude<TextBasedChannel, DMChannel | PartialDMChannel | PartialGroupDMChannel> }
   ) {
     const permissions: PermissionsString[] = [
       'ViewChannel',
@@ -62,10 +64,14 @@ export default class DebugCommand extends Command {
     );
 
     const UEE_FOR_SLASH = interaction.appPermissions.has('UseExternalEmojis');
-    const emojis = UEE_FOR_SLASH ? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY } : { cross: '❌', tick: '☑️', none: '⬛' };
+    const emojis = UEE_FOR_SLASH
+      ? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
+      : { cross: '❌', tick: '☑️', none: '⬛' };
 
     const webhookChannel = channel.isThread() ? channel.parent! : channel;
-    const webhooks = webhookChannel.permissionsFor(this.client.user.id)?.has(['ManageWebhooks', 'ViewChannel'])
+    const webhooks = webhookChannel
+      .permissionsFor(this.client.user.id)
+      ?.has(['ManageWebhooks', 'ViewChannel'])
       ? await webhookChannel.fetchWebhooks()
       : null;
 
@@ -95,10 +101,9 @@ export default class DebugCommand extends Command {
         '',
         `**Loop Time ${timings.clanLoop && timings.playerLoop && timings.warLoop ? '' : '(Processing...)'}**`,
         `${emojis.none} \`\u200e ${'CLANS'.padStart(8, ' ')} \u200b ${'WARS'.padStart(8, ' ')} \u200b ${' PLAYERS'} \u200f\``,
-        `${emojis.tick} \`\u200e ${this.fixTime(timings.clanLoop).padStart(8, ' ')} \u200b ${this.fixTime(timings.warLoop).padStart(
-          8,
-          ' '
-        )} \u200b ${this.fixTime(timings.playerLoop).padStart(8, ' ')} \u200f\``,
+        `${emojis.tick} \`\u200e ${this.fixTime(timings.clanLoop).padStart(8, ' ')} \u200b ${this.fixTime(
+          timings.warLoop
+        ).padStart(8, ' ')} \u200b ${this.fixTime(timings.playerLoop).padStart(8, ' ')} \u200f\``,
         '',
         '**Clan Status and Player Loop Info**',
         '*The war log must be made publicly accessible for the bot to function properly.*',
@@ -117,7 +122,10 @@ export default class DebugCommand extends Command {
 
     await interaction.editReply({ content: chunks[0], allowedMentions: { roles: [] } });
     for (const chunk of chunks.slice(1)) {
-      if (interaction.channel && interaction.appPermissions.has(['SendMessages', 'ViewChannel', 'SendMessagesInThreads'])) {
+      if (
+        interaction.channel &&
+        interaction.appPermissions.has(['SendMessages', 'ViewChannel', 'SendMessagesInThreads'])
+      ) {
         await interaction.channel.send({ content: chunk, allowedMentions: { roles: [] } });
       } else {
         await interaction.followUp({ content: chunk, allowedMentions: { roles: [] } });

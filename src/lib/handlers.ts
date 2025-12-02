@@ -29,7 +29,13 @@ import { Client } from '../struct/client.js';
 import { CustomIdProps } from '../struct/component-handler.js';
 import { i18n } from '../util/i18n.js';
 import './modifier.js';
-import { BuiltInReasons, CommandEvents, CommandHandlerEvents, resolveColorCode, WSEvents } from './util.js';
+import {
+  BuiltInReasons,
+  CommandEvents,
+  CommandHandlerEvents,
+  resolveColorCode,
+  WSEvents
+} from './util.js';
 
 type ArgsMatchType =
   | 'SUB_COMMAND'
@@ -71,9 +77,13 @@ class BaseHandler extends EventEmitter {
   }
 
   public async register() {
-    for await (const dir of readdirp(this.directory, { fileFilter: ({ basename }) => basename.endsWith('.js') })) {
+    for await (const dir of readdirp(this.directory, {
+      fileFilter: ({ basename }) => basename.endsWith('.js')
+    })) {
       if (extname(dir.path) !== '.js') continue;
-      const mod = container.resolve<Command | Listener | Inhibitor>((await import(pathToFileURL(dir.fullPath).href)).default);
+      const mod = container.resolve<Command | Listener | Inhibitor>(
+        (await import(pathToFileURL(dir.fullPath).href)).default
+      );
       this.construct(mod);
     }
   }
@@ -136,7 +146,9 @@ export class CommandHandler extends BaseHandler {
     return this.exec(interaction, command, args);
   }
 
-  private async handleContextInteraction(interaction: UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction) {
+  private async handleContextInteraction(
+    interaction: UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction
+  ) {
     const command = this.getCommand(interaction.commandName);
     if (!command) return;
 
@@ -193,13 +205,22 @@ export class CommandHandler extends BaseHandler {
 
   public rawArgs(interaction: ChatInputCommandInteraction | AutocompleteInteraction) {
     const resolved: Record<string, unknown> = {};
-    for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
+    for (const [name, option] of Object.entries(
+      this.transformInteraction(interaction.options.data)
+    )) {
       const key = name.toString();
 
-      if ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)) {
+      if (
+        [
+          ApplicationCommandOptionType.Subcommand,
+          ApplicationCommandOptionType.SubcommandGroup
+        ].includes(option.type)
+      ) {
         resolved[key] = option.name;
       } else if (option.type === ApplicationCommandOptionType.Channel) {
-        resolved[key] = (option.channel as GuildBasedChannel | null)?.isTextBased() ? option.channel : null;
+        resolved[key] = (option.channel as GuildBasedChannel | null)?.isTextBased()
+          ? option.channel
+          : null;
       } else if (option.type === ApplicationCommandOptionType.Role) {
         resolved[key] = option.role ?? null;
       } else if (option.type === ApplicationCommandOptionType.User) {
@@ -212,7 +233,10 @@ export class CommandHandler extends BaseHandler {
         resolved[key] = option.value ?? null;
       }
 
-      if (resolved[key] && (typeof resolved[key] === 'boolean' || ['true', 'false'].includes(resolved[key] as string))) {
+      if (
+        resolved[key] &&
+        (typeof resolved[key] === 'boolean' || ['true', 'false'].includes(resolved[key] as string))
+      ) {
         resolved[key] = resolved[key] === 'true' || resolved[key] === true;
       }
 
@@ -228,30 +252,46 @@ export class CommandHandler extends BaseHandler {
     return resolved;
   }
 
-  public argumentRunner(interaction: ChatInputCommandInteraction | AutocompleteInteraction, command: Command) {
+  public argumentRunner(
+    interaction: ChatInputCommandInteraction | AutocompleteInteraction,
+    command: Command
+  ) {
     const args = command.args(interaction);
 
     const resolved: Record<string, unknown> = {};
-    for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
+    for (const [name, option] of Object.entries(
+      this.transformInteraction(interaction.options.data)
+    )) {
       const key = (args[name]?.id ?? name).toString(); // KEY_OVERRIDE
 
-      if ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)) {
+      if (
+        [
+          ApplicationCommandOptionType.Subcommand,
+          ApplicationCommandOptionType.SubcommandGroup
+        ].includes(option.type)
+      ) {
         resolved[key] = option.name; // SUB_COMMAND OR SUB_COMMAND_GROUP
       } else if (option.type === ApplicationCommandOptionType.Channel) {
-        resolved[key] = (option.channel as GuildBasedChannel | null)?.isTextBased() ? option.channel : null;
+        resolved[key] = (option.channel as GuildBasedChannel | null)?.isTextBased()
+          ? option.channel
+          : null;
       } else if (option.type === ApplicationCommandOptionType.Role) {
         resolved[key] = option.role ?? null;
       } else if (option.type === ApplicationCommandOptionType.Mentionable) {
         resolved[key] = option.user ?? option.role ?? null;
       } else if (option.type === ApplicationCommandOptionType.User) {
-        resolved[key] = args[name]?.match === 'MEMBER' ? (option.member ?? null) : (option.user ?? null);
+        resolved[key] =
+          args[name]?.match === 'MEMBER' ? (option.member ?? null) : (option.user ?? null);
       } else if (option.type === ApplicationCommandOptionType.Attachment) {
         resolved[key] = option.attachment?.url ?? null;
       } else {
         resolved[key] = option.value ?? null;
       }
 
-      if (resolved[key] && (args[name]?.match === 'BOOLEAN' || resolved[key] === 'true' || resolved[key] === 'false')) {
+      if (
+        resolved[key] &&
+        (args[name]?.match === 'BOOLEAN' || resolved[key] === 'true' || resolved[key] === 'false')
+      ) {
         resolved[key] = typeof resolved[key] === 'boolean' || resolved[key] === 'true';
       }
 
@@ -261,7 +301,9 @@ export class CommandHandler extends BaseHandler {
 
       if (resolved[key] && args[name]?.match === 'ENUM') {
         const value = resolved[key] as string;
-        const flatten = args[name]?.enums?.find((text) => (Array.isArray(text) ? text.includes(value) : text === value));
+        const flatten = args[name]?.enums?.find((text) =>
+          Array.isArray(text) ? text.includes(value) : text === value
+        );
         resolved[key] = flatten ? (Array.isArray(flatten) ? flatten.at(0)! : flatten) : null;
       }
 
@@ -295,7 +337,11 @@ export class CommandHandler extends BaseHandler {
     return this.exec(interaction, command, args);
   }
 
-  public async exec(interaction: CommandInteraction | MessageComponentInteraction, command: Command, args: Record<string, unknown> = {}) {
+  public async exec(
+    interaction: CommandInteraction | MessageComponentInteraction,
+    command: Command,
+    args: Record<string, unknown> = {}
+  ) {
     try {
       const options = command.refine(interaction, args);
 
@@ -311,7 +357,11 @@ export class CommandHandler extends BaseHandler {
     }
   }
 
-  public preInhibitor(interaction: BaseInteraction, command: Command, args: Record<string, unknown>) {
+  public preInhibitor(
+    interaction: BaseInteraction,
+    command: Command,
+    args: Record<string, unknown>
+  ) {
     const options = command.refine(interaction, args);
 
     const reason = this.client.inhibitorHandler.run(interaction, command);
@@ -339,13 +389,23 @@ export class CommandHandler extends BaseHandler {
     return this.runPermissionChecks(interaction, command, options);
   }
 
-  private runPermissionChecks(interaction: BaseInteraction, command: Command, options: CommandOptions) {
+  private runPermissionChecks(
+    interaction: BaseInteraction,
+    command: Command,
+    options: CommandOptions
+  ) {
     if (!interaction.inCachedGuild()) return false;
 
     if (options.clientPermissions?.length) {
       const missing = interaction.appPermissions.missing(options.clientPermissions);
       if (missing.length) {
-        this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.CLIENT, missing);
+        this.emit(
+          CommandHandlerEvents.MISSING_PERMISSIONS,
+          interaction,
+          command,
+          BuiltInReasons.CLIENT,
+          missing
+        );
         return true;
       }
     }
@@ -356,9 +416,17 @@ export class CommandHandler extends BaseHandler {
     const isManager = this.client.util.isManager(interaction.member, options.roleKey);
 
     if (!isManager && options.userPermissions?.length) {
-      const missing = interaction.channel?.permissionsFor(interaction.user)?.missing(options.userPermissions);
+      const missing = interaction.channel
+        ?.permissionsFor(interaction.user)
+        ?.missing(options.userPermissions);
       if (missing?.length) {
-        this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);
+        this.emit(
+          CommandHandlerEvents.MISSING_PERMISSIONS,
+          interaction,
+          command,
+          BuiltInReasons.USER,
+          missing
+        );
         return true;
       }
     }
@@ -366,7 +434,12 @@ export class CommandHandler extends BaseHandler {
     if (isManager) return false;
 
     if (isValidWhitelist && !isWhitelisted) {
-      this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.WHITELIST);
+      this.emit(
+        CommandHandlerEvents.COMMAND_BLOCKED,
+        interaction,
+        command,
+        BuiltInReasons.WHITELIST
+      );
       return true;
     }
 
@@ -379,18 +452,20 @@ export class CommandHandler extends BaseHandler {
 
     if (!options.resolvedId) return [false, false];
 
-    const commandWhitelist = this.client.settings.get<{ key: string; userOrRoleId: string; commandId: string; isRole: boolean }[]>(
-      interaction.guild,
-      Settings.COMMAND_WHITELIST,
-      []
-    );
+    const commandWhitelist = this.client.settings.get<
+      { key: string; userOrRoleId: string; commandId: string; isRole: boolean }[]
+    >(interaction.guild, Settings.COMMAND_WHITELIST, []);
     if (!commandWhitelist.length) return [false, false];
 
-    const whitelisted = commandWhitelist.filter((whitelist) => whitelist.commandId === options.resolvedId);
+    const whitelisted = commandWhitelist.filter(
+      (whitelist) => whitelist.commandId === options.resolvedId
+    );
     if (!whitelisted.length) return [false, false];
 
     const authorized = whitelisted.find(({ userOrRoleId }) => {
-      return interaction.member.roles.cache.has(userOrRoleId) || interaction.user.id === userOrRoleId;
+      return (
+        interaction.member.roles.cache.has(userOrRoleId) || interaction.user.id === userOrRoleId
+      );
     });
 
     return [true, !!authorized];
@@ -489,7 +564,17 @@ export class Command implements CommandOptions {
   public options: CommandOptions;
 
   public constructor(id: string, options: CommandOptions) {
-    const { defer, aliases, ephemeral, userPermissions, clientPermissions, channel, ownerOnly, category, roleKey } = options;
+    const {
+      defer,
+      aliases,
+      ephemeral,
+      userPermissions,
+      clientPermissions,
+      channel,
+      ownerOnly,
+      category,
+      roleKey
+    } = options;
     this.id = id;
     this.aliases = aliases;
     this.defer = defer;
@@ -505,7 +590,10 @@ export class Command implements CommandOptions {
     this.options = options;
   }
 
-  public autocomplete(interaction: AutocompleteInteraction, args: Record<string, unknown>): Promise<unknown> | unknown;
+  public autocomplete(
+    interaction: AutocompleteInteraction,
+    args: Record<string, unknown>
+  ): Promise<unknown> | unknown;
   public autocomplete(): Promise<unknown> | unknown {
     return null;
   }
@@ -520,7 +608,10 @@ export class Command implements CommandOptions {
     return {};
   }
 
-  public exec(interaction: CommandInteraction | MessageComponentInteraction, args: unknown): Promise<unknown> | unknown;
+  public exec(
+    interaction: CommandInteraction | MessageComponentInteraction,
+    args: unknown
+  ): Promise<unknown> | unknown;
   public exec(): Promise<unknown> | unknown {
     throw Error('This method needs to be overwritten inside of an actual command.');
   }

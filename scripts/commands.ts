@@ -123,7 +123,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   TRANSLATE_COMMAND
 ];
 
-export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [BOT_PERSONALIZER_COMMAND];
+export const MAIN_BOT_ONLY_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
+  BOT_PERSONALIZER_COMMAND
+];
 
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   STATUS_COMMAND,

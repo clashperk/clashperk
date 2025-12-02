@@ -292,7 +292,8 @@ export const updateGoogleSheet = async (
               frozenRowCount: sheet.rows.length ? 1 : 0
             }
           },
-          fields: 'gridProperties.rowCount,gridProperties.columnCount,gridProperties.frozenRowCount,title'
+          fields:
+            'gridProperties.rowCount,gridProperties.columnCount,gridProperties.frozenRowCount,title'
         }
       }
     ])
@@ -351,7 +352,10 @@ export const updateGoogleSheet = async (
     { retry: true }
   );
 
-  return { spreadsheetId, spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit` };
+  return {
+    spreadsheetId,
+    spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
+  };
 };
 
 export const createGoogleSheet = async (title: string, sheets: CreateGoogleSheet[]) => {
@@ -376,7 +380,10 @@ const getLocation = async (query: string) => {
     .then(
       (res) =>
         res.json() as unknown as {
-          results: { geometry: { location: { lat: string; lng: string } }; formatted_address: string }[];
+          results: {
+            geometry: { location: { lat: string; lng: string } };
+            formatted_address: string;
+          }[];
         }
     )
     .catch(() => null);
@@ -394,7 +401,9 @@ const timezone = async (query: string) => {
   const lat = location.geometry.location.lat;
   const lng = location.geometry.location.lng;
 
-  const timezone = await fetch(`${GOOGLE_MAPS_API_BASE_URL}/timezone/json?${search}&location=${lat},${lng}`)
+  const timezone = await fetch(
+    `${GOOGLE_MAPS_API_BASE_URL}/timezone/json?${search}&location=${lat},${lng}`
+  )
     .then(
       (res) =>
         res.json() as unknown as {

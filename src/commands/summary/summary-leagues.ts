@@ -1,7 +1,20 @@
-import { CAPITAL_LEAGUE_MAP, Collections, UNRANKED_CAPITAL_LEAGUE_ID, UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_MAP } from '@app/constants';
+import {
+  CAPITAL_LEAGUE_MAP,
+  Collections,
+  UNRANKED_CAPITAL_LEAGUE_ID,
+  UNRANKED_WAR_LEAGUE_ID,
+  WAR_LEAGUE_MAP
+} from '@app/constants';
 import { CapitalRaidSeasonsEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  Guild
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
@@ -16,8 +29,13 @@ export default class SummaryLeaguesCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; is_capital?: boolean }) {
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; is_capital?: boolean }
+  ) {
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const _clans = await this.client.coc._getClans(clans);
@@ -36,7 +54,10 @@ export default class SummaryLeaguesCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setLabel(args.is_capital ? 'Clan War Leagues' : 'Capital Leagues')
         .setEmoji(args.is_capital ? EMOJIS.CWL : EMOJIS.CAPITAL_TROPHY)
@@ -65,7 +86,9 @@ export default class SummaryLeaguesCommand extends Command {
     );
 
     const embed = new EmbedBuilder();
-    embed.setColor(this.client.embed(guild.id)).setDescription(`${EMOJIS.CWL} **Clan War League Groups**`);
+    embed
+      .setColor(this.client.embed(guild.id))
+      .setDescription(`${EMOJIS.CWL} **Clan War League Groups**`);
     leagueGroup
       .sort(([a], [b]) => Number(b) - Number(a))
       .map(([leagueId, clans], i) => {
@@ -92,7 +115,8 @@ export default class SummaryLeaguesCommand extends Command {
     const today = new Date();
     const weekDay = today.getUTCDay();
     const hours = today.getUTCHours();
-    const isRaidWeek = (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
+    const isRaidWeek =
+      (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
     today.setUTCDate(today.getUTCDate() - today.getUTCDay());
     if (weekDay < 5 || (weekDay <= 5 && hours < 7)) today.setDate(today.getUTCDate() - 7);
     today.setUTCDate(today.getUTCDate() + 5);
@@ -115,21 +139,26 @@ export default class SummaryLeaguesCommand extends Command {
       .find({ tag: { $in: clans.map((clan) => clan.tag) }, weekId: this.getLastWeekId() })
       .toArray();
 
-    const leaguesMap = leagues.reduce<Record<string, { gained: number; emoji: string }>>((acc, league) => {
-      if (league._clanCapitalPoints && league.clanCapitalPoints) {
-        const emoji =
-          league._capitalLeague.id > league.capitalLeague.id
-            ? EMOJIS.UP_KEY
-            : league._capitalLeague.id === league.capitalLeague.id
-              ? EMOJIS.STAYED_SAME
-              : EMOJIS.DOWN_KEY;
-        acc[league.tag] = { gained: league._clanCapitalPoints - league.clanCapitalPoints, emoji };
-      }
-      return acc;
-    }, {});
+    const leaguesMap = leagues.reduce<Record<string, { gained: number; emoji: string }>>(
+      (acc, league) => {
+        if (league._clanCapitalPoints && league.clanCapitalPoints) {
+          const emoji =
+            league._capitalLeague.id > league.capitalLeague.id
+              ? EMOJIS.UP_KEY
+              : league._capitalLeague.id === league.capitalLeague.id
+                ? EMOJIS.STAYED_SAME
+                : EMOJIS.DOWN_KEY;
+          acc[league.tag] = { gained: league._clanCapitalPoints - league.clanCapitalPoints, emoji };
+        }
+        return acc;
+      },
+      {}
+    );
 
     const embed = new EmbedBuilder();
-    embed.setColor(this.client.embed(guild.id)).setDescription(`${EMOJIS.CAPITAL_TROPHY} **APIClan Capital League Groups**`);
+    embed
+      .setColor(this.client.embed(guild.id))
+      .setDescription(`${EMOJIS.CAPITAL_TROPHY} **APIClan Capital League Groups**`);
 
     leagueGroup
       .sort(([a], [b]) => Number(b) - Number(a))

@@ -15,7 +15,12 @@ import {
   TextInputStyle
 } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { GuildEventData, eventsMap, imageMaps, locationsMap } from '../../struct/guild-events-handler.js';
+import {
+  GuildEventData,
+  eventsMap,
+  imageMaps,
+  locationsMap
+} from '../../struct/guild-events-handler.js';
 
 export default class SetupEventsCommand extends Command {
   public constructor() {
@@ -39,13 +44,23 @@ export default class SetupEventsCommand extends Command {
 
   public async exec(interaction: CommandInteraction<'cached'>, { disable }: { disable?: boolean }) {
     if (disable) {
-      await this.client.db.collection(Collections.GUILD_EVENTS).deleteOne({ guildId: interaction.guild.id });
-      return interaction.editReply({ content: 'Successfully disabled automatic events schedular.' });
+      await this.client.db
+        .collection(Collections.GUILD_EVENTS)
+        .deleteOne({ guildId: interaction.guild.id });
+      return interaction.editReply({
+        content: 'Successfully disabled automatic events schedular.'
+      });
     }
 
-    if (!interaction.guild.members.me?.permissions.has([PermissionFlagsBits.ManageEvents, PermissionFlagsBits.CreateEvents])) {
+    if (
+      !interaction.guild.members.me?.permissions.has([
+        PermissionFlagsBits.ManageEvents,
+        PermissionFlagsBits.CreateEvents
+      ])
+    ) {
       return interaction.editReply({
-        content: 'The bot is missing **Create Events** and **Manage Events** permissions to execute this command.'
+        content:
+          'The bot is missing **Create Events** and **Manage Events** permissions to execute this command.'
       });
     }
 
@@ -62,19 +77,21 @@ export default class SetupEventsCommand extends Command {
       season_reset: this.client.uuid(interaction.user.id)
     };
 
-    const value = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
-      { guildId: interaction.guild.id },
-      {
-        $setOnInsert: {
-          enabled: false,
-          events: {},
-          images: {},
-          allowedEvents: [...this.client.guildEvents.eventTypes],
-          createdAt: new Date()
-        }
-      },
-      { upsert: true, returnDocument: 'after' }
-    );
+    const value = await this.client.db
+      .collection<GuildEventData>(Collections.GUILD_EVENTS)
+      .findOneAndUpdate(
+        { guildId: interaction.guild.id },
+        {
+          $setOnInsert: {
+            enabled: false,
+            events: {},
+            images: {},
+            allowedEvents: [...this.client.guildEvents.eventTypes],
+            createdAt: new Date()
+          }
+        },
+        { upsert: true, returnDocument: 'after' }
+      );
 
     const state = {
       allowedEvents: value?.allowedEvents ?? [],
@@ -105,7 +122,9 @@ export default class SetupEventsCommand extends Command {
       .setMinValues(1)
       .setMaxValues(this.client.guildEvents.eventTypes.length);
 
-    const durationEvents = this.client.guildEvents.eventTypes.filter((name) => name.endsWith('_start'));
+    const durationEvents = this.client.guildEvents.eventTypes.filter((name) =>
+      name.endsWith('_start')
+    );
     const durationMenu = new StringSelectMenuBuilder()
       .setCustomId(customIds.duration)
       .setPlaceholder('Allowed full duration events...')
@@ -123,9 +142,18 @@ export default class SetupEventsCommand extends Command {
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
     const durationRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(durationMenu);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(customIds.images).setLabel('Set Images').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(customIds.locations).setLabel('Set Locations').setStyle(ButtonStyle.Secondary)
+      new ButtonBuilder()
+        .setCustomId(customIds.confirm)
+        .setLabel('Confirm')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(customIds.images)
+        .setLabel('Set Images')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(customIds.locations)
+        .setLabel('Set Locations')
+        .setStyle(ButtonStyle.Secondary)
     );
 
     const getEmbed = (creating = true) => {
@@ -134,7 +162,9 @@ export default class SetupEventsCommand extends Command {
 
       embed.setDescription(
         [
-          creating ? '**Creating automatic events schedular...**' : '**Successfully created automatic events schedular...**',
+          creating
+            ? '**Creating automatic events schedular...**'
+            : '**Successfully created automatic events schedular...**',
           '',
           '**Enabled Events**',
           ...this.client.guildEvents.eventTypes
@@ -150,7 +180,9 @@ export default class SetupEventsCommand extends Command {
             }),
 
           '',
-          state.tooLargeImage ? '**Action Required: The images you provided are too large (>10MB), so they will not be used.**' : ''
+          state.tooLargeImage
+            ? '**Action Required: The images you provided are too large (>10MB), so they will not be used.**'
+            : ''
         ].join('\n')
       );
 
@@ -166,9 +198,16 @@ export default class SetupEventsCommand extends Command {
       return { embeds: [embed] };
     };
 
-    const msg = await interaction.editReply({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const msg = await interaction.editReply({
+      ...getEmbed(),
+      components: [menuRow, durationRow, buttonRow]
+    });
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 10 * 60 * 1000
     });
 
@@ -176,32 +215,34 @@ export default class SetupEventsCommand extends Command {
       if (action.customId === customIds.confirm) {
         await action.deferUpdate();
 
-        const value = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
-          { guildId: interaction.guild.id },
-          {
-            $set: {
-              images: {
-                clan_games_image_url: state.clan_games_image_url,
-                raid_week_image_url: state.raid_week_image_url,
-                cwl_image_url: state.cwl_image_url,
-                season_reset_image_url: state.season_reset_image_url
+        const value = await this.client.db
+          .collection<GuildEventData>(Collections.GUILD_EVENTS)
+          .findOneAndUpdate(
+            { guildId: interaction.guild.id },
+            {
+              $set: {
+                images: {
+                  clan_games_image_url: state.clan_games_image_url,
+                  raid_week_image_url: state.raid_week_image_url,
+                  cwl_image_url: state.cwl_image_url,
+                  season_reset_image_url: state.season_reset_image_url
+                },
+                locations: {
+                  clan_games_location: state.clan_games_location,
+                  raid_week_location: state.raid_week_location,
+                  cwl_location: state.cwl_location,
+                  season_reset_location: state.season_reset_location
+                },
+                enabled: true,
+                allowedEvents: [...state.allowedEvents],
+                durationOverrides: [...state.durationOverrides]
               },
-              locations: {
-                clan_games_location: state.clan_games_location,
-                raid_week_location: state.raid_week_location,
-                cwl_location: state.cwl_location,
-                season_reset_location: state.season_reset_location
-              },
-              enabled: true,
-              allowedEvents: [...state.allowedEvents],
-              durationOverrides: [...state.durationOverrides]
+              $unset: {
+                tooLargeImage: true
+              }
             },
-            $unset: {
-              tooLargeImage: true
-            }
-          },
-          { returnDocument: 'after' }
-        );
+            { returnDocument: 'after' }
+          );
 
         if (!value) {
           await action.editReply({
@@ -251,7 +292,8 @@ export default class SetupEventsCommand extends Command {
           .setStyle(TextInputStyle.Short)
           .setMaxLength(256)
           .setRequired(false);
-        if (state.season_reset_image_url) seasonResetImageInput.setValue(state.season_reset_image_url);
+        if (state.season_reset_image_url)
+          seasonResetImageInput.setValue(state.season_reset_image_url);
 
         const clanGamesImageInput = new TextInputBuilder()
           .setCustomId(customIds.clan_games)
@@ -295,21 +337,37 @@ export default class SetupEventsCommand extends Command {
             filter: (action) => action.customId === modalCustomId
           });
 
-          const season_reset_image_url = modalSubmit.fields.getTextInputValue(customIds.season_reset);
+          const season_reset_image_url = modalSubmit.fields.getTextInputValue(
+            customIds.season_reset
+          );
           const cwl_image_url = modalSubmit.fields.getTextInputValue(customIds.cwl);
           const raid_week_image_url = modalSubmit.fields.getTextInputValue(customIds.capital_raids);
           const clan_games_image_url = modalSubmit.fields.getTextInputValue(customIds.clan_games);
 
-          state.season_reset_image_url = URL_REGEX.test(season_reset_image_url) ? season_reset_image_url : '';
+          state.season_reset_image_url = URL_REGEX.test(season_reset_image_url)
+            ? season_reset_image_url
+            : '';
           state.cwl_image_url = URL_REGEX.test(cwl_image_url) ? cwl_image_url : '';
-          state.raid_week_image_url = URL_REGEX.test(raid_week_image_url) ? raid_week_image_url : '';
-          state.clan_games_image_url = URL_REGEX.test(clan_games_image_url) ? clan_games_image_url : '';
+          state.raid_week_image_url = URL_REGEX.test(raid_week_image_url)
+            ? raid_week_image_url
+            : '';
+          state.clan_games_image_url = URL_REGEX.test(clan_games_image_url)
+            ? clan_games_image_url
+            : '';
           state.tooLargeImage = false;
 
           await modalSubmit.deferUpdate();
-          await modalSubmit.editReply({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });
+          await modalSubmit.editReply({
+            ...getEmbed(),
+            components: [menuRow, durationRow, buttonRow]
+          });
         } catch (e) {
-          if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          if (
+            !(
+              e instanceof DiscordjsError &&
+              e.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          ) {
             throw e;
           }
         }
@@ -325,7 +383,8 @@ export default class SetupEventsCommand extends Command {
           .setStyle(TextInputStyle.Short)
           .setMaxLength(100)
           .setRequired(false);
-        if (state.season_reset_location) seasonResetLocationInput.setValue(state.season_reset_location);
+        if (state.season_reset_location)
+          seasonResetLocationInput.setValue(state.season_reset_location);
 
         const clanGamesLocationInput = new TextInputBuilder()
           .setCustomId(customIds.clan_games)
@@ -368,7 +427,9 @@ export default class SetupEventsCommand extends Command {
             time: 10 * 60 * 1000,
             filter: (action) => action.customId === modalCustomId
           });
-          const season_reset_location = modalSubmit.fields.getTextInputValue(customIds.season_reset);
+          const season_reset_location = modalSubmit.fields.getTextInputValue(
+            customIds.season_reset
+          );
           const cwl_location = modalSubmit.fields.getTextInputValue(customIds.cwl);
           const raid_week_location = modalSubmit.fields.getTextInputValue(customIds.capital_raids);
           const clan_games_location = modalSubmit.fields.getTextInputValue(customIds.clan_games);
@@ -379,9 +440,17 @@ export default class SetupEventsCommand extends Command {
           state.clan_games_location = clan_games_location || null;
 
           await modalSubmit.deferUpdate();
-          await modalSubmit.editReply({ ...getEmbed(), components: [menuRow, durationRow, buttonRow] });
+          await modalSubmit.editReply({
+            ...getEmbed(),
+            components: [menuRow, durationRow, buttonRow]
+          });
         } catch (e) {
-          if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          if (
+            !(
+              e instanceof DiscordjsError &&
+              e.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          ) {
             throw e;
           }
         }

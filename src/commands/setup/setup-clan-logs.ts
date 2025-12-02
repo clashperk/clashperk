@@ -156,7 +156,10 @@ export default class SetupLogsCommand extends Command {
       channel: TextChannel | AnyThreadChannel;
     }
   ) {
-    const clan = await this.client.resolver.enforceSecurity(interaction, { tag: args.clan, collection: Collections.CLAN_LOGS });
+    const clan = await this.client.resolver.enforceSecurity(interaction, {
+      tag: args.clan,
+      collection: Collections.CLAN_LOGS
+    });
     if (!clan) return;
 
     const disabling = args.action === 'disable-logs';
@@ -164,7 +167,9 @@ export default class SetupLogsCommand extends Command {
 
     const collection = this.client.db.collection<ClanLogsEntity>(Collections.CLAN_LOGS);
     const logTypes = Object.keys(logActionsMap) as ClanLogType[];
-    const _logs = await collection.find({ logType: { $in: logTypes }, clanTag: clan.tag, guildId: interaction.guildId }).toArray();
+    const _logs = await collection
+      .find({ logType: { $in: logTypes }, clanTag: clan.tag, guildId: interaction.guildId })
+      .toArray();
 
     const customIds: Record<string, string> = {
       logs: this.client.uuid()
@@ -274,16 +279,24 @@ export default class SetupLogsCommand extends Command {
         rows.push(row);
       }
     }
-    if (!rows.length) return interaction.editReply(`No logs are enabled for **\u200e${clan.name} (${clan.tag})**`);
+    if (!rows.length)
+      return interaction.editReply(`No logs are enabled for **\u200e${clan.name} (${clan.tag})**`);
 
     const message = await interaction.editReply({
       content: [
         `## ${clan.name} (${clan.tag})`,
         _logs.length ? `### Currently Enabled Logs` : '',
 
-        _logs.map((log) => `- ${logActionsMap[log.logType].label || title(log.logType)} <#${log.channelId}>`).join('\n'),
+        _logs
+          .map(
+            (log) =>
+              `- ${logActionsMap[log.logType].label || title(log.logType)} <#${log.channelId}>`
+          )
+          .join('\n'),
 
-        disabling ? '### Select the logs you want to disable' : `### Select the logs you want to enable in <#${args.channel.id}>`
+        disabling
+          ? '### Select the logs you want to disable'
+          : `### Select the logs you want to enable in <#${args.channel.id}>`
       ].join('\n'),
       components: [...rows]
     });
@@ -295,7 +308,9 @@ export default class SetupLogsCommand extends Command {
       onSelect: async (action) => {
         const selectedLogs = action.values as ClanLogType[];
         if (disabling) {
-          const logIds = _logs.filter((log) => selectedLogs.includes(log.logType)).map((log) => log._id);
+          const logIds = _logs
+            .filter((log) => selectedLogs.includes(log.logType))
+            .map((log) => log._id);
           logIds.forEach((logId) => this.client.enqueuer.deleteLog(logId.toHexString()));
           await collection.deleteMany({ _id: { $in: logIds } });
 

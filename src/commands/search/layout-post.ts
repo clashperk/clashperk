@@ -25,7 +25,8 @@ import { Command, CommandOptions } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 
-const LAYOUT_REGEX = /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?action=OpenLayout&id=TH\S+$/;
+const LAYOUT_REGEX =
+  /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?action=OpenLayout&id=TH\S+$/;
 
 export default class LayoutCommand extends Command {
   public constructor() {
@@ -47,7 +48,10 @@ export default class LayoutCommand extends Command {
     } satisfies CommandOptions;
   }
 
-  public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: LayoutCommandArgs) {
+  public async exec(
+    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+    args: LayoutCommandArgs
+  ) {
     args.layout_link &&= args.layout_link.trim();
 
     if (interaction.isButton() && args.display_link) {
@@ -58,7 +62,10 @@ export default class LayoutCommand extends Command {
       return this.viewDownloader(interaction);
     }
 
-    const layoutTemplate = this.client.settings.get<string>(interaction.guild, Settings.LAYOUT_TEMPLATE);
+    const layoutTemplate = this.client.settings.get<string>(
+      interaction.guild,
+      Settings.LAYOUT_TEMPLATE
+    );
     if (layoutTemplate && !args.notes) args.notes = layoutTemplate;
 
     if (interaction.isCommand()) {
@@ -66,12 +73,19 @@ export default class LayoutCommand extends Command {
     }
 
     const isAdmin =
-      this.client.util.isManager(interaction.member) || interaction.message.interactionMetadata?.user.id === interaction.user.id;
+      this.client.util.isManager(interaction.member) ||
+      interaction.message.interactionMetadata?.user.id === interaction.user.id;
     if (!isAdmin) {
-      return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'You are not allowed to edit this layout.' });
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
+        content: 'You are not allowed to edit this layout.'
+      });
     }
 
-    const layout = await this.collection.findOne({ messageIds: interaction.message.id, guildId: interaction.guild.id });
+    const layout = await this.collection.findOne({
+      messageIds: interaction.message.id,
+      guildId: interaction.guild.id
+    });
     if (layout) args.downloads = layout.downloader.length;
 
     const modalCustomId = this.client.uuid(interaction.user.id);
@@ -94,7 +108,9 @@ export default class LayoutCommand extends Command {
     const descriptionInput = new TextInputBuilder()
       .setCustomId(customIds.notes)
       .setLabel('Notes')
-      .setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
+      .setPlaceholder(
+        'Write anything you want (markdown, hyperlink and custom emojis are supported)'
+      )
       .setStyle(TextInputStyle.Paragraph)
       .setMaxLength(1800)
       .setRequired(false);
@@ -127,18 +143,29 @@ export default class LayoutCommand extends Command {
 
       return await this.handleSubmit(interaction, args);
     } catch (error) {
-      if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+      if (
+        !(
+          error instanceof DiscordjsError &&
+          error.code === DiscordjsErrorCodes.InteractionCollectorError
+        )
+      ) {
         throw error;
       }
     }
   }
 
   public async handleSubmit(
-    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | ModalSubmitInteraction<'cached'>,
+    interaction:
+      | CommandInteraction<'cached'>
+      | ButtonInteraction<'cached'>
+      | ModalSubmitInteraction<'cached'>,
     args: LayoutCommandArgs
   ) {
     if (!args.layout_link || !LAYOUT_REGEX.test(args.layout_link)) {
-      return interaction.followUp({ flags: MessageFlags.Ephemeral, content: 'Invalid layout link was provided.' });
+      return interaction.followUp({
+        flags: MessageFlags.Ephemeral,
+        content: 'Invalid layout link was provided.'
+      });
     }
 
     const layoutTypes: Record<string, string> = {
@@ -159,9 +186,15 @@ export default class LayoutCommand extends Command {
     const layoutId = new URL(args.layout_link).searchParams.get('id')!;
     const [levelString, layoutType, buildingType] = layoutId.split(':');
     const level = levelString.replace('TH', '');
-    const buildingLabel = ['HV', 'BB2', 'WB'].includes(layoutType) ? layoutTypes[layoutType] : layoutTypes[`CC:${buildingType}`];
+    const buildingLabel = ['HV', 'BB2', 'WB'].includes(layoutType)
+      ? layoutTypes[layoutType]
+      : layoutTypes[`CC:${buildingType}`];
 
-    const allowLayoutTracking = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_LAYOUT_TRACKING, false);
+    const allowLayoutTracking = this.client.settings.get<boolean>(
+      interaction.guild,
+      Settings.ALLOW_LAYOUT_TRACKING,
+      false
+    );
 
     const layout = await this.collection.findOne({ guildId: interaction.guild.id, layoutId });
     const row = this.getComponents({
@@ -190,7 +223,9 @@ export default class LayoutCommand extends Command {
           messageIds: msg.id
         },
         $setOnInsert: {
-          userId: interaction.isButton() ? interaction.message.interactionMetadata?.user.id || interaction.user.id : interaction.user.id,
+          userId: interaction.isButton()
+            ? interaction.message.interactionMetadata?.user.id || interaction.user.id
+            : interaction.user.id,
           downloads: 0,
           downloader: [],
           votes: {
@@ -203,7 +238,11 @@ export default class LayoutCommand extends Command {
       { upsert: true }
     );
 
-    const isVotingEnabled = this.client.settings.get(interaction.guild, Settings.ALLOW_LAYOUT_VOTING, false);
+    const isVotingEnabled = this.client.settings.get(
+      interaction.guild,
+      Settings.ALLOW_LAYOUT_VOTING,
+      false
+    );
 
     if (interaction.appPermissions.has(PermissionFlagsBits.AddReactions) && isVotingEnabled) {
       try {
@@ -220,7 +259,11 @@ export default class LayoutCommand extends Command {
       { $addToSet: { downloader: interaction.user.id } },
       { returnDocument: 'after' }
     );
-    if (!updated) return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'Layout data not found.' });
+    if (!updated)
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
+        content: 'Layout data not found.'
+      });
 
     const customId = this.client.uuid();
     const modal = new ModalBuilder()
@@ -243,7 +286,11 @@ export default class LayoutCommand extends Command {
     try {
       await interaction.showModal(modal);
 
-      const row = this.getComponents({ ...args, allow_layout_tracking: true, downloads: updated?.downloader?.length || 0 });
+      const row = this.getComponents({
+        ...args,
+        allow_layout_tracking: true,
+        downloads: updated?.downloader?.length || 0
+      });
       await interaction.editReply({ components: [row] });
 
       const modalSubmitInteraction = await interaction.awaitModalSubmit({
@@ -253,16 +300,27 @@ export default class LayoutCommand extends Command {
 
       return await modalSubmitInteraction.deferUpdate();
     } catch (error) {
-      if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+      if (
+        !(
+          error instanceof DiscordjsError &&
+          error.code === DiscordjsErrorCodes.InteractionCollectorError
+        )
+      ) {
         throw error;
       }
     }
   }
 
   private async viewDownloader(interaction: ButtonInteraction<'cached'>) {
-    const layout = await this.collection.findOne({ messageIds: interaction.message.id, guildId: interaction.guild.id });
+    const layout = await this.collection.findOne({
+      messageIds: interaction.message.id,
+      guildId: interaction.guild.id
+    });
     if (!layout) {
-      return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'Layout data not found.' });
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
+        content: 'Layout data not found.'
+      });
     }
 
     return interaction.reply({
@@ -308,7 +366,12 @@ export default class LayoutCommand extends Command {
       );
       row.addComponents(editButton, viewersButton);
     } else {
-      row.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Copy Layout').setURL(args.layout_link!));
+      row.addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Link)
+          .setLabel('Copy Layout')
+          .setURL(args.layout_link!)
+      );
       row.addComponents(editButton);
     }
 

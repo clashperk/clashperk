@@ -89,8 +89,12 @@ export default class RosterExportCommand extends Command {
     );
 
     const allRosterMembersTags = allRosterMembers.map((member) => member.tag);
-    const missingMembers = allClanMembers.filter((clanMember) => !allRosterMembersTags.includes(clanMember.member.tag));
-    const linksMap = await this.client.resolver.getLinkedUsersMap(missingMembers.map((member) => member.member));
+    const missingMembers = allClanMembers.filter(
+      (clanMember) => !allRosterMembersTags.includes(clanMember.member.tag)
+    );
+    const linksMap = await this.client.resolver.getLinkedUsersMap(
+      missingMembers.map((member) => member.member)
+    );
 
     sheets.push(
       {
@@ -156,6 +160,9 @@ export default class RosterExportCommand extends Command {
       sheets,
       sheetType: SheetType.ROSTERS
     });
-    return interaction.editReply({ content: `**Roster Export**`, components: getExportComponents(spreadsheet) });
+    return interaction.editReply({
+      content: `**Roster Export**`,
+      components: getExportComponents(spreadsheet)
+    });
   }
 }

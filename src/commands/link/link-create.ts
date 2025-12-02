@@ -1,6 +1,12 @@
 import { Collections, FeatureFlags, Settings } from '@app/constants';
 import { APIClan, APIPlayer } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  GuildMember
+} from 'discord.js';
 import { Args, Command, CommandOptions } from '../../lib/handlers.js';
 
 export default class LinkCreateCommand extends Command {
@@ -14,7 +20,11 @@ export default class LinkCreateCommand extends Command {
   }
 
   public refine(interaction: CommandInteraction<'cached'>) {
-    const hasLinksManager = this.client.settings.get<string[]>(interaction.guild, Settings.LINKS_MANAGER_ROLE, []);
+    const hasLinksManager = this.client.settings.get<string[]>(
+      interaction.guild,
+      Settings.LINKS_MANAGER_ROLE,
+      []
+    );
     return {
       ...this.options,
       userPermissions: hasLinksManager ? ['ManageGuild'] : [],
@@ -36,7 +46,13 @@ export default class LinkCreateCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { player_tag?: string; clan_tag?: string; member?: GuildMember; is_default?: boolean; forcePlayer?: boolean }
+    args: {
+      player_tag?: string;
+      clan_tag?: string;
+      member?: GuildMember;
+      is_default?: boolean;
+      forcePlayer?: boolean;
+    }
   ) {
     if (!(args.clan_tag || args.player_tag)) {
       const linkButton = new ButtonBuilder()
@@ -53,7 +69,10 @@ export default class LinkCreateCommand extends Command {
     }
 
     const member = args.member ?? interaction.member;
-    if (member.user.bot) return interaction.editReply(this.i18n('command.link.create.no_bots', { lng: interaction.locale }));
+    if (member.user.bot)
+      return interaction.editReply(
+        this.i18n('command.link.create.no_bots', { lng: interaction.locale })
+      );
 
     // Server disallowed linking users;
     if (
@@ -61,7 +80,9 @@ export default class LinkCreateCommand extends Command {
       member.id !== interaction.id &&
       !this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE)
     ) {
-      return interaction.editReply(this.i18n('common.missing_manager_role', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('common.missing_manager_role', { lng: interaction.locale })
+      );
     }
 
     if (args.player_tag) {
@@ -84,7 +105,9 @@ export default class LinkCreateCommand extends Command {
       );
     }
 
-    return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
+    return interaction.editReply(
+      this.i18n('command.link.create.fail', { lng: interaction.locale })
+    );
   }
 
   private async clanLink(member: GuildMember, clan: APIClan) {
@@ -125,7 +148,10 @@ export default class LinkCreateCommand extends Command {
     // only owner can set default account
     if (link && link.userId === member.id && !isDef) {
       return interaction.editReply(
-        this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
+        this.i18n('command.link.create.link_exists', {
+          lng: interaction.locale,
+          player: `**${player.name} (${player.tag})**`
+        })
       );
     }
 
@@ -140,15 +166,21 @@ export default class LinkCreateCommand extends Command {
     }
 
     if (link && accounts.length >= 25) {
-      return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.link.create.max_limit', { lng: interaction.locale })
+      );
     }
 
-    await this.client.db
-      .collection(Collections.USERS)
-      .updateOne(
-        { userId: member.id },
-        { $set: { username: member.user.username, displayName: member.user.displayName, discriminator: member.user.discriminator } }
-      );
+    await this.client.db.collection(Collections.USERS).updateOne(
+      { userId: member.id },
+      {
+        $set: {
+          username: member.user.username,
+          displayName: member.user.displayName,
+          discriminator: member.user.discriminator
+        }
+      }
+    );
 
     await this.client.db.collection(Collections.PLAYER_LINKS).updateOne(
       { tag: player.tag },
@@ -198,9 +230,14 @@ export default class LinkCreateCommand extends Command {
   }
 
   private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
-    const isTrustedFlag = this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
+    const isTrustedFlag = this.client.isFeatureEnabled(
+      FeatureFlags.TRUSTED_GUILD,
+      interaction.guildId
+    );
 
-    const isTrusted = isTrustedFlag || this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
+    const isTrusted =
+      isTrustedFlag ||
+      this.client.settings.get(interaction.guild, Settings.IS_TRUSTED_GUILD, false);
     if (!isTrusted) return false;
 
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);

@@ -231,7 +231,9 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           required: false,
           type: ApplicationCommandOptionType.Integer,
           description: command.summary.trophies.options.limit.description,
-          description_localizations: translation('command.summary.trophies.options.limit.description')
+          description_localizations: translation(
+            'command.summary.trophies.options.limit.description'
+          )
         }
       ]
     },
@@ -359,7 +361,9 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'week',
           description: command.summary.capital_contribution.options.week.description,
-          description_localizations: translation('command.summary.capital_contribution.options.week.description'),
+          description_localizations: translation(
+            'command.summary.capital_contribution.options.week.description'
+          ),
           type: ApplicationCommandOptionType.String,
           required: false,
           choices: getRaidWeekIds()

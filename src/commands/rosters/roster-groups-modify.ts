@@ -34,7 +34,8 @@ export default class RosterGroupsModifyCommand extends Command {
 
     const categoryId = new ObjectId(args.group);
     const category = await this.client.rosterManager.getCategory(categoryId);
-    if (!category || category.guildId !== interaction.guildId) return interaction.editReply({ content: 'User group was deleted.' });
+    if (!category || category.guildId !== interaction.guildId)
+      return interaction.editReply({ content: 'User group was deleted.' });
 
     if (args.delete_group) {
       await this.client.rosterManager.deleteCategory(category._id);
@@ -44,8 +45,12 @@ export default class RosterGroupsModifyCommand extends Command {
     const data: Partial<IRosterCategory> = {};
 
     if (args.name) {
-      const category = await this.client.rosterManager.searchCategory(interaction.guild.id, args.name);
-      if (category) return interaction.editReply({ content: 'A group with this name already exists.' });
+      const category = await this.client.rosterManager.searchCategory(
+        interaction.guild.id,
+        args.name
+      );
+      if (category)
+        return interaction.editReply({ content: 'A group with this name already exists.' });
     }
 
     if (args.name) data.displayName = args.name;
@@ -55,8 +60,12 @@ export default class RosterGroupsModifyCommand extends Command {
     if (args.order) data.order = args.order;
 
     if (args.group_role) {
-      const dup = await this.client.rosterManager.categories.findOne({ _id: { $ne: category._id }, roleId: args.group_role.id });
-      if (dup) return interaction.editReply({ content: 'A category with this role already exists.' });
+      const dup = await this.client.rosterManager.categories.findOne({
+        _id: { $ne: category._id },
+        roleId: args.group_role.id
+      });
+      if (dup)
+        return interaction.editReply({ content: 'A category with this role already exists.' });
     }
 
     await this.client.rosterManager.editCategory(category._id, data);

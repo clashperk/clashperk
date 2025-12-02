@@ -15,7 +15,10 @@ export default class LeaderboardClansCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { season: string; location: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { season: string; location: string }
+  ) {
     const loc = await this.client.db
       .collection(Collections.CLAN_RANKS)
       .findOne({ countryCode: args.location || 'global', season: args.season || Season.ID });

@@ -7,7 +7,15 @@ import {
   PlayerLinksEntity
 } from '@app/entities';
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
-import { ButtonInteraction, CommandInteraction, ForumChannel, Guild, MediaChannel, NewsChannel, TextChannel } from 'discord.js';
+import {
+  ButtonInteraction,
+  CommandInteraction,
+  ForumChannel,
+  Guild,
+  MediaChannel,
+  NewsChannel,
+  TextChannel
+} from 'discord.js';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { cluster, unique } from 'radash';
@@ -42,7 +50,14 @@ export class StorageHandler {
       .collection(Collections.CLAN_LOGS)
       .aggregate<{ clanTag: string }>([
         { $match: { guildId } },
-        { $lookup: { from: Collections.CLAN_STORES, localField: 'clanId', foreignField: '_id', as: 'root' } },
+        {
+          $lookup: {
+            from: Collections.CLAN_STORES,
+            localField: 'clanId',
+            foreignField: '_id',
+            as: 'root'
+          }
+        },
         { $unwind: { path: '$root', preserveNullAndEmptyArrays: true } },
         { $match: { root: { $exists: true } } },
         { $project: { clanTag: 1 } }
@@ -54,12 +69,21 @@ export class StorageHandler {
     const result = await this.client.db
       .collection(collection)
       .aggregate([
-        { $lookup: { from: Collections.CLAN_STORES, localField: 'clanId', foreignField: '_id', as: 'root' } },
+        {
+          $lookup: {
+            from: Collections.CLAN_STORES,
+            localField: 'clanId',
+            foreignField: '_id',
+            as: 'root'
+          }
+        },
         { $unwind: { path: '$root', preserveNullAndEmptyArrays: true } },
         { $match: { root: { $exists: false } } }
       ])
       .toArray();
-    await this.client.db.collection(collection).deleteMany({ _id: { $in: result.map((doc) => doc._id) } });
+    await this.client.db
+      .collection(collection)
+      .deleteMany({ _id: { $in: result.map((doc) => doc._id) } });
   }
 
   public async search(guildId: string, query: string[]): Promise<WithId<ClanStoresEntity>[]> {
@@ -95,7 +119,12 @@ export class StorageHandler {
     const isTotal = args === '*' || !args;
 
     if (!args && required) {
-      await interaction.editReply(i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE }));
+      await interaction.editReply(
+        i18n('common.no_clan_tag', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
+      );
       return { clans: null };
     }
 
@@ -105,12 +134,22 @@ export class StorageHandler {
         : await this.client.storage.search(interaction.guildId, tags);
 
     if (!clans.length && tags.length) {
-      await interaction.editReply(i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE }));
+      await interaction.editReply(
+        i18n('common.no_clans_found', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
+      );
       return { clans: null, isTotal };
     }
 
     if (!clans.length) {
-      await interaction.editReply(i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE }));
+      await interaction.editReply(
+        i18n('common.no_clans_linked', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
+      );
       return { clans: null, isTotal };
     }
 
@@ -138,7 +177,12 @@ export class StorageHandler {
     const value = await collection.findOneAndUpdate(
       { guildId, name: formattedName },
       {
-        $set: { displayName: category.trim(), guildId, name: formattedName, order: (lastCategory?.order ?? 0) + 1 }
+        $set: {
+          displayName: category.trim(),
+          guildId,
+          name: formattedName,
+          order: (lastCategory?.order ?? 0) + 1
+        }
       },
       { upsert: true, returnDocument: 'after' }
     );
@@ -160,11 +204,21 @@ export class StorageHandler {
         name: name.toLowerCase(),
         displayName: name
       }));
-      await this.client.db.collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES).insertMany(payload);
-      return payload.map((result) => ({ value: result._id.toHexString(), name: result.displayName, order: result.order }));
+      await this.client.db
+        .collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES)
+        .insertMany(payload);
+      return payload.map((result) => ({
+        value: result._id.toHexString(),
+        name: result.displayName,
+        order: result.order
+      }));
     }
 
-    return categories.map((result) => ({ value: result._id.toHexString(), name: result.displayName, order: result.order }));
+    return categories.map((result) => ({
+      value: result._id.toHexString(),
+      name: result.displayName,
+      order: result.order
+    }));
   }
 
   private fixTag(tag: string) {
@@ -228,13 +282,18 @@ export class StorageHandler {
     ];
 
     for (const { reminder, scheduler } of reminders) {
-      const reminders = await this.client.db.collection(reminder).find({ guild, clans: clanTag }).toArray();
+      const reminders = await this.client.db
+        .collection(reminder)
+        .find({ guild, clans: clanTag })
+        .toArray();
       for (const rem of reminders) {
         await this.client.db.collection(scheduler).deleteMany({ reminderId: rem._id });
         if (rem.clans.length === 1) {
           await this.client.db.collection(reminder).deleteOne({ _id: rem._id });
         } else {
-          await this.client.db.collection<ClanWarRemindersEntity>(reminder).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+          await this.client.db
+            .collection<ClanWarRemindersEntity>(reminder)
+            .updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
         }
       }
     }
@@ -243,7 +302,9 @@ export class StorageHandler {
   public async getWebhookWorkloads(guildId: string) {
     const [result] = await this.client.db
       .collection(Collections.CLAN_STORES)
-      .aggregate<Record<string, { name: string; tag: string; webhook: { id: string; token: string } }[]>>([
+      .aggregate<
+        Record<string, { name: string; tag: string; webhook: { id: string; token: string } }[]>
+      >([
         { $match: { guild: guildId } },
         {
           $facet: {
@@ -275,7 +336,9 @@ export class StorageHandler {
     return Object.values(result ?? {}).flat();
   }
 
-  public async getWebhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | MediaChannel) {
+  public async getWebhook(
+    channel: TextChannel | NewsChannel | ForumChannel | MediaChannel | MediaChannel
+  ) {
     const channelWebhooks = await channel.fetchWebhooks();
 
     const clans = await this.getWebhookWorkloads(channel.guild.id);
@@ -292,8 +355,15 @@ export class StorageHandler {
       .sort((a, b) => a.count - b.count)
       .at(0);
 
-    const webhookLimit = this.client.settings.get<number>(channel.guildId, Settings.WEBHOOK_LIMIT, 8);
-    if (estimated && (estimated.count <= 6 || channelWebhooks.size >= Math.max(3, Math.min(8, webhookLimit)))) {
+    const webhookLimit = this.client.settings.get<number>(
+      channel.guildId,
+      Settings.WEBHOOK_LIMIT,
+      8
+    );
+    if (
+      estimated &&
+      (estimated.count <= 6 || channelWebhooks.size >= Math.max(3, Math.min(8, webhookLimit)))
+    ) {
       return channelWebhooks.get(estimated.webhookId)!;
     }
 
@@ -303,11 +373,16 @@ export class StorageHandler {
       name: this.client.user.displayName,
       avatar: this.client.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
     });
-    this.client.logger.log(`Created webhook for ${channel.guild.name}#${channel.name}`, { label: 'HOOK' });
+    this.client.logger.log(`Created webhook for ${channel.guild.name}#${channel.name}`, {
+      label: 'HOOK'
+    });
     return webhook;
   }
 
-  public async getWarTags(tag: string, season: string = Season.monthId): Promise<ClanWarLeagueGroupsEntity | null> {
+  public async getWarTags(
+    tag: string,
+    season: string = Season.monthId
+  ): Promise<ClanWarLeagueGroupsEntity | null> {
     return this.client.db
       .collection<ClanWarLeagueGroupsEntity>(Collections.CWL_GROUPS)
       .findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });
@@ -317,7 +392,9 @@ export class StorageHandler {
     const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
     if (rounds.length !== body.clans.length - 1) return null;
 
-    const data = await this.client.db.collection(Collections.CWL_GROUPS).findOne({ 'clans.tag': tag }, { sort: { _id: -1 } });
+    const data = await this.client.db
+      .collection(Collections.CWL_GROUPS)
+      .findOne({ 'clans.tag': tag }, { sort: { _id: -1 } });
     if (data?.season === Season.monthId) return null;
     if (data && new Date().getMonth() <= new Date(data.season as string).getMonth()) return null;
 
@@ -342,7 +419,13 @@ export class StorageHandler {
     return createHash('md5').update(id).digest('hex');
   }
 
-  private async pushToDB(clanTag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
+  private async pushToDB(
+    clanTag: string,
+    clans: { tag: string; name: string }[],
+    warTags: any,
+    rounds: any[],
+    season: string
+  ) {
     const uid = this.md5(
       `${season}-${clans
         .map((clan) => clan.tag)
@@ -367,7 +450,11 @@ export class StorageHandler {
           uid,
           season,
           id: await this.uuid(),
-          clans: clans.map((clan) => ({ tag: clan.tag, name: clan.name, leagueId: leagues[clan.tag] })),
+          clans: clans.map((clan) => ({
+            tag: clan.tag,
+            name: clan.name,
+            leagueId: leagues[clan.tag]
+          })),
           leagues,
           createdAt: new Date()
         }
@@ -396,7 +483,11 @@ export class StorageHandler {
           uid,
           season,
           id: await this.uuid(),
-          clans: clans.map((clan) => ({ name: clan.name, tag: clan.tag, leagueId: leagues[clan.tag] })),
+          clans: clans.map((clan) => ({
+            name: clan.name,
+            tag: clan.tag,
+            leagueId: leagues[clan.tag]
+          })),
           leagues,
           warTags,
           rounds,
@@ -414,13 +505,18 @@ export class StorageHandler {
 
     const leagues: Record<string, number> = {};
     for (const clan of group.clans) {
-      const res = await fetch(`https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clan.tag)}/cwl/seasons`);
+      const res = await fetch(
+        `https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clan.tag)}/cwl/seasons`
+      );
       const seasons = (await res.json()) as { leagueId: string; seasonId: string }[];
       const season = seasons.find((season) => season.seasonId === seasonId);
       if (!season?.leagueId) continue;
       leagues[clan.tag] = Number(season.leagueId);
     }
-    Object.assign(Object.fromEntries(group.clans.map((clan) => [clan.tag, group.leagueId])), leagues);
+    Object.assign(
+      Object.fromEntries(group.clans.map((clan) => [clan.tag, group.leagueId])),
+      leagues
+    );
 
     const rounds: { warTags: string[] }[] = [];
     for (const _rounds of cluster(group.wars, 4)) {
@@ -437,7 +533,11 @@ export class StorageHandler {
       warTags[round.opponent.tag].push(round.warTag);
     }
 
-    const clans = group.clans.map((clan) => ({ name: clan.name, tag: clan.tag, leagueId: leagues[clan.tag] }));
+    const clans = group.clans.map((clan) => ({
+      name: clan.name,
+      tag: clan.tag,
+      leagueId: leagues[clan.tag]
+    }));
     return { clans, leagues, rounds, warTags, season: seasonId };
   }
 
@@ -504,7 +604,10 @@ export class StorageHandler {
     const _links = await collection.find({ tag: { $in: players.map((mem) => mem.tag) } }).toArray();
     const _discordLinks = await this.client.coc.getDiscordLinks(players);
 
-    const userIds = unique([..._links.map((link) => link.userId), ..._discordLinks.map((link) => link.userId)]);
+    const userIds = unique([
+      ..._links.map((link) => link.userId),
+      ..._discordLinks.map((link) => link.userId)
+    ]);
     const links = await collection.find({ userId: { $in: userIds } }).toArray();
     const discordLinks = await this.client.coc.getDiscordLinks(userIds.map((id) => ({ tag: id })));
 
@@ -512,13 +615,17 @@ export class StorageHandler {
       if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
       const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
 
-      const player = players.find((mem) => mem.tag === tag && mem.name) ?? (await this.client.coc.getPlayer(tag).then(({ body }) => body));
+      const player =
+        players.find((mem) => mem.tag === tag && mem.name) ??
+        (await this.client.coc.getPlayer(tag).then(({ body }) => body));
       if (!player?.name) continue;
 
       const user = await this.client.users.fetch(userId).catch(() => null);
       if (!user || user.bot) continue;
 
-      const dirtyLink = links.find((link) => link.tag === tag && link.userId !== userId && link.source === 'api');
+      const dirtyLink = links.find(
+        (link) => link.tag === tag && link.userId !== userId && link.source === 'api'
+      );
 
       try {
         if (dirtyLink) await collection.deleteOne({ tag: dirtyLink.tag });
@@ -545,7 +652,11 @@ export class StorageHandler {
   }
 
   private async uuid() {
-    const cursor = this.client.db.collection(Collections.CWL_GROUPS).find().sort({ id: -1 }).limit(1);
+    const cursor = this.client.db
+      .collection(Collections.CWL_GROUPS)
+      .find()
+      .sort({ id: -1 })
+      .limit(1);
     const uuid: number = (await cursor.next())?.id ?? 0;
     return uuid + 1;
   }

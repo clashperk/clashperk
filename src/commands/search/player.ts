@@ -53,7 +53,10 @@ export default class PlayerCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction | ButtonInteraction, args: { tag?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction | ButtonInteraction,
+    args: { tag?: string; user?: User }
+  ) {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
@@ -76,24 +79,50 @@ export default class PlayerCommand extends Command {
       history: JSON.stringify({ ...payload, cmd: 'clan-history' })
     };
 
-    const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
+    const refreshButton = new ButtonBuilder()
+      .setEmoji(EMOJIS.REFRESH)
+      .setStyle(ButtonStyle.Secondary)
+      .setCustomId(customIds.refresh);
     const mainRow = new ActionRowBuilder<ButtonBuilder>();
     const optionsRow = new ActionRowBuilder<ButtonBuilder>();
     mainRow
       .addComponents(refreshButton)
       .addComponents(
-        new ButtonBuilder().setLabel('Clan History').setEmoji(EMOJIS.SCROLL).setStyle(ButtonStyle.Secondary).setCustomId(customIds.history)
+        new ButtonBuilder()
+          .setLabel('Clan History')
+          .setEmoji(EMOJIS.SCROLL)
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(customIds.history)
       );
 
     optionsRow
-      .addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.units))
-      .addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
-      .addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Units')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.units)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Upgrades')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.upgrades)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Rushed')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.rushed)
+      );
 
     if (interaction.isMessageComponent()) {
       return interaction.editReply({
         embeds: [embed],
-        components: [mainRow, optionsRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
+        components: [
+          mainRow,
+          optionsRow,
+          ...getMenuFromMessage(interaction, data.tag, customIds.accounts)
+        ]
       });
     }
 
@@ -107,7 +136,10 @@ export default class PlayerCommand extends Command {
     }));
 
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
+      new StringSelectMenuBuilder()
+        .setCustomId(customIds.accounts)
+        .setPlaceholder('Select an account!')
+        .addOptions(options)
     );
 
     return interaction.editReply({
@@ -192,9 +224,17 @@ export default class PlayerCommand extends Command {
       }
     ]);
 
-    const heroes = data.heroes.filter((hero) => hero.village === 'home').map((hero) => `${HEROES[hero.name]} ${hero.level}`);
+    const heroes = data.heroes
+      .filter((hero) => hero.village === 'home')
+      .map((hero) => `${HEROES[hero.name]} ${hero.level}`);
     embed.addFields([
-      { name: '**Heroes**', value: [`${heroes.length ? heroes.join(' ') : `${EMOJIS.WRONG} None`}`, '\u200b\u2002'].join('\n') }
+      {
+        name: '**Heroes**',
+        value: [
+          `${heroes.length ? heroes.join(' ') : `${EMOJIS.WRONG} None`}`,
+          '\u200b\u2002'
+        ].join('\n')
+      }
     ]);
 
     const user = await this.getLinkedUser(data.tag);

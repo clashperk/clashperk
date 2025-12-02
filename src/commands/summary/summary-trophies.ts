@@ -1,4 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  escapeMarkdown
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { formatLeague, leagueTierSort, padStart } from '../../util/helper.js';
@@ -20,12 +27,21 @@ export default class SummaryTrophiesCommand extends Command {
     let limit = 99;
     if (args.limit) limit = Math.max(5, Math.min(99, args.limit));
 
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
     const members = _clans
-      .map((clan) => clan.memberList.map((mem) => ({ clan: clan.name, name: mem.name, tag: mem.tag, trophies: mem.trophies })))
+      .map((clan) =>
+        clan.memberList.map((mem) => ({
+          clan: clan.name,
+          name: mem.name,
+          tag: mem.tag,
+          trophies: mem.trophies
+        }))
+      )
       .flat();
 
     if (!members.length) {
@@ -170,7 +186,10 @@ export default class SummaryTrophiesCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
         .setStyle(ButtonStyle.Primary)

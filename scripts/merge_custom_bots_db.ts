@@ -21,10 +21,13 @@ import { mongoClient } from '../src/struct/database.js';
     if (!user) continue;
 
     for (const { id } of user.guilds) {
-      const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(bot.serviceId, id)}`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bot ${bot.token}`, 'Content-Type': 'application/json' }
-      });
+      const res = await fetch(
+        `${RouteBases.api}${Routes.applicationGuildCommands(bot.serviceId, id)}`,
+        {
+          method: 'GET',
+          headers: { 'Authorization': `Bot ${bot.token}`, 'Content-Type': 'application/json' }
+        }
+      );
       const result = await res.json();
       if (!res.ok) console.log(bot.serviceId, id, res.status, result);
 

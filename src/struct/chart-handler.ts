@@ -1,8 +1,14 @@
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default {
-  async growth(collection: any[] = [], { addition, deletion, growth }: { addition: number; deletion: number; growth: number }) {
-    const total = collection.reduce((pre, curr) => Number(pre) + Number(curr.value.addition - curr.value.deletion), 0);
+  async growth(
+    collection: any[] = [],
+    { addition, deletion, growth }: { addition: number; deletion: number; growth: number }
+  ) {
+    const total = collection.reduce(
+      (pre, curr) => Number(pre) + Number(curr.value.addition - curr.value.deletion),
+      0
+    );
     const body = {
       backgroundColor: 'white',
       width: 500,
@@ -12,7 +18,11 @@ export default {
       chart: {
         type: 'bar',
         data: {
-          labels: [...collection.map((d: any) => `${months[d.date.getMonth()]!} ${d.date.getDate() as number}`)],
+          labels: [
+            ...collection.map(
+              (d: any) => `${months[d.date.getMonth()]!} ${d.date.getDate() as number}`
+            )
+          ],
           datasets: [
             {
               type: 'bar',
@@ -54,7 +64,9 @@ export default {
             display: true,
             fontSize: 10,
             padding: 2,
-            text: [`Total ${total as number} | Server Growth (${collection.length}D) | Today ${addition}/${deletion}/${growth}`]
+            text: [
+              `Total ${total as number} | Server Growth (${collection.length}D) | Today ${addition}/${deletion}/${growth}`
+            ]
           }
         }
       }

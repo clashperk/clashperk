@@ -15,7 +15,10 @@ export default class LeaderboardPlayersCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { season: string; location: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { season: string; location: string }
+  ) {
     const loc = await this.client.db
       .collection(Collections.PLAYER_RANKS)
       .findOne({ countryCode: args.location || 'global', season: args.season || Season.ID });
@@ -38,7 +41,12 @@ export default class LeaderboardPlayersCommand extends Command {
       const embed = new EmbedBuilder();
       embed.setColor(this.client.embed(interaction));
       embed.setDescription(
-        players.map((player) => `${idx * 101}. \`${player.trophies}\` \u200b \u200e${escapeMarkdown(player.name)}`).join('\n')
+        players
+          .map(
+            (player) =>
+              `${idx * 101}. \`${player.trophies}\` \u200b \u200e${escapeMarkdown(player.name)}`
+          )
+          .join('\n')
       );
       embed.setTitle(`${loc.country} Player Leaderboard (${season})`);
       embed.setFooter({ text: `${loc.country} (${season})` });

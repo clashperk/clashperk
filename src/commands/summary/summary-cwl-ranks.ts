@@ -1,6 +1,13 @@
 import { WAR_LEAGUE_MAP, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 import { APIClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  escapeMarkdown
+} from 'discord.js';
 import { rankingSort } from '../../helper/cwl.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
@@ -23,9 +30,14 @@ export default class SummaryCWLRanks extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; season?: string }
+  ) {
     const season = args.season ?? Util.getCWLSeasonId();
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const _clans = await this.client.coc._getClans(clans);
@@ -38,9 +50,17 @@ export default class SummaryCWLRanks extends Command {
       ]);
       if (!leagueGroup?.leagues?.[clan.tag] || leagueGroup.season !== season) continue;
 
-      const isApiData = !(!lastLeagueGroup.res.ok || lastLeagueGroup.body.state === 'notInWar' || lastLeagueGroup.body.season !== season);
+      const isApiData = !(
+        !lastLeagueGroup.res.ok ||
+        lastLeagueGroup.body.state === 'notInWar' ||
+        lastLeagueGroup.body.season !== season
+      );
 
-      const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, leagueGroup, isApiData);
+      const aggregated = await this.client.coc.aggregateClanWarLeague(
+        clan.tag,
+        leagueGroup,
+        isApiData
+      );
       if (!aggregated) continue;
 
       const ranking = await this.rounds({ body: aggregated, clan });
@@ -54,9 +74,16 @@ export default class SummaryCWLRanks extends Command {
     }
 
     const leagueGroups = Object.entries(
-      chunks.reduce<Record<string, { rank: number; name: string; tag: string; stars: number; status: string }[]>>((acc, cur) => {
+      chunks.reduce<
+        Record<string, { rank: number; name: string; tag: string; stars: number; status: string }[]>
+      >((acc, cur) => {
         acc[cur.warLeagueId] ??= [];
-        acc[cur.warLeagueId].push({ ...cur.clan, rank: cur.rank, stars: cur.clan.stars, status: cur.status });
+        acc[cur.warLeagueId].push({
+          ...cur.clan,
+          rank: cur.rank,
+          stars: cur.clan.stars,
+          status: cur.status
+        });
         return acc;
       }, {})
     );
@@ -85,19 +112,30 @@ export default class SummaryCWLRanks extends Command {
       const chunks = Util.splitMessage(`${_clans.join('\n')}${emptySpace}`, { maxLength: 1024 });
       chunks.forEach((chunk, i) => {
         embed.addFields({
-          name: i === 0 ? `${CWL_LEAGUES[WAR_LEAGUE_MAP[leagueId]]} ${WAR_LEAGUE_MAP[leagueId]}` : '\u200b',
+          name:
+            i === 0
+              ? `${CWL_LEAGUES[WAR_LEAGUE_MAP[leagueId]]} ${WAR_LEAGUE_MAP[leagueId]}`
+              : '\u200b',
           value: chunk
         });
       });
     });
 
     if (!chunks.length) {
-      return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.monthId }));
+      return interaction.editReply(
+        this.i18n('command.cwl.no_season_data', {
+          lng: interaction.locale,
+          season: season ?? Season.monthId
+        })
+      );
     }
 
     const customId = this.createId({ cmd: this.id, clans: resolvedArgs, season: args.season });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customId).setStyle(ButtonStyle.Secondary)
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setCustomId(customId)
+        .setStyle(ButtonStyle.Secondary)
     );
 
     return interaction.editReply({ embeds: [embed], components: [row] });

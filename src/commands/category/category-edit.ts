@@ -21,14 +21,21 @@ export default class CategoryEditCommand extends Command {
   ) {
     if (!ObjectId.isValid(args.category)) return interaction.editReply('Invalid categoryId.');
 
-    const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+    const token = this.client.util.createToken({
+      userId: interaction.user.id,
+      guildId: interaction.guild.id
+    });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setURL(`https://clashperk.com/clans?token=${token}`).setLabel('Reorder').setStyle(ButtonStyle.Link)
+      new ButtonBuilder()
+        .setURL(`https://clashperk.com/clans?token=${token}`)
+        .setLabel('Reorder')
+        .setStyle(ButtonStyle.Link)
     );
 
     if (!(args.category_name || args.category_order)) {
       return interaction.editReply({
-        content: 'No value was provided to update the category. Would you like to reorder categories and clans?',
+        content:
+          'No value was provided to update the category. Would you like to reorder categories and clans?',
         components: [row]
       });
     }
@@ -40,9 +47,11 @@ export default class CategoryEditCommand extends Command {
       payload.name = this.client.storage.formatCategoryName(args.category_name);
     }
 
-    const alreadyExists = await this.client.db
-      .collection(Collections.CLAN_CATEGORIES)
-      .findOne({ guildId: interaction.guild.id, name: payload.name, _id: { $ne: new ObjectId(args.category) } });
+    const alreadyExists = await this.client.db.collection(Collections.CLAN_CATEGORIES).findOne({
+      guildId: interaction.guild.id,
+      name: payload.name,
+      _id: { $ne: new ObjectId(args.category) }
+    });
     if (alreadyExists) {
       return interaction.editReply('A category with this name already exists.');
     }
@@ -57,11 +66,15 @@ export default class CategoryEditCommand extends Command {
       if (categoryIds.length) {
         await this.client.db
           .collection(Collections.CLAN_CATEGORIES)
-          .updateMany({ _id: { $in: categoryIds } }, [{ $set: { order: { $sum: ['$order', 1] } } }]);
+          .updateMany({ _id: { $in: categoryIds } }, [
+            { $set: { order: { $sum: ['$order', 1] } } }
+          ]);
       }
     }
 
-    await this.client.db.collection(Collections.CLAN_CATEGORIES).updateOne({ _id: new ObjectId(args.category) }, { $set: { ...payload } });
+    await this.client.db
+      .collection(Collections.CLAN_CATEGORIES)
+      .updateOne({ _id: new ObjectId(args.category) }, { $set: { ...payload } });
 
     return interaction.editReply({
       content: '**Category name was updated.** Would you like to reorder categories and clans?',

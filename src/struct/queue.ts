@@ -10,7 +10,9 @@ export class Queue {
   }
 
   public wait() {
-    const next = this.promises.length ? this.promises[this.promises.length - 1].promise : Promise.resolve();
+    const next = this.promises.length
+      ? this.promises[this.promises.length - 1].promise
+      : Promise.resolve();
     let resolve;
     const promise = new Promise((res) => {
       resolve = res;

@@ -35,7 +35,10 @@ export default class LayoutConfigCommand extends Command {
 
   public async exec(interaction: CommandInteraction<'cached'>, args: LayoutCommandArgs) {
     if (!this.client.util.isManager(interaction.member)) {
-      return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'You are not allowed to edit this layout.' });
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
+        content: 'You are not allowed to edit this layout.'
+      });
     }
 
     const customIds = {
@@ -46,11 +49,24 @@ export default class LayoutConfigCommand extends Command {
       container.setAccentColor(this.client.embed(interaction)!);
       container.addTextDisplayComponents(new TextDisplayBuilder().setContent('## Layout Config'));
 
-      container.addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Small));
+      container.addSeparatorComponents((separator) =>
+        separator.setSpacing(SeparatorSpacingSize.Small)
+      );
 
-      const allowLayoutTracking = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_LAYOUT_TRACKING, false);
-      const allowLayoutVoting = this.client.settings.get<boolean>(interaction.guild, Settings.ALLOW_LAYOUT_VOTING, false);
-      const layoutTemplate = this.client.settings.get<string>(interaction.guild, Settings.LAYOUT_TEMPLATE);
+      const allowLayoutTracking = this.client.settings.get<boolean>(
+        interaction.guild,
+        Settings.ALLOW_LAYOUT_TRACKING,
+        false
+      );
+      const allowLayoutVoting = this.client.settings.get<boolean>(
+        interaction.guild,
+        Settings.ALLOW_LAYOUT_VOTING,
+        false
+      );
+      const layoutTemplate = this.client.settings.get<string>(
+        interaction.guild,
+        Settings.LAYOUT_TEMPLATE
+      );
 
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
@@ -64,7 +80,9 @@ export default class LayoutConfigCommand extends Command {
         )
       );
 
-      container.addSeparatorComponents((separator) => separator.setSpacing(SeparatorSpacingSize.Small));
+      container.addSeparatorComponents((separator) =>
+        separator.setSpacing(SeparatorSpacingSize.Small)
+      );
 
       const section = new SectionBuilder();
 
@@ -76,17 +94,30 @@ export default class LayoutConfigCommand extends Command {
           ].join('\n')
         )
       );
-      section.setButtonAccessory(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.edit).setLabel('Edit Template'));
+      section.setButtonAccessory(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(customIds.edit)
+          .setLabel('Edit Template')
+      );
       container.addSectionComponents(section);
 
       return container;
     };
 
     if (typeof args.allow_tracking === 'boolean') {
-      await this.client.settings.set(interaction.guild, Settings.ALLOW_LAYOUT_TRACKING, args.allow_tracking);
+      await this.client.settings.set(
+        interaction.guild,
+        Settings.ALLOW_LAYOUT_TRACKING,
+        args.allow_tracking
+      );
     }
     if (typeof args.allow_voting === 'boolean') {
-      await this.client.settings.set(interaction.guild, Settings.ALLOW_LAYOUT_VOTING, args.allow_voting);
+      await this.client.settings.set(
+        interaction.guild,
+        Settings.ALLOW_LAYOUT_VOTING,
+        args.allow_voting
+      );
     }
 
     const container = getEmbed();
@@ -97,7 +128,10 @@ export default class LayoutConfigCommand extends Command {
       interaction,
       customIds,
       onClick: async (action) => {
-        const layoutTemplate = this.client.settings.get<string>(interaction.guild, Settings.LAYOUT_TEMPLATE);
+        const layoutTemplate = this.client.settings.get<string>(
+          interaction.guild,
+          Settings.LAYOUT_TEMPLATE
+        );
 
         const modalCustomId = this.client.uuid(interaction.user.id);
         const templateInput = new TextInputBuilder()
@@ -109,7 +143,9 @@ export default class LayoutConfigCommand extends Command {
           .setRequired(false);
         if (layoutTemplate) templateInput.setValue(layoutTemplate);
 
-        const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Layout Template');
+        const modal = new ModalBuilder()
+          .setCustomId(modalCustomId)
+          .setTitle('Edit Layout Template');
         modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(templateInput));
 
         await action.showModal(modal);
@@ -121,13 +157,22 @@ export default class LayoutConfigCommand extends Command {
           });
 
           const newTemplate = modalSubmitInteraction.fields.getTextInputValue(modalCustomId);
-          await this.client.settings.set(interaction.guild, Settings.LAYOUT_TEMPLATE, newTemplate?.trim() || null);
+          await this.client.settings.set(
+            interaction.guild,
+            Settings.LAYOUT_TEMPLATE,
+            newTemplate?.trim() || null
+          );
           await modalSubmitInteraction.deferUpdate();
 
           const container = getEmbed();
           return interaction.editReply({ components: [container], withComponents: true });
         } catch (error) {
-          if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          if (
+            !(
+              error instanceof DiscordjsError &&
+              error.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          ) {
             throw error;
           }
         }

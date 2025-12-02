@@ -1,4 +1,10 @@
-import { GuildMember, GuildTextBasedChannel, PermissionsBitField, PermissionsString, User } from 'discord.js';
+import {
+  GuildMember,
+  GuildTextBasedChannel,
+  PermissionsBitField,
+  PermissionsString,
+  User
+} from 'discord.js';
 import i18next from 'i18next';
 
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
@@ -11,9 +17,11 @@ export const MAX_CLAN_SIZE = 50;
 
 export const BIT_FIELD = new PermissionsBitField(17893773667409n).bitfield;
 
-export const BOT_MANAGER_HYPERLINK = '[Bot Manager](<https://docs.clashperk.com/others/bot-manager>)';
+export const BOT_MANAGER_HYPERLINK =
+  '[Bot Manager](<https://docs.clashperk.com/others/bot-manager>)';
 
-export const URL_REGEX = /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+export const URL_REGEX =
+  /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
 
 export const UNRANKED_CAPITAL_LEAGUE_ID = 85000000;
 
@@ -377,7 +385,9 @@ export const BUILDER_BASE_LEAGUE_MAPS: Record<string, string> = {
 
 export const PLAYER_LEAGUE_NAMES = Array.from(new Set(Object.values(PLAYER_LEAGUE_MAPS)));
 
-export const BUILDER_BASE_LEAGUE_NAMES = Array.from(new Set(Object.values(BUILDER_BASE_LEAGUE_MAPS)));
+export const BUILDER_BASE_LEAGUE_NAMES = Array.from(
+  new Set(Object.values(BUILDER_BASE_LEAGUE_MAPS))
+);
 
 export const TROPHY_ROLES = [
   { min: 5200, max: 5249 },
@@ -388,7 +398,8 @@ export const TROPHY_ROLES = [
 ];
 
 export const CLAN_GAMES_MINIMUM_POINTS = [
-  1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4500, 5000
+  1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750,
+  4000, 4500, 5000
 ];
 
 export const DEEP_LINK_TYPES = {
@@ -500,7 +511,10 @@ export const WAR_LEAGUE_MAP: Record<string, string> = {
   48000022: 'Legend League'
 };
 
-export const WAR_LEAGUE_PROMOTION_MAP: Record<string, { promotion: number; demotion: number; name: string; bonuses: number }> = {
+export const WAR_LEAGUE_PROMOTION_MAP: Record<
+  string,
+  { promotion: number; demotion: number; name: string; bonuses: number }
+> = {
   48000000: { promotion: 3, demotion: 9, name: 'Unranked', bonuses: 0 },
   48000001: { promotion: 3, demotion: 9, name: 'Bronze League III', bonuses: 1 },
   48000002: { promotion: 3, demotion: 8, name: 'Bronze League II', bonuses: 1 },
@@ -727,10 +741,13 @@ export const BUILDER_BASE_LEAGUES = [
   }
 ];
 
-export const BUILDER_BASE_LEAGUES_MAP = BUILDER_BASE_LEAGUES.reduce<Record<string, string>>((record, league) => {
-  record[league.id] = league.name;
-  return record;
-}, {});
+export const BUILDER_BASE_LEAGUES_MAP = BUILDER_BASE_LEAGUES.reduce<Record<string, string>>(
+  (record, league) => {
+    record[league.id] = league.name;
+    return record;
+  },
+  {}
+);
 
 export const calculateCWLMedals = (leagueId: string, stars: number, rank: number) => {
   const percentage = MEDALS_PERCENTAGE_MAP[Math.min(8, stars)];
@@ -739,7 +756,8 @@ export const calculateCWLMedals = (leagueId: string, stars: number, rank: number
   return Math.round((rankMedals * percentage) / 100);
 };
 
-export const getHttpStatusText = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
+export const getHttpStatusText = (code: number, locale: string) =>
+  i18next.t(`common.status_code.${code}`, { lng: locale });
 
 export const getInviteLink = (id: string, guildId?: string, noPermissions = false) => {
   const query = new URLSearchParams({
@@ -751,7 +769,11 @@ export const getInviteLink = (id: string, guildId?: string, noPermissions = fals
   return `https://discord.com/api/oauth2/authorize?${query}`;
 };
 
-export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
+export function missingPermissions(
+  channel: GuildTextBasedChannel,
+  member: GuildMember | User,
+  permissions: PermissionsString[]
+) {
   const missingPerms = channel.permissionsFor(member)!.missing(permissions);
   return mapMissingPermissions(missingPerms);
 }

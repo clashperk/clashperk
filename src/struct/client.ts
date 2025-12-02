@@ -2,7 +2,14 @@ import { FeatureFlags, Settings } from '@app/constants';
 import { createClient as createClickHouseClient } from '@clickhouse/client';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
 import { ClusterClient, getInfo } from 'discord-hybrid-sharding';
-import { BaseInteraction, Client as DiscordClient, GatewayIntentBits, Message, Options, User } from 'discord.js';
+import {
+  BaseInteraction,
+  Client as DiscordClient,
+  GatewayIntentBits,
+  Message,
+  Options,
+  User
+} from 'discord.js';
 import { Db, MongoClient } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { URL, fileURLToPath } from 'node:url';
@@ -100,7 +107,12 @@ export class Client extends DiscordClient<true> {
       shardCount: getInfo().TOTAL_SHARDS,
       shards: getInfo().SHARD_LIST,
 
-      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildWebhooks, GatewayIntentBits.GuildMessages],
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildWebhooks,
+        GatewayIntentBits.GuildMessages
+      ],
       makeCache: Options.cacheWithLimits({
         ...Options.DefaultMakeCacheSettings,
         PresenceManager: 0,
@@ -134,7 +146,8 @@ export class Client extends DiscordClient<true> {
         },
         guildMembers: {
           interval: 5 * 60,
-          filter: () => (member) => member.id !== this.user.id && !this.cacheOverLimitGuilds.has(member.guild.id)
+          filter: () => (member) =>
+            member.id !== this.user.id && !this.cacheOverLimitGuilds.has(member.guild.id)
         },
         users: {
           interval: 5 * 60,
@@ -172,7 +185,9 @@ export class Client extends DiscordClient<true> {
   }
 
   public isCustom() {
-    return !['635462521729581058', '526971716711350273', '1228022517667467367'].includes(this.user.id);
+    return !['635462521729581058', '526971716711350273', '1228022517667467367'].includes(
+      this.user.id
+    );
   }
 
   public isPrimary() {
@@ -210,7 +225,9 @@ export class Client extends DiscordClient<true> {
     const globalMongoClient = new MongoClient(process.env.GLOBAL_MONGODB_URL!);
     this.globalDb = globalMongoClient.db('global_tracking');
 
-    await mongoClient.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
+    await mongoClient
+      .connect()
+      .then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
     this.db = mongoClient.db(mongoClient.dbName);
 
     this.settings = new SettingsProvider(this);

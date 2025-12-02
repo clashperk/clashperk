@@ -1,7 +1,15 @@
 import { Collections } from '@app/constants';
 import { ClanGamesEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, MessageType, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  CommandInteraction,
+  MessageType,
+  User
+} from 'discord.js';
 import { clanGamesEmbedMaker } from '../../helper/clan-games.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -34,14 +42,24 @@ export default class ClanGamesCommand extends Command {
     if (!clan) return;
     const seasonId = this.getSeasonId(args.season);
 
-    if (interaction.isButton() && interaction.message.type === MessageType.Default && this.latestSeason !== args.season) {
+    if (
+      interaction.isButton() &&
+      interaction.message.type === MessageType.Default &&
+      this.latestSeason !== args.season
+    ) {
       return interaction.editReply({ components: [] });
     }
 
-    const isLinked = await this.client.storage.getClan({ guildId: interaction.guild.id, clanTag: clan.tag });
+    const isLinked = await this.client.storage.getClan({
+      guildId: interaction.guild.id,
+      clanTag: clan.tag
+    });
     if (!isLinked && interaction.guild.id !== '509784317598105619') {
       return interaction.editReply(
-        this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_found', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
@@ -54,7 +72,11 @@ export default class ClanGamesCommand extends Command {
     const queried = await this.query(clan.tag, clan, seasonId);
     const members = this.filter(queried, memberList, seasonId);
 
-    const embed = clanGamesEmbedMaker(clan, { members, filters: { maxPoints: args.max, minPoints: args.filter }, seasonId });
+    const embed = clanGamesEmbedMaker(clan, {
+      members,
+      filters: { maxPoints: args.max, minPoints: args.filter },
+      seasonId
+    });
     if (interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand) {
       embed.setFooter({
         text: embed.data.footer!.text,
@@ -66,13 +88,23 @@ export default class ClanGamesCommand extends Command {
     const row = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(
         new ButtonBuilder()
-          .setCustomId(JSON.stringify({ cmd: this.id, max: false, tag: clan.tag, season: seasonId }))
+          .setCustomId(
+            JSON.stringify({ cmd: this.id, max: false, tag: clan.tag, season: seasonId })
+          )
           .setEmoji(EMOJIS.REFRESH)
           .setStyle(ButtonStyle.Secondary)
       )
       .addComponents(
         new ButtonBuilder()
-          .setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false, tag: clan.tag, season: seasonId }))
+          .setCustomId(
+            JSON.stringify({
+              cmd: this.id,
+              max: !args.max,
+              filter: false,
+              tag: clan.tag,
+              season: seasonId
+            })
+          )
           .setLabel(args.max ? 'Permissible Points' : 'Maximum Points')
           .setStyle(ButtonStyle.Primary)
       );
@@ -91,14 +123,16 @@ export default class ClanGamesCommand extends Command {
   }
 
   private query(clanTag: string, _clan: APIClan, seasonId: string) {
-    const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesEntity>([
-      {
-        $match: { __clans: clanTag, season: seasonId }
-      },
-      {
-        $limit: 60
-      }
-    ]);
+    const cursor = this.client.db
+      .collection(Collections.CLAN_GAMES_POINTS)
+      .aggregate<ClanGamesEntity>([
+        {
+          $match: { __clans: clanTag, season: seasonId }
+        },
+        {
+          $limit: 60
+        }
+      ]);
 
     return cursor.toArray();
   }
@@ -142,7 +176,12 @@ export default class ClanGamesCommand extends Command {
 
     return [...members, ...missingMembers]
       .sort((a, b) => b.points - a.points)
-      .sort((a, b) => clanGamesSortingAlgorithm(a.endedAt ? a.endedAt.getTime() : 0, b.endedAt ? b.endedAt.getTime() : 0));
+      .sort((a, b) =>
+        clanGamesSortingAlgorithm(
+          a.endedAt ? a.endedAt.getTime() : 0,
+          b.endedAt ? b.endedAt.getTime() : 0
+        )
+      );
   }
 }
 

@@ -64,7 +64,8 @@ export class ElasticIndexer {
 
   public async reSyncClanHistory(player: APIPlayer) {
     const clanHistoryRepository = this.client.globalDb.collection('global_clan_history');
-    const playersRepository = this.client.globalDb.collection<GlobalPlayersEntity>('global_players');
+    const playersRepository =
+      this.client.globalDb.collection<GlobalPlayersEntity>('global_players');
     const clansRepository = this.client.globalDb.collection('global_clans');
 
     const entity = await playersRepository.findOne({ tag: player.tag });
@@ -144,7 +145,9 @@ export class ElasticIndexer {
         $set: {
           name: player.name,
           townHallLevel: player.townHallLevel,
-          leagueId: player.leagueTier?.id ?? (player.trophies >= 5000 ? LEGEND_LEAGUE_ID : UNRANKED_TIER_ID),
+          leagueId:
+            player.leagueTier?.id ??
+            (player.trophies >= 5000 ? LEGEND_LEAGUE_ID : UNRANKED_TIER_ID),
           clan: player.clan ? { name: player.clan.name, tag: player.clan.tag } : {},
           lastSearched: new Date()
         }

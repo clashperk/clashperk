@@ -1,6 +1,12 @@
 import { Collections, FeatureFlags } from '@app/constants';
 import { addBreadcrumb, captureException } from '@sentry/node';
-import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, PermissionFlagsBits, time } from 'discord.js';
+import {
+  Guild,
+  GuildScheduledEventEntityType,
+  GuildScheduledEventPrivacyLevel,
+  PermissionFlagsBits,
+  time
+} from 'discord.js';
 import moment from 'moment';
 import { EMOJIS } from '../util/emojis.js';
 import { i18n } from '../util/i18n.js';
@@ -62,7 +68,10 @@ export class GuildEventsHandler {
     return this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS);
   }
 
-  public getEvents(lng: string, { filtered, useGraceTime }: { filtered: boolean; useGraceTime: boolean }) {
+  public getEvents(
+    lng: string,
+    { filtered, useGraceTime }: { filtered: boolean; useGraceTime: boolean }
+  ) {
     const now = moment().toDate();
     const graceTime = useGraceTime ? maxGraceTime : 0;
 
@@ -70,16 +79,27 @@ export class GuildEventsHandler {
       moment(now).date() > 28 || (moment(now).date() >= 28 && moment(now).hour() >= 8)
         ? moment(now).startOf('month').add(1, 'month').add(21, 'days').add(8, 'hours').toDate()
         : moment(now).startOf('month').add(21, 'days').add(8, 'hours').toDate();
-    const clanGamesEndTime = moment(clanGamesStartTime).add(6, 'days').subtract(graceTime, 'milliseconds').toDate();
+    const clanGamesEndTime = moment(clanGamesStartTime)
+      .add(6, 'days')
+      .subtract(graceTime, 'milliseconds')
+      .toDate();
 
     const cwlStartTime =
       moment(now).date() > 10 || (moment(now).date() >= 10 && moment(now).hour() >= 8)
         ? moment(now).startOf('month').add(1, 'month').add(8, 'hour').toDate()
         : moment(now).startOf('month').add(8, 'hours').toDate();
-    const cwlSignupEndTime = moment(cwlStartTime).add(2, 'days').subtract(graceTime, 'milliseconds').toDate();
-    const cwlEndTime = moment(cwlStartTime).add(9, 'days').subtract(graceTime, 'milliseconds').toDate();
+    const cwlSignupEndTime = moment(cwlStartTime)
+      .add(2, 'days')
+      .subtract(graceTime, 'milliseconds')
+      .toDate();
+    const cwlEndTime = moment(cwlStartTime)
+      .add(9, 'days')
+      .subtract(graceTime, 'milliseconds')
+      .toDate();
 
-    const seasonEndTime = moment(Util.getSeason().endTime).subtract(graceTime, 'milliseconds').toDate();
+    const seasonEndTime = moment(Util.getSeason().endTime)
+      .subtract(graceTime, 'milliseconds')
+      .toDate();
 
     const { raidWeekEndTime: _raidWeekEndTime, raidWeekStartTime } = Util.geRaidWeekend(now);
     const raidWeekEndTime = moment(_raidWeekEndTime).subtract(graceTime, 'milliseconds').toDate();
@@ -101,7 +121,9 @@ export class GuildEventsHandler {
         formattedName: `${EMOJIS.CLAN_GAMES} ${i18n('common.choices.clan_games', { lng })}`,
         value: `${time(clanGamesStartTime, 'R')}\n${time(clanGamesStartTime, 'f')}`,
         timestamp: clanGamesStartTime.getTime(),
-        visible: moment(now).isBefore(clanGamesStartTime) || moment(now).isAfter(getCorrectedEndTime(clanGamesEndTime))
+        visible:
+          moment(now).isBefore(clanGamesStartTime) ||
+          moment(now).isAfter(getCorrectedEndTime(clanGamesEndTime))
       },
       {
         type: 'clan_games_end',
@@ -149,7 +171,9 @@ export class GuildEventsHandler {
         formattedName: `${EMOJIS.CAPITAL_RAID} ${i18n('common.choices.raid_weekend', { lng })}`,
         value: `${time(raidWeekStartTime, 'R')}\n${time(raidWeekStartTime, 'f')}`,
         timestamp: raidWeekStartTime.getTime(),
-        visible: moment(now).isBefore(raidWeekStartTime) || moment(now).isAfter(getCorrectedEndTime(raidWeekEndTime))
+        visible:
+          moment(now).isBefore(raidWeekStartTime) ||
+          moment(now).isAfter(getCorrectedEndTime(raidWeekEndTime))
       },
       {
         type: 'raid_week_end',
@@ -177,9 +201,18 @@ export class GuildEventsHandler {
   }
 
   public async create(guild: Guild, guildEvent: GuildEventData) {
-    if (!guild.members.me?.permissions.has([PermissionFlagsBits.ManageEvents, PermissionFlagsBits.CreateEvents])) return null;
+    if (
+      !guild.members.me?.permissions.has([
+        PermissionFlagsBits.ManageEvents,
+        PermissionFlagsBits.CreateEvents
+      ])
+    )
+      return null;
 
-    for (const event of this.getEvents(guild.preferredLocale, { filtered: true, useGraceTime: true })) {
+    for (const event of this.getEvents(guild.preferredLocale, {
+      filtered: true,
+      useGraceTime: true
+    })) {
       if (guildEvent.allowedEvents && !guildEvent.allowedEvents.includes(event.type)) continue;
 
       if (event.timestamp === guildEvent.events[event.type]) continue;

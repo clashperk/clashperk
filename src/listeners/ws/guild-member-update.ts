@@ -33,7 +33,8 @@ export default class GuildMemberUpdateListener extends Listener {
 
     if (config.wars) {
       if (
-        (newMember.roles.includes(config.wars) && !warsExclusionUserIds.includes(newMember.user.id)) ||
+        (newMember.roles.includes(config.wars) &&
+          !warsExclusionUserIds.includes(newMember.user.id)) ||
         (!newMember.roles.includes(config.wars) && warsExclusionUserIds.includes(newMember.user.id))
       ) {
         config.warsExclusionUserIds = toggle(warsExclusionUserIds, newMember.user.id);
@@ -43,8 +44,10 @@ export default class GuildMemberUpdateListener extends Listener {
 
     if (config.games) {
       if (
-        (newMember.roles.includes(config.games) && !gamesExclusionUserIds.includes(newMember.user.id)) ||
-        (!newMember.roles.includes(config.games) && gamesExclusionUserIds.includes(newMember.user.id))
+        (newMember.roles.includes(config.games) &&
+          !gamesExclusionUserIds.includes(newMember.user.id)) ||
+        (!newMember.roles.includes(config.games) &&
+          gamesExclusionUserIds.includes(newMember.user.id))
       ) {
         config.gamesExclusionUserIds = toggle(gamesExclusionUserIds, newMember.user.id);
         updated = true;
@@ -53,8 +56,10 @@ export default class GuildMemberUpdateListener extends Listener {
 
     if (config.raids) {
       if (
-        (newMember.roles.includes(config.raids) && !raidsExclusionUserIds.includes(newMember.user.id)) ||
-        (!newMember.roles.includes(config.raids) && raidsExclusionUserIds.includes(newMember.user.id))
+        (newMember.roles.includes(config.raids) &&
+          !raidsExclusionUserIds.includes(newMember.user.id)) ||
+        (!newMember.roles.includes(config.raids) &&
+          raidsExclusionUserIds.includes(newMember.user.id))
       ) {
         config.raidsExclusionUserIds = toggle(raidsExclusionUserIds, newMember.user.id);
         updated = true;

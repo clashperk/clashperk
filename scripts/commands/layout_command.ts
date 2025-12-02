@@ -17,14 +17,18 @@ export const LAYOUT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'screenshot',
           description: command.layout.post.options.screenshot.description,
-          description_localizations: translation('command.layout.post.options.screenshot.description'),
+          description_localizations: translation(
+            'command.layout.post.options.screenshot.description'
+          ),
           required: true,
           type: ApplicationCommandOptionType.Attachment
         },
         {
           name: 'layout_link',
           description: command.layout.post.options.layout_link.description,
-          description_localizations: translation('command.layout.post.options.layout_link.description'),
+          description_localizations: translation(
+            'command.layout.post.options.layout_link.description'
+          ),
           required: true,
           max_length: 200,
           type: ApplicationCommandOptionType.String
@@ -47,13 +51,17 @@ export const LAYOUT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'allow_voting',
           description: command.layout.config.options.allow_voting.description,
-          description_localizations: translation('command.layout.config.options.allow_voting.description'),
+          description_localizations: translation(
+            'command.layout.config.options.allow_voting.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'allow_tracking',
           description: command.layout.config.options.allow_tracking.description,
-          description_localizations: translation('command.layout.config.options.allow_tracking.description'),
+          description_localizations: translation(
+            'command.layout.config.options.allow_tracking.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         }
       ]

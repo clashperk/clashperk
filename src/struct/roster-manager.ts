@@ -306,7 +306,10 @@ export class RosterManager {
     this._emitter.emit(event, ...args);
   }
 
-  public on<K extends keyof IRosterEvents>(event: K, listener: (...args: IRosterEvents[K]) => void) {
+  public on<K extends keyof IRosterEvents>(
+    event: K,
+    listener: (...args: IRosterEvents[K]) => void
+  ) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - this is fine
     this._emitter.on(event, (...args) => listener(...(args as IRosterEvents[K])));
@@ -322,7 +325,11 @@ export class RosterManager {
   }
 
   public async edit(rosterId: ObjectId, data: Partial<IRoster>) {
-    const value = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: data }, { returnDocument: 'after' });
+    const value = await this.rosters.findOneAndUpdate(
+      { _id: rosterId },
+      { $set: data },
+      { returnDocument: 'after' }
+    );
     return value;
   }
 
@@ -355,17 +362,29 @@ export class RosterManager {
   }
 
   public async close(rosterId: ObjectId) {
-    const value = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: true } }, { returnDocument: 'after' });
+    const value = await this.rosters.findOneAndUpdate(
+      { _id: rosterId },
+      { $set: { closed: true } },
+      { returnDocument: 'after' }
+    );
     return value;
   }
 
   public async open(rosterId: ObjectId) {
-    const value = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { closed: false } }, { returnDocument: 'after' });
+    const value = await this.rosters.findOneAndUpdate(
+      { _id: rosterId },
+      { $set: { closed: false } },
+      { returnDocument: 'after' }
+    );
     return value;
   }
 
   public async attachSheetId(rosterId: ObjectId, sheetId: string) {
-    const value = await this.rosters.findOneAndUpdate({ _id: rosterId }, { $set: { sheetId } }, { returnDocument: 'after' });
+    const value = await this.rosters.findOneAndUpdate(
+      { _id: rosterId },
+      { $set: { sheetId } },
+      { returnDocument: 'after' }
+    );
     return value;
   }
 
@@ -454,7 +473,9 @@ export class RosterManager {
     if (roster.members.some((m) => m.tag === player.tag)) {
       return {
         success: false,
-        message: isOwner ? 'You are already signed up for this roster.' : 'This player is already signed up for this roster.'
+        message: isOwner
+          ? 'You are already signed up for this roster.'
+          : 'This player is already signed up for this roster.'
       };
     }
 
@@ -512,7 +533,10 @@ export class RosterManager {
     categoryId,
     isDryRun = false
   }: {
-    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'> | StringSelectMenuInteraction<'cached'>;
+    interaction:
+      | CommandInteraction<'cached'>
+      | ButtonInteraction<'cached'>
+      | StringSelectMenuInteraction<'cached'>;
     rosterId: ObjectId;
     player: APIPlayer;
     user: { id: string; displayName: string; username: string } | null;
@@ -521,7 +545,10 @@ export class RosterManager {
   }) {
     const roster = await this.rosters.findOne({ _id: rosterId });
     if (!roster) {
-      await interaction.followUp({ content: 'This roster no longer exists.', flags: MessageFlags.Ephemeral });
+      await interaction.followUp({
+        content: 'This roster no longer exists.',
+        flags: MessageFlags.Ephemeral
+      });
       return false;
     }
 
@@ -543,7 +570,10 @@ export class RosterManager {
 
     const value = await this.signupUser({ roster, player, user, categoryId });
     if (!value) {
-      await interaction.followUp({ content: 'This roster no longer exists.', flags: MessageFlags.Ephemeral });
+      await interaction.followUp({
+        content: 'This roster no longer exists.',
+        flags: MessageFlags.Ephemeral
+      });
       return false;
     }
 
@@ -647,7 +677,9 @@ export class RosterManager {
     if (!value) return null;
 
     const affectedUserIds = targetedMembers.filter((mem) => mem.userId).map((mem) => mem.userId!);
-    const affectedUsers = roster.members.filter((mem) => mem.userId && affectedUserIds.includes(mem.userId));
+    const affectedUsers = roster.members.filter(
+      (mem) => mem.userId && affectedUserIds.includes(mem.userId)
+    );
 
     const grouped = affectedUsers.reduce<Record<string, IRosterMember[]>>((prev, curr) => {
       if (!curr.userId) return prev;
@@ -667,10 +699,14 @@ export class RosterManager {
       for (const member of members.filter((mem) => playerTags.includes(mem.tag))) {
         if (!member.categoryId) continue;
 
-        const category = categories.find((cat) => cat._id.toHexString() === member.categoryId!.toHexString());
+        const category = categories.find(
+          (cat) => cat._id.toHexString() === member.categoryId!.toHexString()
+        );
         if (!category) continue;
 
-        const categorizedMembers = members.filter((mem) => mem.categoryId && mem.categoryId.toHexString() === category._id.toHexString());
+        const categorizedMembers = members.filter(
+          (mem) => mem.categoryId && mem.categoryId.toHexString() === category._id.toHexString()
+        );
         if (category.roleId && categorizedMembers.length <= 1) roleIds.push(category.roleId);
       }
 
@@ -730,12 +766,14 @@ export class RosterManager {
 
     if (oldCategoryId) {
       const category = await this.getCategory(oldCategoryId);
-      if (category?.roleId && user) await this.removeRole(roster.guildId, [category.roleId], user.id);
+      if (category?.roleId && user)
+        await this.removeRole(roster.guildId, [category.roleId], user.id);
     }
 
     if (newCategoryId) {
       const newCategory = await this.getCategory(newCategoryId);
-      if (newCategory?.roleId && user) await this.addRole(roster.guildId, [newCategory.roleId], user.id);
+      if (newCategory?.roleId && user)
+        await this.addRole(roster.guildId, [newCategory.roleId], user.id);
     }
 
     const value = await this.rosters.findOneAndUpdate(
@@ -792,7 +830,9 @@ export class RosterManager {
       ...new Set(members.filter((mem) => mem.clan?.tag).map((mem) => mem.clan!.tag))
     ]);
     const players = await Promise.all(members.map((mem) => this.client.coc.getPlayer(mem.tag)));
-    const { body, res } = roster.clan ? await this.client.coc.getClan(roster.clan.tag) : { body: null, res: null };
+    const { body, res } = roster.clan
+      ? await this.client.coc.getClan(roster.clan.tag)
+      : { body: null, res: null };
 
     const links = await this.client.db
       .collection(Collections.PLAYER_LINKS)
@@ -801,7 +841,10 @@ export class RosterManager {
 
     const clan = roster.clan;
     if (res?.ok && body && clan) {
-      clan.league = { id: body.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID, name: body.warLeague?.name ?? 'Unranked' };
+      clan.league = {
+        id: body.warLeague?.id ?? UNRANKED_WAR_LEAGUE_ID,
+        name: body.warLeague?.name ?? 'Unranked'
+      };
       clan.badgeUrl = body.badgeUrls.large;
     }
 
@@ -835,7 +878,12 @@ export class RosterManager {
       member.leagueId = player.leagueTier?.id ?? UNRANKED_TIER_ID;
       const heroes = player.heroes.filter((hero) => hero.village === 'home');
       member.heroes = heroes.reduce((prev, curr) => ({ ...prev, [curr.name]: curr.level }), {});
-      if (player.clan) member.clan = { name: player.clan.name, tag: player.clan.tag, alias: aliases[player.clan.tag] || null };
+      if (player.clan)
+        member.clan = {
+          name: player.clan.name,
+          tag: player.clan.tag,
+          alias: aliases[player.clan.tag] || null
+        };
       else member.clan = null;
     });
 
@@ -852,9 +900,21 @@ export class RosterManager {
     return updated;
   }
 
-  public getRosterEmbed(roster: IRoster, categories: WithId<IRosterCategory>[], multi: true): EmbedBuilder[];
-  public getRosterEmbed(roster: IRoster, categories: WithId<IRosterCategory>[], multi?: false): EmbedBuilder;
-  public getRosterEmbed(roster: IRoster, categories: WithId<IRosterCategory>[], multi: boolean = false): EmbedBuilder[] | EmbedBuilder {
+  public getRosterEmbed(
+    roster: IRoster,
+    categories: WithId<IRosterCategory>[],
+    multi: true
+  ): EmbedBuilder[];
+  public getRosterEmbed(
+    roster: IRoster,
+    categories: WithId<IRosterCategory>[],
+    multi?: false
+  ): EmbedBuilder;
+  public getRosterEmbed(
+    roster: IRoster,
+    categories: WithId<IRosterCategory>[],
+    multi: boolean = false
+  ): EmbedBuilder[] | EmbedBuilder {
     const categoriesMap = categories.reduce<Record<string, IRosterCategory>>(
       (prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
       {}
@@ -868,7 +928,9 @@ export class RosterManager {
         roster.members.sort((a, b) => b.townHallLevel - a.townHallLevel);
         break;
       case 'HERO_LEVEL':
-        roster.members.sort((a, b) => this.sum(Object.values(a.heroes)) - this.sum(Object.values(b.heroes)));
+        roster.members.sort(
+          (a, b) => this.sum(Object.values(a.heroes)) - this.sum(Object.values(b.heroes))
+        );
         break;
       case 'TH_HERO_LEVEL':
         roster.members
@@ -938,7 +1000,8 @@ export class RosterManager {
     }
 
     const groups = membersGroup.map(([categoryId, members]) => {
-      const categoryLabel = categoryId === 'none' ? '**Ungrouped**' : `**${categoriesMap[categoryId].displayName}**`;
+      const categoryLabel =
+        categoryId === 'none' ? '**Ungrouped**' : `**${categoriesMap[categoryId].displayName}**`;
       return {
         categoryLabel,
         members: members.map((mem, i) => {
@@ -956,9 +1019,18 @@ export class RosterManager {
           const townHallIcon = TOWN_HALLS[mem.townHallLevel];
           const leagueIcon = HOME_BASE_LEAGUES[mem.leagueId || UNRANKED_TIER_ID];
           const trophies = `${mem.trophies}`.padStart(rosterLayoutMap.TROPHIES.width, ' ');
-          const heroes = `${this.sum(Object.values(mem.heroes))}`.padEnd(rosterLayoutMap.HERO_LEVEL.width, ' ');
-          const role = (mem.role ? roleNames[mem.role] : ' ').padEnd(rosterLayoutMap.ROLE.width, ' ');
-          const warPreference = `${mem.warPreference?.toUpperCase() ?? ' '}`.padEnd(rosterLayoutMap.PREF.width, ' ');
+          const heroes = `${this.sum(Object.values(mem.heroes))}`.padEnd(
+            rosterLayoutMap.HERO_LEVEL.width,
+            ' '
+          );
+          const role = (mem.role ? roleNames[mem.role] : ' ').padEnd(
+            rosterLayoutMap.ROLE.width,
+            ' '
+          );
+          const warPreference = `${mem.warPreference?.toUpperCase() ?? ' '}`.padEnd(
+            rosterLayoutMap.PREF.width,
+            ' '
+          );
 
           return {
             index,
@@ -1019,7 +1091,10 @@ export class RosterManager {
     if (roster.rosterImage) embed.setImage(roster.rosterImage);
 
     const embeds: EmbedBuilder[] = [embed];
-    if ((rest.length && roster.members.length >= ROSTER_MAX_LIMIT) || rosterContent.length >= 5800) {
+    if (
+      (rest.length && roster.members.length >= ROSTER_MAX_LIMIT) ||
+      rosterContent.length >= 5800
+    ) {
       rest.forEach((value) => {
         const embedBuilder = new EmbedBuilder(embed.toJSON());
         embedBuilder.setDescription(value);
@@ -1043,7 +1118,10 @@ export class RosterManager {
     } else if (roster.endTime) {
       embed.addFields({
         name: '\u200e',
-        value: [`${footer}`, `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`].join('\n')
+        value: [
+          `${footer}`,
+          `Signup ${this.isClosed(roster) ? '**closed**' : 'closes'} on ${time(roster.endTime)}`
+        ].join('\n')
       });
     } else if (roster.closed) {
       embed.addFields({
@@ -1110,7 +1188,9 @@ export class RosterManager {
       .addFields({
         name: 'End Time',
         inline: true,
-        value: roster.endTime ? `${time(roster.endTime)} ${this.isClosed(roster) ? '[CLOSED]' : `(${time(roster.endTime, 'R')})`}` : 'N/A'
+        value: roster.endTime
+          ? `${time(roster.endTime)} ${this.isClosed(roster) ? '[CLOSED]' : `(${time(roster.endTime, 'R')})`}`
+          : 'N/A'
       })
       .addFields({
         name: 'Use Clan Alias',
@@ -1151,7 +1231,13 @@ export class RosterManager {
     return embed;
   }
 
-  public getRosterComponents({ roster, signupDisabled }: { roster: WithId<IRoster>; signupDisabled: boolean }) {
+  public getRosterComponents({
+    roster,
+    signupDisabled
+  }: {
+    roster: WithId<IRoster>;
+    signupDisabled: boolean;
+  }) {
     const isClosed = this.isClosed(roster);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -1170,12 +1256,20 @@ export class RosterManager {
     if (!signupDisabled) {
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: true }))
+          .setCustomId(
+            JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: true })
+          )
           .setLabel('Signup')
           .setStyle(ButtonStyle.Success)
           .setDisabled(isClosed),
         new ButtonBuilder()
-          .setCustomId(JSON.stringify({ cmd: 'roster-signup', roster: roster._id.toHexString(), signup: false }))
+          .setCustomId(
+            JSON.stringify({
+              cmd: 'roster-signup',
+              roster: roster._id.toHexString(),
+              signup: false
+            })
+          )
           .setLabel('Opt-out')
           .setStyle(ButtonStyle.Danger)
           .setDisabled(isClosed)
@@ -1228,7 +1322,9 @@ export class RosterManager {
         .toArray();
 
       const categories = await this.getCategories(guild.id);
-      const categoryRolesMap = Object.fromEntries(categories.map((category) => [category._id.toHexString(), category.roleId]));
+      const categoryRolesMap = Object.fromEntries(
+        categories.map((category) => [category._id.toHexString(), category.roleId])
+      );
       const rosterRolesMap: Record<string, string[]> = {};
       const rosterSystemRoles = new Set<string>();
 
@@ -1270,19 +1366,26 @@ export class RosterManager {
         }
 
         if (!(member.id in rolesMap) && roster.roleId) {
-          const roles = [roster.roleId].filter((id) => this.hasPermission(guild, id) && member.roles.cache.has(id));
+          const roles = [roster.roleId].filter(
+            (id) => this.hasPermission(guild, id) && member.roles.cache.has(id)
+          );
           if (roles.length) excluded.push(...roles);
         }
 
         const allowedRoles = rosterRolesMap[member.id] || [];
         const excludedRoles = member.roles.cache.filter(
-          (role) => this.hasPermission(guild, role.id) && rosterSystemRoles.has(role.id) && !allowedRoles.includes(role.id)
+          (role) =>
+            this.hasPermission(guild, role.id) &&
+            rosterSystemRoles.has(role.id) &&
+            !allowedRoles.includes(role.id)
         );
         if (excludedRoles) excluded.push(...excludedRoles.map((role) => role.id));
 
         if (!excluded.length && !included.length) continue;
 
-        const roleIdsToSet = [...existingRoleIds, ...included].filter((id) => !excluded.includes(id));
+        const roleIdsToSet = [...existingRoleIds, ...included].filter(
+          (id) => !excluded.includes(id)
+        );
         await member.edit({ roles: unique(roleIdsToSet, (id) => id) });
 
         await Util.delay(2000);
@@ -1421,7 +1524,11 @@ export class RosterManager {
 
   public async editCategory(categoryId: ObjectId, data: Partial<IRosterCategory>) {
     if (data.displayName) data.name = this.formatCategoryName(data.displayName);
-    const value = await this.categories.findOneAndUpdate({ _id: categoryId }, { $set: data }, { returnDocument: 'after' });
+    const value = await this.categories.findOneAndUpdate(
+      { _id: categoryId },
+      { $set: data },
+      { returnDocument: 'after' }
+    );
     return value;
   }
 
@@ -1429,7 +1536,9 @@ export class RosterManager {
     const zone = location ? moment.tz.zone(location) : null;
     if (zone) return zone.name;
 
-    const user = await this.client.db.collection(Collections.USERS).findOne({ userId: interaction.user.id });
+    const user = await this.client.db
+      .collection(Collections.USERS)
+      .findOne({ userId: interaction.user.id });
     if (!location) {
       if (!user?.timezone) return 'UTC';
       return user.timezone.id;
@@ -1468,7 +1577,11 @@ export class RosterManager {
   }
 
   public getDefaultSettings(guildId: string) {
-    return this.client.settings.get<Partial<IRosterDefaultSettings>>(guildId, Settings.ROSTER_DEFAULT_SETTINGS, {});
+    return this.client.settings.get<Partial<IRosterDefaultSettings>>(
+      guildId,
+      Settings.ROSTER_DEFAULT_SETTINGS,
+      {}
+    );
   }
 
   public async setDefaultSettings(guildId: string, data: Partial<IRoster>) {
@@ -1562,7 +1675,9 @@ export class RosterManager {
       if (!link && !allowUnlinked) return;
 
       members.push({
-        user: link ? { id: link.userId, displayName: link.displayName, username: link.username } : null,
+        user: link
+          ? { id: link.userId, displayName: link.displayName, username: link.username }
+          : null,
         ...player
       });
     });
@@ -1586,7 +1701,10 @@ export class RosterManager {
       (prev, curr) => ({ ...prev, [curr._id.toHexString()]: curr }),
       {}
     );
-    const seasonId = moment().date() >= 10 ? moment().format('YYYY-MM') : moment().subtract(1, 'month').format('YYYY-MM');
+    const seasonId =
+      moment().date() >= 10
+        ? moment().format('YYYY-MM')
+        : moment().subtract(1, 'month').format('YYYY-MM');
 
     const sheets: CreateGoogleSheet[] = [];
 
@@ -1646,16 +1764,22 @@ export class RosterManager {
             cwlMember?.stars,
             cwlMember?.participated ? (cwlMember.stars / cwlMember.participated).toFixed(2) : '',
             cwlMember?.destruction,
-            cwlMember?.participated ? (cwlMember.destruction / cwlMember.participated).toFixed(2) : '',
+            cwlMember?.participated
+              ? (cwlMember.destruction / cwlMember.participated).toFixed(2)
+              : '',
             cwlMember?.threeStars,
             cwlMember?.twoStars,
             cwlMember?.oneStar,
             cwlMember?.zeroStars,
             cwlMember?.missedAttacks,
             cwlMember?.defenseStars,
-            cwlMember?.defenseCount ? (cwlMember.defenseStars / cwlMember.defenseCount).toFixed(2) : '',
+            cwlMember?.defenseCount
+              ? (cwlMember.defenseStars / cwlMember.defenseCount).toFixed(2)
+              : '',
             cwlMember?.defenseDestruction,
-            cwlMember?.defenseCount ? (cwlMember.defenseDestruction / cwlMember.defenseCount).toFixed(2) : ''
+            cwlMember?.defenseCount
+              ? (cwlMember.defenseDestruction / cwlMember.defenseCount).toFixed(2)
+              : ''
           ];
         })
       });
@@ -1697,7 +1821,11 @@ export class RosterManager {
     }
 
     const sheet = roster.sheetId
-      ? await updateGoogleSheet(roster.sheetId, sheets, { clear: true, recreate: false, title: `${name} [Roster Export]` })
+      ? await updateGoogleSheet(roster.sheetId, sheets, {
+          clear: true,
+          recreate: false,
+          title: `${name} [Roster Export]`
+        })
       : await createGoogleSheet(`${name} [Roster Export]`, sheets);
     if (!roster.sheetId) this.client.rosterManager.attachSheetId(roster._id, sheet.spreadsheetId);
     return sheet;
@@ -1806,7 +1934,9 @@ export class RosterManager {
             const previousBestAttack = this.client.coc.getPreviousBestAttack(__attacks, atk);
             member.attacks += 1;
             member.stars += atk.stars;
-            member.trueStars += previousBestAttack ? Math.max(0, atk.stars - previousBestAttack.stars) : atk.stars;
+            member.trueStars += previousBestAttack
+              ? Math.max(0, atk.stars - previousBestAttack.stars)
+              : atk.stars;
             member.destruction += atk.destructionPercentage;
             member.threeStars += atk.stars === 3 ? 1 : 0;
             member.twoStars += atk.stars === 2 ? 1 : 0;
@@ -1862,16 +1992,19 @@ export class RosterManager {
 
     const embed = new EmbedBuilder().setColor(colorCodes[action]).setTitle(`${roster.name}`);
     if (roster.clan) {
-      embed
-        .setURL(`http://cprk.us/c/${roster.clan.tag.slice(1)}`)
-        .setFooter({ text: `${roster.clan.name} (${roster.clan.tag})`, iconURL: roster.clan.badgeUrl });
+      embed.setURL(`http://cprk.us/c/${roster.clan.tag.slice(1)}`).setFooter({
+        text: `${roster.clan.name} (${roster.clan.tag})`,
+        iconURL: roster.clan.badgeUrl
+      });
     }
 
     embed.setDescription(
       [
         `### ${label}`,
         //
-        members.map((mem) => `\u200e${mem.name} (${mem.tag}) ${mem.userId ? `<@${mem.userId}>` : ''}`).join('\n')
+        members
+          .map((mem) => `\u200e${mem.name} (${mem.tag}) ${mem.userId ? `<@${mem.userId}>` : ''}`)
+          .join('\n')
       ].join('\n')
     );
     if (action === RosterLog.CHANGE_GROUP) {
@@ -1890,20 +2023,27 @@ export class RosterManager {
     }
 
     if (action !== RosterLog.OPT_OUT && action !== RosterLog.REMOVE_PLAYER) {
-      embed.addFields({ name: 'User Group', value: categoryId ? categoryMap[categoryId]?.displayName : 'None' });
+      embed.addFields({
+        name: 'User Group',
+        value: categoryId ? categoryMap[categoryId]?.displayName : 'None'
+      });
     }
 
     embed.addFields({ name: 'User', value: `<@${user.id}>` });
 
     const rosterLog =
       roster.logChannelId && roster.webhook
-        ? { fromRoster: true, channelId: roster.logChannelId, webhook: { token: roster.webhook.token, id: roster.webhook.id } }
+        ? {
+            fromRoster: true,
+            channelId: roster.logChannelId,
+            webhook: { token: roster.webhook.token, id: roster.webhook.id }
+          }
         : null;
-    const defaultConfig = this.client.settings.get<{ fromRoster: boolean; channelId: string; webhook: { token: string; id: string } }>(
-      roster.guildId,
-      Settings.ROSTER_CHANGELOG,
-      rosterLog
-    );
+    const defaultConfig = this.client.settings.get<{
+      fromRoster: boolean;
+      channelId: string;
+      webhook: { token: string; id: string };
+    }>(roster.guildId, Settings.ROSTER_CHANGELOG, rosterLog);
 
     const config = rosterLog ?? defaultConfig;
     if (!config) return null;
@@ -1912,9 +2052,13 @@ export class RosterManager {
     const channel = this.client.util.getTextBasedChannel(config.channelId);
 
     try {
-      return await webhook.send(channel?.isThread() ? { embeds: [embed], threadId: config.channelId } : { embeds: [embed] });
+      return await webhook.send(
+        channel?.isThread() ? { embeds: [embed], threadId: config.channelId } : { embeds: [embed] }
+      );
     } catch (error) {
-      if ([DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)) {
+      if (
+        [DiscordErrorCodes.UNKNOWN_CHANNEL, DiscordErrorCodes.UNKNOWN_WEBHOOK].includes(error.code)
+      ) {
         if (config.fromRoster) {
           await this.edit(roster._id, { logChannelId: null, webhook: null });
         } else {
@@ -1938,7 +2082,9 @@ export class RosterManager {
 
     const { roster } = options;
 
-    const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
+    const webhook = await this.client.storage.getWebhook(
+      channel.isThread() ? channel.parent! : channel
+    );
     if (!webhook) return null;
 
     if (config.fromRoster) {

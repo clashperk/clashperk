@@ -1,5 +1,11 @@
 import { Collections } from '@app/constants';
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
+import {
+  ActionRowBuilder,
+  AttachmentBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction
+} from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import Google from '../../struct/google.js';
@@ -15,8 +21,13 @@ export default class ClanActivityCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number; timezone?: string; limit?: number }) {
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; days?: number; timezone?: string; limit?: number }
+  ) {
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const result = await this.aggregate(
@@ -25,7 +36,8 @@ export default class ClanActivityCommand extends Command {
       args.limit || 10 // if the limit is not provided; let's pick up 10
     );
 
-    if (!result.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!result.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
     const timezone = await this.getTimezoneOffset(interaction, args.timezone);
 
     const days = args.days ?? 1;
@@ -34,7 +46,8 @@ export default class ClanActivityCommand extends Command {
     const dataLabel = new Array(days * itemCount)
       .fill(0)
       .map((_, i) => {
-        const decrement = new Date().getTime() - (isHourly ? 60 * 60 * 1000 : 60 * 60 * 1000 * 24) * i;
+        const decrement =
+          new Date().getTime() - (isHourly ? 60 * 60 * 1000 : 60 * 60 * 1000 * 24) * i;
         const key = isHourly
           ? moment(decrement).minutes(0).seconds(0).milliseconds(0).toISOString()
           : moment(decrement).hours(0).minutes(0).seconds(0).milliseconds(0).toISOString();
@@ -79,7 +92,15 @@ export default class ClanActivityCommand extends Command {
         new ButtonBuilder()
           .setEmoji(EMOJIS.REFRESH)
           .setStyle(ButtonStyle.Secondary)
-          .setCustomId(this.createId({ cmd: this.id, clans: resolvedArgs, days: args.days, timezone: args.timezone, limit: args.limit }))
+          .setCustomId(
+            this.createId({
+              cmd: this.id,
+              clans: resolvedArgs,
+              days: args.days,
+              timezone: args.timezone,
+              limit: args.limit
+            })
+          )
       )
       .addComponents(
         new ButtonBuilder()
@@ -90,23 +111,34 @@ export default class ClanActivityCommand extends Command {
 
     const timeZoneCommand = this.client.commands.get('/timezone');
     await interaction.editReply({
-      content: timezone.name === 'UTC' ? `Set your timezone with the ${timeZoneCommand} command.` : null,
+      content:
+        timezone.name === 'UTC' ? `Set your timezone with the ${timeZoneCommand} command.` : null,
       files: [rawFile],
       components: [row]
     });
 
     const diff = process.hrtime(hrStart);
-    this.client.logger.info(`Rendered in ${(diff.at(0)! * 1000 + diff.at(1)! / 1000000).toFixed(2)}ms`, { label: 'CHART' });
+    this.client.logger.info(
+      `Rendered in ${(diff.at(0)! * 1000 + diff.at(1)! / 1000000).toFixed(2)}ms`,
+      {
+        label: 'CHART'
+      }
+    );
   }
 
   private async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {
     const zone = location ? moment.tz.zone(location) : null;
     if (zone) return { offset: zone.utcOffset(Date.now()) * 60 * -1, name: zone.name };
 
-    const user = await this.client.db.collection(Collections.USERS).findOne({ userId: interaction.user.id });
+    const user = await this.client.db
+      .collection(Collections.USERS)
+      .findOne({ userId: interaction.user.id });
     if (!location) {
       if (!user?.timezone?.id) return { offset: 0, name: 'UTC' };
-      return { offset: moment.tz.zone(user.timezone.id)!.utcOffset(Date.now()) * 60 * -1, name: user.timezone.name };
+      return {
+        offset: moment.tz.zone(user.timezone.id)!.utcOffset(Date.now()) * 60 * -1,
+        name: user.timezone.name
+      };
     }
 
     const raw = await Google.timezone(location);
@@ -134,7 +166,10 @@ export default class ClanActivityCommand extends Command {
       );
     }
 
-    return { offset: moment.tz.zone(raw.timezone.timeZoneId)!.utcOffset(Date.now()) * 60 * -1, name: raw.timezone.timeZoneName };
+    return {
+      offset: moment.tz.zone(raw.timezone.timeZoneId)!.utcOffset(Date.now()) * 60 * -1,
+      name: raw.timezone.timeZoneName
+    };
   }
 
   private async aggregate(clanTags: string[], days: number, limit: number) {
@@ -161,7 +196,9 @@ export default class ClanActivityCommand extends Command {
       .then((res) => res.json<{ timestamp: string; count: string; clanTag: string }>());
 
     const groups = Object.entries(
-      rows.data.reduce<Record<string, { activities: { count: number; time: string }[]; total: number }>>((record, row) => {
+      rows.data.reduce<
+        Record<string, { activities: { count: number; time: string }[]; total: number }>
+      >((record, row) => {
         if (!record[row.clanTag]) record[row.clanTag] = { activities: [], total: 0 };
         record[row.clanTag].activities.push({ count: Number(row.count), time: row.timestamp });
         record[row.clanTag].total += Number(row.count);

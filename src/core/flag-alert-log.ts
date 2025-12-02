@@ -45,7 +45,12 @@ export class FlagAlertLog {
       const cache = this.cached.get(clan.guild);
 
       // double posting prevention for custom bots
-      if (cache?.guildId && this.client.settings.hasCustomBot(cache.guildId) && !this.client.isCustom()) continue;
+      if (
+        cache?.guildId &&
+        this.client.settings.hasCustomBot(cache.guildId) &&
+        !this.client.isCustom()
+      )
+        continue;
 
       if (cache) await this.permissionsFor(cache, payload);
     }
@@ -115,7 +120,9 @@ export class FlagAlertLog {
     if (!members.length) return null;
 
     const delay = members.length >= 5 ? 2000 : 250;
-    const messages = (await Promise.all(members.map((member) => this.embed(cache, data, member)))).filter((m) => m);
+    const messages = (
+      await Promise.all(members.map((member) => this.embed(cache, data, member)))
+    ).filter((m) => m);
 
     for (const message of messages) {
       if (!message) continue;
@@ -132,7 +139,10 @@ export class FlagAlertLog {
     return members.length;
   }
 
-  public async webhook(cache: Cache, channel: TextChannel | NewsChannel | ForumChannel | MediaChannel): Promise<WebhookClient | null> {
+  public async webhook(
+    cache: Cache,
+    channel: TextChannel | NewsChannel | ForumChannel | MediaChannel
+  ): Promise<WebhookClient | null> {
     if (cache.webhook) return cache.webhook;
     if (cache.deleted) return null;
 
@@ -175,8 +185,13 @@ export class FlagAlertLog {
     const user = await this.client.users.fetch(flag.user, { cache: false }).catch(() => null);
 
     if (cache.useAutoRole) {
-      const clan = await this.client.storage.collection.findOne({ guild: cache.guildId, tag: data.clan.tag });
-      const roles = [clan?.roles?.coLeader, clan?.roles?.leader].filter((roleId) => roleId && guild.roles.cache.has(roleId)) as string[];
+      const clan = await this.client.storage.collection.findOne({
+        guild: cache.guildId,
+        tag: data.clan.tag
+      });
+      const roles = [clan?.roles?.coLeader, clan?.roles?.leader].filter(
+        (roleId) => roleId && guild.roles.cache.has(roleId)
+      ) as string[];
       if (roles.length) content = `<@&${roles.join('> <@&')}>`;
     } else if (cache.roleId && guild.roles.cache.has(cache.roleId)) {
       content = `<@&${cache.roleId}>`;

@@ -49,8 +49,14 @@ export default class ServerLinkCommand extends Command {
       args.channel = interaction.channel as TextChannel | AnyThreadChannel;
     }
 
-    const clan = await this.client.storage.getClan({ clanTag: data.tag, guildId: interaction.guildId });
-    const categoryId = await this.client.storage.findOrCreateCategory({ category: args.category, guildId: interaction.guildId });
+    const clan = await this.client.storage.getClan({
+      clanTag: data.tag,
+      guildId: interaction.guildId
+    });
+    const categoryId = await this.client.storage.findOrCreateCategory({
+      category: args.category,
+      guildId: interaction.guildId
+    });
 
     await this.client.storage.register(interaction, {
       op: Flags.SERVER_LINKED,

@@ -35,7 +35,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'category',
           description: command.roster.create.options.category.description,
-          description_localizations: translation('command.roster.create.options.category.description'),
+          description_localizations: translation(
+            'command.roster.create.options.category.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -63,13 +65,17 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'import_members',
           description: command.roster.create.options.import_members.description,
-          description_localizations: translation('command.roster.create.options.import_members.description'),
+          description_localizations: translation(
+            'command.roster.create.options.import_members.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'allow_unlinked',
           description: command.roster.create.options.allow_unlinked.description,
-          description_localizations: translation('command.roster.create.options.allow_unlinked.description'),
+          description_localizations: translation(
+            'command.roster.create.options.allow_unlinked.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
@@ -77,7 +83,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           min_value: 5,
           max_value: 500,
           description: command.roster.create.options.max_members.description,
-          description_localizations: translation('command.roster.create.options.max_members.description'),
+          description_localizations: translation(
+            'command.roster.create.options.max_members.description'
+          ),
           type: ApplicationCommandOptionType.Integer
         },
         {
@@ -85,13 +93,17 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           min_value: 1,
           max_value: 75,
           description: command.roster.create.options.max_accounts_per_user.description,
-          description_localizations: translation('command.roster.create.options.max_accounts_per_user.description'),
+          description_localizations: translation(
+            'command.roster.create.options.max_accounts_per_user.description'
+          ),
           type: ApplicationCommandOptionType.Integer
         },
         {
           name: 'min_town_hall',
           description: command.roster.create.options.min_town_hall.description,
-          description_localizations: translation('command.roster.create.options.min_town_hall.description'),
+          description_localizations: translation(
+            'command.roster.create.options.min_town_hall.description'
+          ),
           type: ApplicationCommandOptionType.Integer,
           min_value: 2,
           max_value: MAX_TOWN_HALL_LEVEL
@@ -99,7 +111,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'max_town_hall',
           description: command.roster.create.options.max_town_hall.description,
-          description_localizations: translation('command.roster.create.options.max_town_hall.description'),
+          description_localizations: translation(
+            'command.roster.create.options.max_town_hall.description'
+          ),
           type: ApplicationCommandOptionType.Integer,
           min_value: 2,
           max_value: MAX_TOWN_HALL_LEVEL
@@ -108,69 +122,91 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'min_hero_level',
           min_value: 0,
           description: command.roster.create.options.min_hero_level.description,
-          description_localizations: translation('command.roster.create.options.min_hero_level.description'),
+          description_localizations: translation(
+            'command.roster.create.options.min_hero_level.description'
+          ),
           type: ApplicationCommandOptionType.Integer
         },
         {
           name: 'roster_role',
           description: command.roster.create.options.roster_role.description,
-          description_localizations: translation('command.roster.create.options.roster_role.description'),
+          description_localizations: translation(
+            'command.roster.create.options.roster_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'sort_by',
           description: command.roster.create.options.sort_by.description,
-          description_localizations: translation('command.roster.create.options.sort_by.description'),
+          description_localizations: translation(
+            'command.roster.create.options.sort_by.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [...RosterCommandSortOptions]
         },
         {
           name: 'start_time',
           description: command.roster.create.options.start_time.description,
-          description_localizations: translation('command.roster.create.options.start_time.description'),
+          description_localizations: translation(
+            'command.roster.create.options.start_time.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'end_time',
           description: command.roster.create.options.end_time.description,
-          description_localizations: translation('command.roster.create.options.end_time.description'),
+          description_localizations: translation(
+            'command.roster.create.options.end_time.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'timezone',
           autocomplete: true,
           description: command.roster.create.options.timezone.description,
-          description_localizations: translation('command.roster.create.options.timezone.description'),
+          description_localizations: translation(
+            'command.roster.create.options.timezone.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'allow_group_selection',
           description: command.roster.create.options.allow_group_selection.description,
-          description_localizations: translation('command.roster.create.options.allow_group_selection.description'),
+          description_localizations: translation(
+            'command.roster.create.options.allow_group_selection.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'allow_multi_signup',
           description: command.roster.create.options.allow_multi_signup.description,
-          description_localizations: translation('command.roster.create.options.allow_multi_signup.description'),
+          description_localizations: translation(
+            'command.roster.create.options.allow_multi_signup.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'use_clan_alias',
           description: command.roster.create.options.use_clan_alias.description,
-          description_localizations: translation('command.roster.create.options.use_clan_alias.description'),
+          description_localizations: translation(
+            'command.roster.create.options.use_clan_alias.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'roster_image_url',
           description: command.roster.create.options.roster_image_url.description,
-          description_localizations: translation('command.roster.create.options.roster_image_url.description'),
+          description_localizations: translation(
+            'command.roster.create.options.roster_image_url.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'color_code',
           description: command.roster.create.options.color_code.description,
-          description_localizations: translation('command.roster.create.options.color_code.description'),
+          description_localizations: translation(
+            'command.roster.create.options.color_code.description'
+          ),
           type: ApplicationCommandOptionType.String
         }
       ]
@@ -272,7 +308,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'category',
           description: command.roster.create.options.category.description,
-          description_localizations: translation('command.roster.create.options.category.description'),
+          description_localizations: translation(
+            'command.roster.create.options.category.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -307,19 +345,25 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'detach_clan',
           description: command.roster.edit.options.detach_clan.description,
-          description_localizations: translation('command.roster.edit.options.detach_clan.description'),
+          description_localizations: translation(
+            'command.roster.edit.options.detach_clan.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'allow_unlinked',
           description: command.roster.create.options.allow_unlinked.description,
-          description_localizations: translation('command.roster.create.options.allow_unlinked.description'),
+          description_localizations: translation(
+            'command.roster.create.options.allow_unlinked.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'max_members',
           description: command.roster.create.options.max_members.description,
-          description_localizations: translation('command.roster.create.options.max_members.description'),
+          description_localizations: translation(
+            'command.roster.create.options.max_members.description'
+          ),
           min_value: 5,
           max_value: 500,
           type: ApplicationCommandOptionType.Integer
@@ -329,7 +373,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           min_value: 1,
           max_value: 75,
           description: command.roster.create.options.max_accounts_per_user.description,
-          description_localizations: translation('command.roster.create.options.max_accounts_per_user.description'),
+          description_localizations: translation(
+            'command.roster.create.options.max_accounts_per_user.description'
+          ),
           type: ApplicationCommandOptionType.Integer
         },
         {
@@ -337,13 +383,17 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           max_value: MAX_TOWN_HALL_LEVEL,
           min_value: 2,
           description: command.roster.create.options.min_town_hall.description,
-          description_localizations: translation('command.roster.create.options.min_town_hall.description'),
+          description_localizations: translation(
+            'command.roster.create.options.min_town_hall.description'
+          ),
           type: ApplicationCommandOptionType.Integer
         },
         {
           name: 'max_town_hall',
           description: command.roster.create.options.max_town_hall.description,
-          description_localizations: translation('command.roster.create.options.max_town_hall.description'),
+          description_localizations: translation(
+            'command.roster.create.options.max_town_hall.description'
+          ),
           type: ApplicationCommandOptionType.Integer,
           min_value: 2,
           max_value: MAX_TOWN_HALL_LEVEL
@@ -352,88 +402,116 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'min_hero_level',
           min_value: 0,
           description: command.roster.create.options.min_hero_level.description,
-          description_localizations: translation('command.roster.create.options.min_hero_level.description'),
+          description_localizations: translation(
+            'command.roster.create.options.min_hero_level.description'
+          ),
           type: ApplicationCommandOptionType.Integer
         },
         {
           name: 'roster_role',
           description: command.roster.create.options.roster_role.description,
-          description_localizations: translation('command.roster.create.options.roster_role.description'),
+          description_localizations: translation(
+            'command.roster.create.options.roster_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'sort_by',
           description: command.roster.create.options.sort_by.description,
-          description_localizations: translation('command.roster.create.options.sort_by.description'),
+          description_localizations: translation(
+            'command.roster.create.options.sort_by.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [...RosterCommandSortOptions]
         },
         {
           name: 'delete_role',
           description: command.roster.edit.options.delete_role.description,
-          description_localizations: translation('command.roster.edit.options.delete_role.description'),
+          description_localizations: translation(
+            'command.roster.edit.options.delete_role.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'start_time',
           description: command.roster.create.options.start_time.description,
-          description_localizations: translation('command.roster.create.options.start_time.description'),
+          description_localizations: translation(
+            'command.roster.create.options.start_time.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'end_time',
           description: command.roster.create.options.end_time.description,
-          description_localizations: translation('command.roster.create.options.end_time.description'),
+          description_localizations: translation(
+            'command.roster.create.options.end_time.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'timezone',
           autocomplete: true,
           description: command.roster.create.options.timezone.description,
-          description_localizations: translation('command.roster.create.options.timezone.description'),
+          description_localizations: translation(
+            'command.roster.create.options.timezone.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'allow_group_selection',
           description: command.roster.create.options.allow_group_selection.description,
-          description_localizations: translation('command.roster.create.options.allow_group_selection.description'),
+          description_localizations: translation(
+            'command.roster.create.options.allow_group_selection.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'allow_multi_signup',
           description: command.roster.create.options.allow_multi_signup.description,
-          description_localizations: translation('command.roster.create.options.allow_multi_signup.description'),
+          description_localizations: translation(
+            'command.roster.create.options.allow_multi_signup.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'use_clan_alias',
           description: command.roster.create.options.use_clan_alias.description,
-          description_localizations: translation('command.roster.create.options.use_clan_alias.description'),
+          description_localizations: translation(
+            'command.roster.create.options.use_clan_alias.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'roster_image_url',
           description: command.roster.create.options.roster_image_url.description,
-          description_localizations: translation('command.roster.create.options.roster_image_url.description'),
+          description_localizations: translation(
+            'command.roster.create.options.roster_image_url.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'color_code',
           description: command.roster.create.options.color_code.description,
-          description_localizations: translation('command.roster.create.options.color_code.description'),
+          description_localizations: translation(
+            'command.roster.create.options.color_code.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'log_channel',
           description: command.roster.edit.options.log_channel.description,
-          description_localizations: translation('command.roster.edit.options.log_channel.description'),
+          description_localizations: translation(
+            'command.roster.edit.options.log_channel.description'
+          ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
         },
         {
           name: 'delete_log_channel',
           description: command.roster.edit.options.delete_log_channel.description,
-          description_localizations: translation('command.roster.edit.options.delete_log_channel.description'),
+          description_localizations: translation(
+            'command.roster.edit.options.delete_log_channel.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         }
       ]
@@ -447,7 +525,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'roster',
           description: command.roster.delete.options.roster.description,
-          description_localizations: translation('command.roster.delete.options.roster.description'),
+          description_localizations: translation(
+            'command.roster.delete.options.roster.description'
+          ),
           required: true,
           autocomplete: true,
           type: ApplicationCommandOptionType.String
@@ -463,7 +543,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'roster',
           description: command.roster.manage.options.roster.description,
-          description_localizations: translation('command.roster.manage.options.roster.description'),
+          description_localizations: translation(
+            'command.roster.manage.options.roster.description'
+          ),
           required: true,
           autocomplete: true,
           type: ApplicationCommandOptionType.String
@@ -471,7 +553,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'action',
           description: command.roster.manage.options.action.description,
-          description_localizations: translation('command.roster.manage.options.action.description'),
+          description_localizations: translation(
+            'command.roster.manage.options.action.description'
+          ),
           required: true,
           type: ApplicationCommandOptionType.String,
           choices: [
@@ -501,7 +585,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'player',
           autocomplete: true,
           description: command.roster.manage.options.player.description,
-          description_localizations: translation('command.roster.manage.options.player.description'),
+          description_localizations: translation(
+            'command.roster.manage.options.player.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
@@ -514,28 +600,36 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'from_clan',
           autocomplete: true,
           description: command.roster.manage.options.from_clan.description,
-          description_localizations: translation('command.roster.manage.options.from_clan.description'),
+          description_localizations: translation(
+            'command.roster.manage.options.from_clan.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'from_current_wars',
           autocomplete: true,
           description: command.roster.manage.options.from_current_wars.description,
-          description_localizations: translation('command.roster.manage.options.from_current_wars.description'),
+          description_localizations: translation(
+            'command.roster.manage.options.from_current_wars.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'target_group',
           autocomplete: true,
           description: command.roster.manage.options.target_group.description,
-          description_localizations: translation('command.roster.manage.options.target_group.description'),
+          description_localizations: translation(
+            'command.roster.manage.options.target_group.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'target_roster',
           autocomplete: true,
           description: command.roster.manage.options.target_roster.description,
-          description_localizations: translation('command.roster.manage.options.target_roster.description'),
+          description_localizations: translation(
+            'command.roster.manage.options.target_roster.description'
+          ),
           type: ApplicationCommandOptionType.String
         }
       ]
@@ -555,7 +649,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
             {
               name: 'name',
               description: command.roster.groups.options.name.description,
-              description_localizations: translation('command.roster.groups.options.name.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.name.description'
+              ),
               required: true,
               max_length: 30,
               type: ApplicationCommandOptionType.String
@@ -563,13 +659,17 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
             {
               name: 'group_role',
               description: command.roster.groups.options.group_role.description,
-              description_localizations: translation('command.roster.groups.options.group_role.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.group_role.description'
+              ),
               type: ApplicationCommandOptionType.Role
             },
             {
               name: 'selectable',
               description: command.roster.groups.options.selectable.description,
-              description_localizations: translation('command.roster.groups.options.selectable.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.selectable.description'
+              ),
               type: ApplicationCommandOptionType.Boolean
             }
           ]
@@ -585,20 +685,26 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
               autocomplete: true,
               required: true,
               description: command.roster.groups.options.group.description,
-              description_localizations: translation('command.roster.groups.options.group.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.group.description'
+              ),
               type: ApplicationCommandOptionType.String
             },
             {
               name: 'name',
               description: command.roster.groups.options.name.description,
-              description_localizations: translation('command.roster.groups.options.name.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.name.description'
+              ),
               max_length: 30,
               type: ApplicationCommandOptionType.String
             },
             {
               name: 'order',
               description: command.roster.groups.options.order.description,
-              description_localizations: translation('command.roster.groups.options.order.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.order.description'
+              ),
               type: ApplicationCommandOptionType.Integer,
               max_value: 1000,
               min_value: 1
@@ -606,25 +712,33 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
             {
               name: 'group_role',
               description: command.roster.groups.options.group_role.description,
-              description_localizations: translation('command.roster.groups.options.group_role.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.group_role.description'
+              ),
               type: ApplicationCommandOptionType.Role
             },
             {
               name: 'selectable',
               description: command.roster.groups.options.selectable.description,
-              description_localizations: translation('command.roster.groups.options.selectable.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.selectable.description'
+              ),
               type: ApplicationCommandOptionType.Boolean
             },
             {
               name: 'delete_role',
               description: command.roster.groups.options.delete_role.description,
-              description_localizations: translation('command.roster.groups.options.delete_role.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.delete_role.description'
+              ),
               type: ApplicationCommandOptionType.Boolean
             },
             {
               name: 'delete_group',
               description: command.roster.groups.options.delete_group.description,
-              description_localizations: translation('command.roster.groups.options.delete_group.description'),
+              description_localizations: translation(
+                'command.roster.groups.options.delete_group.description'
+              ),
               type: ApplicationCommandOptionType.Boolean
             }
           ]
@@ -654,7 +768,9 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'ping_option',
           description: command.roster.ping.options.ping_option.description,
-          description_localizations: translation('command.roster.ping.options.ping_option.description'),
+          description_localizations: translation(
+            'command.roster.ping.options.ping_option.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {

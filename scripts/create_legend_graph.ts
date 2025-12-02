@@ -230,7 +230,9 @@ async function graph(data: {
   }
   season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-  const lastSeasonLabels = Array.from({ length: labels.length }, (_, i) => moment(lastSeasonEnd).subtract(i, 'days').toDate()).reverse();
+  const lastSeasonLabels = Array.from({ length: labels.length }, (_, i) =>
+    moment(lastSeasonEnd).subtract(i, 'days').toDate()
+  ).reverse();
 
   if (lastSeason) {
     lastSeasonLabels.forEach((label) => {

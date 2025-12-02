@@ -32,7 +32,11 @@ export default class SetupDisableCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { action: 'unlink-channel' | 'delete-clan' | 'disable-logs' | keyof typeof DeprecatedLogs; channel: TextChannel; clan: string }
+    args: {
+      action: 'unlink-channel' | 'delete-clan' | 'disable-logs' | keyof typeof DeprecatedLogs;
+      channel: TextChannel;
+      clan: string;
+    }
   ) {
     args.clan = this.client.coc.fixTag(args.clan);
     if (args.action === 'unlink-channel') {
@@ -60,9 +64,14 @@ export default class SetupDisableCommand extends Command {
       );
     }
 
-    const data = await this.client.storage.getClan({ clanTag: args.clan, guildId: interaction.guildId });
+    const data = await this.client.storage.getClan({
+      clanTag: args.clan,
+      guildId: interaction.guildId
+    });
     if (!data) {
-      return interaction.editReply(this.i18n('command.setup.disable.clan_not_linked', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.setup.disable.clan_not_linked', { lng: interaction.locale })
+      );
     }
 
     const clanId = data._id.toHexString();
@@ -80,7 +89,10 @@ export default class SetupDisableCommand extends Command {
       );
     }
 
-    if (args.action === 'disable-logs' || (DeprecatedLogs[args.action] && args.action !== 'clan-embed')) {
+    if (
+      args.action === 'disable-logs' ||
+      (DeprecatedLogs[args.action] && args.action !== 'clan-embed')
+    ) {
       const command = this.handler.getCommand('setup-clan-logs')!;
       return this.handler.continue(interaction, command);
     }
@@ -88,7 +100,11 @@ export default class SetupDisableCommand extends Command {
     const logTypes = Object.keys(logActionsMap) as ClanLogType[];
     const _logs = await this.client.db
       .collection(Collections.CLAN_LOGS)
-      .find({ logType: { $in: [...logTypes, ClanLogType.CLAN_EMBED_LOG] }, clanTag: data.tag, guildId: interaction.guildId })
+      .find({
+        logType: { $in: [...logTypes, ClanLogType.CLAN_EMBED_LOG] },
+        clanTag: data.tag,
+        guildId: interaction.guildId
+      })
       .toArray();
 
     const selectedLogs = DeprecatedLogs[args.action];

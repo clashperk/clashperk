@@ -35,7 +35,10 @@ export function getRaidWeekIds() {
   return weekIds;
 }
 
-export const channelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GuildDirectory | ChannelType.GroupDM>[] = [
+export const channelTypes: Exclude<
+  ChannelType,
+  ChannelType.DM | ChannelType.GuildDirectory | ChannelType.GroupDM
+>[] = [
   ChannelType.GuildText,
   ChannelType.GuildAnnouncement,
   ChannelType.AnnouncementThread,
@@ -45,8 +48,15 @@ export const channelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.Gui
 ];
 
 export const userInstallable = {
-  integration_types: [ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall],
-  contexts: [InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel]
+  integration_types: [
+    ApplicationIntegrationType.GuildInstall,
+    ApplicationIntegrationType.UserInstall
+  ],
+  contexts: [
+    InteractionContextType.BotDM,
+    InteractionContextType.Guild,
+    InteractionContextType.PrivateChannel
+  ]
 };
 
 export const translation = (text: TranslationKey): Record<string, string> => {

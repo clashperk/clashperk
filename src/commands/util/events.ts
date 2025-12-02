@@ -1,4 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, parseEmoji } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  parseEmoji
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 
@@ -12,7 +19,10 @@ export default class GameEvents extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>) {
-    const visibleEvents = this.client.guildEvents.getEvents(interaction.locale, { filtered: true, useGraceTime: false });
+    const visibleEvents = this.client.guildEvents.getEvents(interaction.locale, {
+      filtered: true,
+      useGraceTime: false
+    });
 
     const embed = new EmbedBuilder()
       .setAuthor({

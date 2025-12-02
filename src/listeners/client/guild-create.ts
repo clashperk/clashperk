@@ -1,5 +1,12 @@
 import { Collections, Settings } from '@app/constants';
-import { ChannelType, EmbedBuilder, Guild, PermissionFlagsBits, TextChannel, WebhookClient } from 'discord.js';
+import {
+  ChannelType,
+  EmbedBuilder,
+  Guild,
+  PermissionFlagsBits,
+  TextChannel,
+  WebhookClient
+} from 'discord.js';
 import { welcomeEmbedMaker } from '../../helper/welcome.helper.js';
 import { Listener } from '../../lib/handlers.js';
 import { mixpanel } from '../../struct/mixpanel.js';
@@ -69,9 +76,15 @@ export default class GuildCreateListener extends Listener {
     if (webhook) {
       const embed = new EmbedBuilder()
         .setColor(0x38d863)
-        .setAuthor({ name: `${guild.name} (${guild.id})`, iconURL: guild.iconURL({ forceStatic: false })! })
+        .setAuthor({
+          name: `${guild.name} (${guild.id})`,
+          iconURL: guild.iconURL({ forceStatic: false })!
+        })
         .setTitle(`${EMOJIS.OWNER} ${user.displayName} (${user.id})`)
-        .setFooter({ text: `${guild.memberCount} members (Shard ${guild.shard.id})`, iconURL: user.displayAvatarURL() })
+        .setFooter({
+          text: `${guild.memberCount} members (Shard ${guild.shard.id})`,
+          iconURL: user.displayAvatarURL()
+        })
         .setTimestamp();
       return webhook.send({
         embeds: [embed],
@@ -96,7 +109,11 @@ export default class GuildCreateListener extends Listener {
       if (
         channel
           .permissionsFor(this.client.user.id)
-          ?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.ViewChannel])
+          ?.has([
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.EmbedLinks,
+            PermissionFlagsBits.ViewChannel
+          ])
       ) {
         return channel.send({ embeds: [embed] });
       }
@@ -108,11 +125,17 @@ export default class GuildCreateListener extends Listener {
       .filter((channel) =>
         channel
           .permissionsFor(this.client.user.id)!
-          .has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.ViewChannel])
+          .has([
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.EmbedLinks,
+            PermissionFlagsBits.ViewChannel
+          ])
       )
       .first();
     if (channel) return (channel as TextChannel).send({ embeds: [embed] });
-    return this.client.logger.info(`Failed on ${guild.name} (${guild.id})`, { label: 'INTRO_MESSAGE' });
+    return this.client.logger.info(`Failed on ${guild.name} (${guild.id})`, {
+      label: 'INTRO_MESSAGE'
+    });
   }
 
   private async restore(guild: Guild) {
@@ -132,7 +155,11 @@ export default class GuildCreateListener extends Listener {
     const app = await this.client.customBotManager.findBot({ serviceId: this.client.user.id });
     if (!app) return;
 
-    const commands = await this.client.customBotManager.createCommands(app.serviceId, guild.id, app.token);
+    const commands = await this.client.customBotManager.createCommands(
+      app.serviceId,
+      guild.id,
+      app.token
+    );
 
     if (commands.length) {
       await this.client.customBotManager.addGuild({ guildId: guild.id, serviceId: app.serviceId });

@@ -17,7 +17,9 @@ export default class CategoryDeleteCommand extends Command {
   public async exec(interaction: CommandInteraction<'cached'>, args: { category: string }) {
     if (!ObjectId.isValid(args.category)) return interaction.editReply('Invalid categoryId.');
 
-    const deleted = await this.client.db.collection(Collections.CLAN_CATEGORIES).findOneAndDelete({ _id: new ObjectId(args.category) });
+    const deleted = await this.client.db
+      .collection(Collections.CLAN_CATEGORIES)
+      .findOneAndDelete({ _id: new ObjectId(args.category) });
     if (!deleted) return interaction.editReply('Failed to delete the category.');
 
     return interaction.editReply('Successfully deleted.');

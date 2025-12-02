@@ -1,6 +1,14 @@
 import { Collections } from '@app/constants';
 import { APIClanMember } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, StringSelectMenuBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
+  User
+} from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import { MembersCommandOptions } from '../../util/command.options.js';
@@ -28,12 +36,20 @@ export default class ClanAttacksCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { tag?: string; user?: User; sort_by_defense?: boolean; with_options?: boolean; season?: string }
+    args: {
+      tag?: string;
+      user?: User;
+      sort_by_defense?: boolean;
+      with_options?: boolean;
+      season?: string;
+    }
   ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
     if (clan.members < 1) {
-      return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
+      return interaction.editReply(
+        this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name })
+      );
     }
 
     const fetched = await this.getPlayers(clan.memberList, args.season);
@@ -86,7 +102,10 @@ export default class ClanAttacksCommand extends Command {
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh).setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setCustomId(customIds.refresh)
+        .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(customIds.sort_by)
         .setStyle(ButtonStyle.Secondary)

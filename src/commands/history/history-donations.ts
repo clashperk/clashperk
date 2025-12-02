@@ -18,7 +18,10 @@ export default class DonationsHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     const tags = await this.client.resolver.resolveArgs(args.clans);
     const clans = tags.length
       ? await this.client.storage.search(interaction.guildId, tags)
@@ -33,7 +36,9 @@ export default class DonationsHistoryCommand extends Command {
         return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
       }
 
-      return handlePagination(interaction, embeds, (action) => this.export(action, result, includedClans));
+      return handlePagination(interaction, embeds, (action) =>
+        this.export(action, result, includedClans)
+      );
     }
 
     if (args.player) {
@@ -46,16 +51,24 @@ export default class DonationsHistoryCommand extends Command {
         return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
       }
 
-      return handlePagination(interaction, embeds, (action) => this.export(action, result, includedClans));
+      return handlePagination(interaction, embeds, (action) =>
+        this.export(action, result, includedClans)
+      );
     }
 
     if (!clans.length && tags.length)
       return interaction.editReply(
-        this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_found', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     if (!clans.length) {
       return interaction.editReply(
-        this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_linked', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
@@ -70,7 +83,11 @@ export default class DonationsHistoryCommand extends Command {
     return handlePagination(interaction, embeds, (action) => this.export(action, result, clans));
   }
 
-  private async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[], clans?: { name: string; tag: string }[]) {
+  private async getHistory(
+    interaction: CommandInteraction<'cached'>,
+    playerTags: string[],
+    clans?: { name: string; tag: string }[]
+  ) {
     const clanTags = clans?.map((clan) => clan.tag);
 
     const result = await this.client.db
@@ -94,7 +111,12 @@ export default class DonationsHistoryCommand extends Command {
               $subtract: ['$spellsDonations.current', '$spellsDonations.initial']
             },
             _sieges: {
-              $multiply: [{ $subtract: ['$siegeMachinesDonations.current', '$siegeMachinesDonations.initial'] }, 30]
+              $multiply: [
+                {
+                  $subtract: ['$siegeMachinesDonations.current', '$siegeMachinesDonations.initial']
+                },
+                30
+              ]
             }
           }
         },
@@ -133,7 +155,8 @@ export default class DonationsHistoryCommand extends Command {
       const embed = new EmbedBuilder();
       embed.setColor(this.client.embed(interaction));
       embed.setTitle('Donation History (last 6 months)');
-      if (clans?.length) embed.setFooter({ text: clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ') });
+      if (clans?.length)
+        embed.setFooter({ text: clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ') });
 
       chunk.forEach(({ name, tag, seasons }) => {
         embed.addFields({
@@ -171,7 +194,11 @@ export default class DonationsHistoryCommand extends Command {
     return { embeds, result };
   }
 
-  private async export(interaction: ButtonInteraction<'cached'>, result: AggregatedResult[], clans?: { name: string; tag: string }[]) {
+  private async export(
+    interaction: ButtonInteraction<'cached'>,
+    result: AggregatedResult[],
+    clans?: { name: string; tag: string }[]
+  ) {
     const clanTags = clans?.map((clan) => clan.tag);
 
     const chunks = result
@@ -210,7 +237,11 @@ export default class DonationsHistoryCommand extends Command {
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.donations ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...seasonIds.map((id) => r.records[id]?.donations ?? 0)
+        ])
       },
       {
         title: `Received`,
@@ -220,12 +251,22 @@ export default class DonationsHistoryCommand extends Command {
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.donationsReceived ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...seasonIds.map((id) => r.records[id]?.donationsReceived ?? 0)
+        ])
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Donations History]`, sheets);
-    return interaction.editReply({ content: [`**Donations History**`].join('\n'), components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Donations History]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: [`**Donations History**`].join('\n'),
+      components: getExportComponents(spreadsheet)
+    });
   }
 }
 

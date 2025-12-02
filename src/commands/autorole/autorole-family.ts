@@ -1,5 +1,13 @@
 import { Settings } from '@app/constants';
-import { ActionRowBuilder, CommandInteraction, EmbedBuilder, Guild, MessageFlags, Role, RoleSelectMenuBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  CommandInteraction,
+  EmbedBuilder,
+  Guild,
+  MessageFlags,
+  Role,
+  RoleSelectMenuBuilder
+} from 'discord.js';
 import { unique } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { createInteractionCollector } from '../../util/pagination.js';
@@ -31,7 +39,10 @@ export default class AutoFamilyRoleCommand extends Command {
     const clans = await this.client.storage.find(interaction.guildId);
     if (!clans.length) {
       return interaction.editReply(
-        this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_linked', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
@@ -46,7 +57,10 @@ export default class AutoFamilyRoleCommand extends Command {
 
     const selected = roles.filter((role) => role) as Role[];
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'You must select at least one role.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (selected.some((role) => this.isSystemRole(role, interaction.guild))) {
@@ -59,7 +73,9 @@ export default class AutoFamilyRoleCommand extends Command {
     }
 
     if (selected.some((role) => this.isHigherRole(role, interaction.guild))) {
-      return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale })
+      );
     }
 
     if (args.family_role) {
@@ -67,16 +83,26 @@ export default class AutoFamilyRoleCommand extends Command {
     }
 
     if (args.exclusive_family_role) {
-      await this.client.settings.set(interaction.guild, Settings.EXCLUSIVE_FAMILY_ROLE, args.exclusive_family_role.id);
+      await this.client.settings.set(
+        interaction.guild,
+        Settings.EXCLUSIVE_FAMILY_ROLE,
+        args.exclusive_family_role.id
+      );
     }
 
     if (args.family_leaders_role) {
-      const familyLeadersRoles = this.client.settings.get<string[]>(interaction.guild, Settings.FAMILY_LEADERS_ROLE, []);
+      const familyLeadersRoles = this.client.settings.get<string[]>(
+        interaction.guild,
+        Settings.FAMILY_LEADERS_ROLE,
+        []
+      );
 
       await this.client.settings.set(
         interaction.guild,
         Settings.FAMILY_LEADERS_ROLE,
-        unique([...familyLeadersRoles, args.family_leaders_role.id]).filter((id) => interaction.guild.roles.cache.has(id))
+        unique([...familyLeadersRoles, args.family_leaders_role.id]).filter((id) =>
+          interaction.guild.roles.cache.has(id)
+        )
       );
     }
 
@@ -85,11 +111,19 @@ export default class AutoFamilyRoleCommand extends Command {
     }
 
     if (args.verified_role) {
-      await this.client.settings.set(interaction.guild, Settings.ACCOUNT_VERIFIED_ROLE, args.verified_role.id);
+      await this.client.settings.set(
+        interaction.guild,
+        Settings.ACCOUNT_VERIFIED_ROLE,
+        args.verified_role.id
+      );
     }
 
     if (args.account_linked_role) {
-      await this.client.settings.set(interaction.guild, Settings.ACCOUNT_LINKED_ROLE, args.account_linked_role.id);
+      await this.client.settings.set(
+        interaction.guild,
+        Settings.ACCOUNT_LINKED_ROLE,
+        args.account_linked_role.id
+      );
     }
 
     this.client.storage.updateClanLinks(interaction.guildId);
@@ -99,16 +133,27 @@ export default class AutoFamilyRoleCommand extends Command {
       const rolesMap = await this.client.rolesManager.getGuildRolesMap(interaction.guildId);
 
       const embed = new EmbedBuilder();
-      embed.setTitle('Family Role Settings').setURL('https://docs.clashperk.com/features/auto-role');
+      embed
+        .setTitle('Family Role Settings')
+        .setURL('https://docs.clashperk.com/features/auto-role');
       embed.addFields({
         name: 'Family Leaders Roles',
         value: rolesMap.familyLeadersRoles.map((id) => this.getRoleOrNone(id)).join(', ') || 'None'
       });
       embed.addFields({ name: 'Family Role', value: this.getRoleOrNone(rolesMap.familyRoleId) });
-      embed.addFields({ name: 'Exclusive Family Role', value: this.getRoleOrNone(rolesMap.exclusiveFamilyRoleId) });
+      embed.addFields({
+        name: 'Exclusive Family Role',
+        value: this.getRoleOrNone(rolesMap.exclusiveFamilyRoleId)
+      });
       embed.addFields({ name: 'Guest Role', value: this.getRoleOrNone(rolesMap.guestRoleId) });
-      embed.addFields({ name: 'Verified Role', value: this.getRoleOrNone(rolesMap.verifiedRoleId) });
-      embed.addFields({ name: 'Account Linked Role', value: this.getRoleOrNone(rolesMap.accountLinkedRoleId) });
+      embed.addFields({
+        name: 'Verified Role',
+        value: this.getRoleOrNone(rolesMap.verifiedRoleId)
+      });
+      embed.addFields({
+        name: 'Account Linked Role',
+        value: this.getRoleOrNone(rolesMap.accountLinkedRoleId)
+      });
 
       return embed;
     };
@@ -117,7 +162,10 @@ export default class AutoFamilyRoleCommand extends Command {
     if (!args.family_leaders_role) return interaction.editReply({ embeds: [embed] });
 
     const customIds = { roles: this.client.uuid() };
-    const menu = new RoleSelectMenuBuilder().setPlaceholder('Select Family Leaders Roles').setCustomId(customIds.roles).setMaxValues(25);
+    const menu = new RoleSelectMenuBuilder()
+      .setPlaceholder('Select Family Leaders Roles')
+      .setCustomId(customIds.roles)
+      .setMaxValues(25);
 
     const familyLeadersRoles = this.client.settings
       .get<string[]>(interaction.guild, Settings.FAMILY_LEADERS_ROLE, [])

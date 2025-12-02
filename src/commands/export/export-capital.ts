@@ -14,7 +14,10 @@ export default class ExportCapital extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { limit?: number; clans?: string; season?: string }
+  ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -45,7 +48,10 @@ export default class ExportCapital extends Command {
           status: remark,
           weekId: clan.weekId,
           leagueId: clan.capitalLeague?.id ?? UNRANKED_CAPITAL_LEAGUE_ID,
-          leagueName: clan.state === 'ongoing' ? 'Ongoing' : (clan.capitalLeague?.name ?? 'Unknown').replace(/League/g, '').trim(),
+          leagueName:
+            clan.state === 'ongoing'
+              ? 'Ongoing'
+              : (clan.capitalLeague?.name ?? 'Unknown').replace(/League/g, '').trim(),
           capitalTotalLoot: clan.capitalTotalLoot,
           totalAttacks: clan.totalAttacks,
           raidsCompleted: clan.raidsCompleted,
@@ -62,7 +68,8 @@ export default class ExportCapital extends Command {
         weekends
       });
     }
-    if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!chunks.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const sheets: CreateGoogleSheet[] = chunks.map((chunk) => ({
       columns: [
@@ -92,7 +99,13 @@ export default class ExportCapital extends Command {
       title: `${chunk.name} (${chunk.tag})`
     }));
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Clan Capital Stats]`, sheets);
-    return interaction.editReply({ content: `**Clan Capital Export**`, components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Clan Capital Stats]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: `**Clan Capital Export**`,
+      components: getExportComponents(spreadsheet)
+    });
   }
 }

@@ -27,7 +27,9 @@ export const ALIAS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           required: false,
           max_length: 15,
           description: command.alias.create.options.alias_name.description,
-          description_localizations: translation('command.alias.create.options.alias_name.description'),
+          description_localizations: translation(
+            'command.alias.create.options.alias_name.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
@@ -35,7 +37,9 @@ export const ALIAS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           required: false,
           max_length: 15,
           description: command.alias.create.options.clan_nickname.description,
-          description_localizations: translation('command.alias.create.options.clan_nickname.description'),
+          description_localizations: translation(
+            'command.alias.create.options.clan_nickname.description'
+          ),
           type: ApplicationCommandOptionType.String
         }
       ]

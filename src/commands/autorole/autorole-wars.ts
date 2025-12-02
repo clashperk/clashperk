@@ -21,16 +21,23 @@ export default class AutoClanRoleCommand extends Command {
       .findOne({ guild: interaction.guild.id, tag: this.client.coc.fixTag(args.clan) });
     if (!clan) {
       return interaction.editReply(
-        this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_linked', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
     if ([args.role].some((role) => this.isSystemRole(role, interaction.guild))) {
-      return interaction.editReply(`${this.i18n('command.autorole.no_system_roles', { lng: interaction.locale })} (${args.role.id})`);
+      return interaction.editReply(
+        `${this.i18n('command.autorole.no_system_roles', { lng: interaction.locale })} (${args.role.id})`
+      );
     }
 
     if ([args.role].some((role) => this.isHigherRole(role, interaction.guild))) {
-      return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale })
+      );
     }
 
     const roleInUse = await this.client.db

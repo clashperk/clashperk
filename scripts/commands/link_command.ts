@@ -17,14 +17,18 @@ export const LINK_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'player_tag',
           description: command.link.create.options.player_tag.description,
-          description_localizations: translation('command.link.create.options.player_tag.description'),
+          description_localizations: translation(
+            'command.link.create.options.player_tag.description'
+          ),
           required: false,
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'clan_tag',
           description: command.link.create.options.clan_tag.description,
-          description_localizations: translation('command.link.create.options.clan_tag.description'),
+          description_localizations: translation(
+            'command.link.create.options.clan_tag.description'
+          ),
           required: false,
           type: ApplicationCommandOptionType.String
         },
@@ -37,7 +41,9 @@ export const LINK_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'is_default',
           description: command.link.create.options.is_default.description,
-          description_localizations: translation('command.link.create.options.is_default.description'),
+          description_localizations: translation(
+            'command.link.create.options.is_default.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -78,7 +84,9 @@ export const LINK_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'player_tag',
           description: command.link.delete.options.player_tag.description,
-          description_localizations: translation('command.link.delete.options.player_tag.description'),
+          description_localizations: translation(
+            'command.link.delete.options.player_tag.description'
+          ),
           required: false,
           autocomplete: true,
           type: ApplicationCommandOptionType.String
@@ -86,7 +94,9 @@ export const LINK_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'clan_tag',
           description: command.link.delete.options.clan_tag.description,
-          description_localizations: translation('command.link.delete.options.clan_tag.description'),
+          description_localizations: translation(
+            'command.link.delete.options.clan_tag.description'
+          ),
           required: false,
           autocomplete: true,
           type: ApplicationCommandOptionType.String

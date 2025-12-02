@@ -17,19 +17,25 @@ export const NICKNAME_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'family_nickname_format',
           description: command.nickname.config.options.family_nickname_format.description,
-          description_localizations: translation('command.nickname.config.options.family_nickname_format.description'),
+          description_localizations: translation(
+            'command.nickname.config.options.family_nickname_format.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'non_family_nickname_format',
           description: command.nickname.config.options.non_family_nickname_format.description,
-          description_localizations: translation('command.nickname.config.options.non_family_nickname_format.description'),
+          description_localizations: translation(
+            'command.nickname.config.options.non_family_nickname_format.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
           name: 'change_nicknames',
           description: command.nickname.config.options.change_nicknames.description,
-          description_localizations: translation('command.nickname.config.options.change_nicknames.description'),
+          description_localizations: translation(
+            'command.nickname.config.options.change_nicknames.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -47,7 +53,9 @@ export const NICKNAME_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'account_preference_for_naming',
           description: command.nickname.config.options.account_preference_for_naming.description,
-          description_localizations: translation('command.nickname.config.options.account_preference_for_naming.description'),
+          description_localizations: translation(
+            'command.nickname.config.options.account_preference_for_naming.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {

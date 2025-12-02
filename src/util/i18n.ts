@@ -11,7 +11,11 @@ import locales from './locales.js';
 // 		: keyof T & string
 // 	: '';
 
-type Join<K, P> = K extends string | number ? (P extends string | number ? `${K}${'' extends P ? '' : '.'}${P}` : never) : never;
+type Join<K, P> = K extends string | number
+  ? P extends string | number
+    ? `${K}${'' extends P ? '' : '.'}${P}`
+    : never
+  : never;
 
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...0[]];
 
@@ -51,7 +55,10 @@ type CheckDictString<T extends string, O> = T extends `${infer A}.${infer B}`
     ? T
     : never;
 
-export function i18n<K extends Leaves<typeof locales>, I extends Record<Keys<GetDictValue<K, typeof locales>>[number], string>>(
+export function i18n<
+  K extends Leaves<typeof locales>,
+  I extends Record<Keys<GetDictValue<K, typeof locales>>[number], string>
+>(
   key: CheckDictString<K, typeof locales>,
   args: I & { lng: string }
 ): Interpolate<GetDictValue<K, typeof locales>, I> {

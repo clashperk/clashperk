@@ -16,7 +16,10 @@ export default class ExportCwlLineup extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; season?: string }
+  ) {
     const season = args.season === Season.monthId ? null : args.season;
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
@@ -53,7 +56,12 @@ export default class ExportCwlLineup extends Command {
     }
 
     if (!chunks.length) {
-      return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.monthId }));
+      return interaction.editReply(
+        this.i18n('command.cwl.no_season_data', {
+          lng: interaction.locale,
+          season: season ?? Season.monthId
+        })
+      );
     }
 
     const sheets: CreateGoogleSheet[] = chunks

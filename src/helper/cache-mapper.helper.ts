@@ -97,17 +97,21 @@ export function mapToPlayerInterface(player: PartialPlayer): APIPlayer {
           }
         }
       : undefined,
-    achievements: ACHIEVEMENT_LIST.filter((ach) => player.achievements?.[ach.id] >= 0).map(({ name, id }) => ({
-      name,
-      value: player.achievements[id],
-      completionInfo: null,
-      info: name,
-      stars: 0,
-      target: 0,
-      village: 'home'
-    })),
+    achievements: ACHIEVEMENT_LIST.filter((ach) => player.achievements?.[ach.id] >= 0).map(
+      ({ name, id }) => ({
+        name,
+        value: player.achievements[id],
+        completionInfo: null,
+        info: name,
+        stars: 0,
+        target: 0,
+        village: 'home'
+      })
+    ),
 
-    troops: UNITS_LIST.filter((unit) => RAW_UNITS_MAP[unit.name]?.category === 'troop' && player.units?.[unit.id]).map((unit) => {
+    troops: UNITS_LIST.filter(
+      (unit) => RAW_UNITS_MAP[unit.name]?.category === 'troop' && player.units?.[unit.id]
+    ).map((unit) => {
       const raw = RAW_UNITS_MAP[unit.name];
       return {
         name: unit.name,
@@ -117,17 +121,31 @@ export function mapToPlayerInterface(player: PartialPlayer): APIPlayer {
         superTroopIsActive: player.superTroops[unit.name] === 1
       };
     }),
-    spells: UNITS_LIST.filter((unit) => RAW_UNITS_MAP[unit.name]?.category === 'spell' && player.units?.[unit.id]).map((unit) => {
+    spells: UNITS_LIST.filter(
+      (unit) => RAW_UNITS_MAP[unit.name]?.category === 'spell' && player.units?.[unit.id]
+    ).map((unit) => {
       const raw = RAW_UNITS_MAP[unit.name];
-      return { name: unit.name, level: player.units[unit.id], maxLevel: raw.maxLevel, village: raw.village };
+      return {
+        name: unit.name,
+        level: player.units[unit.id],
+        maxLevel: raw.maxLevel,
+        village: raw.village
+      };
     }),
-    heroEquipment: UNITS_LIST.filter((unit) => RAW_UNITS_MAP[unit.name]?.category === 'equipment' && player.units?.[unit.id]).map(
-      (unit) => {
-        const raw = RAW_UNITS_MAP[unit.name];
-        return { name: unit.name, level: player.units[unit.id], maxLevel: raw.maxLevel, village: raw.village };
-      }
-    ),
-    heroes: UNITS_LIST.filter((unit) => RAW_UNITS_MAP[unit.name]?.category === 'hero' && player.units?.[unit.id]).map((hero) => {
+    heroEquipment: UNITS_LIST.filter(
+      (unit) => RAW_UNITS_MAP[unit.name]?.category === 'equipment' && player.units?.[unit.id]
+    ).map((unit) => {
+      const raw = RAW_UNITS_MAP[unit.name];
+      return {
+        name: unit.name,
+        level: player.units[unit.id],
+        maxLevel: raw.maxLevel,
+        village: raw.village
+      };
+    }),
+    heroes: UNITS_LIST.filter(
+      (unit) => RAW_UNITS_MAP[unit.name]?.category === 'hero' && player.units?.[unit.id]
+    ).map((hero) => {
       const raw = RAW_UNITS_MAP[hero.name];
       return {
         name: hero.name,
@@ -135,10 +153,17 @@ export function mapToPlayerInterface(player: PartialPlayer): APIPlayer {
         maxLevel: raw.maxLevel,
         village: raw.village,
         equipment: UNITS_LIST.filter(
-          (equip) => RAW_UNITS_MAP[equip.name]?.category === 'equipment' && player.heroes?.[hero.id]?.equipment[equip.name]
+          (equip) =>
+            RAW_UNITS_MAP[equip.name]?.category === 'equipment' &&
+            player.heroes?.[hero.id]?.equipment[equip.name]
         ).map((unit) => {
           const raw = RAW_UNITS_MAP[unit.name];
-          return { name: unit.name, level: player.units[unit.id], maxLevel: raw.maxLevel, village: raw.village };
+          return {
+            name: unit.name,
+            level: player.units[unit.id],
+            maxLevel: raw.maxLevel,
+            village: raw.village
+          };
         })
       };
     }),
@@ -333,15 +358,20 @@ export const UNITS_MAP_BY_NAME: Record<string, number> = {
   'Totem Spell': 136
 };
 
-const ACHIEVEMENT_LIST = Object.entries(ACHIEVEMENTS_MAP_BY_NAME).reduce<{ name: string; id: string }[]>((record, [name, id]) => {
+const ACHIEVEMENT_LIST = Object.entries(ACHIEVEMENTS_MAP_BY_NAME).reduce<
+  { name: string; id: string }[]
+>((record, [name, id]) => {
   record.push({ name, id: `${id}` });
   return record;
 }, []);
 
-const UNITS_LIST = Object.entries(UNITS_MAP_BY_NAME).reduce<{ name: string; id: string }[]>((record, [name, id]) => {
-  record.push({ name, id: `${id}` });
-  return record;
-}, []);
+const UNITS_LIST = Object.entries(UNITS_MAP_BY_NAME).reduce<{ name: string; id: string }[]>(
+  (record, [name, id]) => {
+    record.push({ name, id: `${id}` });
+    return record;
+  },
+  []
+);
 
 interface RawUnit {
   id: number;

@@ -1,7 +1,14 @@
 import { Collections } from '@app/constants';
 import { CapitalContributionsEntity, ClanLogsEntity, ClanLogType } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
-import { AttachmentBuilder, Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
+import {
+  AttachmentBuilder,
+  Collection,
+  EmbedBuilder,
+  PermissionsString,
+  WebhookClient,
+  WebhookMessageCreateOptions
+} from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { padStart } from '../util/helper.js';
@@ -22,7 +29,14 @@ export class CapitalLog extends RootLog {
   }
 
   public override get permissions(): PermissionsString[] {
-    return ['SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'ReadMessageHistory', 'ViewChannel', 'AttachFiles'];
+    return [
+      'SendMessages',
+      'EmbedLinks',
+      'UseExternalEmojis',
+      'ReadMessageHistory',
+      'ViewChannel',
+      'AttachFiles'
+    ];
   }
 
   public override get collection() {
@@ -53,7 +67,9 @@ export class CapitalLog extends RootLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error: any) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: CapitalLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: CapitalLog.name
+      });
       return null;
     }
   }
@@ -100,7 +116,10 @@ export class CapitalLog extends RootLog {
       .collection(Collections.CAPITAL_RAID_SEASONS)
       .findOne({ weekId: moment(raid.startTime).format('YYYY-MM-DD'), tag: clan.tag });
 
-    const members = raid.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
+    const members = raid.members.map((m) => ({
+      ...m,
+      attackLimit: m.attackLimit + m.bonusAttackLimit
+    }));
     clan.memberList.forEach((member) => {
       const attack = members.find((attack) => attack.tag === member.tag);
       if (!attack) {
@@ -116,7 +135,10 @@ export class CapitalLog extends RootLog {
     });
 
     members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted);
-    const weekend = Util.raidWeekDateFormat(moment(raid.startTime).toDate(), moment(raid.endTime).toDate());
+    const weekend = Util.raidWeekDateFormat(
+      moment(raid.startTime).toDate(),
+      moment(raid.endTime).toDate()
+    );
 
     const embed = new EmbedBuilder()
       .setAuthor({
@@ -159,15 +181,20 @@ export class CapitalLog extends RootLog {
     });
 
     const hasTrophyCard = Boolean(
-      season?.clanCapitalPoints && season._clanCapitalPoints && season._clanCapitalPoints !== season.clanCapitalPoints
+      season?.clanCapitalPoints &&
+        season._clanCapitalPoints &&
+        season._clanCapitalPoints !== season.clanCapitalPoints
     );
 
     const files: AttachmentBuilder[] = [];
 
     files.push(
-      new AttachmentBuilder(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-medals-card?${query.toString()}`, {
-        name: 'capital-raid-trophy-card.jpeg'
-      })
+      new AttachmentBuilder(
+        `${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-medals-card?${query.toString()}`,
+        {
+          name: 'capital-raid-trophy-card.jpeg'
+        }
+      )
     );
 
     if (hasTrophyCard) {
@@ -186,12 +213,18 @@ export class CapitalLog extends RootLog {
       query.set('trophiesEarned', `${trophiesEarned < 0 ? '' : '+'}${trophiesEarned}`);
       query.set('trophies', season!._clanCapitalPoints!.toString());
       query.set('globalRank', globalRank ? `Global Rank: ${globalRank}` : '');
-      query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');
+      query.set(
+        'localRank',
+        countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : ''
+      );
 
       files.push(
-        new AttachmentBuilder(`${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-trophies-card?${query.toString()}`, {
-          name: 'capital-raid-trophy-card.jpeg'
-        })
+        new AttachmentBuilder(
+          `${process.env.IMAGE_GEN_API_BASE_URL!}/capital/raid-trophies-card?${query.toString()}`,
+          {
+            name: 'capital-raid-trophy-card.jpeg'
+          }
+        )
       );
     }
     return { embed, files };
@@ -284,7 +317,12 @@ export class CapitalLog extends RootLog {
           `**Clan Capital Contributions**`,
           '```',
           '\u200e #  TOTAL  NAME',
-          members.map((mem, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${padStart(mem.raids, 5)}  ${mem.name}`).join('\n'),
+          members
+            .map(
+              (mem, i) =>
+                `\u200e${(i + 1).toString().padStart(2, ' ')}  ${padStart(mem.raids, 5)}  ${mem.name}`
+            )
+            .join('\n'),
           '```'
         ].join('\n')
       )
@@ -330,7 +368,10 @@ export class CapitalLog extends RootLog {
         if (this.queued.has(logId)) continue;
 
         this.queued.add(logId);
-        await this.exec(log.clanTag, { logType: ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG, channel: log.channelId } satisfies Feed);
+        await this.exec(log.clanTag, {
+          logType: ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG,
+          channel: log.channelId
+        } satisfies Feed);
         this.queued.delete(logId);
         await Util.delay(3000);
       }

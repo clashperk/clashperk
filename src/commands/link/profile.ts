@@ -88,7 +88,9 @@ export default class ProfileCommand extends Command {
             `${EMOJIS.CLAN} [${clan.name} (${
               clan.tag
             })](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
-            ...[`${EMOJIS.EMPTY} Level ${clan.clanLevel} ${EMOJIS.USERS} ${clan.members} Member${clan.members === 1 ? '' : 's'}`],
+            ...[
+              `${EMOJIS.EMPTY} Level ${clan.clanLevel} ${EMOJIS.USERS} ${clan.members} Member${clan.members === 1 ? '' : 's'}`
+            ],
             '\u200b'
           ].join('\n')
         );
@@ -115,10 +117,15 @@ export default class ProfileCommand extends Command {
     ).length;
     const dirtyUserIds = new Set([user.id, ...otherLinks.map((link) => link.userId)]);
     const hasDiscrepancy = dirtyUserIds.size > 1;
-    if (hasDiscrepancy) this.client.logger.info(`UserIds: ${Array.from(dirtyUserIds).join(',')}`, { label: 'LinkDiscrepancy' });
+    if (hasDiscrepancy)
+      this.client.logger.info(`UserIds: ${Array.from(dirtyUserIds).join(',')}`, {
+        label: 'LinkDiscrepancy'
+      });
 
     if (!players.length && !otherTags.length) {
-      embed.setDescription([embed.data.description, 'No accounts are linked. Why not add some?'].join('\n'));
+      embed.setDescription(
+        [embed.data.description, 'No accounts are linked. Why not add some?'].join('\n')
+      );
       return interaction.editReply({ embeds: [embed] });
     }
 
@@ -146,7 +153,11 @@ export default class ProfileCommand extends Command {
       );
     }
 
-    playerLinks.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
+    playerLinks.sort(
+      (a, b) =>
+        b.townHallLevel ** (b.townHallWeaponLevel ?? 1) -
+        a.townHallLevel ** (a.townHallWeaponLevel ?? 1)
+    );
     playerLinks.sort((a, b) => sumHeroes(b) - sumHeroes(a));
     playerLinks.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
@@ -176,7 +187,9 @@ export default class ProfileCommand extends Command {
         : this.isDuplicate(otherLinks, tag, user.id) || !this.isLinked(players, tag)
           ? '⚠️'
           : '';
-      const weaponLevel = player.townHallWeaponLevel ? weaponLevels[player.townHallWeaponLevel] : '';
+      const weaponLevel = player.townHallWeaponLevel
+        ? weaponLevels[player.townHallWeaponLevel]
+        : '';
       const townHall = `${TOWN_HALLS[player.townHallLevel]} ${player.townHallLevel}${weaponLevel}`;
       const defMark = isDefault ? '**(Default)**' : '';
       const url = this.playerShortUrl(player.tag);
@@ -246,20 +259,30 @@ export default class ProfileCommand extends Command {
     if (
       players.length > 1 &&
       players.length <= 25 &&
-      (this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) || user.id === interaction.user.id)
+      (this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) ||
+        user.id === interaction.user.id)
     ) {
-      row.addComponents(new ButtonBuilder().setCustomId(customIds.change).setLabel('Set Default Account').setStyle(ButtonStyle.Success));
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(customIds.change)
+          .setLabel('Set Default Account')
+          .setStyle(ButtonStyle.Success)
+      );
     }
 
     const changeDefaultAccount = async (action: StringSelectMenuInteraction) => {
       await action.deferUpdate();
 
-      const firstAccount = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ userId: user.id }, { sort: { order: 1 } });
+      const firstAccount = await this.client.db
+        .collection(Collections.PLAYER_LINKS)
+        .findOne({ userId: user.id }, { sort: { order: 1 } });
 
       const order = (firstAccount?.order ?? 0) - 1;
       const [playerTag] = action.values;
 
-      await this.client.db.collection(Collections.PLAYER_LINKS).updateOne({ userId: user.id, tag: playerTag }, { $set: { order } });
+      await this.client.db
+        .collection(Collections.PLAYER_LINKS)
+        .updateOne({ userId: user.id, tag: playerTag }, { $set: { order } });
 
       return this.handler.exec(action, this, args);
     };
@@ -277,15 +300,22 @@ export default class ProfileCommand extends Command {
 
         const isTrustedGuild = await this.client.util.isTrustedGuild(interaction);
         if (action.customId === customIds.change) {
-          const isMember = action.user.id === user.id ? action.member : await action.guild.members.fetch(user.id).catch(() => null);
+          const isMember =
+            action.user.id === user.id
+              ? action.member
+              : await action.guild.members.fetch(user.id).catch(() => null);
           if (
             !isMember ||
             // not manager && not author
-            (!this.client.util.isManager(action.member, Settings.LINKS_MANAGER_ROLE) && user.id !== action.user.id) ||
+            (!this.client.util.isManager(action.member, Settings.LINKS_MANAGER_ROLE) &&
+              user.id !== action.user.id) ||
             // not author && has verified account
             (user.id !== action.user.id && players.some((link) => link.verified) && !isTrustedGuild)
           ) {
-            return action.reply({ flags: MessageFlags.Ephemeral, content: "You're not allowed to change this user's default account." });
+            return action.reply({
+              flags: MessageFlags.Ephemeral,
+              content: "You're not allowed to change this user's default account."
+            });
           }
 
           const linkedPlayerTags = players.map((link) => link.tag);
@@ -350,7 +380,9 @@ export default class ProfileCommand extends Command {
           createHyperlink(this.client.coc.getPlayerURL(player.tag), player.tag),
           player.townHallLevel,
           player.clan?.name,
-          player.clan?.tag ? createHyperlink(this.client.coc.getClanURL(player.clan.tag), player.clan.tag) : '',
+          player.clan?.tag
+            ? createHyperlink(this.client.coc.getClanURL(player.clan.tag), player.clan.tag)
+            : '',
           roles[player.role!],
           player.verified,
           player.internal,
@@ -388,7 +420,8 @@ export default class ProfileCommand extends Command {
 
   private clanName(player: APIPlayer) {
     if (!player.clan) return '';
-    const warPref = player.warPreference === 'in' ? `${EMOJIS.WAR_PREF_IN}` : `${EMOJIS.WAR_PREF_OUT}`;
+    const warPref =
+      player.warPreference === 'in' ? `${EMOJIS.WAR_PREF_IN}` : `${EMOJIS.WAR_PREF_OUT}`;
     return `${warPref} ${roles[player.role!]} of ${player.clan.name}`;
   }
 
@@ -427,7 +460,9 @@ export default class ProfileCommand extends Command {
 
   private deleteBanned(userId: string, tag: string) {
     this.client.coc.unlinkPlayerTag(tag);
-    return this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS).deleteOne({ userId, tag });
+    return this.client.db
+      .collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
+      .deleteOne({ userId, tag });
   }
 
   private async deleteBotAccount(user: User, playerTags: string[]) {
@@ -437,7 +472,9 @@ export default class ProfileCommand extends Command {
       await this.client.coc.unlinkPlayerTag(tag);
     }
 
-    return this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS).deleteOne({ userId: user.id });
+    return this.client.db
+      .collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
+      .deleteOne({ userId: user.id });
   }
 
   private playerShortUrl(tag: string) {

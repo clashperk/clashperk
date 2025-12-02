@@ -8,7 +8,15 @@ import { escapeBackTick, localeSort } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';
 
 // not in use
-export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APIClan; guild: Guild; showTag?: boolean }) => {
+export const linkListEmbedMaker = async ({
+  clan,
+  guild,
+  showTag
+}: {
+  clan: APIClan;
+  guild: Guild;
+  showTag?: boolean;
+}) => {
   const client = container.resolve(Client);
   const memberTags = await client.coc.getDiscordLinks(clan.memberList);
   const dbMembers = await client.db
@@ -29,7 +37,13 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
 
     const mem = members.find((mem) => mem.tag === member.tag);
     if (mem) mem.verified = member.verified;
-    else members.push({ tag: member.tag, userId: member.userId, name: clanMember.name, verified: member.verified });
+    else
+      members.push({
+        tag: member.tag,
+        userId: member.userId,
+        name: clanMember.name,
+        verified: member.verified
+      });
   }
 
   const guildMembers = await client.util.getGuildMembers(guild);
@@ -39,7 +53,9 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
   const notInDiscord = members.filter((mem) => !guildMembers.has(mem.userId));
   // not linked to discord.
   const notLinked = clan.memberList.filter(
-    (m) => !notInDiscord.some((en) => en.tag === m.tag) && !members.some((en) => en.tag === m.tag && guildMembers.has(en.userId))
+    (m) =>
+      !notInDiscord.some((en) => en.tag === m.tag) &&
+      !members.some((en) => en.tag === m.tag && guildMembers.has(en.userId))
   );
 
   const chunks = Util.splitMessage(
@@ -49,7 +65,9 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
         .map((mem) => {
           const name = escapeBackTick(mem.name).padEnd(15, ' ');
           const member = clan.memberList.find((m) => m.tag === mem.tag)!;
-          const user = showTag ? member.tag.padStart(12, ' ') : guildMembers.get(mem.userId)!.displayName.slice(0, 12).padStart(12, ' ');
+          const user = showTag
+            ? member.tag.padStart(12, ' ')
+            : guildMembers.get(mem.userId)!.displayName.slice(0, 12).padStart(12, ' ');
           return { name, user, verified: mem.verified };
         })
         .sort((a, b) => localeSort(a.name, b.name))
@@ -57,7 +75,9 @@ export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: APICl
           return `${verified ? '**✓**' : '✘'} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
         })
         .join('\n'),
-      notInDiscord.length ? `\n${EMOJIS.WRONG} **Players not on Discord: ${notInDiscord.length}**` : '',
+      notInDiscord.length
+        ? `\n${EMOJIS.WRONG} **Players not on Discord: ${notInDiscord.length}**`
+        : '',
       notInDiscord
         .map((mem) => {
           const name = escapeBackTick(mem.name).padEnd(15, ' ');

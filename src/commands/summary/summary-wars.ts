@@ -1,5 +1,12 @@
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, time } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  time
+} from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -21,7 +28,9 @@ export default class SummaryWarsCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const result = (await Promise.all(clans.map((clan) => this.getWAR(clan.tag)))).flat();
@@ -36,7 +45,8 @@ export default class SummaryWarsCommand extends Command {
     const endedWars = wars.filter((war) => war.state === 'warEnded');
 
     const sorted = [...inWarWars, ...completedWars, ...prepWars, ...endedWars];
-    if (!sorted.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!sorted.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const chunks = Array(Math.ceil(sorted.length / 15))
       .fill(0)

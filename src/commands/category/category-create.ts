@@ -15,12 +15,18 @@ export default class CategoryCreateCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { category_name: string; category_order?: number }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { category_name: string; category_order?: number }
+  ) {
     const formattedName = this.client.storage.formatCategoryName(args.category_name);
 
     const collection = this.client.db.collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES);
 
-    const alreadyExists = await collection.findOne({ guildId: interaction.guildId, name: formattedName });
+    const alreadyExists = await collection.findOne({
+      guildId: interaction.guildId,
+      name: formattedName
+    });
     if (alreadyExists) {
       return interaction.editReply('A category with this name already exists.');
     }
@@ -40,13 +46,21 @@ export default class CategoryCreateCommand extends Command {
         .filter((cat) => args.category_order && cat.order >= args.category_order)
         .map((cat) => new ObjectId(cat.value));
       if (categoryIds.length) {
-        await collection.updateMany({ _id: { $in: categoryIds } }, [{ $set: { order: { $sum: ['$order', 1] } } }]);
+        await collection.updateMany({ _id: { $in: categoryIds } }, [
+          { $set: { order: { $sum: ['$order', 1] } } }
+        ]);
       }
     }
 
-    const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+    const token = this.client.util.createToken({
+      userId: interaction.user.id,
+      guildId: interaction.guild.id
+    });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setURL(`https://clashperk.com/clans?token=${token}`).setLabel('Reorder').setStyle(ButtonStyle.Link)
+      new ButtonBuilder()
+        .setURL(`https://clashperk.com/clans?token=${token}`)
+        .setLabel('Reorder')
+        .setStyle(ButtonStyle.Link)
     );
 
     return interaction.editReply({ content: 'Category created.', components: [row] });

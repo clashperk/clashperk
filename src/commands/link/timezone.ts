@@ -17,7 +17,10 @@ export default class TimezoneCommand extends Command {
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { location: string }) {
     const raw = await Google.timezone(args.location);
-    if (!raw) return interaction.editReply(this.i18n('command.timezone.no_result', { lng: interaction.locale }));
+    if (!raw)
+      return interaction.editReply(
+        this.i18n('command.timezone.no_result', { lng: interaction.locale })
+      );
 
     const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
     await this.client.db.collection(Collections.USERS).updateOne(
@@ -53,7 +56,10 @@ export default class TimezoneCommand extends Command {
           `${offset < 0 ? '-' : '+'}${this.timezoneOffset(offset * 1000)}`
         ].join('\n')
       )
-      .setFooter({ text: `${interaction.user.displayName}`, iconURL: interaction.user.displayAvatarURL() });
+      .setFooter({
+        text: `${interaction.user.displayName}`,
+        iconURL: interaction.user.displayAvatarURL()
+      });
     return interaction.editReply({ embeds: [embed] });
   }
 

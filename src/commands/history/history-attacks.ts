@@ -18,7 +18,10 @@ export default class AttacksHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { embeds, result } = await this.getHistory(interaction, playerTags);
@@ -114,10 +117,9 @@ export default class AttacksHistoryCommand extends Command {
             `\u200e${'ATK'.padStart(4, ' ')} ${'DEF'.padStart(4, ' ')}    SEASON`,
             seasons
               .map((season) => {
-                return `${Util.formatNumber(season.attackWins).padStart(4, ' ')} ${Util.formatNumber(season.defenseWins).padStart(
-                  4,
-                  ' '
-                )}  ${moment(season.season).format('MMM YYYY')}`;
+                return `${Util.formatNumber(season.attackWins).padStart(4, ' ')} ${Util.formatNumber(
+                  season.defenseWins
+                ).padStart(4, ' ')}  ${moment(season.season).format('MMM YYYY')}`;
               })
               .join('\n'),
             '```'
@@ -151,7 +153,11 @@ export default class AttacksHistoryCommand extends Command {
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.attackWins ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...seasonIds.map((id) => r.records[id]?.attackWins ?? 0)
+        ])
       },
       {
         title: `Defense`,
@@ -161,12 +167,22 @@ export default class AttacksHistoryCommand extends Command {
           ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id]?.defenseWins ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...seasonIds.map((id) => r.records[id]?.defenseWins ?? 0)
+        ])
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Attacks History]`, sheets);
-    return interaction.editReply({ content: '**Attacks History**', components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Attacks History]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: '**Attacks History**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 }
 

@@ -14,7 +14,11 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
-import { aggregateLegendAttacks, getLegendAttack, getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
+import {
+  aggregateLegendAttacks,
+  getLegendAttack,
+  getLegendTimestampAgainstDay
+} from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
 import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
@@ -72,11 +76,16 @@ export default class LegendDaysCommand extends Command {
     const legend = await getLegendAttack(data.tag);
     if (!legend) {
       return interaction.followUp({
-        content: [`No data available for **${data.name} (${data.tag})**`, `Going forward, Legend statistics will be collected.`].join('\n')
+        content: [
+          `No data available for **${data.name} (${data.tag})**`,
+          `Going forward, Legend statistics will be collected.`
+        ].join('\n')
       });
     }
 
-    const embed = args.prev ? await this.logs(data) : await this.embed(interaction, data, legend, args.day);
+    const embed = args.prev
+      ? await this.logs(data)
+      : await this.embed(interaction, data, legend, args.day);
 
     embed.setTimestamp().setColor(this.client.embed(interaction));
     await interaction.editReply({ embeds: [embed], components: [row], content: null, files: [] });
@@ -85,7 +94,12 @@ export default class LegendDaysCommand extends Command {
     if (result) {
       const rawFile = new AttachmentBuilder(result.file, { name: result.name });
       embed.setImage(result.attachmentKey);
-      return interaction.editReply({ embeds: [embed], components: [row], files: [rawFile], content: null });
+      return interaction.editReply({
+        embeds: [embed],
+        components: [row],
+        files: [rawFile],
+        content: null
+      });
     }
   }
 
@@ -99,13 +113,21 @@ export default class LegendDaysCommand extends Command {
     return null;
   }
 
-  private async embed(interaction: CommandInteraction, data: APIPlayer, legend: LegendAttacksEntity, _day?: number) {
+  private async embed(
+    interaction: CommandInteraction,
+    data: APIPlayer,
+    legend: LegendAttacksEntity,
+    _day?: number
+  ) {
     const clan = data.clan ? await this.getClan(data.clan.tag) : null;
 
     const { startTime, endTime, day } = getLegendTimestampAgainstDay(_day);
-    const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+    const logs = (legend?.logs ?? []).filter(
+      (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
+    );
     const attacks = logs.filter((en) => en.type === 'attack') ?? [];
-    const defenses = logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+    const defenses =
+      logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
 
     const member = (clan?.memberList ?? []).find((en) => en.tag === data.tag);
     // const clanRank = member?.clanRank ?? 0;
@@ -161,7 +183,9 @@ export default class LegendDaysCommand extends Command {
         value: [
           `- Global Rank: ${globalRank ?? 'N/A'}`,
           `- Local Rank: ${
-            countryRank ? `${countryRank.players.rank} (${countryRank.country} :flag_${countryRank.countryCode.toLowerCase()}:)` : 'N/A'
+            countryRank
+              ? `${countryRank.players.rank} (${countryRank.country} :flag_${countryRank.countryCode.toLowerCase()}:)`
+              : 'N/A'
           }`
         ].join('\n')
       });
@@ -205,26 +229,42 @@ export default class LegendDaysCommand extends Command {
       {
         name: '**Attacks**',
         value: attacks.length
-          ? attacks.map((m) => `\` ${`+${m.inc}`.padStart(3, ' ')} \` ${time(new Date(m.timestamp), 'R')}`).join('\n')
+          ? attacks
+              .map(
+                (m) => `\` ${`+${m.inc}`.padStart(3, ' ')} \` ${time(new Date(m.timestamp), 'R')}`
+              )
+              .join('\n')
           : '-',
         inline: true
       },
       {
         name: '**Defenses**',
         value: defenses.length
-          ? defenses.map((m) => `\` ${`-${Math.abs(m.inc)}`.padStart(3, ' ')} \` ${time(new Date(m.timestamp), 'R')}`).join('\n')
+          ? defenses
+              .map(
+                (m) =>
+                  `\` ${`-${Math.abs(m.inc)}`.padStart(3, ' ')} \` ${time(new Date(m.timestamp), 'R')}`
+              )
+              .join('\n')
           : '-',
         inline: true
       }
     ]);
 
     const season = Season.getSeason();
-    embed.setFooter({ text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})` });
+    embed.setFooter({
+      text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})`
+    });
     return embed;
   }
 
   private async graph(data: APIPlayer) {
-    const { items: result, lastSeasonEnd, seasonEnd, seasonStart } = await aggregateLegendAttacks(data.tag);
+    const {
+      items: result,
+      lastSeasonEnd,
+      seasonEnd,
+      seasonStart
+    } = await aggregateLegendAttacks(data.tag);
     if (!result.length) return null;
 
     const season = result.at(0)!;
@@ -243,7 +283,9 @@ export default class LegendDaysCommand extends Command {
     }
     season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-    const lastSeasonLabels = Array.from({ length: labels.length }, (_, i) => moment(lastSeasonEnd).subtract(i, 'days').toDate()).reverse();
+    const lastSeasonLabels = Array.from({ length: labels.length }, (_, i) =>
+      moment(lastSeasonEnd).subtract(i, 'days').toDate()
+    ).reverse();
 
     if (lastSeason) {
       lastSeasonLabels.forEach((label) => {
@@ -288,9 +330,13 @@ export default class LegendDaysCommand extends Command {
     const days = Util.getLegendDays();
 
     const perDayLogs = days.reduce<AggsEntry[]>((items, { startTime, endTime }) => {
-      const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+      const mixedLogs = logs.filter(
+        (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
+      );
       const attacks = mixedLogs.filter((en) => en.type === 'attack') ?? [];
-      const defenses = mixedLogs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+      const defenses =
+        mixedLogs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ??
+        [];
 
       const possibleAttackCount = legend?.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
       const possibleDefenseCount = legend?.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
@@ -304,7 +350,14 @@ export default class LegendDaysCommand extends Command {
       const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
       const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
 
-      items.push({ attackCount, defenseCount, gain, loss, final: final?.end ?? '-', initial: initial?.start ?? '-' });
+      items.push({
+        attackCount,
+        defenseCount,
+        gain,
+        loss,
+        final: final?.end ?? '-',
+        initial: initial?.start ?? '-'
+      });
       return items;
     }, []);
 
@@ -318,7 +371,10 @@ export default class LegendDaysCommand extends Command {
             'DAY ATK   DEF  +/-  INIT FINAL',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
-              const def = padStart(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
+              const def = padStart(
+                `-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`,
+                5
+              );
               const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
               const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
               const final = padStart(day.final, 4);
@@ -332,7 +388,10 @@ export default class LegendDaysCommand extends Command {
             '`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
             ...perDayLogs.map((day, i) => {
               const net = day.gain + day.loss;
-              const def = padStart(`-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`, 5);
+              const def = padStart(
+                `-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`,
+                5
+              );
               const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
               const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
               const final = padStart(day.final, 4);
@@ -404,7 +463,12 @@ export default class LegendDaysCommand extends Command {
     ]);
 
     const leagueId = player.leagueTier?.id ?? UNRANKED_TIER_ID;
-    if ((!logs.length && !lastTournament.result) || leagueId === UNRANKED_TIER_ID || !player.leagueTier) return null;
+    if (
+      (!logs.length && !lastTournament.result) ||
+      leagueId === UNRANKED_TIER_ID ||
+      !player.leagueTier
+    )
+      return null;
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
@@ -412,7 +476,9 @@ export default class LegendDaysCommand extends Command {
       .setURL(`http://cprk.us/p/${trimTag(player.tag)}`);
 
     embed.setDescription(
-      [`${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}** ${EMOJIS.TROPHY} **${player.trophies}**`].join('\n')
+      [
+        `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}** ${EMOJIS.TROPHY} **${player.trophies}**`
+      ].join('\n')
     );
     embed.setThumbnail(player.leagueTier.iconUrls.small);
 
@@ -423,7 +489,9 @@ export default class LegendDaysCommand extends Command {
         name: `Overview (${moment(startTime).format('D MMM')} - ${moment(endTime).format('D MMM')})`,
         value: [
           `- ${player.trophies} trophies gained`,
-          ...(isBugged ? [] : [`- ${player.attackWins} attacks won`, `- ${player.defenseWins} defenses won`])
+          ...(isBugged
+            ? []
+            : [`- ${player.attackWins} attacks won`, `- ${player.defenseWins} defenses won`])
         ].join('\n')
       });
     }
@@ -434,7 +502,12 @@ export default class LegendDaysCommand extends Command {
         name: `Previous Week (${moment(lastTournament.startTime).format('D MMM')} - ${moment(lastTournament.endTime).format('D MMM')})`,
         value: [
           `- ${lastTournament.result.trophies} trophies gained`,
-          ...(isBugged ? [] : [`- ${lastTournament.result.attacks} attacks won`, `- ${lastTournament.result.defenses} defenses won`]),
+          ...(isBugged
+            ? []
+            : [
+                `- ${lastTournament.result.attacks} attacks won`,
+                `- ${lastTournament.result.defenses} defenses won`
+              ]),
           leagueId > lastTournament.result.leagueId
             ? `- Promoted to **${formatLeague(player.leagueTier.name)} (${EMOJIS.UP_KEY} ${leagueId - lastTournament.result.leagueId})**`
             : leagueId < lastTournament.result.leagueId
@@ -450,7 +523,9 @@ export default class LegendDaysCommand extends Command {
         value: [
           `- Global Rank: ${globalRank ?? 'N/A'}`,
           `- Local Rank: ${
-            countryRank ? `${countryRank.players.rank} (${countryRank.country} :flag_${countryRank.countryCode.toLowerCase()}:)` : 'N/A'
+            countryRank
+              ? `${countryRank.players.rank} (${countryRank.country} :flag_${countryRank.countryCode.toLowerCase()}:)`
+              : 'N/A'
           }`
         ].join('\n')
       }
@@ -492,7 +567,9 @@ export default class LegendDaysCommand extends Command {
   }
 
   private async getLastTournament(playerTag: string) {
-    const lastWeek = moment(Util.getTournamentWindow().startTime).subtract(7, 'days').format('YYYY-MM-DD');
+    const lastWeek = moment(Util.getTournamentWindow().startTime)
+      .subtract(7, 'days')
+      .format('YYYY-MM-DD');
     const { id, startTime, endTime } = Util.getTournamentWindowById(lastWeek);
 
     const rows = await this.client.clickhouse

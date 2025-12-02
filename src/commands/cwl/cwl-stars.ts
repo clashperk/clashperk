@@ -37,7 +37,10 @@ export default class CWLStarsCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User; season?: string }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
@@ -48,27 +51,42 @@ export default class CWLStarsCommand extends Command {
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
-        content: this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        content: this.i18n('command.cwl.still_searching', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       });
     }
 
-    const isIncorrectSeason = !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike = args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
+    const isIncorrectSeason =
+      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
+    const entityLike =
+      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
     const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
 
     if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
-        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        content: this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       });
     }
 
-    const aggregated = await this.client.coc.aggregateClanWarLeague(clan.tag, { ...entityLike, leagues: group?.leagues ?? {} }, isApiData);
+    const aggregated = await this.client.coc.aggregateClanWarLeague(
+      clan.tag,
+      { ...entityLike, leagues: group?.leagues ?? {} },
+      isApiData
+    );
 
     if (!aggregated) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
-        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        content: this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       });
     }
 
@@ -118,7 +136,8 @@ export default class CWLStarsCommand extends Command {
         if (['inWar', 'warEnded'].includes(data.state)) {
           if (this.client.coc.isWinner(clan, opponent)) warsWon++;
           for (const m of clan.members) {
-            if (m.attacks && !m.attacks.length && !m.bestOpponentAttack && body.fromArchive) continue;
+            if (m.attacks && !m.attacks.length && !m.bestOpponentAttack && body.fromArchive)
+              continue;
 
             members[m.tag] ??= {
               name: m.name || m.tag,
@@ -150,7 +169,10 @@ export default class CWLStarsCommand extends Command {
     if (!leaderboard.length && body.season !== Util.getCWLSeasonId()) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
-        content: this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        content: this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       });
     }
 
@@ -165,7 +187,9 @@ export default class CWLStarsCommand extends Command {
     const listView = comparisonMode ? 'GAINED' : 'TOTAL';
 
     const leagueId = body.leagues?.[clan.tag];
-    const bonuses = WAR_LEAGUE_PROMOTION_MAP[(leagueId || clan.warLeague?.id) ?? UNRANKED_WAR_LEAGUE_ID].bonuses + warsWon;
+    const bonuses =
+      WAR_LEAGUE_PROMOTION_MAP[(leagueId || clan.warLeague?.id) ?? UNRANKED_WAR_LEAGUE_ID].bonuses +
+      warsWon;
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
@@ -205,7 +229,9 @@ export default class CWLStarsCommand extends Command {
       );
     }
 
-    embed.setFooter({ text: `CWL ${moment(body.season).format('MMM YYYY')} | ${bonuses} Bonuses Assignable` });
+    embed.setFooter({
+      text: `CWL ${moment(body.season).format('MMM YYYY')} | ${bonuses} Bonuses Assignable`
+    });
 
     const payload = {
       cmd: this.id,
@@ -221,7 +247,10 @@ export default class CWLStarsCommand extends Command {
     };
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh)
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh)
     );
 
     const menu = new StringSelectMenuBuilder()
@@ -247,6 +276,9 @@ export default class CWLStarsCommand extends Command {
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
     const clanMenu = await getClanSwitchingMenu(interaction, customIds.clans, clanTag);
-    return interaction.editReply({ embeds: [embed], components: clanMenu ? [buttonRow, menuRow, clanMenu] : [buttonRow, menuRow] });
+    return interaction.editReply({
+      embeds: [embed],
+      components: clanMenu ? [buttonRow, menuRow, clanMenu] : [buttonRow, menuRow]
+    });
   }
 }

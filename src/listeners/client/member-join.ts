@@ -1,6 +1,13 @@
 import { DiscordErrorCodes, Settings } from '@app/constants';
 import { LinkButtonConfig, WelcomeLogConfig } from '@app/entities';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, WebhookClient } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  GuildMember,
+  WebhookClient
+} from 'discord.js';
 import { Listener } from '../../lib/handlers.js';
 
 export default class GuildMemberAddListener extends Listener {
@@ -32,10 +39,14 @@ export default class GuildMemberAddListener extends Listener {
       const embed = new EmbedBuilder().setDescription(log.description);
       if (log.bannerImage) embed.setImage(log.bannerImage);
 
-      const linkConfig = this.client.settings.get<LinkButtonConfig>(member.guild, Settings.LINK_EMBEDS, {
-        token_field: 'optional',
-        button_style: ButtonStyle.Primary
-      });
+      const linkConfig = this.client.settings.get<LinkButtonConfig>(
+        member.guild,
+        Settings.LINK_EMBEDS,
+        {
+          token_field: 'optional',
+          button_style: ButtonStyle.Primary
+        }
+      );
 
       const linkButton = new ButtonBuilder()
         .setCustomId(JSON.stringify({ cmd: 'link-add', token_field: linkConfig.token_field }))
@@ -65,7 +76,9 @@ export default class GuildMemberAddListener extends Listener {
     const channel = this.client.util.getTextBasedChannel(log.channelId);
     if (!channel) return null;
 
-    const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
+    const webhook = await this.client.storage.getWebhook(
+      channel.isThread() ? channel.parent! : channel
+    );
     if (!webhook) return null;
 
     await this.client.settings.set(member.guild.id, Settings.WELCOME_LOG, {

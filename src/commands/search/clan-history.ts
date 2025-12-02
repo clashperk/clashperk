@@ -1,4 +1,12 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, time, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  time,
+  User
+} from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
@@ -51,19 +59,18 @@ export default class ClanHistoryCommand extends Command {
       return interaction.editReply(`No clan history found for **${data.name} (${data.tag})`);
     }
 
-    const mostStayedClansMap = clans.reduce<Record<string, { clan: GlobalClanEntity; stay: number }>>(
-      (record, { firstSeen, lastSeen, clan }) => {
-        const diff = lastSeen.getTime() - firstSeen.getTime();
-        const stay = diff === 0 ? 0 : diff;
-        if (!record[clan.tag]) {
-          record[clan.tag] = { clan, stay };
-        } else {
-          record[clan.tag].stay += stay;
-        }
-        return record;
-      },
-      {}
-    );
+    const mostStayedClansMap = clans.reduce<
+      Record<string, { clan: GlobalClanEntity; stay: number }>
+    >((record, { firstSeen, lastSeen, clan }) => {
+      const diff = lastSeen.getTime() - firstSeen.getTime();
+      const stay = diff === 0 ? 0 : diff;
+      if (!record[clan.tag]) {
+        record[clan.tag] = { clan, stay };
+      } else {
+        record[clan.tag].stay += stay;
+      }
+      return record;
+    }, {});
     const mostStayedClans = Object.values(mostStayedClansMap)
       .sort((a, b) => b.stay - a.stay)
       .filter((x) => x.stay > 0);
@@ -86,7 +93,10 @@ export default class ClanHistoryCommand extends Command {
           ...clans.slice(0, 10).map(({ clan, firstSeen, lastSeen }) => {
             const diff = lastSeen.getTime() - firstSeen.getTime();
             const stay = diff === 0 ? '' : `- ${ms(diff)}`;
-            const timeFrame = diff === 0 ? `${time(firstSeen, 'f')}` : `${time(firstSeen, 'D')} to ${time(lastSeen, 'D')}`;
+            const timeFrame =
+              diff === 0
+                ? `${time(firstSeen, 'f')}`
+                : `${time(firstSeen, 'D')} to ${time(lastSeen, 'D')}`;
             return `\u200e${this.formatClan(clan, data.tag)} ${stay} \n-# ${timeFrame}\n`;
           })
         ].join('\n')
@@ -105,8 +115,18 @@ export default class ClanHistoryCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh))
-      .addComponents(new ButtonBuilder().setLabel('View Profile').setStyle(ButtonStyle.Primary).setCustomId(customIds.profile));
+      .addComponents(
+        new ButtonBuilder()
+          .setEmoji(EMOJIS.REFRESH)
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(customIds.refresh)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('View Profile')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.profile)
+      );
 
     return interaction.editReply({ embeds: [embed], components: [row] });
   }

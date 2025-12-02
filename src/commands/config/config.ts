@@ -64,7 +64,11 @@ export default class ConfigCommand extends Command {
     }
   ) {
     if (args.color_code) {
-      await this.client.settings.set(interaction.guild, Settings.COLOR, this.getColor(args.color_code));
+      await this.client.settings.set(
+        interaction.guild,
+        Settings.COLOR,
+        this.getColor(args.color_code)
+      );
     }
 
     if (args.webhook_limit) {
@@ -73,19 +77,27 @@ export default class ConfigCommand extends Command {
     }
 
     if (args.bot_manager_role) {
-      await this.client.settings.push(interaction.guild, Settings.MANAGER_ROLE, [args.bot_manager_role.id]);
+      await this.client.settings.push(interaction.guild, Settings.MANAGER_ROLE, [
+        args.bot_manager_role.id
+      ]);
     }
 
     if (args.roster_manager_role) {
-      await this.client.settings.push(interaction.guild, Settings.ROSTER_MANAGER_ROLE, [args.roster_manager_role.id]);
+      await this.client.settings.push(interaction.guild, Settings.ROSTER_MANAGER_ROLE, [
+        args.roster_manager_role.id
+      ]);
     }
 
     if (args.flags_manager_role) {
-      await this.client.settings.push(interaction.guild, Settings.FLAGS_MANAGER_ROLE, [args.flags_manager_role.id]);
+      await this.client.settings.push(interaction.guild, Settings.FLAGS_MANAGER_ROLE, [
+        args.flags_manager_role.id
+      ]);
     }
 
     if (args.links_manager_role) {
-      await this.client.settings.push(interaction.guild, Settings.LINKS_MANAGER_ROLE, [args.links_manager_role.id]);
+      await this.client.settings.push(interaction.guild, Settings.LINKS_MANAGER_ROLE, [
+        args.links_manager_role.id
+      ]);
     }
 
     const validOptions = this.getOptions();
@@ -101,7 +113,10 @@ export default class ConfigCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setLabel('Manage Permissions').setStyle(ButtonStyle.Success).setCustomId(customIds.manage)
+      new ButtonBuilder()
+        .setLabel('Manage Permissions')
+        .setStyle(ButtonStyle.Success)
+        .setCustomId(customIds.manage)
     );
     const menuOptions = new StringSelectMenuBuilder()
       .setCustomId(customIds.menu)
@@ -109,7 +124,12 @@ export default class ConfigCommand extends Command {
       .addOptions(validOptions);
     const optionMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menuOptions);
 
-    const roleKeys = [Settings.MANAGER_ROLE, Settings.FLAGS_MANAGER_ROLE, Settings.ROSTER_MANAGER_ROLE, Settings.LINKS_MANAGER_ROLE];
+    const roleKeys = [
+      Settings.MANAGER_ROLE,
+      Settings.FLAGS_MANAGER_ROLE,
+      Settings.ROSTER_MANAGER_ROLE,
+      Settings.LINKS_MANAGER_ROLE
+    ];
 
     const message = await interaction.editReply({ embeds: [embed], components: [row] });
     createInteractionCollector({
@@ -122,7 +142,10 @@ export default class ConfigCommand extends Command {
 
         return action.update({
           embeds: [],
-          content: ['### Select an option to set Permissions', ...roleKeys.map((key) => `- ${title(key)}`)].join('\n'),
+          content: [
+            '### Select an option to set Permissions',
+            ...roleKeys.map((key) => `- ${title(key)}`)
+          ].join('\n'),
           components: [optionMenu]
         });
       },
@@ -145,7 +168,10 @@ export default class ConfigCommand extends Command {
           roleMenus.push(roleMenu);
         }
 
-        const validOptions = this.getOptions().map((op) => ({ ...op, default: op.value === roleKey }));
+        const validOptions = this.getOptions().map((op) => ({
+          ...op,
+          default: op.value === roleKey
+        }));
         const opt = validOptions.find((op) => op.value === roleKey)!;
         menuOptions.setOptions(validOptions);
 
@@ -174,7 +200,11 @@ export default class ConfigCommand extends Command {
         }
         if (customIds.rosterManagerRole === action.customId) {
           if (roleIds.length) {
-            await this.client.settings.set(interaction.guild, Settings.ROSTER_MANAGER_ROLE, roleIds);
+            await this.client.settings.set(
+              interaction.guild,
+              Settings.ROSTER_MANAGER_ROLE,
+              roleIds
+            );
           } else {
             await this.client.settings.delete(interaction.guild, Settings.ROSTER_MANAGER_ROLE);
           }
@@ -192,7 +222,9 @@ export default class ConfigCommand extends Command {
     });
   }
 
-  public fallback(interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>) {
+  public fallback(
+    interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>
+  ) {
     const color = this.client.settings.get<number>(interaction.guild, Settings.COLOR, null);
     const channel = interaction.guild.channels.cache.get(
       this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null)
@@ -266,6 +298,10 @@ export default class ConfigCommand extends Command {
   }
 
   private getOptions() {
-    return options.map((op) => ({ label: title(op.name), value: op.key, description: op.description }));
+    return options.map((op) => ({
+      label: title(op.name),
+      value: op.key,
+      description: op.description
+    }));
   }
 }

@@ -1,6 +1,14 @@
 import { Collections, WarType } from '@app/constants';
 import { APIClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, time, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  time,
+  User
+} from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import { createGoogleSheet, CreateGoogleSheet } from '../../struct/google.js';
@@ -27,7 +35,10 @@ export default class WarLogCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; export?: boolean }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User; export?: boolean }
+  ) {
     const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
@@ -43,7 +54,9 @@ export default class WarLogCommand extends Command {
         url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`
       })
       .setDescription(
-        [`${data.warWins} Wins, ${data.isWarLogPublic ? `${data.warLosses!} Losses,` : ''} ${data.warWinStreak} Win Streak`].join('\n')
+        [
+          `${data.warWins} Wins, ${data.isWarLogPublic ? `${data.warLosses!} Losses,` : ''} ${data.warWinStreak} Win Streak`
+        ].join('\n')
       );
 
     if (!data.isWarLogPublic) {
@@ -143,16 +156,27 @@ export default class WarLogCommand extends Command {
         { name: 'Opponent Tag', width: 160, align: 'LEFT' },
         { name: 'Date', width: 160, align: 'LEFT' }
       ],
-      rows: wars.map((war) => [war.id, war.opponent.name, war.opponent.tag, moment(war.startTime).toDate()])
+      rows: wars.map((war) => [
+        war.id,
+        war.opponent.name,
+        war.opponent.tag,
+        moment(war.startTime).toDate()
+      ])
     });
 
     const spreadsheet = await createGoogleSheet(`${clan.name} (${clan.tag}) [War ID]`, sheets);
-    return interaction.followUp({ content: '**War ID (last 300)**', components: getExportComponents(spreadsheet) });
+    return interaction.followUp({
+      content: '**War ID (last 300)**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 
   private getWarInfo(wars: any[], war: any): { id: string; attacks: number } | null {
     const data = wars.find(
-      (en) => war.opponent?.tag && [en.clan.tag, en.opponent.tag].includes(war.opponent.tag) && this.compareDate(war.endTime, en.endTime)
+      (en) =>
+        war.opponent?.tag &&
+        [en.clan.tag, en.opponent.tag].includes(war.opponent.tag) &&
+        this.compareDate(war.endTime, en.endTime)
     );
     if (!data) return null;
     return { id: data.id, attacks: data.opponent.attacks };

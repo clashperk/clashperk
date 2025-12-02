@@ -22,11 +22,17 @@ export default class RosterGroupsCreateCommand extends Command {
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: RosterGroupCreateProps) {
-    const category = await this.client.rosterManager.searchCategory(interaction.guild.id, args.name);
-    if (category) return interaction.editReply({ content: 'A group with this name already exists.' });
+    const category = await this.client.rosterManager.searchCategory(
+      interaction.guild.id,
+      args.name
+    );
+    if (category)
+      return interaction.editReply({ content: 'A group with this name already exists.' });
 
     if (args.group_role) {
-      const dup = await this.client.rosterManager.categories.findOne({ roleId: args.group_role.id });
+      const dup = await this.client.rosterManager.categories.findOne({
+        roleId: args.group_role.id
+      });
       if (dup) return interaction.editReply({ content: 'A group with this role already exists.' });
     }
 

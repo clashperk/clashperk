@@ -59,7 +59,9 @@ export class CustomBotManager {
   public async createCommands(serviceId: string, guildId: string, token: string) {
     try {
       const rest = new REST({ version: '10' }).setToken(token);
-      const commands = await rest.put(Routes.applicationGuildCommands(serviceId, guildId), { body: COMMANDS });
+      const commands = await rest.put(Routes.applicationGuildCommands(serviceId, guildId), {
+        body: COMMANDS
+      });
       return commands as APIApplicationCommand[];
     } catch (error) {
       this.client.logger.error(error, { label: 'CUSTOM_BOT' });
@@ -68,7 +70,13 @@ export class CustomBotManager {
     }
   }
 
-  public async createService(input: { application: DiscordBot; guildId: string; user: User; patronId: string; token: string }) {
+  public async createService(input: {
+    application: DiscordBot;
+    guildId: string;
+    user: User;
+    patronId: string;
+    token: string;
+  }) {
     const value = await this.collection.findOneAndUpdate(
       {
         serviceId: input.application.id
@@ -123,7 +131,9 @@ export class CustomBotManager {
           }
         );
 
-        await this._deployWebhook({ content: `Service Created [${input.application.name}] (${input.application.id})` }).catch(() => null);
+        await this._deployWebhook({
+          content: `Service Created [${input.application.name}] (${input.application.id})`
+        }).catch(() => null);
       }
 
       return isOk;
@@ -186,26 +196,36 @@ export class CustomBotManager {
 
     try {
       await this._upgradeService(bot.serviceId);
-      this.client.logger.log(`Custom bot "${bot.name}" was set to production.`, { label: 'CUSTOM-BOT' });
+      this.client.logger.log(`Custom bot "${bot.name}" was set to production.`, {
+        label: 'CUSTOM-BOT'
+      });
     } catch (error) {
       captureException(error);
 
       await this.collection.updateOne({ serviceId: bot.serviceId }, { $set: { isLive: false } });
       for (const guildId of bot.guildIds) await this.client.settings.deleteCustomBot(guildId);
-      this.client.logger.error(`Custom bot "${bot.name}" was failed to set to production.`, { label: 'CUSTOM-BOT' });
+      this.client.logger.error(`Custom bot "${bot.name}" was failed to set to production.`, {
+        label: 'CUSTOM-BOT'
+      });
 
-      await this._deployWebhook({ content: `Service Upgrading Failed [${bot.name}] (<@${bot.serviceId}>)` });
+      await this._deployWebhook({
+        content: `Service Upgrading Failed [${bot.name}] (<@${bot.serviceId}>)`
+      });
     }
   }
 
   public async checkGuild(bot: CustomBotsEntity) {
-    const patreon = await this.client.db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS).findOne({ id: bot.patronId });
+    const patreon = await this.client.db
+      .collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS)
+      .findOne({ id: bot.patronId });
     if (!patreon) return;
 
     const guildIds = patreon.guilds.map((guild) => guild.id);
     if (!guildIds.length) return;
 
-    const missingGuilds = guildIds.filter((id) => !bot.guildIds.includes(id) && this.client.guilds.cache.has(id));
+    const missingGuilds = guildIds.filter(
+      (id) => !bot.guildIds.includes(id) && this.client.guilds.cache.has(id)
+    );
     if (!missingGuilds.length) return;
 
     for (const guildId of missingGuilds) {
@@ -240,13 +260,16 @@ export class CustomBotManager {
   }
 
   private async _upgradeService(serviceId: string) {
-    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/upgrade`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
+    const res = await fetch(
+      `${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/upgrade`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
+        }
       }
-    });
+    );
 
     const body = (await res.json()) as { message: string };
     if (!res.ok) throw new Error(body.message);
@@ -255,13 +278,16 @@ export class CustomBotManager {
   }
 
   private async _suspendService(serviceId: string) {
-    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/suspend`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
+    const res = await fetch(
+      `${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/suspend`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
+        }
       }
-    });
+    );
 
     const body = (await res.json()) as { message: string };
     if (!res.ok) throw new Error(body.message);
@@ -270,13 +296,16 @@ export class CustomBotManager {
   }
 
   private async _resumeService(serviceId: string) {
-    const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/resume`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
+    const res = await fetch(
+      `${process.env.DOCKER_SERVICE_API_BASE_URL}/services/${serviceId}/resume`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.DOCKER_SERVICE_API_KEY!
+        }
       }
-    });
+    );
 
     const body = (await res.json()) as { message: string };
     if (!res.ok) throw new Error(body.message);

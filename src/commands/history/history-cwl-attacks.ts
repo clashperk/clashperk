@@ -3,7 +3,13 @@ import { APIClanWar, APIClanWarAttack, APIClanWarMember } from 'clashofclans.js'
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
-import { BLUE_NUMBERS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/emojis.js';
+import {
+  BLUE_NUMBERS,
+  CWL_LEAGUES,
+  EMOJIS,
+  ORANGE_NUMBERS,
+  WHITE_NUMBERS
+} from '../../util/emojis.js';
 import { handlePagination } from '../../util/pagination.js';
 
 const stars: Record<string, string> = {
@@ -23,7 +29,10 @@ export default class CWLHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.player) {
       const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return null;
@@ -40,7 +49,9 @@ export default class CWLHistoryCommand extends Command {
       return this.getHistory(interaction, playerTags);
     }
 
-    const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);
+    const playerTags = await this.client.resolver.getLinkedPlayerTags(
+      args.user?.id ?? interaction.user.id
+    );
     return this.getHistory(interaction, playerTags);
   }
 
@@ -49,7 +60,10 @@ export default class CWLHistoryCommand extends Command {
 
     const groups = await this.client.db
       .collection<{ leagues?: Record<string, number>; season: string }>(Collections.CWL_GROUPS)
-      .find({ id: { $in: [...new Set(_wars.map((a) => a.leagueGroupId))] } }, { projection: { season: 1, leagues: 1 } })
+      .find(
+        { id: { $in: [...new Set(_wars.map((a) => a.leagueGroupId))] } },
+        { projection: { season: 1, leagues: 1 } }
+      )
       .toArray();
 
     const groupMap = groups.reduce<Record<string, number>>((acc, group) => {
@@ -86,7 +100,10 @@ export default class CWLHistoryCommand extends Command {
             wars.sort((a, b) => a.endTime.getTime() - b.endTime.getTime());
             const participated = wars.filter((war) => war.attack).length;
             const totalStars = wars.reduce((acc, war) => acc + (war.attack?.stars ?? 0), 0);
-            const totalDestruction = wars.reduce((acc, war) => acc + (war.attack?.destructionPercentage ?? 0), 0);
+            const totalDestruction = wars.reduce(
+              (acc, war) => acc + (war.attack?.destructionPercentage ?? 0),
+              0
+            );
             const season = moment(seasonId).format('MMM YYYY').toString();
             const [{ member, clan }] = wars;
             const leagueId = groupMap[`${seasonId}-${clan.tag}`];
@@ -146,8 +163,14 @@ export default class CWLHistoryCommand extends Command {
       data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
 
       for (const tag of tags) {
-        const __member = data.clan.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
-        const member = __member ?? data.opponent.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
+        const __member = data.clan.members
+          .map((mem, i) => ({ ...mem, mapPosition: i + 1 }))
+          .find((m) => m.tag === tag);
+        const member =
+          __member ??
+          data.opponent.members
+            .map((mem, i) => ({ ...mem, mapPosition: i + 1 }))
+            .find((m) => m.tag === tag);
         if (!member) continue;
 
         const clan = __member ? data.clan : data.opponent;

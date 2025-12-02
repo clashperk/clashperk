@@ -18,7 +18,10 @@ export default class CapitalContributionHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
       const { embeds, result } = await this.getHistory(interaction, playerTags);
@@ -157,7 +160,9 @@ export default class CapitalContributionHistoryCommand extends Command {
               .slice(0, 14)
               .map(
                 (week, i) =>
-                  `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(week.total)}  ${moment(week.week)
+                  `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(week.total)}  ${moment(
+                    week.week
+                  )
                     .format('D MMM')
                     .padStart(7, ' ')}`
               )
@@ -185,7 +190,9 @@ export default class CapitalContributionHistoryCommand extends Command {
       })
       .flat();
 
-    const weekendIds = Util.getWeekIds(14).map((id) => moment(id).add(3, 'day').format('YYYY-MM-DD'));
+    const weekendIds = Util.getWeekIds(14).map((id) =>
+      moment(id).add(3, 'day').format('YYYY-MM-DD')
+    );
     const sheets: CreateGoogleSheet[] = [
       {
         title: `Capital Donations History`,
@@ -195,12 +202,22 @@ export default class CapitalContributionHistoryCommand extends Command {
           ...weekendIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
         ],
 
-        rows: chunks.map((r) => [r.name, r.tag, ...weekendIds.map((id) => r.records[id]?.total ?? 0)])
+        rows: chunks.map((r) => [
+          r.name,
+          r.tag,
+          ...weekendIds.map((id) => r.records[id]?.total ?? 0)
+        ])
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Capital Contribution History]`, sheets);
-    return interaction.editReply({ content: '**Capital Contribution History**', components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Capital Contribution History]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: '**Capital Contribution History**',
+      components: getExportComponents(spreadsheet)
+    });
   }
 
   private padding(num: number) {

@@ -5,7 +5,11 @@ import {
   TOWN_HALL_LEVELS_FOR_ROLES,
   TROPHY_ROLES
 } from '@app/constants';
-import { APIApplicationCommandBasicOption, ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
+import {
+  APIApplicationCommandBasicOption,
+  ApplicationCommandOptionType,
+  RESTPostAPIApplicationCommandsJSONBody
+} from 'discord.js';
 import { title } from 'radash';
 import { command, common } from '../../src/util/locales.js';
 import { translation } from './@helper.js';
@@ -34,42 +38,54 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'leader_role',
           required: false,
           description: command.autorole.clan_roles.options.leader.description,
-          description_localizations: translation('command.autorole.clan_roles.options.leader.description'),
+          description_localizations: translation(
+            'command.autorole.clan_roles.options.leader.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'co_leader_role',
           required: false,
           description: command.autorole.clan_roles.options.co_lead.description,
-          description_localizations: translation('command.autorole.clan_roles.options.co_lead.description'),
+          description_localizations: translation(
+            'command.autorole.clan_roles.options.co_lead.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'elder_role',
           required: false,
           description: command.autorole.clan_roles.options.elder.description,
-          description_localizations: translation('command.autorole.clan_roles.options.elder.description'),
+          description_localizations: translation(
+            'command.autorole.clan_roles.options.elder.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'member_role',
           required: false,
           description: command.autorole.clan_roles.options.member.description,
-          description_localizations: translation('command.autorole.clan_roles.options.member.description'),
+          description_localizations: translation(
+            'command.autorole.clan_roles.options.member.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'everyone_role',
           required: false,
           description: command.autorole.clan_roles.options.common_role.description,
-          description_localizations: translation('command.autorole.clan_roles.options.common_role.description'),
+          description_localizations: translation(
+            'command.autorole.clan_roles.options.common_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'only_verified',
           required: false,
           description: command.autorole.clan_roles.options.only_verified.description,
-          description_localizations: translation('command.autorole.clan_roles.options.only_verified.description'),
+          description_localizations: translation(
+            'command.autorole.clan_roles.options.only_verified.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -103,7 +119,9 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'allow_non_family_accounts',
           description: command.autorole.town_hall.options.allow_non_family_accounts.description,
-          description_localizations: translation('command.autorole.town_hall.options.allow_non_family_accounts.description'),
+          description_localizations: translation(
+            'command.autorole.town_hall.options.allow_non_family_accounts.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -161,7 +179,9 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'allow_non_family_accounts',
           description: command.autorole.town_hall.options.allow_non_family_accounts.description,
-          description_localizations: translation('command.autorole.town_hall.options.allow_non_family_accounts.description'),
+          description_localizations: translation(
+            'command.autorole.town_hall.options.allow_non_family_accounts.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -227,7 +247,9 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'role',
           required: true,
           description: command.autorole.eos_push.options.role.description,
-          description_localizations: translation('command.autorole.eos_push.options.role.description'),
+          description_localizations: translation(
+            'command.autorole.eos_push.options.role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
@@ -236,7 +258,9 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           autocomplete: true,
           type: ApplicationCommandOptionType.String,
           description: command.autorole.eos_push.options.clans.description,
-          description_localizations: translation('command.autorole.eos_push.options.clans.description')
+          description_localizations: translation(
+            'command.autorole.eos_push.options.clans.description'
+          )
         }
       ]
     },
@@ -249,37 +273,49 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'family_leaders_role',
           description: command.autorole.family.options.family_leaders_role.description,
-          description_localizations: translation('command.autorole.family.options.family_leaders_role.description'),
+          description_localizations: translation(
+            'command.autorole.family.options.family_leaders_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'family_role',
           description: command.autorole.family.options.family_role.description,
-          description_localizations: translation('command.autorole.family.options.family_role.description'),
+          description_localizations: translation(
+            'command.autorole.family.options.family_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'exclusive_family_role',
           description: command.autorole.family.options.exclusive_family_role.description,
-          description_localizations: translation('command.autorole.family.options.exclusive_family_role.description'),
+          description_localizations: translation(
+            'command.autorole.family.options.exclusive_family_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'guest_role',
           description: command.autorole.family.options.guest_role.description,
-          description_localizations: translation('command.autorole.family.options.guest_role.description'),
+          description_localizations: translation(
+            'command.autorole.family.options.guest_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'verified_role',
           description: command.autorole.family.options.verified_role.description,
-          description_localizations: translation('command.autorole.family.options.verified_role.description'),
+          description_localizations: translation(
+            'command.autorole.family.options.verified_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         },
         {
           name: 'account_linked_role',
           description: command.autorole.family.options.account_linked_role.description,
-          description_localizations: translation('command.autorole.family.options.account_linked_role.description'),
+          description_localizations: translation(
+            'command.autorole.family.options.account_linked_role.description'
+          ),
           type: ApplicationCommandOptionType.Role
         }
       ]
@@ -385,19 +421,25 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'user_or_role',
           description: command.autorole.refresh.options.user_or_role.description,
-          description_localizations: translation('command.autorole.refresh.options.user_or_role.description'),
+          description_localizations: translation(
+            'command.autorole.refresh.options.user_or_role.description'
+          ),
           type: ApplicationCommandOptionType.Mentionable
         },
         {
           name: 'is_test_run',
           description: command.autorole.refresh.options.is_test_run.description,
-          description_localizations: translation('command.autorole.refresh.options.is_test_run.description'),
+          description_localizations: translation(
+            'command.autorole.refresh.options.is_test_run.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'force_refresh',
           description: command.autorole.refresh.options.force_refresh.description,
-          description_localizations: translation('command.autorole.refresh.options.force_refresh.description'),
+          description_localizations: translation(
+            'command.autorole.refresh.options.force_refresh.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         }
       ]
@@ -411,7 +453,9 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'auto_update_roles',
           description: command.autorole.config.options.auto_update_roles.description,
-          description_localizations: translation('command.autorole.config.options.auto_update_roles.description'),
+          description_localizations: translation(
+            'command.autorole.config.options.auto_update_roles.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -429,7 +473,9 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'role_removal_delays',
           description: command.autorole.config.options.role_removal_delays.description,
-          description_localizations: translation('command.autorole.config.options.role_removal_delays.description'),
+          description_localizations: translation(
+            'command.autorole.config.options.role_removal_delays.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -494,7 +540,9 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'role_addition_delays',
           description: command.autorole.config.options.role_addition_delays.description,
-          description_localizations: translation('command.autorole.config.options.role_addition_delays.description'),
+          description_localizations: translation(
+            'command.autorole.config.options.role_addition_delays.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -539,7 +587,9 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'delay_exclusion_roles',
           description: command.autorole.config.options.delay_exclusion_roles.description,
-          description_localizations: translation('command.autorole.config.options.delay_exclusion_roles.description'),
+          description_localizations: translation(
+            'command.autorole.config.options.delay_exclusion_roles.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -567,19 +617,25 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'always_force_refresh_roles',
           description: command.autorole.config.options.always_force_refresh_roles.description,
-          description_localizations: translation('command.autorole.config.options.always_force_refresh_roles.description'),
+          description_localizations: translation(
+            'command.autorole.config.options.always_force_refresh_roles.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'allow_not_linked',
           description: command.autorole.config.options.allow_not_linked.description,
-          description_localizations: translation('command.autorole.config.options.allow_not_linked.description'),
+          description_localizations: translation(
+            'command.autorole.config.options.allow_not_linked.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'verified_only_clan_roles',
           description: command.autorole.config.options.verified_only_clan_roles.description,
-          description_localizations: translation('command.autorole.config.options.verified_only_clan_roles.description'),
+          description_localizations: translation(
+            'command.autorole.config.options.verified_only_clan_roles.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {

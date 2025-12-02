@@ -17,7 +17,10 @@ export default class ExportCWL extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string; lineup_only?: boolean }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; season?: string; lineup_only?: boolean }
+  ) {
     const command = this.handler.getCommand('export-cwl-lineup');
     if (command && args.lineup_only) return command.exec(interaction, args);
 
@@ -60,7 +63,12 @@ export default class ExportCWL extends Command {
     }
 
     if (!chunks.length) {
-      return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.monthId }));
+      return interaction.editReply(
+        this.i18n('command.cwl.no_season_data', {
+          lng: interaction.locale,
+          season: season ?? Season.monthId
+        })
+      );
     }
 
     const sheets: CreateGoogleSheet[] = chunks
@@ -208,10 +216,17 @@ export default class ExportCWL extends Command {
             { name: 'Defender Destruction', align: 'RIGHT', width: 100 }
           ],
           rows: round.clan.members.map((m) => {
-            const opponent = round.opponent.members.find((en) => en.tag === m.attacks?.[0]?.defenderTag);
-            const gained = m.bestOpponentAttack && m.attacks?.length ? m.attacks[0].stars - m.bestOpponentAttack.stars : '';
+            const opponent = round.opponent.members.find(
+              (en) => en.tag === m.attacks?.[0]?.defenderTag
+            );
+            const gained =
+              m.bestOpponentAttack && m.attacks?.length
+                ? m.attacks[0].stars - m.bestOpponentAttack.stars
+                : '';
             const __attacks = round.clan.members.flatMap((m) => m.attacks ?? []);
-            const previousBestAttack = m.attacks?.length ? this.client.coc.getPreviousBestAttack(__attacks, m.attacks[0]) : null;
+            const previousBestAttack = m.attacks?.length
+              ? this.client.coc.getPreviousBestAttack(__attacks, m.attacks[0])
+              : null;
 
             return [
               round.clan.name,
@@ -219,7 +234,9 @@ export default class ExportCWL extends Command {
               m.name,
               m.tag,
               m.attacks?.at(0)?.stars ?? '',
-              previousBestAttack ? Math.max(m.attacks!.at(0)!.stars - previousBestAttack.stars) : (m.attacks?.at(0)?.stars ?? ''),
+              previousBestAttack
+                ? Math.max(m.attacks!.at(0)!.stars - previousBestAttack.stars)
+                : (m.attacks?.at(0)?.stars ?? ''),
               gained,
               this._format(m.attacks?.at(0)?.destructionPercentage),
               opponent ? opponent.name : '',
@@ -357,7 +374,9 @@ export default class ExportCWL extends Command {
                 const previousBestAttack = this.client.coc.getPreviousBestAttack(__attacks, atk);
                 member.attacks += 1;
                 member.stars += atk.stars;
-                member.trueStars += previousBestAttack ? Math.max(0, atk.stars - previousBestAttack.stars) : atk.stars;
+                member.trueStars += previousBestAttack
+                  ? Math.max(0, atk.stars - previousBestAttack.stars)
+                  : atk.stars;
                 member.dest += atk.destructionPercentage;
                 member.starTypes.push(atk.stars);
 

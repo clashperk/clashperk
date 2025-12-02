@@ -1,5 +1,11 @@
 import { APIPlayer } from 'clashofclans.js';
-import { ActionRowBuilder, CommandInteraction, MessageFlags, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
+import {
+  ActionRowBuilder,
+  CommandInteraction,
+  MessageFlags,
+  StringSelectMenuBuilder,
+  StringSelectMenuInteraction
+} from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
@@ -18,13 +24,20 @@ export default class RosterSignupCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { roster: string; signup: boolean }) {
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { roster: string; signup: boolean }
+  ) {
+    if (!ObjectId.isValid(args.roster))
+      return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
     if (!roster || roster.guildId !== interaction.guildId) {
-      return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'Roster was deleted.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     const isClosed = this.client.rosterManager.isClosed(roster);
@@ -35,7 +48,11 @@ export default class RosterSignupCommand extends Command {
     }
 
     const players = await this.client.resolver.getPlayers(interaction.user.id, 75);
-    players.sort((a, b) => b.townHallLevel ** (b.townHallWeaponLevel ?? 1) - a.townHallLevel ** (a.townHallWeaponLevel ?? 1));
+    players.sort(
+      (a, b) =>
+        b.townHallLevel ** (b.townHallWeaponLevel ?? 1) -
+        a.townHallLevel ** (a.townHallWeaponLevel ?? 1)
+    );
     players.sort((a, b) => sumHeroes(b) - sumHeroes(a));
     players.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
@@ -69,7 +86,9 @@ export default class RosterSignupCommand extends Command {
           label: `${signedUp.includes(player.tag) ? '[SIGNED UP] ' : ''}${player.name} (${player.tag})`,
           value: player.tag,
           emoji: TOWN_HALLS[player.townHallLevel],
-          description: heroes.length ? `${heroes.map((hero) => `${this.initials(hero.name)} ${hero.level}`).join(', ')}` : undefined
+          description: heroes.length
+            ? `${heroes.map((hero) => `${this.initials(hero.name)} ${hero.level}`).join(', ')}`
+            : undefined
         };
       });
     const registered = roster.members
@@ -82,15 +101,23 @@ export default class RosterSignupCommand extends Command {
     const _options = args.signup ? linked : registered;
 
     if (!linked.length && args.signup) {
-      return interaction.followUp({ content: 'You are not linked to any players.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'You are not linked to any players.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (!registered.length && !args.signup) {
-      return interaction.followUp({ content: 'You are not signed up for this roster.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'You are not signed up for this roster.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
-    const selectableCategories = categories.filter((category) => category.selectable).sort((a, b) => a.order - b.order);
+    const selectableCategories = categories
+      .filter((category) => category.selectable)
+      .sort((a, b) => a.order - b.order);
 
     const selected: { category: null | string } = {
       category: null
@@ -125,13 +152,19 @@ export default class RosterSignupCommand extends Command {
     });
 
     const msg = await interaction.followUp({
-      content: args.signup ? 'Select the accounts you want to signup with.' : 'Select the accounts you want to remove.',
+      content: args.signup
+        ? 'Select the accounts you want to signup with.'
+        : 'Select the accounts you want to remove.',
       flags: MessageFlags.Ephemeral,
       components:
-        args.signup && roster.allowCategorySelection && selectableCategories.length ? [categoryRow, ...accountsRows] : [...accountsRows]
+        args.signup && roster.allowCategorySelection && selectableCategories.length
+          ? [categoryRow, ...accountsRows]
+          : [...accountsRows]
     });
 
-    const categoryId = roster.allowCategorySelection ? selectableCategories.at(0)?._id.toHexString() : null;
+    const categoryId = roster.allowCategorySelection
+      ? selectableCategories.at(0)?._id.toHexString()
+      : null;
 
     const signupUser = async (action: StringSelectMenuInteraction<'cached'>) => {
       await action.deferUpdate();
@@ -159,16 +192,24 @@ export default class RosterSignupCommand extends Command {
       const errored = result.some((res) => !res.success);
 
       const roster = await this.client.rosterManager.get(rosterId);
-      if (!roster) return action.editReply({ content: 'Roster was deleted.', embeds: [], components: [] });
+      if (!roster)
+        return action.editReply({ content: 'Roster was deleted.', embeds: [], components: [] });
 
       if (errored) {
         await action.editReply({
-          content: ['**Failed to signup a few accounts!**', ...result.map((res) => res.message)].join('\n\n'),
+          content: [
+            '**Failed to signup a few accounts!**',
+            ...result.map((res) => res.message)
+          ].join('\n\n'),
           embeds: [],
           components: []
         });
       } else {
-        await action.editReply({ content: 'You have been added to the roster.', embeds: [], components: [] });
+        await action.editReply({
+          content: 'You have been added to the roster.',
+          embeds: [],
+          components: []
+        });
       }
 
       if (changeLog.length) {
@@ -191,9 +232,18 @@ export default class RosterSignupCommand extends Command {
       const members = roster.members.filter((mem) => action.values.includes(mem.tag));
 
       const updated = await this.client.rosterManager.optOut(roster, ...action.values);
-      if (!updated) return action.editReply({ content: 'You are not signed up for this roster.', embeds: [], components: [] });
+      if (!updated)
+        return action.editReply({
+          content: 'You are not signed up for this roster.',
+          embeds: [],
+          components: []
+        });
 
-      await action.editReply({ content: 'You have been removed from the roster.', embeds: [], components: [] });
+      await action.editReply({
+        content: 'You have been removed from the roster.',
+        embeds: [],
+        components: []
+      });
 
       if (members.length) {
         this.client.rosterManager.rosterChangeLog({

@@ -17,7 +17,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'type',
           description: command.reminders.create.options.type.description,
-          description_localizations: translation('command.reminders.create.options.type.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -41,7 +43,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'duration',
           description: command.reminders.create.options.duration.description,
-          description_localizations: translation('command.reminders.create.options.duration.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.duration.description'
+          ),
           type: ApplicationCommandOptionType.String,
           required: true,
           autocomplete: true
@@ -65,14 +69,18 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'exclude_participant_list',
           description: command.reminders.create.options.exclude_participants.description,
-          description_localizations: translation('command.reminders.create.options.exclude_participants.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.exclude_participants.description'
+          ),
           type: ApplicationCommandOptionType.Boolean,
           required: false
         },
         {
           name: 'channel',
           description: command.reminders.create.options.channel.description,
-          description_localizations: translation('command.reminders.create.options.channel.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.channel.description'
+          ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
         }
@@ -87,7 +95,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'type',
           description: command.reminders.create.options.type.description,
-          description_localizations: translation('command.reminders.create.options.type.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -112,7 +122,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'id',
           required: true,
           description: command.reminders.options.reminder_id.description,
-          description_localizations: translation('command.reminders.options.reminder_id.description'),
+          description_localizations: translation(
+            'command.reminders.options.reminder_id.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
@@ -133,7 +145,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name: 'type',
           required: true,
           description: command.reminders.create.options.type.description,
-          description_localizations: translation('command.reminders.create.options.type.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -156,7 +170,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'compact_list',
           description: command.reminders.list.options.compact_list.description,
-          description_localizations: translation('command.reminders.list.options.compact_list.description'),
+          description_localizations: translation(
+            'command.reminders.list.options.compact_list.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {
@@ -169,14 +185,18 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'channel',
           description: command.reminders.create.options.channel.description,
-          description_localizations: translation('command.reminders.create.options.channel.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.channel.description'
+          ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
         },
         {
           name: 'reminder_id',
           description: command.reminders.list.options.reminder_id.description,
-          description_localizations: translation('command.reminders.list.options.reminder_id.description'),
+          description_localizations: translation(
+            'command.reminders.list.options.reminder_id.description'
+          ),
           type: ApplicationCommandOptionType.String
         }
       ]
@@ -190,7 +210,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'type',
           description: command.reminders.create.options.type.description,
-          description_localizations: translation('command.reminders.create.options.type.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -214,7 +236,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'id',
           description: command.reminders.options.reminder_id.description,
-          description_localizations: translation('command.reminders.options.reminder_id.description'),
+          description_localizations: translation(
+            'command.reminders.options.reminder_id.description'
+          ),
           type: ApplicationCommandOptionType.String
         }
       ]
@@ -228,7 +252,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'type',
           description: command.reminders.create.options.type.description,
-          description_localizations: translation('command.reminders.create.options.type.description'),
+          description_localizations: translation(
+            'command.reminders.create.options.type.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {
@@ -275,7 +301,9 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'reminder_ping_exclusion',
           description: command.reminders.config.options.reminder_ping_exclusion.description,
-          description_localizations: translation('command.reminders.config.options.reminder_ping_exclusion.description'),
+          description_localizations: translation(
+            'command.reminders.config.options.reminder_ping_exclusion.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {

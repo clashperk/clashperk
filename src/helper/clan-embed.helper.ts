@@ -4,7 +4,13 @@ import { EmbedBuilder } from 'discord.js';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { ClanEmbedFields } from '../util/command.options.js';
-import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../util/emojis.js';
+import {
+  CAPITAL_LEAGUES,
+  CWL_LEAGUES,
+  EMOJIS,
+  ORANGE_NUMBERS,
+  TOWN_HALLS
+} from '../util/emojis.js';
 
 export const clanEmbedMaker = async (
   clan: APIClan,
@@ -36,11 +42,15 @@ export const clanEmbedMaker = async (
     .map(([level, total]) => ({ level: Number(level), total }))
     .sort((a, b) => b.level - a.level);
 
-  const capitalHall = clan.clanCapital.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
+  const capitalHall = clan.clanCapital.capitalHallLevel
+    ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**`
+    : '';
 
   const embed = new EmbedBuilder()
     .setTitle(`${clan.name} (${clan.tag})`)
-    .setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
+    .setURL(
+      `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`
+    )
     .setThumbnail(clan.badgeUrls.medium)
     .setDescription(
       [
@@ -66,7 +76,9 @@ export const clanEmbedMaker = async (
         value: leaders
           .map((leader) => {
             const user = users.find((u) => u.tag === leader.tag);
-            return user ? `${EMOJIS.OWNER} <@${user.userId}> (${leader.name})` : `${EMOJIS.OWNER} ${leader.name}`;
+            return user
+              ? `${EMOJIS.OWNER} <@${user.userId}> (${leader.name})`
+              : `${EMOJIS.OWNER} ${leader.name}`;
           })
           .join('\n')
       }
@@ -90,7 +102,9 @@ export const clanEmbedMaker = async (
     embed.addFields({
       name: 'Trophies Required',
       value: `${EMOJIS.TROPHY} ${clan.requiredTrophies}${
-        clan.requiredBuilderBaseTrophies ? ` ${EMOJIS.BB_TROPHY} ${clan.requiredBuilderBaseTrophies}` : ''
+        clan.requiredBuilderBaseTrophies
+          ? ` ${EMOJIS.BB_TROPHY} ${clan.requiredBuilderBaseTrophies}`
+          : ''
       }`
     });
   }
@@ -112,12 +126,18 @@ export const clanEmbedMaker = async (
     embed.addFields({
       name: 'War Performance',
       value: `${EMOJIS.OK} ${clan.warWins} Won${
-        clan.isWarLogPublic ? ` ${EMOJIS.WRONG} ${clan.warLosses!} Lost ${EMOJIS.EMPTY} ${clan.warTies!} Tied` : ''
+        clan.isWarLogPublic
+          ? ` ${EMOJIS.WRONG} ${clan.warLosses!} Lost ${EMOJIS.EMPTY} ${clan.warTies!} Tied`
+          : ''
       } ${clan.warWinStreak > 0 ? `🏅 ${clan.warWinStreak} Win Streak` : ''}`
     });
   }
 
-  if (clan.warFrequency && !['unknown', 'never'].includes(clan.warFrequency) && fields?.includes(ClanEmbedFields.WAR_FREQUENCY)) {
+  if (
+    clan.warFrequency &&
+    !['unknown', 'never'].includes(clan.warFrequency) &&
+    fields?.includes(ClanEmbedFields.WAR_FREQUENCY)
+  ) {
     embed.addFields({
       name: 'War Frequency',
       value: `${

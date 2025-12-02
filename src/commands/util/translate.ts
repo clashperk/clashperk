@@ -1,5 +1,11 @@
 import { v2 } from '@google-cloud/translate';
-import { ActionRowBuilder, CommandInteraction, Locale, MessageFlags, StringSelectMenuBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  CommandInteraction,
+  Locale,
+  MessageFlags,
+  StringSelectMenuBuilder
+} from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
 const translate = new v2.Translate({
@@ -15,9 +21,16 @@ export default class TranslateCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { message: string; url: string; locale?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { message: string; url: string; locale?: string }
+  ) {
     const text = args.message?.trim();
-    if (!text) return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'There is no text to translate!' });
+    if (!text)
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
+        content: 'There is no text to translate!'
+      });
 
     const [translations] = await translate.translate(args.message, interaction.locale);
 

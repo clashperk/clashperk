@@ -1,5 +1,12 @@
 import { Collections, Settings } from '@app/constants';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Message, MessageComponentInteraction } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  Message,
+  MessageComponentInteraction
+} from 'discord.js';
 import { title } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { createInteractionCollector } from '../../util/pagination.js';
@@ -15,7 +22,10 @@ export default class AutoRoleDisableCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { type: string; clans?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { type: string; clans?: string }
+  ) {
     const action = {
       'town-hall': this.disableTownHallRoles.bind(this),
       'builder-hall': this.disableBuilderHallRoles.bind(this),
@@ -37,8 +47,14 @@ export default class AutoRoleDisableCommand extends Command {
     return action(interaction, args);
   }
 
-  private async disableClanRoles(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+  private async disableClanRoles(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string }
+  ) {
+    const { clans } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans,
+      required: true
+    });
     if (!clans) return null;
 
     const { customIds, row } = this.deleteButtonRow();
@@ -74,7 +90,10 @@ export default class AutoRoleDisableCommand extends Command {
     });
   }
 
-  private async disableFamilyRoles(interaction: CommandInteraction<'cached'>, args: { type: string }) {
+  private async disableFamilyRoles(
+    interaction: CommandInteraction<'cached'>,
+    args: { type: string }
+  ) {
     if (args.type === 'family') {
       this.client.settings.delete(interaction.guildId, Settings.FAMILY_ROLE);
     }
@@ -124,8 +143,14 @@ export default class AutoRoleDisableCommand extends Command {
     return interaction.editReply('Successfully disabled Builder Hall roles.');
   }
 
-  private async disableWarRoles(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+  private async disableWarRoles(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string }
+  ) {
+    const { clans } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans,
+      required: true
+    });
     if (!clans) return null;
 
     const { customIds, row } = this.deleteButtonRow();
@@ -144,7 +169,10 @@ export default class AutoRoleDisableCommand extends Command {
       onConfirm: async (action) => {
         await this.client.db
           .collection(Collections.CLAN_STORES)
-          .updateMany({ guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } }, { $unset: { warRole: '' } });
+          .updateMany(
+            { guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } },
+            { $unset: { warRole: '' } }
+          );
 
         return action.update({
           components: [],
@@ -163,7 +191,10 @@ export default class AutoRoleDisableCommand extends Command {
       confirm: this.client.uuid()
     };
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm').setStyle(ButtonStyle.Danger)
+      new ButtonBuilder()
+        .setCustomId(customIds.confirm)
+        .setLabel('Confirm')
+        .setStyle(ButtonStyle.Danger)
     );
     return { row, customIds };
   }

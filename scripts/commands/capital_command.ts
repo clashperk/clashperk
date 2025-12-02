@@ -63,7 +63,9 @@ export const CAPITAL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'week',
           description: command.capital.contribution.options.week.description,
-          description_localizations: translation('command.capital.contribution.options.week.description'),
+          description_localizations: translation(
+            'command.capital.contribution.options.week.description'
+          ),
           type: ApplicationCommandOptionType.String,
           required: false,
           choices: getRaidWeekIds()

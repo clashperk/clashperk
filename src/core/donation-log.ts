@@ -1,6 +1,14 @@
 import { Collections, DonationLogFrequencyTypes } from '@app/constants';
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
-import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, time, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
+import {
+  Collection,
+  EmbedBuilder,
+  escapeMarkdown,
+  PermissionsString,
+  time,
+  WebhookClient,
+  WebhookMessageCreateOptions
+} from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { title } from 'radash';
@@ -37,7 +45,12 @@ export class DonationLog extends RootLog {
   public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
     if (data.logType !== cache.logType) return null;
 
-    const embed = await this.rangeDonation(cache, { gte: data.gte, lte: data.lte, interval: data.interval, tag: cache.tag });
+    const embed = await this.rangeDonation(cache, {
+      gte: data.gte,
+      lte: data.lte,
+      interval: data.interval,
+      tag: cache.tag
+    });
     if (!embed) return;
 
     await this.send(cache, webhook, {
@@ -52,7 +65,9 @@ export class DonationLog extends RootLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: DonationLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: DonationLog.name
+      });
       return null;
     }
   }
@@ -132,7 +147,10 @@ export class DonationLog extends RootLog {
     result.sort((a, b) => b.received - a.received);
     result.sort((a, b) => b.donated - a.donated);
 
-    const embed = new EmbedBuilder().setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.large });
+    const embed = new EmbedBuilder().setAuthor({
+      name: `${clan.name} (${clan.tag})`,
+      iconURL: clan.badgeUrls.large
+    });
     if (cache.color) embed.setColor(cache.color);
 
     const [description] = Util.splitMessage(
@@ -286,7 +304,11 @@ export class DonationLog extends RootLog {
     for await (const data of this.collection.find({
       guildId: { $in: guildIds },
       logType: {
-        $in: [ClanLogType.DAILY_DONATION_LOG, ClanLogType.WEEKLY_DONATION_LOG, ClanLogType.MONTHLY_DONATION_LOG]
+        $in: [
+          ClanLogType.DAILY_DONATION_LOG,
+          ClanLogType.WEEKLY_DONATION_LOG,
+          ClanLogType.MONTHLY_DONATION_LOG
+        ]
       },
       isEnabled: true
     })) {
@@ -303,7 +325,11 @@ export class DonationLog extends RootLog {
     for await (const data of this.collection.find({
       guildId,
       logType: {
-        $in: [ClanLogType.DAILY_DONATION_LOG, ClanLogType.WEEKLY_DONATION_LOG, ClanLogType.MONTHLY_DONATION_LOG]
+        $in: [
+          ClanLogType.DAILY_DONATION_LOG,
+          ClanLogType.WEEKLY_DONATION_LOG,
+          ClanLogType.MONTHLY_DONATION_LOG
+        ]
       },
       isEnabled: true
     })) {

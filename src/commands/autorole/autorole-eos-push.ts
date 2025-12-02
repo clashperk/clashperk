@@ -21,14 +21,20 @@ export default class EOSPushRoleCommand extends Command {
       clans: string;
     }
   ) {
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+    const { clans } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans,
+      required: true
+    });
     if (!clans) return;
 
     const roles = [args.role];
 
     const selected = roles.filter((role) => role) as Role[];
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'You must select at least one role.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (selected.some((role) => this.isSystemRole(role, interaction.guild))) {
@@ -41,7 +47,9 @@ export default class EOSPushRoleCommand extends Command {
     }
 
     if (selected.some((role) => this.isHigherRole(role, interaction.guild))) {
-      return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale })
+      );
     }
 
     this.client.settings.set(interaction.guildId, Settings.EOS_PUSH_CLAN_ROLES, [args.role.id]);

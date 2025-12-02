@@ -60,14 +60,15 @@ export default class SuggestionsCommand extends Command {
     let lastThreadId: string | undefined;
 
     do {
-      const { threads: fetchedThreads, hasMore: hasMoreThreads } = await channel.threads.fetchArchived(
-        {
-          fetchAll: true,
-          before: lastThreadId,
-          limit: 100
-        },
-        false
-      );
+      const { threads: fetchedThreads, hasMore: hasMoreThreads } =
+        await channel.threads.fetchArchived(
+          {
+            fetchAll: true,
+            before: lastThreadId,
+            limit: 100
+          },
+          false
+        );
 
       threads = threads.concat(fetchedThreads);
       lastThreadId = fetchedThreads.last()?.id;

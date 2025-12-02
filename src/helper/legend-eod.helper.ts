@@ -55,7 +55,9 @@ export async function getEodAttacksEmbedMaker({
 
   const members = [];
   for (const legend of [...result, ...clanMembers]) {
-    const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+    const logs = legend.logs.filter(
+      (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
+    );
     if (logs.length === 0) continue;
 
     const [current] = logs.slice(-1);
@@ -73,7 +75,9 @@ export async function getEodAttacksEmbedMaker({
   if (clans.length === 1) {
     const [clan] = clans;
     embed.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`);
-    embed.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`);
+    embed.setURL(
+      `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`
+    );
   } else {
     embed.setAuthor({ name: `Legend League Attacks (${seasonId})`, iconURL: guild.iconURL()! });
   }

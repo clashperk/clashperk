@@ -16,7 +16,12 @@ import moment from 'moment-timezone';
 import { ObjectId } from 'mongodb';
 import { isNumber } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
-import { IRoster, RosterSortTypes, rosterLabel, rosterLayoutMap } from '../../struct/roster-manager.js';
+import {
+  IRoster,
+  RosterSortTypes,
+  rosterLabel,
+  rosterLayoutMap
+} from '../../struct/roster-manager.js';
 import { RosterCommandSortOptions } from '../../util/command.options.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -75,28 +80,40 @@ export default class RosterEditCommand extends Command {
   ) {
     if (args.roster === '*') return this.handleBulk(interaction);
 
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
+    if (!ObjectId.isValid(args.roster))
+      return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
     if (!roster || roster.guildId !== interaction.guildId) {
-      return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'Roster was deleted.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (args.delete_roster) {
       await this.client.rosterManager.delete(rosterId);
-      return interaction.followUp({ content: 'Roster deleted successfully.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'Roster deleted successfully.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (args.clan && args.detach_clan) {
-      return interaction.editReply({ content: 'You cannot detach and attach a clan at the same time in a single command.' });
+      return interaction.editReply({
+        content: 'You cannot detach and attach a clan at the same time in a single command.'
+      });
     }
 
     const clan = args.clan ? await this.client.resolver.resolveClan(interaction, args.clan) : null;
     if (args.clan && !clan) return;
 
     if (args.roster_role) {
-      const dup = await this.client.rosterManager.rosters.findOne({ _id: { $ne: roster._id }, roleId: args.roster_role.id });
+      const dup = await this.client.rosterManager.rosters.findOne({
+        _id: { $ne: roster._id },
+        roleId: args.roster_role.id
+      });
       if (dup) return interaction.editReply({ content: 'A roster with this role already exists.' });
     }
 
@@ -120,14 +137,18 @@ export default class RosterEditCommand extends Command {
     if (args.roster_role) data.roleId = args.roster_role.id;
     if (args.delete_role) data.roleId = null;
 
-    if (args.roster_image_url && URL_REGEX.test(args.roster_image_url)) data.rosterImage = args.roster_image_url;
+    if (args.roster_image_url && URL_REGEX.test(args.roster_image_url))
+      data.rosterImage = args.roster_image_url;
     if (args.roster_image_url && /^none$/i.test(args.roster_image_url)) data.rosterImage = null;
 
-    if (typeof args.allow_multi_signup === 'boolean') data.allowMultiSignup = args.allow_multi_signup;
-    if (typeof args.allow_group_selection === 'boolean') data.allowCategorySelection = args.allow_group_selection;
+    if (typeof args.allow_multi_signup === 'boolean')
+      data.allowMultiSignup = args.allow_multi_signup;
+    if (typeof args.allow_group_selection === 'boolean')
+      data.allowCategorySelection = args.allow_group_selection;
     if (args.clear_members) data.members = [];
     if (args.sort_by) data.sortBy = args.sort_by;
-    if (typeof args.max_accounts_per_user === 'number') data.maxAccountsPerUser = args.max_accounts_per_user;
+    if (typeof args.max_accounts_per_user === 'number')
+      data.maxAccountsPerUser = args.max_accounts_per_user;
     if (args.layout) {
       const layoutIds = args.layout.split('/');
       if (layoutIds.length >= 3 && layoutIds.every((id) => id in rosterLayoutMap)) {
@@ -141,10 +162,15 @@ export default class RosterEditCommand extends Command {
     if (args.detach_clan) data.clan = null;
 
     if (args.log_channel) {
-      const webhook = await this.client.storage.getWebhook(args.log_channel.isThread() ? args.log_channel.parent! : args.log_channel);
+      const webhook = await this.client.storage.getWebhook(
+        args.log_channel.isThread() ? args.log_channel.parent! : args.log_channel
+      );
       if (!webhook) {
         return interaction.editReply(
-          this.i18n('common.too_many_webhooks', { lng: interaction.locale, channel: args.log_channel.toString() })
+          this.i18n('common.too_many_webhooks', {
+            lng: interaction.locale,
+            channel: args.log_channel.toString()
+          })
         );
       }
       data.logChannelId = args.log_channel.id;
@@ -169,10 +195,17 @@ export default class RosterEditCommand extends Command {
       .setPlaceholder('Select a custom layout!')
       .setMinValues(3)
       .setMaxValues(5)
-      .setOptions(keys.map(([key, { name, description }]) => ({ label: name, description, value: key })));
+      .setOptions(
+        keys.map(([key, { name, description }]) => ({ label: name, description, value: key }))
+      );
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
 
-    if (typeof args.allow_multi_signup === 'boolean' && !args.allow_multi_signup && roster.allowMultiSignup && roster.members.length > 0) {
+    if (
+      typeof args.allow_multi_signup === 'boolean' &&
+      !args.allow_multi_signup &&
+      roster.allowMultiSignup &&
+      roster.members.length > 0
+    ) {
       const dup = await this.client.rosterManager.rosters.findOne(
         {
           '_id': { $ne: roster._id },
@@ -193,7 +226,8 @@ export default class RosterEditCommand extends Command {
     const timezoneId = await this.client.rosterManager.getTimezoneId(interaction, args.timezone);
     if (args.start_time && moment(args.start_time).isValid()) {
       data.startTime = this.client.rosterManager.convertTime(args.start_time, timezoneId);
-      if (data.startTime < new Date()) return interaction.editReply('Start time cannot be in the past.');
+      if (data.startTime < new Date())
+        return interaction.editReply('Start time cannot be in the past.');
       if (data.startTime < moment().add(5, 'minutes').toDate()) {
         return interaction.editReply('Start time must be at least 5 minutes from now.');
       }
@@ -201,7 +235,8 @@ export default class RosterEditCommand extends Command {
 
     if (args.end_time && moment(args.end_time).isValid()) {
       data.endTime = this.client.rosterManager.convertTime(args.end_time, timezoneId);
-      if (data.endTime < new Date()) return interaction.editReply('End time cannot be in the past.');
+      if (data.endTime < new Date())
+        return interaction.editReply('End time cannot be in the past.');
       if (data.endTime < moment().add(5, 'minutes').toDate()) {
         return interaction.editReply('End time must be at least 5 minutes from now.');
       }
@@ -216,16 +251,24 @@ export default class RosterEditCommand extends Command {
     }
 
     if (data.endTime && data.startTime) {
-      if (data.endTime < data.startTime) return interaction.editReply('End time cannot be before start time.');
+      if (data.endTime < data.startTime)
+        return interaction.editReply('End time cannot be before start time.');
       if (data.endTime.getTime() - data.startTime.getTime() < 600000)
         return interaction.editReply('Roster must be at least 10 minutes long.');
     }
 
     const updated = await this.client.rosterManager.edit(rosterId, data);
-    if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', flags: MessageFlags.Ephemeral });
+    if (!updated)
+      return interaction.followUp({
+        content: 'This roster no longer exists!',
+        flags: MessageFlags.Ephemeral
+      });
     this.client.rosterManager.setDefaultSettings(interaction.guild.id, updated);
 
-    const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+    const token = this.client.util.createToken({
+      userId: interaction.user.id,
+      guildId: interaction.guild.id
+    });
     const url = `https://clashperk.com/rosters?roster=${updated._id.toHexString()}&bot=${this.client.isCustom() ? 'custom' : 'public'}&token=${token}`;
 
     const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
@@ -264,7 +307,11 @@ export default class RosterEditCommand extends Command {
         data.layout = selected.layoutIds.join('/');
 
         const updated = await this.client.rosterManager.edit(rosterId, data);
-        if (!updated) return interaction.followUp({ content: 'This roster no longer exists!', flags: MessageFlags.Ephemeral });
+        if (!updated)
+          return interaction.followUp({
+            content: 'This roster no longer exists!',
+            flags: MessageFlags.Ephemeral
+          });
 
         const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
         return interaction.update({ embeds: [embed], components: [menuRow] });
@@ -285,13 +332,17 @@ export default class RosterEditCommand extends Command {
       .setPlaceholder('Select a custom layout!')
       .setMinValues(3)
       .setMaxValues(5)
-      .setOptions(keys.map(([key, { name, description }]) => ({ label: name, description, value: key })));
+      .setOptions(
+        keys.map(([key, { name, description }]) => ({ label: name, description, value: key }))
+      );
     const layoutMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(layoutMenu);
 
     const sortMenu = new StringSelectMenuBuilder()
       .setCustomId(customIds.sort)
       .setPlaceholder('Select roster sorting key!')
-      .setOptions(RosterCommandSortOptions.map((option) => ({ label: option.name, value: option.value })));
+      .setOptions(
+        RosterCommandSortOptions.map((option) => ({ label: option.name, value: option.value }))
+      );
     const sortMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(sortMenu);
 
     const applyToAllButton = new ButtonBuilder()
@@ -329,20 +380,29 @@ export default class RosterEditCommand extends Command {
       selected.sortBy = action.values.at(0)! as RosterSortTypes;
 
       applyToAllButton.setDisabled(!selected.layout && !selected.sortBy);
-      await action.update({ content: getContent(), components: [layoutMenuRow, sortMenuRow, applyRow] });
+      await action.update({
+        content: getContent(),
+        components: [layoutMenuRow, sortMenuRow, applyRow]
+      });
     };
 
     const selectLayout = async (action: StringSelectMenuInteraction<'cached'>) => {
       selected.layout = action.values.join('/');
 
       applyToAllButton.setDisabled(!selected.layout && !selected.sortBy);
-      await action.update({ content: getContent(), components: [layoutMenuRow, sortMenuRow, applyRow] });
+      await action.update({
+        content: getContent(),
+        components: [layoutMenuRow, sortMenuRow, applyRow]
+      });
     };
 
     const apply = async (action: ButtonInteraction<'cached'>) => {
       await this.client.db
         .collection<IRoster>(Collections.ROSTERS)
-        .updateMany({ guildId: interaction.guild.id, category: { $nin: ['TROPHY', 'NO_CLAN'] } }, { $set: selected });
+        .updateMany(
+          { guildId: interaction.guild.id, category: { $nin: ['TROPHY', 'NO_CLAN'] } },
+          { $set: selected }
+        );
       await action.update({ components: [] });
     };
 

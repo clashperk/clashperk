@@ -67,7 +67,11 @@ export const lastSeenTimestampFormat = (timestamp: number) => {
 
 export const clanGamesMaxPoints = (month: number) => {
   const client = container.resolve(Client);
-  const exceptionalMonths = client.settings.get<number[]>('global', Settings.CLAN_GAMES_EXCEPTIONAL_MONTHS, []);
+  const exceptionalMonths = client.settings.get<number[]>(
+    'global',
+    Settings.CLAN_GAMES_EXCEPTIONAL_MONTHS,
+    []
+  );
   if (exceptionalMonths.includes(month)) return 5000;
   return 4000;
 };
@@ -112,16 +116,25 @@ export const clanGamesLatestSeasonId = () => {
 export const getExportComponents = (sheet: { spreadsheetUrl: string; spreadsheetId: string }) => {
   return [
     new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(sheet.spreadsheetUrl),
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setLabel('Google Sheet')
+        .setURL(sheet.spreadsheetUrl),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Download')
-        .setURL(`https://docs.google.com/spreadsheets/export?id=${sheet.spreadsheetId}&exportFormat=xlsx`)
+        .setURL(
+          `https://docs.google.com/spreadsheets/export?id=${sheet.spreadsheetId}&exportFormat=xlsx`
+        )
     )
   ];
 };
 
-export const getMenuFromMessage = (interaction: ButtonInteraction, selected: string, customId: string) => {
+export const getMenuFromMessage = (
+  interaction: ButtonInteraction,
+  selected: string,
+  customId: string
+) => {
   const _components = interaction.message.components as ActionRow<MessageActionRowComponent>[];
   const mainIndex = _components.findIndex(({ components }) => components.length === 4);
   const components = _components.slice(mainIndex + 1);
@@ -187,22 +200,28 @@ export const recoverDonations = async (clan: APIClan, season: string) => {
     received: Number(row.received)
   }));
 
-  const membersMap = clan.memberList.reduce<Record<string, { donated: number; received: number }>>((record, item) => {
-    record[item.tag] = {
-      donated: item.donations,
-      received: item.donationsReceived
-    };
-    return record;
-  }, {});
+  const membersMap = clan.memberList.reduce<Record<string, { donated: number; received: number }>>(
+    (record, item) => {
+      record[item.tag] = {
+        donated: item.donations,
+        received: item.donationsReceived
+      };
+      return record;
+    },
+    {}
+  );
 
-  const playersMap = data.reduce<Record<string, { donated: number; received: number }>>((record, item) => {
-    const member = membersMap[item.tag] ?? { donated: 0, received: 0 };
-    record[item.tag] = {
-      donated: Math.max(item.donated, member.donated),
-      received: Math.max(item.received, member.received)
-    };
-    return record;
-  }, {});
+  const playersMap = data.reduce<Record<string, { donated: number; received: number }>>(
+    (record, item) => {
+      const member = membersMap[item.tag] ?? { donated: 0, received: 0 };
+      record[item.tag] = {
+        donated: Math.max(item.donated, member.donated),
+        received: Math.max(item.received, member.received)
+      };
+      return record;
+    },
+    {}
+  );
 
   const tags = Object.keys(playersMap);
   if (!tags.length) return;

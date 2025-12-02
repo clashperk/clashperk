@@ -26,10 +26,15 @@ export default class RosterCloneCommand extends Command {
     // Create default categories
     this.client.rosterManager.createDefaultGroups(interaction.guild.id);
 
-    if (!ObjectId.isValid(args.roster)) return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
+    if (!ObjectId.isValid(args.roster))
+      return interaction.followUp({ content: 'Invalid roster ID.', flags: MessageFlags.Ephemeral });
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster) return interaction.followUp({ content: 'Roster was deleted.', flags: MessageFlags.Ephemeral });
+    if (!roster)
+      return interaction.followUp({
+        content: 'Roster was deleted.',
+        flags: MessageFlags.Ephemeral
+      });
 
     const data: IRoster = {
       name: args.name ?? `${roster.name} [CLONE]`,

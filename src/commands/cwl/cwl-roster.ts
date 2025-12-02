@@ -1,9 +1,22 @@
 import { APIClan, APIClanWar, APIClanWarLeagueGroup, APIWarClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  User
+} from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
-import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/emojis.js';
+import {
+  BLUE_NUMBERS,
+  EMOJIS,
+  ORANGE_NUMBERS,
+  TOWN_HALLS,
+  WHITE_NUMBERS
+} from '../../util/emojis.js';
 
 export default class CWLRosterCommand extends Command {
   public constructor() {
@@ -24,19 +37,30 @@ export default class CWLRosterCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; user?: User }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
     const { body, res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
     if (res.status === 504 || body.state === 'notInWar') {
       return interaction.editReply(
-        this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+        this.i18n('command.cwl.still_searching', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
       );
     }
 
     if (!res.ok) {
-      return interaction.editReply(this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
+      return interaction.editReply(
+        this.i18n('command.cwl.not_in_season', {
+          lng: interaction.locale,
+          clan: `${clan.name} (${clan.tag})`
+        })
+      );
     }
 
     return this.rounds(interaction, { body, clan, args });
@@ -74,7 +98,9 @@ export default class CWLRosterCommand extends Command {
     } = {};
 
     const warTags = rounds.map((round) => round.warTags).flat();
-    const wars: (APIClanWar & { warTag: string; ok: boolean })[] = await Promise.all(warTags.map((warTag) => this.fetch(warTag)));
+    const wars: (APIClanWar & { warTag: string; ok: boolean })[] = await Promise.all(
+      warTags.map((warTag) => this.fetch(warTag))
+    );
     for (const data of body.clans) {
       ranking[data.tag] = {
         name: data.name,
@@ -99,10 +125,14 @@ export default class CWLRosterCommand extends Command {
       }
 
       if (data.state === 'warEnded') {
-        clan.stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
+        clan.stars += this.winner(data.clan, data.opponent)
+          ? data.clan.stars + 10
+          : data.clan.stars;
         clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
-        opponent.stars += this.winner(data.opponent, data.clan) ? data.opponent.stars + 10 : data.opponent.stars;
+        opponent.stars += this.winner(data.opponent, data.clan)
+          ? data.opponent.stars + 10
+          : data.opponent.stars;
         opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
       }
 
@@ -148,14 +178,19 @@ export default class CWLRosterCommand extends Command {
         `${EMOJIS.HASH} ${townHalls.map((th) => ORANGE_NUMBERS[th]).join('')} **Clan**`,
         ranks
           .sort((a, b) => b.stars - a.stars)
-          .map((clan, i) => `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name}`)
+          .map(
+            (clan, i) =>
+              `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name}`
+          )
           .join('\n')
       ].join('\n')
     );
 
     if (next) {
       const oppRank = ranks.findIndex((clan) => clan.tag === next.opponent.tag);
-      const flatTownHalls = [...next.clan.members, ...next.opponent.members].map((mem) => mem.townhallLevel);
+      const flatTownHalls = [...next.clan.members, ...next.opponent.members].map(
+        (mem) => mem.townhallLevel
+      );
       const [max, min] = [Math.max(...flatTownHalls), Math.min(...flatTownHalls)];
       const townHalls = Array(Math.max(Math.min(5, max - min + 1), 2))
         .fill(0)
@@ -206,7 +241,11 @@ export default class CWLRosterCommand extends Command {
           name: `\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
           value: [
             cluster(townHalls, 5)
-              .map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' '))
+              .map((chunks) =>
+                chunks
+                  .map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`)
+                  .join(' ')
+              )
               .join('\n')
           ].join('\n')
         }
@@ -225,7 +264,10 @@ export default class CWLRosterCommand extends Command {
       refresh: this.createId(payload)
     };
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(customIds.refresh)
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(customIds.toggle)
         .setStyle(ButtonStyle.Secondary)

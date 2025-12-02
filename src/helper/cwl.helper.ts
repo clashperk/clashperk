@@ -1,7 +1,10 @@
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 
-export function rankingSort(a: { stars: number; destruction: number }, b: { stars: number; destruction: number }) {
+export function rankingSort(
+  a: { stars: number; destruction: number },
+  b: { stars: number; destruction: number }
+) {
   if (a.stars === b.stars) return b.destruction - a.destruction;
   return b.stars - a.stars;
 }

@@ -1,4 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  Guild
+} from 'discord.js';
 import { URL } from 'node:url';
 import { Command } from '../../lib/handlers.js';
 import {
@@ -16,7 +23,8 @@ import {
 import { ARMY_CAPACITY, RAW_SUPER_TROOPS, RAW_TROOPS } from '../../util/troops.js';
 
 const [TOTAL_UNITS, TOTAL_SPELLS] = [340, 11];
-const ARMY_URL_REGEX = /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?action=CopyArmy&army=\S+$/;
+const ARMY_URL_REGEX =
+  /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?action=CopyArmy&army=\S+$/;
 
 export default class ArmyCommand extends Command {
   public constructor() {
@@ -32,7 +40,11 @@ export default class ArmyCommand extends Command {
     return interaction.editReply(payload);
   }
 
-  public embed(guild: Guild, locale: string, args: { link: string; message?: string; army_name?: string; tips?: string }) {
+  public embed(
+    guild: Guild,
+    locale: string,
+    args: { link: string; message?: string; army_name?: string; tips?: string }
+  ) {
     const url = this.getURL(args.link ?? args.message!);
     const army = url?.searchParams.get('army');
     if (!army) return { embeds: [], content: this.i18n('command.army.no_link', { lng: locale }) };
@@ -144,7 +156,8 @@ export default class ArmyCommand extends Command {
     const malformed = ![...troopList, ...spellList].every(
       (en) => typeof en.id === 'number' && typeof en.total === 'number' && en.total <= TOTAL_UNITS
     );
-    if (malformed) return { embeds: [], content: this.i18n('command.army.invalid_link', { lng: locale }) };
+    if (malformed)
+      return { embeds: [], content: this.i18n('command.army.invalid_link', { lng: locale }) };
 
     const SPELLS: Record<string, string> = {
       ...DARK_SPELLS,
@@ -174,7 +187,10 @@ export default class ArmyCommand extends Command {
       const _findOne = (id: number) => {
         return RAW_TROOPS.find(
           (en) =>
-            en.id === id && en.category === category && (subCategory ? en.subCategory === subCategory : true) && en.name in emojiRecords
+            en.id === id &&
+            en.category === category &&
+            (subCategory ? en.subCategory === subCategory : true) &&
+            en.name in emojiRecords
         );
       };
 
@@ -196,12 +212,18 @@ export default class ArmyCommand extends Command {
 
     const troops = findUnits({ category: 'troop', emojiRecords: TROOPS, parts: troopList });
     const spells = findUnits({ category: 'spell', emojiRecords: SPELLS, parts: spellList });
-    const siegeMachines = findUnits({ category: 'siege', emojiRecords: SIEGE_MACHINES, parts: troopList });
+    const siegeMachines = findUnits({
+      category: 'siege',
+      emojiRecords: SIEGE_MACHINES,
+      parts: troopList
+    });
     const ccTroops = findUnits({ category: 'troop', emojiRecords: CC_TROOPS, parts: ccTroopList });
     const ccSpells = findUnits({ category: 'spell', emojiRecords: SPELLS, parts: ccSpellList });
 
     const superTroops = troopList
-      .filter((parts) => RAW_SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS))
+      .filter((parts) =>
+        RAW_SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS)
+      )
       .map((parts) => {
         const unit = RAW_SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS)!;
         return {
@@ -210,15 +232,24 @@ export default class ArmyCommand extends Command {
           name: unit.name,
           category: 'troop',
           subCategory: 'super',
-          hallLevel: RAW_TROOPS.find((en) => en.name === unit.original)!.levels.findIndex((en) => en >= unit.minOriginalLevel) + 1,
+          hallLevel:
+            RAW_TROOPS.find((en) => en.name === unit.original)!.levels.findIndex(
+              (en) => en >= unit.minOriginalLevel
+            ) + 1,
           housing: unit.housingSpace
         };
       });
 
     const heroes = heroList
-      .filter((parts) => RAW_TROOPS.find((en) => en.id === parts.id && en.category === 'hero' && en.name in HOME_HEROES))
+      .filter((parts) =>
+        RAW_TROOPS.find(
+          (en) => en.id === parts.id && en.category === 'hero' && en.name in HOME_HEROES
+        )
+      )
       .map((parts) => {
-        const unit = RAW_TROOPS.find((en) => en.id === parts.id && en.category === 'hero' && en.name in HOME_HEROES)!;
+        const unit = RAW_TROOPS.find(
+          (en) => en.id === parts.id && en.category === 'hero' && en.name in HOME_HEROES
+        )!;
         return {
           id: parts.id,
           total: 0,
@@ -259,13 +290,16 @@ export default class ArmyCommand extends Command {
     );
 
     const [totalTroop, totalSpell] = [
-      troops.reduce((pre, cur) => pre + cur.housing * cur.total, 0) + superTroops.reduce((pre, curr) => pre + curr.housing * curr.total, 0),
+      troops.reduce((pre, cur) => pre + cur.housing * cur.total, 0) +
+        superTroops.reduce((pre, curr) => pre + curr.housing * curr.total, 0),
       spells.reduce((pre, cur) => pre + cur.housing * cur.total, 0),
       siegeMachines.reduce((pre, cur) => pre + cur.housing * cur.total, 0)
     ];
 
-    const hallByTroops = ARMY_CAPACITY.find((en) => en.troops >= Math.min(totalTroop, TOTAL_UNITS))?.hall ?? 0;
-    const hallBySpells = ARMY_CAPACITY.find((en) => en.spells >= Math.min(totalSpell, TOTAL_SPELLS))?.hall ?? 0;
+    const hallByTroops =
+      ARMY_CAPACITY.find((en) => en.troops >= Math.min(totalTroop, TOTAL_UNITS))?.hall ?? 0;
+    const hallBySpells =
+      ARMY_CAPACITY.find((en) => en.spells >= Math.min(totalSpell, TOTAL_SPELLS))?.hall ?? 0;
     const townHallLevel = Math.max(hallByUnlockTH, hallByTroops, hallBySpells);
 
     const embed = new EmbedBuilder()
@@ -288,7 +322,9 @@ export default class ArmyCommand extends Command {
             .map((en) => {
               const exts = en.pets
                 .map((eq) => `${EMOJIS.GAP} ${HERO_PETS[eq.name]} ${eq.name}`)
-                .concat(...en.equipment.map((eq) => `${EMOJIS.GAP} ${HERO_EQUIPMENT[eq.name]} ${eq.name}`))
+                .concat(
+                  ...en.equipment.map((eq) => `${EMOJIS.GAP} ${HERO_EQUIPMENT[eq.name]} ${eq.name}`)
+                )
                 .join('\n');
               return `${HOME_HEROES[en.name]} ${en.name}${exts.length ? '\n' : ''}${exts}`;
             })
@@ -303,7 +339,9 @@ export default class ArmyCommand extends Command {
           embed.data.description,
           '',
           '**Troops**',
-          troops.map((en) => `\u200e\`${this.padding(en.total)}\` ${TROOPS[en.name]}  ${en.name}`).join('\n')
+          troops
+            .map((en) => `\u200e\`${this.padding(en.total)}\` ${TROOPS[en.name]}  ${en.name}`)
+            .join('\n')
         ].join('\n')
       );
     }
@@ -312,9 +350,12 @@ export default class ArmyCommand extends Command {
       embed.addFields([
         {
           name: '\u200b',
-          value: ['**Spells**', spells.map((en) => `\u200e\`${this.padding(en.total)}\` ${SPELLS[en.name]} ${en.name}`).join('\n')].join(
-            '\n'
-          )
+          value: [
+            '**Spells**',
+            spells
+              .map((en) => `\u200e\`${this.padding(en.total)}\` ${SPELLS[en.name]} ${en.name}`)
+              .join('\n')
+          ].join('\n')
         }
       ]);
     }
@@ -325,7 +366,11 @@ export default class ArmyCommand extends Command {
           name: '\u200b',
           value: [
             '**Super Troops**',
-            superTroops.map((en) => `\u200e\`${this.padding(en.total)}\` ${SUPER_TROOPS[en.name]}  ${en.name}`).join('\n')
+            superTroops
+              .map(
+                (en) => `\u200e\`${this.padding(en.total)}\` ${SUPER_TROOPS[en.name]}  ${en.name}`
+              )
+              .join('\n')
           ].join('\n')
         }
       ]);
@@ -337,7 +382,11 @@ export default class ArmyCommand extends Command {
           name: '\u200b',
           value: [
             '**Siege Machines**',
-            siegeMachines.map((en) => `\u200e\`${this.padding(en.total)}\` ${SIEGE_MACHINES[en.name]}  ${en.name}`).join('\n')
+            siegeMachines
+              .map(
+                (en) => `\u200e\`${this.padding(en.total)}\` ${SIEGE_MACHINES[en.name]}  ${en.name}`
+              )
+              .join('\n')
           ].join('\n')
         }
       ]);
@@ -350,7 +399,10 @@ export default class ArmyCommand extends Command {
           value: [
             `**Clan Castle**`,
             [...ccTroops, ...ccSpells]
-              .map((en) => `\u200e\`${this.padding(en.total)}\` ${{ ...CC_TROOPS, ...SPELLS }[en.name]}  ${en.name}`)
+              .map(
+                (en) =>
+                  `\u200e\`${this.padding(en.total)}\` ${{ ...CC_TROOPS, ...SPELLS }[en.name]}  ${en.name}`
+              )
               .join('\n')
           ].join('\n')
         }
@@ -367,7 +419,11 @@ export default class ArmyCommand extends Command {
     }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(url!.href).setLabel('Copy Army Link').setEmoji(EMOJIS.TROOPS)
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setURL(url!.href)
+        .setLabel('Copy Army Link')
+        .setEmoji(EMOJIS.TROOPS)
     );
 
     return {

@@ -39,24 +39,39 @@ export default class FlagListCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { flag_type: 'strike' | 'ban'; player?: string; clans?: string; group_by_players?: boolean; page?: number }
+    args: {
+      flag_type: 'strike' | 'ban';
+      player?: string;
+      clans?: string;
+      group_by_players?: boolean;
+      page?: number;
+    }
   ) {
     // Delete expired flags.
     this.deleteExpiredFlags(interaction.guildId);
 
-    const _clanTags = (await this.resolveTags(interaction.guildId, args.clans)).map((clan) => clan.tag);
+    const _clanTags = (await this.resolveTags(interaction.guildId, args.clans)).map(
+      (clan) => clan.tag
+    );
     const _clans = _clanTags.length ? await this.client.redis.getClans(_clanTags) : [];
     const playerTags = _clans.map((clan) => clan.memberList.map((mem) => mem.tag)).flat();
 
     if (args.player) return this.filterByPlayerTag(interaction, args);
 
-    if (args.group_by_players) return this.groupByPlayerTag(interaction, { ...args, playerTags, clans: _clanTags });
+    if (args.group_by_players)
+      return this.groupByPlayerTag(interaction, { ...args, playerTags, clans: _clanTags });
     return this.flagList(interaction, { ...args, playerTags, clans: _clanTags });
   }
 
   private async flagList(
     interaction: CommandInteraction<'cached'>,
-    args: { flag_type: 'strike' | 'ban'; playerTags: string[]; group_by_players?: boolean; page?: number; clans: string[] }
+    args: {
+      flag_type: 'strike' | 'ban';
+      playerTags: string[];
+      group_by_players?: boolean;
+      page?: number;
+      clans: string[];
+    }
   ) {
     const result = await this.client.db
       .collection<FlagsEntity>(Collections.FLAGS)
@@ -85,7 +100,10 @@ export default class FlagListCommand extends Command {
       chunk.forEach((flag, itemIndex) => {
         const reason = `Reason: ${escapeMarkdown(flag.reason.slice(0, 256))}${flag.reason.length > 256 ? '...' : ''}`;
         embed.addFields({
-          name: itemIndex === 0 ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})` : '\u200b',
+          name:
+            itemIndex === 0
+              ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})`
+              : '\u200b',
           value: [
             `\u200e[${escapeMarkdown(flag.name)} (${flag.tag})](http://cprk.us/p/${flag.tag.replace('#', '')})`,
             `Created ${time(flag.createdAt, 'R')}, by ${flag.username}${flag.expiresAt ? `` : ''}`,
@@ -162,7 +180,10 @@ export default class FlagListCommand extends Command {
       embed.setTitle(`Flags`);
       chunk.forEach((flag, itemIndex) => {
         embed.addFields({
-          name: itemIndex === 0 ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})` : '\u200b',
+          name:
+            itemIndex === 0
+              ? `${args.flag_type === 'strike' ? 'Strike' : 'Ban'} List (Total ${result.length})`
+              : '\u200b',
           value: [
             `\u200e[${escapeMarkdown(flag.name)} (${flag.tag})](http://cprk.us/p/${flag.tag.replace('#', '')})`,
             `**Total ${flag.count} flag${flag.count === 1 ? '' : 's'}, ${flag.flagImpact} ${args.flag_type}${
@@ -186,7 +207,10 @@ export default class FlagListCommand extends Command {
     return this.dynamicPagination(interaction, embeds, args);
   }
 
-  private async filterByPlayerTag(interaction: CommandInteraction<'cached'>, args: { player?: string; flag_type: 'ban' | 'strike' }) {
+  private async filterByPlayerTag(
+    interaction: CommandInteraction<'cached'>,
+    args: { player?: string; flag_type: 'ban' | 'strike' }
+  ) {
     const player = await this.client.resolver.resolvePlayer(interaction, args.player);
     if (!player) return;
 
@@ -248,11 +272,16 @@ export default class FlagListCommand extends Command {
           '',
           `**Flags (Total ${flag.count})**`,
           flag.flags
-            .map(({ createdAt, reason, _id }) => `${time(createdAt, 'd')} - \`${_id.toHexString().slice(-5).toUpperCase()}\` \n${reason}`)
+            .map(
+              ({ createdAt, reason, _id }) =>
+                `${time(createdAt, 'd')} - \`${_id.toHexString().slice(-5).toUpperCase()}\` \n${reason}`
+            )
             .join('\n\n')
         ].join('\n')
       )
-      .setFooter({ text: `Total ${flag.flagImpact} ${args.flag_type}${flag.flagImpact === 1 ? '' : 's'}` });
+      .setFooter({
+        text: `Total ${flag.flagImpact} ${args.flag_type}${flag.flagImpact === 1 ? '' : 's'}`
+      });
 
     return interaction.editReply({ embeds: [embed] });
   }
@@ -266,13 +295,23 @@ export default class FlagListCommand extends Command {
   private dynamicPagination(
     interaction: CommandInteraction<'cached'>,
     embeds: EmbedBuilder[],
-    args: { flag_type: 'ban' | 'strike'; page?: number; group_by_players?: boolean; clans: string[] }
+    args: {
+      flag_type: 'ban' | 'strike';
+      page?: number;
+      group_by_players?: boolean;
+      clans: string[];
+    }
   ) {
     let pageIndex = args.page ?? 0;
     if (pageIndex < 0) pageIndex = embeds.length - 1;
     if (pageIndex >= embeds.length) pageIndex = 0;
 
-    const payload = { cmd: this.id, flag_type: args.flag_type, group_by_players: args.group_by_players, clans: args.clans.join(',') };
+    const payload = {
+      cmd: this.id,
+      flag_type: args.flag_type,
+      group_by_players: args.group_by_players,
+      clans: args.clans.join(',')
+    };
     const customIds = {
       refresh: this.createId({ ...payload }),
       group: this.createId({ ...payload, group_by_players: !args.group_by_players }),
@@ -309,7 +348,10 @@ export default class FlagListCommand extends Command {
     }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.refresh).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(customIds.refresh)
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(customIds.group)
         .setLabel(args.group_by_players ? 'List Flags' : 'Group Flags')
@@ -325,10 +367,15 @@ export default class FlagListCommand extends Command {
     return this.client.storage.search(guildId, await this.client.resolver.resolveArgs(clans));
   }
 
-  private emptyFallback(interaction: CommandInteraction<'cached'>, args: { flag_type: 'ban' | 'strike'; clans: string[] }) {
+  private emptyFallback(
+    interaction: CommandInteraction<'cached'>,
+    args: { flag_type: 'ban' | 'strike'; clans: string[] }
+  ) {
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(this.createId({ cmd: this.id, flag_type: args.flag_type, clans: args.clans.join(',') }))
+        .setCustomId(
+          this.createId({ cmd: this.id, flag_type: args.flag_type, clans: args.clans.join(',') })
+        )
         .setEmoji(EMOJIS.REFRESH)
         .setStyle(ButtonStyle.Secondary)
     );

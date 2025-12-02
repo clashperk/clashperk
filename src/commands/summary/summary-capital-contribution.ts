@@ -1,5 +1,11 @@
 import { Collections } from '@app/constants';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder
+} from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -23,7 +29,9 @@ export default class SummaryCapitalContributionCommand extends Command {
     const season = args.season ?? Season.monthId;
     const week = args.week;
 
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const startWeek = moment(week).utc(true).add(7, 'h').utc().toDate();
@@ -31,10 +39,15 @@ export default class SummaryCapitalContributionCommand extends Command {
 
     const result = await this.client.db
       .collection(Collections.CAPITAL_CONTRIBUTIONS)
-      .aggregate<{ clans: { name: string; tag: string; total: number }[]; members: { name: string; tag: string; total: number }[] }>([
+      .aggregate<{
+        clans: { name: string; tag: string; total: number }[];
+        members: { name: string; tag: string; total: number }[];
+      }>([
         {
           $match: {
-            ...(week ? { createdAt: { $gt: startWeek, $lt: endWeek } } : { createdAt: { $gt: new Date(startWeek), $lt: new Date() } }),
+            ...(week
+              ? { createdAt: { $gt: startWeek, $lt: endWeek } }
+              : { createdAt: { $gt: new Date(startWeek), $lt: new Date() } }),
             'clan.tag': { $in: clans.map((clan) => clan.tag) }
           }
         },
@@ -105,7 +118,11 @@ export default class SummaryCapitalContributionCommand extends Command {
         [
           '```',
           `\u200e #  ${padStart('TOTAL', maxPad)}  NAME`,
-          clansGroup.map((clan, i) => `${padStart(i + 1, 2)}  ${padStart(clan.total, maxPad)}  ${clan.name}`).join('\n'),
+          clansGroup
+            .map(
+              (clan, i) => `${padStart(i + 1, 2)}  ${padStart(clan.total, maxPad)}  ${clan.name}`
+            )
+            .join('\n'),
           '```'
         ].join('\n')
       );
@@ -117,7 +134,11 @@ export default class SummaryCapitalContributionCommand extends Command {
             `**${this.i18n('command.capital.contribution.title', { lng: interaction.locale })} (${season})**`,
             '```',
             '\u200e #  TOTAL  NAME',
-            membersGroup.map((mem, i) => `\u200e${padStart(i + 1, 2)}  ${this.padding(mem.total)}  ${mem.name}`).join('\n'),
+            membersGroup
+              .map(
+                (mem, i) => `\u200e${padStart(i + 1, 2)}  ${this.padding(mem.total)}  ${mem.name}`
+              )
+              .join('\n'),
             '```'
           ].join('\n')
         );
@@ -143,7 +164,10 @@ export default class SummaryCapitalContributionCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
         .setStyle(ButtonStyle.Secondary)

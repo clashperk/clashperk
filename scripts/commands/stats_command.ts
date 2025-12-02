@@ -152,7 +152,9 @@ export const STATS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'filter_farm_hits',
           description: command.stats.options.filter_farm_hits.description,
-          description_localizations: translation('command.stats.options.filter_farm_hits.description'),
+          description_localizations: translation(
+            'command.stats.options.filter_farm_hits.description'
+          ),
           type: ApplicationCommandOptionType.Boolean
         },
         {

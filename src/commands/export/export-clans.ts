@@ -31,7 +31,8 @@ export default class ExportClansCommand extends Command {
         capitalLeague: clan.capitalLeague?.name ?? 'Unranked'
       });
     }
-    if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!chunks.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const sheets: CreateGoogleSheet[] = [
       {

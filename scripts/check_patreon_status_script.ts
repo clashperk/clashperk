@@ -16,16 +16,21 @@ const getSubscribers = async () => {
       'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,campaign_lifetime_support_cents,is_gifted,note'
   }).toString();
 
-  const res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
-    headers: { authorization: `Bearer ${process.env.PATREON_API_KEY}` }
-  });
+  const res = await fetch(
+    `https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`,
+    {
+      headers: { authorization: `Bearer ${process.env.PATREON_API_KEY}` }
+    }
+  );
 
   return (await res.json()) as { data: PatreonMember[]; included: PatreonUser[] };
 };
 
 (async () => {
   await mongoClient.connect().then(() => console.log('MongoDB Connected!'));
-  const collection = mongoClient.db('clashperk').collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
+  const collection = mongoClient
+    .db('clashperk')
+    .collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
 
   const result = await getSubscribers();
 
@@ -50,7 +55,8 @@ const getSubscribers = async () => {
   result.included.forEach((user) => {
     const patron = members.find((p) => p.id === user?.id);
     const pledge = result.data.find((m) => m.relationships.user.data.id === user.id);
-    if (patron && pledge?.attributes.patron_status === 'declined_patron') console.log(user?.attributes.full_name, user?.id);
+    if (patron && pledge?.attributes.patron_status === 'declined_patron')
+      console.log(user?.attributes.full_name, user?.id);
   });
 
   return mongoClient.close();

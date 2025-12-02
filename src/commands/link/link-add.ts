@@ -24,7 +24,10 @@ export default class LinkAddCommand extends Command {
     });
   }
 
-  public async exec(interaction: ButtonInteraction<'cached'>, { token_field }: { token_field: string }) {
+  public async exec(
+    interaction: ButtonInteraction<'cached'>,
+    { token_field }: { token_field: string }
+  ) {
     if (interaction.isButton()) return this.modal(interaction, token_field);
   }
 
@@ -36,7 +39,10 @@ export default class LinkAddCommand extends Command {
 
     if (link && link.userId === member.id) {
       return interaction.editReply(
-        this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
+        this.i18n('command.link.create.link_exists', {
+          lng: interaction.locale,
+          player: `**${player.name} (${player.tag})**`
+        })
       );
     }
 
@@ -51,15 +57,21 @@ export default class LinkAddCommand extends Command {
     }
 
     if (link && accounts.length >= 25) {
-      return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.link.create.max_limit', { lng: interaction.locale })
+      );
     }
 
-    await this.client.db
-      .collection(Collections.USERS)
-      .updateOne(
-        { userId: member.id },
-        { $set: { username: member.user.username, displayName: member.user.displayName, discriminator: member.user.discriminator } }
-      );
+    await this.client.db.collection(Collections.USERS).updateOne(
+      { userId: member.id },
+      {
+        $set: {
+          username: member.user.username,
+          displayName: member.user.displayName,
+          discriminator: member.user.discriminator
+        }
+      }
+    );
 
     await this.client.db.collection(Collections.PLAYER_LINKS).updateOne(
       { tag: player.tag },
@@ -136,7 +148,8 @@ export default class LinkAddCommand extends Command {
         })
         .then(async (modalSubmit) => {
           const tag = modalSubmit.fields.getTextInputValue(customIds.tag);
-          const token = token_field === 'hidden' ? null : modalSubmit.fields.getTextInputValue(customIds.token);
+          const token =
+            token_field === 'hidden' ? null : modalSubmit.fields.getTextInputValue(customIds.token);
           await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
 
           const { body: data, res } = await this.client.coc.getPlayer(tag);
@@ -151,21 +164,32 @@ export default class LinkAddCommand extends Command {
           return this.playerLink(modalSubmit, { player: data, member: interaction.member });
         });
     } catch (e) {
-      if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+      if (
+        !(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)
+      ) {
         throw e;
       }
     }
   }
 
-  private async verify(interaction: ModalSubmitInteraction<'cached'>, data: APIPlayer, token: string) {
+  private async verify(
+    interaction: ModalSubmitInteraction<'cached'>,
+    data: APIPlayer,
+    token: string
+  ) {
     const { body } = await this.client.coc.verifyPlayerToken(data.tag, token);
     if (body.status !== 'ok') {
-      return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.verify.invalid_token', { lng: interaction.locale })
+      );
     }
 
     const collection = this.client.db.collection(Collections.PLAYER_LINKS);
     await collection.deleteOne({ userId: { $ne: interaction.user.id }, tag: data.tag });
-    const lastAccount = await collection.findOne({ userId: interaction.user.id }, { sort: { order: -1 } });
+    const lastAccount = await collection.findOne(
+      { userId: interaction.user.id },
+      { sort: { order: -1 } }
+    );
     await collection.updateOne(
       { tag: data.tag },
       {
@@ -192,7 +216,10 @@ export default class LinkAddCommand extends Command {
     this.resetLinkAPI(interaction.user.id, data.tag);
     this.client.rolesManager.updateOne(interaction.user, interaction.guildId, !lastAccount);
     return interaction.editReply(
-      this.i18n('command.verify.success', { lng: interaction.locale, info: `${data.name} (${data.tag}) ${EMOJIS.VERIFIED}` })
+      this.i18n('command.verify.success', {
+        lng: interaction.locale,
+        info: `${data.name} (${data.tag}) ${EMOJIS.VERIFIED}`
+      })
     );
   }
 

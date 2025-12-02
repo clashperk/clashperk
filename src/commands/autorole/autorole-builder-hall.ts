@@ -25,11 +25,17 @@ export default class AutoBuilderHallRoleCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { allowExternal: boolean } & Record<string, Role | null>) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { allowExternal: boolean } & Record<string, Role | null>
+  ) {
     const clans = await this.client.storage.find(interaction.guildId);
     if (!clans.length) {
       return interaction.editReply(
-        this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_linked', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
@@ -44,14 +50,21 @@ export default class AutoBuilderHallRoleCommand extends Command {
     const selected = Object.entries(rolesMap).map(([hall, role]) => ({ hall, role }));
 
     if (typeof args.allowExternal === 'boolean') {
-      await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, Boolean(args.allowExternal));
+      await this.client.settings.set(
+        interaction.guildId,
+        Settings.ALLOW_EXTERNAL_ACCOUNTS,
+        Boolean(args.allowExternal)
+      );
       if (!selected.length) {
         return interaction.editReply('Builder Hall roles settings updated.');
       }
     }
 
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'You must select at least one role.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (selected.some((r) => this.isSystemRole(r.role, interaction.guild))) {
@@ -64,10 +77,16 @@ export default class AutoBuilderHallRoleCommand extends Command {
     }
 
     if (selected.some((r) => this.isHigherRole(r.role, interaction.guild))) {
-      return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale })
+      );
     }
 
-    const rolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.BUILDER_HALL_ROLES, {});
+    const rolesConfig = this.client.settings.get<Record<string, string>>(
+      interaction.guildId,
+      Settings.BUILDER_HALL_ROLES,
+      {}
+    );
     Object.assign(rolesConfig, Object.fromEntries(selected.map((s) => [s.hall, s.role.id])));
     await this.client.settings.set(interaction.guildId, Settings.BUILDER_HALL_ROLES, rolesConfig);
 
@@ -82,7 +101,9 @@ export default class AutoBuilderHallRoleCommand extends Command {
     return interaction.editReply({
       allowedMentions: { parse: [] },
       content: [
-        roles.map(({ role, hall }) => `${ORANGE_NUMBERS[hall]} ${role ? `<@&${role}>` : ''}`).join('\n'),
+        roles
+          .map(({ role, hall }) => `${ORANGE_NUMBERS[hall]} ${role ? `<@&${role}>` : ''}`)
+          .join('\n'),
         '',
         args.allowExternal ? '' : '(Family Only) Roles will be given to family members only.'
       ].join('\n')

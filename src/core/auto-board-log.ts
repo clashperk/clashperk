@@ -17,7 +17,10 @@ import {
   WebhookMessageEditOptions
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../helper/leaderboard.helper.js';
+import {
+  getBbLegendRankingEmbedMaker,
+  getLegendRankingEmbedMaker
+} from '../helper/leaderboard.helper.js';
 import { Client } from '../struct/client.js';
 import { EMOJIS } from '../util/emojis.js';
 import { Season, Util } from '../util/toolkit.js';
@@ -48,7 +51,12 @@ export class AutoBoardLog {
     if (data.channelId && cache && cache.channelId !== data.channelId) return;
 
     // double posting prevention for custom bots
-    if (cache?.guildId && this.client.settings.hasCustomBot(cache.guildId) && !this.client.isCustom()) return;
+    if (
+      cache?.guildId &&
+      this.client.settings.hasCustomBot(cache.guildId) &&
+      !this.client.isCustom()
+    )
+      return;
 
     if (cache) await this.permissionsFor(cache);
   }
@@ -88,7 +96,13 @@ export class AutoBoardLog {
   private _components(cache: Cache) {
     const btn = new ButtonBuilder()
       .setStyle(ButtonStyle.Secondary)
-      .setCustomId(JSON.stringify({ cmd: 'legend-leaderboard', is_bb: cache.boardType === 'bb-legend-leaderboard', limit: cache.limit }))
+      .setCustomId(
+        JSON.stringify({
+          cmd: 'legend-leaderboard',
+          is_bb: cache.boardType === 'bb-legend-leaderboard',
+          limit: cache.limit
+        })
+      )
       .setEmoji(EMOJIS.REFRESH);
 
     return new ActionRowBuilder<ButtonBuilder>().addComponents(btn);
@@ -172,12 +186,17 @@ export class AutoBoardLog {
         components: [this._components(cache)]
       });
     } catch (error: any) {
-      this.client.logger.error(`${error as string} {${cache._id.toString()}}`, { label: 'AutoBoardLog' });
+      this.client.logger.error(`${error as string} {${cache._id.toString()}}`, {
+        label: 'AutoBoardLog'
+      });
       return null;
     }
   }
 
-  public async webhook(cache: Cache, channel: TextChannel | NewsChannel | ForumChannel | MediaChannel): Promise<WebhookClient | null> {
+  public async webhook(
+    cache: Cache,
+    channel: TextChannel | NewsChannel | ForumChannel | MediaChannel
+  ): Promise<WebhookClient | null> {
     if (cache.webhook) return cache.webhook;
     if (cache.deleted) return null;
 
@@ -204,7 +223,9 @@ export class AutoBoardLog {
         components: [this._components(cache)]
       });
     } catch (error: any) {
-      this.client.logger.error(`${error as string} {${cache.guildId.toString()}}`, { label: 'AutoBoardLog' });
+      this.client.logger.error(`${error as string} {${cache.guildId.toString()}}`, {
+        label: 'AutoBoardLog'
+      });
       return null;
     }
   }
@@ -214,20 +235,30 @@ export class AutoBoardLog {
     if (!guild) return null;
 
     if (cache.boardType === 'bb-legend-leaderboard') {
-      const { embed, players } = await getBbLegendRankingEmbedMaker({ guild, limit: cache.limit, seasonId: Season.ID });
+      const { embed, players } = await getBbLegendRankingEmbedMaker({
+        guild,
+        limit: cache.limit,
+        seasonId: Season.ID
+      });
       if (!players.length) return null;
 
       return embed;
     }
 
-    const { embed, players } = await getLegendRankingEmbedMaker({ guild, limit: cache.limit, seasonId: Season.ID });
+    const { embed, players } = await getLegendRankingEmbedMaker({
+      guild,
+      limit: cache.limit,
+      seasonId: Season.ID
+    });
     if (!players.length) return null;
 
     return embed;
   }
 
   public async init() {
-    for await (const data of this.collection.find({ guildId: { $in: this.client.guilds.cache.map((guild) => guild.id) } })) {
+    for await (const data of this.collection.find({
+      guildId: { $in: this.client.guilds.cache.map((guild) => guild.id) }
+    })) {
       this.cached.set(data._id.toHexString(), {
         _id: data._id.toHexString(),
         guildId: data.guildId,
@@ -285,7 +316,11 @@ export class AutoBoardLog {
             localField: 'guildId',
             foreignField: 'guild',
             as: '_store',
-            pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }, { $limit: 1 }]
+            pipeline: [
+              { $match: { active: true, paused: false } },
+              { $project: { _id: 1 } },
+              { $limit: 1 }
+            ]
           }
         },
         { $unwind: { path: '$_store' } }

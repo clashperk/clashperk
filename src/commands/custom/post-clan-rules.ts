@@ -14,9 +14,11 @@ export default class PostClanRulesCommand extends Command {
   }
 
   public async exec(interaction: ButtonInteraction<'cached'>, args: { tag: string }) {
-    const log = await this.client.db
-      .collection(Collections.CLAN_LOGS)
-      .findOne({ guildId: interaction.guildId, clanTag: args.tag, logType: ClanLogType.CLAN_EMBED_LOG });
+    const log = await this.client.db.collection(Collections.CLAN_LOGS).findOne({
+      guildId: interaction.guildId,
+      clanTag: args.tag,
+      logType: ClanLogType.CLAN_EMBED_LOG
+    });
 
     if (!log?.metadata.rulesText) {
       return interaction.reply({ content: 'No clan rules found.', flags: MessageFlags.Ephemeral });

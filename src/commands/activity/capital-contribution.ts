@@ -1,7 +1,14 @@
 import { Collections } from '@app/constants';
 import { CapitalContributionsEntity } from '@app/entities';
 import { APIClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  User
+} from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -26,7 +33,10 @@ export default class CapitalContributionCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { tag?: string; week?: string; user?: User }
+  ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
 
@@ -89,10 +99,17 @@ export default class CapitalContributionCommand extends Command {
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
           .setLabel('View Contribution Logs')
-          .setURL(`https://clashperk.com/web/clans/${encodeURIComponent(clan.tag)}/capital-contribution`)
+          .setURL(
+            `https://clashperk.com/web/clans/${encodeURIComponent(clan.tag)}/capital-contribution`
+          )
       );
 
-    const embed = this.getCapitalContributionsEmbed({ clan, weekId: weekend, contributions, locale: interaction.locale });
+    const embed = this.getCapitalContributionsEmbed({
+      clan,
+      weekId: weekend,
+      contributions,
+      locale: interaction.locale
+    });
     return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
@@ -125,7 +142,12 @@ export default class CapitalContributionCommand extends Command {
           `**${this.i18n('command.capital.contribution.title', { lng: locale })}**`,
           '```',
           '\u200e #  TOTAL  NAME',
-          members.map((mem, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.raids)}  ${mem.name}`).join('\n'),
+          members
+            .map(
+              (mem, i) =>
+                `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.raids)}  ${mem.name}`
+            )
+            .join('\n'),
           '```'
         ].join('\n')
       )
@@ -143,7 +165,8 @@ export default class CapitalContributionCommand extends Command {
     const today = new Date();
     const weekDay = today.getUTCDay();
     const hours = today.getUTCHours();
-    const isRaidWeek = (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
+    const isRaidWeek =
+      (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
     today.setUTCDate(today.getUTCDate() - today.getUTCDay());
     if (weekDay < 5 || (weekDay <= 5 && hours < 7)) today.setDate(today.getUTCDate() - 7);
     today.setUTCDate(today.getUTCDate() + 5);

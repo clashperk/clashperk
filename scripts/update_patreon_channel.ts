@@ -18,7 +18,9 @@ const client = new Client({
 
 client.on('clientReady', async () => {
   await mongoClient.connect().then(() => console.log('MongoDB Connected!'));
-  const collection = mongoClient.db('clashperk').collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
+  const collection = mongoClient
+    .db('clashperk')
+    .collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
   const patrons = await collection.find().toArray();
 
   const channel = client.channels.cache.get('689103059455967251');

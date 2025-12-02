@@ -89,7 +89,9 @@ export const LEGEND_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'limit',
           description: command.legend.leaderboard.options.limit.description,
-          description_localizations: translation('command.legend.leaderboard.options.limit.description'),
+          description_localizations: translation(
+            'command.legend.leaderboard.options.limit.description'
+          ),
           type: ApplicationCommandOptionType.Number,
           max_value: 100,
           min_value: 3
@@ -104,7 +106,9 @@ export const LEGEND_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'enable_auto_updating',
           description: command.legend.leaderboard.options.enable_auto_updating.description,
-          description_localizations: translation('command.legend.leaderboard.options.enable_auto_updating.description'),
+          description_localizations: translation(
+            'command.legend.leaderboard.options.enable_auto_updating.description'
+          ),
           type: ApplicationCommandOptionType.String,
           choices: [
             {

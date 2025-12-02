@@ -106,7 +106,15 @@ export const getCWLSummaryImage = async ({
   };
 };
 
-export const createTrophyThresholdsGraph = async ({ datasets, labels, title }: { datasets: any[]; labels: string[]; title: string }) => {
+export const createTrophyThresholdsGraph = async ({
+  datasets,
+  labels,
+  title
+}: {
+  datasets: any[];
+  labels: string[];
+  title: string;
+}) => {
   const arrayBuffer = await fetch(`${process.env.IMAGE_GEN_API_BASE_URL!}/clans/activity`, {
     method: 'POST',
     headers: {

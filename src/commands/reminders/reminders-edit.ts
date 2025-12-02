@@ -1,5 +1,9 @@
 import { CLAN_GAMES_MINIMUM_POINTS, Collections, MAX_TOWN_HALL_LEVEL } from '@app/constants';
-import { ClanGamesRemindersEntity, ClanWarRemindersEntity, RaidRemindersEntity } from '@app/entities';
+import {
+  ClanGamesRemindersEntity,
+  ClanWarRemindersEntity,
+  RaidRemindersEntity
+} from '@app/entities';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -48,34 +52,51 @@ export default class RemindersEditCommand extends Command {
     const collection = this.client.db.collection<ClanWarRemindersEntity>(Collections.WAR_REMINDERS);
 
     const reminders = await collection.find({ guild: interaction.guild.id }).toArray();
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_reminders', { lng: interaction.locale })
+      );
 
     const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id.toUpperCase())?._id;
     if (!reminderId) {
-      return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+      );
     }
 
     const reminder = await collection.findOne({ _id: reminderId });
     if (!reminder) {
-      return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+      );
     }
 
     let duration = reminder.duration;
 
     if (args.duration) {
       if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
-        return interaction.editReply(this.i18n('command.reminders.create.invalid_duration_format', { lng: interaction.locale }));
+        return interaction.editReply(
+          this.i18n('command.reminders.create.invalid_duration_format', { lng: interaction.locale })
+        );
       }
 
-      duration = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
+      duration = args.duration
+        .match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!
+        .reduce((acc, cur) => acc + ms(cur), 0);
       if (duration < 15 * 60 * 1000 && duration !== 0) {
-        return interaction.editReply(this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale }));
+        return interaction.editReply(
+          this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale })
+        );
       }
       if (duration > 48 * 60 * 60 * 1000) {
-        return interaction.editReply(this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale }));
+        return interaction.editReply(
+          this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale })
+        );
       }
       if (duration % (15 * 60 * 1000) !== 0) {
-        return interaction.editReply(this.i18n('command.reminders.create.duration_order', { lng: interaction.locale }));
+        return interaction.editReply(
+          this.i18n('command.reminders.create.duration_order', { lng: interaction.locale })
+        );
       }
     }
 
@@ -118,7 +139,10 @@ export default class RemindersEditCommand extends Command {
         ].join('\n')
       );
       embed.setFooter({
-        text: [state.disabled ? 'Reminder Disabled\n' : '', clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
+        text: [
+          state.disabled ? 'Reminder Disabled\n' : '',
+          clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')
+        ].join('\n')
       });
       const warTypeRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
         new StringSelectMenuBuilder()
@@ -245,7 +269,13 @@ export default class RemindersEditCommand extends Command {
             .setStyle(state.disabled ? ButtonStyle.Success : ButtonStyle.Danger)
             .setDisabled(disable)
         )
-        .addComponents(new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable));
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.save)
+            .setLabel('Save')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(disable)
+        );
 
       if (reminder.duration === 0) {
         return [warTypeRow, btnRow];
@@ -264,8 +294,12 @@ export default class RemindersEditCommand extends Command {
       allowedMentions: { parse: [] }
     });
 
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -301,7 +335,9 @@ export default class RemindersEditCommand extends Command {
 
       if (action.customId === customIds.message && action.isButton()) {
         const modalCustomId = this.client.uuid(interaction.user.id);
-        const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Reminder Message');
+        const modal = new ModalBuilder()
+          .setCustomId(modalCustomId)
+          .setTitle('Edit Reminder Message');
         const messageInput = new TextInputBuilder()
           .setCustomId(customIds.modalMessage)
           .setLabel('Reminder Message')
@@ -368,33 +404,54 @@ export default class RemindersEditCommand extends Command {
     });
   }
 
-  private async clanGamesReminders(interaction: ChatInputCommandInteraction<'cached'>, args: { id: string; duration?: string }) {
-    const collection = this.client.db.collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS);
+  private async clanGamesReminders(
+    interaction: ChatInputCommandInteraction<'cached'>,
+    args: { id: string; duration?: string }
+  ) {
+    const collection = this.client.db.collection<ClanGamesRemindersEntity>(
+      Collections.CLAN_GAMES_REMINDERS
+    );
 
     const reminders = await collection.find({ guild: interaction.guild.id }).toArray();
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_reminders', { lng: interaction.locale })
+      );
 
     const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id.toUpperCase())?._id;
     if (!reminderId) {
-      return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+      );
     }
 
     const reminder = await collection.findOne({ _id: reminderId });
     if (!reminder) {
-      return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+      );
     }
 
     let duration = reminder.duration;
 
     if (args.duration) {
       if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
-        return interaction.editReply(this.i18n('command.reminders.create.invalid_duration_format', { lng: interaction.locale }));
+        return interaction.editReply(
+          this.i18n('command.reminders.create.invalid_duration_format', { lng: interaction.locale })
+        );
       }
 
-      duration = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
-      if (duration < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 6 days.');
+      duration = args.duration
+        .match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!
+        .reduce((acc, cur) => acc + ms(cur), 0);
+      if (duration < 15 * 60 * 1000)
+        return interaction.editReply(
+          'The duration must be greater than 15 minutes and less than 6 days.'
+        );
       if (duration > 6 * 24 * 60 * 60 * 1000) {
-        return interaction.editReply('The duration must be greater than 15 minutes and less than 6 days.');
+        return interaction.editReply(
+          'The duration must be greater than 15 minutes and less than 6 days.'
+        );
       }
     }
 
@@ -417,9 +474,11 @@ export default class RemindersEditCommand extends Command {
     const embed = new EmbedBuilder();
     const mutate = (disable = false) => {
       embed.setDescription(
-        [`**Edit Clan Games Reminder (${this.getStatic(duration)} remaining)** <#${reminder.channel}>`, '', `${reminder.message}`].join(
-          '\n'
-        )
+        [
+          `**Edit Clan Games Reminder (${this.getStatic(duration)} remaining)** <#${reminder.channel}>`,
+          '',
+          `${reminder.message}`
+        ].join('\n')
       );
       embed.setFooter({
         text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
@@ -500,7 +559,13 @@ export default class RemindersEditCommand extends Command {
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(disable)
         )
-        .addComponents(new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable));
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.save)
+            .setLabel('Save')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(disable)
+        );
 
       return [minPointsRow, memberTypeRow, clanRolesRow, buttonRow];
     };
@@ -510,8 +575,12 @@ export default class RemindersEditCommand extends Command {
       embeds: [embed],
       allowedMentions: { parse: [] }
     });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -533,7 +602,9 @@ export default class RemindersEditCommand extends Command {
 
       if (action.customId === customIds.message && action.isButton()) {
         const modalCustomId = this.client.uuid(interaction.user.id);
-        const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Reminder Message');
+        const modal = new ModalBuilder()
+          .setCustomId(modalCustomId)
+          .setTitle('Edit Reminder Message');
         const messageInput = new TextInputBuilder()
           .setCustomId(customIds.modalMessage)
           .setLabel('Reminder Message')
@@ -596,33 +667,52 @@ export default class RemindersEditCommand extends Command {
     });
   }
 
-  private async capitalReminders(interaction: ChatInputCommandInteraction<'cached'>, args: { id: string; duration?: string }) {
+  private async capitalReminders(
+    interaction: ChatInputCommandInteraction<'cached'>,
+    args: { id: string; duration?: string }
+  ) {
     const collection = this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS);
 
     const reminders = await collection.find({ guild: interaction.guild.id }).toArray();
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_reminders', { lng: interaction.locale })
+      );
 
     const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id.toUpperCase())?._id;
     if (!reminderId) {
-      return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+      );
     }
 
     const reminder = await collection.findOne({ _id: reminderId });
     if (!reminder) {
-      return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+      );
     }
 
     let duration = reminder.duration;
 
     if (args.duration) {
       if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
-        return interaction.editReply(this.i18n('command.reminders.create.invalid_duration_format', { lng: interaction.locale }));
+        return interaction.editReply(
+          this.i18n('command.reminders.create.invalid_duration_format', { lng: interaction.locale })
+        );
       }
 
-      duration = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
-      if (duration < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
+      duration = args.duration
+        .match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!
+        .reduce((acc, cur) => acc + ms(cur), 0);
+      if (duration < 15 * 60 * 1000)
+        return interaction.editReply(
+          'The duration must be greater than 15 minutes and less than 3 days.'
+        );
       if (duration > 3 * 24 * 60 * 60 * 1000) {
-        return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
+        return interaction.editReply(
+          'The duration must be greater than 15 minutes and less than 3 days.'
+        );
       }
     }
 
@@ -648,9 +738,11 @@ export default class RemindersEditCommand extends Command {
     const embed = new EmbedBuilder();
     const mutate = (disable = false) => {
       embed.setDescription(
-        [`**Edit Raid Attack Reminder (${this.getStatic(duration)} remaining)** <#${reminder.channel}>`, '', `${reminder.message}`].join(
-          '\n'
-        )
+        [
+          `**Edit Raid Attack Reminder (${this.getStatic(duration)} remaining)** <#${reminder.channel}>`,
+          '',
+          `${reminder.message}`
+        ].join('\n')
       );
       embed.setFooter({
         text: [clans.map((clan) => `${clan.name} (${clan.tag})`).join(', ')].join('\n')
@@ -732,7 +824,13 @@ export default class RemindersEditCommand extends Command {
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(disable)
         )
-        .addComponents(new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable));
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.save)
+            .setLabel('Save')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(disable)
+        );
 
       return [remAttackRow, minAttackRow, clanRolesRow, buttonRow];
     };
@@ -743,8 +841,12 @@ export default class RemindersEditCommand extends Command {
       embeds: [embed],
       allowedMentions: { parse: [] }
     });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -771,7 +873,9 @@ export default class RemindersEditCommand extends Command {
 
       if (action.customId === customIds.message && action.isButton()) {
         const modalCustomId = this.client.uuid(interaction.user.id);
-        const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Edit Reminder Message');
+        const modal = new ModalBuilder()
+          .setCustomId(modalCustomId)
+          .setTitle('Edit Reminder Message');
         const messageInput = new TextInputBuilder()
           .setCustomId(customIds.modalMessage)
           .setLabel('Reminder Message')

@@ -93,18 +93,29 @@ export default class SetupButtonsCommand extends Command {
       thumbnailUrl: this.client.uuid()
     };
 
-    const state = this.client.settings.get<LinkButtonConfig>(interaction.guild, Settings.LINK_EMBEDS, {
-      title: `Welcome to ${interaction.guild.name}`,
-      description: 'Click the button below to link your account.',
-      token_field: 'optional',
-      thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
-    });
+    const state = this.client.settings.get<LinkButtonConfig>(
+      interaction.guild,
+      Settings.LINK_EMBEDS,
+      {
+        title: `Welcome to ${interaction.guild.name}`,
+        description: 'Click the button below to link your account.',
+        token_field: 'optional',
+        thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
+      }
+    );
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
     if (args.embed_color) state.embed_color = args.embed_color ?? this.client.embed(interaction);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
+      new ButtonBuilder()
+        .setCustomId(customIds.embed)
+        .setLabel('Customize Embed')
+        .setEmoji('✍️')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(customIds.done)
+        .setLabel('Post Embed')
+        .setStyle(ButtonStyle.Success)
     );
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()
@@ -155,7 +166,11 @@ export default class SetupButtonsCommand extends Command {
       embed.setImage(null);
       embed.setThumbnail(null);
       await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
-      await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
+      await interaction.editReply({
+        embeds: [embed],
+        components: [linkButtonRow],
+        message: '@original'
+      });
     };
 
     try {
@@ -178,8 +193,12 @@ export default class SetupButtonsCommand extends Command {
       components: [menuRow, buttonColorMenu, row]
     });
 
-    const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = interaction.channel!.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 10 * 60 * 1000
     });
 
@@ -191,7 +210,10 @@ export default class SetupButtonsCommand extends Command {
         return;
       }
 
-      if ([customIds.buttonStyle, customIds.token].includes(action.customId) && action.isStringSelectMenu()) {
+      if (
+        [customIds.buttonStyle, customIds.token].includes(action.customId) &&
+        action.isStringSelectMenu()
+      ) {
         await action.deferUpdate();
         if (action.customId === customIds.buttonStyle) {
           state.button_style = Number(action.values.at(0) ?? ButtonStyle.Primary);
@@ -204,16 +226,21 @@ export default class SetupButtonsCommand extends Command {
         const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
         await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
-        await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
+        await interaction.editReply({
+          embeds: [embed],
+          components: [linkButtonRow],
+          message: '@original'
+        });
       }
 
       if (action.customId === customIds.embed) {
         try {
-          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } = await this.handleCustomEmbed(action, customIds, {
-            ...state,
-            imageUrl: state.image_url,
-            thumbnailUrl: state.thumbnail_url
-          });
+          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } =
+            await this.handleCustomEmbed(action, customIds, {
+              ...state,
+              imageUrl: state.image_url,
+              thumbnailUrl: state.thumbnail_url
+            });
 
           state.title = title;
           state.description = description;
@@ -227,15 +254,26 @@ export default class SetupButtonsCommand extends Command {
           embed.setImage(state.image_url || null);
           embed.setThumbnail(state.thumbnail_url || null);
 
-          linkButton.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: state.token_field }));
+          linkButton.setCustomId(
+            JSON.stringify({ cmd: 'link-add', token_field: state.token_field })
+          );
           const linkButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
           await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
-          await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
+          await interaction.editReply({
+            embeds: [embed],
+            components: [linkButtonRow],
+            message: '@original'
+          });
         } catch (e) {
           if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          } else if (
+            !(
+              e instanceof DiscordjsError &&
+              e.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          ) {
             throw e;
           }
         }
@@ -262,17 +300,28 @@ export default class SetupButtonsCommand extends Command {
       thumbnailUrl: this.client.uuid()
     };
 
-    const state = this.client.settings.get<LinkButtonConfig>(interaction.guild, Settings.REFRESH_EMBEDS, {
-      title: `Welcome to ${interaction.guild.name}`,
-      description: 'Click the button below to refresh your roles and nickname.',
-      thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
-    });
+    const state = this.client.settings.get<LinkButtonConfig>(
+      interaction.guild,
+      Settings.REFRESH_EMBEDS,
+      {
+        title: `Welcome to ${interaction.guild.name}`,
+        description: 'Click the button below to refresh your roles and nickname.',
+        thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
+      }
+    );
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
     if (args.embed_color) state.embed_color = args.embed_color ?? this.client.embed(interaction);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
+      new ButtonBuilder()
+        .setCustomId(customIds.embed)
+        .setLabel('Customize Embed')
+        .setEmoji('✍️')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(customIds.done)
+        .setLabel('Post Embed')
+        .setStyle(ButtonStyle.Success)
     );
 
     const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
@@ -298,7 +347,11 @@ export default class SetupButtonsCommand extends Command {
       embed.setImage(null);
       embed.setThumbnail(null);
       await this.client.settings.set(interaction.guild.id, Settings.REFRESH_EMBEDS, state);
-      await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+      await interaction.editReply({
+        embeds: [embed],
+        components: [refreshButtonRow],
+        message: '@original'
+      });
     };
 
     try {
@@ -321,8 +374,12 @@ export default class SetupButtonsCommand extends Command {
       components: [buttonColorMenu, row]
     });
 
-    const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = interaction.channel!.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 10 * 60 * 1000
     });
 
@@ -341,16 +398,21 @@ export default class SetupButtonsCommand extends Command {
         linkButton.setCustomId(customId);
         linkButton.setStyle(state.button_style);
 
-        await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+        await interaction.editReply({
+          embeds: [embed],
+          components: [refreshButtonRow],
+          message: '@original'
+        });
       }
 
       if (action.customId === customIds.embed) {
         try {
-          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } = await this.handleCustomEmbed(action, customIds, {
-            ...state,
-            imageUrl: state.image_url,
-            thumbnailUrl: state.thumbnail_url
-          });
+          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } =
+            await this.handleCustomEmbed(action, customIds, {
+              ...state,
+              imageUrl: state.image_url,
+              thumbnailUrl: state.thumbnail_url
+            });
 
           state.title = title;
           state.description = description;
@@ -365,11 +427,20 @@ export default class SetupButtonsCommand extends Command {
           embed.setThumbnail(state.thumbnail_url || null);
 
           await this.client.settings.set(interaction.guild.id, Settings.REFRESH_EMBEDS, state);
-          await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+          await interaction.editReply({
+            embeds: [embed],
+            components: [refreshButtonRow],
+            message: '@original'
+          });
         } catch (e) {
           if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          } else if (
+            !(
+              e instanceof DiscordjsError &&
+              e.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          ) {
             throw e;
           }
         }
@@ -391,17 +462,28 @@ export default class SetupButtonsCommand extends Command {
       thumbnailUrl: this.client.uuid()
     };
 
-    const state = this.client.settings.get<LinkButtonConfig>(interaction.guild, Settings.REFRESH_EMBEDS, {
-      title: `Welcome to ${interaction.guild.name}`,
-      description: 'Click the button below to refresh your roles and nickname.',
-      thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
-    });
+    const state = this.client.settings.get<LinkButtonConfig>(
+      interaction.guild,
+      Settings.REFRESH_EMBEDS,
+      {
+        title: `Welcome to ${interaction.guild.name}`,
+        description: 'Click the button below to refresh your roles and nickname.',
+        thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
+      }
+    );
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
     if (args.embed_color) state.embed_color = args.embed_color ?? this.client.embed(interaction);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
+      new ButtonBuilder()
+        .setCustomId(customIds.embed)
+        .setLabel('Customize Embed')
+        .setEmoji('✍️')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(customIds.done)
+        .setLabel('Post Embed')
+        .setStyle(ButtonStyle.Success)
     );
 
     const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
@@ -427,7 +509,11 @@ export default class SetupButtonsCommand extends Command {
       embed.setImage(null);
       embed.setThumbnail(null);
       await this.client.settings.set(interaction.guild.id, Settings.REFRESH_EMBEDS, state);
-      await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+      await interaction.editReply({
+        embeds: [embed],
+        components: [refreshButtonRow],
+        message: '@original'
+      });
     };
 
     try {
@@ -450,8 +536,12 @@ export default class SetupButtonsCommand extends Command {
       components: [buttonColorMenu, row]
     });
 
-    const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = interaction.channel!.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 10 * 60 * 1000
     });
 
@@ -470,16 +560,21 @@ export default class SetupButtonsCommand extends Command {
         linkButton.setCustomId(customId);
         linkButton.setStyle(state.button_style);
 
-        await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+        await interaction.editReply({
+          embeds: [embed],
+          components: [refreshButtonRow],
+          message: '@original'
+        });
       }
 
       if (action.customId === customIds.embed) {
         try {
-          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } = await this.handleCustomEmbed(action, customIds, {
-            ...state,
-            imageUrl: state.image_url,
-            thumbnailUrl: state.thumbnail_url
-          });
+          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } =
+            await this.handleCustomEmbed(action, customIds, {
+              ...state,
+              imageUrl: state.image_url,
+              thumbnailUrl: state.thumbnail_url
+            });
 
           state.title = title;
           state.description = description;
@@ -494,11 +589,20 @@ export default class SetupButtonsCommand extends Command {
           embed.setThumbnail(state.thumbnail_url || null);
 
           await this.client.settings.set(interaction.guild.id, Settings.REFRESH_EMBEDS, state);
-          await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+          await interaction.editReply({
+            embeds: [embed],
+            components: [refreshButtonRow],
+            message: '@original'
+          });
         } catch (e) {
           if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          } else if (
+            !(
+              e instanceof DiscordjsError &&
+              e.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          ) {
             throw e;
           }
         }
@@ -520,17 +624,28 @@ export default class SetupButtonsCommand extends Command {
       thumbnailUrl: this.client.uuid()
     };
 
-    const state = this.client.settings.get<LinkButtonConfig>(interaction.guild, Settings.MY_ROSTERS_EMBEDS, {
-      title: `Welcome to ${interaction.guild.name}`,
-      description: "Click the button below to find the rosters you're in.",
-      thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
-    });
+    const state = this.client.settings.get<LinkButtonConfig>(
+      interaction.guild,
+      Settings.MY_ROSTERS_EMBEDS,
+      {
+        title: `Welcome to ${interaction.guild.name}`,
+        description: "Click the button below to find the rosters you're in.",
+        thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
+      }
+    );
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
     if (args.embed_color) state.embed_color = args.embed_color ?? this.client.embed(interaction);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.embed).setLabel('Customize Embed').setEmoji('✍️').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(customIds.done).setLabel('Post Embed').setStyle(ButtonStyle.Success)
+      new ButtonBuilder()
+        .setCustomId(customIds.embed)
+        .setLabel('Customize Embed')
+        .setEmoji('✍️')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(customIds.done)
+        .setLabel('Post Embed')
+        .setStyle(ButtonStyle.Success)
     );
 
     const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
@@ -543,7 +658,11 @@ export default class SetupButtonsCommand extends Command {
     embed.setImage(state.image_url || null);
 
     const customId = this.createId({ cmd: 'roster-list', ephemeral: true });
-    const linkButton = new ButtonBuilder().setLabel('My Rosters').setEmoji(EMOJIS.INFO).setCustomId(customId).setStyle(state.button_style);
+    const linkButton = new ButtonBuilder()
+      .setLabel('My Rosters')
+      .setEmoji(EMOJIS.INFO)
+      .setCustomId(customId)
+      .setStyle(state.button_style);
     const refreshButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
 
     const resetImages = async () => {
@@ -552,7 +671,11 @@ export default class SetupButtonsCommand extends Command {
       embed.setImage(null);
       embed.setThumbnail(null);
       await this.client.settings.set(interaction.guild.id, Settings.MY_ROSTERS_EMBEDS, state);
-      await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+      await interaction.editReply({
+        embeds: [embed],
+        components: [refreshButtonRow],
+        message: '@original'
+      });
     };
 
     try {
@@ -575,8 +698,12 @@ export default class SetupButtonsCommand extends Command {
       components: [buttonColorMenu, row]
     });
 
-    const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = interaction.channel!.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 10 * 60 * 1000
     });
 
@@ -595,16 +722,21 @@ export default class SetupButtonsCommand extends Command {
         linkButton.setCustomId(customId);
         linkButton.setStyle(state.button_style);
 
-        await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+        await interaction.editReply({
+          embeds: [embed],
+          components: [refreshButtonRow],
+          message: '@original'
+        });
       }
 
       if (action.customId === customIds.embed) {
         try {
-          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } = await this.handleCustomEmbed(action, customIds, {
-            ...state,
-            imageUrl: state.image_url,
-            thumbnailUrl: state.thumbnail_url
-          });
+          const { title, description, imageUrl, thumbnailUrl, modalSubmitInteraction } =
+            await this.handleCustomEmbed(action, customIds, {
+              ...state,
+              imageUrl: state.image_url,
+              thumbnailUrl: state.thumbnail_url
+            });
 
           state.title = title;
           state.description = description;
@@ -619,11 +751,20 @@ export default class SetupButtonsCommand extends Command {
           embed.setThumbnail(state.thumbnail_url || null);
 
           await this.client.settings.set(interaction.guild.id, Settings.MY_ROSTERS_EMBEDS, state);
-          await interaction.editReply({ embeds: [embed], components: [refreshButtonRow], message: '@original' });
+          await interaction.editReply({
+            embeds: [embed],
+            components: [refreshButtonRow],
+            message: '@original'
+          });
         } catch (error) {
           if (error.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (!(error instanceof DiscordjsError && error.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+          } else if (
+            !(
+              error instanceof DiscordjsError &&
+              error.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          ) {
             throw error;
           }
         }
@@ -650,7 +791,9 @@ export default class SetupButtonsCommand extends Command {
     const descriptionInput = new TextInputBuilder()
       .setCustomId(customIds.description)
       .setLabel('Description')
-      .setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
+      .setPlaceholder(
+        'Write anything you want (markdown, hyperlink and custom emojis are supported)'
+      )
       .setStyle(TextInputStyle.Paragraph)
       .setMaxLength(2000)
       .setRequired(true);

@@ -55,7 +55,8 @@ export class ClanWarLog extends RootLog {
   public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
     let messageId: string | null = null;
     if (data.warTag) {
-      messageId = cache.rounds[data.round]?.warTag === data.warTag ? cache.rounds[data.round].message : null;
+      messageId =
+        cache.rounds[data.round]?.warTag === data.warTag ? cache.rounds[data.round].message : null;
     } else {
       messageId = (data.uid === cache.uid ? cache.message : null) ?? null;
     }
@@ -74,11 +75,19 @@ export class ClanWarLog extends RootLog {
     }
 
     // MISSED ATTACK LOG
-    if (data.state === 'warEnded' && [ClanLogType.WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(cache.logType)) {
+    if (
+      data.state === 'warEnded' &&
+      [ClanLogType.WAR_MISSED_ATTACKS_LOG, ClanLogType.CWL_MISSED_ATTACKS_LOG].includes(
+        cache.logType
+      )
+    ) {
       if (data.warTag && cache.logType !== ClanLogType.CWL_MISSED_ATTACKS_LOG) return null;
       if (!data.warTag && cache.logType !== ClanLogType.WAR_MISSED_ATTACKS_LOG) return null;
 
-      const isEnabled = this.client.isFeatureEnabled(FeatureFlags.ALLOW_NO_MISSED_ATTACKS_LOG, cache.guild);
+      const isEnabled = this.client.isFeatureEnabled(
+        FeatureFlags.ALLOW_NO_MISSED_ATTACKS_LOG,
+        cache.guild
+      );
       if (!isEnabled && !data.remaining.length) return null;
 
       const embed = this.getRemaining(data);
@@ -86,7 +95,10 @@ export class ClanWarLog extends RootLog {
     }
 
     // LINEUP CHANGE LOG
-    if ((data.oldMembers?.length || data.newMembers?.length) && cache.logType === ClanLogType.CWL_LINEUP_CHANGE_LOG) {
+    if (
+      (data.oldMembers?.length || data.newMembers?.length) &&
+      cache.logType === ClanLogType.CWL_LINEUP_CHANGE_LOG
+    ) {
       const embed = this.getLineupChangeEmbed(data);
       return this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
     }
@@ -120,7 +132,9 @@ export class ClanWarLog extends RootLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: ClanWarLog.name
+      });
       console.log(error);
       return null;
     }
@@ -130,7 +144,9 @@ export class ClanWarLog extends RootLog {
     try {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanWarLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: ClanWarLog.name
+      });
       console.log(error);
       return null;
     }
@@ -142,12 +158,16 @@ export class ClanWarLog extends RootLog {
         .setLabel('Attacks')
         .setEmoji(EMOJIS.SWORD)
         .setStyle(ButtonStyle.Primary)
-        .setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, attacks: true })),
+        .setCustomId(
+          JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, attacks: true })
+        ),
       new ButtonBuilder()
         .setLabel('Defenses')
         .setEmoji(EMOJIS.SHIELD)
         .setStyle(ButtonStyle.Danger)
-        .setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.opponent.tag, attacks: true }))
+        .setCustomId(
+          JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.opponent.tag, attacks: true })
+        )
     );
 
     if (data.state !== 'warEnded') {
@@ -156,7 +176,9 @@ export class ClanWarLog extends RootLog {
           .setLabel('Open Bases')
           .setEmoji(EMOJIS.EMPTY_STAR)
           .setStyle(ButtonStyle.Secondary)
-          .setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, openBases: true }))
+          .setCustomId(
+            JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, openBases: true })
+          )
       );
     }
 
@@ -200,7 +222,14 @@ export class ClanWarLog extends RootLog {
     cache.message = message.id;
     return this.collection.updateOne(
       { _id: cache._id },
-      { $set: { 'messageId': message.id, 'metadata.uid': data.uid, 'updatedAt': new Date(), 'failed': 0 } }
+      {
+        $set: {
+          'messageId': message.id,
+          'metadata.uid': data.uid,
+          'updatedAt': new Date(),
+          'failed': 0
+        }
+      }
     );
   }
 
@@ -265,7 +294,10 @@ export class ClanWarLog extends RootLog {
               ...data.recent.map(({ attacker, defender }) => {
                 const name = escapeMarkdown(attacker.name);
                 const stars = this.getStars(attacker.oldStars, attacker.stars);
-                const destruction: string = Math.floor(attacker.destructionPercentage).toString().concat('%').padStart(pad, ' ');
+                const destruction: string = Math.floor(attacker.destructionPercentage)
+                  .toString()
+                  .concat('%')
+                  .padStart(pad, ' ');
                 return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
                   attacker.townHallLevel
                 ]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
@@ -340,12 +372,19 @@ export class ClanWarLog extends RootLog {
     const friendly = data.attacksPerMember === 1;
     if (twoRem.length) {
       const chunks = Util.splitMessage(twoRem.join('\n'), { maxLength: 1000 });
-      embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b', value: chunk })));
+      embed.addFields(
+        chunks.map((chunk, i) => ({
+          name: i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b',
+          value: chunk
+        }))
+      );
     }
 
     if (oneRem.length && !friendly) {
       const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-      embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? '1 Missed Attacks' : '\u200b', value: chunk })));
+      embed.addFields(
+        chunks.map((chunk, i) => ({ name: i === 0 ? '1 Missed Attacks' : '\u200b', value: chunk }))
+      );
     }
 
     return embed;
@@ -362,10 +401,14 @@ export class ClanWarLog extends RootLog {
           `**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
           '',
           '**Members Added**',
-          ...data.newMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`),
+          ...data.newMembers.map(
+            (m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`
+          ),
           '',
           '**Members Removed**',
-          ...data.oldMembers.map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`)
+          ...data.oldMembers.map(
+            (m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${escapeMarkdown(m.name)}`
+          )
         ].join('\n')
       );
 
@@ -393,7 +436,10 @@ export class ClanWarLog extends RootLog {
       const endTimestamp = new Date(moment(data.endTime).toDate());
       embed.setColor(states[data.state]);
       embed.addFields([
-        { name: 'War State', value: ['Battle Day', `End Time: ${time(endTimestamp, 'R')}`].join('\n') },
+        {
+          name: 'War State',
+          value: ['Battle Day', `End Time: ${time(endTimestamp, 'R')}`].join('\n')
+        },
         { name: 'War Stats', value: this.getLeaderBoard(clan, opponent) }
       ]);
     }
@@ -450,7 +496,10 @@ export class ClanWarLog extends RootLog {
             ...data.recent.map(({ attacker, defender }) => {
               const name = escapeMarkdown(attacker.name);
               const stars = this.getStars(attacker.oldStars, attacker.stars);
-              const destruction: string = Math.floor(attacker.destructionPercentage).toString().concat('%').padStart(pad, ' ');
+              const destruction: string = Math.floor(attacker.destructionPercentage)
+                .toString()
+                .concat('%')
+                .padStart(pad, ' ');
               return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
                 attacker.townHallLevel
               ]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
@@ -513,9 +562,15 @@ export class ClanWarLog extends RootLog {
 
   private getStars(oldStars: number, newStars: number) {
     if (oldStars > newStars) {
-      return [WAR_STARS.OLD.repeat(newStars), WAR_STARS.EMPTY.repeat(3 - newStars)].filter((stars) => stars.length).join('');
+      return [WAR_STARS.OLD.repeat(newStars), WAR_STARS.EMPTY.repeat(3 - newStars)]
+        .filter((stars) => stars.length)
+        .join('');
     }
-    return [WAR_STARS.OLD.repeat(oldStars), WAR_STARS.NEW.repeat(newStars - oldStars), WAR_STARS.EMPTY.repeat(3 - newStars)]
+    return [
+      WAR_STARS.OLD.repeat(oldStars),
+      WAR_STARS.NEW.repeat(newStars - oldStars),
+      WAR_STARS.EMPTY.repeat(3 - newStars)
+    ]
       .filter((stars) => stars.length)
       .join('');
   }

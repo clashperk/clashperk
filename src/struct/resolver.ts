@@ -26,7 +26,10 @@ export class Resolver {
     this.indexer = new ElasticIndexer(client);
   }
 
-  public async resolvePlayer(interaction: BaseInteraction, args?: string): Promise<(APIPlayer & { user?: User }) | null> {
+  public async resolvePlayer(
+    interaction: BaseInteraction,
+    args?: string
+  ): Promise<(APIPlayer & { user?: User }) | null> {
     args = (args?.replace(ESCAPE_CHAR_REGEX, '') ?? '').trim();
     const parsed = await this.parseArgument(interaction, args);
 
@@ -40,7 +43,13 @@ export class Resolver {
     if (linkedPlayerTag) return this.getPlayer(interaction, linkedPlayerTag, user);
 
     if (interaction.user.id === user.id) {
-      return this.fail(interaction, i18n('common.no_player_tag', { lng: interaction.locale, command: this.client.commands.LINK_CREATE }));
+      return this.fail(
+        interaction,
+        i18n('common.no_player_tag', {
+          lng: interaction.locale,
+          command: this.client.commands.LINK_CREATE
+        })
+      );
     }
 
     return this.fail(
@@ -58,7 +67,10 @@ export class Resolver {
 
     return this.client.db
       .collection<{ name: string; tag: string }>(Collections.CLAN_STORES)
-      .findOne({ guild: guildId, alias }, { collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } });
+      .findOne(
+        { guild: guildId, alias },
+        { collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } }
+      );
   }
 
   public async resolveClan(interaction: BaseInteraction, args?: string): Promise<APIClan | null> {
@@ -66,7 +78,8 @@ export class Resolver {
     const parsed = await this.parseArgument(interaction, args);
 
     const clan = await this.clanAlias(interaction.guildId, args.trim());
-    if (parsed.isTag) return this.getClan(interaction, clan && !args.startsWith('#') ? clan.tag : args, true);
+    if (parsed.isTag)
+      return this.getClan(interaction, clan && !args.startsWith('#') ? clan.tag : args, true);
 
     if (!parsed.user) {
       if (clan) return this.getClan(interaction, clan.tag);
@@ -82,7 +95,13 @@ export class Resolver {
     }
 
     if (interaction.user.id === parsed.user.id) {
-      return this.fail(interaction, i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.LINK_CREATE }));
+      return this.fail(
+        interaction,
+        i18n('common.no_clan_tag', {
+          lng: interaction.locale,
+          command: this.client.commands.LINK_CREATE
+        })
+      );
     }
 
     return this.fail(
@@ -95,7 +114,11 @@ export class Resolver {
     );
   }
 
-  public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(APIPlayer & { user?: User }) | null> {
+  public async getPlayer(
+    interaction: BaseInteraction,
+    tag: string,
+    user?: User
+  ): Promise<(APIPlayer & { user?: User }) | null> {
     const { body, res } = await this.client.coc.getPlayer(tag);
     if (res.ok) this.updateLastSearchedPlayer(interaction.user, body);
 
@@ -104,7 +127,11 @@ export class Resolver {
     return this.fail(interaction, `**${getHttpStatusText(res.status, interaction.locale)}**`);
   }
 
-  public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<APIClan | null> {
+  public async getClan(
+    interaction: BaseInteraction,
+    tag: string,
+    checkAlias = false
+  ): Promise<APIClan | null> {
     const { body, res } = await this.client.coc.getClan(tag);
     if (res.ok) this.updateLastSearchedClan(interaction.user, body);
 
@@ -136,7 +163,10 @@ export class Resolver {
       { upsert: true }
     );
 
-    await this.indexer.index({ name: player.name, tag: player.tag, userId: user.id }, ElasticIndex.RECENT_PLAYERS);
+    await this.indexer.index(
+      { name: player.name, tag: player.tag, userId: user.id },
+      ElasticIndex.RECENT_PLAYERS
+    );
   }
 
   private async updateLastSearchedClan(user: User, clan: APIClan) {
@@ -153,7 +183,10 @@ export class Resolver {
       { upsert: true }
     );
 
-    await this.indexer.index({ name: clan.name, tag: clan.tag, userId: user.id }, ElasticIndex.RECENT_CLANS);
+    await this.indexer.index(
+      { name: clan.name, tag: clan.tag, userId: user.id },
+      ElasticIndex.RECENT_CLANS
+    );
   }
 
   private async fail(interaction: BaseInteraction, content: string) {
@@ -170,7 +203,8 @@ export class Resolver {
 
     const id = DISCORD_MENTION_REGEX.exec(args)?.[1] ?? DISCORD_ID_REGEX.exec(args)?.[0];
     if (id) {
-      const user = this.client.users.cache.get(id) ?? (await this.client.users.fetch(id).catch(() => null));
+      const user =
+        this.client.users.cache.get(id) ?? (await this.client.users.fetch(id).catch(() => null));
       if (user) return { user, matched: true, isTag: false };
       return { user: null, matched: true, isTag: false };
     }
@@ -181,7 +215,9 @@ export class Resolver {
   private async getLinkedClanTag(interaction: BaseInteraction, userId: string) {
     const [guildLinkedClan, userLinkedClanTag] = await Promise.all([
       interaction.guildId && interaction.channelId
-        ? this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channelId, guild: interaction.guildId })
+        ? this.client.db
+            .collection(Collections.CLAN_STORES)
+            .findOne({ channels: interaction.channelId, guild: interaction.guildId })
         : null,
       this.getLinkedUserClan(userId, true)
     ]);
@@ -191,7 +227,9 @@ export class Resolver {
 
   private async getLinkedPlayerTag(userId: string) {
     const [linkedPlayer, lastSearchedPlayerTag] = await Promise.all([
-      this.client.db.collection<PlayerLinksEntity>(Collections.PLAYER_LINKS).findOne({ userId }, { sort: { order: 1 } }),
+      this.client.db
+        .collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
+        .findOne({ userId }, { sort: { order: 1 } }),
       this.getLastSearchedPlayerTag(userId)
     ]);
 
@@ -240,23 +278,25 @@ export class Resolver {
       };
     });
 
-    return result.reduce<Record<string, { userId: string; tag: string; verified: boolean; displayName: string; username: string }>>(
-      (acc, link) => {
-        acc[link.tag] ??= link;
-        const prev = acc[link.tag];
+    return result.reduce<
+      Record<
+        string,
+        { userId: string; tag: string; verified: boolean; displayName: string; username: string }
+      >
+    >((acc, link) => {
+      acc[link.tag] ??= link;
+      const prev = acc[link.tag];
 
-        if (!prev.verified && link.verified) acc[link.tag].verified = true;
+      if (!prev.verified && link.verified) acc[link.tag].verified = true;
 
-        if (prev.username === 'unknown' && link.username !== 'unknown') {
-          acc[link.tag].username = link.username;
-          acc[link.tag].displayName = link.displayName;
-        }
+      if (prev.username === 'unknown' && link.username !== 'unknown') {
+        acc[link.tag].username = link.username;
+        acc[link.tag].displayName = link.displayName;
+      }
 
-        if (prev.userId !== link.userId) acc[link.tag] = link;
-        return acc;
-      },
-      {}
-    );
+      if (prev.userId !== link.userId) acc[link.tag] = link;
+      return acc;
+    }, {});
   }
 
   public async getLinkedUsers(players: { tag: string }[]) {
@@ -265,14 +305,23 @@ export class Resolver {
   }
 
   public async getUser(playerTag: string) {
-    const link = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag: playerTag });
+    const link = await this.client.db
+      .collection(Collections.PLAYER_LINKS)
+      .findOne({ tag: playerTag });
     if (!link) return null;
     return this.client.users.fetch(link.userId).catch(() => null);
   }
 
-  public async getPlayers(userId: string, limit = 25): Promise<(APIPlayer & { verified: boolean })[]> {
+  public async getPlayers(
+    userId: string,
+    limit = 25
+  ): Promise<(APIPlayer & { verified: boolean })[]> {
     const [players, others] = await Promise.all([
-      this.client.db.collection(Collections.PLAYER_LINKS).find({ userId }).sort({ order: 1 }).toArray(),
+      this.client.db
+        .collection(Collections.PLAYER_LINKS)
+        .find({ userId })
+        .sort({ order: 1 })
+        .toArray(),
       this.client.coc.getPlayerTags(userId)
     ]);
 
@@ -286,14 +335,19 @@ export class Resolver {
       .slice(0, limit)
       .map((tag) => this.client.coc.getPlayer(tag));
 
-    const result = (await Promise.all(playerTags)).filter(({ res }) => res.ok).map(({ body }) => body);
+    const result = (await Promise.all(playerTags))
+      .filter(({ res }) => res.ok)
+      .map(({ body }) => body);
     return result.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
   }
 
   private async getClansFromCategory(guildId: string, categoryId: string) {
     const clans = await this.client.db
       .collection<ClanStoresEntity>(Collections.CLAN_STORES)
-      .find({ guild: guildId, categoryId: ObjectId.isValid(categoryId) ? new ObjectId(categoryId) : null })
+      .find({
+        guild: guildId,
+        categoryId: ObjectId.isValid(categoryId) ? new ObjectId(categoryId) : null
+      })
       .toArray();
     return clans.map((clan) => clan.tag);
   }
@@ -303,7 +357,10 @@ export class Resolver {
 
     if (/^ARGS/.test(args)) {
       const tags = await this.client.redis.connection.get(args);
-      if (tags) return tags.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.coc.fixTag(tag) : tag));
+      if (tags)
+        return tags
+          .split(/\W+/)
+          .map((tag) => (TAG_REGEX.test(tag) ? this.client.coc.fixTag(tag) : tag));
     }
 
     if (/^CATEGORY:/.test(args)) {
@@ -311,7 +368,9 @@ export class Resolver {
       return this.getClansFromCategory(guildId, categoryId);
     }
 
-    return args.split(/\W+/).map((tag) => (TAG_REGEX.test(tag) ? this.client.coc.fixTag(tag) : tag));
+    return args
+      .split(/\W+/)
+      .map((tag) => (TAG_REGEX.test(tag) ? this.client.coc.fixTag(tag) : tag));
   }
 
   public async enforceSecurity(
@@ -325,7 +384,9 @@ export class Resolver {
     }
   ) {
     if (!tag) {
-      await interaction.editReply(i18n('common.no_clan_tag_first_time', { lng: interaction.locale }));
+      await interaction.editReply(
+        i18n('common.no_clan_tag_first_time', { lng: interaction.locale })
+      );
       return null;
     }
     const data = await this.getClan(interaction, tag, true);
@@ -340,7 +401,9 @@ export class Resolver {
     const max = this.client.settings.get<number>(interaction.guildId, Settings.CLAN_LIMIT, 2);
     const isPatron = this.client.subscribers.has(interaction.guildId);
     const featuresPerClan = unique(features.map((clan) => clan.clanTag));
-    const allowedClans = clans.filter((clan) => featuresPerClan.includes(clan.tag)).map((clan) => clan.name);
+    const allowedClans = clans
+      .filter((clan) => featuresPerClan.includes(clan.tag))
+      .map((clan) => clan.name);
 
     if (
       collection !== Collections.CLAN_STORES &&
@@ -381,7 +444,10 @@ export class Resolver {
       return null;
     }
 
-    const links = await this.client.db.collection(Collections.PLAYER_LINKS).find({ userId: interaction.user.id }).toArray();
+    const links = await this.client.db
+      .collection(Collections.PLAYER_LINKS)
+      .find({ userId: interaction.user.id })
+      .toArray();
     const count = await this.client.db
       .collection(Collections.CLAN_STORES)
       .countDocuments({ tag: data.tag, guild: { $ne: interaction.guildId } });
@@ -425,8 +491,9 @@ export class Resolver {
   private verifyClan(code: string, clan: APIClan, tags: { tag: string; verified: boolean }[]) {
     const verifiedTags = tags.filter((en) => en.verified).map((en) => en.tag);
     return (
-      clan.memberList.filter((m) => ['coLeader', 'leader'].includes(m.role)).some((m) => verifiedTags.includes(m.tag)) ||
-      clan.description.toUpperCase().includes(code)
+      clan.memberList
+        .filter((m) => ['coLeader', 'leader'].includes(m.role))
+        .some((m) => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code)
     );
   }
 

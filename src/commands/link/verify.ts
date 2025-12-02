@@ -23,7 +23,10 @@ export default class VerifyPlayerCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, { tag, token }: { tag: string; token: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    { tag, token }: { tag: string; token: string }
+  ) {
     const data = await this.client.resolver.resolvePlayer(interaction, tag);
     if (!data) return;
 
@@ -39,7 +42,10 @@ export default class VerifyPlayerCommand extends Command {
 
     const collection = this.client.db.collection(Collections.PLAYER_LINKS);
     await collection.deleteOne({ userId: { $ne: interaction.user.id }, tag: data.tag });
-    const lastAccount = await collection.findOne({ userId: interaction.user.id }, { sort: { order: -1 } });
+    const lastAccount = await collection.findOne(
+      { userId: interaction.user.id },
+      { sort: { order: -1 } }
+    );
     await collection.updateOne(
       { tag: data.tag },
       {
@@ -67,7 +73,10 @@ export default class VerifyPlayerCommand extends Command {
     this.client.rolesManager.updateOne(interaction.user, interaction.guildId, !lastAccount);
 
     return interaction.editReply(
-      this.i18n('command.verify.success', { lng: interaction.locale, info: `${data.name} (${data.tag}) ${EMOJIS.VERIFIED}` })
+      this.i18n('command.verify.success', {
+        lng: interaction.locale,
+        info: `${data.name} (${data.tag}) ${EMOJIS.VERIFIED}`
+      })
     );
   }
 

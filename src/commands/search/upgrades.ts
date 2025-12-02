@@ -67,17 +67,39 @@ export default class UpgradesCommand extends Command {
         .setStyle(ButtonStyle.Secondary)
     );
 
-    const refreshButton = new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh);
+    const refreshButton = new ButtonBuilder()
+      .setEmoji(EMOJIS.REFRESH)
+      .setStyle(ButtonStyle.Secondary)
+      .setCustomId(customIds.refresh);
     const mainRow = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(refreshButton)
-      .addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.units))
-      .addComponents(new ButtonBuilder().setLabel('Profile').setStyle(ButtonStyle.Primary).setCustomId(customIds.player))
-      .addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Units')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.units)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Profile')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.player)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Rushed')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customIds.rushed)
+      );
 
     if (interaction.isMessageComponent()) {
       return interaction.editReply({
         embeds: [embed],
-        components: [maxButtonRow, mainRow, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
+        components: [
+          maxButtonRow,
+          mainRow,
+          ...getMenuFromMessage(interaction, data.tag, customIds.accounts)
+        ]
       });
     }
 
@@ -91,7 +113,10 @@ export default class UpgradesCommand extends Command {
     }));
 
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-      new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
+      new StringSelectMenuBuilder()
+        .setCustomId(customIds.accounts)
+        .setPlaceholder('Select an account!')
+        .addOptions(options)
     );
 
     return interaction.editReply({
@@ -130,9 +155,14 @@ export default class UpgradesCommand extends Command {
 
     const apiTroops = unitsFlatten(data, { withEquipment: true });
     const Troops = RAW_TROOPS_WITH_ICONS.filter((unit) => {
-      const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
-      const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > (apiTroop?.level ?? 0);
-      const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 1] > (apiTroop?.level ?? 0);
+      const apiTroop = apiTroops.find(
+        (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+      );
+      const homeTroops =
+        unit.village === 'home' && unit.levels[data.townHallLevel - 1] > (apiTroop?.level ?? 0);
+      const builderTroops =
+        unit.village === 'builderBase' &&
+        unit.levels[data.builderHallLevel! - 1] > (apiTroop?.level ?? 0);
       return Boolean(homeTroops || builderTroops);
     }).reduce<TroopJSON>((prev, curr) => {
       const unlockBuilding =
@@ -152,7 +182,9 @@ export default class UpgradesCommand extends Command {
 
     const rem = RAW_TROOPS_WITH_ICONS.reduce(
       (prev, unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         if (unit.village === 'home') {
           prev.levels += apiTroop?.level ?? 0;
           prev.total += unit.levels[data.townHallLevel - 1];
@@ -229,21 +261,29 @@ export default class UpgradesCommand extends Command {
 
     for (const category of units.sort((a, b) => a.index - b.index)) {
       const unitsArray = category.units.map((unit) => {
-        const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+        const apiTroop = apiTroops.find(
+          (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+        );
         const maxLevel = apiTroop?.maxLevel ?? unit.levels[unit.levels.length - 1];
         const _level = apiTroop?.level ?? 0;
-        const hallLevel = unit.village === 'home' ? data.townHallLevel : (data.builderHallLevel ?? 0);
+        const hallLevel =
+          unit.village === 'home' ? data.townHallLevel : (data.builderHallLevel ?? 0);
         const level = _level === 0 ? 0 : Math.max(_level, unit.minLevel ?? _level);
         const isRushed = unit.levels[hallLevel - 2] > level;
         const hallMaxLevel = unit.levels[hallLevel - 1];
 
-        const hallIndex = unit.village === 'home' ? hallMaxLevel - 1 : hallMaxLevel - (unit.minLevel || 1);
+        const hallIndex =
+          unit.village === 'home' ? hallMaxLevel - 1 : hallMaxLevel - (unit.minLevel || 1);
         const remainingCost = level
-          ? unit.upgrade.cost.slice(level - (unit.minLevel ?? 1), hallIndex).reduce((prev, curr) => prev + curr, 0)
+          ? unit.upgrade.cost
+              .slice(level - (unit.minLevel ?? 1), hallIndex)
+              .reduce((prev, curr) => prev + curr, 0)
           : unit.upgrade.cost.slice(0, hallIndex).reduce((prev, curr) => prev + curr, 0); // + unit.unlock.cost;
 
         const remainingTime = level
-          ? unit.upgrade.time.slice(level - (unit.minLevel ?? 1), hallIndex).reduce((prev, curr) => prev + curr, 0)
+          ? unit.upgrade.time
+              .slice(level - (unit.minLevel ?? 1), hallIndex)
+              .reduce((prev, curr) => prev + curr, 0)
           : unit.upgrade.time.slice(0, hallIndex).reduce((prev, curr) => prev + curr, 0); // + unit.unlock.time;
 
         const resources = unit.upgrade.resources
@@ -302,16 +342,23 @@ export default class UpgradesCommand extends Command {
         `**${category.title}**`,
         unitsArray
           .map((unit) => {
-            const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name] || unit.name;
+            const unitIcon =
+              (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name] || unit.name;
             const level = this.padStart(unit.level);
             const maxLevel = this.padEnd(unit.hallMaxLevel);
             const upgradeTime = this.dur(unit.remainingTime).padStart(5, ' ');
             const upgradeCost = this.format(unit.remainingCost).padStart(6, ' ');
             const rushed = unit.isRushed ? `\` R \`` : '`   `';
 
-            const shinyOre = (unit.resources['Shiny Ore'] ? this.format(unit.resources['Shiny Ore']) : '').padStart(6, ' ');
-            const glowyOre = (unit.resources['Glowy Ore'] ? this.format(unit.resources['Glowy Ore']) : '').padStart(5, ' ');
-            const starryOre = (unit.resources['Starry Ore'] ? this.format(unit.resources['Starry Ore']) : '').padStart(3, ' ');
+            const shinyOre = (
+              unit.resources['Shiny Ore'] ? this.format(unit.resources['Shiny Ore']) : ''
+            ).padStart(6, ' ');
+            const glowyOre = (
+              unit.resources['Glowy Ore'] ? this.format(unit.resources['Glowy Ore']) : ''
+            ).padStart(5, ' ');
+            const starryOre = (
+              unit.resources['Starry Ore'] ? this.format(unit.resources['Starry Ore']) : ''
+            ).padStart(3, ' ');
 
             if (unit.type === 'equipment') {
               return `\u200e${unitIcon} \` ${level}/${maxLevel} \` \` ${shinyOre}\` \` ${glowyOre}\` \` ${starryOre} \` ${rushed}`;
@@ -352,7 +399,8 @@ export default class UpgradesCommand extends Command {
       const shinyOre = this.format(summary['Shiny Ore'] || 0);
       const glowyOre = this.format(summary['Glowy Ore'] || 0);
       const starryOre = this.format(summary['Starry Ore'] || 0);
-      const ore = (summary['Shiny Ore'] || 0) + (summary['Glowy Ore'] || 0) + (summary['Starry Ore'] || 0);
+      const ore =
+        (summary['Shiny Ore'] || 0) + (summary['Glowy Ore'] || 0) + (summary['Starry Ore'] || 0);
 
       embed.setFooter({
         text: [

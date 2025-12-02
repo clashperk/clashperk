@@ -26,7 +26,10 @@ export default class UsageCommand extends Command {
     };
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, { chart, limit }: { chart: string; limit?: number }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    { chart, limit }: { chart: string; limit?: number }
+  ) {
     limit ??= 15;
     if (chart) {
       const url = await this.buffer(Number(limit));
@@ -37,14 +40,20 @@ export default class UsageCommand extends Command {
     const maxDigit = Math.max(...commands.map((cmd) => cmd.uses.toString().length));
     const usage = await this.usage();
     const embed = new EmbedBuilder()
-      .setAuthor({ name: `${this.client.user.displayName}`, iconURL: this.client.user.displayAvatarURL({ extension: 'png' }) })
+      .setAuthor({
+        name: `${this.client.user.displayName}`,
+        iconURL: this.client.user.displayAvatarURL({ extension: 'png' })
+      })
       .setColor(this.client.embed(interaction))
       .setTitle('Usage')
       .setFooter({ text: `${total.toLocaleString()}x Total • Since April 2019` });
     embed.setDescription(
       [
         `__**\`\u200e${'Date'.padEnd(6, ' ')}  ${'Uses'.padEnd(18, ' ')}\u200f\`**__`,
-        ...usage.map((en) => `\`\u200e${moment(en.createdAt).format('DD MMM')}  ${en.usage.toString().padEnd(18, ' ')}\u200f\``),
+        ...usage.map(
+          (en) =>
+            `\`\u200e${moment(en.createdAt).format('DD MMM')}  ${en.usage.toString().padEnd(18, ' ')}\u200f\``
+        ),
         '',
         `__**\`\u200e # ${'Uses'.padStart(maxDigit + 1, ' ')}  ${'Command'.padEnd(15, ' ')}\u200f\`**__`,
         ...commands.splice(0, 50).map(({ id, uses }, index) => {
@@ -78,12 +87,21 @@ export default class UsageCommand extends Command {
   private async growth() {
     const cursor = this.client.db.collection(Collections.BOT_GROWTH).find();
     const data = await cursor.sort({ _id: -1 }).limit(1).next();
-    return { addition: data?.addition, deletion: data?.deletion, growth: data?.addition - data?.deletion };
+    return {
+      addition: data?.addition,
+      deletion: data?.deletion,
+      growth: data?.addition - data?.deletion
+    };
   }
 
   private async buffer(limit: number) {
     const growth = await this.growth();
-    const collection = await this.client.db.collection(Collections.BOT_GROWTH).find().sort({ _id: -1 }).limit(limit).toArray();
+    const collection = await this.client.db
+      .collection(Collections.BOT_GROWTH)
+      .find()
+      .sort({ _id: -1 })
+      .limit(limit)
+      .toArray();
     return Chart.growth(
       collection.reverse().map((growth) => ({ date: new Date(growth.key), value: growth })),
       { ...growth }

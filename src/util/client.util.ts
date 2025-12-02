@@ -33,7 +33,9 @@ export class ClientUtil {
     let guilds = 0;
 
     try {
-      const values = (await this.client.cluster.broadcastEval((client) => client.guilds.cache.size)) ?? [this.client.guilds.cache.size];
+      const values = (await this.client.cluster.broadcastEval(
+        (client) => client.guilds.cache.size
+      )) ?? [this.client.guilds.cache.size];
       guilds = values.reduce((acc, val) => acc + val, 0);
     } catch {}
 
@@ -50,7 +52,9 @@ export class ClientUtil {
     });
   }
 
-  public async getGuildMembers(interaction: BaseInteraction<'cached'> | Guild): Promise<Collection<string, GuildMember>> {
+  public async getGuildMembers(
+    interaction: BaseInteraction<'cached'> | Guild
+  ): Promise<Collection<string, GuildMember>> {
     const guild = interaction instanceof Guild ? interaction : interaction.guild;
     if (this.client.cacheOverLimitGuilds.has(guild.id)) {
       return guild.members.cache;
@@ -109,7 +113,11 @@ export class ClientUtil {
         return { isThread: true, channel, parent: channel.parent! };
       }
 
-      if (!channel.isThread() && channel.permissionsFor(this.client.user)?.has(permissions) && this.hasWebhookPermission(channel)) {
+      if (
+        !channel.isThread() &&
+        channel.permissionsFor(this.client.user)?.has(permissions) &&
+        this.hasWebhookPermission(channel)
+      ) {
         return { isThread: false, channel, parent: channel };
       }
     }
@@ -139,8 +147,14 @@ export class ClientUtil {
 
   public isManager(member: GuildMember, roleKey?: string | null) {
     if (this.client.isOwner(member.user)) return true;
-    const managerRoleIds = this.client.settings.get<string[]>(member.guild, Settings.MANAGER_ROLE, []);
-    const roleOverrides = roleKey ? this.client.settings.get<string[]>(member.guild, roleKey, []) : [];
+    const managerRoleIds = this.client.settings.get<string[]>(
+      member.guild,
+      Settings.MANAGER_ROLE,
+      []
+    );
+    const roleOverrides = roleKey
+      ? this.client.settings.get<string[]>(member.guild, roleKey, [])
+      : [];
     return (
       member.permissions.has(PermissionsBitField.Flags.ManageGuild) ||
       member.roles.cache.hasAny(...managerRoleIds) ||
@@ -155,11 +169,17 @@ export class ClientUtil {
   public async isTrustedGuild(interaction: CommandInteraction) {
     if (!interaction.inCachedGuild()) return false;
 
-    const isTrustedFlag = this.client.isFeatureEnabled(FeatureFlags.TRUSTED_GUILD, interaction.guildId);
+    const isTrustedFlag = this.client.isFeatureEnabled(
+      FeatureFlags.TRUSTED_GUILD,
+      interaction.guildId
+    );
     const isManager = this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE);
     if (!isManager) return false;
 
-    return isTrustedFlag || this.client.settings.get(interaction.guildId, Settings.IS_TRUSTED_GUILD, false);
+    return (
+      isTrustedFlag ||
+      this.client.settings.get(interaction.guildId, Settings.IS_TRUSTED_GUILD, false)
+    );
   }
 
   public async createOrUpdateSheet({ sheets, guild, clans, label, sheetType }: CreateSheetProps) {
@@ -211,7 +231,15 @@ export class ClientUtil {
     return spreadsheet;
   }
 
-  private createSpreadsheetHash({ guildId, clanTags, sheetType }: { guildId: string; clanTags: string[]; sheetType: SheetType }) {
+  private createSpreadsheetHash({
+    guildId,
+    clanTags,
+    sheetType
+  }: {
+    guildId: string;
+    clanTags: string[];
+    sheetType: SheetType;
+  }) {
     const text = `${guildId}-${clanTags
       .map((tag) => tag)
       .sort((a, b) => a.localeCompare(b))

@@ -8,7 +8,10 @@ import {
   MessageType,
   StringSelectMenuBuilder
 } from 'discord.js';
-import { getBbLegendRankingEmbedMaker, getLegendRankingEmbedMaker } from '../../helper/leaderboard.helper.js';
+import {
+  getBbLegendRankingEmbedMaker,
+  getLegendRankingEmbedMaker
+} from '../../helper/leaderboard.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -38,15 +41,20 @@ export default class LegendLeaderboardCommand extends Command {
       enable_auto_updating?: string;
     }
   ) {
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     let seasonId = args.season ?? Season.ID;
 
-    const isDefaultMessage = interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
+    const isDefaultMessage =
+      interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
     if (isDefaultMessage) {
       const currentSeasonEnd = this.client.coc.util.getSeasonEnd(new Date()).toISOString();
-      const messageSentAt = this.client.coc.util.getSeasonEnd(interaction.message.createdAt).toISOString();
+      const messageSentAt = this.client.coc.util
+        .getSeasonEnd(interaction.message.createdAt)
+        .toISOString();
       if (currentSeasonEnd !== messageSentAt) seasonId = messageSentAt.slice(0, 7);
     }
 
@@ -70,7 +78,11 @@ export default class LegendLeaderboardCommand extends Command {
       embed.setDescription(`No players are in the ${args.is_bb ? 'Legend League' : 'Leaderboard'}`);
     }
 
-    if (players.length && args.enable_auto_updating && this.client.util.isManager(interaction.member)) {
+    if (
+      players.length &&
+      args.enable_auto_updating &&
+      this.client.util.isManager(interaction.member)
+    ) {
       await this.client.storage.makeAutoBoard({
         channelId: interaction.channelId,
         boardType: args.enable_auto_updating,
@@ -99,7 +111,10 @@ export default class LegendLeaderboardCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh)
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh)
     );
     if (!args.is_bb) {
       row.addComponents(
@@ -152,16 +167,30 @@ export default class LegendLeaderboardCommand extends Command {
     }
 
     if (args.export && interaction.isButton()) {
-      await interaction.editReply({ embeds: [embed], components: [row, sortingRow], message: interaction.message.id });
+      await interaction.editReply({
+        embeds: [embed],
+        components: [row, sortingRow],
+        message: interaction.message.id
+      });
       await this.export(interaction, players, clans);
     } else {
-      await interaction.editReply({ embeds: [embed], components: args.is_bb || isDefaultMessage ? [row] : [row, sortingRow] });
+      await interaction.editReply({
+        embeds: [embed],
+        components: args.is_bb || isDefaultMessage ? [row] : [row, sortingRow]
+      });
     }
   }
 
   private async export(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    players: { name: string; tag: string; clan?: APIPlayerClan; townHallLevel: number; trophies: number; attackWins: number }[],
+    players: {
+      name: string;
+      tag: string;
+      clan?: APIPlayerClan;
+      townHallLevel: number;
+      trophies: number;
+      attackWins: number;
+    }[],
     clans: { name: string }[]
   ) {
     const sheets: CreateGoogleSheet[] = [
@@ -188,7 +217,10 @@ export default class LegendLeaderboardCommand extends Command {
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Legend Ranking]`, sheets);
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Legend Ranking]`,
+      sheets
+    );
     return interaction.followUp({
       content: `**Legend Leaderboard** (${clans.map((clan) => clan.name).join(', ')})`,
       components: getExportComponents(spreadsheet)

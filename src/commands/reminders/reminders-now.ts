@@ -22,7 +22,10 @@ export default class RemindersNowCommand extends Command {
     });
   }
 
-  public exec(interaction: CommandInteraction<'cached'>, args: { command: string; type: string } & { message: string; clans?: string }) {
+  public exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { command: string; type: string } & { message: string; clans?: string }
+  ) {
     const command = {
       'clan-wars': this.clanWarsReminders.bind(this),
       'clan-games': this.clanGamesReminders.bind(this),
@@ -33,10 +36,19 @@ export default class RemindersNowCommand extends Command {
     return command(interaction, args);
   }
 
-  private async clanWarsReminders(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
-    if (!args.message) return interaction.editReply(this.i18n('command.reminders.no_message', { lng: interaction.locale }));
+  private async clanWarsReminders(
+    interaction: CommandInteraction<'cached'>,
+    args: { message: string; clans?: string }
+  ) {
+    if (!args.message)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_message', { lng: interaction.locale })
+      );
 
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+    const { clans } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans,
+      required: true
+    });
     if (!clans) return;
 
     const CUSTOM_ID = {
@@ -170,10 +182,18 @@ export default class RemindersNowCommand extends Command {
 
     const msg = await interaction.editReply({
       components: mutate(),
-      content: [`**Instant War Reminder Options**`, '', clans.map((clan) => clan.name).join(', ')].join('\n')
+      content: [
+        `**Instant War Reminder Options**`,
+        '',
+        clans.map((clan) => clan.name).join(', ')
+      ].join('\n')
     });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(CUSTOM_ID).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -218,7 +238,9 @@ export default class RemindersNowCommand extends Command {
         if (texts.length) {
           await action.editReply({ content: `\u200e🔔 ${args.message}` });
         } else {
-          await action.editReply({ content: this.i18n('command.reminders.now.no_match', { lng: interaction.locale }) });
+          await action.editReply({
+            content: this.i18n('command.reminders.now.no_match', { lng: interaction.locale })
+          });
         }
 
         await this.send(action, texts);
@@ -231,10 +253,19 @@ export default class RemindersNowCommand extends Command {
     });
   }
 
-  private async clanGamesReminders(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
-    if (!args.message) return interaction.editReply(this.i18n('command.reminders.no_message', { lng: interaction.locale }));
+  private async clanGamesReminders(
+    interaction: CommandInteraction<'cached'>,
+    args: { message: string; clans?: string }
+  ) {
+    if (!args.message)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_message', { lng: interaction.locale })
+      );
 
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+    const { clans } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans,
+      required: true
+    });
     if (!clans) return;
 
     const customIds = {
@@ -334,9 +365,16 @@ export default class RemindersNowCommand extends Command {
       return [row1, row2, row3, row4];
     };
 
-    const msg = await interaction.editReply({ components: mutate(), content: '**Instant Clan Games Reminder Options**' });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const msg = await interaction.editReply({
+      components: mutate(),
+      content: '**Instant Clan Games Reminder Options**'
+    });
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -367,7 +405,10 @@ export default class RemindersNowCommand extends Command {
       }
 
       if (action.customId === customIds.save && action.isButton()) {
-        await action.update({ components: [], content: `**Fetching capital raids...** ${EMOJIS.LOADING}` });
+        await action.update({
+          components: [],
+          content: `**Fetching capital raids...** ${EMOJIS.LOADING}`
+        });
 
         const texts = await this.getClanGamesTexts(action, {
           roles: state.roles,
@@ -380,7 +421,9 @@ export default class RemindersNowCommand extends Command {
         if (texts.length) {
           await action.editReply({ content: `\u200e🔔 ${args.message}` });
         } else {
-          await action.editReply({ content: this.i18n('command.reminders.now.no_match', { lng: interaction.locale }) });
+          await action.editReply({
+            content: this.i18n('command.reminders.now.no_match', { lng: interaction.locale })
+          });
         }
 
         await this.send(action, texts);
@@ -393,10 +436,19 @@ export default class RemindersNowCommand extends Command {
     });
   }
 
-  private async capitalReminders(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
-    if (!args.message) return interaction.editReply(this.i18n('command.reminders.no_message', { lng: interaction.locale }));
+  private async capitalReminders(
+    interaction: CommandInteraction<'cached'>,
+    args: { message: string; clans?: string }
+  ) {
+    if (!args.message)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_message', { lng: interaction.locale })
+      );
 
-    const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans, required: true });
+    const { clans } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans,
+      required: true
+    });
     if (!clans) return;
 
     const customIds = {
@@ -497,9 +549,16 @@ export default class RemindersNowCommand extends Command {
       return [minThresholdRow, row2, row3, row4];
     };
 
-    const msg = await interaction.editReply({ components: mutate(), content: '**Instant Capital Reminder Options**' });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const msg = await interaction.editReply({
+      components: mutate(),
+      content: '**Instant Capital Reminder Options**'
+    });
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -530,7 +589,10 @@ export default class RemindersNowCommand extends Command {
       }
 
       if (action.customId === customIds.save && action.isButton()) {
-        await action.update({ components: [], content: `**Fetching capital raids...** ${EMOJIS.LOADING}` });
+        await action.update({
+          components: [],
+          content: `**Fetching capital raids...** ${EMOJIS.LOADING}`
+        });
 
         const texts = await this.getCapitalTexts(action, {
           remaining: state.remaining.map((num) => Number(num)),
@@ -544,7 +606,9 @@ export default class RemindersNowCommand extends Command {
         if (texts.length) {
           await action.editReply({ content: `\u200e🔔 ${args.message}` });
         } else {
-          await action.editReply({ content: this.i18n('command.reminders.now.no_match', { lng: interaction.locale }) });
+          await action.editReply({
+            content: this.i18n('command.reminders.now.no_match', { lng: interaction.locale })
+          });
         }
 
         await this.send(action, texts);

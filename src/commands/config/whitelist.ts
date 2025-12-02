@@ -25,15 +25,15 @@ export default class WhitelistCommand extends Command {
     }
   ) {
     if ((!args.user_or_role && !args.command) || args.list) {
-      const commandWhitelist = this.client.settings.get<{ key: string; userOrRoleId: string; commandId: string; isRole: boolean }[]>(
-        interaction.guild,
-        Settings.COMMAND_WHITELIST,
-        []
-      );
+      const commandWhitelist = this.client.settings.get<
+        { key: string; userOrRoleId: string; commandId: string; isRole: boolean }[]
+      >(interaction.guild, Settings.COMMAND_WHITELIST, []);
       commandWhitelist.sort((a, b) => a.commandId.localeCompare(b.commandId));
 
       const content = commandWhitelist.map((whitelist) => {
-        const userOrRole = whitelist.isRole ? `<@&${whitelist.userOrRoleId}>` : `<@${whitelist.userOrRoleId}>`;
+        const userOrRole = whitelist.isRole
+          ? `<@&${whitelist.userOrRoleId}>`
+          : `<@${whitelist.userOrRoleId}>`;
         return `**${this.client.commands.resolve(whitelist.commandId)}** - ${userOrRole}`;
       });
 
@@ -41,7 +41,11 @@ export default class WhitelistCommand extends Command {
 
       await interaction.editReply({
         allowedMentions: { parse: [] },
-        content: [`### Whitelisted Commands, Users and Roles`, '', firstPage || 'No whitelisted users or roles.'].join('\n')
+        content: [
+          `### Whitelisted Commands, Users and Roles`,
+          '',
+          firstPage || 'No whitelisted users or roles.'
+        ].join('\n')
       });
 
       for (const page of pages) {
@@ -52,10 +56,15 @@ export default class WhitelistCommand extends Command {
     }
 
     if (!args.user_or_role || !args.command)
-      return interaction.editReply({ content: 'You must provide a user or role and a command to whitelist.' });
+      return interaction.editReply({
+        content: 'You must provide a user or role and a command to whitelist.'
+      });
 
     if (args.clear) {
-      await this.client.settings.clearWhitelist(interaction.guild, { commandId: args.command, userOrRoleId: args.user_or_role.id });
+      await this.client.settings.clearWhitelist(interaction.guild, {
+        commandId: args.command,
+        userOrRoleId: args.user_or_role.id
+      });
       return interaction.editReply({
         content: `### Successfully cleared the whitelist for ${args.user_or_role.toString()} on ${this.client.commands.resolve(args.command)}`
       });

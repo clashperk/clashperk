@@ -34,7 +34,10 @@ export default class RemindersDeleteCommand extends Command {
     });
   }
 
-  public exec(interaction: CommandInteraction<'cached'>, args: { command: string; type: string } & { id?: string }) {
+  public exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { command: string; type: string } & { id?: string }
+  ) {
     const command = {
       'clan-wars': this.clanWarsReminders.bind(this),
       'clan-games': this.clanGamesReminders.bind(this),
@@ -45,24 +48,42 @@ export default class RemindersDeleteCommand extends Command {
     return command(interaction, args);
   }
 
-  private async clanWarsReminders(interaction: CommandInteraction<'cached'>, args: { id?: string }) {
+  private async clanWarsReminders(
+    interaction: CommandInteraction<'cached'>,
+    args: { id?: string }
+  ) {
     const reminders = await this.client.db
       .collection<ClanWarRemindersEntity>(Collections.WAR_REMINDERS)
       .find({ guild: interaction.guild.id })
       .toArray();
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_reminders', { lng: interaction.locale })
+      );
 
     if (args.id) {
-      const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id?.toUpperCase())?._id;
+      const reminderId = reminders.find(
+        (rem) => hexToNanoId(rem._id) === args.id?.toUpperCase()
+      )?._id;
       if (!reminderId)
-        return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
-      await this.client.db.collection<ClanWarRemindersEntity>(Collections.WAR_REMINDERS).deleteOne({ _id: reminderId });
-      await this.client.db.collection<ClanWarSchedulersEntity>(Collections.WAR_SCHEDULERS).deleteMany({ reminderId });
-      return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id }));
+        return interaction.editReply(
+          this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+        );
+      await this.client.db
+        .collection<ClanWarRemindersEntity>(Collections.WAR_REMINDERS)
+        .deleteOne({ _id: reminderId });
+      await this.client.db
+        .collection<ClanWarSchedulersEntity>(Collections.WAR_SCHEDULERS)
+        .deleteMany({ reminderId });
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id })
+      );
     }
 
     if (reminders.length > 25)
-      return interaction.editReply(this.i18n('command.reminders.delete.too_many_reminders', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.too_many_reminders', { lng: interaction.locale })
+      );
 
     const clans = await this.client.storage.find(interaction.guild.id);
     const customIds = {
@@ -71,7 +92,8 @@ export default class RemindersDeleteCommand extends Command {
       view: this.client.uuid(interaction.user.id)
     };
 
-    const label = (duration: number) => moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
+    const label = (duration: number) =>
+      moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
     const state = {
       selected: null as string | null,
@@ -97,8 +119,20 @@ export default class RemindersDeleteCommand extends Command {
       );
 
       const button = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(new ButtonBuilder().setCustomId(customIds.view).setLabel('View').setStyle(ButtonStyle.Primary).setDisabled(view))
-        .addComponents(new ButtonBuilder().setCustomId(customIds.delete).setLabel('Delete').setStyle(ButtonStyle.Danger).setDisabled(del));
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.view)
+            .setLabel('View')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(view)
+        )
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.delete)
+            .setLabel('Delete')
+            .setStyle(ButtonStyle.Danger)
+            .setDisabled(del)
+        );
 
       return [menu, button];
     };
@@ -119,7 +153,12 @@ export default class RemindersDeleteCommand extends Command {
       if (reminder.roles.length === 4) {
         embed.addFields([{ name: 'Roles', value: 'Any' }]);
       } else {
-        embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => PLAYER_ROLES_MAP[role]).join(', ') || 'None' }]);
+        embed.addFields([
+          {
+            name: 'Roles',
+            value: reminder.roles.map((role) => PLAYER_ROLES_MAP[role]).join(', ') || 'None'
+          }
+        ]);
       }
       if (reminder.townHalls.length === MAX_TOWN_HALL_LEVEL - 1) {
         embed.addFields([{ name: 'Town Halls', value: 'Any' }]);
@@ -129,18 +168,26 @@ export default class RemindersDeleteCommand extends Command {
       if (reminder.remaining.length === 2) {
         embed.addFields([{ name: 'Remaining Hits', value: 'Any' }]);
       } else {
-        embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') || 'None' }]);
+        embed.addFields([
+          { name: 'Remaining Hits', value: reminder.remaining.join(', ') || 'None' }
+        ]);
       }
       if (reminder.warTypes.length === 3) {
         embed.addFields([{ name: 'War Types', value: 'Any' }]);
       } else {
-        embed.addFields([{ name: 'War Types', value: reminder.warTypes.join(', ').toUpperCase() || 'None' }]);
+        embed.addFields([
+          { name: 'War Types', value: reminder.warTypes.join(', ').toUpperCase() || 'None' }
+        ]);
       }
       const clanNames = clans
         .filter((clan) => reminder.clans.includes(clan.tag))
         .map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`));
-      if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) || 'None' }]);
-      else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').slice(0, 1024) || 'None' }]);
+      if (clanNames.length)
+        embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) || 'None' }]);
+      else
+        embed.addFields([
+          { name: 'Clans', value: reminder.clans.join(', ').slice(0, 1024) || 'None' }
+        ]);
       embed.addFields([{ name: 'Message', value: reminder.message.slice(0, 1024) || 'None' }]);
       return embed;
     };
@@ -150,8 +197,12 @@ export default class RemindersDeleteCommand extends Command {
       content: '**Manage War Reminders**',
       components: options(false, true, true)
     });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -166,7 +217,9 @@ export default class RemindersDeleteCommand extends Command {
         await action.update({
           embeds: rems.length ? [embeds()] : [],
           components: rems.length ? options(false, true, false) : [],
-          content: rems.length ? '**Manage War Reminders**' : "**You don't have any more reminders!**"
+          content: rems.length
+            ? '**Manage War Reminders**'
+            : "**You don't have any more reminders!**"
         });
       }
 
@@ -185,7 +238,9 @@ export default class RemindersDeleteCommand extends Command {
         await action.editReply({
           embeds: [],
           components: rems.length ? options(false, true, true) : [],
-          content: rems.length ? '**Manage War Reminders**' : "**You don't have any more reminders!**"
+          content: rems.length
+            ? '**Manage War Reminders**'
+            : "**You don't have any more reminders!**"
         });
       }
     });
@@ -194,28 +249,49 @@ export default class RemindersDeleteCommand extends Command {
       for (const id of Object.values(customIds)) {
         this.client.components.delete(id);
       }
-      if (!/delete/i.test(reason)) await interaction.editReply({ components: state.reminders.size ? options(true, true, true) : [] });
+      if (!/delete/i.test(reason))
+        await interaction.editReply({
+          components: state.reminders.size ? options(true, true, true) : []
+        });
     });
   }
 
-  private async clanGamesReminders(interaction: CommandInteraction<'cached'>, args: { id?: string }) {
+  private async clanGamesReminders(
+    interaction: CommandInteraction<'cached'>,
+    args: { id?: string }
+  ) {
     const reminders = await this.client.db
       .collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS)
       .find({ guild: interaction.guild.id })
       .toArray();
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_reminders', { lng: interaction.locale })
+      );
 
     if (args.id) {
-      const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id?.toUpperCase())?._id;
+      const reminderId = reminders.find(
+        (rem) => hexToNanoId(rem._id) === args.id?.toUpperCase()
+      )?._id;
       if (!reminderId)
-        return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
-      await this.client.db.collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS).deleteOne({ _id: reminderId });
-      await this.client.db.collection<ClanGamesSchedulersEntity>(Collections.CLAN_GAMES_SCHEDULERS).deleteMany({ reminderId });
-      return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id }));
+        return interaction.editReply(
+          this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+        );
+      await this.client.db
+        .collection<ClanGamesRemindersEntity>(Collections.CLAN_GAMES_REMINDERS)
+        .deleteOne({ _id: reminderId });
+      await this.client.db
+        .collection<ClanGamesSchedulersEntity>(Collections.CLAN_GAMES_SCHEDULERS)
+        .deleteMany({ reminderId });
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id })
+      );
     }
 
     if (reminders.length > 25)
-      return interaction.editReply(this.i18n('command.reminders.delete.too_many_reminders', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.too_many_reminders', { lng: interaction.locale })
+      );
 
     const clans = await this.client.storage.find(interaction.guild.id);
     const customIds = {
@@ -224,7 +300,8 @@ export default class RemindersDeleteCommand extends Command {
       view: this.client.uuid(interaction.user.id)
     };
 
-    const label = (duration: number) => moment.duration(duration).format('d[d] H[h], m[m], s[s]', { trim: 'both mid' });
+    const label = (duration: number) =>
+      moment.duration(duration).format('d[d] H[h], m[m], s[s]', { trim: 'both mid' });
 
     const state = {
       selected: null as string | null,
@@ -250,8 +327,20 @@ export default class RemindersDeleteCommand extends Command {
       );
 
       const button = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(new ButtonBuilder().setCustomId(customIds.view).setLabel('View').setStyle(ButtonStyle.Primary).setDisabled(view))
-        .addComponents(new ButtonBuilder().setCustomId(customIds.delete).setLabel('Delete').setStyle(ButtonStyle.Danger).setDisabled(del));
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.view)
+            .setLabel('View')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(view)
+        )
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.delete)
+            .setLabel('Delete')
+            .setStyle(ButtonStyle.Danger)
+            .setDisabled(del)
+        );
 
       return [menu, button];
     };
@@ -277,7 +366,9 @@ export default class RemindersDeleteCommand extends Command {
       if (reminder.roles.length === 4) {
         embed.addFields([{ name: 'Roles', value: 'Any' }]);
       } else {
-        embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => PLAYER_ROLES_MAP[role]).join(', ') }]);
+        embed.addFields([
+          { name: 'Roles', value: reminder.roles.map((role) => PLAYER_ROLES_MAP[role]).join(', ') }
+        ]);
       }
 
       if (reminder.minPoints === 0) {
@@ -286,13 +377,16 @@ export default class RemindersDeleteCommand extends Command {
         embed.addFields([{ name: 'Min. Points', value: reminder.minPoints.toString() }]);
       }
 
-      embed.addFields([{ name: 'Members', value: reminder.allMembers ? 'All Members' : 'Only Participants' }]);
+      embed.addFields([
+        { name: 'Members', value: reminder.allMembers ? 'All Members' : 'Only Participants' }
+      ]);
 
       const clanNames = clans
         .filter((clan) => reminder.clans.includes(clan.tag))
         .map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`));
 
-      if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) }]);
+      if (clanNames.length)
+        embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) }]);
       else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').slice(0, 1024) }]);
 
       embed.addFields([{ name: 'Message', value: reminder.message.slice(0, 1024) }]);
@@ -304,8 +398,12 @@ export default class RemindersDeleteCommand extends Command {
       content: '**Manage Capital Raid Reminders**',
       components: options(false, true, true)
     });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -320,7 +418,9 @@ export default class RemindersDeleteCommand extends Command {
         await action.update({
           embeds: rems.length ? [embeds()] : [],
           components: rems.length ? options(false, true, false) : [],
-          content: rems.length ? '**Manage Clan Games Reminders**' : "**You don't have any more reminders!**"
+          content: rems.length
+            ? '**Manage Clan Games Reminders**'
+            : "**You don't have any more reminders!**"
         });
       }
 
@@ -339,7 +439,9 @@ export default class RemindersDeleteCommand extends Command {
         await action.editReply({
           embeds: [],
           components: rems.length ? options(false, true, true) : [],
-          content: rems.length ? '**Manage Clan Games Reminders**' : "**You don't have any more reminders!**"
+          content: rems.length
+            ? '**Manage Clan Games Reminders**'
+            : "**You don't have any more reminders!**"
         });
       }
     });
@@ -348,7 +450,10 @@ export default class RemindersDeleteCommand extends Command {
       for (const id of Object.values(customIds)) {
         this.client.components.delete(id);
       }
-      if (!/delete/i.test(reason)) await interaction.editReply({ components: state.reminders.size ? options(true, true, true) : [] });
+      if (!/delete/i.test(reason))
+        await interaction.editReply({
+          components: state.reminders.size ? options(true, true, true) : []
+        });
     });
   }
 
@@ -357,19 +462,34 @@ export default class RemindersDeleteCommand extends Command {
       .collection<RaidRemindersEntity>(Collections.RAID_REMINDERS)
       .find({ guild: interaction.guild.id })
       .toArray();
-    if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.no_reminders', { lng: interaction.locale }));
+    if (!reminders.length)
+      return interaction.editReply(
+        this.i18n('command.reminders.no_reminders', { lng: interaction.locale })
+      );
 
     if (args.id) {
-      const reminderId = reminders.find((rem) => hexToNanoId(rem._id) === args.id?.toUpperCase())?._id;
+      const reminderId = reminders.find(
+        (rem) => hexToNanoId(rem._id) === args.id?.toUpperCase()
+      )?._id;
       if (!reminderId)
-        return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
-      await this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS).deleteOne({ _id: reminderId });
-      await this.client.db.collection<RaidSchedulersEntity>(Collections.RAID_SCHEDULERS).deleteMany({ reminderId });
-      return interaction.editReply(this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id }));
+        return interaction.editReply(
+          this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id })
+        );
+      await this.client.db
+        .collection<RaidRemindersEntity>(Collections.RAID_REMINDERS)
+        .deleteOne({ _id: reminderId });
+      await this.client.db
+        .collection<RaidSchedulersEntity>(Collections.RAID_SCHEDULERS)
+        .deleteMany({ reminderId });
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.success', { lng: interaction.locale, id: args.id })
+      );
     }
 
     if (reminders.length > 25)
-      return interaction.editReply(this.i18n('command.reminders.delete.too_many_reminders', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.reminders.delete.too_many_reminders', { lng: interaction.locale })
+      );
 
     const clans = await this.client.storage.find(interaction.guild.id);
     const customIds = {
@@ -378,7 +498,8 @@ export default class RemindersDeleteCommand extends Command {
       view: this.client.uuid(interaction.user.id)
     };
 
-    const label = (duration: number) => moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
+    const label = (duration: number) =>
+      moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
     const state = {
       selected: null as string | null,
@@ -404,8 +525,20 @@ export default class RemindersDeleteCommand extends Command {
       );
 
       const button = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(new ButtonBuilder().setCustomId(customIds.view).setLabel('View').setStyle(ButtonStyle.Primary).setDisabled(view))
-        .addComponents(new ButtonBuilder().setCustomId(customIds.delete).setLabel('Delete').setStyle(ButtonStyle.Danger).setDisabled(del));
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.view)
+            .setLabel('View')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(view)
+        )
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(customIds.delete)
+            .setLabel('Delete')
+            .setStyle(ButtonStyle.Danger)
+            .setDisabled(del)
+        );
 
       return [menu, button];
     };
@@ -414,7 +547,9 @@ export default class RemindersDeleteCommand extends Command {
 
     const embeds = () => {
       const reminder = reminders.find((rem) => rem._id.toHexString() === state.selected)!;
-      const timestamp = moment(raidWeekEndTime).subtract(reminder.duration, 'milliseconds').toDate();
+      const timestamp = moment(raidWeekEndTime)
+        .subtract(reminder.duration, 'milliseconds')
+        .toDate();
       const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
       embed.addFields([
         {
@@ -429,7 +564,9 @@ export default class RemindersDeleteCommand extends Command {
       if (reminder.roles.length === 4) {
         embed.addFields([{ name: 'Roles', value: 'Any' }]);
       } else {
-        embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => PLAYER_ROLES_MAP[role]).join(', ') }]);
+        embed.addFields([
+          { name: 'Roles', value: reminder.roles.map((role) => PLAYER_ROLES_MAP[role]).join(', ') }
+        ]);
       }
 
       if (reminder.minThreshold) {
@@ -442,13 +579,16 @@ export default class RemindersDeleteCommand extends Command {
         }
       }
 
-      embed.addFields([{ name: 'Members', value: reminder.allMembers ? 'All Members' : 'Only Participants' }]);
+      embed.addFields([
+        { name: 'Members', value: reminder.allMembers ? 'All Members' : 'Only Participants' }
+      ]);
 
       const clanNames = clans
         .filter((clan) => reminder.clans.includes(clan.tag))
         .map((clan) => escapeMarkdown(`${clan.name} (${clan.tag})`));
 
-      if (clanNames.length) embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) }]);
+      if (clanNames.length)
+        embed.addFields([{ name: 'Clans', value: clanNames.join(', ').slice(0, 1024) }]);
       else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').slice(0, 1024) }]);
 
       embed.addFields([{ name: 'Message', value: reminder.message.slice(0, 1024) }]);
@@ -460,8 +600,12 @@ export default class RemindersDeleteCommand extends Command {
       content: '**Manage Capital Raid Reminders**',
       components: options(false, true, true)
     });
-    const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-      filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+    const collector = msg.createMessageComponentCollector<
+      ComponentType.Button | ComponentType.StringSelect
+    >({
+      filter: (action) =>
+        Object.values(customIds).includes(action.customId) &&
+        action.user.id === interaction.user.id,
       time: 5 * 60 * 1000
     });
 
@@ -476,7 +620,9 @@ export default class RemindersDeleteCommand extends Command {
         await action.update({
           embeds: rems.length ? [embeds()] : [],
           components: rems.length ? options(false, true, false) : [],
-          content: rems.length ? '**Manage Capital Raid Reminders**' : "**You don't have any more reminders!**"
+          content: rems.length
+            ? '**Manage Capital Raid Reminders**'
+            : "**You don't have any more reminders!**"
         });
       }
 
@@ -484,7 +630,9 @@ export default class RemindersDeleteCommand extends Command {
         await action.deferUpdate();
         state.reminders.delete(state.selected!);
 
-        await this.client.db.collection<RaidRemindersEntity>(Collections.RAID_REMINDERS).deleteOne({ _id: new ObjectId(state.selected!) });
+        await this.client.db
+          .collection<RaidRemindersEntity>(Collections.RAID_REMINDERS)
+          .deleteOne({ _id: new ObjectId(state.selected!) });
         await this.client.db
           .collection<RaidSchedulersEntity>(Collections.RAID_SCHEDULERS)
           .deleteMany({ reminderId: new ObjectId(state.selected!) });
@@ -493,7 +641,9 @@ export default class RemindersDeleteCommand extends Command {
         await action.editReply({
           embeds: [],
           components: rems.length ? options(false, true, true) : [],
-          content: rems.length ? '**Manage Capital Raid Reminders**' : "**You don't have any more reminders!**"
+          content: rems.length
+            ? '**Manage Capital Raid Reminders**'
+            : "**You don't have any more reminders!**"
         });
       }
     });
@@ -502,7 +652,10 @@ export default class RemindersDeleteCommand extends Command {
       for (const id of Object.values(customIds)) {
         this.client.components.delete(id);
       }
-      if (!/delete/i.test(reason)) await interaction.editReply({ components: state.reminders.size ? options(true, true, true) : [] });
+      if (!/delete/i.test(reason))
+        await interaction.editReply({
+          components: state.reminders.size ? options(true, true, true) : []
+        });
     });
   }
 }

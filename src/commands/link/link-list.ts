@@ -53,7 +53,10 @@ export default class LinkListCommand extends Command {
   ) {
     const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
     if (!clan) return;
-    if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
+    if (!clan.members)
+      return interaction.editReply(
+        this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name })
+      );
 
     if (args.links) {
       if (!this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE)) {
@@ -63,7 +66,10 @@ export default class LinkListCommand extends Command {
         });
       }
 
-      const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+      const token = this.client.util.createToken({
+        userId: interaction.user.id,
+        guildId: interaction.guild.id
+      });
       const linkRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setURL(
@@ -76,25 +82,42 @@ export default class LinkListCommand extends Command {
       this.client.storage.updateClanLinks(interaction.guildId);
 
       return interaction.followUp({
-        content: [`**Click the button below to manage Discord links on our Dashboard.**`].join('\n'),
+        content: [`**Click the button below to manage Discord links on our Dashboard.**`].join(
+          '\n'
+        ),
         flags: MessageFlags.Ephemeral,
         components: [linkRow]
       });
     }
 
     const users = await this.client.resolver.getLinkedUsersMap(clan.memberList);
-    const members: { name: string; tag: string; userId: string; verified: boolean; displayName: string }[] = [];
+    const members: {
+      name: string;
+      tag: string;
+      userId: string;
+      verified: boolean;
+      displayName: string;
+    }[] = [];
 
     for (const mem of clan.memberList) {
       const user = users[mem.tag];
-      if (user) members.push({ tag: mem.tag, userId: user.userId, name: mem.name, verified: user.verified, displayName: user.displayName });
+      if (user)
+        members.push({
+          tag: mem.tag,
+          userId: user.userId,
+          name: mem.name,
+          verified: user.verified,
+          displayName: user.displayName
+        });
     }
 
     const guildMembers = await this.client.util.getGuildMembers(interaction);
 
     const clanMembers = clan.memberList.map((member) => {
       const link = members.find((mem) => mem.tag === member.tag);
-      const username = link ? (guildMembers.get(link.userId)?.displayName || link.displayName)?.slice(0, 14) : member.tag;
+      const username = link
+        ? (guildMembers.get(link.userId)?.displayName || link.displayName)?.slice(0, 14)
+        : member.tag;
 
       return {
         name: padStart(escapeBackTick(member.name), 15),
@@ -102,7 +125,10 @@ export default class LinkListCommand extends Command {
         tag: padStart(member.tag, 14),
         _tag: member.tag,
         isVerified: Boolean(link?.verified),
-        username: padStart(args.sort_by === SortingKey.TAG ? member.tag : (escapeBackTick(username) ?? member.tag), 14),
+        username: padStart(
+          args.sort_by === SortingKey.TAG ? member.tag : (escapeBackTick(username) ?? member.tag),
+          14
+        ),
         _username: username || '',
         townHallLevel: member.townHallLevel,
         _townHallLevel: member.townHallLevel,
@@ -150,9 +176,25 @@ export default class LinkListCommand extends Command {
     if (args.sort_by) embed.setFooter({ text: `Sorted by ${title(args.sort_by)}` });
 
     const row = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh))
-      .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setEmoji(EMOJIS.SORTING).setCustomId(customIds.sort))
-      .addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setEmoji('🔗').setLabel('Manage').setCustomId(customIds.manage));
+      .addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji(EMOJIS.REFRESH)
+          .setCustomId(customIds.refresh)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji(EMOJIS.SORTING)
+          .setCustomId(customIds.sort)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Primary)
+          .setEmoji('🔗')
+          .setLabel('Manage')
+          .setCustomId(customIds.manage)
+      );
 
     const menu = new StringSelectMenuBuilder()
       .setPlaceholder('Select an option!')
@@ -199,14 +241,18 @@ export default class LinkListCommand extends Command {
             return `${label} \`\u200e${padStart(townHallLevel, 2)} ${name} ${username} \u200f\``;
           })
           .join('\n'),
-        playersNotInServerList.length ? `\n**Players not in the Server: ${playersNotInServerList.length}**` : '',
+        playersNotInServerList.length
+          ? `\n**Players not in the Server: ${playersNotInServerList.length}**`
+          : '',
         playersNotInServerList
           .map(({ name, username, isVerified, townHallLevel }) => {
             const label = isVerified ? EMOJIS.VERIFIED : EMOJIS.OK;
             return `${label} \`\u200e${padStart(townHallLevel, 2)} ${name} ${username} \u200f\``;
           })
           .join('\n'),
-        playersNotLinkedList.length ? `\n**Players not Linked: ${playersNotLinkedList.length}**` : '',
+        playersNotLinkedList.length
+          ? `\n**Players not Linked: ${playersNotLinkedList.length}**`
+          : '',
         playersNotLinkedList
           .map(({ name, username, townHallLevel }) => {
             const label = EMOJIS.WRONG;

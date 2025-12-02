@@ -1,5 +1,11 @@
 import { UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_MAP } from '@app/constants';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder
+} from 'discord.js';
 import { group, parallel } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/emojis.js';
@@ -23,7 +29,10 @@ export default class SummaryCWLStatus extends Command {
     return new Date().toISOString().slice(0, 7);
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; season?: string }
+  ) {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
@@ -79,7 +88,10 @@ export default class SummaryCWLStatus extends Command {
 
     const customId = this.createId({ cmd: this.id });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customId).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Primary)
+      new ButtonBuilder()
+        .setCustomId(customId)
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Primary)
     );
 
     return interaction.editReply({ embeds: [embed], components: [row] });

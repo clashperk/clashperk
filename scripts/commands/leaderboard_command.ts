@@ -17,7 +17,9 @@ export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'location',
           description: command.leaderboard.options.location.description,
-          description_localizations: translation('command.leaderboard.options.location.description'),
+          description_localizations: translation(
+            'command.leaderboard.options.location.description'
+          ),
           type: ApplicationCommandOptionType.String,
           autocomplete: true
         },
@@ -39,7 +41,9 @@ export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'location',
           description: command.leaderboard.options.location.description,
-          description_localizations: translation('command.leaderboard.options.location.description'),
+          description_localizations: translation(
+            'command.leaderboard.options.location.description'
+          ),
           type: ApplicationCommandOptionType.String,
           autocomplete: true
         },
@@ -61,7 +65,9 @@ export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'location',
           description: command.leaderboard.options.location.description,
-          description_localizations: translation('command.leaderboard.options.location.description'),
+          description_localizations: translation(
+            'command.leaderboard.options.location.description'
+          ),
           type: ApplicationCommandOptionType.String,
           autocomplete: true
         },

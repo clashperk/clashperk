@@ -39,7 +39,9 @@ export class ClanGamesLog extends RootLog {
 
   public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
     if (cache.message && new Date().getDate() === CLAN_GAMES_STARTING_DATE) {
-      const messageDate = moment(Number(SnowflakeUtil.deconstruct(cache.message).timestamp)).startOf('month');
+      const messageDate = moment(
+        Number(SnowflakeUtil.deconstruct(cache.message).timestamp)
+      ).startOf('month');
       const currentDate = moment().startOf('month');
 
       if (moment(messageDate).isBefore(moment(currentDate), 'month')) {
@@ -72,13 +74,23 @@ export class ClanGamesLog extends RootLog {
     const row = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(
         new ButtonBuilder()
-          .setCustomId(JSON.stringify({ cmd: 'clan-games', max: false, tag, season: this.seasonId }))
+          .setCustomId(
+            JSON.stringify({ cmd: 'clan-games', max: false, tag, season: this.seasonId })
+          )
           .setEmoji(EMOJIS.REFRESH)
           .setStyle(ButtonStyle.Secondary)
       )
       .addComponents(
         new ButtonBuilder()
-          .setCustomId(JSON.stringify({ cmd: 'clan-games', max: true, filter: false, tag, season: this.seasonId }))
+          .setCustomId(
+            JSON.stringify({
+              cmd: 'clan-games',
+              max: true,
+              filter: false,
+              tag,
+              season: this.seasonId
+            })
+          )
           .setLabel('Maximum Points')
           .setStyle(ButtonStyle.Primary)
       );
@@ -94,7 +106,9 @@ export class ClanGamesLog extends RootLog {
     try {
       return await super.sendMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanGamesLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: ClanGamesLog.name
+      });
       return null;
     }
   }
@@ -103,13 +117,19 @@ export class ClanGamesLog extends RootLog {
     try {
       return await super.editMessage(cache, webhook, payload);
     } catch (error) {
-      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, { label: ClanGamesLog.name });
+      this.client.logger.error(`${error.toString()} {${cache._id.toString()}}`, {
+        label: ClanGamesLog.name
+      });
       return null;
     }
   }
 
   private embed(cache: Cache, { clan, ...data }: Feed) {
-    return clanGamesEmbedMaker(clan, { members: data.members, seasonId: this.seasonId, color: cache.color });
+    return clanGamesEmbedMaker(clan, {
+      members: data.members,
+      seasonId: this.seasonId,
+      color: cache.color
+    });
   }
 
   private didStart() {

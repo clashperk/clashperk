@@ -1,6 +1,8 @@
 export const common = {
-  no_clans_found: 'No clans were found on this server for the specified input! \nUse {{command}} command to link a clan.',
-  no_clans_linked: 'No clans are linked to this server. Why not link some? \nUse {{command}} command to link a clan.',
+  no_clans_found:
+    'No clans were found on this server for the specified input! \nUse {{command}} command to link a clan.',
+  no_clans_linked:
+    'No clans are linked to this server. Why not link some? \nUse {{command}} command to link a clan.',
   clan_verification:
     'We need to ensure that you are a leader or co-leader of this clan. Please verify your player account with the API token.\nUse the {{command}} command to verify your player account. The API token is available in the Game settings.',
   no_option: 'Something went wrong while executing this command. (option not found)',
@@ -19,13 +21,15 @@ export const common = {
     'You must provide a player tag to execute this command!, \nAlternatively, you can link some accounts to your profile using the {{command}} command.',
   clan_not_linked: 'No clan is linked to {{user}}. \nUse {{command}} to link a clan.',
   player_not_linked: 'No player is linked to {{user}}. Use {{command}} command to link a player.',
-  guild_unauthorized: 'This server is not authorized for {{clan}}. Use {{command}} command to link a clan.',
+  guild_unauthorized:
+    'This server is not authorized for {{clan}}. Use {{command}} command to link a clan.',
   status_code: {
     '400': 'An unknown error occurred while handling the request (400)',
     '403': 'An unknown error occurred while handling the request (403)',
     '404': 'No matches were found for the specified tag.',
     '429': 'An unknown error occurred while handling the request (429)',
-    '500': 'An unknown error occurred while handling the request (typically happens during the season reset in the game)',
+    '500':
+      'An unknown error occurred while handling the request (typically happens during the season reset in the game)',
     '503': 'Service is temporarily unavailable because of the maintenance break in the game.',
     '504': 'An unknown error occurred while handling the request (504)'
   },
@@ -786,7 +790,8 @@ export const command = {
       prompt: 'What would you like to link? A Player or a Clan?',
       success: 'Successfully linked {{target}} to {{user}}.',
       link_exists: '{{player}} is already linked.',
-      already_linked: '{{player}} is already linked to another user. If you own this account, please use the {{command}} command.',
+      already_linked:
+        '{{player}} is already linked to another user. If you own this account, please use the {{command}} command.',
       max_limit: 'The maximum account limit has been reached. (25 accounts/user)'
     },
     delete: {
@@ -824,7 +829,8 @@ export const command = {
     description: 'Set your timezone offset for /activity command.',
     options: {
       location: {
-        description: 'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)'
+        description:
+          'Search timezone by city or country. (e.g. London, New York, Singapore, India, Sydney)'
       }
     },
     set: 'Please set your timezone with the `/timezone` command. It enables you to view the graphs in your timezone.',
@@ -878,7 +884,8 @@ export const command = {
           description: 'Remaining duration to mention members (e.g. 6h, 12h, 1d, 2d)'
         },
         exclude_participants: {
-          description: 'Whether to exclude participant list and only include the message (clan wars only)'
+          description:
+            'Whether to exclude participant list and only include the message (clan wars only)'
         },
         channel: {
           description: 'Reminder channel for the notification.'
@@ -887,7 +894,8 @@ export const command = {
       max_limit: 'You can add a maximum of {{maxReminders}} reminders.',
       invalid_duration_format: 'The duration must be in a valid format. e.g. 2h, 2.5h, 30m',
       duration_limit: 'The duration must be greater than 15 minutes and less than 48 hours.',
-      duration_order: 'Duration must be a multiple of 15 minutes. e.g. 15m, 30m, 45m, 1h, 1.25h, 1.5h, 1.75h',
+      duration_order:
+        'Duration must be a multiple of 15 minutes. e.g. 15m, 30m, 45m, 1h, 1.25h, 1.5h, 1.75h',
       too_many_clans:
         "The clan selection menu is not available for more than 25 clans. {{clans}} clans were selected automatically!\nTo create a reminder for specific clans, pass clan tags or aliases through the 'clans' option while executing the command.",
       success: 'Successfully saved!'
@@ -1053,7 +1061,8 @@ export const command = {
   },
   members: {
     description: 'Get a clan member list with heroes, trophies, war preferences and much more.',
-    description_long: 'List clan members sorted by heroes, trophies, war preferences, discord links, clan roles, player tags, attacks, etc.'
+    description_long:
+      'List clan members sorted by heroes, trophies, war preferences, discord links, clan roles, player tags, attacks, etc.'
   },
   player: {
     description: 'Player summary and overview.',
@@ -1161,7 +1170,8 @@ export const command = {
           description: 'Channel to send updates to (defaults to the current channel)'
         },
         color: {
-          description: 'Hex color code (only for donation log, clan games, last seen and clan embed)'
+          description:
+            'Hex color code (only for donation log, clan games, last seen and clan embed)'
         },
         role: {
           description: 'Role for the flag notification (only for clan feed)'
@@ -1302,7 +1312,8 @@ export const command = {
           description: 'Clan role for everyone in the clan.'
         },
         only_verified: {
-          description: 'Roles will be given to the verified players only. (API token verification is required)'
+          description:
+            'Roles will be given to the verified players only. (API token verification is required)'
         }
       }
     },
@@ -1373,7 +1384,8 @@ export const command = {
     },
     disable: {
       description: 'Disable automatic clan roles.',
-      description_long: 'Disable automatic role management for clan roles, town hall levels, or leagues.',
+      description_long:
+        'Disable automatic role management for clan roles, town hall levels, or leagues.',
       options: {
         type: {
           description: 'Type of roles to disable.'
@@ -1386,7 +1398,8 @@ export const command = {
     },
     refresh: {
       description: 'Refresh roles manually.',
-      description_long: 'Refresh roles manually. (Use this command if the roles are not updated automatically)',
+      description_long:
+        'Refresh roles manually. (Use this command if the roles are not updated automatically)',
       options: {
         user_or_role: {
           description: 'Refresh an individual user or a role.'

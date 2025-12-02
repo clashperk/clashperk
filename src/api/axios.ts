@@ -20,7 +20,9 @@ httpClient.instance.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ message: string }>) => {
     const client = container.resolve(Client);
-    client.logger.error(`${JSON.stringify(error.response?.data || error.code, null, 0)}`, { label: 'AXIOS' });
+    client.logger.error(`${JSON.stringify(error.response?.data || error.code, null, 0)}`, {
+      label: 'AXIOS'
+    });
 
     setContext('http_call_errored', {
       response: error.response?.data || {},

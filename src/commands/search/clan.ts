@@ -46,7 +46,10 @@ export default class ClanCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction, args: { tag?: string; user?: User; by_player_tag?: string; with_options?: boolean }) {
+  public async exec(
+    interaction: CommandInteraction,
+    args: { tag?: string; user?: User; by_player_tag?: string; with_options?: boolean }
+  ) {
     if (args.by_player_tag && !args.tag) {
       const { res, body: player } = await this.client.coc.getPlayer(args.by_player_tag);
       if (res.ok && player.clan) args.tag = player.clan.tag;
@@ -74,7 +77,12 @@ export default class ClanCommand extends Command {
           .setStyle(ButtonStyle.Secondary)
           .setCustomId(JSON.stringify({ cmd: 'clan', tag: clan.tag }))
       )
-      .addComponents(new ButtonBuilder().setLabel('Clan Badge').setStyle(ButtonStyle.Link).setURL(clan.badgeUrls.large));
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('Clan Badge')
+          .setStyle(ButtonStyle.Link)
+          .setURL(clan.badgeUrls.large)
+      );
 
     const menu = new StringSelectMenuBuilder()
       .setPlaceholder('Select an option!')
@@ -88,9 +96,16 @@ export default class ClanCommand extends Command {
         }))
       );
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu);
-    const clanRow = await getClanSwitchingMenu(interaction, this.createId({ cmd: this.id, string_key: 'tag' }), clan.tag);
+    const clanRow = await getClanSwitchingMenu(
+      interaction,
+      this.createId({ cmd: this.id, string_key: 'tag' }),
+      clan.tag
+    );
 
-    return interaction.editReply({ embeds: [embed], components: clanRow ? [row, menuRow, clanRow] : [row, menuRow] });
+    return interaction.editReply({
+      embeds: [embed],
+      components: clanRow ? [row, menuRow, clanRow] : [row, menuRow]
+    });
   }
 
   private async embed(guildId: string | null, clan: APIClan) {
@@ -100,7 +115,9 @@ export default class ClanCommand extends Command {
       .setColor(this.client.embed(guildId))
       .setThumbnail(clan.badgeUrls.medium);
 
-    const capitalHall = clan.clanCapital.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
+    const capitalHall = clan.clanCapital.capitalHallLevel
+      ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**`
+      : '';
 
     embed.setDescription(
       [
@@ -141,7 +158,11 @@ export default class ClanCommand extends Command {
       }
     ]);
 
-    const [action, season, wars] = await Promise.all([this.getActivity(clan), this.getSeason(clan), this.getWars(clan.tag)]);
+    const [action, season, wars] = await Promise.all([
+      this.getActivity(clan),
+      this.getSeason(clan),
+      this.getWars(clan.tag)
+    ]);
     const fields = [];
     if (action) {
       fields.push(
@@ -165,9 +186,17 @@ export default class ClanCommand extends Command {
     if (wars.length) {
       const won = wars.filter((war) => war.result).length;
       const lost = wars.filter((war) => !war.result).length;
-      fields.push(...['**Total Wars**', `${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`]);
+      fields.push(
+        ...[
+          '**Total Wars**',
+          `${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`
+        ]
+      );
     }
-    if (fields.length) embed.addFields([{ name: `**Season Stats (${Season.ID})**`, value: [...fields, '\u200e'].join('\n') }]);
+    if (fields.length)
+      embed.addFields([
+        { name: `**Season Stats (${Season.ID})**`, value: [...fields, '\u200e'].join('\n') }
+      ]);
 
     embed.addFields([
       {
@@ -177,7 +206,9 @@ export default class ClanCommand extends Command {
           `${clan.isWarLogPublic ? '🔓 Public' : '🔒 Private'}`,
           '**War Performance**',
           `${EMOJIS.OK} ${clan.warWins} Won ${
-            clan.isWarLogPublic ? `${EMOJIS.WRONG} ${clan.warLosses!} Lost ${EMOJIS.EMPTY} ${clan.warTies!} Tied` : ''
+            clan.isWarLogPublic
+              ? `${EMOJIS.WRONG} ${clan.warLosses!} Lost ${EMOJIS.EMPTY} ${clan.warTies!} Tied`
+              : ''
           }`,
           '**Win Streak**',
           `${'🏅'} ${clan.warWinStreak}`,
@@ -206,7 +237,9 @@ export default class ClanCommand extends Command {
         name: `**Town Halls**`,
         value: cluster(townHalls, 3)
           .map((townHalls) => {
-            return townHalls.map((th) => `${TOWN_HALLS[th.level]}${ORANGE_NUMBERS[th.total]}\u200b`).join(' ');
+            return townHalls
+              .map((th) => `${TOWN_HALLS[th.level]}${ORANGE_NUMBERS[th.total]}\u200b`)
+              .join(' ');
           })
           .join('\n')
       });
@@ -230,7 +263,9 @@ export default class ClanCommand extends Command {
     return null;
   }
 
-  private async getActivity(clan: APIClan): Promise<{ avgDailyActivity: number; avgDailyOnline: number } | null> {
+  private async getActivity(
+    clan: APIClan
+  ): Promise<{ avgDailyActivity: number; avgDailyOnline: number } | null> {
     const rows = await this.client.clickhouse
       .query({
         query: `
@@ -253,7 +288,9 @@ export default class ClanCommand extends Command {
           clanTag: clan.tag
         }
       })
-      .then((res) => res.json<{ avg_daily_activity_count: string; avg_daily_active_members: string }>());
+      .then((res) =>
+        res.json<{ avg_daily_activity_count: string; avg_daily_active_members: string }>()
+      );
 
     return {
       avgDailyOnline: Number(rows.data[0]?.avg_daily_active_members ?? 0),
@@ -264,7 +301,12 @@ export default class ClanCommand extends Command {
   private async getSeason(clan: APIClan) {
     const [result] = await this.client.db
       .collection(Collections.PLAYER_SEASONS)
-      .aggregate<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number }>([
+      .aggregate<{
+        donations: number;
+        donationsReceived: number;
+        attackWins: number;
+        defenseWins: number;
+      }>([
         {
           $match: {
             __clans: clan.tag,
@@ -344,11 +386,15 @@ export default class ClanCommand extends Command {
                     then: false
                   },
                   {
-                    case: { $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
+                    case: {
+                      $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage']
+                    },
                     then: true
                   },
                   {
-                    case: { $lt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
+                    case: {
+                      $lt: ['$clan.destructionPercentage', '$opponent.destructionPercentage']
+                    },
                     then: false
                   }
                 ],

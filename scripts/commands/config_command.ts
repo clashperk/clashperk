@@ -17,19 +17,25 @@ export const CONFIG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
     {
       name: 'roster_manager_role',
       description: command.config.options.roster_manager_role.description,
-      description_localizations: translation('command.config.options.roster_manager_role.description'),
+      description_localizations: translation(
+        'command.config.options.roster_manager_role.description'
+      ),
       type: ApplicationCommandOptionType.Role
     },
     {
       name: 'flags_manager_role',
       description: command.config.options.flags_manager_role.description,
-      description_localizations: translation('command.config.options.flags_manager_role.description'),
+      description_localizations: translation(
+        'command.config.options.flags_manager_role.description'
+      ),
       type: ApplicationCommandOptionType.Role
     },
     {
       name: 'links_manager_role',
       description: command.config.options.links_manager_role.description,
-      description_localizations: translation('command.config.options.links_manager_role.description'),
+      description_localizations: translation(
+        'command.config.options.links_manager_role.description'
+      ),
       type: ApplicationCommandOptionType.Role
     },
     {

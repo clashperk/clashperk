@@ -69,7 +69,11 @@ export default class WarCommand extends Command {
     if (args.attacks && args.war_id) {
       const collection = this.client.db.collection(Collections.CLAN_WARS);
       const body = await collection.findOne({ id: args.war_id });
-      if (!body) return interaction.followUp({ content: 'No war found with that ID.', flags: MessageFlags.Ephemeral });
+      if (!body)
+        return interaction.followUp({
+          content: 'No war found with that ID.',
+          flags: MessageFlags.Ephemeral
+        });
 
       const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
       const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
@@ -81,19 +85,30 @@ export default class WarCommand extends Command {
     if ((args.open_bases || args.openBases) && args.war_id) {
       const collection = this.client.db.collection(Collections.CLAN_WARS);
       const body = await collection.findOne({ id: args.war_id });
-      if (!body) return interaction.followUp({ content: 'No war found with that ID.', flags: MessageFlags.Ephemeral });
+      if (!body)
+        return interaction.followUp({
+          content: 'No war found with that ID.',
+          flags: MessageFlags.Ephemeral
+        });
 
       const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
       const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
 
-      const embed = await this.openBases(interaction, { ...body, clan, opponent } as unknown as APIClanWar);
+      const embed = await this.openBases(interaction, {
+        ...body,
+        clan,
+        opponent
+      } as unknown as APIClanWar);
       return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
     }
 
     let body: APIClanWar | null = null;
     if (args.war_id) {
       const war = await this.getWar(args.war_id, clan.tag);
-      if (!war) return interaction.editReply(this.i18n('command.war.no_war_id', { lng: interaction.locale }));
+      if (!war)
+        return interaction.editReply(
+          this.i18n('command.war.no_war_id', { lng: interaction.locale })
+        );
       body = war;
     }
 
@@ -104,7 +119,9 @@ export default class WarCommand extends Command {
     if (!clan.isWarLogPublic && !interaction.isMessageComponent()) {
       const { res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
-        return this.handler.exec(interaction, this.handler.getCommand('cwl-round')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-round')!, {
+          tag: clan.tag
+        });
       }
       embed.setDescription('Private War Log');
       return interaction.followUp({ embeds: [embed] });
@@ -119,7 +136,9 @@ export default class WarCommand extends Command {
     if (body.state === 'notInWar') {
       const { res } = await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (res.ok) {
-        return this.handler.exec(interaction, this.handler.getCommand('cwl-round')!, { tag: clan.tag });
+        return this.handler.exec(interaction, this.handler.getCommand('cwl-round')!, {
+          tag: clan.tag
+        });
       }
       embed.setDescription(this.i18n('command.war.not_in_war', { lng: interaction.locale }));
       return interaction.followUp({ embeds: [embed] });
@@ -138,7 +157,11 @@ export default class WarCommand extends Command {
       const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
       const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
 
-      const embed = this.groupAttacks(interaction, { ...body, clan, opponent } as unknown as APIClanWar);
+      const embed = this.groupAttacks(interaction, {
+        ...body,
+        clan,
+        opponent
+      } as unknown as APIClanWar);
       const components = this.getComponents({ body, selected: args.selected });
       return interaction.editReply({ embeds: [embed], components });
     }
@@ -156,13 +179,21 @@ export default class WarCommand extends Command {
       const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
       const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
 
-      const embed = await this.openBases(interaction, { ...body, clan, opponent } as unknown as APIClanWar);
+      const embed = await this.openBases(interaction, {
+        ...body,
+        clan,
+        opponent
+      } as unknown as APIClanWar);
       const components = this.getComponents({ body, selected: args.selected });
       return interaction.editReply({ embeds: [embed], components });
     }
 
     if (args.export) {
-      const components = this.getComponents({ body, selected: args.selected, exportDisabled: true });
+      const components = this.getComponents({
+        body,
+        selected: args.selected,
+        exportDisabled: true
+      });
       await interaction.editReply({ components });
       return this.export(interaction, body);
     }
@@ -182,7 +213,10 @@ export default class WarCommand extends Command {
             },
             { sort: { _id: -1 } }
           )
-        : await collection.findOne({ id: Number(id), $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }] });
+        : await collection.findOne({
+            id: Number(id),
+            $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }]
+          });
 
     if (!data) return null;
 
@@ -196,9 +230,10 @@ export default class WarCommand extends Command {
     interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,
     body: APIClanWar & { id?: number }
   ) {
-    const embed = new EmbedBuilder()
-      .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
+    const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setAuthor({
+      name: `\u200e${body.clan.name} (${body.clan.tag})`,
+      iconURL: body.clan.badgeUrls.medium
+    });
 
     if (body.state === 'preparation') {
       const startTimestamp = new Date(moment(body.startTime).toDate());
@@ -257,11 +292,16 @@ export default class WarCommand extends Command {
     embed.addFields([
       {
         name: 'Rosters',
-        value: [`\u200e${escapeMarkdown(body.clan.name)}`, `${this.count(body.clan.members)}`].join('\n')
+        value: [`\u200e${escapeMarkdown(body.clan.name)}`, `${this.count(body.clan.members)}`].join(
+          '\n'
+        )
       },
       {
         name: '\u200b',
-        value: [`\u200e${escapeMarkdown(body.opponent.name)}`, `${this.count(body.opponent.members)}`].join('\n')
+        value: [
+          `\u200e${escapeMarkdown(body.opponent.name)}`,
+          `${this.count(body.opponent.members)}`
+        ].join('\n')
       }
     ]);
 
@@ -295,7 +335,10 @@ export default class WarCommand extends Command {
     };
 
     const primaryRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setCustomId(customIds.refresh).setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setCustomId(customIds.refresh)
+        .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setEmoji(EMOJIS.EXPORT)
         .setStyle(ButtonStyle.Secondary)
@@ -378,11 +421,16 @@ export default class WarCommand extends Command {
       .sort((a, b) => b.level - a.level);
 
     return cluster(townHalls, 5)
-      .map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]}${WHITE_NUMBERS[th.total]}`).join(' '))
+      .map((chunks) =>
+        chunks.map((th) => `${TOWN_HALLS[th.level]}${WHITE_NUMBERS[th.total]}`).join(' ')
+      )
       .join('\n');
   }
 
-  private async export(interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>, round: APIClanWar) {
+  private async export(
+    interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,
+    round: APIClanWar
+  ) {
     const data = this.flatHits(round);
 
     const sheets: CreateGoogleSheet[] = [
@@ -456,7 +504,9 @@ export default class WarCommand extends Command {
         const previousBestAttack = this.client.coc.getPreviousBestAttack(__attacks, atk);
         return {
           ...atk,
-          trueStars: previousBestAttack ? Math.max(0, atk.stars - previousBestAttack.stars) : atk.stars
+          trueStars: previousBestAttack
+            ? Math.max(0, atk.stars - previousBestAttack.stars)
+            : atk.stars
         };
       });
 
@@ -496,10 +546,14 @@ export default class WarCommand extends Command {
       }, []);
   }
 
-  private attacks(interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>, body: APIClanWar) {
-    const embed = new EmbedBuilder()
-      .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
+  private attacks(
+    interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,
+    body: APIClanWar
+  ) {
+    const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setAuthor({
+      name: `\u200e${body.clan.name} (${body.clan.tag})`,
+      iconURL: body.clan.badgeUrls.medium
+    });
 
     embed.setDescription(
       [
@@ -532,10 +586,14 @@ export default class WarCommand extends Command {
     return embed;
   }
 
-  private groupAttacks(interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>, body: APIClanWar) {
-    const embed = new EmbedBuilder()
-      .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
+  private groupAttacks(
+    interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,
+    body: APIClanWar
+  ) {
+    const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setAuthor({
+      name: `\u200e${body.clan.name} (${body.clan.tag})`,
+      iconURL: body.clan.badgeUrls.medium
+    });
 
     const attacks = [];
 
@@ -546,17 +604,32 @@ export default class WarCommand extends Command {
       }, 0);
       const attacksPerMember = body.attacksPerMember || 2;
       const attackCount = member.attacks?.length || 0;
-      attacks.push({ tag: member.tag, name: member.name, stars, townHallLevel: member.townhallLevel, attackCount, attacksPerMember });
+      attacks.push({
+        tag: member.tag,
+        name: member.name,
+        stars,
+        townHallLevel: member.townhallLevel,
+        attackCount,
+        attacksPerMember
+      });
     }
 
     const groups = Object.entries(
-      attacks.reduce<Record<string, { name: string; tag: string; townHallLevel: number; attacksPerMember: number; attackCount: number }[]>>(
-        (record, mem) => {
-          record[mem.stars] = (record[mem.stars] || []).concat(mem);
-          return record;
-        },
-        {}
-      )
+      attacks.reduce<
+        Record<
+          string,
+          {
+            name: string;
+            tag: string;
+            townHallLevel: number;
+            attacksPerMember: number;
+            attackCount: number;
+          }[]
+        >
+      >((record, mem) => {
+        record[mem.stars] = (record[mem.stars] || []).concat(mem);
+        return record;
+      }, {})
     ).map(([stars, members]) => {
       members.sort((a, b) => b.townHallLevel - a.townHallLevel);
       return {
@@ -596,7 +669,10 @@ export default class WarCommand extends Command {
     return `${ISO}-${[data.clan.tag, data.opponent.tag].sort((a, b) => a.localeCompare(b)).join('-')}`;
   }
 
-  private async openBases(interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>, body: APIClanWar) {
+  private async openBases(
+    interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,
+    body: APIClanWar
+  ) {
     const openBases = body.opponent.members
       .sort((a, b) => a.mapPosition - b.mapPosition)
       .map((member, n) => ({
@@ -604,7 +680,10 @@ export default class WarCommand extends Command {
         mapPosition: n + 1,
         originalMapPosition: member.mapPosition,
         stars: member.bestOpponentAttack?.stars ?? 0,
-        isOpen: body.attacksPerMember === 1 ? !member.bestOpponentAttack : member.bestOpponentAttack?.stars !== 3,
+        isOpen:
+          body.attacksPerMember === 1
+            ? !member.bestOpponentAttack
+            : member.bestOpponentAttack?.stars !== 3,
         destructionPercentage: member.bestOpponentAttack?.destructionPercentage ?? 0
       }))
       .filter((m) => m.isOpen);
@@ -614,9 +693,10 @@ export default class WarCommand extends Command {
       .findOne({ warId: this.createWarId(body), guild: interaction.guildId });
     const caller = callerData?.caller ?? {};
 
-    const embed = new EmbedBuilder()
-      .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
+    const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setAuthor({
+      name: `\u200e${body.clan.name} (${body.clan.tag})`,
+      iconURL: body.clan.badgeUrls.medium
+    });
     embed.setDescription(
       [
         embed.data.description,

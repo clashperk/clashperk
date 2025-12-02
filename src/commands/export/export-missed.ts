@@ -31,7 +31,8 @@ export default class ExportMissed extends Command {
     let limit = Number(args.limit ?? 25);
     limit = Math.min(100, limit);
     const chunks = [];
-    const missed: { [key: string]: { name: string; tag: string; count: number; missed: Date[] } } = {};
+    const missed: { [key: string]: { name: string; tag: string; count: number; missed: Date[] } } =
+      {};
 
     const query = args.season ? { startTime: { $gte: new Date(args.season) } } : {};
     for (const { tag } of clans) {
@@ -97,7 +98,9 @@ export default class ExportMissed extends Command {
           }
 
           if (m.attacks?.length === 2) {
-            mem.stars = m.attacks.map((m: any) => [m.stars, m.destructionPercentage.toFixed(2)]).flat();
+            mem.stars = m.attacks
+              .map((m: any) => [m.stars, m.destructionPercentage.toFixed(2)])
+              .flat();
           }
 
           chunks.push(mem);
@@ -105,7 +108,8 @@ export default class ExportMissed extends Command {
       }
     }
 
-    if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+    if (!chunks.length)
+      return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
     const twoMissed = Object.values(missed).filter((m) => m.count === 2);
     const oneMissed = Object.values(missed).filter((m) => m.count === 1);
@@ -124,7 +128,17 @@ export default class ExportMissed extends Command {
           { name: 'Team Size', width: 100, align: 'RIGHT' },
           { name: 'Missed', width: 100, align: 'RIGHT' }
         ],
-        rows: chunks.map((m) => [m.name, m.tag, m.clan, m.opponent, m.warID, m.timestamp, m.warType, m.teamSize, m.missed])
+        rows: chunks.map((m) => [
+          m.name,
+          m.tag,
+          m.clan,
+          m.opponent,
+          m.warID,
+          m.timestamp,
+          m.warType,
+          m.teamSize,
+          m.missed
+        ])
       },
       {
         title: Util.escapeSheetName(`2 Missed Attacks`),
@@ -137,7 +151,11 @@ export default class ExportMissed extends Command {
           { name: 'Miss #4', width: 160, align: 'LEFT' },
           { name: 'Miss #5', width: 160, align: 'LEFT' }
         ],
-        rows: twoMissed.map((m) => [m.name, m.tag, ...m.missed.map((m) => Util.dateToSerialDate(m)).slice(0, 5)])
+        rows: twoMissed.map((m) => [
+          m.name,
+          m.tag,
+          ...m.missed.map((m) => Util.dateToSerialDate(m)).slice(0, 5)
+        ])
       },
       {
         title: Util.escapeSheetName('1 Missed Attacks'),
@@ -154,7 +172,13 @@ export default class ExportMissed extends Command {
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Missed Attacks]`, sheets);
-    return interaction.editReply({ content: `**Missed Attacks (Last ${limit})**`, components: getExportComponents(spreadsheet) });
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Missed Attacks]`,
+      sheets
+    );
+    return interaction.editReply({
+      content: `**Missed Attacks (Last ${limit})**`,
+      components: getExportComponents(spreadsheet)
+    });
   }
 }

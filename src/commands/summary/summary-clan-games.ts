@@ -37,7 +37,9 @@ export default class SummaryClanGamesCommand extends Command {
       export?: boolean;
     }
   ) {
-    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, { args: args.clans });
+    const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
+      args: args.clans
+    });
     if (!clans) return;
 
     const seasonId = this.getSeasonId(args.season);
@@ -76,7 +78,10 @@ export default class SummaryClanGamesCommand extends Command {
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary).setCustomId(customIds.refresh),
+      new ButtonBuilder()
+        .setEmoji(EMOJIS.REFRESH)
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(customIds.refresh),
       new ButtonBuilder()
         .setLabel(args.clans_only ? 'Players Summary' : 'Clans Summary')
         .setStyle(ButtonStyle.Secondary)
@@ -101,7 +106,11 @@ export default class SummaryClanGamesCommand extends Command {
     );
 
     if (args.export && interaction.isButton()) {
-      await interaction.editReply({ embeds: [embed], components: [...components, row], message: interaction.message.id });
+      await interaction.editReply({
+        embeds: [embed],
+        components: [...components, row],
+        message: interaction.message.id
+      });
       await this.export(interaction, queried?.members ?? []);
     } else {
       await interaction.editReply({ embeds: [embed], components: [...components, row] });
@@ -159,19 +168,33 @@ export default class SummaryClanGamesCommand extends Command {
       seasonId,
       showTime
     }: {
-      members: { name: string; tag: string; points: number; completedAt?: Date; timeTaken?: number }[];
+      members: {
+        name: string;
+        tag: string;
+        points: number;
+        completedAt?: Date;
+        timeTaken?: number;
+      }[];
       maxPoints?: boolean;
       seasonId: string;
       showTime?: boolean;
     }
   ) {
-    const total = members.reduce((prev, mem) => prev + (maxPoints ? mem.points : Math.min(mem.points, this.MAX)), 0);
+    const total = members.reduce(
+      (prev, mem) => prev + (maxPoints ? mem.points : Math.min(mem.points, this.MAX)),
+      0
+    );
     members
       .sort((a, b) => b.points - a.points)
-      .sort((a, b) => clanGamesSortingAlgorithm(a.completedAt?.getTime() ?? 0, b.completedAt?.getTime() ?? 0));
+      .sort((a, b) =>
+        clanGamesSortingAlgorithm(a.completedAt?.getTime() ?? 0, b.completedAt?.getTime() ?? 0)
+      );
 
     const embed = new EmbedBuilder()
-      .setAuthor({ name: `${interaction.guild!.name} Clan Games Scoreboard`, iconURL: interaction.guild!.iconURL()! })
+      .setAuthor({
+        name: `${interaction.guild!.name} Clan Games Scoreboard`,
+        iconURL: interaction.guild!.iconURL()!
+      })
       .setDescription(
         [
           `**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://clashperk.com/faq)**`,
@@ -181,7 +204,9 @@ export default class SummaryClanGamesCommand extends Command {
           members
             .slice(0, 99)
             // TODO: fix timing issues
-            .filter((d) => (showTime ? d.points >= this.MAX && d.timeTaken && d.timeTaken > 0 : true))
+            .filter((d) =>
+              showTime ? d.points >= this.MAX && d.timeTaken && d.timeTaken > 0 : true
+            )
             .map((m, i) => {
               const completionTime = this._formatTime(m.timeTaken).padStart(7, ' ');
               const points = m.points.toString().padStart(5, ' ');

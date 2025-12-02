@@ -24,7 +24,9 @@ export class Autocomplete {
 
   public async commandsAutocomplete(interaction: AutocompleteInteraction, focused: string) {
     const query = interaction.options.getString(focused)?.trim();
-    const commands = this.client.commands.entries().map((cmd) => ({ name: cmd, value: cmd.replace(/^\//, '').replace(/\s+/g, '-') }));
+    const commands = this.client.commands
+      .entries()
+      .map((cmd) => ({ name: cmd, value: cmd.replace(/^\//, '').replace(/\s+/g, '-') }));
 
     if (!query) {
       const choices = commands.slice(0, 25);
@@ -39,16 +41,29 @@ export class Autocomplete {
 
   public async locationAutocomplete(interaction: AutocompleteInteraction, query?: string) {
     if (!query) {
-      return interaction.respond(COUNTRIES.slice(0, 25).map((country) => ({ name: country.name, value: country.countryCode! })));
+      return interaction.respond(
+        COUNTRIES.slice(0, 25).map((country) => ({
+          name: country.name,
+          value: country.countryCode!
+        }))
+      );
     }
 
-    const countries = COUNTRIES.filter((country) => country.name.toLowerCase().includes(query.toLowerCase())).slice(0, 25);
-    if (!countries.length) return interaction.respond([{ name: 'No countries found.', value: '0' }]);
+    const countries = COUNTRIES.filter((country) =>
+      country.name.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 25);
+    if (!countries.length)
+      return interaction.respond([{ name: 'No countries found.', value: '0' }]);
 
-    return interaction.respond(countries.map((country) => ({ name: country.name, value: country.countryCode! })));
+    return interaction.respond(
+      countries.map((country) => ({ name: country.name, value: country.countryCode! }))
+    );
   }
 
-  public async startOrEndDateAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+  public async startOrEndDateAutocomplete(
+    interaction: AutocompleteInteraction<'cached'>,
+    focused: string
+  ) {
     let query = interaction.options.getString(focused)?.trim();
     if (!query) {
       const ids = Util.getSeasonIds().slice(0, 12);
@@ -76,7 +91,10 @@ export class Autocomplete {
     if (args.player) {
       const text = args.player.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       if (this.client.coc.isValidTag(text)) {
-        filter.$or = [{ tag: this.client.coc.fixTag(text) }, { name: { $regex: `.*${text}.*`, $options: 'i' } }];
+        filter.$or = [
+          { tag: this.client.coc.fixTag(text) },
+          { name: { $regex: `.*${text}.*`, $options: 'i' } }
+        ];
       } else {
         filter.name = { $regex: `.*${text}.*`, $options: 'i' };
       }
@@ -87,7 +105,10 @@ export class Autocomplete {
 
     const flags = await cursor.limit(24).toArray();
     const players = unique(flags, (flag) => flag.tag);
-    const choices = players.map((flag) => ({ name: `${flag.name} (${flag.tag})`, value: flag.tag }));
+    const choices = players.map((flag) => ({
+      name: `${flag.name} (${flag.tag})`,
+      value: flag.tag
+    }));
 
     if (subCommand === 'delete') choices.unshift({ name: 'All Flags', value: '*' });
 
@@ -99,7 +120,10 @@ export class Autocomplete {
     return interaction.respond(categories.slice(0, 25));
   }
 
-  public async globalPlayersAutocomplete(interaction: AutocompleteInteraction<'cached'>, args: { player?: string }) {
+  public async globalPlayersAutocomplete(
+    interaction: AutocompleteInteraction<'cached'>,
+    args: { player?: string }
+  ) {
     const clans = await this.client.storage.find(interaction.guildId);
     const query: Filter<PlayersEntity> = {
       'clan.tag': { $in: clans.map((clan) => clan.tag) }
@@ -107,10 +131,15 @@ export class Autocomplete {
 
     if (args.player) {
       const text = args.player.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      query.$or = [{ name: { $regex: `.*${text}.*`, $options: 'i' } }, { tag: { $regex: `.*${text}.*`, $options: 'i' } }];
+      query.$or = [
+        { name: { $regex: `.*${text}.*`, $options: 'i' } },
+        { tag: { $regex: `.*${text}.*`, $options: 'i' } }
+      ];
     }
 
-    const cursor = this.client.db.collection<PlayersEntity>(Collections.PLAYERS).find(query, { projection: { name: 1, tag: 1 } });
+    const cursor = this.client.db
+      .collection<PlayersEntity>(Collections.PLAYERS)
+      .find(query, { projection: { name: 1, tag: 1 } });
     if (!args.player) cursor.sort({ lastSeen: -1 });
     const players = await cursor.limit(24).toArray();
 
@@ -138,7 +167,10 @@ export class Autocomplete {
     ]);
 
     const choices = unique(
-      [...userClans, ...clans].map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` })),
+      [...userClans, ...clans].map((clan) => ({
+        value: clan.tag,
+        name: `${clan.name} (${clan.tag})`
+      })),
       (e) => e.value
     );
 
@@ -146,7 +178,10 @@ export class Autocomplete {
       const categoryIds = sift(clans.map((clan) => clan.categoryId));
       const categories = await this.client.db
         .collection<ClanCategoriesEntity>(Collections.CLAN_CATEGORIES)
-        .find({ guildId: interaction.guildId, _id: { $in: categoryIds } }, { sort: { order: 1 }, limit: 10 })
+        .find(
+          { guildId: interaction.guildId, _id: { $in: categoryIds } },
+          { sort: { order: 1 }, limit: 10 }
+        )
         .toArray();
       if (categories.length) {
         choices.unshift(

@@ -59,7 +59,11 @@ export class ClanWarScheduler {
         const id: string = change.documentKey._id.toHexString();
         if (this.queued.has(id)) this.clear(id);
         const schedule = change.fullDocument;
-        if (schedule && !schedule.triggered && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
+        if (
+          schedule &&
+          !schedule.triggered &&
+          schedule.timestamp.getTime() < Date.now() + this.refreshRate
+        ) {
           this.queue(schedule);
         }
       }
@@ -157,7 +161,15 @@ export class ClanWarScheduler {
     return Math.abs(ms) <= 60 * 1000;
   }
 
-  private async randomUsers({ limit, userIds, clanTag }: { limit: number; userIds: string[]; clanTag: string }) {
+  private async randomUsers({
+    limit,
+    userIds,
+    clanTag
+  }: {
+    limit: number;
+    userIds: string[];
+    clanTag: string;
+  }) {
     if (!limit) return [];
 
     const redisKey = `RANDOM_SELECTION:${clanTag}`;
@@ -180,7 +192,14 @@ export class ClanWarScheduler {
   public async getReminderText(
     reminder: Pick<
       ClanWarRemindersEntity,
-      'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip' | 'linkedOnly' | 'randomLimit'
+      | 'roles'
+      | 'remaining'
+      | 'townHalls'
+      | 'guild'
+      | 'message'
+      | 'smartSkip'
+      | 'linkedOnly'
+      | 'randomLimit'
     >,
     schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
     data: APIClanWar
@@ -270,7 +289,10 @@ export class ClanWarScheduler {
         members
           .map((mem, i) => {
             const ping = i === 0 && mention !== '0x' ? ` ${mention}` : '';
-            const hits = data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
+            const hits =
+              data.state === 'preparation' || attacksPerMember === 1
+                ? ''
+                : ` (${mem.attacks}/${attacksPerMember})`;
             const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
             return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
           })
@@ -287,7 +309,10 @@ export class ClanWarScheduler {
   }
 
   private async warEndReminderText(
-    reminder: Pick<ClanWarRemindersEntity, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'duration'>,
+    reminder: Pick<
+      ClanWarRemindersEntity,
+      'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'duration'
+    >,
     schedule: Pick<ClanWarSchedulersEntity, 'tag' | 'warTag'>,
     data: APIClanWar
   ): Promise<[string | null, string[]]> {
@@ -306,11 +331,16 @@ export class ClanWarScheduler {
     }
 
     if (reminder.duration === 0) {
-      const text = [`\u200e🔔 **${clanNick} (War has ended)**`, `📨 ${reminder.message}`].join('\n');
+      const text = [`\u200e🔔 **${clanNick} (War has ended)**`, `📨 ${reminder.message}`].join(
+        '\n'
+      );
       return [text, []];
     }
 
-    const text = [`\u200e🔔 **${clanNick} (War ${prefix} ${warTiming})**`, `📨 ${reminder.message}`].join('\n');
+    const text = [
+      `\u200e🔔 **${clanNick} (War ${prefix} ${warTiming})**`,
+      `📨 ${reminder.message}`
+    ].join('\n');
 
     const config = this.getExclusionConfig(reminder.guild);
     if (config.type && config.warsExclusionUserIds?.length) {
@@ -325,9 +355,11 @@ export class ClanWarScheduler {
     try {
       const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
       if (!reminder) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_NOT_FOUND);
-      if (reminder.disabled) return await this.delete(schedule, ReminderDeleteReasons.REMINDER_DISABLED);
+      if (reminder.disabled)
+        return await this.delete(schedule, ReminderDeleteReasons.REMINDER_DISABLED);
 
-      if (!this.client.channels.cache.has(reminder.channel)) return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
+      if (!this.client.channels.cache.has(reminder.channel))
+        return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_NOT_FOUND);
 
       const warType = schedule.warTag ? 'cwl' : schedule.isFriendly ? 'friendly' : 'normal';
       if (reminder.warTypes && !reminder.warTypes.includes(warType)) {
@@ -339,8 +371,10 @@ export class ClanWarScheduler {
         : await this.client.coc.getCurrentWar(schedule.tag);
       if (!res.ok) return this.clear(id);
 
-      if (data.state === 'notInWar') return await this.delete(schedule, ReminderDeleteReasons.NOT_IN_WAR);
-      if (data.state === 'warEnded' && schedule.duration !== 0) return await this.delete(schedule, ReminderDeleteReasons.WAR_ENDED);
+      if (data.state === 'notInWar')
+        return await this.delete(schedule, ReminderDeleteReasons.NOT_IN_WAR);
+      if (data.state === 'warEnded' && schedule.duration !== 0)
+        return await this.delete(schedule, ReminderDeleteReasons.WAR_ENDED);
 
       if (this.wasInMaintenance(schedule, data)) {
         if (schedule.key !== this.createWarId(data)) {
@@ -354,7 +388,11 @@ export class ClanWarScheduler {
 
         return await this.schedulers.updateOne(
           { _id: schedule._id },
-          { $set: { timestamp: new Date(moment(data.endTime).toDate().getTime() - schedule.duration) } }
+          {
+            $set: {
+              timestamp: new Date(moment(data.endTime).toDate().getTime() - schedule.duration)
+            }
+          }
         );
       }
 
@@ -375,10 +413,13 @@ export class ClanWarScheduler {
       ]);
       if (channel) {
         if (channel.isThread) reminder.threadId = channel.channel.id;
-        const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
+        const webhook = reminder.webhook
+          ? new WebhookClient(reminder.webhook)
+          : await this.webhook(channel.parent, reminder);
 
         for (const content of Util.splitMessage(`${text}\n\u200b`)) {
-          if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
+          if (webhook)
+            await this.deliver({ reminder, channel: channel.parent, webhook, content, userIds });
         }
       } else {
         return await this.delete(schedule, ReminderDeleteReasons.CHANNEL_MISSING_PERMISSIONS);
@@ -426,11 +467,17 @@ export class ClanWarScheduler {
     }
   }
 
-  private async webhook(channel: TextChannel | NewsChannel | ForumChannel | MediaChannel, reminder: WithId<ClanWarRemindersEntity>) {
+  private async webhook(
+    channel: TextChannel | NewsChannel | ForumChannel | MediaChannel,
+    reminder: WithId<ClanWarRemindersEntity>
+  ) {
     const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
     if (webhook) {
       reminder.webhook = { id: webhook.id, token: webhook.token! };
-      await this.reminders.updateOne({ _id: reminder._id }, { $set: { webhook: { id: webhook.id, token: webhook.token! } } });
+      await this.reminders.updateOne(
+        { _id: reminder._id },
+        { $set: { webhook: { id: webhook.id, token: webhook.token! } } }
+      );
       return new WebhookClient({ id: webhook.id, token: webhook.token! });
     }
     return null;
@@ -462,7 +509,9 @@ export class ClanWarScheduler {
   }
 
   private async _refresh() {
-    const cursor = this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } });
+    const cursor = this.schedulers.find({
+      timestamp: { $lt: new Date(Date.now() + this.refreshRate) }
+    });
 
     const now = new Date().getTime();
     for await (const schedule of cursor) {

@@ -77,7 +77,8 @@ export class Util extends CocUtil {
     const start = moment();
     const day = start.day();
     const hours = start.hours();
-    const isRaidWeek = (day === 5 && hours >= 7) || [0, 6].includes(day) || (day === 1 && hours < 7);
+    const isRaidWeek =
+      (day === 5 && hours >= 7) || [0, 6].includes(day) || (day === 1 && hours < 7);
     if (day < 5 || (day <= 5 && hours < 7)) start.day(-7);
     start.day(5);
     start.hours(7).minutes(0).seconds(0).milliseconds(0);
@@ -104,9 +105,14 @@ export class Util extends CocUtil {
   /** Returns today's start time and end time. */
   public static getCurrentLegendTimestamp() {
     const start =
-      moment().hour() >= 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
+      moment().hour() >= 5
+        ? moment().startOf('day').add(5, 'hours')
+        : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
 
-    return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').toDate().getTime() };
+    return {
+      startTime: start.toDate().getTime(),
+      endTime: start.clone().add(1, 'day').toDate().getTime()
+    };
   }
 
   /** Returns the day count for today. */
@@ -131,7 +137,10 @@ export class Util extends CocUtil {
     return Array(Util.getLegendDay())
       .fill(0)
       .map((_, i) => {
-        const startTime = moment(Season.getSeason().startTime).startOf('day').add(i, 'days').add(5, 'hours');
+        const startTime = moment(Season.getSeason().startTime)
+          .startOf('day')
+          .add(i, 'days')
+          .add(5, 'hours');
         const endTime = startTime.clone().add(1, 'day');
         return { startTime: startTime.toDate().getTime(), endTime: endTime.toDate().getTime() };
       });
@@ -145,7 +154,10 @@ export class Util extends CocUtil {
     return { startTime: prevDay.toDate().getTime(), endTime: nextDay.toDate().getTime() };
   }
 
-  public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
+  public static splitMessage(
+    text: string,
+    { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}
+  ) {
     if (text.length <= maxLength) return [text];
     let splitText = [text];
     if (Array.isArray(char)) {
@@ -252,7 +264,14 @@ export class Util extends CocUtil {
     return `${num}${isLong ? ' ms' : 'ms'}`;
   }
 
-  private static _format(ms: number, msAbs: number, dur: number, longUnit: string, shortUnit: string, isLong = false) {
+  private static _format(
+    ms: number,
+    msAbs: number,
+    dur: number,
+    longUnit: string,
+    shortUnit: string,
+    isLong = false
+  ) {
     const plural = msAbs >= dur * 1.5;
     let num: number | string = ms / dur;
     num = Number(Number.isInteger(num) ? num : num.toFixed(1));
@@ -296,6 +315,8 @@ export class Season {
 
   public static get isTournamentReset() {
     const date = new Date();
-    return (date.getDay() === 1 && date.getHours() > 5) || (date.getDay() === 2 && date.getHours() < 5);
+    return (
+      (date.getDay() === 1 && date.getHours() > 5) || (date.getDay() === 2 && date.getHours() < 5)
+    );
   }
 }

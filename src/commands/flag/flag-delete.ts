@@ -22,7 +22,8 @@ export default class FlagDeleteCommand extends Command {
   ) {
     const focused = interaction.options.getFocused(true);
     if (focused.name === 'flag_ref') {
-      if (!args.player) return interaction.respond([{ name: 'Select a player first!', value: '0' }]);
+      if (!args.player)
+        return interaction.respond([{ name: 'Select a player first!', value: '0' }]);
 
       const playerTag = this.client.coc.fixTag(args.player);
       const flags = await this.client.db
@@ -56,7 +57,10 @@ export default class FlagDeleteCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { player: string; flag_type: 'ban' | 'strike'; flag_ref?: string; clan?: string }
   ) {
-    if (!args.player) return interaction.editReply(this.i18n('command.flag.delete.no_tag', { lng: interaction.locale }));
+    if (!args.player)
+      return interaction.editReply(
+        this.i18n('command.flag.delete.no_tag', { lng: interaction.locale })
+      );
     const playerTag = this.client.coc.fixTag(args.player);
 
     const playerTags: string[] = [];
@@ -68,14 +72,18 @@ export default class FlagDeleteCommand extends Command {
     const filter: Filter<FlagsEntity> = {
       guild: interaction.guild.id,
       flagType: args.flag_type,
-      ...(playerTags.length && args.player === '*' ? { tag: { $in: playerTags } } : { tag: playerTag }),
+      ...(playerTags.length && args.player === '*'
+        ? { tag: { $in: playerTags } }
+        : { tag: playerTag }),
       $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }]
     };
 
     const collection = this.client.db.collection<FlagsEntity>(Collections.FLAGS);
     const flags = await collection.find(filter).sort({ _id: -1 }).toArray();
     if (!flags.length) {
-      return interaction.editReply(this.i18n('common.no_match_found', { lng: interaction.locale, tag: playerTag }));
+      return interaction.editReply(
+        this.i18n('common.no_match_found', { lng: interaction.locale, tag: playerTag })
+      );
     }
 
     if (args.flag_ref && args.flag_ref !== '*') {
@@ -91,7 +99,9 @@ export default class FlagDeleteCommand extends Command {
     await collection.deleteMany(filter);
 
     if (args.player === '*' && result && playerTags.length) {
-      return interaction.editReply(`Successfully deleted ${flags.length} ${args.flag_type}s from the clan **\u200e${result.body.name}**`);
+      return interaction.editReply(
+        `Successfully deleted ${flags.length} ${args.flag_type}s from the clan **\u200e${result.body.name}**`
+      );
     }
 
     return interaction.editReply(

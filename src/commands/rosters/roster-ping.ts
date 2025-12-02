@@ -20,14 +20,22 @@ export default class RosterPingCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { roster: string; ping_option?: 'unregistered' | 'missing' | 'everyone'; group?: string; message?: string }
+    args: {
+      roster: string;
+      ping_option?: 'unregistered' | 'missing' | 'everyone';
+      group?: string;
+      message?: string;
+    }
   ) {
-    if (!(args.ping_option || args.group)) return interaction.editReply('Please provide a ping option or a user-group.');
-    if (!ObjectId.isValid(args.roster)) return interaction.editReply({ content: 'Invalid roster ID.' });
+    if (!(args.ping_option || args.group))
+      return interaction.editReply('Please provide a ping option or a user-group.');
+    if (!ObjectId.isValid(args.roster))
+      return interaction.editReply({ content: 'Invalid roster ID.' });
 
     const rosterId = new ObjectId(args.roster);
     const roster = await this.client.rosterManager.get(rosterId);
-    if (!roster || roster.guildId !== interaction.guildId) return interaction.editReply({ content: 'Roster not found.' });
+    if (!roster || roster.guildId !== interaction.guildId)
+      return interaction.editReply({ content: 'Roster not found.' });
 
     if (!roster.clan) {
       return interaction.editReply({
@@ -36,7 +44,10 @@ export default class RosterPingCommand extends Command {
     }
 
     const { body: clan, res } = await this.client.coc.getClan(roster.clan.tag);
-    if (!res.ok) return interaction.editReply({ content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})` });
+    if (!res.ok)
+      return interaction.editReply({
+        content: `Failed to fetch the clan \u200e${roster.clan.name} (${roster.clan.tag})`
+      });
 
     const updated = await this.client.rosterManager.updateMembers(roster, roster.members);
     if (!updated) return interaction.editReply({ content: 'This roster no longer exists.' });
@@ -47,55 +58,84 @@ export default class RosterPingCommand extends Command {
     const msgText = `\u200e**${roster.name} - ${roster.clan.name} (${roster.clan.tag})** ${args.message ? `\n\n${args.message}` : ''}`;
 
     if (args.group) {
-      const groupMembers = updated.members.filter((member) => member.categoryId && member.categoryId.toHexString() === args.group);
-      if (!groupMembers.length) return interaction.editReply({ content: 'No members found in this group.' });
+      const groupMembers = updated.members.filter(
+        (member) => member.categoryId && member.categoryId.toHexString() === args.group
+      );
+      if (!groupMembers.length)
+        return interaction.editReply({ content: 'No members found in this group.' });
 
       groupMembers.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
       const result = groupMembers.map((member) => {
-        return { name: `${member.name} (${member.tag})`, mention: `${member.userId ? `<@${member.userId}>` : ''}` };
+        return {
+          name: `${member.name} (${member.tag})`,
+          mention: `${member.userId ? `<@${member.userId}>` : ''}`
+        };
       });
 
       return this.followUp(interaction, msgText, result);
     }
 
     if (args.ping_option === 'unregistered') {
-      const unregisteredMembers = clan.memberList.filter((member) => !updated.members.some((m) => m.tag === member.tag));
-      if (!unregisteredMembers.length) return interaction.editReply({ content: 'No unregistered members found.' });
+      const unregisteredMembers = clan.memberList.filter(
+        (member) => !updated.members.some((m) => m.tag === member.tag)
+      );
+      if (!unregisteredMembers.length)
+        return interaction.editReply({ content: 'No unregistered members found.' });
 
       const members = await this.client.rosterManager.getClanMembers(unregisteredMembers, true);
-      if (!members.length) return interaction.editReply({ content: 'No unregistered members found.' });
+      if (!members.length)
+        return interaction.editReply({ content: 'No unregistered members found.' });
 
       members.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
       const result = members.map((member) => {
-        return { name: `${member.name} (${member.tag})`, mention: `${member.userId ? `<@${member.userId}>` : ''}` };
+        return {
+          name: `${member.name} (${member.tag})`,
+          mention: `${member.userId ? `<@${member.userId}>` : ''}`
+        };
       });
       return this.followUp(interaction, msgText, result);
     }
 
     if (args.ping_option === 'missing') {
-      const missingMembers = updated.members.filter((member) => !member.clan || member.clan.tag !== clan.tag);
-      if (!missingMembers.length) return interaction.editReply({ content: 'No missing members found.' });
+      const missingMembers = updated.members.filter(
+        (member) => !member.clan || member.clan.tag !== clan.tag
+      );
+      if (!missingMembers.length)
+        return interaction.editReply({ content: 'No missing members found.' });
 
       missingMembers.sort((a, b) => nullsLastSortAlgo(a.userId, b.userId));
       const result = missingMembers.map((member) => {
-        return { name: `${member.name} (${member.tag})`, mention: `${member.userId ? `<@${member.userId}>` : ''}` };
+        return {
+          name: `${member.name} (${member.tag})`,
+          mention: `${member.userId ? `<@${member.userId}>` : ''}`
+        };
       });
 
       return this.followUp(interaction, msgText, result);
     }
 
     const result = updated.members.map((member) => {
-      return { name: `${member.name} (${member.tag})`, mention: `${member.userId ? `<@${member.userId}>` : ''}` };
+      return {
+        name: `${member.name} (${member.tag})`,
+        mention: `${member.userId ? `<@${member.userId}>` : ''}`
+      };
     });
     return this.followUp(interaction, msgText, result);
   }
 
-  private async followUp(interaction: CommandInteraction<'cached'>, msgText: string, result: { name: string; mention: string }[]) {
+  private async followUp(
+    interaction: CommandInteraction<'cached'>,
+    msgText: string,
+    result: { name: string; mention: string }[]
+  ) {
     const customIds = {
       confirm: this.client.uuid(interaction.user.id)
     };
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm and Ping').setStyle(ButtonStyle.Primary)
+      new ButtonBuilder()
+        .setCustomId(customIds.confirm)
+        .setLabel('Confirm and Ping')
+        .setStyle(ButtonStyle.Primary)
     );
 
     const message = await interaction.editReply({
@@ -109,11 +149,17 @@ export default class RosterPingCommand extends Command {
       customIds,
       interaction,
       onClick: async (action) => {
-        await action.update({ components: [], content: `${msgText}\nPinging ${result.length} members` });
+        await action.update({
+          components: [],
+          content: `${msgText}\nPinging ${result.length} members`
+        });
 
-        for (const content of Util.splitMessage(`${msgText}\n${result.map((m) => `- \u200e${m.name} ${m.mention}`).join('\n')}`, {
-          maxLength: 2000
-        })) {
+        for (const content of Util.splitMessage(
+          `${msgText}\n${result.map((m) => `- \u200e${m.name} ${m.mention}`).join('\n')}`,
+          {
+            maxLength: 2000
+          }
+        )) {
           await action.followUp({ content });
         }
       }

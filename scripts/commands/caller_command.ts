@@ -17,7 +17,9 @@ export const CALLER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'defense_target',
           description: command.caller.options.defense_target.description,
-          description_localizations: translation('command.caller.options.defense_target.description'),
+          description_localizations: translation(
+            'command.caller.options.defense_target.description'
+          ),
           type: ApplicationCommandOptionType.Integer,
           required: true,
           min_value: 1,
@@ -26,7 +28,9 @@ export const CALLER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'offense_target',
           description: command.caller.assign.options.offense_target.description,
-          description_localizations: translation('command.caller.assign.options.offense_target.description'),
+          description_localizations: translation(
+            'command.caller.assign.options.offense_target.description'
+          ),
           type: ApplicationCommandOptionType.Integer,
           required: true,
           min_value: 1,
@@ -57,7 +61,9 @@ export const CALLER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'defense_target',
           description: command.caller.options.defense_target.description,
-          description_localizations: translation('command.caller.options.defense_target.description'),
+          description_localizations: translation(
+            'command.caller.options.defense_target.description'
+          ),
           type: ApplicationCommandOptionType.Number,
           required: true,
           min_value: 1,

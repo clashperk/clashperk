@@ -33,7 +33,10 @@ export default class AutoBbLeagueRoleCommand extends Command {
     const clans = await this.client.storage.find(interaction.guildId);
     if (!clans.length) {
       return interaction.editReply(
-        this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+        this.i18n('common.no_clans_linked', {
+          lng: interaction.locale,
+          command: this.client.commands.SETUP_ENABLE
+        })
       );
     }
 
@@ -45,14 +48,21 @@ export default class AutoBbLeagueRoleCommand extends Command {
     const selected = Object.entries(rolesMap).map(([league, role]) => ({ league, role }));
 
     if (typeof args.allowExternal === 'boolean') {
-      await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, Boolean(args.allowExternal));
+      await this.client.settings.set(
+        interaction.guildId,
+        Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE,
+        Boolean(args.allowExternal)
+      );
       if (!selected.length) {
         return interaction.editReply('Builder league roles settings updated.');
       }
     }
 
     if (!selected.length) {
-      return interaction.followUp({ content: 'You must select at least one role.', flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: 'You must select at least one role.',
+        flags: MessageFlags.Ephemeral
+      });
     }
 
     if (selected.some((r) => this.isSystemRole(r.role, interaction.guild))) {
@@ -65,10 +75,16 @@ export default class AutoBbLeagueRoleCommand extends Command {
     }
 
     if (selected.some((r) => this.isHigherRole(r.role, interaction.guild))) {
-      return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
+      return interaction.editReply(
+        this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale })
+      );
     }
 
-    const rolesConfig = this.client.settings.get<Record<string, string>>(interaction.guildId, Settings.BUILDER_LEAGUE_ROLES, {});
+    const rolesConfig = this.client.settings.get<Record<string, string>>(
+      interaction.guildId,
+      Settings.BUILDER_LEAGUE_ROLES,
+      {}
+    );
     Object.assign(rolesConfig, Object.fromEntries(selected.map((s) => [s.league, s.role.id])));
     await this.client.settings.set(interaction.guildId, Settings.BUILDER_LEAGUE_ROLES, rolesConfig);
 
@@ -84,7 +100,10 @@ export default class AutoBbLeagueRoleCommand extends Command {
       allowedMentions: { parse: [] },
       content: [
         roles
-          .map(({ league, role }) => `${league.replace(/\b(\w)/g, (char) => char.toUpperCase())} ${role ? `<@&${role}>` : ''}`)
+          .map(
+            ({ league, role }) =>
+              `${league.replace(/\b(\w)/g, (char) => char.toUpperCase())} ${role ? `<@&${role}>` : ''}`
+          )
           .join('\n'),
         '',
         args.allowExternal ? '' : '(Family Only) Roles will be given to family members only.'

@@ -20,6 +20,12 @@ export interface ClanStoresEntity {
   categoryId?: ObjectId | null;
   secureRole: boolean;
   warRole?: string;
-  roles?: { coLeader?: string; admin?: string; member?: string; leader?: string; everyone?: string };
+  roles?: {
+    coLeader?: string;
+    admin?: string;
+    member?: string;
+    leader?: string;
+    everyone?: string;
+  };
   createdAt: Date;
 }

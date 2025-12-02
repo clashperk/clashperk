@@ -29,7 +29,12 @@ export const MEMBERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description: common.select_an_option,
       description_localizations: translation('common.select_an_option'),
       type: ApplicationCommandOptionType.String,
-      choices: [...Object.values(MembersCommandOptions).map((choice) => ({ name: choice.label, value: choice.id }))]
+      choices: [
+        ...Object.values(MembersCommandOptions).map((choice) => ({
+          name: choice.label,
+          value: choice.id
+        }))
+      ]
     }
   ]
 };

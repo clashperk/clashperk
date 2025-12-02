@@ -18,7 +18,10 @@ export default class EosTrophiesHistoryCommand extends Command {
     });
   }
 
-  public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; player?: string; user?: User }) {
+  public async exec(
+    interaction: CommandInteraction<'cached'>,
+    args: { clans?: string; player?: string; user?: User }
+  ) {
     if (args.player) {
       const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return null;
@@ -42,7 +45,9 @@ export default class EosTrophiesHistoryCommand extends Command {
       return handlePagination(interaction, embeds, (action) => this.export(action, result));
     }
 
-    const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user?.id ?? interaction.user.id);
+    const playerTags = await this.client.resolver.getLinkedPlayerTags(
+      args.user?.id ?? interaction.user.id
+    );
     const { embeds, result } = await this.getHistory(interaction, playerTags);
 
     if (!result.length) {
@@ -111,7 +116,11 @@ export default class EosTrophiesHistoryCommand extends Command {
   private async export(interaction: ButtonInteraction<'cached'>, result: AggregatedResult[]) {
     const chunks = result
       .map((r) => {
-        return { name: r.name, tag: r.tag, records: Object.fromEntries(r.seasons.map((r) => [r.season, r.trophies])) };
+        return {
+          name: r.name,
+          tag: r.tag,
+          records: Object.fromEntries(r.seasons.map((r) => [r.season, r.trophies]))
+        };
       })
       .flat();
 
@@ -129,7 +138,10 @@ export default class EosTrophiesHistoryCommand extends Command {
       }
     ];
 
-    const spreadsheet = await createGoogleSheet(`${interaction.guild.name} [Season End Trophy History]`, sheets);
+    const spreadsheet = await createGoogleSheet(
+      `${interaction.guild.name} [Season End Trophy History]`,
+      sheets
+    );
     return interaction.editReply({
       content: [`**Season End Trophy History**`].join('\n'),
       components: getExportComponents(spreadsheet)
