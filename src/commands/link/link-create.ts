@@ -1,7 +1,7 @@
 import { Collections, FeatureFlags, Settings } from '@app/constants';
 import { APIClan, APIPlayer } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember } from 'discord.js';
-import { Args, Command } from '../../lib/handlers.js';
+import { Args, Command, CommandOptions } from '../../lib/handlers.js';
 
 export default class LinkCreateCommand extends Command {
   public constructor() {
@@ -13,14 +13,13 @@ export default class LinkCreateCommand extends Command {
     });
   }
 
-  public async pre(interaction: CommandInteraction<'cached'>) {
-    if (this.client.settings.get<string[]>(interaction.guild, Settings.LINKS_MANAGER_ROLE, []).length) {
-      this.userPermissions = ['ManageGuild'];
-      this.roleKey = Settings.LINKS_MANAGER_ROLE;
-    } else {
-      this.roleKey = null;
-      this.userPermissions = [];
-    }
+  public pre(interaction: CommandInteraction<'cached'>) {
+    const hasLinksManager = this.client.settings.get<string[]>(interaction.guild, Settings.LINKS_MANAGER_ROLE, []);
+    return {
+      ...this.options,
+      userPermissions: hasLinksManager ? ['ManageGuild'] : [],
+      roleKey: hasLinksManager ? Settings.LINKS_MANAGER_ROLE : null
+    } satisfies CommandOptions;
   }
 
   public args(): Args {

@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { Filter } from 'mongodb';
-import { Command } from '../../lib/handlers.js';
+import { Command, CommandOptions } from '../../lib/handlers.js';
 import { hexToNanoId } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
@@ -25,8 +25,11 @@ export default class RemindersListCommand extends Command {
     });
   }
 
-  async pre(_: Interaction, args: { compact_list?: boolean }) {
-    this.ephemeral = !args.compact_list;
+  public pre(_: Interaction, args: { compact_list?: boolean }) {
+    return {
+      ...this.options,
+      ephemeral: !args.compact_list
+    } satisfies CommandOptions;
   }
 
   public exec(

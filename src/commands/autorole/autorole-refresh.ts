@@ -2,11 +2,11 @@ import { Settings } from '@app/constants';
 import { ButtonInteraction, CommandInteraction, EmbedBuilder, Role, User } from 'discord.js';
 import moment from 'moment';
 import { cluster } from 'radash';
-import { Command } from '../../lib/handlers.js';
+import { Command, CommandOptions } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { handleMessagePagination } from '../../util/pagination.js';
 
-export default class AutoTownHallRoleCommand extends Command {
+export default class AutoTownHallRoleCommand extends Command implements CommandOptions {
   public constructor() {
     super('autorole-refresh', {
       category: 'roles',
@@ -17,15 +17,12 @@ export default class AutoTownHallRoleCommand extends Command {
     });
   }
 
-  public async pre(interaction: ButtonInteraction | CommandInteraction, args: { user_or_role?: Role | User }) {
-    if (args.user_or_role && args.user_or_role instanceof User) {
-      this.roleKey = Settings.LINKS_MANAGER_ROLE;
-    } else {
-      this.roleKey = null;
-    }
-
-    // message should be ephemeral for button clicks
-    this.ephemeral = interaction.isButton();
+  public pre(interaction: ButtonInteraction | CommandInteraction, args: { user_or_role?: Role | User }) {
+    return {
+      ...this.options,
+      roleKey: args.user_or_role && args.user_or_role instanceof User ? Settings.LINKS_MANAGER_ROLE : null,
+      ephemeral: interaction.isButton()
+    } satisfies CommandOptions;
   }
 
   public async exec(

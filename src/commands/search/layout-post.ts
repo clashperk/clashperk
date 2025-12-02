@@ -21,7 +21,7 @@ import {
 } from 'discord.js';
 import pluralize from 'pluralize';
 import { shake } from 'radash';
-import { Command } from '../../lib/handlers.js';
+import { Command, CommandOptions } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
 
@@ -40,8 +40,11 @@ export default class LayoutCommand extends Command {
     return this.client.db.collection<LayoutsEntity>(Collections.LAYOUTS);
   }
 
-  public async pre(interaction: BaseInteraction) {
-    this.defer = !interaction.isButton();
+  public pre(interaction: BaseInteraction) {
+    return {
+      ...this.options,
+      defer: !interaction.isButton()
+    } satisfies CommandOptions;
   }
 
   public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: LayoutCommandArgs) {
