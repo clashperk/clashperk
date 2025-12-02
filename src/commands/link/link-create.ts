@@ -13,7 +13,7 @@ export default class LinkCreateCommand extends Command {
     });
   }
 
-  public pre(interaction: CommandInteraction<'cached'>) {
+  public refine(interaction: CommandInteraction<'cached'>) {
     const hasLinksManager = this.client.settings.get<string[]>(interaction.guild, Settings.LINKS_MANAGER_ROLE, []);
     return {
       ...this.options,

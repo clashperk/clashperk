@@ -17,7 +17,7 @@ export default class AutoTownHallRoleCommand extends Command implements CommandO
     });
   }
 
-  public pre(interaction: ButtonInteraction | CommandInteraction, args: { user_or_role?: Role | User }) {
+  public refine(interaction: ButtonInteraction | CommandInteraction, args: { user_or_role?: Role | User }) {
     return {
       ...this.options,
       roleKey: args.user_or_role && args.user_or_role instanceof User ? Settings.LINKS_MANAGER_ROLE : null,

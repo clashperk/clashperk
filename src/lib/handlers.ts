@@ -297,7 +297,7 @@ export class CommandHandler extends BaseHandler {
 
   public async exec(interaction: CommandInteraction | MessageComponentInteraction, command: Command, args: Record<string, unknown> = {}) {
     try {
-      const options = command.pre(interaction, args);
+      const options = command.refine(interaction, args);
 
       if (options.defer && !interaction.deferred && !interaction.replied) {
         await interaction.deferReply(options.ephemeral ? { flags: MessageFlags.Ephemeral } : {});
@@ -312,7 +312,7 @@ export class CommandHandler extends BaseHandler {
   }
 
   public preInhibitor(interaction: BaseInteraction, command: Command, args: Record<string, unknown>) {
-    const options = command.pre(interaction, args);
+    const options = command.refine(interaction, args);
 
     const reason = this.client.inhibitorHandler.run(interaction, command);
     if (reason) {
@@ -510,8 +510,8 @@ export class Command implements CommandOptions {
     return null;
   }
 
-  public pre(interaction: BaseInteraction, args: Record<string, unknown>): CommandOptions;
-  public pre(): CommandOptions {
+  public refine(interaction: BaseInteraction, args: Record<string, unknown>): CommandOptions;
+  public refine(): CommandOptions {
     return this.options;
   }
 

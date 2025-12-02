@@ -40,7 +40,7 @@ export default class LayoutCommand extends Command {
     return this.client.db.collection<LayoutsEntity>(Collections.LAYOUTS);
   }
 
-  public pre(interaction: BaseInteraction) {
+  public refine(interaction: BaseInteraction) {
     return {
       ...this.options,
       defer: !interaction.isButton()

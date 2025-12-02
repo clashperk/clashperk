@@ -25,7 +25,7 @@ export default class RemindersListCommand extends Command {
     });
   }
 
-  public pre(_: Interaction, args: { compact_list?: boolean }) {
+  public refine(_: Interaction, args: { compact_list?: boolean }) {
     return {
       ...this.options,
       ephemeral: !args.compact_list
