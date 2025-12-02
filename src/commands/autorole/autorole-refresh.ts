@@ -6,7 +6,7 @@ import { Command, CommandOptions } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { handleMessagePagination } from '../../util/pagination.js';
 
-export default class AutoTownHallRoleCommand extends Command implements CommandOptions {
+export default class AutoTownHallRoleCommand extends Command {
   public constructor() {
     super('autorole-refresh', {
       category: 'roles',
