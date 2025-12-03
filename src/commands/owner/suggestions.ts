@@ -1,5 +1,6 @@
 import {
   ActionRowBuilder,
+  AnyThreadChannel,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -57,21 +58,21 @@ export default class SuggestionsCommand extends Command {
   private async getEmbed(channel: ForumChannel) {
     let { threads } = await channel.threads.fetchActive(false);
     let hasMore = true;
-    let lastThreadId: string | undefined;
+    let lastThread: AnyThreadChannel | undefined;
 
     do {
       const { threads: fetchedThreads, hasMore: hasMoreThreads } =
         await channel.threads.fetchArchived(
           {
             fetchAll: true,
-            before: lastThreadId,
+            before: lastThread,
             limit: 100
           },
           false
         );
 
       threads = threads.concat(fetchedThreads);
-      lastThreadId = fetchedThreads.last()?.id;
+      lastThread = fetchedThreads.last();
       hasMore = hasMoreThreads;
     } while (hasMore);
 
