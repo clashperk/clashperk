@@ -132,6 +132,12 @@ export default class NicknameConfigCommand extends Command {
       false
     );
 
+    const autoRole = this.client.settings.get<boolean>(
+      interaction.guildId,
+      Settings.USE_AUTO_ROLE,
+      false
+    );
+
     if (args.account_preference_for_naming) {
       await this.client.settings.set(
         interaction.guildId,
@@ -159,7 +165,14 @@ export default class NicknameConfigCommand extends Command {
     const settings = [
       { name: 'Family Nickname Format', value: `\`${familyFormat || 'None'}\`` },
       { name: 'Non-Family Nickname Format', value: `\`${nonFamilyFormat || 'None'}\`` },
-      { name: 'Change Nicknames', value: `\`${enabledAuto ? 'Yes' : 'No'}\`` },
+      {
+        name: 'Change Nicknames',
+        value:
+          `\`${enabledAuto ? 'Yes' : 'No'}\`` +
+          (autoRole
+            ? ''
+            : `\n-# Autorole must be enabled to auto change nicknames, otherwise it only updates with ${this.client.commands.get('/autorole refresh')} or when accounts are linked. Enable autorole using ${this.client.commands.get('/autorole config')} command.`)
+      },
       { name: 'Account Preference', value: `\`${title(accountPreference)}\`` }
     ];
     container.addTextDisplayComponents(

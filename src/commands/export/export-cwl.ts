@@ -94,10 +94,30 @@ export default class ExportCWL extends Command {
             { name: 'Zero Stars', width: 100, align: 'RIGHT' },
             { name: 'Missed', width: 100, align: 'RIGHT' },
             { name: 'Total Defenses', width: 100, align: 'RIGHT' },
-            { name: 'Def Stars', width: 100, align: 'RIGHT' },
-            { name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
-            { name: 'Total Def Dest', width: 100, align: 'RIGHT' },
-            { name: 'Avg Def Dest', width: 100, align: 'RIGHT' },
+            {
+              name: 'Defensive Stars',
+              width: 100,
+              align: 'RIGHT',
+              note: 'Stars lost in defensive attacks'
+            },
+            {
+              name: 'Avg. Defensive Stars',
+              width: 100,
+              align: 'RIGHT',
+              note: 'Average stars lost in defensive attacks'
+            },
+            {
+              name: 'Total Defensive Destruction',
+              width: 100,
+              align: 'RIGHT',
+              note: 'Total destruction in defensive attacks'
+            },
+            {
+              name: 'Avg Defensive Destruction',
+              width: 100,
+              align: 'RIGHT',
+              note: 'Average destruction in defensive attacks'
+            },
             { name: 'Lower TH Hits (Dips)', width: 100, align: 'RIGHT' },
             { name: 'Upper TH Hits (Reaches)', width: 100, align: 'RIGHT' },
             {
@@ -177,9 +197,9 @@ export default class ExportCWL extends Command {
             { name: 'Destruction', align: 'RIGHT', width: 100 },
             { name: 'Opponent', align: 'LEFT', width: 160 },
             { name: 'Opponent Tag', align: 'LEFT', width: 120 },
-            { name: 'Opp. Attacks', align: 'RIGHT', width: 100 },
-            { name: 'Opp. Stars', align: 'RIGHT', width: 100 },
-            { name: 'Opp. Dest.', align: 'RIGHT', width: 100 }
+            { name: 'Opponent Attacks', align: 'RIGHT', width: 100 },
+            { name: 'Opponent Stars', align: 'RIGHT', width: 100 },
+            { name: 'Opponent Destruction', align: 'RIGHT', width: 100 }
           ],
           rows: chunk.perRound.map((round, i) => [
             i + 1,
@@ -212,8 +232,18 @@ export default class ExportCWL extends Command {
             { name: 'Attacker TH', align: 'RIGHT', width: 100 },
             { name: 'Defender Map', align: 'RIGHT', width: 100 },
             { name: 'Defender TH', align: 'RIGHT', width: 100 },
-            { name: 'Defender Stars', align: 'RIGHT', width: 100 },
-            { name: 'Defender Destruction', align: 'RIGHT', width: 100 }
+            {
+              name: 'Defensive Stars',
+              align: 'RIGHT',
+              width: 100,
+              note: 'Stars lost in defensive attacks'
+            },
+            {
+              name: 'Defensive Destruction',
+              align: 'RIGHT',
+              width: 100,
+              note: 'Total destruction in defensive attacks'
+            }
           ],
           rows: round.clan.members.map((m) => {
             const opponent = round.opponent.members.find(
