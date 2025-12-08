@@ -8,7 +8,6 @@ import { CustomIdProps } from './component-handler.js';
 export class RedisService {
   public connection = createClient({
     url: process.env.REDIS_URL,
-    database: 1,
     disableOfflineQueue: false
   });
 
