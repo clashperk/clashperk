@@ -323,10 +323,15 @@ export class ClashClient extends RESTManager {
     return res?.status === 200 && this.bearerToken;
   }
 
-  public async linkPlayerTag(discordId: string, playerTag: string, force = true) {
-    if (!this.client.isFeatureEnabled(FeatureFlags.USE_DISCORD_LINK_API, 'global')) return true;
+  public async linkPlayerTag(discordId: string, playerTag: string, options?: { force?: boolean }) {
+    if (
+      !options?.force &&
+      !this.client.isFeatureEnabled(FeatureFlags.USE_DISCORD_LINK_API, 'global')
+    ) {
+      return true;
+    }
 
-    if (force) {
+    if (options?.force) {
       await this.unlinkPlayerTag(playerTag);
     }
 

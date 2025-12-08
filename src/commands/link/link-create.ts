@@ -25,10 +25,11 @@ export default class LinkCreateCommand extends Command {
       Settings.LINKS_MANAGER_ROLE,
       []
     );
+
     return {
       ...this.options,
-      userPermissions: hasLinksManager ? ['ManageGuild'] : [],
-      roleKey: hasLinksManager ? Settings.LINKS_MANAGER_ROLE : null
+      userPermissions: hasLinksManager.length ? ['ManageGuild'] : [],
+      roleKey: hasLinksManager.length ? Settings.LINKS_MANAGER_ROLE : null
     } satisfies CommandOptions;
   }
 
