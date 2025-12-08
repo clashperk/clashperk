@@ -4,6 +4,7 @@ import {
   ClanStoresEntity,
   ClanWarLeagueGroupsEntity,
   ClanWarRemindersEntity,
+  ClanWarSchedulersEntity,
   PlayerLinksEntity
 } from '@app/entities';
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
@@ -283,11 +284,10 @@ export class StorageHandler {
 
     for (const { reminder, scheduler } of reminders) {
       const reminders = await this.client.db
-        .collection(reminder)
+        .collection<ClanWarRemindersEntity>(reminder)
         .find({ guild, clans: clanTag })
         .toArray();
       for (const rem of reminders) {
-        await this.client.db.collection(scheduler).deleteMany({ reminderId: rem._id });
         if (rem.clans.length === 1) {
           await this.client.db.collection(reminder).deleteOne({ _id: rem._id });
         } else {
@@ -295,6 +295,10 @@ export class StorageHandler {
             .collection<ClanWarRemindersEntity>(reminder)
             .updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
         }
+
+        await this.client.db
+          .collection<ClanWarSchedulersEntity>(scheduler)
+          .deleteMany({ guild, tag: clanTag });
       }
     }
   }
