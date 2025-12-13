@@ -442,10 +442,11 @@ export class ClanWarLog extends RootLog {
           ORANGE_NUMBERS[isClanMember ? attacker.townhallLevel : attacker.defender.townhallLevel];
         const defenderTh =
           ORANGE_NUMBERS[isClanMember ? attacker.defender.townhallLevel : attacker.townhallLevel];
+        const vs = isClanMember ? EMOJIS.VS : EMOJIS.VS_RED;
 
         return `${stars} \`${destruction}\` ${attackerMap}${
           attackerTh
-        }${EMOJIS.VS}${defenderMap}${defenderTh} \u200e${name}`;
+        }${vs}${defenderMap}${defenderTh} \u200e${name}`;
       })
       .join('\n');
   }
