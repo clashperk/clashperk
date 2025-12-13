@@ -79,7 +79,8 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Action Figure': '<:ActionFigure:1401438960294690867>',
   'Dark Crown': '<:DarkCrown:1401438986366484602>',
   'Heroic Torch': '<:HeroicTorch:1252640503988486327>',
-  'Meteor Staff': '<:MeteorStaff:1436061197077315586>'
+  'Meteor Staff': '<:MeteorStaff:1436061197077315586>',
+  'Frost Flake': '<:FrostFlake:1447958238816374919>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
@@ -420,7 +421,12 @@ export const CAPITAL_HALLS: Record<string, string> = {
 export const WAR_STARS = {
   OLD: '<:OldStar:812613069703872543>',
   NEW: '<:Star:812625750809116704>',
-  EMPTY: '<:EmptyStar:812613069372522518>'
+
+  YELLOW_NEW: '<:yellow_star:1449496858857836745>',
+  YELLOW_EMPTY: '<:yellow_grey:1449496884237435051>',
+  RED_NEW: '<:red_star:1449494660610523289>',
+  RED_EMPTY: '<:red_grey:1449494686715871363>',
+  EMPTY: '<:grey:1449493203618238637>'
 };
 
 export const WAR_STAR_COMBINATIONS: Record<string, string> = {

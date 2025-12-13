@@ -69,6 +69,7 @@ const logGroups: { name: string; logs: LogMap }[] = [
       [ClanLogType.WAR_EMBED_LOG]: {
         description: 'Self-updating and Posted for every War'
       },
+      [ClanLogType.WAR_ATTACK_LOG]: {},
       [ClanLogType.WAR_MISSED_ATTACKS_LOG]: {},
       [ClanLogType.CWL_EMBED_LOG]: {
         description: 'Self-updating and Posted for every CWL Round'

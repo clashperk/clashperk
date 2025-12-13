@@ -1,6 +1,6 @@
 import { Collections, FeatureFlags, calculateCWLMedals } from '@app/constants';
 import { ClanLogType, ClanLogsEntity } from '@app/entities';
-import { APIClanWar, APIClanWarMember, APIWarClan } from 'clashofclans.js';
+import { APIClanWar, APIClanWarAttack, APIClanWarMember, APIWarClan } from 'clashofclans.js';
 import {
   APIMessage,
   ActionRowBuilder,
@@ -21,6 +21,7 @@ import { cluster } from 'radash';
 import { aggregateRoundsForRanking, calculateLeagueRanking } from '../helper/cwl.helper.js';
 import { getCWLSummaryImage } from '../struct/image-helper.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/emojis.js';
+import { padStart } from '../util/helper.js';
 import { Season, Util } from '../util/toolkit.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
@@ -101,6 +102,15 @@ export class ClanWarLog extends RootLog {
     ) {
       const embed = this.getLineupChangeEmbed(data);
       return this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+    }
+
+    // WAR ATTACK LOG
+    if (
+      (data.newAttacks?.length || data.newDefenses?.length) &&
+      cache.logType === ClanLogType.WAR_ATTACK_LOG
+    ) {
+      const content = this.getAttackLogMessage(data);
+      return this.send(cache, webhook, { content, threadId: cache.threadId });
     }
 
     if (data.warTag && cache.logType !== ClanLogType.CWL_EMBED_LOG) return null;
@@ -415,6 +425,31 @@ export class ClanWarLog extends RootLog {
     return embed;
   }
 
+  private getAttackLogMessage(data: Feed) {
+    return [...data.newAttacks, ...data.newDefenses]
+      .map((attacker) => {
+        const name = escapeMarkdown(attacker.name);
+        const isClanMember = data.clan.tag === attacker.clanTag;
+
+        const stars = this.getStars(attacker.attack.oldStars, attacker.attack.stars, !isClanMember);
+        const destruction = padStart(`${Math.floor(attacker.attack.destructionPercentage)}%`, 4);
+
+        const attackerMap =
+          BLUE_NUMBERS[isClanMember ? attacker.mapPosition : attacker.defender.mapPosition];
+        const defenderMap =
+          BLUE_NUMBERS[isClanMember ? attacker.defender.mapPosition : attacker.mapPosition];
+        const attackerTh =
+          ORANGE_NUMBERS[isClanMember ? attacker.townhallLevel : attacker.defender.townhallLevel];
+        const defenderTh =
+          ORANGE_NUMBERS[isClanMember ? attacker.defender.townhallLevel : attacker.townhallLevel];
+
+        return `${stars} \`${destruction}\` ${attackerMap}${
+          attackerTh
+        }${EMOJIS.VS}${defenderMap}${defenderTh} \u200e${name}`;
+      })
+      .join('\n');
+  }
+
   private getLeagueWarEmbed(data: Feed) {
     const { clan, opponent } = data;
     const embed = new EmbedBuilder()
@@ -560,19 +595,23 @@ export class ClanWarLog extends RootLog {
     ].join('\n');
   }
 
-  private getStars(oldStars: number, newStars: number) {
+  private getStars(oldStars: number, newStars: number, isDefense = false) {
+    const newStar = isDefense ? WAR_STARS.RED_NEW : WAR_STARS.YELLOW_NEW;
+    const oldStar = isDefense ? WAR_STARS.RED_EMPTY : WAR_STARS.YELLOW_EMPTY;
+    const emptyStar = WAR_STARS.EMPTY;
+
     if (oldStars > newStars) {
-      return [WAR_STARS.OLD.repeat(newStars), WAR_STARS.EMPTY.repeat(3 - newStars)]
-        .filter((stars) => stars.length)
-        .join('');
+      const stars = [oldStar.repeat(newStars), emptyStar.repeat(3 - newStars)];
+      return stars.filter(Boolean).join('');
     }
-    return [
-      WAR_STARS.OLD.repeat(oldStars),
-      WAR_STARS.NEW.repeat(newStars - oldStars),
-      WAR_STARS.EMPTY.repeat(3 - newStars)
-    ]
-      .filter((stars) => stars.length)
-      .join('');
+
+    const stars = [
+      oldStar.repeat(oldStars),
+      newStar.repeat(newStars - oldStars),
+      emptyStar.repeat(3 - newStars)
+    ];
+
+    return stars.filter(Boolean).join('');
   }
 
   private getRoster(
@@ -616,6 +655,7 @@ export class ClanWarLog extends RootLog {
         $in: [
           ClanLogType.WAR_EMBED_LOG,
           ClanLogType.CWL_EMBED_LOG,
+          ClanLogType.WAR_ATTACK_LOG,
           ClanLogType.CWL_MISSED_ATTACKS_LOG,
           ClanLogType.WAR_MISSED_ATTACKS_LOG,
           ClanLogType.CWL_LINEUP_CHANGE_LOG,
@@ -681,6 +721,16 @@ interface Feed extends APIClanWar {
   };
   oldMembers: APIClanWarMember[];
   newMembers: APIClanWarMember[];
+  newAttacks: (Pick<APIClanWarMember, 'name' | 'tag' | 'mapPosition' | 'townhallLevel'> & {
+    clanTag: string;
+    attack: APIClanWarAttack & { oldStars: number };
+    defender: Pick<APIClanWarMember, 'name' | 'tag' | 'mapPosition' | 'townhallLevel'>;
+  })[];
+  newDefenses: (Pick<APIClanWarMember, 'name' | 'tag' | 'mapPosition' | 'townhallLevel'> & {
+    clanTag: string;
+    attack: APIClanWarAttack & { oldStars: number };
+    defender: Pick<APIClanWarMember, 'name' | 'tag' | 'mapPosition' | 'townhallLevel'>;
+  })[];
   type?: 'CWL_ENDED';
 }
 
