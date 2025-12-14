@@ -428,8 +428,8 @@ export class ClanWarLog extends RootLog {
   private getAttackLogMessage(data: Feed) {
     return [...data.newAttacks, ...data.newDefenses]
       .map((attacker) => {
-        const name = escapeMarkdown(attacker.name);
         const isClanMember = data.clan.tag === attacker.clanTag;
+        const name = escapeMarkdown(isClanMember ? attacker.name : attacker.defender.name);
 
         const stars = this.getStars(attacker.attack.oldStars, attacker.attack.stars, !isClanMember);
         const destruction = padStart(`${Math.floor(attacker.attack.destructionPercentage)}%`, 4);
@@ -633,16 +633,7 @@ export class ClanWarLog extends RootLog {
     const guildIds = this.client.guilds.cache.map((guild) => guild.id);
     for await (const data of this.collection.find({
       guildId: { $in: guildIds },
-      logType: {
-        $in: [
-          ClanLogType.WAR_EMBED_LOG,
-          ClanLogType.CWL_EMBED_LOG,
-          ClanLogType.CWL_MISSED_ATTACKS_LOG,
-          ClanLogType.WAR_MISSED_ATTACKS_LOG,
-          ClanLogType.CWL_LINEUP_CHANGE_LOG,
-          ClanLogType.CWL_MONTHLY_SUMMARY_LOG
-        ]
-      },
+      logType: { $in: this.logTypes },
       isEnabled: true
     })) {
       this.setCache(data);
@@ -652,21 +643,23 @@ export class ClanWarLog extends RootLog {
   public async add(guildId: string) {
     for await (const data of this.collection.find({
       guildId,
-      logType: {
-        $in: [
-          ClanLogType.WAR_EMBED_LOG,
-          ClanLogType.CWL_EMBED_LOG,
-          ClanLogType.WAR_ATTACK_LOG,
-          ClanLogType.CWL_MISSED_ATTACKS_LOG,
-          ClanLogType.WAR_MISSED_ATTACKS_LOG,
-          ClanLogType.CWL_LINEUP_CHANGE_LOG,
-          ClanLogType.CWL_MONTHLY_SUMMARY_LOG
-        ]
-      },
+      logType: { $in: this.logTypes },
       isEnabled: true
     })) {
       this.setCache(data);
     }
+  }
+
+  private get logTypes() {
+    return [
+      ClanLogType.WAR_EMBED_LOG,
+      ClanLogType.CWL_EMBED_LOG,
+      ClanLogType.WAR_ATTACK_LOG,
+      ClanLogType.CWL_MISSED_ATTACKS_LOG,
+      ClanLogType.WAR_MISSED_ATTACKS_LOG,
+      ClanLogType.CWL_LINEUP_CHANGE_LOG,
+      ClanLogType.CWL_MONTHLY_SUMMARY_LOG
+    ];
   }
 
   private setCache(data: WithId<ClanLogsEntity>) {
