@@ -70,25 +70,12 @@ services:
     mem_limit: 1gb
     restart: always
 
-  mongodb-keyfile-generator:
-    image: mongo:7
-    container_name: mongodb-keyfile-generator
-    volumes:
-      - 'mongodb_config:/data/configdb'
-    entrypoint:
-      [
-        '/bin/sh',
-        '-c',
-        'openssl rand -base64 756 > /data/configdb/keyFile.pem && chmod 400 /data/configdb/keyFile.pem && chown 999:999 /data/configdb/keyFile.pem'
-      ]
-
   mongodb:
     container_name: mongodb
-    image: mongo:7
+    image: mongo:8
     restart: always
-    depends_on:
-      - mongodb-keyfile-generator
     mem_limit: 1g
+    hostname: mongodb
     ports:
       - 27017:27017
     environment:
@@ -97,21 +84,9 @@ services:
     volumes:
       - 'mongodb_data:/data/db'
       - 'mongodb_config:/data/configdb'
+      - './scripts/start_mongo.sh:/start_mongo.sh'
+    entrypoint: ["/bin/bash", "/start_mongo.sh"]
     command: --bind_ip_all --replSet rs0 --keyFile /data/configdb/keyFile.pem
-
-  mongodb-repl-init:
-    image: mongo:7
-    container_name: mongodb-repl-init
-    depends_on:
-      - mongodb
-    volumes:
-      - 'mongodb_config:/data/configdb'
-    entrypoint:
-      [
-        '/bin/sh',
-        '-c',
-        'sleep 5 && mongosh --host mongodb:27017 -u root -p password --authenticationDatabase admin --eval ''rs.initiate({_id: "rs0", members: [{ _id: 0, host: "mongodb:27017" }]})'''
-      ]
 
 volumes:
   redis_data:

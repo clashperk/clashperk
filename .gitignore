@@ -9,3 +9,4 @@ test/
 .sentryclirc
 .env.*
 scripts/sql/
+service-account.json
