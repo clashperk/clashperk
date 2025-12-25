@@ -59,7 +59,7 @@ async function exportCommands(commands: ApplicationCommand[]) {
   }));
 
   items.sort((a, b) => a.name.localeCompare(b.name));
-  writeFileSync('./scripts/commands_export.json', JSON.stringify(items, null, 2));
+  writeFileSync('./scripts/assets/commands_export.json', JSON.stringify(items, null, 2));
 }
 
 const applicationGuildCommands = async (

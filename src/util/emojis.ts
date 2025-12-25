@@ -1,13 +1,9 @@
-export const HOME_HEROES_TYPED = {
+export const HOME_HEROES: Record<string, string> = {
   'Barbarian King': '<:BarbarianKing:696305370682884111>',
   'Archer Queen': '<:ArcherQueen:696305403046133780>',
   'Grand Warden': '<:GrandWarden:841295204476780586>',
   'Royal Champion': '<:RoyalChampion:813806447934308422>',
   'Minion Prince': '<:MinionPrince:1310574226448584704>'
-};
-
-export const HOME_HEROES: Record<string, string> = {
-  ...HOME_HEROES_TYPED
 };
 
 export const ELIXIR_TROOPS: Record<string, string> = {
