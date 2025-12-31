@@ -658,6 +658,7 @@ export class ClanWarLog extends RootLog {
       ClanLogType.WAR_EMBED_LOG,
       ClanLogType.CWL_EMBED_LOG,
       ClanLogType.WAR_ATTACK_LOG,
+      ClanLogType.CWL_ATTACK_LOG,
       ClanLogType.CWL_MISSED_ATTACKS_LOG,
       ClanLogType.WAR_MISSED_ATTACKS_LOG,
       ClanLogType.CWL_LINEUP_CHANGE_LOG,
