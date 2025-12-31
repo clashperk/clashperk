@@ -66,15 +66,22 @@ const logGroups: { name: string; logs: LogMap }[] = [
   {
     name: 'War Logs',
     logs: {
+      [ClanLogType.WAR_ATTACK_LOG]: {
+        description: 'Posted for every War Attack [NEW]'
+      },
+      [ClanLogType.CWL_ATTACK_LOG]: {
+        description: 'Posted for every CWL Attack [NEW]'
+      },
+
       [ClanLogType.WAR_EMBED_LOG]: {
         description: 'Self-updating and Posted for every War'
       },
-      [ClanLogType.WAR_ATTACK_LOG]: {},
       [ClanLogType.WAR_MISSED_ATTACKS_LOG]: {},
       [ClanLogType.CWL_EMBED_LOG]: {
         description: 'Self-updating and Posted for every CWL Round'
       },
       [ClanLogType.CWL_MISSED_ATTACKS_LOG]: {},
+
       [ClanLogType.CWL_LINEUP_CHANGE_LOG]: {},
       [ClanLogType.CWL_MONTHLY_SUMMARY_LOG]: {}
     }

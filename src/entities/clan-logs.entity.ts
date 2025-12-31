@@ -76,6 +76,7 @@ export enum ClanLogType {
   WAR_MISSED_ATTACKS_LOG = 'war_missed_attacks_log',
 
   WAR_ATTACK_LOG = 'war_attack_log',
+  CWL_ATTACK_LOG = 'cwl_attack_log',
 
   CWL_EMBED_LOG = 'cwl_embed_log',
   CWL_LINEUP_CHANGE_LOG = 'cwl_lineup_change_log',

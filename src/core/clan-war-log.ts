@@ -107,8 +107,11 @@ export class ClanWarLog extends RootLog {
     // WAR ATTACK LOG
     if (
       (data.newAttacks?.length || data.newDefenses?.length) &&
-      cache.logType === ClanLogType.WAR_ATTACK_LOG
+      [ClanLogType.WAR_ATTACK_LOG, ClanLogType.CWL_ATTACK_LOG].includes(cache.logType)
     ) {
+      if (data.warTag && cache.logType !== ClanLogType.CWL_ATTACK_LOG) return null;
+      if (!data.warTag && cache.logType !== ClanLogType.WAR_ATTACK_LOG) return null;
+
       const content = this.getAttackLogMessage(data);
       return this.send(cache, webhook, { content, threadId: cache.threadId });
     }
