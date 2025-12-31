@@ -539,9 +539,9 @@ export class ClanWarLog extends RootLog {
                 .toString()
                 .concat('%')
                 .padStart(pad, ' ');
-              return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
+              return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]}${ORANGE_NUMBERS[
                 attacker.townHallLevel
-              ]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
+              ]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]}${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
             })
           ].join('\n')
         }
@@ -626,7 +626,7 @@ export class ClanWarLog extends RootLog {
   ) {
     return cluster(townHalls, 5)
       .map((chunks) => {
-        const list = chunks.map((th) => `${TOWN_HALLS[th.level]!} ${ORANGE_NUMBERS[th.total]!}`);
+        const list = chunks.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`);
         return list.join(' ');
       })
       .join('\n');
