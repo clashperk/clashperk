@@ -17,6 +17,8 @@ import {
   MessageFlags,
   PermissionsString,
   RestEvents,
+  StringSelectMenuInteraction,
+  TextDisplayBuilder,
   User,
   UserContextMenuCommandInteraction
 } from 'discord.js';
@@ -26,7 +28,7 @@ import { pathToFileURL } from 'node:url';
 import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
-import { CustomIdProps } from '../struct/component-handler.js';
+import { CustomIdProps } from '../struct/redis-service.js';
 import { i18n } from '../util/i18n.js';
 import './modifier.js';
 import {
@@ -61,6 +63,12 @@ export type Args = Record<
     default?: unknown | ((value: unknown) => unknown);
   } | null
 >;
+
+const deferredDisallowed = ['link-add'];
+
+const deletedCommands: Record<string, string> = {
+  layout: 'layout-post'
+};
 
 class BaseHandler extends EventEmitter {
   public readonly directory: string;
@@ -116,6 +124,9 @@ export class CommandHandler extends BaseHandler {
       if (interaction.isContextMenuCommand()) {
         return this.handleContextInteraction(interaction);
       }
+      if (interaction.isMessageComponent()) {
+        return this.handleComponentInteraction(interaction);
+      }
     });
   }
 
@@ -128,6 +139,84 @@ export class CommandHandler extends BaseHandler {
       }
       this.aliases.set(alias, command.id);
     }
+  }
+
+  private async handleComponentInteraction(interaction: MessageComponentInteraction) {
+    const userIds = this.client.components.get(interaction.customId);
+    if (userIds?.length && userIds.includes(interaction.user.id)) return;
+
+    if (userIds?.length && !userIds.includes(interaction.user.id)) {
+      return interaction.reply({
+        content: i18n('common.component.unauthorized', { lng: interaction.locale }),
+        flags: MessageFlags.Ephemeral
+      });
+    }
+
+    if (this.client.components.has(interaction.customId)) return;
+
+    const parsed = await this.client.redis.parseCommandId(interaction.customId);
+    const command = parsed && this.getCommand(deletedCommands[parsed.cmd] || parsed.cmd);
+    if (!command) {
+      //
+      const isEmpty = !(
+        interaction.message.attachments.size ||
+        interaction.message.embeds.length ||
+        interaction.message.content.length ||
+        interaction.message.stickers.size
+      );
+
+      const content = i18n('common.component.expired', { lng: interaction.locale });
+      if (interaction.message.flags.has(MessageFlags.IsComponentsV2)) {
+        return interaction.update({ components: [new TextDisplayBuilder({ content })] });
+      }
+
+      if (isEmpty) {
+        return interaction.update({ components: [], content });
+      }
+
+      await interaction.update({ components: [] });
+      return interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+    }
+
+    if (!interaction.inCachedGuild() && command.channel !== 'dm') return true;
+    if (interaction.inCachedGuild() && !interaction.channel) return true;
+
+    if (this.preInhibitor(interaction, command, { commandName: parsed.cmd })) return;
+
+    if (
+      parsed.is_locked &&
+      interaction.message.interactionMetadata &&
+      interaction.message.interactionMetadata?.user.id !== interaction.user.id
+    ) {
+      await interaction.reply({
+        content: i18n('common.component.unauthorized', { lng: interaction.locale }),
+        flags: MessageFlags.Ephemeral
+      });
+      return true;
+    }
+
+    const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
+    if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) {
+      if (parsed.ephemeral) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+      } else {
+        await interaction.deferUpdate();
+      }
+    }
+
+    if (parsed.user_id) {
+      parsed.user = await this.client.users.fetch(parsed.user_id as string).catch(() => null);
+    }
+
+    function resolveMenu(interaction: StringSelectMenuInteraction, parsed: CustomIdProps) {
+      const values = interaction.values;
+      if (parsed.array_key) return { [parsed.array_key]: values };
+      if (parsed.string_key) return { [parsed.string_key]: values.at(0) };
+      return { selected: values };
+    }
+
+    const selected = interaction.isStringSelectMenu() ? resolveMenu(interaction, parsed) : {};
+    return this.exec(interaction, command, { ...parsed, ...selected });
   }
 
   public handleInteraction(interaction: ChatInputCommandInteraction) {

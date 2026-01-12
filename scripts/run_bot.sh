@@ -6,9 +6,9 @@ if ! docker network inspect default_net >/dev/null 2>&1; then
 fi
 
 if [ "$(docker ps -aq -f name=clashperk_bot)" ]; then
-    echo "Stopping and removing existing 'clashperk_bot' container..."
-    docker stop clashperk_bot
-    docker rm clashperk_bot
+  echo "Stopping and removing existing 'clashperk_bot' container..."
+  docker stop clashperk_bot
+  docker rm clashperk_bot
 fi
 
 echo "Starting 'clashperk_bot'..."

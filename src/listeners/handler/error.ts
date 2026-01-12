@@ -1,4 +1,4 @@
-import { addBreadcrumb, captureException, setContext } from '@sentry/node';
+import { addBreadcrumb, captureException, setContext, setUser } from '@sentry/node';
 import {
   ActionRowBuilder,
   AutocompleteInteraction,
@@ -25,7 +25,7 @@ export default class ErrorListener extends Listener {
   public async exec(
     error: Error,
     interaction: Exclude<Interaction, AutocompleteInteraction>,
-    command?: Command
+    command: Command
   ) {
     const label = interaction.guild
       ? `${interaction.guild.name}/${interaction.user.displayName}`
@@ -51,8 +51,8 @@ export default class ErrorListener extends Listener {
         ? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
         : interaction.channelId,
       command: {
-        id: command?.id,
-        category: command?.category
+        id: command.id,
+        category: command.category
       },
       interaction: {
         locale: interaction.locale,
@@ -70,7 +70,18 @@ export default class ErrorListener extends Listener {
       data: context
     });
     setContext('command_errored', context);
-    captureException(error);
+    setUser({
+      id: interaction.user.id,
+      username: interaction.user.username
+    });
+    captureException(error, {
+      tags: {
+        command: command.id,
+        userId: interaction.user.id,
+        interactionType: InteractionType[interaction.type],
+        guildId: interaction.guildId || 'DM'
+      }
+    });
 
     const content =
       interaction.inCachedGuild() && !interaction.channel

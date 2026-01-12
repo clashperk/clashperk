@@ -3,7 +3,6 @@ import { nanoid } from 'nanoid';
 import { createClient } from 'redis';
 import { mapToPlayerInterface } from '../helper/cache-mapper.helper.js';
 import { Client } from './client.js';
-import { CustomIdProps } from './component-handler.js';
 
 export class RedisService {
   public connection = createClient({
@@ -151,6 +150,14 @@ export class RedisService {
     }
   }
 
+  public async parseCommandId(customId: string): Promise<CustomIdProps | null> {
+    if (/^{.*}$/.test(customId)) return JSON.parse(customId);
+    if (/^CMD/.test(customId)) {
+      return this.getCustomId<CustomIdProps>(customId);
+    }
+    return null;
+  }
+
   public async deleteCustomId(customId: string) {
     return this.connection.del(customId);
   }
@@ -158,4 +165,17 @@ export class RedisService {
   public async expireCustomId(customId: string) {
     return this.connection.expire(customId, 60, 'XX');
   }
+}
+
+export interface CustomIdProps {
+  cmd: string;
+  ephemeral?: boolean;
+  flags?: never;
+  /** It defaults to `true` */
+  defer?: false;
+  array_key?: string;
+  string_key?: string;
+  user_id?: string;
+  is_locked?: boolean;
+  [key: string]: unknown;
 }

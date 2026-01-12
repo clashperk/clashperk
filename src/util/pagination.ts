@@ -14,7 +14,7 @@ import {
 } from 'discord.js';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
-import { CustomIdProps } from '../struct/component-handler.js';
+import { CustomIdProps } from '../struct/redis-service.js';
 import { EMOJIS } from './emojis.js';
 
 const NEXT = '➡️';

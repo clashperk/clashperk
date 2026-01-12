@@ -63,7 +63,7 @@ export class ClientUtil {
     this.client.cacheOverLimitGuilds.add(guild.id);
     setTimeout(() => {
       this.client.cacheOverLimitGuilds.delete(guild.id);
-    }, 45000);
+    }, 45 * 1000);
 
     try {
       try {

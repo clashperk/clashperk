@@ -16,7 +16,6 @@ import pluralize from 'pluralize';
 import { group } from 'radash';
 import { getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
-import { CustomIdProps } from '../../struct/component-handler.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
 import { Season, Util } from '../../util/toolkit.js';
 
@@ -619,7 +618,7 @@ export default class RemainingCommand extends Command {
   }
 
   private getComponents(args: CommandArgs) {
-    const payload: CustomIdProps = {
+    const payload = {
       cmd: this.id,
       user_id: args.user?.id,
       player_tag: args.player_tag,
