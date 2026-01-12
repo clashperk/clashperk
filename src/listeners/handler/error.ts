@@ -78,7 +78,6 @@ export default class ErrorListener extends Listener {
       tags: {
         command: command.id,
         userId: interaction.user.id,
-        interactionType: InteractionType[interaction.type],
         guildId: interaction.guildId || 'DM'
       }
     });
