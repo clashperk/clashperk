@@ -149,11 +149,12 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String
         },
         {
-          name: 'season',
-          description: common.options.season_since.description,
-          description_localizations: translation('common.options.season_since.description'),
-          type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          name: 'auto_export_on',
+          description: command.export.members.options.auto_export_on.description,
+          description_localizations: translation(
+            'command.export.members.options.auto_export_on.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
         }
       ]
     },

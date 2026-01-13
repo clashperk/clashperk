@@ -98,10 +98,18 @@ export interface HandoffTokenInputDto {
   guildId: string;
 }
 
+export interface HandoffTokenDto {
+  token: string;
+}
+
 export interface CreateLinkInputDto {
   playerTag: string;
   userId: string;
   apiToken: string | null;
+}
+
+export interface ResultOkDto {
+  message: string;
 }
 
 export interface GetLinksInputDto {
@@ -110,13 +118,13 @@ export interface GetLinksInputDto {
    * @minItems 1
    * @example ["#2PP"]
    */
-  playerTags: string[];
+  playerTags?: string[];
   /**
    * @maxItems 100
    * @minItems 1
    * @example ["444432489818357760"]
    */
-  userIds: string[];
+  userIds?: string[];
 }
 
 export interface LinksDto {
@@ -177,7 +185,7 @@ export interface AttackRecordDto {
   stars: number;
   trueStars: number;
   defenderTag: string;
-  destructionPercentage: number;
+  destruction: number;
 }
 
 export interface AttackHistoryDto {
@@ -187,6 +195,7 @@ export interface AttackHistoryDto {
   /** @format date-time */
   endTime: string;
   attacks: AttackRecordDto[];
+  season: string;
   id: number;
   clan: {
     name: string;
@@ -211,11 +220,30 @@ export interface AttackHistoryItemsDto {
 }
 
 export interface AggregateAttackHistoryDto {
+  season: string;
   totalWars: number;
   totalAttacks: number;
   total3Stars: number;
   totalMissed: number;
   totalStars: number;
+}
+
+export interface AggregateAttackHistoryItemsDto {
+  items: AggregateAttackHistoryDto[];
+}
+
+export interface AggregateClanWarLeagueHistoryDto {
+  season: string;
+  totalAttacks: number;
+  totalMissed: number;
+  totalDestruction: number;
+  totalStars: number;
+  totalWars: number;
+  rounds: number;
+}
+
+export interface AggregateClanWarLeagueHistoryItemsDto {
+  items: AggregateClanWarLeagueHistoryDto[];
 }
 
 export interface ThresholdsDto {
@@ -291,7 +319,7 @@ export interface ClanWarLeagueRound {
   warTags: string[];
 }
 
-export interface ClanDto {
+export interface LeagueGroupClanDto {
   tag: string;
   name: string;
   leagueId: number;
@@ -335,23 +363,178 @@ export interface WarClanDto {
 
 export interface ClanWarDto {
   state: string;
-  battleModifier?: string;
-  teamSize: number;
   startTime: string;
   preparationStartTime: string;
   endTime: string;
+  battleModifier?: string | null;
+  attacksPerMember?: number | null;
+  round?: number | null;
+  warTag?: string | null;
+  teamSize: number;
   clan: WarClanDto;
   opponent: WarClanDto;
-  attacksPerMember?: number;
-  round: number;
-  warTag: string;
+  result: string;
 }
 
 export interface ClanWarLeaguesDto {
   season: string;
   rounds: ClanWarLeagueRound[];
-  clans: ClanDto[];
+  clans: LeagueGroupClanDto[];
   wars: ClanWarDto[];
+}
+
+export interface RosterMemberOfRostersEntity {
+  warPreference: string;
+  categoryId?: string | null;
+  name: string;
+  tag: string;
+  userId: string | null;
+  username: string | null;
+  role: string | null;
+  townHallLevel: number;
+  heroes: object;
+  trophies: number;
+  clan?: {
+    tag: string;
+    name: string;
+    alias?: string | null;
+  };
+  /** @format date-time */
+  createdAt: string;
+}
+
+export interface RostersEntity {
+  _id: string;
+  category: string;
+  name: string;
+  guildId: string;
+  maxMembers?: number;
+  minTownHall?: number;
+  maxTownHall?: number;
+  minHeroLevels?: number;
+  roleId?: string | null;
+  colorCode?: number;
+  clan: {
+    tag: string;
+    name: string;
+    badgeUrl: string;
+  };
+  members: RosterMemberOfRostersEntity[];
+  layout?: string;
+  sheetId?: string;
+  closed: boolean;
+  /** @format date-time */
+  startTime?: string | null;
+  /** @format date-time */
+  endTime?: string | null;
+  sortBy?: string;
+  useClanAlias?: boolean;
+  allowUnlinked?: boolean;
+  allowMultiSignup?: boolean;
+  allowCategorySelection?: boolean;
+  /** @format date-time */
+  lastUpdated: string;
+  /** @format date-time */
+  createdAt: string;
+}
+
+export interface RosterGroupsEntity {
+  _id: string;
+  displayName: string;
+  name: string;
+  guildId: string;
+  selectable: boolean;
+  roleId?: string | null;
+  /** @format date-time */
+  createdAt: string;
+}
+
+export interface GetRostersDto {
+  rosters: RostersEntity[];
+  categories: RosterGroupsEntity[];
+}
+
+export interface RemoveMembersBulkInput {
+  /** @minItems 1 */
+  playerTags: string[];
+}
+
+export interface TransferRosterMembersInput {
+  /** @minItems 1 */
+  playerTags: string[];
+  newRosterId: string;
+  newGroupId: string;
+}
+
+export interface TransferRosterMembersDto {
+  roster: RostersEntity;
+  result: {
+    player: {
+      name?: string;
+      tag?: string;
+    };
+    success: boolean;
+    message: string;
+  }[];
+}
+
+export interface GuildClanDto {
+  _id: string;
+  categoryId?: string | null;
+  name: string;
+  tag: string;
+  order: number;
+}
+
+export interface CategoryDto {
+  _id: string;
+  displayName: string;
+  order: number;
+  clans: GuildClanDto[];
+}
+
+export interface GuildClansDto {
+  guildId: string;
+  name: string;
+  clans: GuildClanDto[];
+  categories: CategoryDto[];
+}
+
+export interface ReorderClansInput {
+  _id: string;
+  order: number;
+}
+
+export interface ReorderCategoriesInput {
+  _id: string;
+  order: number;
+  clans: ReorderClansInput[];
+}
+
+export interface ReorderClanCategoriesInput {
+  /** @minItems 1 */
+  categories: ReorderCategoriesInput[];
+}
+
+export interface ListMemberDto {
+  id: string;
+  username: string;
+  displayName: string;
+}
+
+export interface ExportMembersInput {
+  /**
+   * @maxItems 100
+   * @minItems 1
+   */
+  clanTags: string[];
+  guildId: string;
+  scheduled: boolean;
+}
+
+export interface ExportMembersOutputDto {
+  spreadsheetId: string;
+  spreadsheetUrl: string;
 }
 
 export interface CommandsUsageLogDto {
@@ -369,9 +552,9 @@ export type LoginData = LoginOkDto;
 
 export type LoginError = ErrorResponseDto;
 
-export type GenerateTokenData = GenerateTokenDto;
+export type GeneratePasskeyData = GenerateTokenDto;
 
-export type GenerateTokenError = ErrorResponseDto;
+export type GeneratePasskeyError = ErrorResponseDto;
 
 export interface GetAuthUserParams {
   userId: string;
@@ -389,11 +572,11 @@ export type DecodeHandoffTokenData = HandoffUserDto;
 
 export type DecodeHandoffTokenError = ErrorResponseDto;
 
-export type CreateHandoffTokenData = any;
+export type CreateHandoffTokenData = HandoffTokenDto;
 
 export type CreateHandoffTokenError = ErrorResponseDto;
 
-export type LinkData = any;
+export type LinkData = ResultOkDto;
 
 export type LinkError = ErrorResponseDto;
 
@@ -401,7 +584,7 @@ export interface UnlinkParams {
   playerTag: string;
 }
 
-export type UnlinkData = any;
+export type UnlinkData = ResultOkDto;
 
 export type UnlinkError = ErrorResponseDto;
 
@@ -430,7 +613,7 @@ export interface GetAttackHistoryParams {
    * Date string or timestamp in milliseconds
    * @format date-time
    */
-  startDate?: string;
+  startDate: string;
   playerTag: string;
 }
 
@@ -443,19 +626,33 @@ export interface AggregateAttackHistoryParams {
    * Date string or timestamp in milliseconds
    * @format date-time
    */
-  startDate?: string;
+  startDate: string;
   playerTag: string;
 }
 
-export type AggregateAttackHistoryData = AggregateAttackHistoryDto;
+export type AggregateAttackHistoryData = AggregateAttackHistoryItemsDto;
 
 export type AggregateAttackHistoryError = ErrorResponseDto;
+
+export interface AggregateClanWarLeagueHistoryParams {
+  /**
+   * Date string or timestamp in milliseconds
+   * @format date-time
+   */
+  startDate: string;
+  playerTag: string;
+}
+
+export type AggregateClanWarLeagueHistoryData =
+  AggregateClanWarLeagueHistoryItemsDto;
+
+export type AggregateClanWarLeagueHistoryError = ErrorResponseDto;
 
 export interface AddPlayerAccountParams {
   playerTag: string;
 }
 
-export type AddPlayerAccountData = any;
+export type AddPlayerAccountData = ResultOkDto;
 
 export type AddPlayerAccountError = ErrorResponseDto;
 
@@ -495,39 +692,20 @@ export type GetClanWarLeagueForClanData = ClanWarLeaguesDto;
 
 export type GetClanWarLeagueForClanError = ErrorResponseDto;
 
-export interface GetRosterParams {
-  rosterId: string;
-  guildId: string;
+export interface GetClanWarParams {
+  clanTag: string;
+  warId: string;
 }
 
-export type GetRosterData = any;
+export type GetClanWarData = ClanWarDto;
 
-export type GetRosterError = ErrorResponseDto;
-
-export interface UpdateRosterParams {
-  rosterId: string;
-  guildId: string;
-}
-
-export type UpdateRosterData = any;
-
-export type UpdateRosterError = ErrorResponseDto;
-
-export interface DeleteRosterParams {
-  rosterId: string;
-  guildId: string;
-}
-
-export type DeleteRosterData = any;
-
-export type DeleteRosterError = ErrorResponseDto;
+export type GetClanWarError = ErrorResponseDto;
 
 export interface GetRostersParams {
-  rosterId: string;
   guildId: string;
 }
 
-export type GetRostersData = any;
+export type GetRostersData = GetRostersDto;
 
 export type GetRostersError = ErrorResponseDto;
 
@@ -536,16 +714,43 @@ export interface CreateRosterParams {
   guildId: string;
 }
 
-export type CreateRosterData = any;
+export type CreateRosterData = object;
 
 export type CreateRosterError = ErrorResponseDto;
+
+export interface GetRosterParams {
+  rosterId: string;
+  guildId: string;
+}
+
+export type GetRosterData = RostersEntity;
+
+export type GetRosterError = ErrorResponseDto;
+
+export interface UpdateRosterParams {
+  rosterId: string;
+  guildId: string;
+}
+
+export type UpdateRosterData = object;
+
+export type UpdateRosterError = ErrorResponseDto;
+
+export interface DeleteRosterParams {
+  rosterId: string;
+  guildId: string;
+}
+
+export type DeleteRosterData = object;
+
+export type DeleteRosterError = ErrorResponseDto;
 
 export interface CloneRosterParams {
   rosterId: string;
   guildId: string;
 }
 
-export type CloneRosterData = any;
+export type CloneRosterData = object;
 
 export type CloneRosterError = ErrorResponseDto;
 
@@ -554,7 +759,7 @@ export interface AddRosterMembersParams {
   guildId: string;
 }
 
-export type AddRosterMembersData = any;
+export type AddRosterMembersData = object;
 
 export type AddRosterMembersError = ErrorResponseDto;
 
@@ -563,7 +768,7 @@ export interface DeleteRosterMembersParams {
   guildId: string;
 }
 
-export type DeleteRosterMembersData = any;
+export type DeleteRosterMembersData = object;
 
 export type DeleteRosterMembersError = ErrorResponseDto;
 
@@ -572,24 +777,24 @@ export interface RefreshRosterMembersParams {
   guildId: string;
 }
 
-export type RefreshRosterMembersData = any;
+export type RefreshRosterMembersData = object;
 
 export type RefreshRosterMembersError = ErrorResponseDto;
 
-export interface ManageRosterParams {
+export interface TransferRosterMembersParams {
   rosterId: string;
   guildId: string;
 }
 
-export type ManageRosterData = any;
+export type TransferRosterMembersData = TransferRosterMembersDto;
 
-export type ManageRosterError = ErrorResponseDto;
+export type TransferRosterMembersError = ErrorResponseDto;
 
 export interface GetUserParams {
   userId: string;
 }
 
-export type GetUserData = any;
+export type GetUserData = object;
 
 export type GetUserError = ErrorResponseDto;
 
@@ -597,20 +802,37 @@ export interface GetGuildClansParams {
   guildId: string;
 }
 
-export type GetGuildClansData = any;
+export type GetGuildClansData = GuildClansDto;
 
 export type GetGuildClansError = ErrorResponseDto;
 
-export type ExportClanMembersData = any;
+export interface ReorderGuildClansParams {
+  guildId: string;
+}
+
+export type ReorderGuildClansData = GuildClansDto;
+
+export type ReorderGuildClansError = ErrorResponseDto;
+
+export interface ListMembersParams {
+  query: string;
+  guildId: string;
+}
+
+export type ListMembersData = ListMemberDto[];
+
+export type ListMembersError = ErrorResponseDto;
+
+export type ExportClanMembersData = ExportMembersOutputDto;
 
 export type ExportClanMembersError = ErrorResponseDto;
 
 export namespace Auth {
   /**
-   * No description
+   * @description Authenticates a user using a `passKey` and returns an `accessToken` with a limited validity period (2 hours). Once the token expires, a new token must be generated.<br/><br/>The `accessToken` must be included in all protected API requests using the following header `Authorization: Bearer <accessToken>`
    * @tags Auth
    * @name Login
-   * @summary Authenticates a user and returns login information.
+   * @summary Authenticate with your passKey to receive an accessToken required for authorized API requests.
    * @request POST:/auth/login
    * @response `201` `LoginData`
    * @response `500` `ErrorResponseDto`
@@ -626,26 +848,25 @@ export namespace Auth {
   /**
    * No description
    * @tags Auth
-   * @name GenerateToken
-   * @summary Generates a JWT token with specified user roles.
-   * @request POST:/auth/generate-token
+   * @name GeneratePasskey
+   * @summary Generate a passKey required for authentication.
+   * @request POST:/auth/generate-passkey
    * @secure
-   * @response `201` `GenerateTokenData`
+   * @response `201` `GeneratePasskeyData`
    * @response `500` `ErrorResponseDto`
    */
-  export namespace GenerateToken {
+  export namespace GeneratePasskey {
     export type RequestParams = {};
     export type RequestQuery = {};
     export type RequestBody = GenerateTokenInputDto;
     export type RequestHeaders = {};
-    export type ResponseBody = GenerateTokenData;
+    export type ResponseBody = GeneratePasskeyData;
   }
 
   /**
    * No description
    * @tags Auth
    * @name GetAuthUser
-   * @summary Retrieves authenticated user information based on userId.
    * @request GET:/auth/users/{userId}
    * @secure
    * @response `200` `GetAuthUserData`
@@ -813,7 +1034,7 @@ export namespace Players {
        * Date string or timestamp in milliseconds
        * @format date-time
        */
-      startDate?: string;
+      startDate: string;
     };
     export type RequestBody = never;
     export type RequestHeaders = {};
@@ -838,11 +1059,36 @@ export namespace Players {
        * Date string or timestamp in milliseconds
        * @format date-time
        */
-      startDate?: string;
+      startDate: string;
     };
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = AggregateAttackHistoryData;
+  }
+
+  /**
+   * No description
+   * @tags Players
+   * @name AggregateClanWarLeagueHistory
+   * @request GET:/players/{playerTag}/clan-war-leagues/aggregate
+   * @secure
+   * @response `200` `AggregateClanWarLeagueHistoryData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace AggregateClanWarLeagueHistory {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {
+      /**
+       * Date string or timestamp in milliseconds
+       * @format date-time
+       */
+      startDate: string;
+    };
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = AggregateClanWarLeagueHistoryData;
   }
 
   /**
@@ -975,9 +1221,68 @@ export namespace Wars {
     export type RequestHeaders = {};
     export type ResponseBody = GetClanWarLeagueForClanData;
   }
+
+  /**
+   * No description
+   * @tags Wars
+   * @name GetClanWar
+   * @request GET:/wars/{clanTag}/{warId}
+   * @secure
+   * @response `200` `GetClanWarData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetClanWar {
+    export type RequestParams = {
+      clanTag: string;
+      warId: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetClanWarData;
+  }
 }
 
 export namespace Rosters {
+  /**
+   * No description
+   * @tags Rosters
+   * @name GetRosters
+   * @request GET:/rosters/{guildId}/list
+   * @secure
+   * @response `200` `GetRostersData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetRosters {
+    export type RequestParams = {
+      guildId: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetRostersData;
+  }
+
+  /**
+   * No description
+   * @tags Rosters
+   * @name CreateRoster
+   * @request POST:/rosters/{guildId}/create
+   * @secure
+   * @response `201` `CreateRosterData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace CreateRoster {
+    export type RequestParams = {
+      rosterId: string;
+      guildId: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = CreateRosterData;
+  }
+
   /**
    * No description
    * @tags Rosters
@@ -1041,46 +1346,6 @@ export namespace Rosters {
   /**
    * No description
    * @tags Rosters
-   * @name GetRosters
-   * @request GET:/rosters/{guildId}/{rosterId}/list
-   * @secure
-   * @response `200` `GetRostersData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace GetRosters {
-    export type RequestParams = {
-      rosterId: string;
-      guildId: string;
-    };
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetRostersData;
-  }
-
-  /**
-   * No description
-   * @tags Rosters
-   * @name CreateRoster
-   * @request POST:/rosters/{guildId}/create
-   * @secure
-   * @response `201` `CreateRosterData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace CreateRoster {
-    export type RequestParams = {
-      rosterId: string;
-      guildId: string;
-    };
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = CreateRosterData;
-  }
-
-  /**
-   * No description
-   * @tags Rosters
    * @name CloneRoster
    * @request POST:/rosters/{guildId}/{rosterId}/clone
    * @secure
@@ -1133,7 +1398,7 @@ export namespace Rosters {
       guildId: string;
     };
     export type RequestQuery = {};
-    export type RequestBody = never;
+    export type RequestBody = RemoveMembersBulkInput;
     export type RequestHeaders = {};
     export type ResponseBody = DeleteRosterMembersData;
   }
@@ -1161,21 +1426,21 @@ export namespace Rosters {
   /**
    * No description
    * @tags Rosters
-   * @name ManageRoster
+   * @name TransferRosterMembers
    * @request PUT:/rosters/{guildId}/{rosterId}/members/transfer
    * @secure
-   * @response `200` `ManageRosterData`
+   * @response `200` `TransferRosterMembersData`
    * @response `500` `ErrorResponseDto`
    */
-  export namespace ManageRoster {
+  export namespace TransferRosterMembers {
     export type RequestParams = {
       rosterId: string;
       guildId: string;
     };
     export type RequestQuery = {};
-    export type RequestBody = never;
+    export type RequestBody = TransferRosterMembersInput;
     export type RequestHeaders = {};
-    export type ResponseBody = ManageRosterData;
+    export type ResponseBody = TransferRosterMembersData;
   }
 }
 
@@ -1219,6 +1484,46 @@ export namespace Guilds {
     export type RequestHeaders = {};
     export type ResponseBody = GetGuildClansData;
   }
+
+  /**
+   * No description
+   * @tags Guilds
+   * @name ReorderGuildClans
+   * @request PATCH:/guilds/{guildId}/clans/reorder
+   * @secure
+   * @response `200` `ReorderGuildClansData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace ReorderGuildClans {
+    export type RequestParams = {
+      guildId: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = ReorderClanCategoriesInput;
+    export type RequestHeaders = {};
+    export type ResponseBody = ReorderGuildClansData;
+  }
+
+  /**
+   * No description
+   * @tags Guilds
+   * @name ListMembers
+   * @request GET:/guilds/{guildId}/members/list
+   * @secure
+   * @response `200` `ListMembersData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace ListMembers {
+    export type RequestParams = {
+      guildId: string;
+    };
+    export type RequestQuery = {
+      query: string;
+    };
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = ListMembersData;
+  }
 }
 
 export namespace Exports {
@@ -1233,7 +1538,7 @@ export namespace Exports {
   export namespace ExportClanMembers {
     export type RequestParams = {};
     export type RequestQuery = {};
-    export type RequestBody = never;
+    export type RequestBody = ExportMembersInput;
     export type RequestHeaders = {};
     export type ResponseBody = ExportClanMembersData;
   }
@@ -1416,7 +1721,7 @@ export class HttpClient<SecurityDataType = unknown> {
 
 /**
  * @title ClashPerk Discord Bot API
- * @version v1
+ * @version v2.0.1
  * @baseUrl /v1
  * @contact
  *
@@ -1437,11 +1742,11 @@ export class Api<SecurityDataType extends unknown> {
 
   auth = {
     /**
-     * No description
+     * @description Authenticates a user using a `passKey` and returns an `accessToken` with a limited validity period (2 hours). Once the token expires, a new token must be generated.<br/><br/>The `accessToken` must be included in all protected API requests using the following header `Authorization: Bearer <accessToken>`
      *
      * @tags Auth
      * @name Login
-     * @summary Authenticates a user and returns login information.
+     * @summary Authenticate with your passKey to receive an accessToken required for authorized API requests.
      * @request POST:/auth/login
      * @response `201` `LoginData`
      * @response `500` `ErrorResponseDto`
@@ -1460,16 +1765,19 @@ export class Api<SecurityDataType extends unknown> {
      * No description
      *
      * @tags Auth
-     * @name GenerateToken
-     * @summary Generates a JWT token with specified user roles.
-     * @request POST:/auth/generate-token
+     * @name GeneratePasskey
+     * @summary Generate a passKey required for authentication.
+     * @request POST:/auth/generate-passkey
      * @secure
-     * @response `201` `GenerateTokenData`
+     * @response `201` `GeneratePasskeyData`
      * @response `500` `ErrorResponseDto`
      */
-    generateToken: (data: GenerateTokenInputDto, params: RequestParams = {}) =>
-      this.http.request<GenerateTokenData, GenerateTokenError>({
-        path: `/auth/generate-token`,
+    generatePasskey: (
+      data: GenerateTokenInputDto,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GeneratePasskeyData, GeneratePasskeyError>({
+        path: `/auth/generate-passkey`,
         method: "POST",
         body: data,
         secure: true,
@@ -1483,7 +1791,6 @@ export class Api<SecurityDataType extends unknown> {
      *
      * @tags Auth
      * @name GetAuthUser
-     * @summary Retrieves authenticated user information based on userId.
      * @request GET:/auth/users/{userId}
      * @secure
      * @response `200` `GetAuthUserData`
@@ -1543,6 +1850,7 @@ export class Api<SecurityDataType extends unknown> {
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: "json",
         ...params,
       }),
   };
@@ -1564,6 +1872,7 @@ export class Api<SecurityDataType extends unknown> {
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
@@ -1585,6 +1894,7 @@ export class Api<SecurityDataType extends unknown> {
         path: `/links/${playerTag}`,
         method: "DELETE",
         secure: true,
+        format: "json",
         ...params,
       }),
 
@@ -1709,6 +2019,32 @@ export class Api<SecurityDataType extends unknown> {
      * No description
      *
      * @tags Players
+     * @name AggregateClanWarLeagueHistory
+     * @request GET:/players/{playerTag}/clan-war-leagues/aggregate
+     * @secure
+     * @response `200` `AggregateClanWarLeagueHistoryData`
+     * @response `500` `ErrorResponseDto`
+     */
+    aggregateClanWarLeagueHistory: (
+      { playerTag, ...query }: AggregateClanWarLeagueHistoryParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<
+        AggregateClanWarLeagueHistoryData,
+        AggregateClanWarLeagueHistoryError
+      >({
+        path: `/players/${playerTag}/clan-war-leagues/aggregate`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Players
      * @name AddPlayerAccount
      * @request PUT:/players/{playerTag}
      * @secure
@@ -1723,6 +2059,7 @@ export class Api<SecurityDataType extends unknown> {
         path: `/players/${playerTag}`,
         method: "PUT",
         secure: true,
+        format: "json",
         ...params,
       }),
   };
@@ -1872,89 +2209,49 @@ export class Api<SecurityDataType extends unknown> {
         format: "json",
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags Wars
+     * @name GetClanWar
+     * @request GET:/wars/{clanTag}/{warId}
+     * @secure
+     * @response `200` `GetClanWarData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getClanWar: (
+      { clanTag, warId, ...query }: GetClanWarParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetClanWarData, GetClanWarError>({
+        path: `/wars/${clanTag}/${warId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
   };
   rosters = {
     /**
      * No description
      *
      * @tags Rosters
-     * @name GetRoster
-     * @request GET:/rosters/{guildId}/{rosterId}
-     * @secure
-     * @response `200` `GetRosterData`
-     * @response `500` `ErrorResponseDto`
-     */
-    getRoster: (
-      { rosterId, guildId, ...query }: GetRosterParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetRosterData, GetRosterError>({
-        path: `/rosters/${guildId}/${rosterId}`,
-        method: "GET",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Rosters
-     * @name UpdateRoster
-     * @request PATCH:/rosters/{guildId}/{rosterId}
-     * @secure
-     * @response `200` `UpdateRosterData`
-     * @response `500` `ErrorResponseDto`
-     */
-    updateRoster: (
-      { rosterId, guildId, ...query }: UpdateRosterParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<UpdateRosterData, UpdateRosterError>({
-        path: `/rosters/${guildId}/${rosterId}`,
-        method: "PATCH",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Rosters
-     * @name DeleteRoster
-     * @request DELETE:/rosters/{guildId}/{rosterId}
-     * @secure
-     * @response `200` `DeleteRosterData`
-     * @response `500` `ErrorResponseDto`
-     */
-    deleteRoster: (
-      { rosterId, guildId, ...query }: DeleteRosterParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<DeleteRosterData, DeleteRosterError>({
-        path: `/rosters/${guildId}/${rosterId}`,
-        method: "DELETE",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Rosters
      * @name GetRosters
-     * @request GET:/rosters/{guildId}/{rosterId}/list
+     * @request GET:/rosters/{guildId}/list
      * @secure
      * @response `200` `GetRostersData`
      * @response `500` `ErrorResponseDto`
      */
     getRosters: (
-      { rosterId, guildId, ...query }: GetRostersParams,
+      { guildId, ...query }: GetRostersParams,
       params: RequestParams = {},
     ) =>
       this.http.request<GetRostersData, GetRostersError>({
-        path: `/rosters/${guildId}/${rosterId}/list`,
+        path: `/rosters/${guildId}/list`,
         method: "GET",
         secure: true,
+        format: "json",
         ...params,
       }),
 
@@ -1976,6 +2273,73 @@ export class Api<SecurityDataType extends unknown> {
         path: `/rosters/${guildId}/create`,
         method: "POST",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Rosters
+     * @name GetRoster
+     * @request GET:/rosters/{guildId}/{rosterId}
+     * @secure
+     * @response `200` `GetRosterData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getRoster: (
+      { rosterId, guildId, ...query }: GetRosterParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetRosterData, GetRosterError>({
+        path: `/rosters/${guildId}/${rosterId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Rosters
+     * @name UpdateRoster
+     * @request PATCH:/rosters/{guildId}/{rosterId}
+     * @secure
+     * @response `200` `UpdateRosterData`
+     * @response `500` `ErrorResponseDto`
+     */
+    updateRoster: (
+      { rosterId, guildId, ...query }: UpdateRosterParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<UpdateRosterData, UpdateRosterError>({
+        path: `/rosters/${guildId}/${rosterId}`,
+        method: "PATCH",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Rosters
+     * @name DeleteRoster
+     * @request DELETE:/rosters/{guildId}/{rosterId}
+     * @secure
+     * @response `200` `DeleteRosterData`
+     * @response `500` `ErrorResponseDto`
+     */
+    deleteRoster: (
+      { rosterId, guildId, ...query }: DeleteRosterParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<DeleteRosterData, DeleteRosterError>({
+        path: `/rosters/${guildId}/${rosterId}`,
+        method: "DELETE",
+        secure: true,
+        format: "json",
         ...params,
       }),
 
@@ -1997,6 +2361,7 @@ export class Api<SecurityDataType extends unknown> {
         path: `/rosters/${guildId}/${rosterId}/clone`,
         method: "POST",
         secure: true,
+        format: "json",
         ...params,
       }),
 
@@ -2018,6 +2383,7 @@ export class Api<SecurityDataType extends unknown> {
         path: `/rosters/${guildId}/${rosterId}/members`,
         method: "PUT",
         secure: true,
+        format: "json",
         ...params,
       }),
 
@@ -2033,12 +2399,16 @@ export class Api<SecurityDataType extends unknown> {
      */
     deleteRosterMembers: (
       { rosterId, guildId, ...query }: DeleteRosterMembersParams,
+      data: RemoveMembersBulkInput,
       params: RequestParams = {},
     ) =>
       this.http.request<DeleteRosterMembersData, DeleteRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members`,
         method: "DELETE",
+        body: data,
         secure: true,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
@@ -2060,6 +2430,7 @@ export class Api<SecurityDataType extends unknown> {
         path: `/rosters/${guildId}/${rosterId}/members/refresh`,
         method: "POST",
         secure: true,
+        format: "json",
         ...params,
       }),
 
@@ -2067,20 +2438,24 @@ export class Api<SecurityDataType extends unknown> {
      * No description
      *
      * @tags Rosters
-     * @name ManageRoster
+     * @name TransferRosterMembers
      * @request PUT:/rosters/{guildId}/{rosterId}/members/transfer
      * @secure
-     * @response `200` `ManageRosterData`
+     * @response `200` `TransferRosterMembersData`
      * @response `500` `ErrorResponseDto`
      */
-    manageRoster: (
-      { rosterId, guildId, ...query }: ManageRosterParams,
+    transferRosterMembers: (
+      { rosterId, guildId, ...query }: TransferRosterMembersParams,
+      data: TransferRosterMembersInput,
       params: RequestParams = {},
     ) =>
-      this.http.request<ManageRosterData, ManageRosterError>({
+      this.http.request<TransferRosterMembersData, TransferRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members/transfer`,
         method: "PUT",
+        body: data,
         secure: true,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
   };
@@ -2103,6 +2478,7 @@ export class Api<SecurityDataType extends unknown> {
         path: `/users/${userId}`,
         method: "GET",
         secure: true,
+        format: "json",
         ...params,
       }),
   };
@@ -2125,6 +2501,55 @@ export class Api<SecurityDataType extends unknown> {
         path: `/guilds/${guildId}/clans`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Guilds
+     * @name ReorderGuildClans
+     * @request PATCH:/guilds/{guildId}/clans/reorder
+     * @secure
+     * @response `200` `ReorderGuildClansData`
+     * @response `500` `ErrorResponseDto`
+     */
+    reorderGuildClans: (
+      { guildId, ...query }: ReorderGuildClansParams,
+      data: ReorderClanCategoriesInput,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<ReorderGuildClansData, ReorderGuildClansError>({
+        path: `/guilds/${guildId}/clans/reorder`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Guilds
+     * @name ListMembers
+     * @request GET:/guilds/{guildId}/members/list
+     * @secure
+     * @response `200` `ListMembersData`
+     * @response `500` `ErrorResponseDto`
+     */
+    listMembers: (
+      { guildId, ...query }: ListMembersParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<ListMembersData, ListMembersError>({
+        path: `/guilds/${guildId}/members/list`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
         ...params,
       }),
   };
@@ -2138,10 +2563,13 @@ export class Api<SecurityDataType extends unknown> {
      * @response `201` `ExportClanMembersData`
      * @response `500` `ErrorResponseDto`
      */
-    exportClanMembers: (params: RequestParams = {}) =>
+    exportClanMembers: (data: ExportMembersInput, params: RequestParams = {}) =>
       this.http.request<ExportClanMembersData, ExportClanMembersError>({
         path: `/exports/members`,
         method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
   };

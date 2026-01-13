@@ -647,7 +647,12 @@ export const command = {
       }
     },
     members: {
-      description: 'Export a comprehensive version of clan member stats.'
+      description: 'Export a comprehensive version of clan member stats.',
+      options: {
+        auto_export_on: {
+          description: 'Whether to schedule the export to run every Sunday at 4:55 UTC.'
+        }
+      }
     },
     clans: {
       description: 'Export all linked clans.'
