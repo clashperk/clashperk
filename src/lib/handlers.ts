@@ -437,38 +437,38 @@ export class CommandHandler extends BaseHandler {
         name: command.id,
         op: 'command_executed',
         attributes: {
-          command: command.id,
-          userId: interaction.user.id,
-          guildId: interaction.guildId ?? 'DM'
+          'interaction.command': command.id,
+          'interaction.userId': interaction.user.id,
+          'interaction.guildId': interaction.guildId ?? 'DM'
         }
       },
       async (span) => {
         try {
+          let startTime = Date.now();
+          span.setAttributes({
+            'interaction.started_at': new Date().toISOString()
+          });
           const options = command.refine(interaction, args);
 
           if (options.defer && !interaction.deferred && !interaction.replied) {
-            await startSpan(
-              {
-                name: command.id,
-                op: 'interaction_deferred',
-                attributes: {
-                  command: command.id,
-                  userId: interaction.user.id,
-                  guildId: interaction.guildId ?? 'DM'
-                }
-              },
-              () => {
-                return interaction.deferReply(
-                  options.ephemeral ? { flags: MessageFlags.Ephemeral } : {}
-                );
-              }
+            await interaction.deferReply(
+              options.ephemeral ? { flags: MessageFlags.Ephemeral } : {}
             );
+            span.setAttributes({
+              'interaction.deferred_at': new Date().toISOString(),
+              'interaction.deferred_ms': `${Date.now() - startTime}ms`
+            });
+            startTime = Date.now();
           }
 
           this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
 
           await command.exec(interaction, args);
 
+          span.setAttributes({
+            'interaction.completed_at': new Date().toISOString(),
+            'interaction.completed_ms': `${Date.now() - startTime}ms`
+          });
           span.setStatus({ code: 0, message: 'ok' });
         } catch (error) {
           this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
