@@ -447,10 +447,24 @@ export class CommandHandler extends BaseHandler {
           const options = command.refine(interaction, args);
 
           if (options.defer && !interaction.deferred && !interaction.replied) {
-            await interaction.deferReply(
-              options.ephemeral ? { flags: MessageFlags.Ephemeral } : {}
+            await startSpan(
+              {
+                name: command.id,
+                op: 'interaction_deferred',
+                attributes: {
+                  command: command.id,
+                  userId: interaction.user.id,
+                  guildId: interaction.guildId ?? 'DM'
+                }
+              },
+              () => {
+                return interaction.deferReply(
+                  options.ephemeral ? { flags: MessageFlags.Ephemeral } : {}
+                );
+              }
             );
           }
+
           this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
 
           await command.exec(interaction, args);
