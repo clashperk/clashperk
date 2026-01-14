@@ -432,10 +432,10 @@ export class CommandHandler extends BaseHandler {
     command: Command,
     args: Record<string, unknown> = {}
   ) {
-    return startSpan(
+    await startSpan(
       {
-        name: command.id,
         op: 'command_executed',
+        name: command.id,
         attributes: {
           'interaction.command': command.id,
           'interaction.userId': interaction.user.id,
@@ -444,32 +444,19 @@ export class CommandHandler extends BaseHandler {
       },
       async (span) => {
         try {
-          let startTime = Date.now();
-          span.setAttributes({
-            'interaction.started_at': new Date().toISOString()
-          });
           const options = command.refine(interaction, args);
 
           if (options.defer && !interaction.deferred && !interaction.replied) {
             await interaction.deferReply(
               options.ephemeral ? { flags: MessageFlags.Ephemeral } : {}
             );
-            span.setAttributes({
-              'interaction.deferred_at': new Date().toISOString(),
-              'interaction.deferred_ms': `${Date.now() - startTime}ms`
-            });
-            startTime = Date.now();
           }
 
           this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
 
           await command.exec(interaction, args);
 
-          span.setAttributes({
-            'interaction.completed_at': new Date().toISOString(),
-            'interaction.completed_ms': `${Date.now() - startTime}ms`
-          });
-          span.setStatus({ code: 0, message: 'ok' });
+          span.setStatus({ code: 1, message: 'ok' });
         } catch (error) {
           this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
           span.setStatus({ code: 2, message: 'internal_error' });
