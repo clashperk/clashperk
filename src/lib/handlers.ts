@@ -446,7 +446,10 @@ export class CommandHandler extends BaseHandler {
         try {
           const options = command.refine(interaction, args);
 
-          if (options.defer && !interaction.deferred && !interaction.replied) {
+          const deferred = options.defer && !interaction.deferred && !interaction.replied;
+          span.setAttribute('interaction.deferred', deferred);
+
+          if (deferred) {
             await interaction.deferReply(
               options.ephemeral ? { flags: MessageFlags.Ephemeral } : {}
             );
