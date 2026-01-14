@@ -1,4 +1,5 @@
 import { Settings } from '@app/constants';
+import { startSpan } from '@sentry/node';
 import {
   ApplicationCommandOptionType,
   AutocompleteInteraction,
@@ -431,19 +432,40 @@ export class CommandHandler extends BaseHandler {
     command: Command,
     args: Record<string, unknown> = {}
   ) {
-    try {
-      const options = command.refine(interaction, args);
+    return startSpan(
+      {
+        name: command.id,
+        op: 'command_executed',
+        attributes: {
+          command: command.id,
+          userId: interaction.user.id,
+          guildId: interaction.guildId ?? 'DM'
+        }
+      },
+      async (span) => {
+        try {
+          const options = command.refine(interaction, args);
 
-      if (options.defer && !interaction.deferred && !interaction.replied) {
-        await interaction.deferReply(options.ephemeral ? { flags: MessageFlags.Ephemeral } : {});
+          if (options.defer && !interaction.deferred && !interaction.replied) {
+            await interaction.deferReply(
+              options.ephemeral ? { flags: MessageFlags.Ephemeral } : {}
+            );
+          }
+          this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
+
+          await command.exec(interaction, args);
+
+          span.setStatus({ code: 0, message: 'ok' });
+        } catch (error) {
+          this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
+          span.setStatus({ code: 2, message: 'internal_error' });
+        } finally {
+          this.emit(CommandHandlerEvents.COMMAND_ENDED, interaction, command, args);
+        }
+
+        return span;
       }
-      this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
-      await command.exec(interaction, args);
-    } catch (error) {
-      this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
-    } finally {
-      this.emit(CommandHandlerEvents.COMMAND_ENDED, interaction, command, args);
-    }
+    );
   }
 
   public preInhibitor(
