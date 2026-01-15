@@ -6,10 +6,10 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  ChatInputCommandInteraction,
   MessageContextMenuCommandInteraction
 } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
-import { createInteractionCollector } from '../../util/pagination.js';
 
 const cerebras = createCerebras({
   apiKey: process.env.CEREBRAS_API_KEY
@@ -25,7 +25,9 @@ export default class AskCommand extends Command {
   }
 
   public async exec(
-    interaction: MessageContextMenuCommandInteraction<'cached'>,
+    interaction:
+      | MessageContextMenuCommandInteraction<'cached'>
+      | ChatInputCommandInteraction<'cached'>,
     args: { message: string }
   ) {
     if (!args.message?.length || !(args.message.length >= 5)) {
@@ -44,47 +46,30 @@ export default class AskCommand extends Command {
         'No results were found. Visit our [documentation](<https://docs.clashperk.com>) to learn more or explore related topics.'
       );
 
-    const customIds = {
-      accept: this.client.uuid(),
-      ignore: this.client.uuid()
-    };
+    const row = this.getComponents(
+      interaction.isContextMenuCommand()
+        ? interaction.targetMessage.author.id
+        : interaction.user.id,
+      interaction.user.id
+    );
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    return interaction.editReply({
+      components: [row],
+      content: `${content} ${interaction.isContextMenuCommand() ? interaction.targetMessage.author.toString() : interaction.user.toString()}` // .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    });
+  }
+
+  private getComponents(targetUserId: string, userId: string) {
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(customIds.accept)
+        .setCustomId(`action-consume:${targetUserId}:${userId}`)
         .setLabel('Helpful')
         .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
-        .setCustomId(customIds.ignore)
+        .setCustomId(`action-delete:${targetUserId}:${userId}`)
         .setLabel('Not Helpful')
         .setStyle(ButtonStyle.Danger)
     );
-
-    const msg = await interaction.editReply({
-      components: [row],
-      content: content // .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    });
-
-    createInteractionCollector({
-      customIds,
-      interaction,
-      message: msg,
-      clear: true,
-      onClick: async (action) => {
-        await action.deferUpdate();
-        const isAuthorized =
-          [interaction.user.id, interaction.targetMessage.author.id].includes(action.user.id) ||
-          this.client.util.isManager(action.member);
-
-        if (action.customId === customIds.ignore && isAuthorized) {
-          await action.deleteReply(msg.id);
-        }
-
-        if (action.customId === customIds.accept && isAuthorized) {
-          await action.editReply({ components: [] });
-        }
-      }
-    });
   }
 
   private async askGitBook(message: string) {

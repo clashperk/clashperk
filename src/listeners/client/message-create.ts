@@ -1,8 +1,10 @@
 import { Settings } from '@app/constants';
-import { ChannelType, Message, PermissionFlagsBits } from 'discord.js';
-import { Listener } from '../../lib/handlers.js';
+import { Message, PermissionFlagsBits } from 'discord.js';
+import { Command, Listener } from '../../lib/handlers.js';
 
-const REGEX = /\bhttps:\/\/link\.clashofclans\.com\S+/gi;
+const IN_GAME_REGEX = /\bhttps:\/\/link\.clashofclans\.com\S+/gi;
+
+// const SHORT_LINK_REGEX = /\bhttps?:\/\/cprk\.us\S+/gi;
 
 // https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=
 
@@ -28,11 +30,9 @@ export default class MessageCreateListener extends Listener {
   }
 
   public async exec(message: Message) {
-    if (!message.guild) return;
+    if (!message.inGuild()) return;
     if (message.author.bot) return;
 
-    if (message.channel.type === ChannelType.DM || message.channel.type === ChannelType.GroupDM)
-      return;
     if (this.inhibitor(message)) return;
 
     if (
@@ -42,6 +42,7 @@ export default class MessageCreateListener extends Listener {
         ?.has(PermissionFlagsBits.SendMessagesInThreads)
     )
       return;
+
     if (
       !message.channel
         .permissionsFor(this.client.user)
@@ -49,16 +50,32 @@ export default class MessageCreateListener extends Listener {
     )
       return;
 
-    if (REGEX.test(message.content)) return this.linkParser(message);
+    if (IN_GAME_REGEX.test(message.content)) {
+      return this.linkParser(message);
+    }
 
     const parsed = [`<@${this.client.user.id}>`, `<@!${this.client.user.id}>`]
-      .map((mention) => this.parseWithPrefix(message, mention))
+      .map((mention) => this.parseWithPrefix(message.content, mention))
       .find((_) => _);
     if (!parsed) return;
 
     const { command, content, contents } = parsed;
     if (!command) return;
 
+    const resolved: Record<string, string> = {};
+    const args = command.args();
+    const keys = Object.keys(args);
+    keys.forEach((key, idx) => (resolved[key] = contents[idx]));
+    if (!keys.length) resolved.message = content;
+
+    return this.executeCommand(message, command, resolved);
+  }
+
+  private async executeCommand(
+    message: Message<true>,
+    command: Command,
+    args: Record<string, string>
+  ) {
     if (command.ownerOnly && !this.client.isOwner(message.author.id)) {
       this.client.logger.log(`${command.id} ~ text-command`, {
         label: `${message.guild.name}/${message.author.displayName}`
@@ -67,42 +84,20 @@ export default class MessageCreateListener extends Listener {
     }
 
     try {
-      const args = command.args();
-      const resolved: Record<string, string> = {};
-      const keys = Object.keys(args);
-      keys.forEach((key, index) => (resolved[key] = contents[index]));
-      if (!keys.length) resolved.content = content;
-
       this.client.logger.log(`${command.id}`, {
         label: `${message.guild.name}/${message.author.displayName}`
       });
-      await command.run(message, resolved);
+      await command.run(message, args);
     } catch (error) {
-      this.client.logger.error(`${command.id} ~ ${error as string}`, {
+      this.client.logger.error(`${command.id} ~ ${error.message}`, {
         label: `${message.guild.name}/${message.author.displayName}`
       });
-      console.error(error);
       await message.channel.send('**Something went wrong while executing this command.**');
     }
   }
 
-  private parseWithPrefix(message: Message, prefix: string) {
-    const lowerContent = message.content.toLowerCase();
-    if (!lowerContent.startsWith(prefix.toLowerCase())) return null;
-
-    const endOfPrefix = lowerContent.indexOf(prefix.toLowerCase()) + prefix.length;
-    const startOfArgs = message.content.slice(endOfPrefix).search(/\S/) + prefix.length;
-    const alias = message.content.slice(startOfArgs).split(/\s{1,}|\n{1,}/)[0];
-
-    const command = this.client.commandHandler.getCommand(alias);
-    const content = message.content.slice(startOfArgs + alias.length + 1).trim();
-    const contents = content.split(/\s+/g);
-
-    return { command, content, contents };
-  }
-
   private linkParser(message: Message) {
-    const matches = (message.content.match(REGEX) ?? []).slice(0, 3);
+    const matches = (message.content.match(IN_GAME_REGEX) ?? []).slice(0, 3);
 
     for (const text of matches) {
       const url = new URL(text);
@@ -136,6 +131,21 @@ export default class MessageCreateListener extends Listener {
           break;
       }
     }
+  }
+
+  private parseWithPrefix(messageContent: string, prefix: string) {
+    const lowerContent = messageContent.toLowerCase();
+    if (!lowerContent.startsWith(prefix.toLowerCase())) return null;
+
+    const endOfPrefix = lowerContent.indexOf(prefix.toLowerCase()) + prefix.length;
+    const startOfArgs = messageContent.slice(endOfPrefix).search(/\S/) + prefix.length;
+    const alias = messageContent.slice(startOfArgs).split(/\s{1,}|\n{1,}/)[0];
+
+    const command = this.client.commandHandler.getCommand(alias);
+    const content = messageContent.slice(startOfArgs + alias.length + 1).trim();
+    const contents = content.split(/\s+/g);
+
+    return { command, content, contents };
   }
 
   private inhibitor(message: Message) {

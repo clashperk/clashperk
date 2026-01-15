@@ -1518,6 +1518,9 @@ export const command = {
     options: {
       name: {
         description: 'Name of the command.'
+      },
+      ask: {
+        description: 'Find answers with AI.'
       }
     }
   },

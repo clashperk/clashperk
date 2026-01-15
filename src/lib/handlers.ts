@@ -146,6 +146,25 @@ export class CommandHandler extends BaseHandler {
     const userIds = this.client.components.get(interaction.customId);
     if (userIds?.length && userIds.includes(interaction.user.id)) return;
 
+    if (
+      interaction.isButton() &&
+      interaction.inCachedGuild() &&
+      interaction.customId.startsWith('action-')
+    ) {
+      const [action, ...userIds] = interaction.customId.split(':');
+      const isAuthorized =
+        userIds.includes(interaction.user.id) || this.client.util.isManager(interaction.member);
+
+      await interaction.deferUpdate();
+      if (action === 'action-consume' && isAuthorized) {
+        return interaction.editReply({ components: [] });
+      }
+
+      if (action === 'action-delete' && isAuthorized) {
+        return interaction.deleteReply();
+      }
+    }
+
     if (userIds?.length && !userIds.includes(interaction.user.id)) {
       return interaction.reply({
         content: i18n('common.component.unauthorized', { lng: interaction.locale }),

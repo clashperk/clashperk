@@ -13,6 +13,12 @@ export const HELP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description: command.help.options.name.description,
       description_localizations: translation('command.help.options.name.description'),
       type: ApplicationCommandOptionType.String
+    },
+    {
+      name: 'ask',
+      description: command.help.options.ask.description,
+      description_localizations: translation('command.help.options.ask.description'),
+      type: ApplicationCommandOptionType.String
     }
   ],
   ...userInstallable
