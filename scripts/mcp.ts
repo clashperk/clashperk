@@ -1,7 +1,8 @@
+import 'dotenv/config';
+
 import { createCerebras } from '@ai-sdk/cerebras';
 import { createMCPClient } from '@ai-sdk/mcp';
 import { generateText, stepCountIs } from 'ai';
-import 'dotenv/config';
 import { SYSTEM_PROMPT } from '../src/util/constants.js';
 
 (async () => {
@@ -35,7 +36,7 @@ import { SYSTEM_PROMPT } from '../src/util/constants.js';
       },
       {
         role: 'user',
-        content: [{ type: 'text', text: 'How to verify?' }]
+        content: [{ type: 'text', text: 'Can anyone give war log reminder set up commands' }]
       }
     ],
     maxOutputTokens: 4096

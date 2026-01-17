@@ -1,4 +1,3 @@
-import { Settings } from '@app/constants';
 import {
   ButtonInteraction,
   CommandInteraction,
@@ -15,8 +14,6 @@ export default class RosterListCommand extends Command {
     super('roster-list', {
       category: 'roster',
       channel: 'guild',
-      userPermissions: ['ManageGuild'],
-      roleKey: Settings.ROSTER_MANAGER_ROLE,
       defer: true,
       ephemeral: true
     });
