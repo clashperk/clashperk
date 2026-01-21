@@ -266,7 +266,7 @@ export const HOME_BASE_LEAGUES: Record<string, string> = {
   105000034: '<:LegendLeague:1424720630183497832>'
 };
 
-export const PLAYER_LEAGUE_TIERS = {
+export const PLAYER_LEAGUE_TIERS: Record<string, string> = {
   'Unranked': '<:Unranked:1424720675003830423>',
   'Skeleton League 1': '<:SkeletonLeague1:1424720650332934224>',
   'Skeleton League 2': '<:SkeletonLeague2:1424720655982788689>',

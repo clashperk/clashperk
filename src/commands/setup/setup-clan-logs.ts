@@ -97,7 +97,10 @@ const logGroups: { name: string; logs: LogMap }[] = [
       },
       [ClanLogType.NAME_CHANGE_LOG]: {},
       [ClanLogType.TOWN_HALL_UPGRADE_LOG]: {},
-      [ClanLogType.WAR_PREFERENCE_LOG]: {}
+      [ClanLogType.WAR_PREFERENCE_LOG]: {},
+      [ClanLogType.RANKED_BATTLE_LEAGUE_CHANGE_LOG]: {
+        label: 'Ranked Battle League Change Log (NEW)'
+      }
     }
   }
 ];

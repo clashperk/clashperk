@@ -54,6 +54,7 @@ export enum ClanLogType {
   ROLE_CHANGE_LOG = 'role_change_log',
   TOWN_HALL_UPGRADE_LOG = 'town_hall_upgrade_log',
   NAME_CHANGE_LOG = 'name_change_log',
+  RANKED_BATTLE_LEAGUE_CHANGE_LOG = 'ranked_battle_league_change_log',
 
   // PLAYER
   WAR_PREFERENCE_LOG = 'war_preference_log',

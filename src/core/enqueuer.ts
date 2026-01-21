@@ -13,6 +13,7 @@ import { ClanWarLog } from './clan-war-log.js';
 import { DonationLog } from './donation-log.js';
 import { FlagAlertLog } from './flag-alert-log.js';
 import { LastSeenLog } from './last-seen-log.js';
+import { RankedBattleLog } from './ranked-battle-log.js';
 import { LegendLog } from './legend-log.js';
 import { MaintenanceLog } from './maintenance-log.js';
 
@@ -37,6 +38,7 @@ export class Enqueuer {
   private donationLog = new DonationLog(this);
   private lastSeenLog = new LastSeenLog(this);
   private legendLog = new LegendLog(this);
+  private rankedBattleLog = new RankedBattleLog(this);
 
   public constructor(public readonly client: Client) {
     this.maintenanceLog.init();
@@ -157,6 +159,7 @@ export class Enqueuer {
     await this.clanWarLog.init();
     await this.donationLog.init();
     await this.lastSeenLog.init();
+    await this.rankedBattleLog.init();
     await this.clanLog.init();
     await this.legendLog.init();
 
@@ -252,6 +255,7 @@ export class Enqueuer {
     this.donationLog.delete(logId);
     this.lastSeenLog.delete(logId);
     this.legendLog.delete(logId);
+    this.rankedBattleLog.delete(logId);
   }
 
   public async addLog(guildId: string) {
@@ -263,7 +267,8 @@ export class Enqueuer {
       this.clanWarLog.add(guildId),
       this.donationLog.add(guildId),
       this.lastSeenLog.add(guildId),
-      this.legendLog.add(guildId)
+      this.legendLog.add(guildId),
+      this.rankedBattleLog.add(guildId)
     ]);
   }
 
@@ -287,6 +292,7 @@ export class Enqueuer {
     this.donationLog.cached.clear();
     this.lastSeenLog.cached.clear();
     this.legendLog.cached.clear();
+    this.rankedBattleLog.cached.clear();
 
     await this.client.redis.subscriber.unsubscribe(REDIS_PUB_SUB_CHANNEL);
   }
