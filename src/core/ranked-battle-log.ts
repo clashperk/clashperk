@@ -21,6 +21,7 @@ export class RankedBattleLog extends RootLog {
   private readonly queued = new Set<string>();
   public refreshRate: number;
   private timeout!: NodeJS.Timeout | null;
+  private lastPostedAt: Date | null = null;
 
   public constructor(private enqueuer: Enqueuer) {
     super(enqueuer.client);
@@ -50,7 +51,10 @@ export class RankedBattleLog extends RootLog {
       await Util.delay(250);
     }
 
-    await this.collection.updateOne({ _id: cache._id }, { $set: { lastPostedAt: new Date() } });
+    await this.collection.updateOne(
+      { _id: cache._id },
+      { $set: { lastPostedAt: this.lastPostedAt || new Date() } }
+    );
   }
 
   private async send(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
@@ -68,9 +72,8 @@ export class RankedBattleLog extends RootLog {
     const clan = await this.client.redis.getClan(cache.tag);
     if (!clan) return null;
 
-    const weekId = moment(Util.getTournamentWindow().startTime)
-      .subtract(7, 'days')
-      .format('YYYY-MM-DD');
+    const { startTime } = Util.getTournamentWindow();
+    const weekId = moment(startTime).subtract(7, 'days').format('YYYY-MM-DD');
 
     const rows = await this.client.clickhouse
       .query({
@@ -146,8 +149,9 @@ export class RankedBattleLog extends RootLog {
     if (this.timeout) clearTimeout(this.timeout);
 
     const { endTime } = Util.getTournamentWindow();
-    const timestamp = moment(endTime).subtract(12, 'hours').toDate();
+    const timestamp = moment(endTime).subtract(5, 'hours').toDate();
     if (timestamp.getTime() > Date.now()) return;
+    this.lastPostedAt = timestamp;
 
     try {
       const guildIds = this.client.guilds.cache.map((guild) => guild.id);
@@ -156,7 +160,7 @@ export class RankedBattleLog extends RootLog {
           $match: {
             guildId: { $in: guildIds },
             logType: ClanLogType.RANKED_BATTLE_LEAGUE_CHANGE_LOG,
-            lastPostedAt: { $lte: timestamp }
+            lastPostedAt: { $lt: timestamp }
           }
         },
         {
