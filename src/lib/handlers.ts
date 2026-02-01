@@ -201,7 +201,7 @@ export class CommandHandler extends BaseHandler {
     if (!interaction.inCachedGuild() && command.channel !== 'dm') return true;
     if (interaction.inCachedGuild() && !interaction.channel) return true;
 
-    if (this.preInhibitor(interaction, command, { commandName: parsed.cmd })) return;
+    // if (this.preInhibitor(interaction, command, { commandName: parsed.cmd })) return;
 
     if (
       parsed.is_locked &&
