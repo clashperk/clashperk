@@ -22,7 +22,6 @@ import { createInteractionCollector } from '../../util/pagination.js';
 export default class SetupCustomBotCommand extends Command {
   public constructor() {
     super('bot-personalizer', {
-      aliases: ['setup-custom-bot'],
       category: 'setup',
       clientPermissions: ['EmbedLinks', 'AttachFiles'],
       defer: true

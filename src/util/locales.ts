@@ -1250,14 +1250,6 @@ export const command = {
         }
       }
     },
-    custom_bot: {
-      description: 'Setup custom bot for the server.',
-      options: {
-        delete_custom_bot: {
-          description: 'Delete the custom bot.'
-        }
-      }
-    },
     responses: {
       channel_unlink: 'Successfully unlinked {{clan}} from {{channel}}.',
       channel_not_found: 'No clans were found that are linked to {{channel}}.',

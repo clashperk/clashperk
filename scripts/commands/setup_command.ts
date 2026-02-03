@@ -8,12 +8,6 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   description_localizations: translation('command.setup.description'),
   dm_permission: false,
   options: [
-    // enable
-    {
-      name: 'enable',
-      description: 'This command has been replaced with /setup clan and /setup clan-embed',
-      type: ApplicationCommandOptionType.Subcommand
-    },
     // clan
     {
       name: 'clan',
@@ -323,28 +317,18 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     },
+
+    // enable
+    {
+      name: 'enable',
+      description: 'This command has been replaced with /setup clan and /setup clan-embed',
+      type: ApplicationCommandOptionType.Subcommand
+    },
     // disable
     {
       name: 'disable',
       description: 'This command has been replaced with /setup clan and /setup clan-embed',
       type: ApplicationCommandOptionType.Subcommand
-    },
-    // custom-bot
-    {
-      name: 'custom-bot',
-      description: command.setup.custom_bot.description,
-      description_localizations: translation('command.setup.custom_bot.description'),
-      type: ApplicationCommandOptionType.Subcommand,
-      options: [
-        {
-          name: 'delete_custom_bot',
-          description: command.setup.custom_bot.options.delete_custom_bot.description,
-          description_localizations: translation(
-            'command.setup.custom_bot.options.delete_custom_bot.description'
-          ),
-          type: ApplicationCommandOptionType.Boolean
-        }
-      ]
     }
   ]
 };
