@@ -14,6 +14,7 @@ import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
 import { IRoster } from '../../struct/roster-manager.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/emojis.js';
+import { padEnd, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
@@ -151,6 +152,7 @@ export default class StatsCommand extends Command {
       season: string;
       attempt?: string;
       filter_farm_hits?: boolean;
+      filter_loot_hits?: boolean;
       user?: User;
       roster?: string;
       days?: number;
@@ -257,12 +259,17 @@ export default class StatsCommand extends Command {
 
             if (
               attempt === 'fresh' &&
-              !this._isFreshAttack(attacks, attack.defenderTag, attack.order)
+              !this.isFreshAttack(attacks, attack.defenderTag, attack.order)
             )
               continue;
             if (
               attempt === 'cleanup' &&
-              this._isFreshAttack(attacks, attack.defenderTag, attack.order)
+              this.isFreshAttack(attacks, attack.defenderTag, attack.order)
+            )
+              continue;
+            if (
+              args.filter_loot_hits &&
+              this.alreadyCompleted(attacks, attack.defenderTag, attack.order)
             )
               continue;
 
@@ -316,7 +323,7 @@ export default class StatsCommand extends Command {
                         b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars
                     )[0]!;
 
-            const isFresh = this._isFreshAttack(attacks, attack.defenderTag, attack.order);
+            const isFresh = this.isFreshAttack(attacks, attack.defenderTag, attack.order);
             if (attempt === 'cleanup' && isFresh) continue;
             if (attempt === 'fresh' && !isFresh) continue;
 
@@ -387,11 +394,11 @@ export default class StatsCommand extends Command {
           `${EMOJIS.HASH}${EMOJIS.TOWN_HALL} \`RATE%   HITS  ${'NAME'.padEnd(15, ' ')}\u200f\``,
           stats
             .map((m, i) => {
-              const percentage = this._padStart(m.rate.toFixed(1), 5);
-              return `\u200e${BLUE_NUMBERS[++i]}${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(
+              const percentage = padStart(m.rate.toFixed(1), 5);
+              return `\u200e${BLUE_NUMBERS[++i]}${ORANGE_NUMBERS[m.hall]} \`${percentage} ${padStart(
                 m.success,
                 3
-              )}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
+              )}/${padEnd(m.total, 3)} ${padEnd(m.name, 14)} \u200f\``;
             })
             .join('\n')
         ].join('\n'),
@@ -420,10 +427,10 @@ export default class StatsCommand extends Command {
             `\u200e${EMOJIS.HASH}\`STAR AVG RATE%  ${'NAME'.padEnd(15, ' ')}\u200f\``,
             stats
               .map((m, i) => {
-                const percentage = this._padStart(this.percentage(m.rate), 5);
-                const stars = this._padStart(m.stars.toFixed(0), 3);
-                const avg = this._padStart(this.percentage(m.stars / m.attacks), 4);
-                return `\u200e${BLUE_NUMBERS[++i]}\`${stars} ${avg} ${percentage}  ${this._padEnd(m.name, 14)} \u200f\``;
+                const percentage = padStart(this.percentage(m.rate), 5);
+                const stars = padStart(m.stars.toFixed(0), 3);
+                const avg = padStart(this.percentage(m.stars / m.attacks), 4);
+                return `\u200e${BLUE_NUMBERS[++i]}\`${stars} ${avg} ${percentage}  ${padEnd(m.name, 14)} \u200f\``;
               })
               .join('\n')
           ].join('\n'),
@@ -494,19 +501,18 @@ export default class StatsCommand extends Command {
     }
   }
 
-  private _padEnd(num: number | string, maxLength: number) {
-    return Util.escapeBackTick(num.toString()).padEnd(maxLength, ' ');
-  }
-
-  private _padStart(num: number | string, maxLength: number) {
-    return num.toString().padStart(maxLength, ' ');
-  }
-
-  private _isFreshAttack(attacks: APIClanWarAttack[], defenderTag: string, order: number) {
+  private isFreshAttack(attacks: APIClanWarAttack[], defenderTag: string, order: number) {
     const hits = attacks
       .filter((atk) => atk.defenderTag === defenderTag)
       .sort((a, b) => a.order - b.order);
-    return hits.length === 1 || hits[0]!.order === order;
+    return hits.length === 1 || hits[0].order === order;
+  }
+
+  private alreadyCompleted(attacks: APIClanWarAttack[], defenderTag: string, order: number) {
+    const hits = attacks
+      .filter((atk) => atk.defenderTag === defenderTag && atk.stars === 3 && atk.order < order)
+      .sort((a, b) => a.order - b.order);
+    return !!hits.length;
   }
 }
 

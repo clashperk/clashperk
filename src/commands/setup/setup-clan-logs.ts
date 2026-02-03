@@ -245,10 +245,6 @@ export default class SetupLogsCommand extends Command {
       });
     };
 
-    // if (args.action && args.action in DeprecatedLogs) {
-    //   return onComplete(interaction, DeprecatedLogs[args.action as keyof typeof DeprecatedLogs]);
-    // }
-
     const rows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
     for (const group of logGroups) {
       const logs = Object.keys(group.logs) as ClanLogType[];

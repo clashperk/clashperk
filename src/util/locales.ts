@@ -1134,6 +1134,9 @@ export const command = {
       filter_farm_hits: {
         description: 'Filter out farm hits (1 star and < 50% destruction)'
       },
+      filter_loot_hits: {
+        description: 'Filter out loot hits (attacks targeting 3-starred bases)'
+      },
       clan_only: {
         description: "Only include the specified clan's war attacks."
       }
@@ -1166,6 +1169,40 @@ export const command = {
   },
   setup: {
     description: 'Enable/disable features on the server or add/remove clans.',
+    clan: {
+      description: 'Link/unlink clans to the server or channels.',
+      description_long: 'Manage clans on the server (link server, link channel, clan embed)',
+      options: {
+        channel: {
+          description: 'Channel to send updates to (defaults to the current channel)'
+        },
+        category: {
+          description: 'Category of the clan. (select from the menu or type your own)'
+        },
+        unlink_clan: {
+          description: 'Unlink a clan from the server and remove all the features related to it.'
+        },
+        unlink_clan_channel: {
+          description: 'Unlink a channel from the clan.'
+        }
+      }
+    },
+    clan_embed: {
+      description: 'Enable/disable clan embed on the server or add/remove clans.',
+      description_long: 'Manage clans on the server (link server, link channel, clan embed)',
+      options: {
+        channel: {
+          description: 'Channel to send updates to (defaults to the current channel)'
+        },
+        color: {
+          description:
+            'Hex color code (only for donation log, clan games, last seen and clan embed)'
+        },
+        disable_embed: {
+          description: 'Disable clan embed.'
+        }
+      }
+    },
     enable: {
       description: 'Enable a feature on the server or add a clan.',
       description_long:
@@ -1192,7 +1229,7 @@ export const command = {
       },
       channel_link: {
         description: 'Link a channel to a clan.',
-        already_linked: '{{clan}} is already linked to {{channel}}.',
+        already_linked: '{{channel}} is already linked to {{clan}}',
         success: 'Successfully linked {{clan}} to {{channel}}.'
       }
     },
@@ -1214,14 +1251,6 @@ export const command = {
       options: {
         clans: {
           description: 'Select the clans to list.'
-        }
-      }
-    },
-    utils: {
-      description: '[DEPRECATED] Setup other utility features (link button, events schedular)',
-      options: {
-        disable: {
-          description: 'Disable a scheduled event.'
         }
       }
     },
@@ -1263,6 +1292,14 @@ export const command = {
         },
         action: {
           description: 'What logs to enable or disable.'
+        }
+      }
+    },
+    custom_bot: {
+      description: 'Setup custom bot for the server.',
+      options: {
+        delete_custom_bot: {
+          description: 'Delete the custom bot.'
         }
       }
     }

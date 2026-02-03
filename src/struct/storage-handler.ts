@@ -123,7 +123,7 @@ export class StorageHandler {
       await interaction.editReply(
         i18n('common.no_clan_tag', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
       return { clans: null };
@@ -138,7 +138,7 @@ export class StorageHandler {
       await interaction.editReply(
         i18n('common.no_clans_found', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
       return { clans: null, isTotal };
@@ -148,7 +148,7 @@ export class StorageHandler {
       await interaction.editReply(
         i18n('common.no_clans_linked', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
       return { clans: null, isTotal };
@@ -170,7 +170,7 @@ export class StorageHandler {
     if (ObjectId.isValid(category)) {
       const result = await collection.findOne({ guildId, _id: new ObjectId(category) });
 
-      return result?._id ?? null;
+      return result;
     }
 
     const lastCategory = await collection.findOne({ guildId }, { sort: { order: -1 } });
@@ -187,7 +187,7 @@ export class StorageHandler {
       },
       { upsert: true, returnDocument: 'after' }
     );
-    return value?._id ?? null;
+    return value;
   }
 
   public async getOrCreateDefaultCategories(guildId: string) {

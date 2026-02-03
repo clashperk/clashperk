@@ -60,12 +60,31 @@ export default class ClanEmbedCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    {
-      clan,
-      color,
-      channel
-    }: { clan: string; color?: number; channel: TextChannel | AnyThreadChannel }
+    args: {
+      clan: string;
+      color?: number;
+      channel: TextChannel | AnyThreadChannel;
+      disable_embed?: boolean;
+    }
   ) {
+    if (args.disable_embed) {
+      const _logs = await this.client.db
+        .collection(Collections.CLAN_LOGS)
+        .find({
+          logType: ClanLogType.CLAN_EMBED_LOG,
+          clanTag: args.clan,
+          guildId: interaction.guildId
+        })
+        .toArray();
+
+      const logIds = _logs.map((log) => log._id);
+      logIds.forEach((logId) => this.client.enqueuer.deleteLog(logId.toHexString()));
+      await this.client.db.collection(Collections.CLAN_LOGS).deleteMany({ _id: { $in: logIds } });
+
+      return interaction.editReply('Clan embed disabled.');
+    }
+
+    const { clan, color, channel } = args;
     const data = await this.client.resolver.enforceSecurity(interaction, {
       tag: clan,
       collection: Collections.CLAN_LOGS

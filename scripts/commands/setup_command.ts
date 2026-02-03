@@ -11,34 +11,16 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
     // enable
     {
       name: 'enable',
-      description: command.setup.enable.description,
-      description_localizations: translation('command.setup.enable.description'),
+      description: 'This command has been replaced with /setup clan and /setup clan-embed',
+      type: ApplicationCommandOptionType.Subcommand
+    },
+    // clan
+    {
+      name: 'clan',
+      description: command.setup.clan.description,
+      description_localizations: translation('command.setup.clan.description'),
       type: ApplicationCommandOptionType.Subcommand,
       options: [
-        {
-          name: 'action',
-          description: common.select_an_option,
-          description_localizations: translation('common.select_an_option'),
-          type: ApplicationCommandOptionType.String,
-          required: true,
-          choices: [
-            {
-              name: common.choices.setup.link_server,
-              name_localizations: translation('common.choices.setup.link_server'),
-              value: 'link-clan'
-            },
-            {
-              name: common.choices.setup.link_channel,
-              name_localizations: translation('common.choices.setup.link_channel'),
-              value: 'link-channel'
-            },
-            {
-              name: common.choices.setup.clan_embed,
-              name_localizations: translation('common.choices.setup.clan_embed'),
-              value: 'clan-embed'
-            }
-          ]
-        },
         {
           name: 'clan',
           description: common.options.clan.tag.description,
@@ -58,6 +40,49 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           autocomplete: true
         },
         {
+          name: 'clan_channel',
+          description: command.setup.enable.options.channel.description,
+          description_localizations: translation(
+            'command.setup.enable.options.channel.description'
+          ),
+          type: ApplicationCommandOptionType.Channel,
+          channel_types: channelTypes
+        },
+        {
+          name: 'unlink_clan_channel',
+          description: command.setup.clan.options.unlink_clan_channel.description,
+          description_localizations: translation(
+            'command.setup.clan.options.unlink_clan_channel.description'
+          ),
+          type: ApplicationCommandOptionType.Channel,
+          channel_types: channelTypes
+        },
+        {
+          name: 'unlink_clan',
+          description: command.setup.clan.options.unlink_clan.description,
+          description_localizations: translation(
+            'command.setup.clan.options.unlink_clan.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
+        }
+      ]
+    },
+    // clan-embed
+    {
+      name: 'clan-embed',
+      description: command.setup.clan_embed.description,
+      description_localizations: translation('command.setup.clan_embed.description'),
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'clan',
+          description: common.options.clan.tag.description,
+          description_localizations: translation('common.options.clan.tag.description'),
+          required: true,
+          autocomplete: true,
+          type: ApplicationCommandOptionType.String
+        },
+        {
           name: 'channel',
           description: command.setup.enable.options.channel.description,
           description_localizations: translation(
@@ -72,6 +97,14 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.setup.enable.options.color.description,
           description_localizations: translation('command.setup.enable.options.color.description'),
           type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'disable_embed',
+          description: command.setup.clan_embed.options.disable_embed.description,
+          description_localizations: translation(
+            'command.setup.clan_embed.options.disable_embed.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
         }
       ]
     },
@@ -291,50 +324,23 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
     // disable
     {
       name: 'disable',
-      description: command.setup.disable.description,
-      description_localizations: translation('command.setup.disable.description'),
+      description: 'This command has been replaced with /setup clan and /setup clan-embed',
+      type: ApplicationCommandOptionType.Subcommand
+    },
+    // custom-bot
+    {
+      name: 'custom-bot',
+      description: command.setup.custom_bot.description,
+      description_localizations: translation('command.setup.custom_bot.description'),
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: 'action',
-          required: true,
-          description: common.select_an_option,
-          description_localizations: translation('common.select_an_option'),
-          type: ApplicationCommandOptionType.String,
-          choices: [
-            {
-              name: common.choices.setup.unlink_channel,
-              name_localizations: translation('common.choices.setup.unlink_channel'),
-              value: 'unlink-channel'
-            },
-            {
-              name: common.choices.setup.remove_clan,
-              name_localizations: translation('common.choices.setup.remove_clan'),
-              value: 'delete-clan'
-            },
-            {
-              name: common.choices.setup.clan_embed,
-              name_localizations: translation('common.choices.setup.clan_embed'),
-              value: 'clan-embed'
-            }
-          ]
-        },
-        {
-          name: 'clan',
-          autocomplete: true,
-          description: common.options.clan.tag.description,
-          description_localizations: translation('common.options.clan.tag.description'),
-          type: ApplicationCommandOptionType.String,
-          required: true
-        },
-        {
-          name: 'channel',
-          description: command.setup.disable.options.channel.description,
+          name: 'delete_custom_bot',
+          description: command.setup.custom_bot.options.delete_custom_bot.description,
           description_localizations: translation(
-            'command.setup.disable.options.channel.description'
+            'command.setup.custom_bot.options.delete_custom_bot.description'
           ),
-          type: ApplicationCommandOptionType.Channel,
-          channel_types: channelTypes
+          type: ApplicationCommandOptionType.Boolean
         }
       ]
     }

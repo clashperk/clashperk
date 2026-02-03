@@ -1,12 +1,12 @@
 import { Collections } from '@app/constants';
 import { ButtonInteraction, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
+import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
 import { handlePagination } from '../../util/pagination.js';
 import { Util } from '../../util/toolkit.js';
-import { cluster } from 'radash';
 
 export default class DonationsHistoryCommand extends Command {
   public constructor() {
@@ -60,14 +60,14 @@ export default class DonationsHistoryCommand extends Command {
       return interaction.editReply(
         this.i18n('common.no_clans_found', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
     if (!clans.length) {
       return interaction.editReply(
         this.i18n('common.no_clans_linked', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
     }
