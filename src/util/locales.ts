@@ -1174,7 +1174,7 @@ export const command = {
       description_long: 'Manage clans on the server (link server, link channel, clan embed)',
       options: {
         clan_channel: {
-          description: 'Channel to send updates to (defaults to the current channel)'
+          description: 'Link the clan to a channel.'
         },
         category: {
           description: 'Category of the clan. (select from the menu or type your own)'
@@ -1243,7 +1243,7 @@ export const command = {
           description: 'What logs to enable or disable.'
         },
         color: {
-          description: 'Hex color code for the embed.'
+          description: 'Hex color code for the embed (for donation log, clan games, last seen, etc)'
         },
         channel: {
           description: 'Channel to send updates to (defaults to the current channel)'
