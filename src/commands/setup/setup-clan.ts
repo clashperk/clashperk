@@ -51,7 +51,7 @@ export default class ServerLinkCommand extends Command {
 
       if (value) {
         return interaction.editReply(
-          this.i18n('command.setup.disable.channel_unlink', {
+          this.i18n('command.setup.responses.channel_unlink', {
             lng: interaction.locale,
             clan: `**${value.name}**`,
             channel: `<#${args.unlink_clan_channel.id}>`
@@ -60,7 +60,7 @@ export default class ServerLinkCommand extends Command {
       }
 
       return interaction.editReply(
-        this.i18n('command.setup.disable.channel_not_found', {
+        this.i18n('command.setup.responses.channel_not_found', {
           lng: interaction.locale,
           channel: args.unlink_clan_channel.toString()
         })
@@ -74,7 +74,7 @@ export default class ServerLinkCommand extends Command {
       });
       if (!clan) {
         return interaction.editReply(
-          this.i18n('command.setup.disable.clan_not_linked', { lng: interaction.locale })
+          this.i18n('command.setup.responses.clan_not_linked', { lng: interaction.locale })
         );
       }
 
@@ -84,7 +84,7 @@ export default class ServerLinkCommand extends Command {
       await this.client.enqueuer.delete({ tag: clan.tag, guild: interaction.guildId });
 
       return interaction.editReply(
-        this.i18n('command.setup.disable.clan_deleted', {
+        this.i18n('command.setup.responses.clan_deleted', {
           lng: interaction.locale,
           clan: `**${clan.name as string} (${clan.tag as string})**`
         })
@@ -132,7 +132,7 @@ export default class ServerLinkCommand extends Command {
 
     if (linkedToAnother && args.clan_channel) {
       return interaction.editReply(
-        this.i18n('command.setup.enable.channel_link.already_linked', {
+        this.i18n('command.setup.responses.channel_link.already_linked', {
           lng: interaction.locale,
           clan: `${linkedToAnother.name} (${linkedToAnother.tag})`,
           channel: args.clan_channel.toString()
@@ -148,7 +148,7 @@ export default class ServerLinkCommand extends Command {
     }
 
     return interaction.editReply({
-      content: this.i18n('command.setup.enable.server_link.success', {
+      content: this.i18n('command.setup.responses.server_link.success', {
         lng: interaction.locale,
         clan: `**${data.name} (${data.tag})**`,
         guild: `**${interaction.guild.name}**${args.clan_channel && !linkedToAnother ? ` ${args.clan_channel?.toString()}` : ''}${category ? ` with category **${category.displayName}**` : ''}`

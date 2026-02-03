@@ -1173,7 +1173,7 @@ export const command = {
       description: 'Link/unlink clans to the server or channels.',
       description_long: 'Manage clans on the server (link server, link channel, clan embed)',
       options: {
-        channel: {
+        clan_channel: {
           description: 'Channel to send updates to (defaults to the current channel)'
         },
         category: {
@@ -1189,62 +1189,11 @@ export const command = {
     },
     clan_embed: {
       description: 'Enable/disable clan embed on the server or add/remove clans.',
-      description_long: 'Manage clans on the server (link server, link channel, clan embed)',
       options: {
-        channel: {
-          description: 'Channel to send updates to (defaults to the current channel)'
-        },
-        color: {
-          description:
-            'Hex color code (only for donation log, clan games, last seen and clan embed)'
-        },
         disable_embed: {
           description: 'Disable clan embed.'
         }
       }
-    },
-    enable: {
-      description: 'Enable a feature on the server or add a clan.',
-      description_long:
-        'Enable a feature on the server (War Feed, Last Seen, Clan Games, Legend Log, Capital Log, Clan Feed, Join/Leave Log, Clan Embed, Donation Log) or add a clan or link a clan to a channel.',
-      options: {
-        channel: {
-          description: 'Channel to send updates to (defaults to the current channel)'
-        },
-        color: {
-          description:
-            'Hex color code (only for donation log, clan games, last seen and clan embed)'
-        },
-        role: {
-          description: 'Role for the flag notification (only for clan feed)'
-        },
-        category: {
-          description: 'Category of the clan. (select from the menu or type your own)'
-        }
-      },
-      no_leader_link: 'Clan Leader must be linked to the bot to enable this feature.',
-      server_link: {
-        success: 'Successfully linked {{clan}} to {{guild}}.',
-        already_linked: '{{clan}} is already linked to {{guild}}.'
-      },
-      channel_link: {
-        description: 'Link a channel to a clan.',
-        already_linked: '{{channel}} is already linked to {{clan}}',
-        success: 'Successfully linked {{clan}} to {{channel}}.'
-      }
-    },
-    disable: {
-      description: 'Disable a feature on the server or remove a clan.',
-      options: {
-        channel: {
-          description: 'Channel to be removed.'
-        }
-      },
-      channel_unlink: 'Successfully unlinked {{clan}} from {{channel}}.',
-      channel_not_found: 'No clans were found that are linked to {{channel}}.',
-      clan_not_linked: 'No clans were found on the server for the specified tag.',
-      clan_deleted: 'Successfully deleted {{clan}}.',
-      feature_disabled: 'Successfully disabled {{feature}} for {{clan}}.'
     },
     list: {
       description: 'List all enabled features and clans.',
@@ -1292,6 +1241,12 @@ export const command = {
         },
         action: {
           description: 'What logs to enable or disable.'
+        },
+        color: {
+          description: 'Hex color code for the embed.'
+        },
+        channel: {
+          description: 'Channel to send updates to (defaults to the current channel)'
         }
       }
     },
@@ -1301,6 +1256,23 @@ export const command = {
         delete_custom_bot: {
           description: 'Delete the custom bot.'
         }
+      }
+    },
+    responses: {
+      channel_unlink: 'Successfully unlinked {{clan}} from {{channel}}.',
+      channel_not_found: 'No clans were found that are linked to {{channel}}.',
+      clan_not_linked: 'No clans were found on the server for the specified tag.',
+      clan_deleted: 'Successfully deleted {{clan}}.',
+      feature_disabled: 'Successfully disabled {{feature}} for {{clan}}.',
+      no_leader_link: 'Clan Leader must be linked to the bot to enable this feature.',
+      server_link: {
+        success: 'Successfully linked {{clan}} to {{guild}}.',
+        already_linked: '{{clan}} is already linked to {{guild}}.'
+      },
+      channel_link: {
+        description: 'Link a channel to a clan.',
+        already_linked: '{{channel}} is already linked to {{clan}}',
+        success: 'Successfully linked {{clan}} to {{channel}}.'
       }
     }
   },

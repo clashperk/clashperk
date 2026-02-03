@@ -31,19 +31,17 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         },
         {
           name: 'category',
-          description: command.setup.enable.options.category.description,
-          description_localizations: translation(
-            'command.setup.enable.options.category.description'
-          ),
+          description: command.setup.clan.options.category.description,
+          description_localizations: translation('command.setup.clan.options.category.description'),
           type: ApplicationCommandOptionType.String,
           max_length: 36,
           autocomplete: true
         },
         {
           name: 'clan_channel',
-          description: command.setup.enable.options.channel.description,
+          description: command.setup.clan.options.clan_channel.description,
           description_localizations: translation(
-            'command.setup.enable.options.channel.description'
+            'command.setup.clan.options.clan_channel.description'
           ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
@@ -84,9 +82,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         },
         {
           name: 'channel',
-          description: command.setup.enable.options.channel.description,
+          description: command.setup.clan_logs.options.channel.description,
           description_localizations: translation(
-            'command.setup.enable.options.channel.description'
+            'command.setup.clan_logs.options.channel.description'
           ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
@@ -94,8 +92,10 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'color',
           name_localizations: { 'en-GB': 'colour' },
-          description: command.setup.enable.options.color.description,
-          description_localizations: translation('command.setup.enable.options.color.description'),
+          description: command.setup.clan_logs.options.color.description,
+          description_localizations: translation(
+            'command.setup.clan_logs.options.color.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
@@ -298,9 +298,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         },
         {
           name: 'channel',
-          description: command.setup.enable.options.channel.description,
+          description: command.setup.clan_logs.options.channel.description,
           description_localizations: translation(
-            'command.setup.enable.options.channel.description'
+            'command.setup.clan_logs.options.channel.description'
           ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
@@ -310,8 +310,10 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name_localizations: {
             'en-GB': 'colour'
           },
-          description: command.setup.enable.options.color.description,
-          description_localizations: translation('command.setup.enable.options.color.description'),
+          description: command.setup.clan_logs.options.color.description,
+          description_localizations: translation(
+            'command.setup.clan_logs.options.color.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
