@@ -45,6 +45,7 @@ export class StatsHandler {
       {
         $inc: { usage: 1 },
         $set: {
+          isAdmin: interaction.member.permissions.has('ManageGuild'),
           locale: interaction.locale,
           guildLocale: interaction.guildLocale,
           lastUpdated: new Date()
@@ -156,6 +157,7 @@ export class StatsHandler {
         $set: {
           guild: guild.id,
           name: guild.name,
+          iconUrl: guild.iconURL(),
           updatedAt: new Date(),
           locale: guild.preferredLocale,
           memberCount: guild.approximateMemberCount || guild.memberCount

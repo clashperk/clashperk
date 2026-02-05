@@ -32,6 +32,7 @@ const clickhouse = createClickHouseClient({
       CREATE TABLE IF NOT EXISTS player_activities (
         tag String,
         clanTag String,
+        action String DEFAULT 'UNKNOWN',
         createdAt DATETIME DEFAULT now()
       ) ENGINE = MergeTree()
       PARTITION BY toYYYYMM(createdAt)
