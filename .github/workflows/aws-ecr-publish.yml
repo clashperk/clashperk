@@ -8,7 +8,7 @@ jobs:
   build:
     environment: Production
     name: aws-ecr-publish
-    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - name: Checkout
