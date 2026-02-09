@@ -958,6 +958,9 @@ export const command = {
       },
       user: {
         description: 'Select a user for the history.'
+      },
+      roster: {
+        description: 'Select a roster for the history.'
       }
     }
   },

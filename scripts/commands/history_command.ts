@@ -91,6 +91,13 @@ export const HISTORY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description: command.history.options.user.description,
       description_localizations: translation('command.history.options.user.description'),
       type: ApplicationCommandOptionType.User
+    },
+    {
+      name: 'roster',
+      autocomplete: true,
+      description: command.history.options.roster.description,
+      description_localizations: translation('command.history.options.roster.description'),
+      type: ApplicationCommandOptionType.String
     }
   ]
 };

@@ -918,12 +918,12 @@
         "description": "The week to show contributions for.",
         "type": "String",
         "choices": [
+          "06 Feb, 2026",
           "30 Jan, 2026",
           "23 Jan, 2026",
           "16 Jan, 2026",
           "09 Jan, 2026",
-          "02 Jan, 2026",
-          "26 Dec, 2025"
+          "02 Jan, 2026"
         ]
       }
     ]
@@ -950,12 +950,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
+          "06 Feb, 2026",
           "30 Jan, 2026",
           "23 Jan, 2026",
           "16 Jan, 2026",
           "09 Jan, 2026",
-          "02 Jan, 2026",
-          "26 Dec, 2025"
+          "02 Jan, 2026"
         ]
       }
     ]
@@ -2006,6 +2006,12 @@
         "name": "user",
         "description": "Select a user for the history.",
         "type": "User",
+        "choices": []
+      },
+      {
+        "name": "roster",
+        "description": "Select a roster for the history.",
+        "type": "String",
         "choices": []
       }
     ]
@@ -3389,7 +3395,7 @@
       },
       {
         "name": "clan_channel",
-        "description": "Channel to send updates to (defaults to the current channel)",
+        "description": "Link the clan to a channel.",
         "type": "Channel",
         "choices": []
       },
@@ -3410,7 +3416,7 @@
   {
     "name": "setup clan-embed",
     "description": "Enable/disable clan embed on the server or add/remove clans.",
-    "description_long": "Manage clans on the server (link server, link channel, clan embed)",
+    "description_long": null,
     "options": [
       {
         "name": "clan",
@@ -3426,7 +3432,7 @@
       },
       {
         "name": "color",
-        "description": "Hex color code (only for donation log, clan games, last seen and clan embed)",
+        "description": "Hex color code for the embed (for donation log, clan games, last seen, etc)",
         "type": "String",
         "choices": []
       },
@@ -3466,7 +3472,7 @@
       },
       {
         "name": "color",
-        "description": "Hex color code (only for donation log, clan games, last seen and clan embed)",
+        "description": "Hex color code for the embed (for donation log, clan games, last seen, etc)",
         "type": "String",
         "choices": []
       },
@@ -3474,19 +3480,6 @@
         "name": "ping_role",
         "description": "Ping this role in the logs (only for town hall upgrade log)",
         "type": "Role",
-        "choices": []
-      }
-    ]
-  },
-  {
-    "name": "setup custom-bot",
-    "description": "Setup custom bot for the server.",
-    "description_long": null,
-    "options": [
-      {
-        "name": "delete_custom_bot",
-        "description": "Delete the custom bot.",
-        "type": "Boolean",
         "choices": []
       }
     ]
@@ -3500,7 +3493,7 @@
   {
     "name": "setup enable",
     "description": "This command has been replaced with /setup clan and /setup clan-embed",
-    "description_long": "Enable a feature on the server (War Feed, Last Seen, Clan Games, Legend Log, Capital Log, Clan Feed, Join/Leave Log, Clan Embed, Donation Log) or add a clan or link a clan to a channel.",
+    "description_long": null,
     "options": []
   },
   {
@@ -3951,12 +3944,12 @@
         "description": "The week to show capital contributions for.",
         "type": "String",
         "choices": [
+          "06 Feb, 2026",
           "30 Jan, 2026",
           "23 Jan, 2026",
           "16 Jan, 2026",
           "09 Jan, 2026",
-          "02 Jan, 2026",
-          "26 Dec, 2025"
+          "02 Jan, 2026"
         ]
       }
     ]
@@ -3977,12 +3970,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
+          "06 Feb, 2026",
           "30 Jan, 2026",
           "23 Jan, 2026",
           "16 Jan, 2026",
           "09 Jan, 2026",
-          "02 Jan, 2026",
-          "26 Dec, 2025"
+          "02 Jan, 2026"
         ]
       }
     ]
