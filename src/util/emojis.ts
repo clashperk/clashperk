@@ -76,7 +76,8 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Dark Crown': '<:DarkCrown:1401438986366484602>',
   'Heroic Torch': '<:HeroicTorch:1252640503988486327>',
   'Meteor Staff': '<:MeteorStaff:1436061197077315586>',
-  'Frost Flake': '<:FrostFlake:1447958238816374919>'
+  'Frost Flake': '<:FrostFlake:1447958238816374919>',
+  'Stick Horse': '<:StickHorse:1470414517191180319>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
