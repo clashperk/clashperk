@@ -148,12 +148,12 @@ export class RankedBattleLog extends RootLog {
   private async _refresh() {
     if (this.timeout) clearTimeout(this.timeout);
 
-    const { endTime } = Util.getTournamentWindow();
-    const timestamp = moment(endTime).subtract(5, 'hours').toDate();
-    if (timestamp.getTime() > Date.now()) return;
-    this.lastPostedAt = timestamp;
-
     try {
+      const { endTime } = Util.getTournamentWindow();
+      const timestamp = moment(endTime).subtract(5, 'hours').toDate();
+      if (timestamp.getTime() > Date.now()) return;
+      this.lastPostedAt = timestamp;
+
       const guildIds = this.client.guilds.cache.map((guild) => guild.id);
       const cursor = this.collection.aggregate<WithId<ClanLogsEntity>>([
         {
@@ -189,7 +189,7 @@ export class RankedBattleLog extends RootLog {
         await Util.delay(3000);
       }
     } finally {
-      this.timeout = setTimeout(this._refresh.bind(this), this.refreshRate).unref();
+      this.timeout = setTimeout(this._refresh.bind(this), this.refreshRate);
     }
   }
 
