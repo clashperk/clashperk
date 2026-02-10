@@ -1,5 +1,6 @@
 import { Collections, COLOR_CODES, UNRANKED_TIER_ID } from '@app/constants';
 import { ClanLogsEntity, ClanLogType } from '@app/entities';
+import { APIClanMember } from 'clashofclans.js';
 import {
   Collection,
   EmbedBuilder,
@@ -9,9 +10,8 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
-import { cluster } from 'radash';
-import { EMOJIS, PLAYER_LEAGUE_TIERS } from '../util/emojis.js';
-import { formatLeague } from '../util/helper.js';
+import { cluster, title } from 'radash';
+import { PLAYER_LEAGUE_TIERS } from '../util/emojis.js';
 import { Util } from '../util/toolkit.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
@@ -72,8 +72,7 @@ export class RankedBattleLog extends RootLog {
     const clan = await this.client.redis.getClan(cache.tag);
     if (!clan) return null;
 
-    const { startTime } = Util.getTournamentWindow();
-    const weekId = moment(startTime).subtract(7, 'days').format('YYYY-MM-DD');
+    const { startTime, weekId, endTime } = this.getTournamentWindow();
 
     const rows = await this.client.clickhouse
       .query({
@@ -103,7 +102,7 @@ export class RankedBattleLog extends RootLog {
       return record;
     }, {});
 
-    const embeds = clan.memberList
+    const players = clan.memberList
       .filter((player) => result[player.tag])
       .map((player) => {
         const leagueId = player.leagueTier?.id || UNRANKED_TIER_ID;
@@ -117,6 +116,35 @@ export class RankedBattleLog extends RootLog {
               ? `STAYED`
               : `DEMOTED`;
 
+        return {
+          player,
+          league,
+          trophies,
+          status
+        };
+      });
+
+    const playerGroups = players.reduce<
+      Record<
+        string,
+        {
+          player: APIClanMember;
+          league: string;
+          trophies: number;
+          status: string;
+        }[]
+      >
+    >((record, item) => {
+      record[item.status] = record[item.status] || [];
+      record[item.status].push(item);
+      return record;
+    }, {});
+
+    const priority: Record<string, number> = { PROMOTED: 1, STAYED: 2, DEMOTED: 3 };
+
+    const embeds = Object.entries(playerGroups)
+      .sort(([a], [b]) => priority[a] - priority[b])
+      .map(([status, players], index, items) => {
         const color =
           status === 'PROMOTED'
             ? COLOR_CODES.GREEN
@@ -124,20 +152,21 @@ export class RankedBattleLog extends RootLog {
               ? COLOR_CODES.PEACH
               : COLOR_CODES.RED;
 
-        const label =
-          status === 'PROMOTED'
-            ? `Promoted to ${PLAYER_LEAGUE_TIERS[league]} ${formatLeague(league)}`
-            : status === 'STAYED'
-              ? `Stayed in ${PLAYER_LEAGUE_TIERS[league]} ${formatLeague(league)}`
-              : `Demoted to ${PLAYER_LEAGUE_TIERS[league]} ${formatLeague(league)}`;
-
         const embed = new EmbedBuilder()
-          .setTitle(`${player.name} (${player.tag})`)
+          .setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
+          .setTitle(`${title(status.toLowerCase())} (${players.length})`)
           .setDescription(
-            `${label} ${EMOJIS.TROPHY} ${trophies >= 0 ? '+' : '-'}${Math.abs(trophies)}`
+            players
+              .map((player) => `${PLAYER_LEAGUE_TIERS[player.league]} \u200e${player.player.name}`)
+              .join('\n')
           )
-          .setColor(color)
-          .setFooter({ text: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small });
+          .setColor(color);
+
+        if (index === items.length - 1) {
+          embed.setTimestamp().setFooter({
+            text: `${moment(startTime).format('DD MMM YYYY')} - ${moment(endTime).format('DD MMM YYYY')}`
+          });
+        }
 
         return embed;
       });
@@ -145,11 +174,22 @@ export class RankedBattleLog extends RootLog {
     return embeds;
   }
 
+  private getTournamentWindow() {
+    const timestamp =
+      new Date().getTime() < new Date('2026-02-15T00:00:00.000Z').getTime()
+        ? new Date('2026-02-09T01:00:00.000Z')
+        : new Date();
+
+    const { id: weekId, startTime, endTime } = Util.getTournamentWindow(timestamp);
+
+    return { startTime, endTime, weekId };
+  }
+
   private async _refresh() {
     if (this.timeout) clearTimeout(this.timeout);
 
     try {
-      const { endTime } = Util.getTournamentWindow();
+      const { endTime } = this.getTournamentWindow();
       const timestamp = moment(endTime).subtract(5, 'hours').toDate();
       if (timestamp.getTime() > Date.now()) return;
       this.lastPostedAt = timestamp;
