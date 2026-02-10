@@ -110,7 +110,7 @@ export class RankedBattleLog extends RootLog {
         const trophies = result[player.tag].trophies;
 
         const status =
-          result[player.tag].leagueId > leagueId
+          leagueId > result[player.tag].leagueId
             ? `PROMOTED`
             : result[player.tag].leagueId === leagueId
               ? `STAYED`
