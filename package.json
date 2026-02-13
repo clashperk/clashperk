@@ -41,7 +41,7 @@
     "@sentry/node": "^10.33.0",
     "@sentry/profiling-node": "^10.33.0",
     "ai": "^6.0.33",
-    "axios": "^1.12.2",
+    "axios": "^1.13.5",
     "chalk": "^5.6.2",
     "clashofclans.js": "^3.6.1-dev.65db7bc",
     "discord-hybrid-sharding": "^3.0.1",
