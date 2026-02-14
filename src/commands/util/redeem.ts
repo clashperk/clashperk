@@ -112,8 +112,8 @@ export default class RedeemCommand extends Command {
       );
     }
 
-    const isGifted =
-      !!pledge.attributes.is_gifted || Object.values(CustomTiers).includes(pledge.attributes.note);
+    const isLifetime = Object.values(CustomTiers).includes(pledge.attributes.note);
+    const isGifted = !!pledge.attributes.is_gifted || isLifetime;
 
     if (pledge.attributes.patron_status !== 'active_patron' && !isGifted) {
       return interaction.editReply(
@@ -121,7 +121,10 @@ export default class RedeemCommand extends Command {
       );
     }
 
-    const rewardId = pledge.relationships.currently_entitled_tiers.data[0]?.id;
+    const rewardId = isLifetime
+      ? pledge.attributes.note
+      : pledge.relationships.currently_entitled_tiers.data[0]?.id;
+
     if (!rewardId || !(rewardId in guildLimits)) {
       return interaction.editReply(
         `**Something went wrong (unknown tier ${rewardId || '00000'}), please [contact us.](<https://discord.gg/ppuppun>)**`
