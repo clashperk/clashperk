@@ -136,9 +136,9 @@ export const getMenuFromMessage = (
   customId: string
 ) => {
   const _components = interaction.message.components as ActionRow<MessageActionRowComponent>[];
-  const mainIndex = _components.findIndex(({ components }) => components.length === 4);
-  const components = _components.slice(mainIndex + 1);
-  const component = components.at(0)?.components.at(0);
+  const component = _components
+    .flatMap((row) => row.components)
+    .find((component) => component.type === ComponentType.StringSelect);
 
   if (component && component.type === ComponentType.StringSelect) {
     const menu = StringSelectMenuBuilder.from(component.toJSON());
