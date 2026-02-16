@@ -14,7 +14,7 @@ import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
 import { IRoster } from '../../struct/roster-manager.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/emojis.js';
-import { padEnd, padStart } from '../../util/helper.js';
+import { escapeBackTick, padEnd, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
@@ -398,7 +398,7 @@ export default class StatsCommand extends Command {
               return `\u200e${BLUE_NUMBERS[++i]}${ORANGE_NUMBERS[m.hall]} \`${percentage} ${padStart(
                 m.success,
                 3
-              )}/${padEnd(m.total, 3)} ${padEnd(m.name, 14)} \u200f\``;
+              )}/${padEnd(m.total, 3)} ${padEnd(escapeBackTick(m.name), 14)} \u200f\``;
             })
             .join('\n')
         ].join('\n'),
