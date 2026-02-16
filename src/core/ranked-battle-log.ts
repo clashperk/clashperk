@@ -72,7 +72,11 @@ export class RankedBattleLog extends RootLog {
     const clan = await this.client.redis.getClan(cache.tag);
     if (!clan) return null;
 
-    const { startTime, weekId, endTime } = this.getTournamentWindow();
+    const {
+      startTime,
+      id: weekId,
+      endTime
+    } = Util.getTournamentWindow(moment().startOf('week').toDate());
 
     const rows = await this.client.clickhouse
       .query({
@@ -174,23 +178,12 @@ export class RankedBattleLog extends RootLog {
     return embeds;
   }
 
-  private getTournamentWindow() {
-    const timestamp =
-      new Date().getTime() < new Date('2026-02-15T00:00:00.000Z').getTime()
-        ? new Date('2026-02-09T01:00:00.000Z')
-        : new Date();
-
-    const { id: weekId, startTime, endTime } = Util.getTournamentWindow(timestamp);
-
-    return { startTime, endTime, weekId };
-  }
-
   private async _refresh() {
     if (this.timeout) clearTimeout(this.timeout);
 
     try {
-      const { endTime } = this.getTournamentWindow();
-      const timestamp = moment(endTime).subtract(5, 'hours').toDate();
+      const { startTime } = Util.getTournamentWindow();
+      const timestamp = moment(startTime).add(3, 'hours').toDate();
       if (timestamp.getTime() > Date.now()) return;
       this.lastPostedAt = timestamp;
 
