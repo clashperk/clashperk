@@ -120,8 +120,7 @@ export default class SetupListCommand extends Command {
 
     const fetched = clans.map((clan) => {
       const features = logs.filter((en) => en.clanTag === clan.tag);
-      const channels =
-        clan.channels?.map((id) => this.client.channels.cache.get(id)?.toString()) ?? [];
+      const channels = clan.channels?.map((id) => `<#${id}>`) ?? [];
 
       return {
         name: clan.name,
@@ -133,7 +132,7 @@ export default class SetupListCommand extends Command {
           const entry = features.find((en) => en.logType === logType);
           return {
             name: logActionsMap[logType].label || title(logType),
-            channel: entry && this.client.channels.cache.get(entry.channelId)?.toString()
+            channel: entry && `<#${entry.channelId}>`
           };
         })
       };

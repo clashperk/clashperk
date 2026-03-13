@@ -3,7 +3,8 @@ export const HOME_HEROES: Record<string, string> = {
   'Archer Queen': '<:ArcherQueen:696305403046133780>',
   'Grand Warden': '<:GrandWarden:841295204476780586>',
   'Royal Champion': '<:RoyalChampion:813806447934308422>',
-  'Minion Prince': '<:MinionPrince:1310574226448584704>'
+  'Minion Prince': '<:MinionPrince:1310574226448584704>',
+  'Dragon Duke': '<:DragonDuke:1475833050427555922>'
 };
 
 export const ELIXIR_TROOPS: Record<string, string> = {
@@ -39,7 +40,8 @@ export const HERO_PETS: Record<string, string> = {
   'Phoenix': '<:Phoenix:1029115881982271549>',
   'Spirit Fox': '<:SpiritFox:1184210185263259778>',
   'Angry Jelly': '<:AngryJelly:1230233853013004319>',
-  'Sneezy': '<:Sneezy:1354122571343466518>'
+  'Sneezy': '<:Sneezy:1354122571343466518>',
+  'Greedy Raven': '<:GreedyRaven:1475833362177462302>'
 };
 
 export const HERO_EQUIPMENT: Record<string, string> = {

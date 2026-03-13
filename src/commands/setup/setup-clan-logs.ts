@@ -110,28 +110,6 @@ export const logActionsMap = logGroups.reduce<LogMap>((record, group) => {
   return record;
 }, {});
 
-export const DeprecatedLogs = {
-  'war-feed': [
-    ClanLogType.WAR_EMBED_LOG,
-    ClanLogType.WAR_MISSED_ATTACKS_LOG,
-    ClanLogType.CWL_EMBED_LOG,
-    ClanLogType.CWL_MISSED_ATTACKS_LOG
-  ],
-  'last-seen': [ClanLogType.LAST_SEEN_EMBED_LOG],
-  'clan-games': [ClanLogType.CLAN_GAMES_EMBED_LOG],
-  'legend-log': [ClanLogType.LEGEND_ATTACKS_DAILY_SUMMARY_LOG],
-  'capital-log': [ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG],
-  'clan-feed': [
-    ClanLogType.CLAN_ACHIEVEMENTS_LOG,
-    ClanLogType.WAR_PREFERENCE_LOG,
-    ClanLogType.NAME_CHANGE_LOG,
-    ClanLogType.TOWN_HALL_UPGRADE_LOG
-  ],
-  'join-leave': [ClanLogType.MEMBER_JOIN_LEAVE_LOG],
-  'clan-embed': [ClanLogType.CLAN_EMBED_LOG],
-  'donation-log': [ClanLogType.CONTINUOUS_DONATION_LOG]
-};
-
 export default class SetupLogsCommand extends Command {
   public constructor() {
     super('setup-logs', {
@@ -161,7 +139,7 @@ export default class SetupLogsCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: {
       clan: string;
-      action: 'enable-logs' | 'disable-logs' | keyof typeof DeprecatedLogs;
+      action: 'enable-logs' | 'disable-logs';
       color?: number;
       ping_role?: Role;
       channel: TextChannel | AnyThreadChannel;
