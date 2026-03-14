@@ -109,7 +109,7 @@ export default class AskCommand extends Command {
     const tools = await mcpClient.tools();
 
     const result = await generateText({
-      model: cerebras('gpt-oss-120b'),
+      model: cerebras('qwen-3-235b-a22b-instruct-2507'),
       tools,
       stopWhen: stepCountIs(5),
       messages: [
