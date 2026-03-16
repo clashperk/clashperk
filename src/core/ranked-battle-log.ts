@@ -12,6 +12,7 @@ import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import { cluster, title } from 'radash';
 import { PLAYER_LEAGUE_TIERS } from '../util/emojis.js';
+import { padStart } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
@@ -161,7 +162,10 @@ export class RankedBattleLog extends RootLog {
           .setTitle(`${title(status.toLowerCase())} (${players.length})`)
           .setDescription(
             players
-              .map((player) => `${PLAYER_LEAGUE_TIERS[player.league]} \u200e${player.player.name}`)
+              .map(
+                (player) =>
+                  `${PLAYER_LEAGUE_TIERS[player.league]} \`${padStart(player.trophies, 4)}\` \u200e${player.player.name}`
+              )
               .join('\n')
           )
           .setColor(color);
