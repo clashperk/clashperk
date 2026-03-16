@@ -4,7 +4,7 @@ export const HOME_HEROES: Record<string, string> = {
   'Grand Warden': '<:GrandWarden:841295204476780586>',
   'Royal Champion': '<:RoyalChampion:813806447934308422>',
   'Minion Prince': '<:MinionPrince:1310574226448584704>',
-  'Dragon Duke': '<:DragonDuke:1475833050427555922>'
+  'Dragon Duke': '<:DragonDuke:1483039973321211924>'
 };
 
 export const ELIXIR_TROOPS: Record<string, string> = {
@@ -79,7 +79,9 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Heroic Torch': '<:HeroicTorch:1252640503988486327>',
   'Meteor Staff': '<:MeteorStaff:1436061197077315586>',
   'Frost Flake': '<:FrostFlake:1447958238816374919>',
-  'Stick Horse': '<:StickHorse:1470414517191180319>'
+  'Stick Horse': '<:StickHorse:1470414517191180319>',
+  'Fire Heart': '<:FireHeart:1483040001116602420>',
+  'Stun Blaster': '<:StunBlaster:1483040038789841040>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
