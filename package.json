@@ -43,7 +43,7 @@
     "ai": "^6.0.33",
     "axios": "^1.12.2",
     "chalk": "^5.6.2",
-    "clashofclans.js": "^3.6.2-dev.367d031",
+    "clashofclans.js": "^3.6.3-dev.fb51c0b",
     "discord-hybrid-sharding": "^3.0.1",
     "discord.js": "^14.25.0",
     "google-auth-library": "^9.15.0",
