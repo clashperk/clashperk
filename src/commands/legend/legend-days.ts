@@ -1,13 +1,21 @@
-import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID, UNRANKED_TIER_ID } from '@app/constants';
+import {
+  ATTACK_COUNTS,
+  Collections,
+  LEGEND_LEAGUE_ID,
+  PLAYER_LEAGUE_MAP,
+  UNRANKED_TIER_ID
+} from '@app/constants';
 import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
   AttachmentBuilder,
   ButtonBuilder,
+  ButtonInteraction,
   ButtonStyle,
   CommandInteraction,
   EmbedBuilder,
+  StringSelectMenuBuilder,
   User,
   escapeMarkdown,
   time
@@ -21,8 +29,8 @@ import {
 } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
-import { EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
-import { formatLeague, padStart, trimTag } from '../../util/helper.js';
+import { EMOJIS, HOME_TROOPS, PLAYER_LEAGUE_TIERS, TOWN_HALLS } from '../../util/emojis.js';
+import { formatLeague, getMenuFromMessage, padStart, trimTag } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class LegendDaysCommand extends Command {
@@ -46,23 +54,29 @@ export default class LegendDaysCommand extends Command {
   }
 
   public async exec(
-    interaction: CommandInteraction<'cached'>,
+    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     args: { tag?: string; user?: User; prev?: boolean; day?: number; graph?: boolean }
   ) {
     const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
     if (!data) return;
 
+    const customIds = {
+      refresh: this.createId({ cmd: this.id, prev: args.prev, tag: data.tag }),
+      accounts: this.createId({ cmd: this.id, prev: args.prev, tag: data.tag, string_key: 'tag' }),
+      overview: this.createId({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag })
+    };
+
     const row = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(
         new ButtonBuilder()
           .setEmoji(EMOJIS.REFRESH)
-          .setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev, tag: data.tag }))
+          .setCustomId(customIds.refresh)
           .setStyle(ButtonStyle.Secondary)
       )
       .addComponents(
         new ButtonBuilder()
           .setLabel(args.prev ? 'Overview / Current Day' : 'Previous Days / Graph')
-          .setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag }))
+          .setCustomId(customIds.overview)
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       );
 
@@ -101,6 +115,36 @@ export default class LegendDaysCommand extends Command {
         content: null
       });
     }
+
+    if (interaction.isMessageComponent()) {
+      return interaction.editReply({
+        components: [row, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
+      });
+    }
+
+    if (!data.user) return;
+
+    const players = await this.client.resolver.getPlayers(data.user.id);
+    const options = players
+      .filter((op) => op.leagueTier?.id === LEGEND_LEAGUE_ID)
+      .map((op) => ({
+        label: `${op.name} (${op.tag})`,
+        description: `${EMOJIS.TROPHY_UNICODE} ${op.trophies}`,
+        value: op.tag,
+        default: op.tag === data.tag,
+        emoji: PLAYER_LEAGUE_TIERS[PLAYER_LEAGUE_MAP[op.leagueTier?.id ?? UNRANKED_TIER_ID]]
+      }));
+
+    if (!(options.length > 1)) return;
+
+    const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId(customIds.accounts)
+        .setPlaceholder('Select an account!')
+        .addOptions(options)
+    );
+
+    return interaction.editReply({ components: [row, menuRow] });
   }
 
   private async getClan(clanTag: string) {
@@ -114,7 +158,7 @@ export default class LegendDaysCommand extends Command {
   }
 
   private async embed(
-    interaction: CommandInteraction,
+    interaction: CommandInteraction | ButtonInteraction,
     data: APIPlayer,
     legend: LegendAttacksEntity,
     _day?: number
@@ -455,7 +499,10 @@ export default class LegendDaysCommand extends Command {
     };
   }
 
-  private async rankedBattles(interaction: CommandInteraction<'cached'>, player: APIPlayer) {
+  private async rankedBattles(
+    interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+    player: APIPlayer
+  ) {
     const [logs, lastTournament, { globalRank, countryRank }] = await Promise.all([
       this.getTournamentLogs(player.tag),
       this.getLastTournament(player.tag),
