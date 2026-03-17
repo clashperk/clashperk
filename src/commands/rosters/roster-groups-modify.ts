@@ -54,7 +54,7 @@ export default class RosterGroupsModifyCommand extends Command {
     }
 
     if (args.name) data.displayName = args.name;
-    if (args.selectable) data.selectable = args.selectable;
+    if (typeof args.selectable === 'boolean') data.selectable = args.selectable;
     if (args.group_role) data.roleId = args.group_role.id;
     if (args.delete_role) data.roleId = null;
     if (args.order) data.order = args.order;

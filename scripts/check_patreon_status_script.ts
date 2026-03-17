@@ -1,5 +1,4 @@
-import { config } from 'dotenv';
-config();
+import 'dotenv/config';
 
 import { Collections } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';

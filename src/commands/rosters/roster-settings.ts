@@ -180,9 +180,10 @@ export default class RosterEditCommand extends Command {
         );
 
         if (dup)
-          return action.reply(
-            `This roster has multiple members signed up for another roster **${rosterLabel(dup)}**. Please remove them before opening this roster.`
-          );
+          return action.reply({
+            content: `This roster has multiple members signed up for another roster **${rosterLabel(dup)}**. Please remove them before opening this roster.`,
+            flags: MessageFlags.Ephemeral
+          });
       }
 
       const updated = await this.client.rosterManager.open(rosterId);

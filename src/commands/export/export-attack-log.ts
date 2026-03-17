@@ -1,4 +1,4 @@
-import { Collections, WarType } from '@app/constants';
+import { Collections, WAR_LEAGUE_MAP, WarType } from '@app/constants';
 import { SheetType } from '@app/entities';
 import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
@@ -44,13 +44,26 @@ export default class ExportWarAttackLogCommand extends Command {
     for (const { tag, name } of clans) {
       const cursor = this.client.db
         .collection<ClanWarsEntity>(Collections.CLAN_WARS)
-        .find({
-          $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
-          state: { $in: ['inWar', 'warEnded'] },
-          ...query
-        })
-        .sort({ _id: -1 })
-        .limit(num);
+        .aggregate<ClanWarsEntity & { group?: { leagues: Record<string, number> } }>([
+          {
+            $match: {
+              $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
+              state: { $in: ['inWar', 'warEnded'] },
+              ...query
+            }
+          },
+          { $sort: { _id: -1 } },
+          { $limit: num },
+          {
+            $lookup: {
+              from: Collections.CWL_GROUPS,
+              localField: 'leagueGroupId',
+              foreignField: 'id',
+              as: 'group'
+            }
+          },
+          { $unwind: { path: '$group', preserveNullAndEmptyArrays: true } }
+        ]);
 
       const attacks: AggregatedResult[] = [];
       for await (const war of cursor) {
@@ -92,8 +105,10 @@ export default class ExportWarAttackLogCommand extends Command {
               destructionPercentage: atk.destructionPercentage,
               defenderMapPosition: _defender.mapPosition,
               defenderName: _defender.name,
-              clanLevel: clan.clanLevel,
-              enemyClanLevel: opponent.clanLevel,
+              clanLeague: war.group ? WAR_LEAGUE_MAP[war.group.leagues[tag]] : clan.clanLevel,
+              enemyClanLeague: war.group
+                ? WAR_LEAGUE_MAP[war.group.leagues[opponent.tag]]
+                : opponent.clanLevel,
               attackerHomeClan: 1,
               stars: atk.stars,
               newStars: _newStars,
@@ -134,8 +149,10 @@ export default class ExportWarAttackLogCommand extends Command {
               destructionPercentage: atk.destructionPercentage,
               defenderMapPosition: _defender.mapPosition,
               defenderName: _defender.name,
-              clanLevel: clan.clanLevel,
-              enemyClanLevel: opponent.clanLevel,
+              clanLeague: war.group ? WAR_LEAGUE_MAP[war.group.leagues[tag]] : clan.clanLevel,
+              enemyClanLeague: war.group
+                ? WAR_LEAGUE_MAP[war.group.leagues[opponent.tag]]
+                : opponent.clanLevel,
               attackerHomeClan: 0,
               stars: atk.stars,
               newStars: _newStars,
@@ -181,16 +198,26 @@ export default class ExportWarAttackLogCommand extends Command {
         { name: 'New Stars', width: 100, align: 'RIGHT' },
         { name: 'Destruction', width: 100, align: 'RIGHT' },
         { name: 'Defender Tag', width: 100, align: 'LEFT' },
-        { name: 'Defender Name', width: 100, align: 'LEFT' },
+        { name: 'Defender Name', width: 160, align: 'LEFT' },
         { name: 'Defender Position', width: 100, align: 'RIGHT' },
         { name: 'Defender TH', width: 100, align: 'RIGHT' },
-        { name: 'Attacker Home Clan', width: 100, align: 'RIGHT' },
+        { name: 'Attacker Home Clan', width: 160, align: 'RIGHT' },
         { name: 'Clan Tag', width: 100, align: 'LEFT' },
-        { name: 'Clan Name', width: 100, align: 'LEFT' },
-        { name: 'Clan Level', width: 100, align: 'RIGHT' },
+        { name: 'Clan Name', width: 160, align: 'LEFT' },
+        {
+          name: 'Clan League/Level',
+          width: 100,
+          align: 'RIGHT',
+          note: 'Clan League is available for CWL and War League, otherwise it will show Clan Level'
+        },
         { name: 'Enemy Clan Tag', width: 100, align: 'LEFT' },
-        { name: 'Enemy Clan Name', width: 100, align: 'LEFT' },
-        { name: 'Enemy Clan Level', width: 100, align: 'RIGHT' },
+        { name: 'Enemy Clan Name', width: 160, align: 'LEFT' },
+        {
+          name: 'Enemy Clan League/Level',
+          width: 100,
+          align: 'RIGHT',
+          note: 'Clan League is available for CWL and War League, otherwise it will show Clan Level'
+        },
         { name: 'War Start Time', width: 100, align: 'LEFT' },
         { name: 'Team Size', width: 100, align: 'RIGHT' },
         { name: 'War Type', width: 100, align: 'LEFT' }
@@ -214,10 +241,10 @@ export default class ExportWarAttackLogCommand extends Command {
         m.attackerHomeClan,
         m.clanTag,
         m.clanName,
-        m.clanLevel,
+        m.clanLeague,
         m.enemyClanTag,
         m.enemyClanName,
-        m.enemyClanLevel,
+        m.enemyClanLeague,
         m.startTime,
         m.teamSize,
         m.warType
@@ -265,10 +292,10 @@ export interface AggregatedResult {
   attackerHomeClan: number;
   clanTag: string;
   clanName: string;
-  clanLevel: number;
+  clanLeague: string | number;
   enemyClanTag: string;
   enemyClanName: string;
-  enemyClanLevel: number;
+  enemyClanLeague: string | number;
   startTime: string | Date;
   teamSize: number;
   warType: string;

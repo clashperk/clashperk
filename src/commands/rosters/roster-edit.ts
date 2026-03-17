@@ -218,9 +218,9 @@ export default class RosterEditCommand extends Command {
       );
 
       if (dup)
-        return interaction.editReply(
-          `This roster has multiple members signed up for another roster ${rosterLabel(dup)}. Please remove them or close the roster before disabling multi-signup.`
-        );
+        return interaction.editReply({
+          content: `This roster has multiple members signed up for another roster ${rosterLabel(dup)}. Please remove them or close the roster before disabling multi-signup.`
+        });
     }
 
     const timezoneId = await this.client.rosterManager.getTimezoneId(interaction, args.timezone);
