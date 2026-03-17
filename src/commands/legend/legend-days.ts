@@ -102,7 +102,17 @@ export default class LegendDaysCommand extends Command {
       : await this.embed(interaction, data, legend, args.day);
 
     embed.setTimestamp().setColor(this.client.embed(interaction));
-    await interaction.editReply({ embeds: [embed], components: [row], content: null, files: [] });
+    await interaction.editReply({
+      embeds: [embed],
+      components: [
+        row,
+        ...(interaction.isMessageComponent()
+          ? getMenuFromMessage(interaction, data.tag, customIds.accounts)
+          : [])
+      ],
+      content: null,
+      files: []
+    });
 
     const result = args.prev ? await this.graph(data) : null;
     if (result) {
@@ -110,15 +120,14 @@ export default class LegendDaysCommand extends Command {
       embed.setImage(result.attachmentKey);
       return interaction.editReply({
         embeds: [embed],
-        components: [row],
+        components: [
+          row,
+          ...(interaction.isMessageComponent()
+            ? getMenuFromMessage(interaction, data.tag, customIds.accounts)
+            : [])
+        ],
         files: [rawFile],
         content: null
-      });
-    }
-
-    if (interaction.isMessageComponent()) {
-      return interaction.editReply({
-        components: [row, ...getMenuFromMessage(interaction, data.tag, customIds.accounts)]
       });
     }
 
