@@ -513,6 +513,9 @@ export const command = {
         },
         clan: {
           description: 'Search rosters by clan'
+        },
+        category: {
+          description: 'Search rosters by category'
         }
       }
     },

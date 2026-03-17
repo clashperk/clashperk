@@ -281,6 +281,40 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description_localizations: translation('command.roster.list.options.clan.description'),
           type: ApplicationCommandOptionType.String,
           autocomplete: true
+        },
+        {
+          name: 'category',
+          description: command.roster.list.options.category.description,
+          description_localizations: translation(
+            'command.roster.list.options.category.description'
+          ),
+          type: ApplicationCommandOptionType.String,
+          choices: [
+            {
+              name: common.choices.cwl,
+              name_localizations: translation('common.choices.cwl'),
+              value: 'CWL'
+            },
+            {
+              name: common.choices.war,
+              name_localizations: translation('common.choices.war'),
+              value: 'WAR'
+            },
+            {
+              name: common.choices.e_sports,
+              name_localizations: translation('common.choices.e_sports'),
+              value: 'ESPORTS'
+            },
+            {
+              name: common.choices.trophy,
+              name_localizations: translation('common.choices.trophy'),
+              value: 'TROPHY'
+            },
+            {
+              name: 'Un-categorized',
+              value: 'GENERAL'
+            }
+          ]
         }
       ]
     },

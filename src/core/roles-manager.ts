@@ -309,7 +309,7 @@ export class RolesManager {
 
     const playerClanTags = players
       .filter((player) => player.clanTag)
-      .map((player) => player.clanTag!);
+      .map((player) => player.clanTag as string);
     const inFamily = rolesMap.clanTags.some((clanTag) => playerClanTags.includes(clanTag));
     const isFamilyLeader = players.some(
       (player) =>
