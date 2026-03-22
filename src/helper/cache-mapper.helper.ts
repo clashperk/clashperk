@@ -1,5 +1,5 @@
 import { BUILDER_BASE_LEAGUES_MAP, PLAYER_LEAGUE_MAP } from '@app/constants';
-import { APIPlayer, RawData } from 'clashofclans.js';
+import { APIPlayer, RAW_DATA } from 'clashofclans.js';
 
 export interface PartialPlayer {
   name: string;
@@ -384,7 +384,7 @@ interface RawUnit {
   maxLevel: number;
 }
 
-const RAW_UNITS_MAP = RawData.RawUnits.reduce<Record<string, RawUnit>>((record, unit) => {
+const RAW_UNITS_MAP = RAW_DATA.RAW_UNITS.reduce<Record<string, RawUnit>>((record, unit) => {
   record[unit.name] = {
     id: unit.id,
     name: unit.name,

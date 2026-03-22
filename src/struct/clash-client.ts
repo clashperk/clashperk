@@ -47,8 +47,6 @@ export class ClashClient extends RESTManager {
       rejectIfNotValid: false,
       cache: false,
       retryLimit: 0,
-      connections: 50,
-      pipelining: 10,
       keys: [...keys],
       baseURL: process.env.CLASH_OF_CLANS_API_BASE_URL,
       onError: ({ path, status, body }) => {

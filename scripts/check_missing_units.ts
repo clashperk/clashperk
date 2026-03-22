@@ -1,4 +1,4 @@
-import { RawData } from 'clashofclans.js';
+import { RAW_DATA } from 'clashofclans.js';
 import { writeFileSync } from 'node:fs';
 import { UNITS_MAP_BY_NAME } from '../src/helper/cache-mapper.helper.js';
 import {
@@ -24,7 +24,7 @@ const units = {
   ...SUPER_TROOPS
 };
 
-for (const unit of RawData.RawUnits) {
+for (const unit of RAW_DATA.RAW_UNITS) {
   if (!units[unit.name]) {
     console.log({ missingType: 'emoji', name: unit.name, type: unit.subCategory });
   }
