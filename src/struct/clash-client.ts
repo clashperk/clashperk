@@ -6,8 +6,8 @@ import {
   APIClanWarAttack,
   APIClanWarLeagueGroup,
   APIWarClan,
-  RESTManager,
-  RequestHandler
+  RequestHandler,
+  RestManager
 } from 'clashofclans.js';
 import moment from 'moment';
 import { isWinner } from '../helper/cwl.helper.js';
@@ -30,7 +30,7 @@ export function timeoutSignal(timeout: number, path: string) {
   return controller.signal;
 }
 
-export class ClashClient extends RESTManager {
+export class ClashClient extends RestManager {
   private bearerToken!: string;
 
   public constructor(private readonly client: Client) {
@@ -359,8 +359,9 @@ export class ClashClient extends RESTManager {
     return Promise.resolve(res?.status === 200);
   }
 
-  public async getPlayerTags(user: string) {
-    const res = await fetch(`https://cocdiscord.link/links/${user}`, {
+  /** @deprecated -- deleted */
+  public async getPlayerTags(userId: string) {
+    const res = await fetch(`https://cocdiscord.link/links/${userId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -374,6 +375,7 @@ export class ClashClient extends RESTManager {
     return data.filter((en) => TAG_REGEX.test(en.playerTag)).map((en) => this.fixTag(en.playerTag));
   }
 
+  /** @deprecated */
   public async getLinkedUser(tag: string) {
     const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(tag)}`, {
       method: 'GET',
@@ -389,6 +391,7 @@ export class ClashClient extends RESTManager {
     return data.map((en) => ({ userId: en.discordId, tag }))[0] ?? null;
   }
 
+  /** @deprecated */
   public async getDiscordLinks(players: { tag: string }[]) {
     if (!players.length) return [];
 

@@ -13,7 +13,7 @@ import {
   StringSelectMenuInteraction,
   User
 } from 'discord.js';
-import { cluster, diff } from 'radash';
+import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/google.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';
@@ -63,13 +63,12 @@ export default class ProfileCommand extends Command {
         ? await this.getUserByTag(interaction, args.player)
         : (args.user ?? interaction.user);
 
-    const [data, players, otherTags] = await Promise.all([
+    const [data, players] = await Promise.all([
       this.client.db.collection(Collections.USERS).findOne({ userId: user.id }),
       this.client.db
         .collection(Collections.PLAYER_LINKS)
         .find({ userId: user.id }, { sort: { order: 1 } })
-        .toArray(),
-      this.client.coc.getPlayerTags(user.id)
+        .toArray()
     ]);
 
     const embed = new EmbedBuilder()
@@ -101,28 +100,7 @@ export default class ProfileCommand extends Command {
       embed.setDescription([embed.data.description, '\u200b'].join('\n'));
     }
 
-    const [_otherLinks, _otherDbLinks] = await Promise.all([
-      this.client.coc.getDiscordLinks(players),
-      this.client.db
-        .collection(Collections.PLAYER_LINKS)
-        .find({ userId: { $ne: user.id }, tag: { $in: otherTags } })
-        .toArray()
-    ]);
-    const otherLinks = _otherLinks.concat(_otherDbLinks);
-
-    // JUST FOR LOGGING
-    const hasExtraAccount = diff(
-      otherTags,
-      players.map((en) => en.tag)
-    ).length;
-    const dirtyUserIds = new Set([user.id, ...otherLinks.map((link) => link.userId)]);
-    const hasDiscrepancy = dirtyUserIds.size > 1;
-    if (hasDiscrepancy)
-      this.client.logger.info(`UserIds: ${Array.from(dirtyUserIds).join(',')}`, {
-        label: 'LinkDiscrepancy'
-      });
-
-    if (!players.length && !otherTags.length) {
+    if (!players.length) {
       embed.setDescription(
         [embed.data.description, 'No accounts are linked. Why not add some?'].join('\n')
       );
@@ -130,14 +108,10 @@ export default class ProfileCommand extends Command {
     }
 
     const _fields: { field: string; values: string[] }[] = [];
-    const playerTags = [...new Set([...players.map((en) => en.tag), ...otherTags])];
+    const playerTags = [...new Set(players.map((en) => en.tag))];
     const _players = await Promise.all(playerTags.map((tag) => this.client.coc.getPlayer(tag)));
     const playerLinks = _players.filter(({ res }) => res.ok).map(({ body }) => body);
     const defaultPlayerTag = playerLinks[0]?.tag;
-
-    if (hasExtraAccount || hasDiscrepancy) {
-      this.client.storage.updatePlayerLinks(playerTags.map((tag) => ({ tag })));
-    }
 
     _players.forEach(({ res }, idx) => {
       const tag = playerTags[idx];
@@ -161,32 +135,25 @@ export default class ProfileCommand extends Command {
     playerLinks.sort((a, b) => sumHeroes(b) - sumHeroes(a));
     playerLinks.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-    const links: LinkData[] = playerLinks.map((player) => {
-      const duplicate = this.isDuplicate(otherLinks, player.tag, user.id);
-      return {
-        name: player.name,
-        tag: player.tag,
-        verified: this.isVerified(players, player.tag) ? 'Yes' : 'No',
-        clan: {
-          name: player.clan?.name,
-          tag: player.clan?.tag
-        },
-        townHallLevel: player.townHallLevel,
-        role: player.role,
-        internal: this.isLinked(players, player.tag) ? 'Yes' : 'No',
-        duplicate: duplicate ? `${duplicate.userId}` : 'No'
-      };
-    });
+    const links: LinkData[] = playerLinks.map((player) => ({
+      name: player.name,
+      tag: player.tag,
+      verified: this.isVerified(players, player.tag) ? 'Yes' : 'No',
+      clan: {
+        name: player.clan?.name,
+        tag: player.clan?.tag
+      },
+      townHallLevel: player.townHallLevel,
+      role: player.role,
+      internal: 'Yes',
+      duplicate: 'No'
+    }));
 
     playerLinks.forEach((player) => {
       const tag = player.tag;
       const isDefault = defaultPlayerTag === tag;
 
-      const signature = this.isVerified(players, tag)
-        ? '**✓**'
-        : this.isDuplicate(otherLinks, tag, user.id) || !this.isLinked(players, tag)
-          ? '⚠️'
-          : '';
+      const signature = this.isVerified(players, tag) ? '**✓**' : '';
       const weaponLevel = player.townHallWeaponLevel
         ? weaponLevels[player.townHallWeaponLevel]
         : '';
@@ -346,12 +313,11 @@ export default class ProfileCommand extends Command {
 
   private async getUserByTag(interaction: CommandInteraction, playerTag: string) {
     playerTag = this.client.coc.fixTag(playerTag);
-    const [link, externalLink] = await Promise.all([
-      this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag: playerTag }),
-      this.client.coc.getLinkedUser(playerTag)
-    ]);
+    const link = await this.client.db
+      .collection(Collections.PLAYER_LINKS)
+      .findOne({ tag: playerTag });
 
-    const userId = link?.userId ?? externalLink?.userId;
+    const userId = link?.userId;
     if (!userId) return interaction.user;
 
     return this.fetchUser(userId).catch(() => interaction.user);
@@ -397,21 +363,6 @@ export default class ProfileCommand extends Command {
       content: `**Linked Accounts [${user.displayName} (${user.id})]**`,
       components: getExportComponents(spreadsheet)
     });
-  }
-
-  private isLinked(players: PlayerLinksEntity[], tag: string) {
-    return Boolean(players.find((en) => en.tag === tag));
-  }
-
-  private isDuplicate(
-    players: {
-      tag: string;
-      userId: string;
-    }[],
-    tag: string,
-    userId: string
-  ) {
-    return players.find((en) => en.tag === tag && en.userId !== userId);
   }
 
   private isVerified(players: PlayerLinksEntity[], tag: string) {

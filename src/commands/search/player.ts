@@ -270,7 +270,7 @@ export default class PlayerCommand extends Command {
   }
 
   private async getLinkedUser(tag: string) {
-    const data = await Promise.any([this.getLinkedFromDb(tag), this.client.coc.getLinkedUser(tag)]);
+    const data = await this.getLinkedFromDb(tag);
     if (!data) return null;
 
     return { mention: `<@${data.userId}>`, userId: data.userId };

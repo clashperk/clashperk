@@ -4,7 +4,8 @@
     "Archer Queen",
     "Grand Warden",
     "Royal Champion",
-    "Minion Prince"
+    "Minion Prince",
+    "Dragon Duke"
   ],
   "ELIXIR_TROOPS": [
     "Barbarian",
@@ -38,7 +39,8 @@
     "Phoenix",
     "Spirit Fox",
     "Angry Jelly",
-    "Sneezy"
+    "Sneezy",
+    "Greedy Raven"
   ],
   "HERO_EQUIPMENT": [
     "Rage Gem",
@@ -75,7 +77,9 @@
     "Heroic Torch",
     "Meteor Staff",
     "Frost Flake",
-    "Stick Horse"
+    "Stick Horse",
+    "Fire Heart",
+    "Stun Blaster"
   ],
   "DARK_ELIXIR_TROOPS": [
     "Minion",
@@ -165,6 +169,7 @@
     "Grand Warden",
     "Royal Champion",
     "Minion Prince",
+    "Dragon Duke",
     "Battle Machine"
   ],
   "HOME_TROOPS": [
@@ -173,6 +178,7 @@
     "Grand Warden",
     "Royal Champion",
     "Minion Prince",
+    "Dragon Duke",
     "Barbarian",
     "Archer",
     "Giant",
@@ -240,6 +246,7 @@
     "Spirit Fox",
     "Angry Jelly",
     "Sneezy",
+    "Greedy Raven",
     "Rage Gem",
     "Archer Puppet",
     "Barbarian Puppet",
@@ -274,7 +281,9 @@
     "Heroic Torch",
     "Meteor Staff",
     "Frost Flake",
-    "Stick Horse"
+    "Stick Horse",
+    "Fire Heart",
+    "Stun Blaster"
   ],
   "BUILDER_TROOPS": [
     "Raged Barbarian",

@@ -233,11 +233,6 @@ export class Resolver {
       this.getLastSearchedPlayerTag(userId)
     ]);
 
-    if (!linkedPlayer) {
-      const externalLinks = await this.client.coc.getPlayerTags(userId);
-      return externalLinks.at(0) ?? lastSearchedPlayerTag;
-    }
-
     return linkedPlayer?.tag ?? lastSearchedPlayerTag;
   }
 
@@ -252,23 +247,21 @@ export class Resolver {
   }
 
   public async getLinkedPlayerTags(userId: string) {
-    const [players, others] = await Promise.all([
-      this.client.db.collection(Collections.PLAYER_LINKS).find({ userId }).toArray(),
-      this.client.coc.getPlayerTags(userId)
-    ]);
-    return Array.from(new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]));
+    const players = await this.client.db
+      .collection(Collections.PLAYER_LINKS)
+      .find({ userId })
+      .toArray();
+
+    return players.map((en) => en.tag);
   }
 
   public async getLinkedUsersMap(players: { tag: string }[]) {
-    const fetched = await Promise.all([
-      this.client.coc.getDiscordLinks(players),
-      this.client.db
-        .collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
-        .find({ tag: { $in: players.map((player) => player.tag) } })
-        .toArray()
-    ]);
+    const links = await this.client.db
+      .collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
+      .find({ tag: { $in: players.map((player) => player.tag) } })
+      .toArray();
 
-    const result = fetched.flat().map((link) => {
+    const result = links.map((link) => {
       return {
         tag: link.tag,
         userId: link.userId,
@@ -278,25 +271,7 @@ export class Resolver {
       };
     });
 
-    return result.reduce<
-      Record<
-        string,
-        { userId: string; tag: string; verified: boolean; displayName: string; username: string }
-      >
-    >((acc, link) => {
-      acc[link.tag] ??= link;
-      const prev = acc[link.tag];
-
-      if (!prev.verified && link.verified) acc[link.tag].verified = true;
-
-      if (prev.username === 'unknown' && link.username !== 'unknown') {
-        acc[link.tag].username = link.username;
-        acc[link.tag].displayName = link.displayName;
-      }
-
-      if (prev.userId !== link.userId) acc[link.tag] = link;
-      return acc;
-    }, {});
+    return Object.fromEntries(result.map((link) => [link.tag, link]));
   }
 
   public async getLinkedUsers(players: { tag: string }[]) {
@@ -316,29 +291,23 @@ export class Resolver {
     userId: string,
     limit = 25
   ): Promise<(APIPlayer & { verified: boolean })[]> {
-    const [players, others] = await Promise.all([
-      this.client.db
-        .collection(Collections.PLAYER_LINKS)
-        .find({ userId })
-        .sort({ order: 1 })
-        .toArray(),
-      this.client.coc.getPlayerTags(userId)
-    ]);
+    const links = await this.client.db
+      .collection(Collections.PLAYER_LINKS)
+      .find({ userId })
+      .sort({ order: 1 })
+      .toArray();
 
-    const verifiedPlayersMap = players.reduce<Record<string, boolean>>((prev, curr) => {
+    const verifiedPlayersMap = links.reduce<Record<string, boolean>>((prev, curr) => {
       prev[curr.tag] = Boolean(curr.verified);
       return prev;
     }, {});
 
-    const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
-    const playerTags = Array.from(playerTagSet)
-      .slice(0, limit)
-      .map((tag) => this.client.coc.getPlayer(tag));
-
-    const result = (await Promise.all(playerTags))
+    const result = await Promise.all(
+      links.slice(0, limit).map((link) => this.client.coc.getPlayer(link.tag))
+    );
+    return result
       .filter(({ res }) => res.ok)
-      .map(({ body }) => body);
-    return result.map((player) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
+      .map(({ body: player }) => ({ ...player, verified: verifiedPlayersMap[player.tag] }));
   }
 
   private async getClansFromCategory(guildId: string, categoryId: string) {

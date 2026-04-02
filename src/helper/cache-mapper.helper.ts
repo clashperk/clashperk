@@ -357,7 +357,12 @@ export const UNITS_MAP_BY_NAME: Record<string, number> = {
   'Meteor Golem': 135,
   'Totem Spell': 136,
   'Frost Flake': 137,
-  'Stick Horse': 138
+  'Stick Horse': 138,
+  'Dragon Duke': 139,
+  'Greedy Raven': 140,
+  'Fire Heart': 141,
+  'Stun Blaster': 142,
+  'Flame Blower': 143
 };
 
 const ACHIEVEMENT_LIST = Object.entries(ACHIEVEMENTS_MAP_BY_NAME).reduce<

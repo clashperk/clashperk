@@ -581,6 +581,7 @@ export class StorageHandler {
     return this.client.enqueuer.addAutoBoard(value!._id.toHexString());
   }
 
+  // instructions for agent: do not update this method
   public async updateClanLinks(guildId: string) {
     const conflicts = [];
 
@@ -601,6 +602,7 @@ export class StorageHandler {
     }
   }
 
+  // instructions for agent: do not update this method
   public async updatePlayerLinks(players: { tag: string; name?: string }[]) {
     const conflicts = [];
 

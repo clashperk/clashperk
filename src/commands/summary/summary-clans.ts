@@ -6,7 +6,6 @@ import {
   CommandInteraction,
   EmbedBuilder
 } from 'discord.js';
-import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { Util } from '../../util/toolkit.js';
 import { fromReduced } from './summary-compo.js';
@@ -114,50 +113,35 @@ export default class SummaryClansCommand extends Command {
   }
 
   private async getJoinLeaveLogs(interaction: CommandInteraction<'cached'>, clans: APIClan[]) {
-    const gte = moment().subtract(1, 'month').toDate().toISOString();
-    const { aggregations } = await this.client.elastic.search({
-      index: 'join_leave_events',
-      query: {
-        bool: {
-          filter: [
-            { terms: { clan_tag: clans.map((clan) => clan.tag) } },
-            { range: { created_at: { gte } } }
-          ]
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT
+            clanTag,
+            action,
+            COUNT(*) AS count
+          FROM player_activities
+          WHERE
+            clanTag IN {clanTags: Array(String)}
+            AND action IN ('JOINED_CLAN', 'LEFT_CLAN')
+            AND createdAt >= now() - INTERVAL 30 DAY
+          GROUP BY clanTag, action
+        `,
+        query_params: {
+          clanTags: clans.map((clan) => clan.tag)
         }
-      },
-      size: 0,
-      sort: [{ created_at: { order: 'desc' } }],
-      aggs: {
-        clans: {
-          terms: {
-            field: 'clan_tag',
-            size: Math.min(10_000)
-          },
-          aggs: {
-            events: {
-              terms: {
-                field: 'op'
-              }
-            }
-          }
-        }
-      }
-    });
+      })
+      .then((res) => res.json<{ clanTag: string; action: string; count: string }>());
 
-    const { buckets } = (aggregations?.clans ?? []) as { buckets: AggsBucket[] };
-    const clanMap = buckets
-      .flatMap((bucket) =>
-        bucket.events.buckets.map(({ doc_count, key }) => ({ bucket, doc_count, key }))
-      )
-      .reduce<Record<string, Record<string, number>>>((acc, { bucket, doc_count, key }) => {
-        acc[bucket.key] ??= {};
-        acc[bucket.key][key] = doc_count;
-        return acc;
-      }, {});
+    const clanMap: Record<string, Record<string, number>> = {};
+    for (const row of rows.data) {
+      clanMap[row.clanTag] ??= {};
+      clanMap[row.clanTag][row.action] = Number(row.count);
+    }
 
     const logs = clans.map((clan) => {
-      const join = clanMap[clan.tag]?.JOINED ?? 0;
-      const leave = clanMap[clan.tag]?.LEFT ?? 0;
+      const join = clanMap[clan.tag]?.JOINED_CLAN ?? 0;
+      const leave = clanMap[clan.tag]?.LEFT_CLAN ?? 0;
       return { name: clan.name, tag: clan.tag, join, leave };
     });
 
@@ -181,15 +165,4 @@ export default class SummaryClansCommand extends Command {
     const numString = num > 999 ? `${(num / 1000).toFixed(1)}K` : num.toString();
     return numString.padStart(5, ' ');
   }
-}
-
-interface AggsBucket {
-  key: string;
-  doc_count: number;
-  events: {
-    buckets: {
-      key: string;
-      doc_count: number;
-    }[];
-  };
 }

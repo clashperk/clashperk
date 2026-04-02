@@ -33,6 +33,6 @@ jobs:
         run: npm i
 
       - name: Update Crowdin
-        run: npm run crowdin
+        run: npm run check:crowdin
         env:
           CROWDIN_API: ${{ secrets.CROWDIN_API }}
