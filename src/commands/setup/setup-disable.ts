@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageFlags } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
 export default class SetupDisableCommand extends Command {
@@ -14,7 +14,7 @@ export default class SetupDisableCommand extends Command {
   public async exec(interaction: CommandInteraction<'cached'>) {
     return interaction.reply({
       content: `This command has been replaced with ${this.client.commands.get('/setup clan')} and ${this.client.commands.get('/setup clan-embed')}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 }
