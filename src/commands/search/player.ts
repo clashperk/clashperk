@@ -116,7 +116,7 @@ export default class PlayerCommand extends Command {
       );
 
     if (interaction.isMessageComponent()) {
-      return interaction.editReply({
+      return await interaction.editReply({
         embeds: [embed],
         components: [
           mainRow,
@@ -270,15 +270,9 @@ export default class PlayerCommand extends Command {
   }
 
   private async getLinkedUser(tag: string) {
-    const data = await this.getLinkedFromDb(tag);
+    const data = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag });
     if (!data) return null;
 
     return { mention: `<@${data.userId}>`, userId: data.userId };
-  }
-
-  private async getLinkedFromDb(tag: string) {
-    const data = await this.client.db.collection(Collections.PLAYER_LINKS).findOne({ tag });
-    if (!data) return Promise.reject(0);
-    return data;
   }
 }

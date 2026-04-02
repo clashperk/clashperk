@@ -480,13 +480,6 @@ export class CommandHandler extends BaseHandler {
 
           span.setStatus({ code: 1, message: 'ok' });
         } catch (error) {
-          console.log({
-            error,
-            stack: error?.stack,
-            type: typeof error,
-            isError: error instanceof Error
-          });
-
           this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
           span.setStatus({ code: 2, message: 'internal_error' });
         } finally {
