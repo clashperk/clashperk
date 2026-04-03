@@ -389,7 +389,7 @@ export default class LayoutCommand extends Command {
   }
 }
 
-export interface LayoutCommandArgs {
+interface LayoutCommandArgs {
   screenshot: string;
   notes?: string;
   has_description?: boolean;

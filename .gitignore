@@ -10,3 +10,4 @@ test/
 .env.*
 scripts/sql/
 service-account.json
+clashperk.code-workspace

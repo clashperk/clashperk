@@ -1,7 +1,7 @@
 import { BUILDER_BASE_LEAGUES_MAP, PLAYER_LEAGUE_MAP } from '@app/constants';
 import { APIPlayer, RAW_DATA } from 'clashofclans.js';
 
-export interface PartialPlayer {
+interface PartialPlayer {
   name: string;
   tag: string;
   townHallLevel: number;

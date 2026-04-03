@@ -1,5 +1,5 @@
-import { APIClanWar, APIWarClan } from 'clashofclans.js';
 import { WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
+import { APIClanWar, APIWarClan } from 'clashofclans.js';
 
 export function rankingSort(
   a: { stars: number; destruction: number },
@@ -72,7 +72,7 @@ export function calculateLeagueRanking(rankings: CWLRanking[], leagueId: number)
     }));
 }
 
-export interface CWLRanking {
+interface CWLRanking {
   name: string;
   tag: string;
   stars: number;

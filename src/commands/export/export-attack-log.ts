@@ -273,7 +273,7 @@ interface ClanWarsEntity extends Omit<APIClanWar, 'startTime'> {
   startTime: Date | string;
 }
 
-export interface AggregatedResult {
+interface AggregatedResult {
   name: string;
   tag: string;
   mapPosition: number;

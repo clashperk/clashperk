@@ -17,9 +17,9 @@ import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/emojis.js';
 import { escapeBackTick, padEnd, padStart } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
-export type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
-export type WarTypeArg = 'regular' | 'cwl' | 'friendly' | 'noFriendly' | 'noCWL' | 'all';
-export type Mode = 'attacks' | 'defense';
+type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
+type WarTypeArg = 'regular' | 'cwl' | 'friendly' | 'noFriendly' | 'noCWL' | 'all';
+type Mode = 'attacks' | 'defense';
 
 const WarTypes = {
   regular: 'Regular',
