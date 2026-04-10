@@ -1,4 +1,4 @@
-import { calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
+import { calculateBonus, calculateCWLMedals, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
 import { APIClan, APIWarClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -126,6 +126,7 @@ export default class CWLStatsCommand extends Command {
     > = {};
     let activeRounds = 0;
     let warsWon = 0;
+    const teamSize = body.wars?.at(0)?.teamSize || 0;
 
     for (const data of body.wars) {
       if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
@@ -274,7 +275,7 @@ export default class CWLStatsCommand extends Command {
 
     const medals = leagueId ? calculateCWLMedals(leagueId.toString(), 8, rankIndex + 1) : 0;
     if (leagueId) {
-      const bonuses = WAR_LEAGUE_PROMOTION_MAP[leagueId].bonuses + warsWon;
+      const bonuses = calculateBonus({ leagueId, teamSize }) + warsWon;
       embed.setDescription(
         [
           `${EMOJIS.GAP}${EMOJIS.HASH} **\`\u200eSTAR DEST%${''.padEnd(padding - 3, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,

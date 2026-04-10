@@ -23,10 +23,12 @@ npm run submodule      # Initialize/update locales git submodule
 ## Architecture
 
 ### Entry Points
+
 - `src/index.ts` — Cluster manager using discord-hybrid-sharding (process sharding, health check HTTP server on PORT env or 8070)
 - `src/main.ts` — Discord client bootstrap: Sentry init, i18next setup, handler registration, login
 
 ### Core Classes (`src/struct/`)
+
 - `client.ts` — Extended Discord.js client holding all service references (db, coc, redis, elastic, clickhouse, analytics, settings, handlers)
 - `clash-client.ts` — Clash of Clans API integration via `clashofclans.js`
 - `database.ts` — MongoDB connection managing two databases: main + global tracking
@@ -36,21 +38,26 @@ npm run submodule      # Initialize/update locales git submodule
 - `resolver.ts` — Resolves player/clan tags from Discord users and arguments
 
 ### Command System (`src/commands/`)
+
 Commands are organized by category (activity, alias, autorole, config, cwl, export, flag, history, legend, link, rosters, search, setup, summary, util). Each command extends a `Command` base class with `exec()` for slash command interactions. Inhibitors in `src/inhibitors/` run pre-command validation (permissions, blacklist, emoji checks).
 
 ### Event & Log System (`src/core/`)
+
 Log handlers (clan-log, clan-war-log, capital-log, donation-log, etc.) process game events and post updates to configured Discord channels. The `Enqueuer` handles message batching and queuing.
 
 ### Handler Framework (`src/lib/`)
+
 `handlers.ts` discovers and loads commands, listeners, and inhibitors from their directories using file-system scanning.
 
 ### Data Layer
+
 - `src/entities/` — MongoDB collection type definitions (~39 collections)
 - `src/helper/` — Feature-specific business logic helpers (legends, leaderboards, clan embeds, etc.)
 - `src/util/constants.ts` — Feature flags, collection names, magic numbers
 - `src/api/` — Auto-generated Swagger types for Clash of Clans API
 
 ### Localization
+
 - `locales/` is a git submodule (`clashperk/locales`) with 32+ language translations
 - i18next handles runtime translation with `src/util/i18n.ts` and `src/util/locales.ts`
 
@@ -64,3 +71,9 @@ Log handlers (clan-log, clan-war-log, capital-log, donation-log, etc.) process g
 - **Node**: >= 20.x, Docker uses Node 22-alpine
 - **Databases**: MongoDB (replica set required), Redis, Elasticsearch, Clickhouse
 - **Monitoring**: Sentry for errors, PostHog + Mixpanel for analytics
+
+## Workspaces:
+
+- clashperk - bot code in this repository
+- clashperk-backend - API server for web dashboard and bot
+- dashboard - React web dashboard for clan management and stats

@@ -1,4 +1,4 @@
-import { UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
+import { calculateBonus, UNRANKED_WAR_LEAGUE_ID } from '@app/constants';
 import { APIClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -188,8 +188,10 @@ export default class CWLStarsCommand extends Command {
 
     const leagueId = body.leagues?.[clan.tag];
     const bonuses =
-      WAR_LEAGUE_PROMOTION_MAP[(leagueId || clan.warLeague?.id) ?? UNRANKED_WAR_LEAGUE_ID].bonuses +
-      warsWon;
+      calculateBonus({
+        leagueId: (leagueId || clan.warLeague?.id) ?? UNRANKED_WAR_LEAGUE_ID,
+        teamSize: body.wars.at(0)?.teamSize || 0
+      }) + warsWon;
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))

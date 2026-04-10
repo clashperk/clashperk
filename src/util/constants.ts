@@ -139,7 +139,10 @@ export const enum Collections {
   BOT_USERS = 'BotUsers',
   BOT_STATS = 'BotStats',
   BOT_COMMANDS = 'BotCommands',
-  BOT_INTERACTIONS = 'BotInteractions'
+  BOT_INTERACTIONS = 'BotInteractions',
+
+  TICKET_PANELS = 'TicketPanels',
+  TICKETS = 'Tickets'
 }
 
 export const enum Settings {
@@ -514,27 +517,56 @@ export const WAR_LEAGUE_MAP: Record<string, string> = {
 
 export const WAR_LEAGUE_PROMOTION_MAP: Record<
   string,
-  { promotion: number; demotion: number; name: string; bonuses: number }
+  { promotion: number; demotion: number; name: string }
 > = {
-  48000000: { promotion: 3, demotion: 9, name: 'Unranked', bonuses: 0 },
-  48000001: { promotion: 3, demotion: 9, name: 'Bronze League III', bonuses: 1 },
-  48000002: { promotion: 3, demotion: 8, name: 'Bronze League II', bonuses: 1 },
-  48000003: { promotion: 3, demotion: 8, name: 'Bronze League I', bonuses: 1 },
-  48000004: { promotion: 2, demotion: 8, name: 'Silver League III', bonuses: 1 },
-  48000005: { promotion: 2, demotion: 7, name: 'Silver League II', bonuses: 1 },
-  48000006: { promotion: 2, demotion: 7, name: 'Silver League I', bonuses: 1 },
-  48000007: { promotion: 2, demotion: 7, name: 'Gold League III', bonuses: 2 },
-  48000008: { promotion: 2, demotion: 7, name: 'Gold League II', bonuses: 2 },
-  48000009: { promotion: 2, demotion: 7, name: 'Gold League I', bonuses: 2 },
-  48000010: { promotion: 2, demotion: 7, name: 'Crystal League III', bonuses: 2 },
-  48000011: { promotion: 2, demotion: 7, name: 'Crystal League II', bonuses: 2 },
-  48000012: { promotion: 1, demotion: 7, name: 'Crystal League I', bonuses: 2 },
-  48000013: { promotion: 1, demotion: 7, name: 'Master League III', bonuses: 3 },
-  48000014: { promotion: 1, demotion: 7, name: 'Master League II', bonuses: 3 },
-  48000015: { promotion: 1, demotion: 7, name: 'Master League I', bonuses: 3 },
-  48000016: { promotion: 1, demotion: 7, name: 'Champion League III', bonuses: 4 },
-  48000017: { promotion: 1, demotion: 7, name: 'Champion League II', bonuses: 4 },
-  48000018: { promotion: 0, demotion: 6, name: 'Champion League I', bonuses: 4 }
+  48000000: { promotion: 3, demotion: 9, name: 'Unranked' },
+  48000001: { promotion: 3, demotion: 9, name: 'Bronze League III' },
+  48000002: { promotion: 3, demotion: 8, name: 'Bronze League II' },
+  48000003: { promotion: 3, demotion: 8, name: 'Bronze League I' },
+  48000004: { promotion: 2, demotion: 8, name: 'Silver League III' },
+  48000005: { promotion: 2, demotion: 7, name: 'Silver League II' },
+  48000006: { promotion: 2, demotion: 7, name: 'Silver League I' },
+  48000007: { promotion: 2, demotion: 7, name: 'Gold League III' },
+  48000008: { promotion: 2, demotion: 7, name: 'Gold League II' },
+  48000009: { promotion: 2, demotion: 7, name: 'Gold League I' },
+  48000010: { promotion: 2, demotion: 7, name: 'Crystal League III' },
+  48000011: { promotion: 2, demotion: 7, name: 'Crystal League II' },
+  48000012: { promotion: 1, demotion: 7, name: 'Crystal League I' },
+  48000013: { promotion: 1, demotion: 7, name: 'Master League III' },
+  48000014: { promotion: 1, demotion: 7, name: 'Master League II' },
+  48000015: { promotion: 1, demotion: 7, name: 'Master League I' },
+  48000016: { promotion: 1, demotion: 7, name: 'Champion League III' },
+  48000017: { promotion: 1, demotion: 7, name: 'Champion League II' },
+  48000018: { promotion: 0, demotion: 6, name: 'Champion League I' }
+};
+
+export const GUARANTEED_BONUS: Record<string, Record<string, number>> = {
+  // leagueId: { teamSize: bonus }
+  '48000001': { '5': 0, '15': 1, '30': 2 },
+  '48000002': { '5': 0, '15': 1, '30': 2 },
+  '48000003': { '5': 0, '15': 1, '30': 2 },
+  '48000004': { '5': 0, '15': 1, '30': 2 },
+  '48000005': { '5': 0, '15': 1, '30': 2 },
+  '48000006': { '5': 0, '15': 1, '30': 2 },
+
+  '48000007': { '5': 0, '15': 2, '30': 4 },
+  '48000008': { '5': 0, '15': 2, '30': 4 },
+  '48000009': { '5': 0, '15': 2, '30': 4 },
+  '48000010': { '5': 0, '15': 2, '30': 4 },
+  '48000011': { '5': 0, '15': 2, '30': 4 },
+  '48000012': { '5': 0, '15': 2, '30': 4 },
+
+  '48000013': { '5': 1, '15': 3, '30': 6 },
+  '48000014': { '5': 1, '15': 3, '30': 6 },
+  '48000015': { '5': 1, '15': 3, '30': 6 },
+
+  '48000016': { '5': 0, '15': 4, '30': 0 },
+  '48000017': { '5': 0, '15': 4, '30': 0 },
+  '48000018': { '5': 0, '15': 4, '30': 0 }
+};
+
+export const calculateBonus = ({ leagueId, teamSize }: { leagueId: number; teamSize: number }) => {
+  return GUARANTEED_BONUS[leagueId]?.[teamSize] || 0;
 };
 
 export const MEDALS_RANKING_MAP: Record<string, number[]> = {
