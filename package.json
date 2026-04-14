@@ -1,6 +1,6 @@
 {
   "name": "clashperk",
-  "version": "4.2.53",
+  "version": "4.2.54",
   "author": "",
   "license": "MIT",
   "description": "Clash of Clans Discord Bot",
@@ -28,7 +28,7 @@
     "check:locales": "tsx -r dotenv/config scripts/check_duplicate_locales.ts",
     "check:patreon": "tsx -r dotenv/config scripts/check_patreon_status_script.ts",
     "check:units": "tsx -r dotenv/config scripts/check_missing_units.ts",
-    "sanity": "npm run check:crowdin && npm run check:locales && npm run check:units",
+    "sanity": "npm run check:locales && npm run check:units && npm run check:crowdin",
     "generate:api": "swagger-typescript-api generate -p http://localhost:8080/docs/json?x-typings-ignored=1 -o ./src/api --name generated.ts --axios --route-types --extract-request-params --extract-response-body --extract-response-error --single-http-client --responses"
   },
   "dependencies": {

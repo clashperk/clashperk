@@ -362,7 +362,8 @@ export const UNITS_MAP_BY_NAME: Record<string, number> = {
   'Greedy Raven': 140,
   'Fire Heart': 141,
   'Stun Blaster': 142,
-  'Flame Blower': 143
+  'Flame Blower': 143,
+  'Rocket Backpack': 144
 };
 
 const ACHIEVEMENT_LIST = Object.entries(ACHIEVEMENTS_MAP_BY_NAME).reduce<

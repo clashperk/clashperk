@@ -79,7 +79,9 @@
     "Frost Flake",
     "Stick Horse",
     "Fire Heart",
-    "Stun Blaster"
+    "Stun Blaster",
+    "Rocket Backpack",
+    "Flame Blower"
   ],
   "DARK_ELIXIR_TROOPS": [
     "Minion",
@@ -283,7 +285,9 @@
     "Frost Flake",
     "Stick Horse",
     "Fire Heart",
-    "Stun Blaster"
+    "Stun Blaster",
+    "Rocket Backpack",
+    "Flame Blower"
   ],
   "BUILDER_TROOPS": [
     "Raged Barbarian",
