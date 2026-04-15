@@ -373,9 +373,12 @@ export class StorageHandler {
 
     if (channelWebhooks.size >= 10) return null;
 
+    const member = channel.guild.members.me;
     const webhook = await channel.createWebhook({
-      name: this.client.user.displayName,
-      avatar: this.client.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
+      name: !!member?.avatar ? member.displayName : this.client.user.displayName,
+      avatar: !!member?.avatar
+        ? member.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
+        : this.client.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
     });
     this.client.logger.log(`Created webhook for ${channel.guild.name}#${channel.name}`, {
       label: 'HOOK'
