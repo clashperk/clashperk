@@ -323,12 +323,18 @@ export default class LayoutCommand extends Command {
       });
     }
 
-    return interaction.reply({
-      flags: MessageFlags.Ephemeral,
-      content: `Total Downloads: ${layout.downloader.length}\n\n${layout.downloader
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    for (const content of Util.splitMessage(
+      `Total Downloads: ${layout.downloader.length}\n\n${layout.downloader
         .map((id, index) => `${index + 1}. <@${id}>`)
         .join('\n')}`
-    });
+    )) {
+      await interaction.followUp({
+        flags: MessageFlags.Ephemeral,
+        content,
+        allowedMentions: { users: [] }
+      });
+    }
   }
 
   private getComponents(args: LayoutCommandArgs) {
