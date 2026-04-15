@@ -32,4 +32,5 @@ export * from './player-seasons.entity.js';
 export * from './players.entity.js';
 export * from './rosters.entity.js';
 export * from './settings.entity.js';
+export * from './tickets.entity.js';
 export * from './users.entity.js';
