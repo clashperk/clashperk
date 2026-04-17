@@ -1,5 +1,5 @@
 import { Collections } from '@app/constants';
-import { TicketTypeConfig, TicketEntity, TicketPanelEntity } from '@app/entities';
+import { TicketEntity, TicketPanelEntity, TicketTypeConfig } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -10,6 +10,7 @@ import {
   ComponentType,
   ContainerBuilder,
   GuildMember,
+  InteractionEditReplyOptions,
   LabelBuilder,
   MessageComponentInteraction,
   MessageFlags,
@@ -86,7 +87,7 @@ export default class TicketOpenCommand extends Command {
         'CreatePrivateThreads',
         'SendMessagesInThreads'
       ],
-      defer: true,
+      defer: false,
       ephemeral: true
     });
   }
@@ -216,7 +217,8 @@ export default class TicketOpenCommand extends Command {
     });
 
     if (existing) {
-      return interaction.editReply({
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
         content: `You already have an open ticket: <#${existing.channelId}>`
       });
     }
@@ -224,18 +226,63 @@ export default class TicketOpenCommand extends Command {
     // Log button click
     void this.logButtonClick(panel, btn, interaction);
 
-    // If CoC account required, show account select
     if (btn.requireLinkedAccount) {
+      if (btn.questions?.length) {
+        // Fetch accounts and embed the selection at the top of the questions modal
+        const accountOptions = await this.fetchQualifyingAccounts(interaction, btn);
+        if (!accountOptions) return;
+        return this.showQuestionsModal(interaction, panel, btn, null, accountOptions);
+      }
+      await interaction.deferReply();
       return this.showAccountSelect(interaction, panel, btn);
     }
 
-    // If questions configured, show modal
+    // If questions configured, show modal (must be first response — before any defer)
     if (btn.questions?.length) {
       return this.showQuestionsModal(interaction, panel, btn, null);
     }
 
-    // Otherwise create ticket directly
+    await interaction.deferReply();
     return this.createTicketChannel(interaction, panel, btn, null, []);
+  }
+
+  private async fetchQualifyingAccounts(
+    interaction: MessageComponentInteraction<'cached'>,
+    btn: TicketTypeConfig
+  ): Promise<{ label: string; value: string; description: string }[] | null> {
+    const linkedTags = await this.client.resolver.getLinkedPlayerTags(interaction.user.id);
+
+    if (linkedTags.length === 0) {
+      await interaction.reply({
+        content:
+          'You need a linked Clash of Clans account to open this ticket. Use </link add:0> to link your account.',
+        flags: MessageFlags.Ephemeral
+      });
+      return null;
+    }
+
+    const playerResults = await Promise.all(
+      linkedTags.map((tag) => this.client.coc.getPlayer(tag).catch(() => null))
+    );
+    const validPlayers = playerResults.filter(Boolean).map((r) => r!.body as APIPlayer);
+
+    const qualifying = validPlayers.filter((p) => {
+      if (btn.thMin && (p.townHallLevel ?? 0) < btn.thMin) return false;
+      return true;
+    });
+
+    if (qualifying.length === 0) {
+      const parts = ['None of your linked accounts meet the requirements:'];
+      if (btn.thMin) parts.push(`- TH${btn.thMin}+ required`);
+      await interaction.reply({ content: parts.join('\n'), flags: MessageFlags.Ephemeral });
+      return null;
+    }
+
+    return qualifying.slice(0, 25).map((p) => ({
+      label: `${p.name} (TH${p.townHallLevel})`,
+      value: p.tag,
+      description: p.tag
+    }));
   }
 
   private async showAccountSelect(
@@ -243,31 +290,8 @@ export default class TicketOpenCommand extends Command {
     panel: WithId<TicketPanelEntity>,
     btn: TicketTypeConfig
   ) {
-    const linkedTags = await this.client.resolver.getLinkedPlayerTags(interaction.user.id);
-
-    if (linkedTags.length === 0) {
-      return interaction.editReply({
-        content: `You need a linked Clash of Clans account to open this ticket. Use </link add:0> to link your account.`
-      });
-    }
-
-    // Fetch player data for all linked accounts
-    const playerResults = await Promise.all(
-      linkedTags.map((tag) => this.client.coc.getPlayer(tag).catch(() => null))
-    );
-    const validPlayers = playerResults.filter(Boolean).map((r) => r!.body as APIPlayer);
-
-    // Filter by requirements
-    const qualifying = validPlayers.filter((p) => {
-      if (btn.thMin && (p.townHallLevel ?? 0) < btn.thMin) return false;
-      return true;
-    });
-
-    if (qualifying.length === 0) {
-      const parts = [`None of your linked accounts meet the requirements:`];
-      if (btn.thMin) parts.push(`- TH${btn.thMin}+ required`);
-      return interaction.editReply({ content: parts.join('\n') });
-    }
+    const accountOptions = await this.fetchQualifyingAccounts(interaction, btn);
+    if (!accountOptions) return;
 
     const selectId = this.createId({
       cmd: 'ticket-open',
@@ -276,12 +300,6 @@ export default class TicketOpenCommand extends Command {
       bid: btn.id,
       ephemeral: true
     });
-
-    const accountOptions = qualifying.slice(0, 25).map((p) => ({
-      label: `${p.name} (TH${p.townHallLevel})`,
-      value: p.tag,
-      description: p.tag
-    }));
 
     return interaction.editReply({
       content: 'Select the account you want to apply with:',
@@ -318,10 +336,6 @@ export default class TicketOpenCommand extends Command {
       : null;
     const player = playerResult ? (playerResult.body as APIPlayer) : null;
 
-    if (btn.questions?.length) {
-      return this.showQuestionsModal(interaction, panel, btn, player);
-    }
-
     return this.createTicketChannel(interaction, panel, btn, player, []);
   }
 
@@ -329,16 +343,36 @@ export default class TicketOpenCommand extends Command {
     interaction: MessageComponentInteraction<'cached'>,
     panel: WithId<TicketPanelEntity>,
     btn: TicketTypeConfig,
-    player: APIPlayer | null
+    player: APIPlayer | null,
+    accountOptions?: { label: string; value: string; description: string }[]
   ) {
     if (!btn.questions?.length) return;
 
     const modalId = nanoid(12);
-    const questionIds = btn.questions.map(() => nanoid(8));
+    const playerSelectId = nanoid(8);
+    // Modal limit is 5 components; reserve one slot for the account select if needed
+    const maxQuestions = accountOptions?.length ? 4 : 5;
+    const questionIds = btn.questions.slice(0, maxQuestions).map(() => nanoid(8));
 
     const modal = new ModalBuilder().setCustomId(modalId).setTitle('Application Questions');
-    modal.addLabelComponents(
-      ...btn.questions.slice(0, 5).map((q, i) =>
+
+    const labelComponents = [];
+
+    if (accountOptions?.length) {
+      labelComponents.push(
+        new LabelBuilder()
+          .setLabel('Select your account')
+          .setStringSelectMenuComponent(
+            new StringSelectMenuBuilder()
+              .setCustomId(playerSelectId)
+              .setPlaceholder('Choose an account…')
+              .setOptions(accountOptions)
+          )
+      );
+    }
+
+    labelComponents.push(
+      ...btn.questions.slice(0, maxQuestions).map((q, i) =>
         new LabelBuilder().setLabel(q.label.slice(0, 45)).setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(questionIds[i])
@@ -349,6 +383,8 @@ export default class TicketOpenCommand extends Command {
         )
       )
     );
+
+    modal.addLabelComponents(...labelComponents);
 
     await interaction.showModal(modal);
 
@@ -361,7 +397,17 @@ export default class TicketOpenCommand extends Command {
 
     if (!submit) return;
 
-    const answers = btn.questions.slice(0, 5).map((q, i) => ({
+    // Resolve player from the embedded account select if present
+    let resolvedPlayer = player;
+    if (accountOptions?.length) {
+      const selectedTag = submit.fields.getStringSelectValues(playerSelectId)?.[0];
+      if (selectedTag) {
+        const result = await this.client.coc.getPlayer(selectedTag).catch(() => null);
+        resolvedPlayer = result ? (result.body as APIPlayer) : null;
+      }
+    }
+
+    const answers = btn.questions.slice(0, maxQuestions).map((q, i) => ({
       question: q.label,
       answer: submit.fields.getTextInputValue(questionIds[i])
     }));
@@ -371,7 +417,7 @@ export default class TicketOpenCommand extends Command {
       submit as unknown as MessageComponentInteraction<'cached'>,
       panel,
       btn,
-      player,
+      resolvedPlayer,
       answers
     );
   }
@@ -538,13 +584,8 @@ export default class TicketOpenCommand extends Command {
     const headerText = [
       `## Ticket #${ticketNum}`,
       `**Created by:** <@${ticket.creatorId}>`,
-      `**Created at:** <t:${Math.floor(ticket.createdAt.getTime() / 1000)}:F>`,
-      ticket.accountName && ticket.accountTh
-        ? `**Account:** **${ticket.accountName}** (TH${ticket.accountTh}) — \`${ticket.accountTag}\``
-        : null
-    ]
-      .filter(Boolean)
-      .join('\n');
+      `**Created at:** <t:${Math.floor(ticket.createdAt.getTime() / 1000)}:F>`
+    ].join('\n');
 
     const container = new ContainerBuilder();
     container.addSectionComponents(
@@ -558,6 +599,12 @@ export default class TicketOpenCommand extends Command {
         )
     );
 
+    if (ticket.accountName && ticket.accountTh) {
+      container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
+      const accountText = `**Account:** **${ticket.accountName}** (TH${ticket.accountTh}) — \`${ticket.accountTag}\``;
+      container.addTextDisplayComponents(new TextDisplayBuilder().setContent(accountText));
+    }
+
     if (ticket.answers?.length) {
       container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
       const answersText = ticket.answers
@@ -567,11 +614,31 @@ export default class TicketOpenCommand extends Command {
     }
 
     // Build in-ticket action buttons
-    const deleteId = this.createId({ cmd: 'ticket-open', action: 'del-confirm', cid: channel.id });
-    const respondId = this.createId({ cmd: 'ticket-open', action: 'respond', cid: channel.id });
-    const setClanId = this.createId({ cmd: 'ticket-open', action: 'set-clan', cid: channel.id });
+    const deleteId = this.createId({
+      cmd: 'ticket-open',
+      action: 'del-confirm',
+      cid: channel.id,
+      ephemeral: true
+    });
+    const respondId = this.createId({
+      cmd: 'ticket-open',
+      action: 'respond',
+      cid: channel.id,
+      ephemeral: true
+    });
+    const setClanId = this.createId({
+      cmd: 'ticket-open',
+      action: 'set-clan',
+      cid: channel.id,
+      ephemeral: true
+    });
     const viewAccId = ticket.accountTag
-      ? this.createId({ cmd: 'ticket-open', action: 'view-acc', cid: channel.id })
+      ? this.createId({
+          cmd: 'ticket-open',
+          action: 'view-acc',
+          cid: channel.id,
+          ephemeral: true
+        })
       : null;
     const notifyId = this.createId({
       cmd: 'ticket-open',
@@ -637,7 +704,7 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply({ content: 'Ticket not found.' });
+    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
 
     const confirmId = this.createId({
       cmd: 'ticket-open',
@@ -698,21 +765,17 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply({ content: 'Ticket not found.' });
+    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
 
     const channel = interaction.guild!.channels.cache.get(channelId) as TextChannel | undefined;
-    if (!channel) return interaction.editReply({ content: 'Channel not found.' });
+    if (!channel) return interaction.editReply(this.cv2Reply('Channel not found.'));
 
     // Get panel for logging
     const panel = await this.client.db
       .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
       .findOne({ _id: new ObjectId(ticket.panelId) });
 
-    await interaction.editReply({
-      content: `Closing ticket… generating transcript.`,
-      embeds: [],
-      components: []
-    });
+    await interaction.editReply(this.cv2Reply('Closing ticket… generating transcript.'));
 
     // Generate transcript
     const transcript = await this.generateTranscript(channel);
@@ -773,7 +836,7 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply({ content: 'Ticket not found.' });
+    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
 
     const panel = await this.client.db
       .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
@@ -783,23 +846,27 @@ export default class TicketOpenCommand extends Command {
     const templates = btn?.messageTemplates ?? [];
 
     if (templates.length === 0) {
-      return interaction.editReply({
-        content: 'No message templates configured. Add some via `/ticket setup`.'
-      });
+      return interaction.editReply(
+        this.cv2Reply('No message templates configured. Add some via `/ticket setup`.')
+      );
     }
 
     const selectId = this.client.uuid(interaction.user.id);
 
     await interaction.editReply({
-      content: 'Select a response template:',
       components: [
-        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-          new StringSelectMenuBuilder()
-            .setCustomId(selectId)
-            .setPlaceholder('Choose a template…')
-            .setOptions(templates.slice(0, 25).map((t) => ({ label: t.name, value: t.name })))
-        )
-      ]
+        new ContainerBuilder()
+          .addTextDisplayComponents((t) => t.setContent('Select a response template:'))
+          .addActionRowComponents((row) =>
+            row.addComponents(
+              new StringSelectMenuBuilder()
+                .setCustomId(selectId)
+                .setPlaceholder('Choose a template…')
+                .setOptions(templates.slice(0, 25).map((t) => ({ label: t.name, value: t.name })))
+            )
+          )
+      ],
+      flags: MessageFlags.IsComponentsV2
     });
 
     const msg = await interaction.fetchReply();
@@ -814,12 +881,21 @@ export default class TicketOpenCommand extends Command {
     this.client.components.delete(selectId);
 
     if (!selection) {
-      return interaction.editReply({ content: 'Timed out.', components: [] });
+      return interaction.editReply(this.cv2Reply('Timed out.'));
     }
 
     const templateName = selection.values[0];
     const template = templates.find((t) => t.name === templateName);
-    if (!template) return selection.update({ content: 'Template not found.', components: [] });
+    if (!template) {
+      return selection.update({
+        components: [
+          new ContainerBuilder().addTextDisplayComponents((t) =>
+            t.setContent('Template not found.')
+          )
+        ],
+        flags: MessageFlags.IsComponentsV2
+      });
+    }
 
     // Build variable map
     const creatorMember = await interaction
@@ -892,7 +968,7 @@ export default class TicketOpenCommand extends Command {
     }
 
     await interaction
-      .editReply({ content: `Response sent using template **${templateName}**.`, components: [] })
+      .editReply(this.cv2Reply(`Response sent using template **${templateName}**.`))
       .catch(() => null);
   }
 
@@ -902,7 +978,7 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply({ content: 'Ticket not found.' });
+    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
 
     const clans = await this.client.db
       .collection(Collections.CLAN_STORES)
@@ -910,7 +986,7 @@ export default class TicketOpenCommand extends Command {
       .toArray();
 
     if (clans.length === 0) {
-      return interaction.editReply({ content: 'No clans are set up in this server.' });
+      return interaction.editReply(this.cv2Reply('No clans are set up in this server.'));
     }
 
     const setClanSelectId = this.createId({
@@ -921,21 +997,27 @@ export default class TicketOpenCommand extends Command {
     });
 
     await interaction.editReply({
-      content: 'Select the clan to associate with this ticket:',
       components: [
-        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-          new StringSelectMenuBuilder()
-            .setCustomId(setClanSelectId)
-            .setPlaceholder('Select a clan…')
-            .setOptions(
-              clans.slice(0, 25).map((c) => ({
-                label: c.name,
-                value: c.tag,
-                description: c.tag
-              }))
+        new ContainerBuilder()
+          .addTextDisplayComponents((t) =>
+            t.setContent('Select the clan to associate with this ticket:')
+          )
+          .addActionRowComponents((row) =>
+            row.addComponents(
+              new StringSelectMenuBuilder()
+                .setCustomId(setClanSelectId)
+                .setPlaceholder('Select a clan…')
+                .setOptions(
+                  clans.slice(0, 25).map((c) => ({
+                    label: c.name,
+                    value: c.tag,
+                    description: c.tag
+                  }))
+                )
             )
-        )
-      ]
+          )
+      ],
+      flags: MessageFlags.IsComponentsV2
     });
   }
 
@@ -957,10 +1039,7 @@ export default class TicketOpenCommand extends Command {
         { $set: { clanTag, clanName: clan?.name ?? clanTag, updatedAt: new Date() } }
       );
 
-    await interaction.editReply({
-      content: `Clan set to **${clan?.name ?? clanTag}**`,
-      components: []
-    });
+    await interaction.editReply(this.cv2Reply(`Clan set to **${clan?.name ?? clanTag}**`));
   }
 
   private async viewAccount(
@@ -969,12 +1048,12 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply({ content: 'Ticket not found.' });
+    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
     if (!ticket.accountTag)
-      return interaction.editReply({ content: 'No account linked to this ticket.' });
+      return interaction.editReply(this.cv2Reply('No account linked to this ticket.'));
 
     const playerResult = await this.client.coc.getPlayer(ticket.accountTag).catch(() => null);
-    if (!playerResult) return interaction.editReply({ content: 'Could not fetch player data.' });
+    if (!playerResult) return interaction.editReply(this.cv2Reply('Could not fetch player data.'));
     const player = playerResult.body as APIPlayer;
 
     const accContainer = new ContainerBuilder();
@@ -999,7 +1078,7 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply({ content: 'Ticket not found.' });
+    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
 
     const userId = interaction.user.id;
     const isSubscribed = ticket.notifyMeUserIds.includes(userId);
@@ -1008,20 +1087,27 @@ export default class TicketOpenCommand extends Command {
       await this.client.db
         .collection<TicketEntity>(Collections.TICKETS)
         .updateOne({ channelId }, { $pull: { notifyMeUserIds: userId } });
-      await interaction.editReply({
-        content: 'You will no longer be notified when the ticket creator sends a message.'
-      });
+      await interaction.editReply(
+        this.cv2Reply('You will no longer be notified when the ticket creator sends a message.')
+      );
     } else {
       await this.client.db
         .collection<TicketEntity>(Collections.TICKETS)
         .updateOne({ channelId }, { $addToSet: { notifyMeUserIds: userId } });
-      await interaction.editReply({
-        content: 'You will be notified when the ticket creator sends a message.'
-      });
+      await interaction.editReply(
+        this.cv2Reply('You will be notified when the ticket creator sends a message.')
+      );
     }
   }
 
   // =================== UTILITY ===================
+
+  private cv2Reply(text: string): InteractionEditReplyOptions {
+    return {
+      components: [new ContainerBuilder().addTextDisplayComponents((t) => t.setContent(text))],
+      flags: MessageFlags.IsComponentsV2
+    };
+  }
 
   public async getTicketByChannel(channelId: string) {
     return this.client.db.collection<TicketEntity>(Collections.TICKETS).findOne({ channelId });

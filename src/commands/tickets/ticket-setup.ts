@@ -103,7 +103,7 @@ export default class TicketSetupCommand extends Command {
               viewOnlyRoleIds: [],
               addRoleIds: [],
               removeRoleIds: [],
-              namingConvention: 'ticket-{username}',
+              namingConvention: 'ticket-{count}',
               messageTemplates: [],
               createStaffThread: false
             }
