@@ -31,6 +31,10 @@ import { Args, Command } from '../../lib/handlers.js';
 
 const DEFAULT_NAMING = 'ticket-{count}';
 
+const SHOW_SEND_RESPONSE_BUTTON = false;
+const SHOW_SET_CLAN_BUTTON = false;
+const SHOW_NOTIFY_BUTTON = false;
+
 function resolveChannelName(
   convention: string,
   data: { count: number; user: string; accountName?: string; accountTh?: number }
@@ -227,12 +231,6 @@ export default class TicketOpenCommand extends Command {
     void this.logButtonClick(panel, btn, interaction);
 
     if (btn.requireLinkedAccount) {
-      if (btn.questions?.length) {
-        // Fetch accounts and embed the selection at the top of the questions modal
-        const accountOptions = await this.fetchQualifyingAccounts(interaction, btn);
-        if (!accountOptions) return;
-        return this.showQuestionsModal(interaction, panel, btn, null, accountOptions);
-      }
       await interaction.deferReply();
       return this.showAccountSelect(interaction, panel, btn);
     }
@@ -298,7 +296,7 @@ export default class TicketOpenCommand extends Command {
       action: 'accounts',
       pid: panel._id.toHexString(),
       bid: btn.id,
-      ephemeral: true
+      defer: false
     });
 
     return interaction.editReply({
@@ -307,7 +305,7 @@ export default class TicketOpenCommand extends Command {
         new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
           new StringSelectMenuBuilder()
             .setCustomId(selectId)
-            .setPlaceholder('Select an account…')
+            .setPlaceholder('Select an account...')
             .setOptions(accountOptions)
         )
       ]
@@ -336,6 +334,11 @@ export default class TicketOpenCommand extends Command {
       : null;
     const player = playerResult ? (playerResult.body as APIPlayer) : null;
 
+    if (btn.questions?.length) {
+      return this.showQuestionsModal(interaction, panel, btn, player);
+    }
+
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     return this.createTicketChannel(interaction, panel, btn, player, []);
   }
 
@@ -343,36 +346,17 @@ export default class TicketOpenCommand extends Command {
     interaction: MessageComponentInteraction<'cached'>,
     panel: WithId<TicketPanelEntity>,
     btn: TicketTypeConfig,
-    player: APIPlayer | null,
-    accountOptions?: { label: string; value: string; description: string }[]
+    resolvedPlayer: APIPlayer | null
   ) {
     if (!btn.questions?.length) return;
 
     const modalId = nanoid(12);
-    const playerSelectId = nanoid(8);
-    // Modal limit is 5 components; reserve one slot for the account select if needed
-    const maxQuestions = accountOptions?.length ? 4 : 5;
-    const questionIds = btn.questions.slice(0, maxQuestions).map(() => nanoid(8));
+    const questionIds = btn.questions.slice(0, 5).map(() => nanoid(8));
 
     const modal = new ModalBuilder().setCustomId(modalId).setTitle('Application Questions');
 
-    const labelComponents = [];
-
-    if (accountOptions?.length) {
-      labelComponents.push(
-        new LabelBuilder()
-          .setLabel('Select your account')
-          .setStringSelectMenuComponent(
-            new StringSelectMenuBuilder()
-              .setCustomId(playerSelectId)
-              .setPlaceholder('Choose an account…')
-              .setOptions(accountOptions)
-          )
-      );
-    }
-
-    labelComponents.push(
-      ...btn.questions.slice(0, maxQuestions).map((q, i) =>
+    modal.addLabelComponents(
+      ...btn.questions.slice(0, 5).map((q, i) =>
         new LabelBuilder().setLabel(q.label.slice(0, 45)).setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(questionIds[i])
@@ -383,8 +367,6 @@ export default class TicketOpenCommand extends Command {
         )
       )
     );
-
-    modal.addLabelComponents(...labelComponents);
 
     await interaction.showModal(modal);
 
@@ -397,17 +379,7 @@ export default class TicketOpenCommand extends Command {
 
     if (!submit) return;
 
-    // Resolve player from the embedded account select if present
-    let resolvedPlayer = player;
-    if (accountOptions?.length) {
-      const selectedTag = submit.fields.getStringSelectValues(playerSelectId)?.[0];
-      if (selectedTag) {
-        const result = await this.client.coc.getPlayer(selectedTag).catch(() => null);
-        resolvedPlayer = result ? (result.body as APIPlayer) : null;
-      }
-    }
-
-    const answers = btn.questions.slice(0, maxQuestions).map((q, i) => ({
+    const answers = btn.questions.slice(0, 5).map((q, i) => ({
       question: q.label,
       answer: submit.fields.getTextInputValue(questionIds[i])
     }));
@@ -578,7 +550,7 @@ export default class TicketOpenCommand extends Command {
     ticket: TicketEntity,
     panel: WithId<TicketPanelEntity>,
     btn: TicketTypeConfig,
-    member: GuildMember
+    _member: GuildMember
   ) {
     const ticketNum = String(ticket.count).padStart(4, '0');
     const headerText = [
@@ -587,17 +559,20 @@ export default class TicketOpenCommand extends Command {
       `**Created at:** <t:${Math.floor(ticket.createdAt.getTime() / 1000)}:F>`
     ].join('\n');
 
-    const container = new ContainerBuilder();
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText))
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setURL(member.user.displayAvatarURL({ size: 64 }))
-            .setLabel('\u200b')
-            .setStyle(ButtonStyle.Link)
-        )
+    const section = new SectionBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(headerText)
     );
+    if (ticket.accountTag) {
+      section.setButtonAccessory(
+        new ButtonBuilder()
+          .setURL(this.client.coc.getPlayerURL(ticket.accountTag))
+          .setLabel('View Profile')
+          .setStyle(ButtonStyle.Link)
+      );
+    }
+
+    const container = new ContainerBuilder();
+    container.addSectionComponents(section);
 
     if (ticket.accountName && ticket.accountTh) {
       container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
@@ -655,21 +630,33 @@ export default class TicketOpenCommand extends Command {
           .setLabel('Delete Ticket')
           .setEmoji('🗑️')
           .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId(respondId)
-          .setLabel('Send Response')
-          .setEmoji('💬')
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId(setClanId)
-          .setLabel('Set Clan')
-          .setEmoji('🏰')
-          .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId(notifyId)
-          .setLabel('Notify Me')
-          .setEmoji('🔔')
-          .setStyle(ButtonStyle.Secondary)
+        ...(SHOW_SEND_RESPONSE_BUTTON
+          ? [
+              new ButtonBuilder()
+                .setCustomId(respondId)
+                .setLabel('Send Response')
+                .setEmoji('💬')
+                .setStyle(ButtonStyle.Primary)
+            ]
+          : []),
+        ...(SHOW_SET_CLAN_BUTTON
+          ? [
+              new ButtonBuilder()
+                .setCustomId(setClanId)
+                .setLabel('Set Clan')
+                .setEmoji('🏰')
+                .setStyle(ButtonStyle.Secondary)
+            ]
+          : []),
+        ...(SHOW_NOTIFY_BUTTON
+          ? [
+              new ButtonBuilder()
+                .setCustomId(notifyId)
+                .setLabel('Notify Me')
+                .setEmoji('🔔')
+                .setStyle(ButtonStyle.Secondary)
+            ]
+          : [])
       );
       if (viewAccId) {
         row.addComponents(
