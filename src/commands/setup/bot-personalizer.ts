@@ -47,7 +47,7 @@ export default class SetupCustomBotCommand extends Command {
     }
 
     if (patron && patron.customBots?.[interaction.guildId] && args.opt_out) {
-      await this.client.subscribers.unsetBotProfile(interaction.guild, patron);
+      await this.client.subscribers.unsetBotProfile(interaction.guild, patron, { clear: true });
       return interaction.editReply(`Successfully removed the bot personalization!`);
     }
 
@@ -235,11 +235,14 @@ export default class SetupCustomBotCommand extends Command {
           `Join [Support Server](<https://discord.gg/ppuppun>) and check <#1130139203213197434> for the list of the emoji servers.`
         );
         return modalSubmit.editReply(this.reply(messages.join('\n')));
-      } catch (e) {
+      } catch (error) {
         if (
-          !(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)
+          !(
+            error instanceof DiscordjsError &&
+            error.code === DiscordjsErrorCodes.InteractionCollectorError
+          )
         ) {
-          throw e;
+          throw error;
         }
       }
     };
@@ -306,7 +309,7 @@ export default class SetupCustomBotCommand extends Command {
         } else {
           return modalSubmit.editReply(
             this.reply(
-              `${EMOJIS.WRONG} Failed to apply changes — make sure the bot has permission to manage itself in this server or you are changing your avatar too fast.`
+              `${EMOJIS.WRONG} Failed to apply changes — You are changing the avatar too fast, try again later.`
             )
           );
         }

@@ -434,7 +434,11 @@ export class Subscribers {
     }
   }
 
-  public async unsetBotProfile(guild: Guild, patron: PatreonMembersEntity) {
+  public async unsetBotProfile(
+    guild: Guild,
+    patron: PatreonMembersEntity,
+    options = { clear: false }
+  ) {
     if (this.client.isCustom()) return null;
 
     if (!patron.customBots?.[guild.id]?.active) return;
@@ -442,15 +446,24 @@ export class Subscribers {
     try {
       // We only unset the avatar because users can change the nickname themselves but not the avatar.
       await guild.members.editMe({ avatar: null, reason: 'Custom Profile Disabled' });
-      await this.collection.updateOne(
-        { id: patron.id },
-        { $set: { [`customBots.${guild.id}.active`]: false } }
-      );
+
+      if (options.clear) {
+        await this.collection.updateOne(
+          { id: patron.id },
+          { $unset: { [`customBots.${guild.id}`]: true } }
+        );
+      } else {
+        await this.collection.updateOne(
+          { id: patron.id },
+          { $set: { [`customBots.${guild.id}.active`]: false } }
+        );
+      }
 
       this.client.logger.info(
         `Bot profile removed for ${patron.username} (${patron.userId}/${patron.id}) in guild ${guild.name} (${guild.id})`,
         { label: 'CustomBot' }
       );
+
       await this.sendWebhook(patron, {
         label: 'Bot Profile Removed',
         color: COLOR_CODES.YELLOW,
