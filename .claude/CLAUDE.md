@@ -77,3 +77,4 @@ Log handlers (clan-log, clan-war-log, capital-log, donation-log, etc.) process g
 - clashperk - bot code in this repository
 - clashperk-backend - API server for web dashboard and bot
 - dashboard - React web dashboard for clan management and stats
+- docs.clashperk.com - GitBook documentation site

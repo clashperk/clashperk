@@ -1,8 +1,9 @@
 import { Collections, COLOR_CODES, FeatureFlags, Settings } from '@app/constants';
 import { PatreonMembersEntity } from '@app/entities';
 import { captureException } from '@sentry/node';
-import { EmbedBuilder, Interaction, WebhookClient } from 'discord.js';
+import { EmbedBuilder, Guild, Interaction, WebhookClient } from 'discord.js';
 import { Collection, WithId } from 'mongodb';
+import { Util } from '../util/toolkit.js';
 import { timeoutSignal } from './clash-client.js';
 import { Client } from './client.js';
 
@@ -131,7 +132,7 @@ export class Subscribers {
 
     const patrons = await this.collection.find().toArray();
     for (const patron of patrons) {
-      if (patron.id === '00000000') continue;
+      if (['00000000'].includes(patron.id)) continue;
 
       const pledge =
         res.data.find((entry) => entry.relationships.user.data.id === patron.id) ?? null;
@@ -210,16 +211,25 @@ export class Subscribers {
         for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId]))
           await this.deleteGuild(guild.id, patron.id);
 
-        if (
+        const lostCustomBot =
           ![rewards.gold, rewards.gold_deprecated].includes(rewardId) &&
           ![
             CustomTiers.LIFETIME_CUSTOM_BOT,
             CustomTiers.SPONSORED_CUSTOM_BOT,
             CustomScopes.CUSTOM_BOT
-          ].includes(patron.note) &&
-          patron.applicationId
-        ) {
+          ].includes(patron.note);
+
+        if (lostCustomBot && patron.applicationId) {
           await this.client.customBotManager.suspendService(patron.applicationId);
+        }
+
+        if (lostCustomBot) {
+          for (const [guildId, profile] of Object.entries(patron.customBots ?? {})) {
+            if (profile.active) {
+              const guild = this.client.guilds.cache.get(guildId);
+              if (guild) await this.unsetBotProfile(guild, patron);
+            }
+          }
         }
 
         this.client.logger.info(
@@ -248,6 +258,16 @@ export class Subscribers {
       for (const guild of patron.guilds ?? []) await this.restoreGuild(guild.id);
       if (patron.applicationId)
         await this.client.customBotManager.resumeService(patron.applicationId);
+
+      for (const [guildId, profile] of Object.entries(patron.customBots ?? {})) {
+        const guild = this.client.guilds.cache.get(guildId);
+        if (guild) {
+          await this.setBotProfile(guild, patron, {
+            nick: profile.nickname,
+            avatar: profile.avatarUrl
+          });
+        }
+      }
 
       this.client.logger.info(
         `Subscription Resumed ${patron.username} (${patron.userId}/${patron.id})`,
@@ -283,8 +303,16 @@ export class Subscribers {
       );
 
       for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id, patron.id);
-      if (patron.applicationId)
+      if (patron.applicationId) {
         await this.client.customBotManager.suspendService(patron.applicationId);
+      }
+
+      for (const [guildId, profile] of Object.entries(patron.customBots ?? {})) {
+        if (profile.active) {
+          const guild = this.client.guilds.cache.get(guildId);
+          if (guild) await this.unsetBotProfile(guild, patron);
+        }
+      }
 
       this.client.logger.info(
         `Subscription Canceled ${patron.username} (${patron.userId}/${patron.id})`,
@@ -362,6 +390,105 @@ export class Subscribers {
     }
   }
 
+  public async setBotProfile(
+    guild: Guild,
+    patron: PatreonMembersEntity,
+    editData: { nick: string; avatar: string }
+  ) {
+    if (this.client.isCustom()) return null;
+    try {
+      const member = await guild.members.editMe({ ...editData, reason: 'Custom Profile Enabled' });
+
+      await this.collection.updateOne(
+        { id: patron.id },
+        {
+          $set: {
+            [`customBots.${guild.id}`]: {
+              active: true,
+              nickname: editData.nick,
+              avatarUrl: editData.avatar
+            }
+          }
+        }
+      );
+
+      this.client.logger.info(
+        `Bot profile set for ${patron.username} (${patron.userId}/${patron.id}) in guild ${guild.name} (${guild.id})`,
+        { label: 'CustomBot' }
+      );
+      await this.sendWebhook(patron, {
+        label: 'Bot Profile Set',
+        color: COLOR_CODES.GREEN,
+        status: patron.status,
+        extra: [`**Avatar URL:** ${editData.avatar}`]
+      });
+
+      return member;
+    } catch (e) {
+      captureException(e);
+      this.client.logger.error(
+        `Failed to set bot profile for ${patron.username} (${patron.userId}/${patron.id}) in guild ${guild.name} (${guild.id})`,
+        { label: 'CustomBot' }
+      );
+      return null;
+    }
+  }
+
+  public async unsetBotProfile(guild: Guild, patron: PatreonMembersEntity) {
+    if (this.client.isCustom()) return null;
+
+    if (!patron.customBots?.[guild.id]?.active) return;
+
+    try {
+      // We only unset the avatar because users can change the nickname themselves but not the avatar.
+      await guild.members.editMe({ avatar: null, reason: 'Custom Profile Disabled' });
+      await this.collection.updateOne(
+        { id: patron.id },
+        { $set: { [`customBots.${guild.id}.active`]: false } }
+      );
+
+      this.client.logger.info(
+        `Bot profile removed for ${patron.username} (${patron.userId}/${patron.id}) in guild ${guild.name} (${guild.id})`,
+        { label: 'CustomBot' }
+      );
+      await this.sendWebhook(patron, {
+        label: 'Bot Profile Removed',
+        color: COLOR_CODES.YELLOW,
+        status: patron.status
+      });
+    } catch (e) {
+      captureException(e);
+      this.client.logger.error(
+        `Failed to remove bot profile for ${patron.username} (${patron.userId}/${patron.id}) in guild ${guild.name} (${guild.id})`,
+        { label: 'CustomBot' }
+      );
+    }
+  }
+
+  public async updateGuildWebhooks(
+    guild: Guild,
+    applicationId: string,
+    editData: { avatar: string | null; nick: string }
+  ) {
+    if (this.client.isCustom()) return null;
+
+    const publicBotNames = ['ClashPerk', 'ClashPerk II', this.client.user.displayName];
+
+    try {
+      for (const [, webhook] of (await guild.fetchWebhooks()).filter(
+        (webhook) => webhook.applicationId === applicationId
+      )) {
+        if (!publicBotNames.includes(webhook.name)) continue;
+
+        await webhook.edit({ avatar: editData.avatar, name: editData.nick });
+        await Util.delay(1000);
+      }
+    } catch (error) {
+      captureException(error);
+      this.client.logger.error(`${error.message}`, { label: 'CustomizeBot' });
+    }
+  }
+
   public async fetchAPI() {
     const query = new URLSearchParams({
       'page[size]': '1000',
@@ -391,7 +518,12 @@ export class Subscribers {
 
   public async sendWebhook(
     patron: PatreonMembersEntity,
-    { status, label, color }: { status: string; label: string; color: number }
+    {
+      status,
+      label,
+      color,
+      extra
+    }: { status: string; label: string; color: number; extra?: string[] }
   ) {
     try {
       const webhook = new WebhookClient({
@@ -411,11 +543,19 @@ export class Subscribers {
             `**Status:** [${status}](https://www.patreon.com/members?query=${encodeURIComponent(patron.email || patron.name)})`,
             `**Pledge:** $${(patron.entitledAmount / 100).toFixed(2)}`,
             `**Lifetime:** $${(patron.lifetimeSupport / 100).toFixed(2)}`,
-            `**Last Charged:** ${patron.lastChargeDate.toUTCString()}`,
+            `**Last Charged:** ${patron.lastChargeDate?.toUTCString()}`,
             `**Is Gifted:** ${patron.isGifted}`,
             `**Is Lifetime:** ${patron.isLifetime}`,
             `**Bot ID:** ${patron.applicationId ?? 'N/A'}`,
-            `**Note:** ${patron.note || 'N/A'}`
+            `**Custom Profiles:** ${
+              Object.keys(patron.customBots ?? {}).length > 0
+                ? Object.keys(patron.customBots ?? {})
+                    .map((guildId) => `\n- ${guildId}`)
+                    .join('')
+                : 'N/A'
+            }`,
+            `**Note:** ${patron.note || 'N/A'}`,
+            ...(extra ?? [])
           ].join('\n')
         )
         .setFooter({ text: label })

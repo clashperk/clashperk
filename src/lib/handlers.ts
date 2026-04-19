@@ -12,6 +12,7 @@ import {
   Events,
   GuildBasedChannel,
   Interaction,
+  InteractionEditReplyOptions,
   Message,
   MessageComponentInteraction,
   MessageContextMenuCommandInteraction,
@@ -758,6 +759,13 @@ export class Command implements CommandOptions {
 
   public createId(payload: CustomIdProps) {
     return this.client.redis.createCustomId(payload);
+  }
+
+  public reply(text: string): InteractionEditReplyOptions {
+    return {
+      components: [new TextDisplayBuilder().setContent(text)],
+      flags: MessageFlags.IsComponentsV2
+    };
   }
 }
 
