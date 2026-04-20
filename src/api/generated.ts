@@ -197,6 +197,18 @@ export interface BattleLogItemsDto {
   items: BattleLogDto[];
 }
 
+export interface BattleLogDailyDto {
+  battleDate: string;
+  trophies: number;
+  offense: number;
+  defense: number;
+  gain: number;
+}
+
+export interface BattleLogAggregateItemsDto {
+  items: BattleLogDailyDto[];
+}
+
 export interface GlobalClanEntity {
   tag: string;
   name: string;
@@ -653,6 +665,14 @@ export type GetBattleLogData = BattleLogItemsDto;
 
 export type GetBattleLogError = ErrorResponseDto;
 
+export interface GetBattleLogAggregateParams {
+  playerTag: string;
+}
+
+export type GetBattleLogAggregateData = BattleLogAggregateItemsDto;
+
+export type GetBattleLogAggregateError = ErrorResponseDto;
+
 export interface GetClanHistoryParams {
   playerTag: string;
 }
@@ -1066,6 +1086,25 @@ export namespace Players {
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = GetBattleLogData;
+  }
+
+  /**
+   * No description
+   * @tags Players
+   * @name GetBattleLogAggregate
+   * @request GET:/players/{playerTag}/battle-log/aggregate
+   * @secure
+   * @response `200` `GetBattleLogAggregateData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetBattleLogAggregate {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetBattleLogAggregateData;
   }
 
   /**
@@ -2026,6 +2065,28 @@ export class Api<SecurityDataType extends unknown> {
     ) =>
       this.http.request<GetBattleLogData, GetBattleLogError>({
         path: `/players/${playerTag}/battle-log`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name GetBattleLogAggregate
+     * @request GET:/players/{playerTag}/battle-log/aggregate
+     * @secure
+     * @response `200` `GetBattleLogAggregateData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getBattleLogAggregate: (
+      { playerTag, ...query }: GetBattleLogAggregateParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetBattleLogAggregateData, GetBattleLogAggregateError>({
+        path: `/players/${playerTag}/battle-log/aggregate`,
         method: "GET",
         secure: true,
         format: "json",

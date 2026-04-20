@@ -1,5 +1,5 @@
-import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
-import { LegendAttacksEntity } from '@app/entities';
+import { ATTACK_COUNTS, LEGEND_LEAGUE_ID } from '@app/constants';
+import { BattleLogDto } from '../../api/generated.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,7 +11,7 @@ import {
   User
 } from 'discord.js';
 import moment from 'moment';
-import { getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
+import { getLegendBattleLog, getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart, trimTag } from '../../util/helper.js';
@@ -39,8 +39,6 @@ export default class LegendAttacksCommand extends Command {
     if (!resolved) return;
 
     const { clans, resolvedArgs } = resolved;
-    const seasonId = Season.ID;
-
     const legendMembers = clans
       .flatMap((clan) => clan.memberList)
       .filter((member) => member.trophies >= 5000 || member.leagueTier?.id === LEGEND_LEAGUE_ID);
@@ -51,8 +49,7 @@ export default class LegendAttacksCommand extends Command {
       guild: interaction.guild,
       leagueDay: args.day,
       legendMembers,
-      playerTags,
-      seasonId
+      playerTags
     });
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -67,92 +64,59 @@ export default class LegendAttacksCommand extends Command {
   }
 
   private async getAttackLog({
-    seasonId,
     playerTags,
     legendMembers,
     leagueDay,
     clans,
     guild
   }: {
-    seasonId: string;
     playerTags: string[];
     legendMembers: { name: string; tag: string; trophies: number }[];
     leagueDay?: number;
     clans: { tag: string; name: string }[];
     guild: Guild;
   }) {
-    const result = await this.client.db
-      .collection(Collections.LEGEND_ATTACKS)
-      .find({ tag: { $in: playerTags }, seasonId })
-      .toArray();
+    const { startTime, day } = getLegendTimestampAgainstDay(leagueDay);
+    const battleDate = new Date(startTime).toISOString().slice(0, 10);
 
-    const attackingMembers = result.map((mem) => mem.tag);
-    const { startTime, endTime, day } = getLegendTimestampAgainstDay(leagueDay);
+    const battleLogResults = await Promise.all(
+      playerTags.map((tag) => getLegendBattleLog(tag).catch(() => [] as BattleLogDto[]))
+    );
+    const logsByTag = new Map<string, BattleLogDto[]>(
+      playerTags.map((tag, i) => [tag, battleLogResults[i]])
+    );
 
-    const clanMembers: LegendAttacksEntity[] = legendMembers
-      .filter((mem) => !attackingMembers.includes(mem.tag))
-      .map((mem) => ({
-        name: mem.name,
-        tag: mem.tag,
-        streak: 0,
-        logs: [
-          {
-            timestamp: startTime,
-            start: mem.trophies,
-            inc: 0,
-            end: mem.trophies,
-            type: 'hold'
-          }
-        ],
-
-        // not confirmed
-        initial: mem.trophies,
-        seasonId,
-        trophies: mem.trophies,
-        attackLogs: {},
-        defenseLogs: {}
-      }));
+    const memberNameMap = new Map(legendMembers.map((m) => [m.tag, m.name]));
 
     const members = [];
-    for (const legend of [...result, ...clanMembers]) {
-      const logs = legend.logs.filter(
-        (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
-      );
-      if (logs.length === 0) continue;
+    for (const [tag, battles] of logsByTag) {
+      const dayBattles = battles.filter((b) => b.battleDate === battleDate);
+      if (!dayBattles.length) continue;
 
-      const attacks = logs.filter((en) => en.type === 'attack');
-      const defenses =
-        logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+      const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
+      const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
 
-      const [initial] = logs;
-      const [current] = logs.slice(-1);
-
-      const possibleAttackCount = legend.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
-      const possibleDefenseCount = legend.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
-
-      const attackCount = Math.max(attacks.length, possibleAttackCount);
-      const defenseCount = Math.max(defenses.length, possibleDefenseCount);
-
-      const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
-      const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);
-
+      const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
+      const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
       const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
 
+      const lastBattle = dayBattles.at(0)!;
+      const currentTrophies = lastBattle.trophies;
+
       members.push({
-        name: legend.name,
-        tag: legend.tag,
+        name: memberNameMap.get(tag) ?? tag,
+        tag,
         attacks,
         defenses,
-        attackCount,
-        defenseCount,
+        attackCount: attacks.length,
+        defenseCount: defenses.length,
         trophiesFromAttacks,
         trophiesFromDefenses,
         netTrophies,
-        initial,
-        current
+        currentTrophies
       });
     }
-    members.sort((a, b) => b.current.end - a.current.end);
+    members.sort((a, b) => b.currentTrophies - a.currentTrophies);
 
     const embed = new EmbedBuilder().setColor(this.client.embed(guild.id));
 
@@ -161,7 +125,7 @@ export default class LegendAttacksCommand extends Command {
       embed.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`);
       embed.setURL(`http://cprk.us/c/${trimTag(clan.tag)}`);
     } else {
-      embed.setAuthor({ name: `Legend League Attacks (${seasonId})`, iconURL: guild.iconURL()! });
+      embed.setAuthor({ name: `Legend League Attacks (${Season.ID})`, iconURL: guild.iconURL()! });
     }
 
     embed.setDescription(
@@ -177,7 +141,7 @@ export default class LegendAttacksCommand extends Command {
             `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`,
             5
           );
-          return `\`${attacks} ${defense}  ${padStart(mem.current.end, 4)} \` \u200e${escapeMarkdown(mem.name)}`;
+          return `\`${attacks} ${defense}  ${padStart(mem.currentTrophies, 4)} \` \u200e${escapeMarkdown(mem.name)}`;
         })
       ].join('\n')
     );

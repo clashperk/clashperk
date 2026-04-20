@@ -1,5 +1,5 @@
 import { ATTACK_COUNTS, Collections, LEGEND_LEAGUE_ID } from '@app/constants';
-import { ClanLogsEntity, ClanLogType, LegendAttacksEntity } from '@app/entities';
+import { ClanLogsEntity, ClanLogType } from '@app/entities';
 import {
   Collection,
   EmbedBuilder,
@@ -10,6 +10,8 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
+import { BattleLogDto } from '../api/generated.js';
+import { getLegendBattleLog } from '../helper/legends.helper.js';
 import { padStart } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';
 import { Enqueuer } from './enqueuer.js';
@@ -66,84 +68,45 @@ export class LegendLog extends RootLog {
 
     const { startTime, endTime } = Util.getPreviousLegendTimestamp();
     const season = Util.getSeason(new Date(endTime));
+    const battleDate = new Date(startTime).toISOString().slice(0, 10);
 
-    const result = await this.client.db
-      .collection(Collections.LEGEND_ATTACKS)
-      .find({
-        tag: {
-          $in: clan.memberList.map((mem) => mem.tag)
-        },
-        seasonId: season.seasonId
-      })
-      .toArray();
-    const attackingMembers = result.map((mem) => mem.tag);
+    const legendMembers = clan.memberList.filter(
+      (mem) => mem.leagueTier?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000
+    );
+    const memberNameMap = new Map(legendMembers.map((m) => [m.tag, m.name]));
 
-    const clanMembers: LegendAttacksEntity[] = clan.memberList
-      .filter(
-        (mem) =>
-          !attackingMembers.includes(mem.tag) &&
-          (mem.leagueTier?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000)
-      )
-      .map((mem) => ({
-        name: mem.name,
-        tag: mem.tag,
-        streak: 0,
-        logs: [
-          {
-            timestamp: startTime,
-            start: mem.trophies,
-            inc: 0,
-            end: mem.trophies,
-            type: 'hold'
-          }
-        ],
-
-        // not confirmed
-        initial: mem.trophies,
-        seasonId: season.seasonId,
-        trophies: mem.trophies
-      }));
+    const battleLogResults = await Promise.all(
+      legendMembers.map((m) => getLegendBattleLog(m.tag).catch(() => [] as BattleLogDto[]))
+    );
+    const logsByTag = new Map<string, BattleLogDto[]>(
+      legendMembers.map((m, i) => [m.tag, battleLogResults[i]])
+    );
 
     const members = [];
-    for (const legend of [...result, ...clanMembers]) {
-      const logs = legend.logs.filter(
-        (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
-      );
-      if (logs.length === 0) continue;
+    for (const [tag, battles] of logsByTag) {
+      const dayBattles = battles.filter((b) => b.battleDate === battleDate);
+      if (!dayBattles.length) continue;
 
-      const attacks = logs.filter((en) => en.type === 'attack');
-      const defenses =
-        logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+      const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
+      const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
 
-      const [initial] = logs;
-      const [current] = logs.slice(-1);
-
-      const possibleAttackCount = legend.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
-      const possibleDefenseCount = legend.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
-
-      const attackCount = Math.max(attacks.length, possibleAttackCount);
-      const defenseCount = Math.max(defenses.length, possibleDefenseCount);
-
-      const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
-      const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);
-
+      const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
+      const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
       const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
+      const currentTrophies = dayBattles.at(0)!.trophies;
 
       members.push({
-        name: legend.name,
-        tag: legend.tag,
-        attacks,
-        defenses,
-        attackCount,
-        defenseCount,
+        name: memberNameMap.get(tag) ?? tag,
+        tag,
+        attackCount: attacks.length,
+        defenseCount: defenses.length,
         trophiesFromAttacks,
         trophiesFromDefenses,
         netTrophies,
-        initial,
-        current
+        currentTrophies
       });
     }
-    members.sort((a, b) => b.current.end - a.current.end);
+    members.sort((a, b) => b.currentTrophies - a.currentTrophies);
 
     const embed = new EmbedBuilder()
       .setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
@@ -165,7 +128,7 @@ export class LegendLog extends RootLog {
             `-${Math.abs(mem.trophiesFromDefenses)}${ATTACK_COUNTS[Math.min(8, mem.defenseCount)]}`,
             5
           );
-          return `\`${attacks} ${defense}  ${padStart(mem.current.end, 4)} \` \u200e${escapeMarkdown(mem.name)}`;
+          return `\`${attacks} ${defense}  ${padStart(mem.currentTrophies, 4)} \` \u200e${escapeMarkdown(mem.name)}`;
         })
       ].join('\n')
     );

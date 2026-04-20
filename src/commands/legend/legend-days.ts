@@ -5,7 +5,6 @@ import {
   PLAYER_LEAGUE_MAP,
   UNRANKED_TIER_ID
 } from '@app/constants';
-import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -22,9 +21,11 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
+import { BattleLogDto } from '../../api/generated.js';
 import {
-  aggregateLegendAttacks,
-  getLegendAttack,
+  aggregateLegendBattleLog,
+  getLegendBattleLog,
+  getLegendBattleLogAggregate,
   getLegendTimestampAgainstDay
 } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
@@ -87,8 +88,8 @@ export default class LegendDaysCommand extends Command {
       });
     }
 
-    const legend = await getLegendAttack(data.tag);
-    if (!legend) {
+    const battles = await getLegendBattleLog(data.tag);
+    if (!battles.length) {
       return interaction.followUp({
         content: [
           `No data available for **${data.name} (${data.tag})**`,
@@ -98,8 +99,8 @@ export default class LegendDaysCommand extends Command {
     }
 
     const embed = args.prev
-      ? await this.logs(data)
-      : await this.embed(interaction, data, legend, args.day);
+      ? await this.logs(data, battles)
+      : await this.embed(interaction, data, battles, args.day);
 
     embed.setTimestamp().setColor(this.client.embed(interaction));
     await interaction.editReply({
@@ -169,36 +170,38 @@ export default class LegendDaysCommand extends Command {
   private async embed(
     interaction: CommandInteraction | ButtonInteraction,
     data: APIPlayer,
-    legend: LegendAttacksEntity,
+    allBattles: BattleLogDto[],
     _day?: number
   ) {
     const clan = data.clan ? await this.getClan(data.clan.tag) : null;
 
-    const { startTime, endTime, day } = getLegendTimestampAgainstDay(_day);
-    const logs = (legend?.logs ?? []).filter(
-      (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
-    );
-    const attacks = logs.filter((en) => en.type === 'attack') ?? [];
-    const defenses =
-      logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
+    const { startTime, day } = getLegendTimestampAgainstDay(_day);
+    const battleDate = new Date(startTime).toISOString().slice(0, 10);
+    const dayBattles = allBattles.filter((b) => {
+      return b.battleDate === battleDate;
+    });
+
+    const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
+    const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+
+    const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
+    const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
+    const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
+
+    let streak = 0;
+    for (const b of attacks) {
+      if (b.stars === 3) streak++;
+      else break;
+    }
+
+    const firstBattle = dayBattles.at(-1);
+    const lastBattle = dayBattles.at(0);
+    const initialTrophies = firstBattle
+      ? firstBattle.trophies - firstBattle.trophyChange
+      : data.trophies;
+    const currentTrophies = lastBattle ? lastBattle.trophies : data.trophies;
 
     const member = (clan?.memberList ?? []).find((en) => en.tag === data.tag);
-    // const clanRank = member?.clanRank ?? 0;
-    // const percentage = this.calc(clanRank);
-
-    const [initial] = logs;
-    const [current] = logs.slice(-1);
-
-    const possibleAttackCount = legend.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
-    const possibleDefenseCount = legend.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
-
-    const attackCount = Math.max(attacks.length, possibleAttackCount);
-    const defenseCount = Math.max(defenses.length, possibleDefenseCount);
-
-    const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
-    const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);
-
-    const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
 
     const { globalRank, countryRank } = await this.rankings(data.tag);
 
@@ -220,12 +223,12 @@ export default class LegendDaysCommand extends Command {
       {
         name: '**Overview**',
         value: [
-          `- Initial Trophies: ${initial?.start || data.trophies}`,
-          `- Current Trophies: ${current?.end || data.trophies}`,
-          `- ${attackCount} attack${attackCount === 1 ? '' : 's'} (+${trophiesFromAttacks} trophies)`,
-          `- ${defenseCount} defense${defenseCount === 1 ? '' : 's'} (${trophiesFromDefenses} trophies)`,
+          `- Initial Trophies: ${initialTrophies}`,
+          `- Current Trophies: ${currentTrophies}`,
+          `- ${attacks.length} attack${attacks.length === 1 ? '' : 's'} (+${trophiesFromAttacks} trophies)`,
+          `- ${defenses.length} defense${defenses.length === 1 ? '' : 's'} (${trophiesFromDefenses} trophies)`,
           `- ${Math.abs(netTrophies)} trophies ${netTrophies >= 0 ? 'gained' : 'lost'}`,
-          `- Streak: ${legend.streak ?? 0}`
+          `- Streak: ${streak}`
         ].join('\n')
       }
     ]);
@@ -251,7 +254,6 @@ export default class LegendDaysCommand extends Command {
           value: [
             `- ${clan ? `[${clan.name} (${clan.tag})](http://cprk.us/c/${trimTag(clan.tag)})` : 'N/A'}`,
             `- Rank in Clan: ${member.clanRank}`
-            // `- Clan Points Contribution: ${Math.floor((member.trophies * percentage) / 100)} (${percentage}%)`
           ].join('\n')
         }
       ]);
@@ -283,8 +285,10 @@ export default class LegendDaysCommand extends Command {
         name: '**Attacks**',
         value: attacks.length
           ? attacks
+              .reverse()
               .map(
-                (m) => `\` ${`+${m.inc}`.padStart(3, ' ')} \` ${time(new Date(m.timestamp), 'R')}`
+                (b) =>
+                  `\` ${`+${b.trophyChange}`.padStart(3, ' ')} \` ${time(new Date(b.ingestedAt), 'R')}`
               )
               .join('\n')
           : '-',
@@ -294,9 +298,10 @@ export default class LegendDaysCommand extends Command {
         name: '**Defenses**',
         value: defenses.length
           ? defenses
+              .reverse()
               .map(
-                (m) =>
-                  `\` ${`-${Math.abs(m.inc)}`.padStart(3, ' ')} \` ${time(new Date(m.timestamp), 'R')}`
+                (b) =>
+                  `\` ${String(b.trophyChange).padStart(4, ' ')} \` ${time(new Date(b.ingestedAt), 'R')}`
               )
               .join('\n')
           : '-',
@@ -312,12 +317,15 @@ export default class LegendDaysCommand extends Command {
   }
 
   private async graph(data: APIPlayer) {
+    const dailyItems = await getLegendBattleLogAggregate(data.tag);
+    if (!dailyItems.length) return null;
+
     const {
       items: result,
-      lastSeasonEnd,
+      seasonStart,
       seasonEnd,
-      seasonStart
-    } = await aggregateLegendAttacks(data.tag);
+      lastSeasonEnd
+    } = aggregateLegendBattleLog(dailyItems);
     if (!result.length) return null;
 
     const season = result.at(0)!;
@@ -349,10 +357,7 @@ export default class LegendDaysCommand extends Command {
 
       lastSeason.logs = lastSeason.logs.map((log, i) => {
         if (log.trophies === null) {
-          return {
-            ...log,
-            trophies: lastSeason.logs[i - 1]?.trophies ?? null
-          };
+          return { ...log, trophies: lastSeason.logs[i - 1]?.trophies ?? null };
         }
         return log;
       });
@@ -376,43 +381,33 @@ export default class LegendDaysCommand extends Command {
     });
   }
 
-  private async logs(data: APIPlayer) {
-    const legend = await getLegendAttack(data.tag);
-
-    const logs = legend?.logs ?? [];
+  private async logs(data: APIPlayer, allBattles: BattleLogDto[]) {
     const days = Util.getLegendDays();
 
-    const perDayLogs = days.reduce<AggsEntry[]>((items, { startTime, endTime }) => {
-      const mixedLogs = logs.filter(
-        (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
-      );
-      const attacks = mixedLogs.filter((en) => en.type === 'attack') ?? [];
-      const defenses =
-        mixedLogs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ??
-        [];
+    const perDayLogs = days.map(({ startTime }) => {
+      const battleDate = new Date(startTime).toISOString().slice(0, 10);
+      const dayBattles = allBattles.filter((b) => b.battleDate === battleDate);
 
-      const possibleAttackCount = legend?.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
-      const possibleDefenseCount = legend?.defenseLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
+      const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
+      const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
 
-      const attackCount = Math.max(attacks.length, possibleAttackCount);
-      const defenseCount = Math.max(defenses.length, possibleDefenseCount);
+      const gain = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
+      const loss = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
 
-      const [final] = mixedLogs.slice(-1);
-      const [initial] = mixedLogs;
+      const firstBattle = dayBattles.at(-1);
+      const lastBattle = dayBattles.at(0);
+      const initial = firstBattle ? firstBattle.trophies - firstBattle.trophyChange : '-';
+      const final = lastBattle ? lastBattle.trophies : '-';
 
-      const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
-      const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
-
-      items.push({
-        attackCount,
-        defenseCount,
+      return {
+        attackCount: attacks.length,
+        defenseCount: defenses.length,
         gain,
         loss,
-        final: final?.end ?? '-',
-        initial: initial?.start ?? '-'
-      });
-      return items;
-    }, []);
+        final,
+        initial
+      };
+    });
 
     const totalAttacks = perDayLogs.reduce((acc, cur) => acc + cur.attackCount, 0);
 
@@ -484,21 +479,9 @@ export default class LegendDaysCommand extends Command {
     const ranks = await this.client.db
       .collection(Collections.PLAYER_RANKS)
       .aggregate<{ country: string; countryCode: string; players: { rank: number } }>([
-        {
-          $match: {
-            season: Season.ID
-          }
-        },
-        {
-          $unwind: {
-            path: '$players'
-          }
-        },
-        {
-          $match: {
-            'players.tag': tag
-          }
-        }
+        { $match: { season: Season.ID } },
+        { $unwind: { path: '$players' } },
+        { $match: { 'players.tag': tag } }
       ])
       .toArray();
 
@@ -701,13 +684,4 @@ interface RankedBattleLog {
   attacks: number;
   defenses: number;
   createdAt: string;
-}
-
-interface AggsEntry {
-  attackCount: number;
-  defenseCount: number;
-  gain: number;
-  loss: number;
-  final: number;
-  initial: number;
 }
