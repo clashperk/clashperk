@@ -59,19 +59,17 @@ export const getLegendRankingEmbedMaker = async ({
     )
     .toArray();
 
-  let players = legends
-    .map((legend) => {
-      const player = playersMap[legend.tag];
-      return {
-        name: legend.name,
-        tag: legend.tag,
-        clan: player.clan,
-        trophies: legend.trophies,
-        attackWins: player.attackWins,
-        townHallLevel: player.townHallLevel
-      };
-    })
-    .filter((legend) => legend.trophies >= 4900);
+  let players = legends.map((legend) => {
+    const player = playersMap[legend.tag];
+    return {
+      name: legend.name,
+      tag: legend.tag,
+      clan: player.clan,
+      trophies: legend.trophies,
+      attackWins: player.attackWins,
+      townHallLevel: player.townHallLevel
+    };
+  });
 
   if (sort_by === 'town_hall_asc') {
     players.sort((a, b) => b.trophies - a.trophies);
