@@ -7,7 +7,6 @@ import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { BLUE_NUMBERS } from '../util/emojis.js';
 import { escapeBackTick, padStart } from '../util/helper.js';
-import { Season } from '../util/toolkit.js';
 
 function calc(clanRank: number) {
   if (clanRank >= 41) return 3;
@@ -67,13 +66,12 @@ export const getLegendRankingEmbedMaker = async ({
         name: legend.name,
         tag: legend.tag,
         clan: player.clan,
-        actualTrophies: player.trophies,
         trophies: legend.trophies,
         attackWins: player.attackWins,
         townHallLevel: player.townHallLevel
       };
     })
-    .filter((legend) => legend.actualTrophies >= 4900);
+    .filter((legend) => legend.trophies >= 4900);
 
   if (sort_by === 'town_hall_asc') {
     players.sort((a, b) => b.trophies - a.trophies);
@@ -94,7 +92,7 @@ export const getLegendRankingEmbedMaker = async ({
 
   const embed = new EmbedBuilder();
   embed.setColor(client.embed(guild.id));
-  embed.setAuthor({ name: `Legend Leaderboard (${Season.ID})` });
+  embed.setAuthor({ name: `Legend Leaderboard (${moment(seasonId).format('MMM YYYY')})` });
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
 
