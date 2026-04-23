@@ -105,8 +105,9 @@ export const calculateTrophies = (
   }
 
   // In Legend League, the defender LOSES what the attacker gains
+  // Exception: 0 stars means no trophies are lost by the defender
   if (isLegendLeague) {
-    return -attackerGain;
+    return stars === 0 ? 0 : -attackerGain;
   }
 
   // In Ranked, the defender GAINS the remainder of the 40 pool
