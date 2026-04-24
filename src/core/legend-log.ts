@@ -71,10 +71,8 @@ export class LegendLog extends RootLog {
     const battleDate = new Date(startTime).toISOString().slice(0, 10);
 
     const legendMembers = clan.memberList.filter(
-      (mem) => mem.leagueTier?.id === LEGEND_LEAGUE_ID || mem.trophies >= 5000
+      (mem) => (mem.leagueTier && mem.leagueTier.id >= LEGEND_LEAGUE_ID) || mem.trophies >= 5000
     );
-    const memberNameMap = new Map(legendMembers.map((m) => [m.tag, m.name]));
-
     const battleLogResults = await Promise.all(
       legendMembers.map((m) => getLegendBattleLog(m.tag).catch(() => [] as BattleLogDto[]))
     );
@@ -93,10 +91,11 @@ export class LegendLog extends RootLog {
       const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
       const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
       const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
-      const currentTrophies = dayBattles.at(0)!.trophies;
+      const lastBattle = dayBattles.at(0)!;
+      const currentTrophies = lastBattle.trophies;
 
       members.push({
-        name: memberNameMap.get(tag) ?? tag,
+        name: lastBattle.name,
         tag,
         attackCount: attacks.length,
         defenseCount: defenses.length,

@@ -180,7 +180,8 @@ export interface LastSeenDto {
 }
 
 export interface BattleLogDto {
-  playerTag: string;
+  name: string;
+  tag: string;
   opponentTag: string;
   battleType: string;
   isAttack: boolean;
@@ -208,6 +209,26 @@ export interface BattleLogDailyDto {
 export interface BattleLogAggregateItemsDto {
   items: BattleLogDailyDto[];
 }
+
+export interface BattleLogLeaderboardItemDto {
+  tag: string;
+  name: string;
+  trophies: number;
+}
+
+export interface BattleLogLeaderboardDto {
+  items: BattleLogLeaderboardItemDto[];
+}
+
+export interface BattleLogLeaderboardInputDto {
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  battleDate: string;
+  playerTags: string[];
+}
+
+export type GetBattleLogLeaderboardData = BattleLogLeaderboardDto;
+
+export type GetBattleLogLeaderboardError = ErrorResponseDto;
 
 export interface GlobalClanEntity {
   tag: string;
@@ -1105,6 +1126,23 @@ export namespace Players {
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = GetBattleLogAggregateData;
+  }
+
+  /**
+   * No description
+   * @tags Players
+   * @name GetBattleLogLeaderboard
+   * @request POST:/players/battle-log/leaderboard
+   * @secure
+   * @response `200` `GetBattleLogLeaderboardData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetBattleLogLeaderboard {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = BattleLogLeaderboardInputDto;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetBattleLogLeaderboardData;
   }
 
   /**
@@ -2089,6 +2127,27 @@ export class Api<SecurityDataType extends unknown> {
         path: `/players/${playerTag}/battle-log/aggregate`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name GetBattleLogLeaderboard
+     * @request POST:/players/battle-log/leaderboard
+     * @secure
+     * @response `200` `GetBattleLogLeaderboardData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getBattleLogLeaderboard: (body: BattleLogLeaderboardInputDto, params: RequestParams = {}) =>
+      this.http.request<GetBattleLogLeaderboardData, GetBattleLogLeaderboardError>({
+        path: `/players/battle-log/leaderboard`,
+        method: "POST",
+        body,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

@@ -339,7 +339,9 @@ export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
   '105000031': 'electro',
   '105000032': 'electro',
   '105000033': 'electro',
-  '105000034': 'legend'
+  '105000034': 'legend',
+  '105000035': 'legend',
+  '105000036': 'legend'
 };
 
 export const BUILDER_BASE_LEAGUE_MAPS: Record<string, string> = {
@@ -486,7 +488,9 @@ export const PLAYER_LEAGUE_MAP: Record<string, string> = {
   '105000031': 'Electro League 31',
   '105000032': 'Electro League 32',
   '105000033': 'Electro League 33',
-  '105000034': 'Legend League'
+  '105000034': 'Legend League 3',
+  '105000035': 'Legend League 2',
+  '105000036': 'Legend League 1'
 };
 
 export const WAR_LEAGUE_MAP: Record<string, string> = {
@@ -866,7 +870,9 @@ export const BattlesPerWeek: Record<string, number> = {
   '105000031': 30,
   '105000032': 30,
   '105000033': 30,
-  '105000034': 56
+  '105000034': 24,
+  '105000035': 30,
+  '105000036': 56
 };
 
 export const SYSTEM_PROMPT = `

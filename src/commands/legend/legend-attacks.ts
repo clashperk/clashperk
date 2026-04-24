@@ -1,5 +1,4 @@
 import { ATTACK_COUNTS, LEGEND_LEAGUE_ID } from '@app/constants';
-import { BattleLogDto } from '../../api/generated.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,6 +10,7 @@ import {
   User
 } from 'discord.js';
 import moment from 'moment';
+import { BattleLogDto } from '../../api/generated.js';
 import { getLegendBattleLog, getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
@@ -41,14 +41,16 @@ export default class LegendAttacksCommand extends Command {
     const { clans, resolvedArgs } = resolved;
     const legendMembers = clans
       .flatMap((clan) => clan.memberList)
-      .filter((member) => member.trophies >= 5000 || member.leagueTier?.id === LEGEND_LEAGUE_ID);
+      .filter(
+        (member) =>
+          member.trophies >= 5000 || (member.leagueTier && member.leagueTier.id >= LEGEND_LEAGUE_ID)
+      );
     const playerTags = legendMembers.map((member) => member.tag);
 
     const embed = await this.getAttackLog({
       clans,
       guild: interaction.guild,
       leagueDay: args.day,
-      legendMembers,
       playerTags
     });
 
@@ -65,13 +67,11 @@ export default class LegendAttacksCommand extends Command {
 
   private async getAttackLog({
     playerTags,
-    legendMembers,
     leagueDay,
     clans,
     guild
   }: {
     playerTags: string[];
-    legendMembers: { name: string; tag: string; trophies: number }[];
     leagueDay?: number;
     clans: { tag: string; name: string }[];
     guild: Guild;
@@ -85,8 +85,6 @@ export default class LegendAttacksCommand extends Command {
     const logsByTag = new Map<string, BattleLogDto[]>(
       playerTags.map((tag, i) => [tag, battleLogResults[i]])
     );
-
-    const memberNameMap = new Map(legendMembers.map((m) => [m.tag, m.name]));
 
     const members = [];
     for (const [tag, battles] of logsByTag) {
@@ -104,7 +102,7 @@ export default class LegendAttacksCommand extends Command {
       const currentTrophies = lastBattle.trophies;
 
       members.push({
-        name: memberNameMap.get(tag) ?? tag,
+        name: lastBattle.name,
         tag,
         attacks,
         defenses,

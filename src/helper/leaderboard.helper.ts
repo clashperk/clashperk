@@ -1,12 +1,13 @@
 import { Collections, FeatureFlags } from '@app/constants';
-import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayerClan } from 'clashofclans.js';
 import { EmbedBuilder, escapeMarkdown, Guild } from 'discord.js';
 import moment from 'moment';
 import { container } from 'tsyringe';
+import { api } from '../api/axios.js';
 import { Client } from '../struct/client.js';
 import { BLUE_NUMBERS } from '../util/emojis.js';
-import { escapeBackTick, padStart } from '../util/helper.js';
+import { padStart } from '../util/helper.js';
+import { Season, Util } from '../util/toolkit.js';
 
 function calc(clanRank: number) {
   if (clanRank >= 41) return 3;
@@ -39,10 +40,17 @@ export const getLegendRankingEmbedMaker = async ({
   const playersMap = _players.reduce<
     Record<
       string,
-      { townHallLevel: number; attackWins: number; clan?: APIPlayerClan; trophies: number }
+      {
+        name: string;
+        townHallLevel: number;
+        attackWins: number;
+        clan?: APIPlayerClan;
+        trophies: number;
+      }
     >
   >((record, curr) => {
     record[curr.tag] = {
+      name: curr.name,
       townHallLevel: curr.townHallLevel,
       attackWins: curr.attackWins,
       clan: curr.clan,
@@ -51,23 +59,25 @@ export const getLegendRankingEmbedMaker = async ({
     return record;
   }, {});
 
-  const legends = await client.db
-    .collection<Omit<LegendAttacksEntity, 'logs'>>(Collections.LEGEND_ATTACKS)
-    .find(
-      { tag: { $in: _players.map(({ tag }) => tag) }, seasonId },
-      { projection: { logs: 0, defenseLogs: 0, attackLogs: 0 } }
-    )
-    .toArray();
+  const { endTime } = Util.getSeasonById(seasonId);
+  const battleDate =
+    seasonId === Season.ID
+      ? new Date(Util.getCurrentLegendTimestamp().startTime).toISOString().slice(0, 10)
+      : moment(endTime).startOf('day').subtract(1, 'minute').toISOString().slice(0, 10);
 
-  let players = legends.map((legend) => {
+  const result = await api.players.getBattleLogLeaderboard({
+    battleDate,
+    playerTags: _players.map(({ tag }) => tag)
+  });
+
+  let players = (result.data?.items ?? []).map((legend) => {
     const player = playersMap[legend.tag];
     return {
-      name: legend.name,
+      name: player.name,
       tag: legend.tag,
-      clan: player.clan,
+      clan: player?.clan,
       trophies: legend.trophies,
-      attackWins: player.attackWins,
-      townHallLevel: player.townHallLevel
+      townHallLevel: player?.townHallLevel ?? 0
     };
   });
 
@@ -102,30 +112,12 @@ export const getLegendRankingEmbedMaker = async ({
   if (players.length) {
     embed.setDescription(
       [
-        '```',
-        `\u200e #  TH TROPHY WON  NAME`,
+        `\` #  TH TROPHY\` \u200b **NAME**`,
         ...players.slice(0, 99).map((player, n) => {
           const trophies = player.trophies;
-          const attacks = padStart(player.attackWins, 3);
-          const name = escapeBackTick(player.name);
+          const name = escapeMarkdown(player.name);
           const townHall = padStart(player.townHallLevel, 2);
-          return `\u200e${padStart(n + 1, 2)}  ${townHall}  ${trophies}  ${attacks}  ${name}`;
-        }),
-        '```',
-        '',
-        isProjectionEnabled ? `**Projected Clan Points:** \`${totalPoints}\`` : ''
-      ].join('\n')
-    );
-  }
-
-  if ((!sort_by || sort_by === 'trophies_only') && players.length) {
-    embed.setDescription(
-      [
-        ...players.slice(0, 50).map((player, idx) => {
-          const name = escapeMarkdown(
-            `${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`
-          );
-          return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
+          return `\`${padStart(n + 1, 2)}  ${townHall}  ${trophies} \` \u200b \u200e${name}`;
         }),
         '',
         isProjectionEnabled ? `**Projected Clan Points:** \`${totalPoints}\`` : ''

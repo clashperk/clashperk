@@ -81,7 +81,7 @@ export default class LegendDaysCommand extends Command {
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       );
 
-    if (data.leagueTier?.id !== LEGEND_LEAGUE_ID) {
+    if (!data.leagueTier || data.leagueTier.id < LEGEND_LEAGUE_ID) {
       if (await this.rankedBattles(interaction, data)) return;
       return interaction.followUp({
         content: `**${data.name} (${data.tag})** is not in the Legend League. \n**Ranked battle logs are coming soon!**`
@@ -136,7 +136,7 @@ export default class LegendDaysCommand extends Command {
 
     const players = await this.client.resolver.getPlayers(data.user.id);
     const options = players
-      .filter((op) => op.leagueTier?.id === LEGEND_LEAGUE_ID)
+      .filter((op) => op.leagueTier && op.leagueTier.id >= LEGEND_LEAGUE_ID)
       .map((op) => ({
         label: `${op.name} (${op.tag})`,
         description: `${EMOJIS.TROPHY_UNICODE} ${op.trophies}`,
@@ -213,7 +213,9 @@ export default class LegendDaysCommand extends Command {
     embed.setDescription(
       [
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
-          data.leagueTier?.id === LEGEND_LEAGUE_ID ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
+          data.leagueTier && data.leagueTier.id >= LEGEND_LEAGUE_ID
+            ? EMOJIS.LEGEND_LEAGUE
+            : EMOJIS.TROPHY
         } **${data.trophies}**`,
         ''
       ].join('\n')
@@ -452,7 +454,9 @@ export default class LegendDaysCommand extends Command {
     const description = [
       ...[
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
-          data.leagueTier?.id === LEGEND_LEAGUE_ID ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
+          data.leagueTier && data.leagueTier.id >= LEGEND_LEAGUE_ID
+            ? EMOJIS.LEGEND_LEAGUE
+            : EMOJIS.TROPHY
         } **${data.trophies}**`,
         ''
       ],

@@ -1,9 +1,10 @@
-import { Collections } from '@app/constants';
 import { CommandInteraction, User } from 'discord.js';
+import { BattleLogDto } from '../../api/generated.js';
+import { getLegendBattleLog } from '../../helper/legends.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
-import { Season, Util } from '../../util/toolkit.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class LegendAttacksHistoryCommand extends Command {
   public constructor() {
@@ -21,24 +22,20 @@ export default class LegendAttacksHistoryCommand extends Command {
   ) {
     if (args.user) {
       const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user.id);
-      const { result } = await this.getHistory(interaction, playerTags);
+      const { result } = await this.getHistory(playerTags);
       if (!result.length) {
         return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
       }
-
       return this.export(interaction, result);
     }
 
     if (args.player) {
       const player = await this.client.resolver.resolvePlayer(interaction, args.player);
       if (!player) return null;
-      const playerTags = [player.tag];
-      const { result } = await this.getHistory(interaction, playerTags);
-
+      const { result } = await this.getHistory([player.tag]);
       if (!result.length) {
         return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
       }
-
       return this.export(interaction, result);
     }
 
@@ -46,8 +43,8 @@ export default class LegendAttacksHistoryCommand extends Command {
     if (!clans) return;
 
     const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
-    const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
-    const { result } = await this.getHistory(interaction, playerTags);
+    const playerTags = _clans.flatMap((clan) => clan.memberList.map((m) => m.tag));
+    const { result } = await this.getHistory(playerTags);
 
     if (!result.length) {
       return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
@@ -56,48 +53,46 @@ export default class LegendAttacksHistoryCommand extends Command {
     return this.export(interaction, result);
   }
 
-  private async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
-    const seasonId = Season.ID;
-    const players = await this.client.db
-      .collection(Collections.LEGEND_ATTACKS)
-      .find({
-        tag: { $in: playerTags },
-        seasonId
-      })
-      .toArray();
+  private async getHistory(playerTags: string[]) {
+    const battleLogResults = await Promise.all(
+      playerTags.map((tag) => getLegendBattleLog(tag).catch(() => [] as BattleLogDto[]))
+    );
+    const logsByTag = new Map<string, BattleLogDto[]>(
+      playerTags.map((tag, i) => [tag, battleLogResults[i]])
+    );
 
+    const days = Util.getLegendDays();
     const result: AggregatedResult[] = [];
-    for (const { logs, name, tag } of players) {
-      const days = Util.getLegendDays();
-      const perDayLogs = days.reduce<PerDayLog[]>((prev, { startTime, endTime }, i) => {
-        const mixedLogs = logs.filter(
-          (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
-        );
-        const attacks = mixedLogs.filter((en) => en.inc > 0);
-        const defenses = mixedLogs.filter((en) => en.inc <= 0);
 
-        const attackCount = attacks.length;
-        const defenseCount = defenses.length;
-        const final = mixedLogs.slice(-1).at(0);
-        const initial = mixedLogs.at(0);
+    for (const [tag, allBattles] of logsByTag) {
+      if (!allBattles.length) continue;
 
-        const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
-        const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
+      const perDayLogs = days.map(({ startTime }, i) => {
+        const battleDate = new Date(startTime).toISOString().slice(0, 10);
+        const dayBattles = allBattles.filter((b) => b.battleDate === battleDate);
 
-        prev.push({
-          attackCount,
-          defenseCount,
+        const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
+        const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+
+        const gain = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
+        const loss = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
+
+        const firstBattle = dayBattles.at(-1);
+        const lastBattle = dayBattles.at(0);
+
+        return {
+          attackCount: attacks.length,
+          defenseCount: defenses.length,
           gain,
           loss,
-          final: final?.end ?? '-',
-          initial: initial?.start ?? '-',
+          final: lastBattle?.trophies ?? '-',
+          initial: firstBattle ? firstBattle.trophies - firstBattle.trophyChange : '-',
           day: i + 1,
           netGain: gain + loss
-        });
-        return prev;
-      }, []);
+        };
+      });
 
-      result.push({ name, tag, logs: perDayLogs });
+      result.push({ name: allBattles[0]?.name ?? tag, tag, logs: perDayLogs });
     }
 
     return { embeds: [], result };

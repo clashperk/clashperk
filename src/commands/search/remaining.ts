@@ -14,10 +14,11 @@ import {
 import moment from 'moment';
 import pluralize from 'pluralize';
 import { group } from 'radash';
-import { getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
+import { BattleLogDto } from '../../api/generated.js';
+import { getLegendBattleLog, getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/emojis.js';
-import { Season, Util } from '../../util/toolkit.js';
+import { Util } from '../../util/toolkit.js';
 
 const RemainingType = {
   WAR_ATTACKS: 'war-attacks',
@@ -532,11 +533,15 @@ export default class RemainingCommand extends Command {
       ? [args.player.tag]
       : (args.playerTags ?? (await this.client.resolver.getLinkedPlayerTags(args.user!.id)));
 
-    const result = await this.client.db
-      .collection(Collections.LEGEND_ATTACKS)
-      .find({ tag: { $in: playerTags }, seasonId: Season.ID })
-      .toArray();
     const { startTime, endTime } = getLegendTimestampAgainstDay();
+    const battleDate = new Date(startTime).toISOString().slice(0, 10);
+
+    const battleLogResults = await Promise.all(
+      playerTags.map((tag) => getLegendBattleLog(tag).catch(() => [] as BattleLogDto[]))
+    );
+    const logsByTag = new Map<string, BattleLogDto[]>(
+      playerTags.map((tag, i) => [tag, battleLogResults[i]])
+    );
 
     const playersMap: {
       [key: string]: {
@@ -547,34 +552,25 @@ export default class RemainingCommand extends Command {
         trophies: number;
       };
     } = {};
-    for (const legend of result) {
-      playersMap[legend.tag] = {
-        name: legend.name,
-        tag: legend.tag,
-        attacks: 0,
-        netTrophies: 0,
-        trophies: legend.trophies
+    for (const [tag, battles] of logsByTag) {
+      const dayBattles = battles.filter((b) => b.battleDate === battleDate);
+      if (!dayBattles.length) continue;
+
+      const attacks = dayBattles.filter((b) => b.isAttack);
+      const defenses = dayBattles.filter((b) => !b.isAttack);
+
+      const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
+      const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
+
+      const lastBattle = dayBattles.at(0)!;
+
+      playersMap[tag] = {
+        name: lastBattle.name,
+        tag,
+        attacks: attacks.length,
+        netTrophies: trophiesFromAttacks + trophiesFromDefenses,
+        trophies: lastBattle.trophies
       };
-
-      const logs = legend.logs.filter(
-        (atk) => atk.timestamp >= startTime && atk.timestamp <= endTime
-      );
-      if (logs.length === 0) continue;
-
-      const attacks = logs.filter((en) => en.type === 'attack');
-      const defenses =
-        logs.filter((en) => en.type === 'defense' || (en.type === 'attack' && en.inc === 0)) ?? [];
-
-      const possibleAttackCount = legend.attackLogs?.[moment(endTime).format('YYYY-MM-DD')] ?? 0;
-      const attackCount = Math.max(attacks.length, possibleAttackCount);
-
-      const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
-      const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);
-      const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
-
-      const player = playersMap[legend.tag];
-      player.attacks = attackCount;
-      player.netTrophies = netTrophies;
     }
 
     const players = Object.values(playersMap)

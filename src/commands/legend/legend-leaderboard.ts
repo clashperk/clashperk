@@ -189,7 +189,6 @@ export default class LegendLeaderboardCommand extends Command {
       clan?: APIPlayerClan;
       townHallLevel: number;
       trophies: number;
-      attackWins: number;
     }[],
     clans: { name: string }[]
   ) {
@@ -202,8 +201,7 @@ export default class LegendLeaderboardCommand extends Command {
           { name: 'CLAN', align: 'LEFT', width: 160 },
           { name: 'CLAN TAG', align: 'LEFT', width: 160 },
           { name: 'TOWN HALL', align: 'RIGHT', width: 100 },
-          { name: 'TROPHIES', align: 'RIGHT', width: 100 },
-          { name: 'ATTACKS WON', align: 'RIGHT', width: 100 }
+          { name: 'TROPHIES', align: 'RIGHT', width: 100 }
         ],
         rows: players.map((player) => [
           player.name,
@@ -211,8 +209,7 @@ export default class LegendLeaderboardCommand extends Command {
           player.clan?.name,
           player.clan?.tag,
           player.townHallLevel,
-          player.trophies,
-          player.attackWins
+          player.trophies
         ])
       }
     ];
