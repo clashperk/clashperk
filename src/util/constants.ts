@@ -541,7 +541,11 @@ export const WAR_LEAGUE_PROMOTION_MAP: Record<
   48000015: { promotion: 1, demotion: 7, name: 'Master League I' },
   48000016: { promotion: 1, demotion: 7, name: 'Champion League III' },
   48000017: { promotion: 1, demotion: 7, name: 'Champion League II' },
-  48000018: { promotion: 0, demotion: 6, name: 'Champion League I' }
+  48000018: { promotion: 1, demotion: 6, name: 'Champion League I' },
+  48000019: { promotion: 1, demotion: 6, name: 'Titan League III' },
+  48000020: { promotion: 1, demotion: 6, name: 'Titan League II' },
+  48000021: { promotion: 1, demotion: 6, name: 'Titan League I' },
+  48000022: { promotion: 0, demotion: 6, name: 'Legend League' }
 };
 
 export const GUARANTEED_BONUS: Record<string, Record<string, number>> = {
@@ -566,7 +570,12 @@ export const GUARANTEED_BONUS: Record<string, Record<string, number>> = {
 
   '48000016': { '5': 0, '15': 4, '30': 0 },
   '48000017': { '5': 0, '15': 4, '30': 0 },
-  '48000018': { '5': 0, '15': 4, '30': 0 }
+  '48000018': { '5': 0, '15': 4, '30': 0 },
+
+  '48000019': { '5': 0, '15': 5, '30': 0 },
+  '48000020': { '5': 0, '15': 5, '30': 0 },
+  '48000021': { '5': 0, '15': 5, '30': 0 },
+  '48000022': { '5': 0, '15': 6, '30': 0 }
 };
 
 export const calculateBonus = ({ leagueId, teamSize }: { leagueId: number; teamSize: number }) => {
@@ -858,18 +867,18 @@ export const BattlesPerWeek: Record<string, number> = {
   '105000019': 12,
   '105000020': 12,
   '105000021': 12,
-  '105000022': 14,
-  '105000023': 14,
-  '105000024': 14,
-  '105000025': 18,
-  '105000026': 18,
-  '105000027': 18,
-  '105000028': 24,
-  '105000029': 24,
-  '105000030': 24,
-  '105000031': 30,
-  '105000032': 30,
-  '105000033': 30,
+  '105000022': 12,
+  '105000023': 12,
+  '105000024': 12,
+  '105000025': 12,
+  '105000026': 12,
+  '105000027': 12,
+  '105000028': 14,
+  '105000029': 14,
+  '105000030': 14,
+  '105000031': 18,
+  '105000032': 18,
+  '105000033': 18,
   '105000034': 24,
   '105000035': 30,
   '105000036': 56

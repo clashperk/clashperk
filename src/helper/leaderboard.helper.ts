@@ -7,7 +7,7 @@ import { api } from '../api/axios.js';
 import { Client } from '../struct/client.js';
 import { BLUE_NUMBERS } from '../util/emojis.js';
 import { padStart } from '../util/helper.js';
-import { Season, Util } from '../util/toolkit.js';
+import { Season } from '../util/toolkit.js';
 
 function calc(clanRank: number) {
   if (clanRank >= 41) return 3;
@@ -59,14 +59,8 @@ export const getLegendRankingEmbedMaker = async ({
     return record;
   }, {});
 
-  const { endTime } = Util.getSeasonById(seasonId);
-  const battleDate =
-    seasonId === Season.ID
-      ? new Date(Util.getCurrentLegendTimestamp().startTime).toISOString().slice(0, 10)
-      : moment(endTime).startOf('day').subtract(1, 'minute').toISOString().slice(0, 10);
-
   const result = await api.players.getBattleLogLeaderboard({
-    battleDate,
+    seasonId,
     playerTags: _players.map(({ tag }) => tag)
   });
 
@@ -76,8 +70,8 @@ export const getLegendRankingEmbedMaker = async ({
       name: player.name,
       tag: legend.tag,
       clan: player?.clan,
-      trophies: legend.trophies,
-      townHallLevel: player?.townHallLevel ?? 0
+      trophies: seasonId === Season.ID ? player.trophies : legend.trophies,
+      townHallLevel: player.townHallLevel
     };
   });
 

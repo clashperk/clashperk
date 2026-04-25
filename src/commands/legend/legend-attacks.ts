@@ -10,8 +10,10 @@ import {
   User
 } from 'discord.js';
 import moment from 'moment';
-import { BattleLogDto } from '../../api/generated.js';
-import { getLegendBattleLog, getLegendTimestampAgainstDay } from '../../helper/legends.helper.js';
+import {
+  getLegendBattleLogAggregate,
+  getLegendTimestampAgainstDay
+} from '../../helper/legends.helper.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart, trimTag } from '../../util/helper.js';
@@ -79,39 +81,25 @@ export default class LegendAttacksCommand extends Command {
     const { startTime, day } = getLegendTimestampAgainstDay(leagueDay);
     const battleDate = new Date(startTime).toISOString().slice(0, 10);
 
-    const battleLogResults = await Promise.all(
-      playerTags.map((tag) => getLegendBattleLog(tag).catch(() => [] as BattleLogDto[]))
-    );
-    const logsByTag = new Map<string, BattleLogDto[]>(
-      playerTags.map((tag, i) => [tag, battleLogResults[i]])
+    const aggregateResults = await Promise.all(
+      playerTags.map((tag) => getLegendBattleLogAggregate(tag).catch(() => []))
     );
 
     const members = [];
-    for (const [tag, battles] of logsByTag) {
-      const dayBattles = battles.filter((b) => b.battleDate === battleDate);
-      if (!dayBattles.length) continue;
-
-      const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
-      const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
-
-      const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
-      const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
-      const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
-
-      const lastBattle = dayBattles.at(0)!;
-      const currentTrophies = lastBattle.trophies;
+    for (let i = 0; i < playerTags.length; i++) {
+      const tag = playerTags[i];
+      const dayEntry = aggregateResults[i].find((e) => e.battleDate === battleDate);
+      if (!dayEntry) continue;
 
       members.push({
-        name: lastBattle.name,
+        name: dayEntry.name,
         tag,
-        attacks,
-        defenses,
-        attackCount: attacks.length,
-        defenseCount: defenses.length,
-        trophiesFromAttacks,
-        trophiesFromDefenses,
-        netTrophies,
-        currentTrophies
+        attackCount: dayEntry.attackCount,
+        defenseCount: dayEntry.defenseCount,
+        trophiesFromAttacks: dayEntry.offenseTrophies,
+        trophiesFromDefenses: dayEntry.defenseTrophies,
+        netTrophies: dayEntry.gain,
+        currentTrophies: dayEntry.trophies
       });
     }
     members.sort((a, b) => b.currentTrophies - a.currentTrophies);

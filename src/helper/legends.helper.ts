@@ -47,10 +47,10 @@ export const aggregateLegendBattleLog = (dailyItems: BattleLogDailyDto[]) => {
     }));
     const avgGain = items.length ? items.reduce((s, i) => s + Number(i.gain), 0) / items.length : 0;
     const avgOffense = items.length
-      ? items.reduce((s, i) => s + Number(i.offense), 0) / items.length
+      ? items.reduce((s, i) => s + Number(i.offenseTrophies), 0) / items.length
       : 0;
     const avgDefense = items.length
-      ? items.reduce((s, i) => s + Number(i.defense), 0) / items.length
+      ? items.reduce((s, i) => s + Number(i.defenseTrophies), 0) / items.length
       : 0;
     return { _id: seasonId, logs, avgGain, avgOffense, avgDefense };
   };
