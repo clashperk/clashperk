@@ -83,7 +83,8 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Fire Heart': '<:FireHeart:1483040001116602420>',
   'Stun Blaster': '<:StunBlaster:1483040038789841040>',
   'Rocket Backpack': '<:RocketBackpack:1493662588695740659>',
-  'Flame Blower': '<:FlameBlower:1493665431611904221>'
+  'Flame Blower': '<:FlameBlower:1493665431611904221>',
+  'Electro Fangs': '<:ElectroFangs:1498392822158721214>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
@@ -109,7 +110,8 @@ export const SIEGE_MACHINES: Record<string, string> = {
   'Log Launcher': '<:LogLauncher:918762884257939478>',
   'Flame Flinger': '<:FlameFlinger:918762753013981235>',
   'Battle Drill': '<:BattleDrill:1029114347949142087>',
-  'Troop Launcher': '<:TroopLauncher:1341345433632636968>'
+  'Troop Launcher': '<:TroopLauncher:1341345433632636968>',
+  'Sky Wagon': '<:SkyWagon:1498392948340162623>'
 };
 
 export const ELIXIR_SPELLS: Record<string, string> = {
