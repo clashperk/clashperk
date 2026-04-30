@@ -4,7 +4,8 @@ import {
   ButtonStyle,
   CommandInteraction,
   EmbedBuilder,
-  Guild
+  Guild,
+  Message
 } from 'discord.js';
 import { URL } from 'node:url';
 import { Command } from '../../lib/handlers.js';
@@ -32,6 +33,15 @@ export default class ArmyCommand extends Command {
       category: 'search',
       clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
       defer: true
+    });
+  }
+
+  public async run(message: Message<true>, args: { link: string }) {
+    const payload = this.embed(message.guild, 'en-US', args);
+    return message.channel.send({
+      ...payload,
+      allowedMentions: { repliedUser: false },
+      reply: { messageReference: message, failIfNotExists: false }
     });
   }
 
