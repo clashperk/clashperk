@@ -488,9 +488,9 @@ export const PLAYER_LEAGUE_MAP: Record<string, string> = {
   '105000031': 'Electro League 31',
   '105000032': 'Electro League 32',
   '105000033': 'Electro League 33',
-  '105000034': 'Legend League 3',
-  '105000035': 'Legend League 2',
-  '105000036': 'Legend League 1'
+  '105000034': 'Legend League III',
+  '105000035': 'Legend League II',
+  '105000036': 'Legend League I'
 };
 
 export const WAR_LEAGUE_MAP: Record<string, string> = {

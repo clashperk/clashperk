@@ -32,7 +32,13 @@ import {
 } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
-import { EMOJIS, HOME_TROOPS, PLAYER_LEAGUE_TIERS, TOWN_HALLS } from '../../util/emojis.js';
+import {
+  EMOJIS,
+  HOME_BASE_LEAGUES,
+  HOME_TROOPS,
+  PLAYER_LEAGUE_TIERS,
+  TOWN_HALLS
+} from '../../util/emojis.js';
 import { formatLeague, getMenuFromMessage, padStart, trimTag } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
@@ -218,8 +224,7 @@ export default class LegendDaysCommand extends Command {
           data.leagueTier && data.leagueTier.id >= LEGEND_LEAGUE_ID
             ? EMOJIS.LEGEND_LEAGUE
             : EMOJIS.TROPHY
-        } **${data.trophies}**`,
-        ''
+        } **${data.trophies} ${HOME_BASE_LEAGUES[data.leagueTier?.id ?? UNRANKED_TIER_ID]} ${'Legend I'}**`
       ].join('\n')
     );
 
@@ -292,7 +297,7 @@ export default class LegendDaysCommand extends Command {
               .reverse()
               .map(
                 (b) =>
-                  `\` ${`+${b.trophyChange}`.padStart(3, ' ')} \` ${time(new Date(b.ingestedAt), 'R')}`
+                  `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
               )
               .join('\n')
           : '-',
@@ -305,7 +310,7 @@ export default class LegendDaysCommand extends Command {
               .reverse()
               .map(
                 (b) =>
-                  `\` ${String(b.trophyChange).padStart(4, ' ')} \` ${time(new Date(b.ingestedAt), 'R')}`
+                  `\` ${padStart(`${b.trophyChange === 0 ? '+' : ''}${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
               )
               .join('\n')
           : '-',
@@ -518,17 +523,24 @@ export default class LegendDaysCommand extends Command {
     const attacks = battles.filter((b) => b.isAttack);
     const defenses = battles.filter((b) => !b.isAttack);
 
+    const avgStat = (arr: typeof battles, key: 'stars' | 'destruction') =>
+      arr.length ? (arr.reduce((s, b) => s + b[key], 0) / arr.length).toFixed(1) : '0';
+    const avgOffenseStars = avgStat(attacks, 'stars');
+    const avgOffenseDestruction = avgStat(attacks, 'destruction');
+    const avgDefenseStars = avgStat(defenses, 'stars');
+    const avgDefenseDestruction = avgStat(defenses, 'destruction');
+
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
       .setTitle(`${escapeMarkdown(player.name)} (${player.tag})`)
       .setURL(`http://cprk.us/p/${trimTag(player.tag)}`);
 
+    const leagueLabel = formatLeague(PLAYER_LEAGUE_MAP[leagueId]);
     embed.setDescription(
       [
-        `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}** ${EMOJIS.TROPHY} **${player.trophies}**`
+        `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}** ${EMOJIS.TROPHY} **${player.trophies} ${HOME_BASE_LEAGUES[leagueId]} ${leagueLabel}**`
       ].join('\n')
     );
-    embed.setThumbnail(player.leagueTier.iconUrls.small);
 
     if (!Season.isTournamentReset) {
       const { startTime, endTime } = Util.getTournamentWindow();
@@ -537,18 +549,18 @@ export default class LegendDaysCommand extends Command {
         value: [
           `- ${player.trophies} trophies gained`,
           `- ${attacks.length}/${BattlesPerWeek[leagueId]} attacks`,
-          `- ${defenses.length} defenses`
+          `- ${defenses.length}/${BattlesPerWeek[leagueId]} defenses`
         ].join('\n')
       });
     }
 
-    if (lastTournament.result && lastTournament.startTime >= new Date('2026-04-27')) {
+    if (lastTournament.result) {
       embed.addFields({
         name: `Previous Week (${moment(lastTournament.startTime).format('D MMM')} - ${moment(lastTournament.endTime).format('D MMM')})`,
         value: [
           `- ${lastTournament.result.trophies} trophies gained`,
           `- ${lastTournament.result.attacks}/${BattlesPerWeek[lastTournament.result.leagueId]} attacks`,
-          `- ${lastTournament.result.defenses} defenses`,
+          `- ${lastTournament.result.defenses}/${BattlesPerWeek[leagueId]} defenses`,
           leagueId > lastTournament.result.leagueId
             ? `- Promoted to **${formatLeague(player.leagueTier.name)} (${EMOJIS.UP_KEY} ${leagueId - lastTournament.result.leagueId})**`
             : leagueId < lastTournament.result.leagueId
@@ -574,28 +586,28 @@ export default class LegendDaysCommand extends Command {
 
     embed.addFields([
       {
-        name: '**Attacks**',
+        name: `**Attacks** (Avg: ${avgOffenseStars}★ ${avgOffenseDestruction}%)`,
         value: attacks.length
           ? attacks
-              .slice(0, 30)
+              .slice(0, 10)
               .reverse()
               .map(
                 (b) =>
-                  `\` ${`+${b.trophyChange}`.padStart(3, ' ')} \` ${time(new Date(b.ingestedAt), 'R')}`
+                  `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
               )
               .join('\n')
           : '-',
         inline: true
       },
       {
-        name: '**Defenses**',
+        name: `**Defenses** (Avg: ${avgDefenseStars}★ ${avgDefenseDestruction}%)`,
         value: defenses.length
           ? defenses
-              .slice(0, 30)
+              .slice(0, 10)
               .reverse()
               .map(
                 (b) =>
-                  `\` ${String(b.trophyChange).padStart(4, ' ')} \` ${time(new Date(b.ingestedAt), 'R')}`
+                  `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
               )
               .join('\n')
           : '-',
