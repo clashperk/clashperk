@@ -75,7 +75,7 @@
     "@types/ms": "^0.7.31",
     "@types/node": "^24.9.1",
     "@types/pluralize": "^0.0.33",
-    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.32.1",
     "dotenv": "^17.2.0",
     "eslint": "^10.2.1",
