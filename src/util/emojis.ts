@@ -344,13 +344,6 @@ export const CAPITAL_LEAGUES: Record<string, string> = {
   85000022: '<:legend:696301773513818162>'
 };
 
-export const ACHIEVEMENT_STARS: Record<string, string> = {
-  0: '<:0stars:696294293782003722>',
-  1: '<:1star:696294317932675122>',
-  2: '<:2stars:696294341186158593>',
-  3: '<:3stars:696294365663985674>'
-};
-
 export const CWL_LEAGUES: Record<string, string> = {
   'Champion League I': '<:Champion1:717735571933364334>',
   'Champion League II': '<:Champion2:717735583962759228>',

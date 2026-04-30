@@ -1,5 +1,6 @@
 import {
   ATTACK_COUNTS,
+  BattlesPerWeek,
   Collections,
   LEGEND_LEAGUE_ID,
   PLAYER_LEAGUE_MAP,
@@ -26,11 +27,18 @@ import {
   aggregateLegendBattleLog,
   getLegendBattleLog,
   getLegendBattleLogAggregate,
-  getLegendTimestampAgainstDay
+  getLegendTimestampAgainstDay,
+  getRankedBattleLog
 } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
-import { EMOJIS, HOME_TROOPS, PLAYER_LEAGUE_TIERS, TOWN_HALLS } from '../../util/emojis.js';
+import {
+  EMOJIS,
+  HOME_BASE_LEAGUES,
+  HOME_TROOPS,
+  PLAYER_LEAGUE_TIERS,
+  TOWN_HALLS
+} from '../../util/emojis.js';
 import { formatLeague, getMenuFromMessage, padStart, trimTag } from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
@@ -81,7 +89,7 @@ export default class LegendDaysCommand extends Command {
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       );
 
-    if (!data.leagueTier || data.leagueTier.id < LEGEND_LEAGUE_ID) {
+    if (!data.leagueTier || data.leagueTier.id !== LEGEND_LEAGUE_ID + 2) {
       if (await this.rankedBattles(interaction, data)) return;
       return interaction.followUp({
         content: `**${data.name} (${data.tag})** is not in the Legend League. \n**Ranked battle logs are coming soon!**`
@@ -216,8 +224,7 @@ export default class LegendDaysCommand extends Command {
           data.leagueTier && data.leagueTier.id >= LEGEND_LEAGUE_ID
             ? EMOJIS.LEGEND_LEAGUE
             : EMOJIS.TROPHY
-        } **${data.trophies}**`,
-        ''
+        } **${data.trophies} ${HOME_BASE_LEAGUES[data.leagueTier?.id ?? UNRANKED_TIER_ID]} ${'Legend I'}**`
       ].join('\n')
     );
 
@@ -290,7 +297,7 @@ export default class LegendDaysCommand extends Command {
               .reverse()
               .map(
                 (b) =>
-                  `\` ${`+${b.trophyChange}`.padStart(3, ' ')} \` ${time(new Date(b.ingestedAt), 'R')}`
+                  `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
               )
               .join('\n')
           : '-',
@@ -303,7 +310,7 @@ export default class LegendDaysCommand extends Command {
               .reverse()
               .map(
                 (b) =>
-                  `\` ${String(b.trophyChange).padStart(4, ' ')} \` ${time(new Date(b.ingestedAt), 'R')}`
+                  `\` ${padStart(`${b.trophyChange === 0 ? '+' : ''}${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
               )
               .join('\n')
           : '-',
@@ -499,58 +506,61 @@ export default class LegendDaysCommand extends Command {
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     player: APIPlayer
   ) {
-    const [logs, lastTournament, { globalRank, countryRank }] = await Promise.all([
-      this.getTournamentLogs(player.tag),
+    const [battles, lastTournament, { globalRank, countryRank }] = await Promise.all([
+      getRankedBattleLog(player.tag, Season.tournamentID),
       this.getLastTournament(player.tag),
       this.rankings(player.tag)
     ]);
 
     const leagueId = player.leagueTier?.id ?? UNRANKED_TIER_ID;
     if (
-      (!logs.length && !lastTournament.result) ||
+      (!battles.length && !lastTournament.result) ||
       leagueId === UNRANKED_TIER_ID ||
       !player.leagueTier
     )
       return null;
+
+    const attacks = battles.filter((b) => b.isAttack);
+    const defenses = battles.filter((b) => !b.isAttack);
+
+    const avgStat = (arr: typeof battles, key: 'stars' | 'destruction') =>
+      arr.length ? (arr.reduce((s, b) => s + b[key], 0) / arr.length).toFixed(1) : '0';
+    const avgOffenseStars = avgStat(attacks, 'stars');
+    const avgOffenseDestruction = avgStat(attacks, 'destruction');
+    const avgDefenseStars = avgStat(defenses, 'stars');
+    const avgDefenseDestruction = avgStat(defenses, 'destruction');
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
       .setTitle(`${escapeMarkdown(player.name)} (${player.tag})`)
       .setURL(`http://cprk.us/p/${trimTag(player.tag)}`);
 
+    const leagueLabel = formatLeague(PLAYER_LEAGUE_MAP[leagueId]);
     embed.setDescription(
       [
-        `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}** ${EMOJIS.TROPHY} **${player.trophies}**`
+        `${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}** ${EMOJIS.TROPHY} **${player.trophies} ${HOME_BASE_LEAGUES[leagueId]} ${leagueLabel}**`
       ].join('\n')
     );
-    embed.setThumbnail(player.leagueTier.iconUrls.small);
 
     if (!Season.isTournamentReset) {
-      const isBugged = player.attackWins === 0 && player.defenseWins === 0 && player.trophies > 40;
       const { startTime, endTime } = Util.getTournamentWindow();
       embed.addFields({
         name: `Overview (${moment(startTime).format('D MMM')} - ${moment(endTime).format('D MMM')})`,
         value: [
           `- ${player.trophies} trophies gained`,
-          ...(isBugged
-            ? []
-            : [`- ${player.attackWins} attacks won`, `- ${player.defenseWins} defenses won`])
+          `- ${attacks.length}/${BattlesPerWeek[leagueId]} attacks`,
+          `- ${defenses.length}/${BattlesPerWeek[leagueId]} defenses`
         ].join('\n')
       });
     }
 
     if (lastTournament.result) {
-      const isBugged = lastTournament.result.attacks === 0 && lastTournament.result.defenses === 0;
       embed.addFields({
         name: `Previous Week (${moment(lastTournament.startTime).format('D MMM')} - ${moment(lastTournament.endTime).format('D MMM')})`,
         value: [
           `- ${lastTournament.result.trophies} trophies gained`,
-          ...(isBugged
-            ? []
-            : [
-                `- ${lastTournament.result.attacks} attacks won`,
-                `- ${lastTournament.result.defenses} defenses won`
-              ]),
+          `- ${lastTournament.result.attacks}/${BattlesPerWeek[lastTournament.result.leagueId]} attacks`,
+          `- ${lastTournament.result.defenses}/${BattlesPerWeek[leagueId]} defenses`,
           leagueId > lastTournament.result.leagueId
             ? `- Promoted to **${formatLeague(player.leagueTier.name)} (${EMOJIS.UP_KEY} ${leagueId - lastTournament.result.leagueId})**`
             : leagueId < lastTournament.result.leagueId
@@ -576,16 +586,32 @@ export default class LegendDaysCommand extends Command {
 
     embed.addFields([
       {
-        name: logs.length > 10 ? '**Logs (last 10)**' : '**Logs**',
-        value: !logs.length
-          ? '-'
-          : logs
+        name: `**Attacks** (Avg: ${avgOffenseStars}★ ${avgOffenseDestruction}%)`,
+        value: attacks.length
+          ? attacks
               .slice(0, 10)
               .reverse()
-              .map((row) => {
-                return `\`${padStart(`+${row.diff}`, 4)} \` ${time(moment(row.createdAt).toDate(), 'R')}`;
-              })
+              .map(
+                (b) =>
+                  `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
+              )
               .join('\n')
+          : '-',
+        inline: true
+      },
+      {
+        name: `**Defenses** (Avg: ${avgDefenseStars}★ ${avgDefenseDestruction}%)`,
+        value: defenses.length
+          ? defenses
+              .slice(0, 10)
+              .reverse()
+              .map(
+                (b) =>
+                  `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
+              )
+              .join('\n')
+          : '-',
+        inline: true
       }
     ]);
 
@@ -615,77 +641,18 @@ export default class LegendDaysCommand extends Command {
       .format('YYYY-MM-DD');
     const { id, startTime, endTime } = Util.getTournamentWindowById(lastWeek);
 
-    const rows = await this.client.clickhouse
-      .query({
-        query: `
-          SELECT
-            anyLast(name) AS name,
-            tag,
-            sum(diff) AS diff,
-            max(trophies) AS trophies,
-            max(attacks) AS attacks,
-            max(defenses) AS defenses,
-            max(leagueId) AS leagueId,
-            max(createdAt) AS createdAt
-          FROM player_trophy_records
-          WHERE tag = {tag: String} AND weekId = {weekId: String}
-          GROUP BY tag;
-      `,
-        query_params: { tag: playerTag, weekId: id }
-      })
-      .then((res) =>
-        res.json<{
-          name: string;
-          tag: string;
-          trophies: number;
-          leagueId: number;
-          diff: number;
-          attacks: number;
-          defenses: number;
-          createdAt: string;
-        }>()
-      );
+    const battles = await getRankedBattleLog(playerTag, id);
+    if (!battles.length) return { result: null, startTime, endTime, id };
+
+    const attacks = battles.filter((b) => b.isAttack).length;
+    const defenses = battles.filter((b) => !b.isAttack).length;
+    const lastBattle = battles.at(0)!;
 
     return {
-      result: rows.data.at(0) ?? null,
+      result: { trophies: lastBattle.trophies, attacks, defenses, leagueId: lastBattle.leagueId },
       startTime,
       endTime,
       id
     };
   }
-
-  private async getTournamentLogs(playerTag: string) {
-    const rows = await this.client.clickhouse
-      .query({
-        query: `
-          SELECT
-            name,
-            tag,
-            diff,
-            trophies,
-            attacks,
-            defenses,
-            leagueId,
-            createdAt
-          FROM player_trophy_records
-          WHERE tag = {tag: String} AND weekId = {weekId: String}
-          ORDER BY createdAt DESC
-        `,
-        query_params: { tag: playerTag, weekId: Season.tournamentID }
-      })
-      .then((res) => res.json<RankedBattleLog>());
-
-    return rows.data;
-  }
-}
-
-interface RankedBattleLog {
-  name: string;
-  tag: string;
-  trophies: number;
-  leagueId: number;
-  diff: number;
-  attacks: number;
-  defenses: number;
-  createdAt: string;
 }

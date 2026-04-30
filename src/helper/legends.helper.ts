@@ -17,6 +17,15 @@ export const getLegendBattleLog = async (playerTag: string): Promise<BattleLogDt
   return result.data.items.filter((b) => b.battleType === 'legend');
 };
 
+export const getRankedBattleLog = async (
+  playerTag: string,
+  weekId: string
+): Promise<BattleLogDto[]> => {
+  const result = await api.players.getBattleLog({ playerTag: encode(playerTag) });
+  if (!result?.data?.items) return [];
+  return result.data.items.filter((b) => b.battleWeek === weekId && b.battleType === 'ranked');
+};
+
 export const getLegendBattleLogAggregate = async (
   playerTag: string
 ): Promise<BattleLogDailyDto[]> => {

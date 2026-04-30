@@ -190,6 +190,9 @@ export interface BattleLogDto {
   trophies: number;
   trophyChange: number;
   battleDate: string;
+  battleSeason: string;
+  battleWeek: string;
+  leagueId: number;
   /** @format date-time */
   ingestedAt: string;
 }
@@ -335,30 +338,6 @@ export interface LegendRankingThresholdsDto {
   live: LegendRankingThresholdsSnapShotDto;
   eod: LegendRankingThresholdsSnapShotDto | null;
   history: LegendRankingThresholdsSnapShotDto[];
-}
-
-export interface LeaderboardByTagsInputDto {
-  /**
-   * @maxItems 100
-   * @minItems 0
-   * @example ["#2PP"]
-   */
-  playerTags: string[];
-  /** @example 1 */
-  minRank: number;
-  /** @example 100 */
-  maxRank: number;
-}
-
-export interface LeaderboardByTagsDto {
-  tag: string;
-  name: string;
-  rank: number;
-  trophies: number;
-}
-
-export interface LeaderboardByTagsItemsDto {
-  items: LeaderboardByTagsDto[];
 }
 
 export interface GetLegendAttacksInputDto {
@@ -760,10 +739,6 @@ export type AddPlayerAccountError = ErrorResponseDto;
 export type GetLegendRankingThresholdsData = LegendRankingThresholdsDto;
 
 export type GetLegendRankingThresholdsError = ErrorResponseDto;
-
-export type GetLeaderboardData = LeaderboardByTagsItemsDto;
-
-export type GetLeaderboardError = ErrorResponseDto;
 
 export type GetLegendAttacksData = LegendAttacksItemsDto;
 
@@ -1282,23 +1257,6 @@ export namespace Legends {
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = GetLegendRankingThresholdsData;
-  }
-
-  /**
-   * No description
-   * @tags Legends
-   * @name GetLeaderboard
-   * @request POST:/legends/leaderboard/query
-   * @secure
-   * @response `201` `GetLeaderboardData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace GetLeaderboard {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = LeaderboardByTagsInputDto;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetLeaderboardData;
   }
 
   /**
@@ -2303,30 +2261,6 @@ export class Api<SecurityDataType extends unknown> {
         path: `/legends/ranking-thresholds`,
         method: "GET",
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Legends
-     * @name GetLeaderboard
-     * @request POST:/legends/leaderboard/query
-     * @secure
-     * @response `201` `GetLeaderboardData`
-     * @response `500` `ErrorResponseDto`
-     */
-    getLeaderboard: (
-      data: LeaderboardByTagsInputDto,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetLeaderboardData, GetLeaderboardError>({
-        path: `/legends/leaderboard/query`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
