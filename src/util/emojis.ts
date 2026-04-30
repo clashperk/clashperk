@@ -83,7 +83,8 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Fire Heart': '<:FireHeart:1483040001116602420>',
   'Stun Blaster': '<:StunBlaster:1483040038789841040>',
   'Rocket Backpack': '<:RocketBackpack:1493662588695740659>',
-  'Flame Blower': '<:FlameBlower:1493665431611904221>'
+  'Flame Blower': '<:FlameBlower:1493665431611904221>',
+  'Electro Fangs': '<:ElectroFangs:1498392822158721214>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
@@ -109,7 +110,8 @@ export const SIEGE_MACHINES: Record<string, string> = {
   'Log Launcher': '<:LogLauncher:918762884257939478>',
   'Flame Flinger': '<:FlameFlinger:918762753013981235>',
   'Battle Drill': '<:BattleDrill:1029114347949142087>',
-  'Troop Launcher': '<:TroopLauncher:1341345433632636968>'
+  'Troop Launcher': '<:TroopLauncher:1341345433632636968>',
+  'Sky Wagon': '<:SkyWagon:1498392948340162623>'
 };
 
 export const ELIXIR_SPELLS: Record<string, string> = {
@@ -270,7 +272,9 @@ export const HOME_BASE_LEAGUES: Record<string, string> = {
   105000031: '<:ElectroLeague31:1424720598172569693>',
   105000032: '<:ElectroLeague32:1424720603721502762>',
   105000033: '<:ElectroLeague33:1424720610793361598>',
-  105000034: '<:LegendLeague:1424720630183497832>'
+  105000034: '<:LegendLeague:1424720630183497832>',
+  105000035: '<:LegendLeague:1424720630183497832>',
+  105000036: '<:LegendLeague:1424720630183497832>'
 };
 
 export const PLAYER_LEAGUE_TIERS: Record<string, string> = {
@@ -308,7 +312,10 @@ export const PLAYER_LEAGUE_TIERS: Record<string, string> = {
   'Electro League 31': '<:ElectroLeague31:1424720598172569693>',
   'Electro League 32': '<:ElectroLeague32:1424720603721502762>',
   'Electro League 33': '<:ElectroLeague33:1424720610793361598>',
-  'Legend League': '<:LegendLeague:1424720630183497832>'
+  'Legend League': '<:LegendLeague:1424720630183497832>',
+  'Legend League I': '<:LegendLeague:1424720630183497832>',
+  'Legend League II': '<:LegendLeague:1424720630183497832>',
+  'Legend League III': '<:LegendLeague:1424720630183497832>'
 };
 
 export const CAPITAL_LEAGUES: Record<string, string> = {

@@ -26,6 +26,7 @@ export enum UserRoles {
   FETCH_LEGENDS = "fetch:legends",
   FETCH_LINKS = "fetch:links",
   MANAGE_LINKS = "manage:links",
+  FETCH_ROSTERS = "fetch:rosters",
   MANAGE_ROSTERS = "manage:rosters",
   MANAGE_REMINDERS = "manage:reminders",
 }
@@ -51,6 +52,18 @@ export interface ErrorResponseDto {
   path: string;
 }
 
+export interface JwtUserInput {
+  roles: string[];
+  jti: string;
+  userId: string;
+  username: string;
+  version: string;
+  guildIds: string[];
+  applicationId?: string;
+  remoteIp?: string;
+  cacheMultiplier?: number;
+}
+
 export interface LoginInputDto {
   passKey: string;
 }
@@ -62,7 +75,7 @@ export interface LoginOkDto {
 }
 
 export interface GenerateTokenInputDto {
-  /** @default ["user","admin","viewer","fetch:wars","fetch:clans","fetch:players","fetch:legends","fetch:links","manage:links","manage:rosters","manage:reminders"] */
+  /** @default ["user","admin","viewer","fetch:wars","fetch:clans","fetch:players","fetch:legends","fetch:links","manage:links","fetch:rosters","manage:rosters","manage:reminders"] */
   roles: UserRoles[];
   userId: string;
 }
@@ -83,19 +96,27 @@ export interface AuthUserDto {
   isBot: boolean;
 }
 
+export interface HandoffGuildDto {
+  id: string;
+  name: string;
+  iconUrl: string | null;
+}
+
 export interface HandoffUserDto {
   roles: UserRoles[];
   userId: string;
   displayName: string;
   username: string;
   isBot: boolean;
-  guildId: string;
+  guild: HandoffGuildDto;
+  applicationId: string | null;
   avatarUrl: string | null;
 }
 
 export interface HandoffTokenInputDto {
   userId: string;
   guildId: string;
+  applicationId: string | null;
 }
 
 export interface HandoffTokenDto {
@@ -156,6 +177,60 @@ export interface LastSeenMemberDto {
 
 export interface LastSeenDto {
   items: LastSeenMemberDto[];
+}
+
+export interface BattleLogDto {
+  name: string;
+  tag: string;
+  opponentTag: string;
+  battleType: string;
+  isAttack: boolean;
+  stars: number;
+  destruction: number;
+  trophies: number;
+  trophyChange: number;
+  battleDate: string;
+  /** @format date-time */
+  ingestedAt: string;
+}
+
+export interface BattleLogItemsDto {
+  items: BattleLogDto[];
+}
+
+export interface BattleLogDailyDto {
+  name: string;
+  tag: string;
+  battleDate: string;
+  trophies: number;
+  offenseTrophies: number;
+  defenseTrophies: number;
+  gain: number;
+  attackCount: number;
+  defenseCount: number;
+}
+
+export interface BattleLogAggregateItemsDto {
+  items: BattleLogDailyDto[];
+}
+
+export interface BattleLogLeaderboardInputDto {
+  /**
+   * @pattern /^\d{4}-\d{2}$/
+   * @example "2026-05"
+   */
+  seasonId: string;
+  playerTags: string[];
+}
+
+export interface BattleLogLeaderboardItemDto {
+  tag: string;
+  name: string;
+  trophies: number;
+}
+
+export interface BattleLogLeaderboardDto {
+  items: BattleLogLeaderboardItemDto[];
 }
 
 export interface GlobalClanEntity {
@@ -454,6 +529,10 @@ export interface GetRostersDto {
   categories: RosterGroupsEntity[];
 }
 
+export interface MessageOkDto {
+  message: string;
+}
+
 export interface RemoveMembersBulkInput {
   /** @minItems 1 */
   playerTags: string[];
@@ -480,10 +559,13 @@ export interface TransferRosterMembersDto {
 
 export interface GuildClanDto {
   _id: string;
-  categoryId?: string | null;
+  categoryId: string;
   name: string;
   tag: string;
   order: number;
+  league: string;
+  level: number;
+  members: number;
 }
 
 export interface CategoryDto {
@@ -496,7 +578,6 @@ export interface CategoryDto {
 export interface GuildClansDto {
   guildId: string;
   name: string;
-  clans: GuildClanDto[];
   categories: CategoryDto[];
 }
 
@@ -599,6 +680,26 @@ export interface GetLastSeenParams {
 export type GetLastSeenData = LastSeenDto;
 
 export type GetLastSeenError = ErrorResponseDto;
+
+export interface GetBattleLogParams {
+  playerTag: string;
+}
+
+export type GetBattleLogData = BattleLogItemsDto;
+
+export type GetBattleLogError = ErrorResponseDto;
+
+export interface GetBattleLogAggregateParams {
+  playerTag: string;
+}
+
+export type GetBattleLogAggregateData = BattleLogAggregateItemsDto;
+
+export type GetBattleLogAggregateError = ErrorResponseDto;
+
+export type GetBattleLogLeaderboardData = BattleLogLeaderboardDto;
+
+export type GetBattleLogLeaderboardError = ErrorResponseDto;
 
 export interface GetClanHistoryParams {
   playerTag: string;
@@ -710,11 +811,10 @@ export type GetRostersData = GetRostersDto;
 export type GetRostersError = ErrorResponseDto;
 
 export interface CreateRosterParams {
-  rosterId: string;
   guildId: string;
 }
 
-export type CreateRosterData = object;
+export type CreateRosterData = MessageOkDto;
 
 export type CreateRosterError = ErrorResponseDto;
 
@@ -732,7 +832,7 @@ export interface UpdateRosterParams {
   guildId: string;
 }
 
-export type UpdateRosterData = object;
+export type UpdateRosterData = MessageOkDto;
 
 export type UpdateRosterError = ErrorResponseDto;
 
@@ -741,7 +841,7 @@ export interface DeleteRosterParams {
   guildId: string;
 }
 
-export type DeleteRosterData = object;
+export type DeleteRosterData = MessageOkDto;
 
 export type DeleteRosterError = ErrorResponseDto;
 
@@ -750,7 +850,7 @@ export interface CloneRosterParams {
   guildId: string;
 }
 
-export type CloneRosterData = object;
+export type CloneRosterData = MessageOkDto;
 
 export type CloneRosterError = ErrorResponseDto;
 
@@ -759,7 +859,7 @@ export interface AddRosterMembersParams {
   guildId: string;
 }
 
-export type AddRosterMembersData = object;
+export type AddRosterMembersData = MessageOkDto;
 
 export type AddRosterMembersError = ErrorResponseDto;
 
@@ -768,7 +868,7 @@ export interface DeleteRosterMembersParams {
   guildId: string;
 }
 
-export type DeleteRosterMembersData = object;
+export type DeleteRosterMembersData = MessageOkDto;
 
 export type DeleteRosterMembersError = ErrorResponseDto;
 
@@ -777,7 +877,7 @@ export interface RefreshRosterMembersParams {
   guildId: string;
 }
 
-export type RefreshRosterMembersData = object;
+export type RefreshRosterMembersData = MessageOkDto;
 
 export type RefreshRosterMembersError = ErrorResponseDto;
 
@@ -794,7 +894,7 @@ export interface GetUserParams {
   userId: string;
 }
 
-export type GetUserData = object;
+export type GetUserData = MessageOkDto;
 
 export type GetUserError = ErrorResponseDto;
 
@@ -997,6 +1097,61 @@ export namespace Clans {
 }
 
 export namespace Players {
+  /**
+   * No description
+   * @tags Players
+   * @name GetBattleLog
+   * @request GET:/players/{playerTag}/battle-log
+   * @secure
+   * @response `200` `GetBattleLogData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetBattleLog {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetBattleLogData;
+  }
+
+  /**
+   * No description
+   * @tags Players
+   * @name GetBattleLogAggregate
+   * @request GET:/players/{playerTag}/battle-log/aggregate
+   * @secure
+   * @response `200` `GetBattleLogAggregateData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetBattleLogAggregate {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetBattleLogAggregateData;
+  }
+
+  /**
+   * No description
+   * @tags Players
+   * @name GetBattleLogLeaderboard
+   * @request POST:/players/battle-log/leaderboard
+   * @secure
+   * @response `201` `GetBattleLogLeaderboardData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetBattleLogLeaderboard {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = BattleLogLeaderboardInputDto;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetBattleLogLeaderboardData;
+  }
+
   /**
    * No description
    * @tags Players
@@ -1274,7 +1429,6 @@ export namespace Rosters {
    */
   export namespace CreateRoster {
     export type RequestParams = {
-      rosterId: string;
       guildId: string;
     };
     export type RequestQuery = {};
@@ -1727,11 +1881,7 @@ export class HttpClient<SecurityDataType = unknown> {
  *
  * ### API Routes for ClashPerk Discord Bot and Services
  *
- * API endpoints are protected by **Cloudflare** with a global rate limit of **300 requests per 10 seconds**.<br/>Response **caching is enabled**, with duration varying across different endpoints for optimal performance.<br/>API **access is limited** and reviewed individually. If you'd like to request access, reach out to us on Discord.
- *
- * By using this API, you agree to fair usage. Access may be revoked for abuse, misuse, or security violations.
- *
- * [Join our Discord](https://discord.gg/ppuppun) | [Terms of Service](https://clashperk.com/terms) | [Privacy Policy](https://clashperk.com/privacy)
+ * [Terms of Service](https://clashperk.com/terms) | [Privacy Policy](https://clashperk.com/privacy)
  */
 export class Api<SecurityDataType extends unknown> {
   http: HttpClient<SecurityDataType>;
@@ -1944,6 +2094,77 @@ export class Api<SecurityDataType extends unknown> {
       }),
   };
   players = {
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name GetBattleLog
+     * @request GET:/players/{playerTag}/battle-log
+     * @secure
+     * @response `200` `GetBattleLogData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getBattleLog: (
+      { playerTag, ...query }: GetBattleLogParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetBattleLogData, GetBattleLogError>({
+        path: `/players/${playerTag}/battle-log`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name GetBattleLogAggregate
+     * @request GET:/players/{playerTag}/battle-log/aggregate
+     * @secure
+     * @response `200` `GetBattleLogAggregateData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getBattleLogAggregate: (
+      { playerTag, ...query }: GetBattleLogAggregateParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetBattleLogAggregateData, GetBattleLogAggregateError>({
+        path: `/players/${playerTag}/battle-log/aggregate`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name GetBattleLogLeaderboard
+     * @request POST:/players/battle-log/leaderboard
+     * @secure
+     * @response `201` `GetBattleLogLeaderboardData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getBattleLogLeaderboard: (
+      data: BattleLogLeaderboardInputDto,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<
+        GetBattleLogLeaderboardData,
+        GetBattleLogLeaderboardError
+      >({
+        path: `/players/battle-log/leaderboard`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
     /**
      * No description
      *
@@ -2266,7 +2487,7 @@ export class Api<SecurityDataType extends unknown> {
      * @response `500` `ErrorResponseDto`
      */
     createRoster: (
-      { rosterId, guildId, ...query }: CreateRosterParams,
+      { guildId, ...query }: CreateRosterParams,
       params: RequestParams = {},
     ) =>
       this.http.request<CreateRosterData, CreateRosterError>({

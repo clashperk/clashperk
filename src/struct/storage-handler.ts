@@ -380,9 +380,11 @@ export class StorageHandler {
         ? member.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
         : this.client.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
     });
+
     this.client.logger.log(`Created webhook for ${channel.guild.name}#${channel.name}`, {
       label: 'HOOK'
     });
+
     return webhook;
   }
 

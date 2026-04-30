@@ -10,7 +10,8 @@ const httpClient = new HttpClient({
   securityWorker: () => {
     return {
       headers: {
-        'x-api-key': process.env.INTERNAL_API_KEY
+        'x-api-key': process.env.INTERNAL_API_KEY,
+        'x-rate-limit-bypass-key': process.env.INTERNAL_API_KEY
       }
     };
   }
