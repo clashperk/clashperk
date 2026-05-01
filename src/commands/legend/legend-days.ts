@@ -22,6 +22,7 @@ import {
 } from 'discord.js';
 import moment from 'moment';
 import pluralize from 'pluralize';
+import { api, encode } from '../../api/axios.js';
 import { BattleLogDto } from '../../api/generated.js';
 import {
   aggregateLegendBattleLog,
@@ -175,14 +176,58 @@ export default class LegendDaysCommand extends Command {
     return null;
   }
 
+  private async addClanAndEquipmentFields({
+    embed,
+    player,
+    showEquipment
+  }: {
+    embed: EmbedBuilder;
+    player: APIPlayer;
+    showEquipment: boolean;
+  }) {
+    const clan = player.clan ? await this.getClan(player.clan.tag) : null;
+    const member = (clan?.memberList ?? []).find((en) => en.tag === player.tag);
+
+    if (clan && member) {
+      embed.addFields({
+        name: '**Clan**',
+        value: [
+          `- [${clan.name} (${clan.tag})](http://cprk.us/c/${trimTag(clan.tag)})`,
+          `- Rank in Clan: ${member.clanRank}`
+        ].join('\n')
+      });
+    }
+
+    if (showEquipment) {
+      const heroes = player.heroes.filter(
+        (hero) => hero.equipment?.length && hero.village === 'home'
+      );
+      const equipmentGroup = heroes
+        .map((hero) => {
+          const troops = [hero, ...hero.equipment!].filter((unit) => HOME_TROOPS[unit.name]);
+          return troops.map((unit, idx) => {
+            const unitIcon = HOME_TROOPS[unit.name];
+            const level = padStart(unit.level, idx === 0 ? 3 : 2);
+            return `${unitIcon} \`\u200e${level}\u200f\`${idx === 0 ? ' -' : ''}`;
+          });
+        })
+        .filter((group) => group.length);
+
+      if (equipmentGroup.length) {
+        embed.addFields({
+          name: 'Equipment Used',
+          value: equipmentGroup.map((group) => group.join(' ')).join('\n')
+        });
+      }
+    }
+  }
+
   private async embed(
     interaction: CommandInteraction | ButtonInteraction,
     data: APIPlayer,
     allBattles: BattleLogDto[],
     _day?: number
   ) {
-    const clan = data.clan ? await this.getClan(data.clan.tag) : null;
-
     const { startTime, day } = getLegendTimestampAgainstDay(_day);
     const battleDate = new Date(startTime).toISOString().slice(0, 10);
     const dayBattles = allBattles.filter((b) => {
@@ -208,8 +253,6 @@ export default class LegendDaysCommand extends Command {
       ? firstBattle.trophies - firstBattle.trophyChange
       : data.trophies;
     const currentTrophies = lastBattle ? lastBattle.trophies : data.trophies;
-
-    const member = (clan?.memberList ?? []).find((en) => en.tag === data.tag);
 
     const { globalRank, countryRank } = await this.rankings(data.tag);
 
@@ -256,38 +299,11 @@ export default class LegendDaysCommand extends Command {
       });
     }
 
-    if (clan && member) {
-      embed.addFields([
-        {
-          name: '**Clan**',
-          value: [
-            `- ${clan ? `[${clan.name} (${clan.tag})](http://cprk.us/c/${trimTag(clan.tag)})` : 'N/A'}`,
-            `- Rank in Clan: ${member.clanRank}`
-          ].join('\n')
-        }
-      ]);
-    }
-
-    const heroes = data.heroes.filter((hero) => {
-      return hero.equipment?.length && hero.village === 'home';
+    await this.addClanAndEquipmentFields({
+      embed,
+      player: data,
+      showEquipment: attacks.length > 0 && Util.getLegendDay() === day
     });
-    const equipmentGroup = heroes
-      .map((hero) => {
-        const troops = [hero, ...hero.equipment!].filter((unit) => HOME_TROOPS[unit.name]);
-        return troops.map((unit, idx) => {
-          const unitIcon = HOME_TROOPS[unit.name];
-          const level = padStart(unit.level, idx === 0 ? 3 : 2);
-          return `${unitIcon} \`\u200e${level}\u200f\`${idx === 0 ? ' -' : ''}`;
-        });
-      })
-      .filter((group) => group.length);
-
-    if (equipmentGroup.length && attacks.length && Util.getLegendDay() === day) {
-      embed.addFields({
-        name: 'Equipment Used',
-        value: equipmentGroup.map((group) => group.join(' ')).join('\n')
-      });
-    }
 
     embed.addFields([
       {
@@ -496,8 +512,20 @@ export default class LegendDaysCommand extends Command {
       ])
       .toArray();
 
+    let globalRank =
+      ranks.find(({ countryCode }) => countryCode === 'global')?.players.rank ?? null;
+
+    if (!globalRank) {
+      try {
+        const estimate = await api.legends.estimateRank({ playerTag: encode(tag) });
+        globalRank = estimate.data.rank;
+      } catch {
+        // Silently ignore estimate errors
+      }
+    }
+
     return {
-      globalRank: ranks.find(({ countryCode }) => countryCode === 'global')?.players.rank ?? null,
+      globalRank,
       countryRank: ranks.find(({ countryCode }) => countryCode !== 'global') ?? null
     };
   }
@@ -506,10 +534,9 @@ export default class LegendDaysCommand extends Command {
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     player: APIPlayer
   ) {
-    const [battles, lastTournament, { globalRank, countryRank }] = await Promise.all([
+    const [battles, lastTournament] = await Promise.all([
       getRankedBattleLog(player.tag, Season.tournamentID),
-      this.getLastTournament(player.tag),
-      this.rankings(player.tag)
+      this.getLastTournament(player.tag)
     ]);
 
     const leagueId = player.leagueTier?.id ?? UNRANKED_TIER_ID;
@@ -570,19 +597,7 @@ export default class LegendDaysCommand extends Command {
       });
     }
 
-    embed.addFields([
-      {
-        name: '**Ranking**',
-        value: [
-          `- Global Rank: ${globalRank ?? 'N/A'}`,
-          `- Local Rank: ${
-            countryRank
-              ? `${countryRank.players.rank} (${countryRank.country} :flag_${countryRank.countryCode.toLowerCase()}:)`
-              : 'N/A'
-          }`
-        ].join('\n')
-      }
-    ]);
+    await this.addClanAndEquipmentFields({ embed, player, showEquipment: attacks.length > 0 });
 
     embed.addFields([
       {

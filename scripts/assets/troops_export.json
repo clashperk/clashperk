@@ -81,7 +81,8 @@
     "Fire Heart",
     "Stun Blaster",
     "Rocket Backpack",
-    "Flame Blower"
+    "Flame Blower",
+    "Electro Fangs"
   ],
   "DARK_ELIXIR_TROOPS": [
     "Minion",
@@ -105,7 +106,8 @@
     "Log Launcher",
     "Flame Flinger",
     "Battle Drill",
-    "Troop Launcher"
+    "Troop Launcher",
+    "Sky Wagon"
   ],
   "ELIXIR_SPELLS": [
     "Lightning Spell",
@@ -220,6 +222,7 @@
     "Flame Flinger",
     "Battle Drill",
     "Troop Launcher",
+    "Sky Wagon",
     "Lightning Spell",
     "Healing Spell",
     "Rage Spell",
@@ -287,7 +290,8 @@
     "Fire Heart",
     "Stun Blaster",
     "Rocket Backpack",
-    "Flame Blower"
+    "Flame Blower",
+    "Electro Fangs"
   ],
   "BUILDER_TROOPS": [
     "Raged Barbarian",

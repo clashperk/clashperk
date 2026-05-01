@@ -369,6 +369,13 @@ export interface LegendAttacksItemsDto {
   items: LegendAttacksDto[];
 }
 
+export interface LegendRankDto {
+  tag: string;
+  name: string;
+  rank: number;
+  trophies: number;
+}
+
 export interface ClanWarLeagueRound {
   warTags: string[];
 }
@@ -751,6 +758,14 @@ export interface GetLegendAttacksByPlayerTagParams {
 export type GetLegendAttacksByPlayerTagData = LegendAttacksDto;
 
 export type GetLegendAttacksByPlayerTagError = ErrorResponseDto;
+
+export interface EstimateRankParams {
+  playerTag: string;
+}
+
+export type EstimateRankData = LegendRankDto;
+
+export type EstimateRankError = ErrorResponseDto;
 
 export interface GetClanWarLeagueGroupsParams {
   clanTag: string;
@@ -1293,6 +1308,25 @@ export namespace Legends {
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = GetLegendAttacksByPlayerTagData;
+  }
+
+  /**
+   * No description
+   * @tags Legends
+   * @name EstimateRank
+   * @request GET:/legends/{playerTag}/estimate-rank
+   * @secure
+   * @response `200` `EstimateRankData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace EstimateRank {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = EstimateRankData;
   }
 }
 
@@ -2308,6 +2342,28 @@ export class Api<SecurityDataType extends unknown> {
         GetLegendAttacksByPlayerTagError
       >({
         path: `/legends/${playerTag}/attacks`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Legends
+     * @name EstimateRank
+     * @request GET:/legends/{playerTag}/estimate-rank
+     * @secure
+     * @response `200` `EstimateRankData`
+     * @response `500` `ErrorResponseDto`
+     */
+    estimateRank: (
+      { playerTag, ...query }: EstimateRankParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<EstimateRankData, EstimateRankError>({
+        path: `/legends/${playerTag}/estimate-rank`,
         method: "GET",
         secure: true,
         format: "json",
