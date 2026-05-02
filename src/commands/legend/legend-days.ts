@@ -234,8 +234,8 @@ export default class LegendDaysCommand extends Command {
       return b.battleDate === battleDate;
     });
 
-    const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
-    const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+    const attacks = dayBattles.filter((b) => b.isAttack);
+    const defenses = dayBattles.filter((b) => !b.isAttack);
 
     const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
     const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
@@ -413,8 +413,8 @@ export default class LegendDaysCommand extends Command {
       const battleDate = new Date(startTime).toISOString().slice(0, 10);
       const dayBattles = allBattles.filter((b) => b.battleDate === battleDate);
 
-      const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
-      const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+      const attacks = dayBattles.filter((b) => b.isAttack);
+      const defenses = dayBattles.filter((b) => !b.isAttack);
 
       const gain = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
       const loss = defenses.reduce((acc, b) => acc + b.trophyChange, 0);

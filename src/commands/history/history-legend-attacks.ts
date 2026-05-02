@@ -71,8 +71,8 @@ export default class LegendAttacksHistoryCommand extends Command {
         const battleDate = new Date(startTime).toISOString().slice(0, 10);
         const dayBattles = allBattles.filter((b) => b.battleDate === battleDate);
 
-        const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
-        const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+        const attacks = dayBattles.filter((b) => b.isAttack);
+        const defenses = dayBattles.filter((b) => !b.isAttack);
 
         const gain = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
         const loss = defenses.reduce((acc, b) => acc + b.trophyChange, 0);

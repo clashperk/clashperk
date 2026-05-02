@@ -85,8 +85,8 @@ export class LegendLog extends RootLog {
       const dayBattles = battles.filter((b) => b.battleDate === battleDate);
       if (!dayBattles.length) continue;
 
-      const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
-      const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+      const attacks = dayBattles.filter((b) => b.isAttack);
+      const defenses = dayBattles.filter((b) => !b.isAttack);
 
       const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
       const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
