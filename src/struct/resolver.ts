@@ -7,6 +7,7 @@ import {
   PATREON_LINK,
   Settings,
   TAG_REGEX,
+  UNRANKED_TIER_ID,
   getHttpStatusText
 } from '@app/constants';
 import { ClanStoresEntity, PlayerLinksEntity } from '@app/entities';
@@ -147,8 +148,7 @@ export class Resolver {
 
   private async updateLastSearchedPlayer(user: User, player: APIPlayer) {
     await this.indexer.reSyncClanHistory(player);
-
-    if (player.trophies >= 4900) await this.indexer.reSyncLegends(player);
+    if (player.leagueTier?.id !== UNRANKED_TIER_ID) await this.indexer.reSyncLegends(player);
 
     await this.client.db.collection(Collections.USERS).updateOne(
       { userId: user.id },

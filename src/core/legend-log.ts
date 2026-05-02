@@ -71,7 +71,7 @@ export class LegendLog extends RootLog {
     const battleDate = new Date(startTime).toISOString().slice(0, 10);
 
     const legendMembers = clan.memberList.filter(
-      (mem) => (mem.leagueTier && mem.leagueTier.id >= LEGEND_LEAGUE_ID) || mem.trophies >= 5000
+      (mem) => mem.leagueTier && mem.leagueTier.id === LEGEND_LEAGUE_ID
     );
     const battleLogResults = await Promise.all(
       legendMembers.map((m) => getLegendBattleLog(m.tag).catch(() => [] as BattleLogDto[]))

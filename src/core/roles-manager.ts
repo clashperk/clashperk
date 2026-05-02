@@ -343,7 +343,7 @@ export class RolesManager {
       // EOS Push Role
       if (
         player.clanTag &&
-        (player.leagueId >= LEGEND_LEAGUE_ID || player.trophies >= 5000) &&
+        player.leagueId === LEGEND_LEAGUE_ID &&
         rolesMap.eosPushClans.includes(player.clanTag)
       ) {
         rolesToInclude.push(...rolesMap.eosPushClanRoles);

@@ -25,7 +25,9 @@ export const URL_REGEX =
 
 export const UNRANKED_CAPITAL_LEAGUE_ID = 85000000;
 
-export const LEGEND_LEAGUE_ID = 105000034;
+export const LEGEND_LEAGUE_ID = 105000036;
+
+export const MIN_LEAGUE_ID = 105000030;
 
 export const UNRANKED_TIER_ID = 105000000;
 

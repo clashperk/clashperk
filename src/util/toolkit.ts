@@ -319,4 +319,11 @@ export class Season {
       (date.getDay() === 1 && date.getHours() > 5) || (date.getDay() === 2 && date.getHours() < 5)
     );
   }
+
+  public static toBattleDate(timestamp: Date) {
+    const shifted = new Date(timestamp.getTime() - 5 * 60 * 60 * 1000);
+    return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()))
+      .toISOString()
+      .slice(0, 10);
+  }
 }

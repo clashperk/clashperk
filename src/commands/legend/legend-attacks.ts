@@ -45,7 +45,8 @@ export default class LegendAttacksCommand extends Command {
       .flatMap((clan) => clan.memberList)
       .filter(
         (member) =>
-          member.trophies >= 5000 || (member.leagueTier && member.leagueTier.id >= LEGEND_LEAGUE_ID)
+          member.trophies >= 5000 ||
+          (member.leagueTier && member.leagueTier.id === LEGEND_LEAGUE_ID)
       );
     const playerTags = legendMembers.map((member) => member.tag);
 

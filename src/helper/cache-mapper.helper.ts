@@ -29,6 +29,9 @@ interface PartialPlayer {
   leagueId: number;
   builderBaseLeagueId: number;
 
+  leagueGroupTag: string;
+  leagueSeasonId: number;
+
   achievements: { [id: string]: number };
   units: { [id: string]: number };
   heroes: {
@@ -67,6 +70,10 @@ export function mapToPlayerInterface(player: PartialPlayer): APIPlayer {
     donationsReceived: player.donationsReceived,
     clanCapitalContributions: player.clanCapitalContributions || 0,
     bestBuilderBaseTrophies: player.bestBuilderBaseTrophies || 0,
+    currentLeagueGroupTag: player.leagueGroupTag,
+    currentLeagueSeasonId: player.leagueSeasonId,
+    previousLeagueGroupTag: '',
+    previousLeagueSeasonId: 0,
     builderBaseLeague: {
       id: player.builderBaseLeagueId || 44000000,
       name: BUILDER_BASE_LEAGUES_MAP[player.builderBaseLeagueId] || 'Wood League V'
