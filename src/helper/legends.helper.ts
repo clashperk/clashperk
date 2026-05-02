@@ -4,6 +4,7 @@ import { container } from 'tsyringe';
 import { api, encode } from '../api/axios.js';
 import { BattleLogDailyDto, BattleLogDto } from '../api/generated.js';
 import { Client } from '../struct/client.js';
+import { LeaguePromotionsMap } from '../util/constants.js';
 import { Season, Util } from '../util/toolkit.js';
 
 export const getLegendTimestampAgainstDay = (day?: number) => {
@@ -84,7 +85,25 @@ export const getTournament = async (player: APIPlayer, lastTournament = false) =
 
   const rank = rankIndex + 1;
   const topPercentage = Math.ceil((rank / total) * 100);
-  return { rank, total, topPercentage, battles: [...attacks, ...defenses] };
+
+  const leagueId = String(player.leagueTier?.id ?? 0);
+  const promotions = LeaguePromotionsMap[leagueId as keyof typeof LeaguePromotionsMap];
+  const demotionZone = promotions ? Math.ceil(total * (promotions.demotion / 100)) : 0;
+  const isInDemotionZone = demotionZone > 0 && rank > total - demotionZone;
+
+  const promotionZone = promotions ? Math.ceil(total * (promotions.promotion / 100)) : 0;
+  const isInPromotionZone = promotionZone > 0 && rank <= promotionZone;
+
+  return {
+    rank,
+    total,
+    topPercentage,
+    demotionZone,
+    isInDemotionZone,
+    promotionZone,
+    isInPromotionZone,
+    battles: [...attacks, ...defenses]
+  };
 };
 
 export const getLegendBattleLogAggregate = async (

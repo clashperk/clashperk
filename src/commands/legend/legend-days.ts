@@ -567,13 +567,21 @@ export default class LegendDaysCommand extends Command {
 
     if (!Season.isTournamentReset) {
       const { startTime, endTime } = Util.getTournamentWindow();
+
+      const zoneLine = tournament.isInPromotionZone
+        ? `- **Promotion Zone** (top ${tournament.promotionZone} players) ${EMOJIS.UP_KEY}`
+        : tournament.isInDemotionZone
+          ? `- **Demotion Zone** (last ${tournament.demotionZone} players) ${EMOJIS.DOWN_KEY}`
+          : `- **Safe Zone** (rank ${tournament.promotionZone + 1}-${tournament.total - tournament.demotionZone})`;
+
       embed.addFields({
         name: `Overview (${moment(startTime).format('D MMM')} - ${moment(endTime).format('D MMM')})`,
         value: [
           `- ${player.trophies} trophies gained`,
           `- ${attacks.length}/${BattlesPerWeek[leagueId]} attacks`,
           `- ${defenses.length}/${BattlesPerWeek[leagueId]} defenses`,
-          `- Rank **#${tournament.rank}** / ${tournament.total} (Top **${tournament.topPercentage}%**)`
+          `- Rank **#${tournament.rank}** / ${tournament.total} (Top **${tournament.topPercentage}%**)`,
+          zoneLine
         ]
           .filter(Boolean)
           .join('\n')
