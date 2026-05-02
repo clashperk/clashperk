@@ -1,5 +1,10 @@
 import { Collections } from '@app/constants';
-import { TicketEntity, TicketPanelEntity, TicketTypeConfig } from '@app/entities';
+import {
+  TicketEntity,
+  TicketGuildSettingsEntity,
+  TicketPanelEntity,
+  TicketTypeConfig
+} from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -10,7 +15,6 @@ import {
   ComponentType,
   ContainerBuilder,
   GuildMember,
-  InteractionEditReplyOptions,
   LabelBuilder,
   MessageComponentInteraction,
   MessageFlags,
@@ -28,12 +32,14 @@ import {
 import { ObjectId, WithId } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { Args, Command } from '../../lib/handlers.js';
+import { EMOJIS } from '../../util/emojis.js';
+import { createInteractionCollector } from '../../util/pagination.js';
 
 const DEFAULT_NAMING = 'ticket-{count}';
 
-const SHOW_SEND_RESPONSE_BUTTON = false;
-const SHOW_SET_CLAN_BUTTON = false;
-const SHOW_NOTIFY_BUTTON = false;
+const SHOW_REPLY_BUTTON = true;
+const SHOW_SET_CLAN_BUTTON = true;
+const SHOW_NOTIFY_BUTTON = true;
 
 function resolveChannelName(
   convention: string,
@@ -117,14 +123,10 @@ export default class TicketOpenCommand extends Command {
         return this.confirmDeleteTicket(interaction, args);
       case 'del-ticket':
         return this.deleteTicketChannel(interaction, args);
-      case 'respond':
-        return this.sendResponse(interaction, args);
+      case 'reply':
+        return this.sendReply(interaction, args);
       case 'set-clan':
         return this.setClan(interaction, args);
-      case 'set-clan-select':
-        return this.setClanSelect(interaction, args);
-      case 'view-acc':
-        return this.viewAccount(interaction, args);
       case 'notify':
         return this.toggleNotify(interaction, args);
     }
@@ -231,7 +233,7 @@ export default class TicketOpenCommand extends Command {
     void this.logButtonClick(panel, btn, interaction);
 
     if (btn.requireLinkedAccount) {
-      await interaction.deferReply();
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       return this.showAccountSelect(interaction, panel, btn);
     }
 
@@ -384,7 +386,7 @@ export default class TicketOpenCommand extends Command {
       answer: submit.fields.getTextInputValue(questionIds[i])
     }));
 
-    await submit.deferReply({ flags: MessageFlags.Ephemeral });
+    await submit.deferUpdate();
     return this.createTicketChannel(
       submit as unknown as MessageComponentInteraction<'cached'>,
       panel,
@@ -545,13 +547,7 @@ export default class TicketOpenCommand extends Command {
       .catch(() => null);
   }
 
-  private async postTicketEmbed(
-    channel: TextChannel,
-    ticket: TicketEntity,
-    panel: WithId<TicketPanelEntity>,
-    btn: TicketTypeConfig,
-    _member: GuildMember
-  ) {
+  private buildTicketContainer(ticket: TicketEntity, btn: TicketTypeConfig, channelId: string) {
     const ticketNum = String(ticket.count).padStart(4, '0');
     const headerText = [
       `## Ticket #${ticketNum}`,
@@ -580,6 +576,15 @@ export default class TicketOpenCommand extends Command {
       container.addTextDisplayComponents(new TextDisplayBuilder().setContent(accountText));
     }
 
+    if (ticket.clanName) {
+      container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `**Clan:** **${ticket.clanName}**${ticket.clanTag ? ` — \`${ticket.clanTag}\`` : ''}`
+        )
+      );
+    }
+
     if (ticket.answers?.length) {
       container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
       const answersText = ticket.answers
@@ -592,95 +597,107 @@ export default class TicketOpenCommand extends Command {
     const deleteId = this.createId({
       cmd: 'ticket-open',
       action: 'del-confirm',
-      cid: channel.id,
+      cid: channelId,
       ephemeral: true
     });
-    const respondId = this.createId({
+    const replyId = this.createId({
       cmd: 'ticket-open',
-      action: 'respond',
-      cid: channel.id,
+      action: 'reply',
+      cid: channelId,
       ephemeral: true
     });
     const setClanId = this.createId({
       cmd: 'ticket-open',
       action: 'set-clan',
-      cid: channel.id,
+      cid: channelId,
       ephemeral: true
     });
     const viewAccId = ticket.accountTag
-      ? this.createId({
-          cmd: 'ticket-open',
-          action: 'view-acc',
-          cid: channel.id,
-          ephemeral: true
-        })
+      ? this.createId({ cmd: 'player', tag: ticket.accountTag, ephemeral: true })
       : null;
     const notifyId = this.createId({
       cmd: 'ticket-open',
       action: 'notify',
-      cid: channel.id,
+      cid: channelId,
       ephemeral: true
     });
 
-    container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
-    container.addActionRowComponents((row) => {
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(deleteId)
-          .setLabel('Delete Ticket')
-          .setEmoji('🗑️')
-          .setStyle(ButtonStyle.Danger),
-        ...(SHOW_SEND_RESPONSE_BUTTON
-          ? [
-              new ButtonBuilder()
-                .setCustomId(respondId)
-                .setLabel('Send Response')
-                .setEmoji('💬')
-                .setStyle(ButtonStyle.Primary)
-            ]
-          : []),
-        ...(SHOW_SET_CLAN_BUTTON
-          ? [
-              new ButtonBuilder()
-                .setCustomId(setClanId)
-                .setLabel('Set Clan')
-                .setEmoji('🏰')
-                .setStyle(ButtonStyle.Secondary)
-            ]
-          : []),
-        ...(SHOW_NOTIFY_BUTTON
-          ? [
-              new ButtonBuilder()
-                .setCustomId(notifyId)
-                .setLabel('Notify Me')
-                .setEmoji('🔔')
-                .setStyle(ButtonStyle.Secondary)
-            ]
-          : [])
-      );
-      if (viewAccId) {
-        row.addComponents(
-          new ButtonBuilder()
-            .setCustomId(viewAccId)
-            .setLabel('View Account')
-            .setEmoji('⚔️')
-            .setStyle(ButtonStyle.Secondary)
-        );
-      }
-      return row;
-    });
+    // Row 1: Reply | Set Clan | Notify Me
+    const topButtons = [
+      ...(SHOW_REPLY_BUTTON
+        ? [
+            new ButtonBuilder()
+              .setCustomId(replyId)
+              .setLabel('Reply')
+              .setEmoji('💬')
+              .setStyle(ButtonStyle.Primary)
+          ]
+        : []),
+      ...(SHOW_SET_CLAN_BUTTON
+        ? [
+            new ButtonBuilder()
+              .setCustomId(setClanId)
+              .setLabel('Set Clan')
+              .setEmoji(EMOJIS.CLAN)
+              .setStyle(ButtonStyle.Secondary)
+          ]
+        : []),
+      ...(SHOW_NOTIFY_BUTTON
+        ? [
+            new ButtonBuilder()
+              .setCustomId(notifyId)
+              .setLabel('Notify Me')
+              .setEmoji('🔔')
+              .setStyle(ButtonStyle.Secondary)
+          ]
+        : [])
+    ];
 
-    // Ping staff roles + mention user — must be inside the CV2 container, not as `content`
+    if (topButtons.length > 0) {
+      container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
+      container.addActionRowComponents((row) => row.addComponents(...topButtons));
+    }
+
+    // Row 2: Delete Ticket | View Account
+    const bottomButtons: ButtonBuilder[] = [
+      new ButtonBuilder()
+        .setCustomId(deleteId)
+        .setLabel('Delete Ticket')
+        .setEmoji('🗑️')
+        .setStyle(ButtonStyle.Danger)
+    ];
+    if (viewAccId) {
+      bottomButtons.push(
+        new ButtonBuilder()
+          .setCustomId(viewAccId)
+          .setLabel('View Account')
+          .setEmoji('⚔️')
+          .setStyle(ButtonStyle.Secondary)
+      );
+    }
+    container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
+    container.addActionRowComponents((row) => row.addComponents(...bottomButtons));
+
+    // Ping staff roles + mention user
     const pings = btn.pingRoleIds.map((id) => `<@&${id}>`).join(' ');
     const mentionLine = [pings, `<@${ticket.creatorId}>`].filter(Boolean).join(' ');
     if (mentionLine) {
+      container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
       container.addTextDisplayComponents(new TextDisplayBuilder().setContent(mentionLine));
     }
 
-    await channel.send({
-      components: [container],
-      flags: MessageFlags.IsComponentsV2
-    });
+    return container;
+  }
+
+  private async postTicketEmbed(
+    channel: TextChannel,
+    ticket: TicketEntity,
+    _panel: WithId<TicketPanelEntity>,
+    btn: TicketTypeConfig,
+    _member: GuildMember
+  ) {
+    const container = this.buildTicketContainer(ticket, btn, channel.id);
+    return channel.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
   }
 
   // =================== IN-TICKET BUTTON HANDLERS ===================
@@ -691,7 +708,7 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
+    if (!ticket) return interaction.editReply(this.reply('Ticket not found.'));
 
     const confirmId = this.createId({
       cmd: 'ticket-open',
@@ -752,17 +769,17 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
+    if (!ticket) return interaction.editReply(this.reply('Ticket not found.'));
 
     const channel = interaction.guild!.channels.cache.get(channelId) as TextChannel | undefined;
-    if (!channel) return interaction.editReply(this.cv2Reply('Channel not found.'));
+    if (!channel) return interaction.editReply(this.reply('Channel not found.'));
 
     // Get panel for logging
     const panel = await this.client.db
       .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
       .findOne({ _id: new ObjectId(ticket.panelId) });
 
-    await interaction.editReply(this.cv2Reply('Closing ticket… generating transcript.'));
+    await interaction.editReply(this.reply('Closing ticket… generating transcript.'));
 
     // Generate transcript
     const transcript = await this.generateTranscript(channel);
@@ -817,24 +834,23 @@ export default class TicketOpenCommand extends Command {
     setTimeout(() => channel.delete('Ticket closed').catch(() => null), 3000);
   }
 
-  private async sendResponse(
+  private async sendReply(
     interaction: MessageComponentInteraction<'cached'>,
     args: Record<string, unknown>
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
+    if (!ticket) return interaction.editReply(this.reply('Ticket not found.'));
 
-    const panel = await this.client.db
-      .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-      .findOne({ _id: new ObjectId(ticket.panelId) });
+    const settings = await this.client.db
+      .collection<TicketGuildSettingsEntity>(Collections.TICKET_SETTINGS)
+      .findOne({ guildId: interaction.guildId });
 
-    const btn = panel?.ticketTypes.find((b) => b.id === ticket.buttonId);
-    const templates = btn?.messageTemplates ?? [];
+    const templates = settings?.savedReplies ?? [];
 
     if (templates.length === 0) {
       return interaction.editReply(
-        this.cv2Reply('No message templates configured. Add some via `/ticket setup`.')
+        this.reply('No saved replies configured. Add some via `/ticket-setup`.')
       );
     }
 
@@ -868,7 +884,7 @@ export default class TicketOpenCommand extends Command {
     this.client.components.delete(selectId);
 
     if (!selection) {
-      return interaction.editReply(this.cv2Reply('Timed out.'));
+      return interaction.editReply(this.reply('Timed out.'));
     }
 
     const templateName = selection.values[0];
@@ -955,7 +971,7 @@ export default class TicketOpenCommand extends Command {
     }
 
     await interaction
-      .editReply(this.cv2Reply(`Response sent using template **${templateName}**.`))
+      .editReply(this.reply(`Reply sent using template **${templateName}**.`))
       .catch(() => null);
   }
 
@@ -965,7 +981,7 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
+    if (!ticket) return interaction.editReply(this.reply('Ticket not found.'));
 
     const clans = await this.client.db
       .collection(Collections.CLAN_STORES)
@@ -973,17 +989,14 @@ export default class TicketOpenCommand extends Command {
       .toArray();
 
     if (clans.length === 0) {
-      return interaction.editReply(this.cv2Reply('No clans are set up in this server.'));
+      return interaction.editReply(this.reply('No clans are set up in this server.'));
     }
 
-    const setClanSelectId = this.createId({
-      cmd: 'ticket-open',
-      action: 'set-clan-select',
-      cid: channelId,
-      ephemeral: true
-    });
+    const customIds = {
+      selectAccount: this.client.uuid(interaction.user.id)
+    };
 
-    await interaction.editReply({
+    const message = await interaction.editReply({
       components: [
         new ContainerBuilder()
           .addTextDisplayComponents((t) =>
@@ -992,7 +1005,7 @@ export default class TicketOpenCommand extends Command {
           .addActionRowComponents((row) =>
             row.addComponents(
               new StringSelectMenuBuilder()
-                .setCustomId(setClanSelectId)
+                .setCustomId(customIds.selectAccount)
                 .setPlaceholder('Select a clan…')
                 .setOptions(
                   clans.slice(0, 25).map((c) => ({
@@ -1006,56 +1019,40 @@ export default class TicketOpenCommand extends Command {
       ],
       flags: MessageFlags.IsComponentsV2
     });
-  }
 
-  private async setClanSelect(
-    interaction: MessageComponentInteraction<'cached'>,
-    args: Record<string, unknown>
-  ) {
-    const channelId = args.cid as string;
-    const clanTag = (args.selected as string[] | undefined)?.[0] ?? (args.string_key as string);
+    createInteractionCollector({
+      customIds,
+      interaction,
+      message,
+      onSelect: async (action) => {
+        const clanTag = action.values[0];
 
-    const clan = await this.client.db
-      .collection(Collections.CLAN_STORES)
-      .findOne({ tag: clanTag, guild: interaction.guildId });
+        const clan = await this.client.db
+          .collection(Collections.CLAN_STORES)
+          .findOne({ tag: clanTag, guild: interaction.guildId });
 
-    await this.client.db
-      .collection<TicketEntity>(Collections.TICKETS)
-      .updateOne(
-        { channelId },
-        { $set: { clanTag, clanName: clan?.name ?? clanTag, updatedAt: new Date() } }
-      );
+        await this.client.db
+          .collection<TicketEntity>(Collections.TICKETS)
+          .updateOne(
+            { channelId },
+            { $set: { clanTag, clanName: clan?.name ?? clanTag, updatedAt: new Date() } }
+          );
 
-    await interaction.editReply(this.cv2Reply(`Clan set to **${clan?.name ?? clanTag}**`));
-  }
+        await action.update(this.reply(`Clan set to **${clan?.name ?? clanTag}**`));
 
-  private async viewAccount(
-    interaction: MessageComponentInteraction<'cached'>,
-    args: Record<string, unknown>
-  ) {
-    const channelId = args.cid as string;
-    const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
-    if (!ticket.accountTag)
-      return interaction.editReply(this.cv2Reply('No account linked to this ticket.'));
-
-    const playerResult = await this.client.coc.getPlayer(ticket.accountTag).catch(() => null);
-    if (!playerResult) return interaction.editReply(this.cv2Reply('Could not fetch player data.'));
-    const player = playerResult.body as APIPlayer;
-
-    const accContainer = new ContainerBuilder();
-    accContainer.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        [
-          `## ${player.name} (TH${player.townHallLevel})`,
-          `**Tag:** \`${player.tag}\` | **Trophies:** ${player.trophies} | **War Stars:** ${player.warStars ?? 0}`,
-          `**Clan:** ${player.clan ? `${player.clan.name} (${player.clan.tag})` : '*(no clan)*'}`
-        ].join('\n')
-      )
-    );
-    await interaction.editReply({
-      components: [accContainer],
-      flags: MessageFlags.IsComponentsV2
+        const panel = await this.client.db
+          .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
+          .findOne({ _id: new ObjectId(ticket.panelId) });
+        const btn = panel?.ticketTypes.find((b) => b.id === ticket.buttonId);
+        if (btn) {
+          const updatedTicket = { ...ticket, clanTag, clanName: clan?.name ?? clanTag };
+          const container = this.buildTicketContainer(updatedTicket, btn, channelId);
+          await interaction.message.edit({
+            components: [container],
+            flags: MessageFlags.IsComponentsV2
+          });
+        }
+      }
     });
   }
 
@@ -1065,7 +1062,7 @@ export default class TicketOpenCommand extends Command {
   ) {
     const channelId = args.cid as string;
     const ticket = await this.getTicketByChannel(channelId);
-    if (!ticket) return interaction.editReply(this.cv2Reply('Ticket not found.'));
+    if (!ticket) return interaction.editReply(this.reply('Ticket not found.'));
 
     const userId = interaction.user.id;
     const isSubscribed = ticket.notifyMeUserIds.includes(userId);
@@ -1075,26 +1072,19 @@ export default class TicketOpenCommand extends Command {
         .collection<TicketEntity>(Collections.TICKETS)
         .updateOne({ channelId }, { $pull: { notifyMeUserIds: userId } });
       await interaction.editReply(
-        this.cv2Reply('You will no longer be notified when the ticket creator sends a message.')
+        this.reply('You will no longer be notified when the ticket creator sends a message.')
       );
     } else {
       await this.client.db
         .collection<TicketEntity>(Collections.TICKETS)
         .updateOne({ channelId }, { $addToSet: { notifyMeUserIds: userId } });
       await interaction.editReply(
-        this.cv2Reply('You will be notified when the ticket creator sends a message.')
+        this.reply('You will be notified when the ticket creator sends a message.')
       );
     }
   }
 
   // =================== UTILITY ===================
-
-  private cv2Reply(text: string): InteractionEditReplyOptions {
-    return {
-      components: [new ContainerBuilder().addTextDisplayComponents((t) => t.setContent(text))],
-      flags: MessageFlags.IsComponentsV2
-    };
-  }
 
   public async getTicketByChannel(channelId: string) {
     return this.client.db.collection<TicketEntity>(Collections.TICKETS).findOne({ channelId });

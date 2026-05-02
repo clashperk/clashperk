@@ -1,5 +1,5 @@
 import { Collections } from '@app/constants';
-import { TicketPanelEntity, TicketTypeConfig } from '@app/entities';
+import { TicketGuildSettingsEntity, TicketPanelEntity, TicketTypeConfig } from '@app/entities';
 import {
   ButtonBuilder,
   ButtonInteraction,
@@ -104,7 +104,6 @@ export default class TicketSetupCommand extends Command {
               addRoleIds: [],
               removeRoleIds: [],
               namingConvention: 'ticket-{count}',
-              messageTemplates: [],
               createStaffThread: false
             }
           ],
@@ -169,12 +168,8 @@ export default class TicketSetupCommand extends Command {
           await this.editQuestionsModal(btn, panel!);
           panel = (await this.getPanel(panel!.guildId, panel!.name)) ?? panel;
         } else if (action.customId === ids.editMessages) {
-          if (panel!.ticketTypes.length > 0) {
-            await action.deferUpdate();
-            panel = await this.editSavedRepliesFlow(interaction, panel!, panel!.ticketTypes[0].id);
-          } else {
-            await action.deferUpdate();
-          }
+          await action.deferUpdate();
+          await this.editSavedRepliesFlow(interaction, panel!.guildId);
         } else if (action.customId === ids.editCategories) {
           if (panel!.ticketTypes.length > 0) {
             panel = await this.editTicketTypeCategoriesModal(btn, panel!, panel!.ticketTypes[0].id);
@@ -362,15 +357,12 @@ export default class TicketSetupCommand extends Command {
     );
 
     // Messages
-    const msgsText = firstBtn
-      ? firstBtn.messageTemplates.length
-        ? firstBtn.messageTemplates.map((t) => `• **${t.name}**`).join('\n')
-        : '*(no templates)*'
-      : '*(configure a button first)*';
     container.addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`### 💬 Saved Replies\n${msgsText}`)
+          new TextDisplayBuilder().setContent(
+            `### 💬 Saved Replies\nPre-written messages shared across all application types in this server.`
+          )
         )
         .setButtonAccessory(
           new ButtonBuilder()
@@ -657,7 +649,7 @@ export default class TicketSetupCommand extends Command {
               new TextDisplayBuilder().setContent(
                 [
                   `${b.emoji ? `${b.emoji} ` : ''}**${b.label}**`,
-                  `Ping: ${b.pingRoleIds.length ? b.pingRoleIds.map((r) => `<@&${r}>`).join(', ') : '*none*'} | Questions: ${b.questions?.length ?? 0} | Saved Replies: ${b.messageTemplates.length}`,
+                  `Ping: ${b.pingRoleIds.length ? b.pingRoleIds.map((r) => `<@&${r}>`).join(', ') : '*none*'} | Questions: ${b.questions?.length ?? 0}`,
                   `TH min: ${b.thMin ?? '*-*'} | Max accounts: ${b.maxAccounts ?? '*unlimited*'} | Require linked: ${b.requireLinkedAccount ? 'Yes' : 'No'}`
                 ].join('\n')
               )
@@ -812,7 +804,6 @@ export default class TicketSetupCommand extends Command {
       addRoleIds: [],
       removeRoleIds: [],
       namingConvention: DEFAULT_NAMING,
-      messageTemplates: [],
       createStaffThread: false
     };
 
@@ -844,7 +835,6 @@ export default class TicketSetupCommand extends Command {
       editRoles: this.client.uuid(interaction.user.id),
       editRules: this.client.uuid(interaction.user.id),
       editQuestions: this.client.uuid(interaction.user.id),
-      editMessages: this.client.uuid(interaction.user.id),
       editCategories: this.client.uuid(interaction.user.id),
       editNaming: this.client.uuid(interaction.user.id),
       back: this.client.uuid(interaction.user.id),
@@ -919,22 +909,6 @@ export default class TicketSetupCommand extends Command {
           .setButtonAccessory(
             new ButtonBuilder()
               .setCustomId(ids.editCategories)
-              .setLabel('Edit')
-              .setStyle(ButtonStyle.Secondary)
-          )
-      );
-      container.addSectionComponents(
-        new SectionBuilder()
-          .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(
-              b.messageTemplates.length
-                ? `**Saved Replies:**\n${b.messageTemplates.map((t) => `• ${t.name}`).join('\n')}`
-                : `**Saved Replies:** *(none)*`
-            )
-          )
-          .setButtonAccessory(
-            new ButtonBuilder()
-              .setCustomId(ids.editMessages)
               .setLabel('Edit')
               .setStyle(ButtonStyle.Secondary)
           )
@@ -1167,10 +1141,6 @@ export default class TicketSetupCommand extends Command {
             await updateTicketType({ questions });
             await submit.deferUpdate();
             this.client.components.delete(modalId);
-          } else if (action.customId === ids.editMessages) {
-            await action.deferUpdate();
-            currentPanel = await this.editSavedRepliesFlow(interaction, currentPanel, buttonId);
-            btn = currentPanel.ticketTypes.find((b) => b.id === buttonId)!;
           } else if (action.customId === ids.editCategories) {
             currentPanel = await this.editTicketTypeCategoriesModal(
               action as unknown as ButtonInteraction<'cached'>,
@@ -1306,10 +1276,15 @@ export default class TicketSetupCommand extends Command {
 
   private async editSavedRepliesFlow(
     interaction: CommandInteraction<'cached'>,
-    panel: WithId<TicketPanelEntity>,
-    buttonId: string
-  ): Promise<WithId<TicketPanelEntity>> {
-    let currentPanel = panel;
+    guildId: string
+  ): Promise<void> {
+    const getSettings = () =>
+      this.client.db
+        .collection<TicketGuildSettingsEntity>(Collections.TICKET_SETTINGS)
+        .findOne({ guildId });
+
+    let settings = await getSettings();
+    let templates = settings?.savedReplies ?? [];
 
     const staticIds = {
       addReply: this.client.uuid(interaction.user.id),
@@ -1324,19 +1299,30 @@ export default class TicketSetupCommand extends Command {
       return perReplyIds.get(replyName)!;
     };
 
-    const renderRepliesMenu = (p: WithId<TicketPanelEntity>) => {
-      const btn = p.ticketTypes.find((b) => b.id === buttonId);
-      const templates = btn?.messageTemplates ?? [];
+    for (const t of templates) getOrCreateReplyIds(t.name);
 
+    const saveTemplates = async (updated: { name: string; content: string }[]) => {
+      await this.client.db
+        .collection<TicketGuildSettingsEntity>(Collections.TICKET_SETTINGS)
+        .updateOne(
+          { guildId },
+          { $set: { savedReplies: updated, updatedAt: new Date() } },
+          { upsert: true }
+        );
+      settings = await getSettings();
+      templates = settings?.savedReplies ?? [];
+    };
+
+    const renderRepliesMenu = () => {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           [
             '## Saved Replies',
-            'Saved replies are pre-written messages you can send inside a ticket with one click.',
+            'Pre-written messages shared across all panels and application types in this server.',
             templates.length === 0
               ? '-# No saved replies yet — click **Add Reply** to create your first one.'
-              : `-# Click **Edit / Delete** next to a reply to edit or remove it. Up to **10 replies** per button.`
+              : `-# Click **Edit / Delete** next to a reply to edit or remove it. Up to **25 replies** per server.`
           ].join('\n')
         )
       );
@@ -1367,7 +1353,7 @@ export default class TicketSetupCommand extends Command {
             .setCustomId(staticIds.addReply)
             .setLabel('Add Reply')
             .setStyle(ButtonStyle.Success)
-            .setDisabled(templates.length >= 10),
+            .setDisabled(templates.length >= 25),
           new ButtonBuilder()
             .setCustomId(staticIds.back)
             .setLabel('Back')
@@ -1379,11 +1365,11 @@ export default class TicketSetupCommand extends Command {
     };
 
     await interaction.editReply({
-      components: [renderRepliesMenu(currentPanel)],
+      components: [renderRepliesMenu()],
       flags: MessageFlags.IsComponentsV2
     });
 
-    return new Promise<WithId<TicketPanelEntity>>((resolve) => {
+    return new Promise<void>((resolve) => {
       const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button>({
         filter: (a) => {
           const allIds = [
@@ -1404,8 +1390,7 @@ export default class TicketSetupCommand extends Command {
 
         try {
           if (action.customId === staticIds.addReply) {
-            const btn = currentPanel.ticketTypes.find((b) => b.id === buttonId);
-            if (!btn || btn.messageTemplates.length >= 10) {
+            if (templates.length >= 25) {
               await action.deferUpdate();
               return;
             }
@@ -1445,25 +1430,15 @@ export default class TicketSetupCommand extends Command {
             const name = submit.fields.getTextInputValue(nameId).trim();
             const content = submit.fields.getTextInputValue(contentId).trim();
             if (name && content) {
-              await this.client.db
-                .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-                .updateOne(
-                  { '_id': currentPanel._id, 'ticketTypes.id': buttonId },
-                  {
-                    $push: { 'ticketTypes.$.messageTemplates': { name, content } },
-                    $set: { updatedAt: new Date() }
-                  }
-                );
-              currentPanel =
-                (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
+              await saveTemplates([...templates, { name, content }]);
+              getOrCreateReplyIds(name);
             }
             await submit.deferUpdate();
             this.client.components.delete(modalId);
           } else {
             for (const [replyName, replyIds] of perReplyIds.entries()) {
               if (action.customId === replyIds.edit) {
-                const btn = currentPanel.ticketTypes.find((b) => b.id === buttonId);
-                const template = btn?.messageTemplates.find((t) => t.name === replyName);
+                const template = templates.find((t) => t.name === replyName);
                 if (!template) break;
 
                 const modalId = this.client.uuid(action.user.id);
@@ -1512,43 +1487,23 @@ export default class TicketSetupCommand extends Command {
                 });
                 const shouldDelete = submit.fields.getCheckboxGroup(deleteId).includes('delete');
                 if (shouldDelete) {
-                  const newTemplates = btn!.messageTemplates.filter((t) => t.name !== replyName);
-                  await this.client.db
-                    .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-                    .updateOne(
-                      { '_id': currentPanel._id, 'ticketTypes.id': buttonId },
-                      {
-                        $set: {
-                          'ticketTypes.$.messageTemplates': newTemplates,
-                          'updatedAt': new Date()
-                        }
-                      }
-                    );
+                  await saveTemplates(templates.filter((t) => t.name !== replyName));
+                  perReplyIds.delete(replyName);
                 } else {
                   const newName = submit.fields.getTextInputValue(nameId).trim();
                   const newContent = submit.fields.getTextInputValue(contentId).trim();
                   if (newName && newContent) {
-                    const newTemplates = btn!.messageTemplates.map((t) =>
-                      t.name === replyName ? { name: newName, content: newContent } : t
+                    await saveTemplates(
+                      templates.map((t) =>
+                        t.name === replyName ? { name: newName, content: newContent } : t
+                      )
                     );
-                    await this.client.db
-                      .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-                      .updateOne(
-                        { '_id': currentPanel._id, 'ticketTypes.id': buttonId },
-                        {
-                          $set: {
-                            'ticketTypes.$.messageTemplates': newTemplates,
-                            'updatedAt': new Date()
-                          }
-                        }
-                      );
                     if (newName !== replyName) {
                       perReplyIds.delete(replyName);
+                      getOrCreateReplyIds(newName);
                     }
                   }
                 }
-                currentPanel =
-                  (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
                 await submit.deferUpdate();
                 this.client.components.delete(modalId);
                 break;
@@ -1567,7 +1522,7 @@ export default class TicketSetupCommand extends Command {
 
         await interaction
           .editReply({
-            components: [renderRepliesMenu(currentPanel)],
+            components: [renderRepliesMenu()],
             flags: MessageFlags.IsComponentsV2
           })
           .catch(() => null);
@@ -1575,7 +1530,7 @@ export default class TicketSetupCommand extends Command {
 
       collector.on('end', () => {
         Object.values(staticIds).forEach((id) => this.client.components.delete(id));
-        resolve(currentPanel);
+        resolve();
       });
     });
   }

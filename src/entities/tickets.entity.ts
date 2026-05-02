@@ -18,7 +18,6 @@ export interface TicketTypeConfig {
   sleepCategoryId?: string;
   closedCategoryId?: string;
   namingConvention: string;
-  messageTemplates: { name: string; content: string }[];
   createStaffThread: boolean;
 }
 
@@ -46,6 +45,13 @@ export interface TicketPanelEntity {
     ticketClose?: string;
   };
   createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TicketGuildSettingsEntity {
+  _id: ObjectId;
+  guildId: string;
+  savedReplies: { name: string; content: string }[];
   updatedAt: Date;
 }
 
