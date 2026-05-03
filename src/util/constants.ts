@@ -921,7 +921,7 @@ export const LeaguePromotionsMap = {
   '105000030': { promotion: 20, demotion: 20 },
   '105000031': { promotion: 20, demotion: 20 },
   '105000032': { promotion: 15, demotion: 15 },
-  '105000033': { promotion: 10, demotion: 10 },
+  '105000033': { promotion: 15, demotion: 15 },
   '105000034': { promotion: 5, demotion: 15 },
   '105000035': { promotion: 3, demotion: 15 }
 };
