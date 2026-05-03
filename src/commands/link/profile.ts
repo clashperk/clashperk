@@ -425,7 +425,7 @@ export default class ProfileCommand extends Command {
 
     return this.client.db
       .collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
-      .deleteOne({ userId: user.id });
+      .deleteMany({ userId: user.id });
   }
 
   private playerShortUrl(tag: string) {

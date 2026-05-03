@@ -321,6 +321,13 @@ export class ClashClient extends RestManager {
     return res?.status === 200 && this.bearerToken;
   }
 
+  public async forceLink(userId: string, tag: string) {
+    const link = await this.getLinkedUser(tag);
+    if (link && link.userId !== userId) {
+      await this.linkPlayerTag(userId, tag, { force: true });
+    }
+  }
+
   public async linkPlayerTag(discordId: string, playerTag: string, options?: { force?: boolean }) {
     if (
       !options?.force &&

@@ -208,7 +208,7 @@ export default class LinkCreateCommand extends Command {
       { upsert: true }
     );
 
-    this.resetLinkAPI(member.id, player.tag);
+    this.client.coc.forceLink(member.id, player.tag);
     this.client.rolesManager.updateOne(member.user, interaction.guildId, accounts.length === 0);
     this.client.storage.updateClanLinks(interaction.guildId);
 
@@ -224,10 +224,6 @@ export default class LinkCreateCommand extends Command {
   private async getPlayer(tag: string, userId: string) {
     const collection = this.client.db.collection(Collections.PLAYER_LINKS);
     return Promise.all([collection.findOne({ tag }), collection.find({ userId }).toArray()]);
-  }
-
-  private async resetLinkAPI(user: string, tag: string) {
-    await this.client.coc.linkPlayerTag(user, tag);
   }
 
   private async isTrustedGuild(interaction: CommandInteraction<'cached'>) {
