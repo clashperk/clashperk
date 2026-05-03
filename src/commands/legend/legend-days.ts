@@ -146,7 +146,11 @@ export default class LegendDaysCommand extends Command {
 
     const players = await this.client.resolver.getPlayers(data.user.id);
     const options = players
-      .filter((op) => op.leagueTier?.id === LEGEND_LEAGUE_ID || op.currentLeagueGroupTag !== '#0')
+      .filter(
+        (op) =>
+          op.leagueTier?.id === LEGEND_LEAGUE_ID ||
+          (op.currentLeagueGroupTag && op.currentLeagueGroupTag !== '#0')
+      )
       .map((op) => ({
         label: `${op.name} (${op.tag})`,
         description: `${EMOJIS.TROPHY_UNICODE} ${op.trophies}`,
