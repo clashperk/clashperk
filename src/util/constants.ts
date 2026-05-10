@@ -25,7 +25,7 @@ export const URL_REGEX =
 
 export const UNRANKED_CAPITAL_LEAGUE_ID = 85000000;
 
-export const LEGEND_LEAGUE_ID = 105000034;
+export const LEGEND_LEAGUE_ID = 105000036;
 
 export const UNRANKED_TIER_ID = 105000000;
 
@@ -883,6 +883,46 @@ export const BattlesPerWeek: Record<string, number> = {
   '105000034': 24,
   '105000035': 30,
   '105000036': 56
+};
+
+// Percent promoted and demoted based on league
+export const LeaguePromotionsMap = {
+  '105000000': { promotion: 50, demotion: 0 },
+  '105000001': { promotion: 50, demotion: 0 },
+  '105000002': { promotion: 50, demotion: 10 },
+  '105000003': { promotion: 50, demotion: 10 },
+  '105000004': { promotion: 40, demotion: 10 },
+  '105000005': { promotion: 30, demotion: 10 },
+  '105000006': { promotion: 30, demotion: 10 },
+  '105000007': { promotion: 30, demotion: 10 },
+  '105000008': { promotion: 30, demotion: 10 },
+  '105000009': { promotion: 30, demotion: 10 },
+  '105000010': { promotion: 30, demotion: 10 },
+  '105000011': { promotion: 30, demotion: 15 },
+  '105000012': { promotion: 30, demotion: 15 },
+  '105000013': { promotion: 30, demotion: 15 },
+  '105000014': { promotion: 30, demotion: 15 },
+  '105000015': { promotion: 30, demotion: 15 },
+  '105000016': { promotion: 30, demotion: 15 },
+  '105000017': { promotion: 30, demotion: 15 },
+  '105000018': { promotion: 30, demotion: 15 },
+  '105000019': { promotion: 30, demotion: 15 },
+  '105000020': { promotion: 25, demotion: 20 },
+  '105000021': { promotion: 25, demotion: 20 },
+  '105000022': { promotion: 25, demotion: 20 },
+  '105000023': { promotion: 25, demotion: 20 },
+  '105000024': { promotion: 20, demotion: 20 },
+  '105000025': { promotion: 20, demotion: 20 },
+  '105000026': { promotion: 20, demotion: 20 },
+  '105000027': { promotion: 20, demotion: 20 },
+  '105000028': { promotion: 20, demotion: 20 },
+  '105000029': { promotion: 20, demotion: 20 },
+  '105000030': { promotion: 20, demotion: 20 },
+  '105000031': { promotion: 20, demotion: 20 },
+  '105000032': { promotion: 15, demotion: 15 },
+  '105000033': { promotion: 15, demotion: 15 },
+  '105000034': { promotion: 5, demotion: 15 },
+  '105000035': { promotion: 3, demotion: 15 }
 };
 
 export const SYSTEM_PROMPT = `

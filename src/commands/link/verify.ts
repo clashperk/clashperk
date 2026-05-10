@@ -69,7 +69,7 @@ export default class VerifyPlayerCommand extends Command {
       { upsert: true }
     );
 
-    this.resetLinkAPI(interaction.user.id, data.tag);
+    this.client.coc.forceLink(interaction.user.id, data.tag);
     this.client.rolesManager.updateOne(interaction.user, interaction.guildId, !lastAccount);
 
     return interaction.editReply(
@@ -78,9 +78,5 @@ export default class VerifyPlayerCommand extends Command {
         info: `${data.name} (${data.tag}) ${EMOJIS.VERIFIED}`
       })
     );
-  }
-
-  private async resetLinkAPI(userId: string, tag: string) {
-    await this.client.coc.linkPlayerTag(userId, tag, { force: true });
   }
 }

@@ -32,6 +32,7 @@ export function timeoutSignal(timeout: number, path: string) {
 
 export class ClashClient extends RestManager {
   private bearerToken!: string;
+  private linkApiURL = 'https://cocdiscord.link';
 
   public constructor(private readonly client: Client) {
     const keys = process.env.CLASH_OF_CLANS_API_KEYS?.split(',') ?? [];
@@ -304,7 +305,7 @@ export class ClashClient extends RestManager {
   }
 
   private async _login() {
-    const res = await fetch('https://cocdiscord.link/login', {
+    const res = await fetch(`${this.linkApiURL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -321,6 +322,13 @@ export class ClashClient extends RestManager {
     return res?.status === 200 && this.bearerToken;
   }
 
+  public async forceLink(userId: string, tag: string) {
+    const link = await this.getLinkedUser(tag);
+    if (link && link.userId !== userId) {
+      await this.linkPlayerTag(userId, tag, { force: true });
+    }
+  }
+
   public async linkPlayerTag(discordId: string, playerTag: string, options?: { force?: boolean }) {
     if (
       !options?.force &&
@@ -333,7 +341,7 @@ export class ClashClient extends RestManager {
       await this.unlinkPlayerTag(playerTag);
     }
 
-    const res = await fetch('https://cocdiscord.link/links', {
+    const res = await fetch(`${this.linkApiURL}/links`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -347,7 +355,7 @@ export class ClashClient extends RestManager {
   }
 
   public async unlinkPlayerTag(playerTag: string) {
-    const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(playerTag)}`, {
+    const res = await fetch(`${this.linkApiURL}/links/${encodeURIComponent(playerTag)}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -361,7 +369,7 @@ export class ClashClient extends RestManager {
 
   /** @deprecated -- deleted */
   public async getPlayerTags(userId: string) {
-    const res = await fetch(`https://cocdiscord.link/links/${userId}`, {
+    const res = await fetch(`${this.linkApiURL}/links/${userId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -377,7 +385,7 @@ export class ClashClient extends RestManager {
 
   /** @deprecated */
   public async getLinkedUser(tag: string) {
-    const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(tag)}`, {
+    const res = await fetch(`${this.linkApiURL}/links/${encodeURIComponent(tag)}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -395,7 +403,7 @@ export class ClashClient extends RestManager {
   public async getDiscordLinks(players: { tag: string }[]) {
     if (!players.length) return [];
 
-    const res = await fetch('https://cocdiscord.link/batch', {
+    const res = await fetch(`${this.linkApiURL}/batch`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,

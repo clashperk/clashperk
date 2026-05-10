@@ -23,7 +23,7 @@ import { Season } from '../../util/toolkit.js';
 
 const possibleRanks = [
   1, 3, 10, 20, 50, 100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
-  12500, 20000, 50000, 62500, 100000
+  12500
 ];
 
 export default class LegendStatsCommand extends Command {
@@ -136,7 +136,7 @@ export default class LegendStatsCommand extends Command {
     const labels = thresholdRecords.map((record) => record.timestamp);
     const ranksToShow = args.ranks?.length
       ? args.ranks.map(Number)
-      : [1, 100, 500, 1000, 5000, 10000, 50000];
+      : [1, 100, 500, 1000, 5000, 10000];
 
     const datasets = ranksToShow.map((rank) => {
       return {

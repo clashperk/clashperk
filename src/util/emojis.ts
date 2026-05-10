@@ -272,9 +272,9 @@ export const HOME_BASE_LEAGUES: Record<string, string> = {
   105000031: '<:ElectroLeague31:1424720598172569693>',
   105000032: '<:ElectroLeague32:1424720603721502762>',
   105000033: '<:ElectroLeague33:1424720610793361598>',
-  105000034: '<:LegendLeague:1424720630183497832>',
-  105000035: '<:LegendLeague:1424720630183497832>',
-  105000036: '<:LegendLeague:1424720630183497832>'
+  105000034: '<:Legend3:1502756189954506886>',
+  105000035: '<:Legend2:1502756123974045867>',
+  105000036: '<:Legend1:1502756072803401968>'
 };
 
 export const PLAYER_LEAGUE_TIERS: Record<string, string> = {
@@ -312,10 +312,11 @@ export const PLAYER_LEAGUE_TIERS: Record<string, string> = {
   'Electro League 31': '<:ElectroLeague31:1424720598172569693>',
   'Electro League 32': '<:ElectroLeague32:1424720603721502762>',
   'Electro League 33': '<:ElectroLeague33:1424720610793361598>',
+
   'Legend League': '<:LegendLeague:1424720630183497832>',
-  'Legend League I': '<:LegendLeague:1424720630183497832>',
-  'Legend League II': '<:LegendLeague:1424720630183497832>',
-  'Legend League III': '<:LegendLeague:1424720630183497832>'
+  'Legend League III': '<:Legend3:1502756189954506886>',
+  'Legend League II': '<:Legend2:1502756123974045867>',
+  'Legend League I': '<:Legend1:1502756072803401968>'
 };
 
 export const CAPITAL_LEAGUES: Record<string, string> = {
@@ -345,6 +346,10 @@ export const CAPITAL_LEAGUES: Record<string, string> = {
 };
 
 export const CWL_LEAGUES: Record<string, string> = {
+  'Legend League': '<:Legend:1502750074701086811>',
+  'Titan League I': '<:Titan1:1502750484245778623>',
+  'Titan League II': '<:Titan2:1502750534363250830>',
+  'Titan League III': '<:Titan3:1502750583822487663>',
   'Champion League I': '<:Champion1:717735571933364334>',
   'Champion League II': '<:Champion2:717735583962759228>',
   'Champion League III': '<:Champion3:717735599184019598>',

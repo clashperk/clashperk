@@ -29,7 +29,8 @@ import {
   getLegendBattleLog,
   getLegendBattleLogAggregate,
   getLegendTimestampAgainstDay,
-  getRankedBattleLog
+  getRankedBattleLog,
+  getTournament
 } from '../../helper/legends.helper.js';
 import { Args, Command } from '../../lib/handlers.js';
 import { createLegendGraph } from '../../struct/image-helper.js';
@@ -90,7 +91,7 @@ export default class LegendDaysCommand extends Command {
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
       );
 
-    if (!data.leagueTier || data.leagueTier.id !== LEGEND_LEAGUE_ID + 2) {
+    if (!data.leagueTier || data.leagueTier.id !== LEGEND_LEAGUE_ID) {
       if (await this.rankedBattles(interaction, data)) return;
       return interaction.followUp({
         content: `**${data.name} (${data.tag})** is not in the Legend League. \n**Ranked battle logs are coming soon!**`
@@ -145,7 +146,11 @@ export default class LegendDaysCommand extends Command {
 
     const players = await this.client.resolver.getPlayers(data.user.id);
     const options = players
-      .filter((op) => op.leagueTier && op.leagueTier.id >= LEGEND_LEAGUE_ID)
+      .filter(
+        (op) =>
+          op.leagueTier?.id === LEGEND_LEAGUE_ID ||
+          (op.currentLeagueGroupTag && op.currentLeagueGroupTag !== '#0')
+      )
       .map((op) => ({
         label: `${op.name} (${op.tag})`,
         description: `${EMOJIS.TROPHY_UNICODE} ${op.trophies}`,
@@ -234,8 +239,8 @@ export default class LegendDaysCommand extends Command {
       return b.battleDate === battleDate;
     });
 
-    const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
-    const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+    const attacks = dayBattles.filter((b) => b.isAttack);
+    const defenses = dayBattles.filter((b) => !b.isAttack);
 
     const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
     const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
@@ -264,7 +269,7 @@ export default class LegendDaysCommand extends Command {
     embed.setDescription(
       [
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
-          data.leagueTier && data.leagueTier.id >= LEGEND_LEAGUE_ID
+          data.leagueTier && data.leagueTier.id === LEGEND_LEAGUE_ID
             ? EMOJIS.LEGEND_LEAGUE
             : EMOJIS.TROPHY
         } **${data.trophies} ${HOME_BASE_LEAGUES[data.leagueTier?.id ?? UNRANKED_TIER_ID]} ${'Legend I'}**`
@@ -413,8 +418,8 @@ export default class LegendDaysCommand extends Command {
       const battleDate = new Date(startTime).toISOString().slice(0, 10);
       const dayBattles = allBattles.filter((b) => b.battleDate === battleDate);
 
-      const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
-      const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+      const attacks = dayBattles.filter((b) => b.isAttack);
+      const defenses = dayBattles.filter((b) => !b.isAttack);
 
       const gain = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
       const loss = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
@@ -477,7 +482,7 @@ export default class LegendDaysCommand extends Command {
     const description = [
       ...[
         `${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
-          data.leagueTier && data.leagueTier.id >= LEGEND_LEAGUE_ID
+          data.leagueTier && data.leagueTier.id === LEGEND_LEAGUE_ID
             ? EMOJIS.LEGEND_LEAGUE
             : EMOJIS.TROPHY
         } **${data.trophies}**`,
@@ -534,18 +539,12 @@ export default class LegendDaysCommand extends Command {
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
     player: APIPlayer
   ) {
-    const [battles, lastTournament] = await Promise.all([
-      getRankedBattleLog(player.tag, Season.tournamentID),
-      this.getLastTournament(player.tag)
-    ]);
+    const tournament = await getTournament(player);
+    if (!tournament) return null;
+    const { battles } = tournament;
 
     const leagueId = player.leagueTier?.id ?? UNRANKED_TIER_ID;
-    if (
-      (!battles.length && !lastTournament.result) ||
-      leagueId === UNRANKED_TIER_ID ||
-      !player.leagueTier
-    )
-      return null;
+    if (!battles.length || leagueId === UNRANKED_TIER_ID || !player.leagueTier) return null;
 
     const attacks = battles.filter((b) => b.isAttack);
     const defenses = battles.filter((b) => !b.isAttack);
@@ -571,31 +570,42 @@ export default class LegendDaysCommand extends Command {
 
     if (!Season.isTournamentReset) {
       const { startTime, endTime } = Util.getTournamentWindow();
+
+      const zoneLine = tournament.isInPromotionZone
+        ? `- **Promotion Zone** (top ${tournament.promotionZone} players) ${EMOJIS.UP_KEY}`
+        : tournament.isInDemotionZone
+          ? `- **Demotion Zone** (last ${tournament.demotionZone} players) ${EMOJIS.DOWN_KEY}`
+          : `- **Safe Zone** (rank ${tournament.promotionZone + 1}-${tournament.total - tournament.demotionZone})`;
+
       embed.addFields({
         name: `Overview (${moment(startTime).format('D MMM')} - ${moment(endTime).format('D MMM')})`,
         value: [
           `- ${player.trophies} trophies gained`,
           `- ${attacks.length}/${BattlesPerWeek[leagueId]} attacks`,
-          `- ${defenses.length}/${BattlesPerWeek[leagueId]} defenses`
-        ].join('\n')
+          `- ${defenses.length}/${BattlesPerWeek[leagueId]} defenses`,
+          `- Rank **#${tournament.rank}** / ${tournament.total} (Top **${tournament.topPercentage}%**)`,
+          zoneLine
+        ]
+          .filter(Boolean)
+          .join('\n')
       });
     }
 
-    if (lastTournament.result) {
-      embed.addFields({
-        name: `Previous Week (${moment(lastTournament.startTime).format('D MMM')} - ${moment(lastTournament.endTime).format('D MMM')})`,
-        value: [
-          `- ${lastTournament.result.trophies} trophies gained`,
-          `- ${lastTournament.result.attacks}/${BattlesPerWeek[lastTournament.result.leagueId]} attacks`,
-          `- ${lastTournament.result.defenses}/${BattlesPerWeek[leagueId]} defenses`,
-          leagueId > lastTournament.result.leagueId
-            ? `- Promoted to **${formatLeague(player.leagueTier.name)} (${EMOJIS.UP_KEY} ${leagueId - lastTournament.result.leagueId})**`
-            : leagueId < lastTournament.result.leagueId
-              ? `- Demoted to **${formatLeague(player.leagueTier.name)} (${EMOJIS.DOWN_KEY} ${lastTournament.result.leagueId - leagueId})**`
-              : `- Stayed in **${formatLeague(player.leagueTier.name)}**`
-        ].join('\n')
-      });
-    }
+    // if (lastTournament.result) {
+    //   embed.addFields({
+    //     name: `Previous Week (${moment(lastTournament.startTime).format('D MMM')} - ${moment(lastTournament.endTime).format('D MMM')})`,
+    //     value: [
+    //       `- ${lastTournament.result.trophies} trophies gained`,
+    //       `- ${lastTournament.result.attacks}/${BattlesPerWeek[lastTournament.result.leagueId]} attacks`,
+    //       `- ${lastTournament.result.defenses}/${BattlesPerWeek[leagueId]} defenses`,
+    //       leagueId > lastTournament.result.leagueId
+    //         ? `- Promoted to **${formatLeague(player.leagueTier.name)} (${EMOJIS.UP_KEY} ${leagueId - lastTournament.result.leagueId})**`
+    //         : leagueId < lastTournament.result.leagueId
+    //           ? `- Demoted to **${formatLeague(player.leagueTier.name)} (${EMOJIS.DOWN_KEY} ${lastTournament.result.leagueId - leagueId})**`
+    //           : `- Stayed in **${formatLeague(player.leagueTier.name)}**`
+    //     ].join('\n')
+    //   });
+    // }
 
     await this.addClanAndEquipmentFields({ embed, player, showEquipment: attacks.length > 0 });
 

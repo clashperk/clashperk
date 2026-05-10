@@ -1,7 +1,11 @@
+import { APIPlayer } from 'clashofclans.js';
 import moment from 'moment';
+import { container } from 'tsyringe';
 import { api, encode } from '../api/axios.js';
 import { BattleLogDailyDto, BattleLogDto } from '../api/generated.js';
-import { Util } from '../util/toolkit.js';
+import { Client } from '../struct/client.js';
+import { LeaguePromotionsMap } from '../util/constants.js';
+import { Season, Util } from '../util/toolkit.js';
 
 export const getLegendTimestampAgainstDay = (day?: number) => {
   if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
@@ -24,6 +28,82 @@ export const getRankedBattleLog = async (
   const result = await api.players.getBattleLog({ playerTag: encode(playerTag) });
   if (!result?.data?.items) return [];
   return result.data.items.filter((b) => b.battleWeek === weekId && b.battleType === 'ranked');
+};
+
+export const getTournament = async (player: APIPlayer, lastTournament = false) => {
+  const client = container.resolve(Client);
+  const { body, res } = await client.coc.getLeagueGroup(
+    lastTournament ? player.previousLeagueGroupTag : player.currentLeagueGroupTag,
+    lastTournament ? player.previousLeagueSeasonId : player.currentLeagueSeasonId,
+    { playerTag: player.tag }
+  );
+  if (!res.ok || !body?.members?.length) return null;
+
+  const total = body.members.length;
+  const rankIndex = body.members.findIndex((m) => m.playerTag === player.tag);
+  if (rankIndex < 0) return null;
+
+  const attacks: BattleLogDto[] = [...body.attackLogs].map((log) => ({
+    battleDate: Season.toBattleDate(new Date(log.creationTime)),
+    battleType: 'ranked',
+    battleWeek: Season.tournamentID,
+    battleSeason: Season.ID,
+    destruction: log.destructionPercentage,
+    isAttack: true,
+    leagueId: player.leagueTier?.id ?? 0,
+    stars: log.stars,
+    name: player.name,
+    opponentTag: log.opponentPlayerTag,
+    tag: player.tag,
+    trophyChange: calculateTrophies(log.stars, log.destructionPercentage, {
+      isAttack: true,
+      isLegendLeague: false
+    }),
+    trophies: 0,
+    ingestedAt: new Date(log.creationTime).toISOString()
+  }));
+
+  const defenses: BattleLogDto[] = [...body.defenseLogs].map((log) => ({
+    battleDate: Season.toBattleDate(new Date(log.creationTime)),
+    battleType: 'ranked',
+    battleWeek: Season.tournamentID,
+    battleSeason: Season.ID,
+    destruction: log.destructionPercentage,
+    isAttack: false,
+    leagueId: player.leagueTier?.id ?? 0,
+    stars: log.stars,
+    name: player.name,
+    opponentTag: log.opponentPlayerTag,
+    tag: player.tag,
+    trophyChange: calculateTrophies(log.stars, log.destructionPercentage, {
+      isAttack: false,
+      isLegendLeague: false
+    }),
+    trophies: 0,
+    ingestedAt: new Date(log.creationTime).toISOString()
+  }));
+
+  const rank = rankIndex + 1;
+  const topPercentage = Math.ceil((rank / total) * 100);
+
+  const leagueId = String(player.leagueTier?.id ?? 0);
+  const promotions = LeaguePromotionsMap[leagueId as keyof typeof LeaguePromotionsMap];
+  const demotionZone = promotions ? Math.ceil(total * (promotions.demotion / 100)) : 0;
+  const isInDemotionZone = demotionZone > 0 && rank > total - demotionZone;
+
+  const promotionZone = promotions ? Math.ceil(total * (promotions.promotion / 100)) : 0;
+  const isInPromotionZone = promotionZone > 0 && rank <= promotionZone;
+
+  return {
+    rank,
+    total,
+    topPercentage,
+    demotionZone,
+    isInDemotionZone,
+    promotionZone,
+    isInPromotionZone,
+    battles: [...attacks, ...defenses]
+  };
 };
 
 export const getLegendBattleLogAggregate = async (
@@ -83,8 +163,7 @@ export const aggregateLegendBattleLog = (dailyItems: BattleLogDailyDto[]) => {
 export const calculateTrophies = (
   stars: number,
   destruction: number,
-  isAttack: boolean,
-  isLegendLeague: boolean
+  { isAttack, isLegendLeague }: { isAttack: boolean; isLegendLeague: boolean }
 ): number => {
   let attackerGain = 0;
 

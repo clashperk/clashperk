@@ -71,7 +71,7 @@ export class LegendLog extends RootLog {
     const battleDate = new Date(startTime).toISOString().slice(0, 10);
 
     const legendMembers = clan.memberList.filter(
-      (mem) => (mem.leagueTier && mem.leagueTier.id >= LEGEND_LEAGUE_ID) || mem.trophies >= 5000
+      (mem) => mem.leagueTier && mem.leagueTier.id === LEGEND_LEAGUE_ID
     );
     const battleLogResults = await Promise.all(
       legendMembers.map((m) => getLegendBattleLog(m.tag).catch(() => [] as BattleLogDto[]))
@@ -85,8 +85,8 @@ export class LegendLog extends RootLog {
       const dayBattles = battles.filter((b) => b.battleDate === battleDate);
       if (!dayBattles.length) continue;
 
-      const attacks = dayBattles.filter((b) => b.isAttack && b.trophyChange > 0);
-      const defenses = dayBattles.filter((b) => !b.isAttack || b.trophyChange <= 0);
+      const attacks = dayBattles.filter((b) => b.isAttack);
+      const defenses = dayBattles.filter((b) => !b.isAttack);
 
       const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
       const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
