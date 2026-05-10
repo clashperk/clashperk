@@ -164,10 +164,12 @@ export default class TicketOpenCommand extends Command {
       cmd: 'ticket-open',
       action: 'select-type',
       pid: panelId,
-      ephemeral: true
+      ephemeral: true,
+      defer: false
     });
 
-    return interaction.editReply({
+    return interaction.reply({
+      flags: MessageFlags.Ephemeral,
       content: 'Select the type of ticket you want to open:',
       components: [
         new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -242,7 +244,7 @@ export default class TicketOpenCommand extends Command {
       return this.showQuestionsModal(interaction, panel, btn, null);
     }
 
-    await interaction.deferReply();
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     return this.createTicketChannel(interaction, panel, btn, null, []);
   }
 
@@ -555,20 +557,22 @@ export default class TicketOpenCommand extends Command {
       `**Created at:** <t:${Math.floor(ticket.createdAt.getTime() / 1000)}:F>`
     ].join('\n');
 
-    const section = new SectionBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(headerText)
-    );
-    if (ticket.accountTag) {
-      section.setButtonAccessory(
-        new ButtonBuilder()
-          .setURL(this.client.coc.getPlayerURL(ticket.accountTag))
-          .setLabel('View Profile')
-          .setStyle(ButtonStyle.Link)
-      );
-    }
-
     const container = new ContainerBuilder();
-    container.addSectionComponents(section);
+
+    if (ticket.accountTag) {
+      container.addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText))
+          .setButtonAccessory(
+            new ButtonBuilder()
+              .setURL(this.client.coc.getPlayerURL(ticket.accountTag))
+              .setLabel('View Profile')
+              .setStyle(ButtonStyle.Link)
+          )
+      );
+    } else {
+      container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
+    }
 
     if (ticket.accountName && ticket.accountTh) {
       container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
