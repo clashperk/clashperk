@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getRaidWeekIds, translation } from './@helper.js';
+import { getRaidWeekIds, translation, guildInstallable } from './@helper.js';
 
 export const CAPITAL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'capital',
@@ -72,5 +72,6 @@ export const CAPITAL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

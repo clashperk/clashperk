@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const ACTIVITY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'activity',
@@ -62,5 +62,6 @@ export const ACTIVITY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description_localizations: translation('command.timezone.options.location.description'),
       type: ApplicationCommandOptionType.String
     }
-  ]
+  ],
+  ...guildInstallable
 };

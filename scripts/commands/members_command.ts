@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { MembersCommandOptions } from '../../src/util/command.options.js';
 import { command, common } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const MEMBERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'members',
@@ -36,5 +36,6 @@ export const MEMBERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }))
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

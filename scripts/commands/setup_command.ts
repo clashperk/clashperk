@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { channelTypes, translation } from './@helper.js';
+import { channelTypes, translation, guildInstallable } from './@helper.js';
 
 export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'setup',
@@ -330,5 +330,6 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description: 'This command has been replaced with /setup clan and /setup clan-embed',
       type: ApplicationCommandOptionType.Subcommand
     }
-  ]
+  ],
+  ...guildInstallable
 };

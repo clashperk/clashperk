@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, getSeasonSinceIds, translation } from './@helper.js';
+import { getSeasonIds, getSeasonSinceIds, translation, guildInstallable } from './@helper.js';
 
 export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'export',
@@ -404,5 +404,6 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

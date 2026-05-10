@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
+import { guildInstallable } from './@helper.js';
 
 export const TICKET_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'ticket',
@@ -89,5 +90,6 @@ export const TICKET_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

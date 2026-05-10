@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const SEARCH_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'search',
@@ -14,5 +14,6 @@ export const SEARCH_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description_localizations: translation('command.search.options.name.description'),
       type: ApplicationCommandOptionType.String
     }
-  ]
+  ],
+  ...guildInstallable
 };

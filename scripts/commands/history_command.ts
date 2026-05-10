@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const HISTORY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'history',
@@ -99,5 +99,6 @@ export const HISTORY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description_localizations: translation('command.history.options.roster.description'),
       type: ApplicationCommandOptionType.String
     }
-  ]
+  ],
+  ...guildInstallable
 };

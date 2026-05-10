@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const CONFIG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'config',
@@ -55,5 +55,6 @@ export const CONFIG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       max_value: 8,
       min_value: 3
     }
-  ]
+  ],
+  ...guildInstallable
 };

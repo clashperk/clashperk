@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, translation } from './@helper.js';
+import { getSeasonIds, translation, guildInstallable } from './@helper.js';
 
 export const CWL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'cwl',
@@ -194,5 +194,6 @@ export const CWL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

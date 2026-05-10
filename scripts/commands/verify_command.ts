@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const VERIFY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'verify',
@@ -23,5 +23,6 @@ export const VERIFY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description_localizations: translation('command.verify.options.token.description'),
       type: ApplicationCommandOptionType.String
     }
-  ]
+  ],
+  ...guildInstallable
 };

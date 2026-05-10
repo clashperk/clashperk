@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, translation } from './@helper.js';
+import { getSeasonIds, translation, guildInstallable } from './@helper.js';
 
 export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'leaderboard',
@@ -80,5 +80,6 @@ export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

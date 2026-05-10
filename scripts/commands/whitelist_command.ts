@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const WHITELIST_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'whitelist',
@@ -33,5 +33,6 @@ export const WHITELIST_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description_localizations: translation('command.whitelist.options.list.description'),
       type: ApplicationCommandOptionType.Boolean
     }
-  ]
+  ],
+  ...guildInstallable
 };

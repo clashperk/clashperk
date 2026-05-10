@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonSinceIds, translation } from './@helper.js';
+import { getSeasonSinceIds, translation, guildInstallable } from './@helper.js';
 
 export const STATS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'stats',
@@ -311,5 +311,6 @@ export const STATS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

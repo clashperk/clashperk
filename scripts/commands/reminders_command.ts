@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { channelTypes, translation } from './@helper.js';
+import { channelTypes, translation, guildInstallable } from './@helper.js';
 
 export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'reminders',
@@ -320,5 +320,6 @@ export const REMINDERS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const TIMEZONE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'timezone',
@@ -15,5 +15,6 @@ export const TIMEZONE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       type: ApplicationCommandOptionType.String,
       required: true
     }
-  ]
+  ],
+  ...guildInstallable
 };

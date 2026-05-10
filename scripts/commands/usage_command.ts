@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
+import { guildInstallable } from './@helper.js';
 
 export const USAGE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'usage',
@@ -18,5 +19,6 @@ export const USAGE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       type: ApplicationCommandOptionType.Integer,
       required: false
     }
-  ]
+  ],
+  ...guildInstallable
 };

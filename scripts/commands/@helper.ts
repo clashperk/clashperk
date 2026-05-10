@@ -59,6 +59,11 @@ export const userInstallable = {
   ]
 };
 
+export const guildInstallable = {
+  integration_types: [ApplicationIntegrationType.GuildInstall],
+  contexts: [InteractionContextType.Guild]
+};
+
 export const translation = (text: TranslationKey): Record<string, string> => {
   return Object.keys(fallbackLng).reduce<Record<string, string>>((record, lang) => {
     record[lang] = i18next.t(text, { lng: lang, escapeValue: false });
