@@ -15,6 +15,8 @@ const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64'
 const CUSTOM_BOT_SERVER_ID = '1130572457175175293';
 const SUPPORT_SERVER_ID = '509784317598105619';
 
+const BETA_TESTING_GUILD_IDS = [SUPPORT_SERVER_ID, '609250675431309313'];
+
 const decrypt = (value: string) => {
   const key = Buffer.from(process.env.CRYPTO_KEY!, 'hex');
   const iv = Buffer.from(process.env.CRYPTO_IV!, 'hex');
@@ -161,6 +163,12 @@ const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJ
   const token = process.env.DISCORD_TOKEN!;
   if (process.argv.includes('--gh-action')) {
     await applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS]);
+
+    if (BETA_TESTING_GUILD_IDS.length) {
+      for (const guildId of BETA_TESTING_GUILD_IDS) {
+        await applicationGuildCommands(token, guildId, [...HIDDEN_COMMANDS]);
+      }
+    }
     return;
   }
 

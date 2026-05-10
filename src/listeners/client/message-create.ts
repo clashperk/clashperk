@@ -33,6 +33,8 @@ export default class MessageCreateListener extends Listener {
     if (!message.inGuild()) return;
     if (message.author.bot) return;
 
+    void this.client.tickets.resetAutoSleep(message.channelId, message.author.id);
+
     if (this.inhibitor(message)) return;
 
     if (

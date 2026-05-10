@@ -55,6 +55,7 @@ import { USAGE_COMMAND } from './commands/usage_command.js';
 import { VERIFY_COMMAND } from './commands/verify_command.js';
 import { WAR_COMMAND } from './commands/war_command.js';
 import { WARLOG_COMMAND } from './commands/warlog_command.js';
+import { TICKET_COMMAND } from './commands/ticket_command.js';
 import { WHITELIST_COMMAND } from './commands/whitelist_command.js';
 import { WHOIS_COMMAND } from './commands/whois_command.js';
 
@@ -96,6 +97,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   ROSTER_COMMAND,
   AUTOROLE_COMMAND,
   REMINDERS_COMMAND,
+  TICKET_COMMAND,
 
   // -------- OTHER COMMANDS--------
   LEGEND_COMMAND,

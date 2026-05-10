@@ -8,6 +8,7 @@ import {
   EmbedBuilder,
   InteractionEditReplyOptions,
   Message,
+  MessageComponentInteraction,
   RoleSelectMenuInteraction,
   StringSelectMenuInteraction,
   UserSelectMenuInteraction
@@ -282,7 +283,7 @@ export const createInteractionCollector = ({
   onRoleSelect?: (interaction: RoleSelectMenuInteraction<'cached'>) => unknown;
   onChannelSelect?: (interaction: ChannelSelectMenuInteraction<'cached'>) => unknown;
   onClose?: () => unknown;
-  interaction: CommandInteraction<'cached'>;
+  interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>;
   message: Message<true>;
   clear?: boolean;
 }) => {

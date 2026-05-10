@@ -142,7 +142,8 @@ export const enum Collections {
   BOT_INTERACTIONS = 'BotInteractions',
 
   TICKET_PANELS = 'TicketPanels',
-  TICKETS = 'Tickets'
+  TICKETS = 'Tickets',
+  TICKET_SETTINGS = 'TicketSettings'
 }
 
 export const enum Settings {
