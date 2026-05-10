@@ -296,7 +296,7 @@ export default class TicketOpenCommand extends Command {
         parts.push(
           `- ${PLAYER_LEAGUE_MAP[btn.minLeagueTier] ?? btn.minLeagueTier} or higher required`
         );
-      await interaction.reply({ content: parts.join('\n'), flags: MessageFlags.Ephemeral });
+      await interaction.editReply({ content: parts.join('\n') });
       return null;
     }
 
