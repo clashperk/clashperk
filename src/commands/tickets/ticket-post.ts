@@ -8,7 +8,6 @@ import {
 } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
-import TicketSetupCommand from './ticket-setup.js';
 
 export default class TicketPostCommand extends Command {
   public constructor() {
@@ -34,11 +33,7 @@ export default class TicketPostCommand extends Command {
       return interaction.editReply({ content: 'Please provide a panel name.' });
     }
 
-    const setupCmd = this.client.commandHandler.modules.get('ticket-setup') as
-      | TicketSetupCommand
-      | undefined;
-
-    const panel = await setupCmd?.getPanel(interaction.guildId, panel_name);
+    const panel = await this.client.tickets.getPanel(interaction.guildId, panel_name);
 
     if (!panel) {
       return interaction.editReply({
@@ -47,9 +42,9 @@ export default class TicketPostCommand extends Command {
     }
 
     const embed = this.buildPanelEmbed(panel);
-    const row = this.buildPanelButton(panel);
+    const rows = this.buildPanelComponents(panel);
 
-    await interaction.channel!.send({ embeds: [embed], components: [row] });
+    await interaction.channel!.send({ embeds: [embed], components: rows });
     await interaction.editReply({ content: `Panel **${panel_name}** posted successfully!` });
   }
 
@@ -65,23 +60,46 @@ export default class TicketPostCommand extends Command {
     return embed;
   }
 
-  private buildPanelButton(panel: WithId<TicketPanelEntity>) {
+  private buildPanelComponents(
+    panel: WithId<TicketPanelEntity>
+  ): ActionRowBuilder<ButtonBuilder>[] {
+    const useButtonMode =
+      (panel.displayMode ?? 'menu') === 'buttons' &&
+      panel.ticketTypes.length > 0 &&
+      panel.ticketTypes.length <= 5;
+
+    if (useButtonMode) {
+      const buttons = panel.ticketTypes.map((type) => {
+        const customId = this.createId({
+          cmd: 'ticket-open',
+          action: 'open',
+          pid: panel._id.toHexString(),
+          bid: type.id,
+          defer: false
+        });
+        const btn = new ButtonBuilder()
+          .setCustomId(customId)
+          .setLabel(type.label)
+          .setStyle(type.buttonStyle ?? ButtonStyle.Primary);
+        if (type.emoji) btn.setEmoji(type.emoji);
+        return btn;
+      });
+      return [new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons)];
+    }
+
+    // Menu mode (or >5 types fallback: single button opens select menu)
     const customId = this.createId({
       cmd: 'ticket-open',
       action: 'open',
       pid: panel._id.toHexString(),
       defer: false
     });
-
     const cfg = panel.button ?? { label: 'Create Ticket', emoji: '📩', style: ButtonStyle.Primary };
-
     const btn = new ButtonBuilder()
       .setCustomId(customId)
       .setLabel(cfg.label)
       .setStyle(cfg.style ?? ButtonStyle.Primary);
-
     if (cfg.emoji) btn.setEmoji(cfg.emoji);
-
-    return new ActionRowBuilder<ButtonBuilder>().addComponents(btn);
+    return [new ActionRowBuilder<ButtonBuilder>().addComponents(btn)];
   }
 }

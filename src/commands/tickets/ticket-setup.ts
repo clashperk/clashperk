@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, PLAYER_LEAGUE_MAP } from '@app/constants';
 import { TicketGuildSettingsEntity, TicketPanelEntity, TicketTypeConfig } from '@app/entities';
 import {
   ButtonBuilder,
@@ -28,7 +28,7 @@ import {
 } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
 import { nanoid } from 'nanoid';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 
 const DEFAULT_EMBED = {
   title: 'Open a Ticket',
@@ -59,12 +59,6 @@ export default class TicketSetupCommand extends Command {
     });
   }
 
-  public args(): Args {
-    return {
-      panel_name: { match: 'STRING' }
-    };
-  }
-
   public async exec(
     interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,
     args: Record<string, unknown>
@@ -93,6 +87,7 @@ export default class TicketSetupCommand extends Command {
           guildId: interaction.guildId,
           name: panelName,
           embed: { ...DEFAULT_EMBED },
+          displayMode: 'menu',
           button: { label: 'Create Ticket', emoji: '📩', style: ButtonStyle.Primary },
           ticketTypes: [
             {
@@ -154,31 +149,9 @@ export default class TicketSetupCommand extends Command {
         } else if (action.customId === ids.editTicketTypes) {
           await action.deferUpdate();
           panel = await this.editTicketTypesFlow(interaction, btn, panel!);
-        } else if (action.customId === ids.editStaffRoles) {
-          if (panel!.ticketTypes.length > 0) {
-            const firstBtn = panel!.ticketTypes[0];
-            panel = await this.editTicketTypeRolesModal(btn, panel!, firstBtn.id, firstBtn);
-          } else {
-            await action.deferUpdate();
-          }
-        } else if (action.customId === ids.editRules) {
-          await this.editRulesModal(btn, panel!);
-          panel = (await this.getPanel(panel!.guildId, panel!.name)) ?? panel;
-        } else if (action.customId === ids.editQuestions) {
-          await this.editQuestionsModal(btn, panel!);
-          panel = (await this.getPanel(panel!.guildId, panel!.name)) ?? panel;
         } else if (action.customId === ids.editMessages) {
           await action.deferUpdate();
           await this.editSavedRepliesFlow(interaction, panel!.guildId);
-        } else if (action.customId === ids.editCategories) {
-          if (panel!.ticketTypes.length > 0) {
-            panel = await this.editTicketTypeCategoriesModal(btn, panel!, panel!.ticketTypes[0].id);
-          } else {
-            await action.deferUpdate();
-          }
-        } else if (action.customId === ids.editNaming) {
-          await this.editNamingModal(btn, panel!);
-          panel = (await this.getPanel(panel!.guildId, panel!.name)) ?? panel;
         } else if (action.customId === ids.editLogging) {
           panel = await this.editLoggingModal(btn, panel!);
         }
@@ -216,12 +189,7 @@ export default class TicketSetupCommand extends Command {
       editEmbed: this.client.uuid(userId),
       editPanelButton: this.client.uuid(userId),
       editTicketTypes: this.client.uuid(userId),
-      editStaffRoles: this.client.uuid(userId),
-      editRules: this.client.uuid(userId),
-      editQuestions: this.client.uuid(userId),
       editMessages: this.client.uuid(userId),
-      editCategories: this.client.uuid(userId),
-      editNaming: this.client.uuid(userId),
       editLogging: this.client.uuid(userId),
       done: this.client.uuid(userId)
     };
@@ -231,7 +199,6 @@ export default class TicketSetupCommand extends Command {
     panel: WithId<TicketPanelEntity>,
     ids: ReturnType<typeof this.makeDashboardIds>
   ) {
-    const firstBtn = panel.ticketTypes[0];
     const container = new ContainerBuilder();
 
     container.addTextDisplayComponents(
@@ -249,7 +216,9 @@ export default class TicketSetupCommand extends Command {
     ].join('\n');
     container.addSectionComponents(
       new SectionBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### 📝 Embed\n${embedText}`))
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`### Step 1: Embed\n${embedText}`)
+        )
         .setButtonAccessory(
           new ButtonBuilder()
             .setCustomId(ids.editEmbed)
@@ -258,16 +227,38 @@ export default class TicketSetupCommand extends Command {
         )
     );
 
+    container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
+
     // Create Ticket button section
-    const panelButtonText = [
-      `**Label:** ${panel.button?.label ?? 'Create Ticket'}`,
-      `**Emoji:** ${panel.button?.emoji ?? '*(none)*'}`,
-      `**Style:** ${panel.button?.style != null ? (ButtonStyle[panel.button.style] ?? panel.button.style) : 'Primary'}`
-    ].join(' | ');
+    const displayMode = panel.displayMode ?? 'menu';
+    const panelButtonLines: string[] = [];
+    if (displayMode === 'buttons') {
+      panelButtonLines.push(
+        `**Mode:** Buttons`,
+        `-# Each application type gets its own button. Best when you have 2-5 application types.`
+      );
+      if (panel.ticketTypes.length > 5) {
+        panelButtonLines.push(
+          `-# ⚠️ You have more than 5 types — falling back to select menu until you reduce them.`
+        );
+      } else if (panel.ticketTypes.length > 0) {
+        panelButtonLines.push(
+          `-# Button label, emoji, and style are configured per type under **Application Types**.`
+        );
+      }
+    } else {
+      panelButtonLines.push(
+        `**Mode:** Select Menu`,
+        `-# A single button opens a dropdown when you have multiple application types.`,
+        `**Label:** ${panel.button.label} | **Emoji:** ${panel.button?.emoji ?? '*(none)*'} | **Style:** ${panel.button?.style != null ? (ButtonStyle[panel.button.style] ?? panel.button.style) : 'Primary'}`
+      );
+    }
     container.addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`### 🎫 Create Ticket Button\n${panelButtonText}`)
+          new TextDisplayBuilder().setContent(
+            `### Step 2: Panel Button\n${panelButtonLines.join('\n')}`
+          )
         )
         .setButtonAccessory(
           new ButtonBuilder()
@@ -277,17 +268,33 @@ export default class TicketSetupCommand extends Command {
         )
     );
 
+    container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large));
+
     // Application Types section
     const appTypesText =
       panel.ticketTypes.length === 0
         ? '*(no application types)*'
         : panel.ticketTypes
-            .map((b) => `- ${b.emoji ? `${b.emoji} ` : ''}**${b.label}**`)
+            .map((type, i) => {
+              const details: string[] = [];
+              if (type.pingRoleIds.length)
+                details.push(`Ping: ${type.pingRoleIds.map((id) => `<@&${id}>`).join(', ')}`);
+              else details.push('No staff roles');
+              if (type.questions?.length) details.push(`${type.questions.length} question(s)`);
+              if (type.requireLinkedAccount) {
+                details.push('Linked account required');
+                if (type.thMin) details.push(`TH${type.thMin}+`);
+                if (type.minTrophies) details.push(`${type.minTrophies}+ trophies`);
+                if (type.minLeagueTier)
+                  details.push(PLAYER_LEAGUE_MAP[type.minLeagueTier] ?? type.minLeagueTier);
+              }
+              return `${i + 1}. ${type.emoji ? `${type.emoji} ` : ''}**${type.label}**\n  - ${details.join(' · ')}`;
+            })
             .join('\n');
     container.addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`### 🗂️ Application Types\n${appTypesText}`)
+          new TextDisplayBuilder().setContent(`### Step 3: Application Types\n${appTypesText}`)
         )
         .setButtonAccessory(
           new ButtonBuilder()
@@ -297,71 +304,14 @@ export default class TicketSetupCommand extends Command {
         )
     );
 
-    // Staff roles
-    const staffText = firstBtn
-      ? [
-          `**Ping:** ${firstBtn.pingRoleIds.length ? firstBtn.pingRoleIds.map((id) => `<@&${id}>`).join(', ') : '*(none)*'}`,
-          `**View-only:** ${firstBtn.viewOnlyRoleIds.length ? firstBtn.viewOnlyRoleIds.map((id) => `<@&${id}>`).join(', ') : '*(none)*'}`
-        ].join('\n')
-      : '*(configure a button first)*';
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`### 👥 Staff Roles\n${staffText}`)
-        )
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(ids.editStaffRoles)
-            .setLabel('Edit')
-            .setStyle(ButtonStyle.Secondary)
-        )
-    );
+    container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large));
 
-    // Apply rules
-    const rulesText = firstBtn
-      ? [
-          `**TH min:** ${firstBtn.thMin ?? '*(none)*'} | **Max accounts:** ${firstBtn.maxAccounts ?? '*(unlimited)*'} | **Min war stars:** ${firstBtn.minWarStars ?? '*(none)*'}`,
-          `**Require linked account:** ${firstBtn.requireLinkedAccount ? 'Yes' : 'No'}`
-        ].join('\n')
-      : '*(configure a button first)*';
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`### 📋 Apply Rules\n${rulesText}`)
-        )
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(ids.editRules)
-            .setLabel('Edit')
-            .setStyle(ButtonStyle.Secondary)
-        )
-    );
-
-    // Questions
-    const questionsText = firstBtn
-      ? firstBtn.questions?.length
-        ? firstBtn.questions.map((q, i) => `${i + 1}. ${q.label}`).join('\n')
-        : '*(no questions)*'
-      : '*(configure a button first)*';
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`### ❓ Questions\n${questionsText}`)
-        )
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(ids.editQuestions)
-            .setLabel('Edit')
-            .setStyle(ButtonStyle.Secondary)
-        )
-    );
-
-    // Messages
+    // Saved Replies
     container.addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### 💬 Saved Replies\nPre-written messages shared across all application types in this server.`
+            `### Step 4: Saved Replies\nPre-written messages shared across all application types in this server.`
           )
         )
         .setButtonAccessory(
@@ -372,42 +322,7 @@ export default class TicketSetupCommand extends Command {
         )
     );
 
-    // Categories
-    const catsText = firstBtn
-      ? [
-          `**Open:** ${firstBtn.openCategoryId ? `<#${firstBtn.openCategoryId}>` : '*(not set)*'}`,
-          `**Sleep:** ${firstBtn.sleepCategoryId ? `<#${firstBtn.sleepCategoryId}>` : '*(not set)*'}`,
-          `**Closed:** ${firstBtn.closedCategoryId ? `<#${firstBtn.closedCategoryId}>` : '*(not set)*'}`
-        ].join('\n')
-      : '*(configure a button first)*';
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`### 📂 Categories\n${catsText}`)
-        )
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(ids.editCategories)
-            .setLabel('Edit')
-            .setStyle(ButtonStyle.Secondary)
-        )
-    );
-
-    // Naming
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 🏷️ Naming\n\`${firstBtn?.namingConvention ?? DEFAULT_NAMING}\``
-          )
-        )
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(ids.editNaming)
-            .setLabel('Edit')
-            .setStyle(ButtonStyle.Secondary)
-        )
-    );
+    container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
 
     // Logging
     const logText = [
@@ -417,7 +332,9 @@ export default class TicketSetupCommand extends Command {
     ].join('\n');
     container.addSectionComponents(
       new SectionBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### 📣 Logging\n${logText}`))
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`### Step 5: Logging\n${logText}`)
+        )
         .setButtonAccessory(
           new ButtonBuilder()
             .setCustomId(ids.editLogging)
@@ -432,7 +349,7 @@ export default class TicketSetupCommand extends Command {
       warnings.push(
         '⚠️ No application types configured — add at least one so users can open tickets.'
       );
-    } else if (firstBtn && firstBtn.pingRoleIds.length === 0) {
+    } else if (panel.ticketTypes.every((b) => b.pingRoleIds.length === 0)) {
       warnings.push("⚠️ No staff roles set — tickets won't ping anyone.");
     }
     if (warnings.length > 0) {
@@ -456,15 +373,17 @@ export default class TicketSetupCommand extends Command {
     action: ButtonInteraction<'cached'>,
     panel: WithId<TicketPanelEntity>
   ) {
-    const modalId = this.client.uuid(action.user.id);
-    const titleId = nanoid(8);
-    const descId = nanoid(8);
-    const colorId = nanoid(8);
+    const customIds = {
+      modal: this.client.uuid(action.user.id),
+      title: nanoid(8),
+      desc: nanoid(8),
+      color: nanoid(8)
+    };
 
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Edit Panel Embed');
+    const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Panel Embed');
 
     const titleInput = new TextInputBuilder()
-      .setCustomId(titleId)
+      .setCustomId(customIds.title)
       .setStyle(TextInputStyle.Short)
       .setMaxLength(256)
       .setRequired(false)
@@ -472,7 +391,7 @@ export default class TicketSetupCommand extends Command {
     if (panel.embed.title) titleInput.setValue(panel.embed.title);
 
     const descInput = new TextInputBuilder()
-      .setCustomId(descId)
+      .setCustomId(customIds.desc)
       .setStyle(TextInputStyle.Paragraph)
       .setMaxLength(2000)
       .setRequired(false)
@@ -480,7 +399,7 @@ export default class TicketSetupCommand extends Command {
     if (panel.embed.description) descInput.setValue(panel.embed.description);
 
     const colorInput = new TextInputBuilder()
-      .setCustomId(colorId)
+      .setCustomId(customIds.color)
       .setStyle(TextInputStyle.Short)
       .setMaxLength(7)
       .setRequired(false)
@@ -498,12 +417,12 @@ export default class TicketSetupCommand extends Command {
 
     const submit = await action.awaitModalSubmit({
       time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
+      filter: (a) => a.customId === customIds.modal
     });
 
-    const title = submit.fields.getTextInputValue(titleId) || undefined;
-    const description = submit.fields.getTextInputValue(descId) || undefined;
-    const colorRaw = submit.fields.getTextInputValue(colorId);
+    const title = submit.fields.getTextInputValue(customIds.title) || undefined;
+    const description = submit.fields.getTextInputValue(customIds.desc) || undefined;
+    const colorRaw = submit.fields.getTextInputValue(customIds.color);
     const color = colorRaw ? parseInt(colorRaw.replace('#', ''), 16) || undefined : undefined;
 
     await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
@@ -519,42 +438,68 @@ export default class TicketSetupCommand extends Command {
     );
 
     await submit.deferUpdate();
-    this.client.components.delete(modalId);
+    this.client.components.delete(customIds.modal);
   }
 
   private async editPanelButtonModal(
     action: ButtonInteraction<'cached'>,
     panel: WithId<TicketPanelEntity>
   ): Promise<WithId<TicketPanelEntity>> {
-    const modalId = this.client.uuid(action.user.id);
-    const labelId = nanoid(8);
-    const emojiId = nanoid(8);
-    const styleId = nanoid(8);
+    const customIds = {
+      modal: this.client.uuid(action.user.id),
+      mode: nanoid(8),
+      label: nanoid(8),
+      emoji: nanoid(8),
+      style: nanoid(8)
+    };
 
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Edit Create Ticket Button');
     const current = panel.button ?? {
       label: 'Create Ticket',
       emoji: '📩',
       style: ButtonStyle.Primary
     };
+    const currentMode = panel.displayMode ?? 'menu';
+
     const labelInput = new TextInputBuilder()
-      .setCustomId(labelId)
+      .setCustomId(customIds.label)
       .setStyle(TextInputStyle.Short)
       .setMaxLength(80)
       .setRequired(true)
       .setValue(current.label);
     const emojiInput = new TextInputBuilder()
-      .setCustomId(emojiId)
+      .setCustomId(customIds.emoji)
       .setStyle(TextInputStyle.Short)
       .setMaxLength(32)
       .setRequired(false);
     if (current.emoji) emojiInput.setValue(current.emoji);
 
+    const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Panel Button');
     modal.addLabelComponents(
-      new LabelBuilder().setLabel('Button Label').setTextInputComponent(labelInput),
-      new LabelBuilder().setLabel('Emoji (optional)').setTextInputComponent(emojiInput),
-      new LabelBuilder().setLabel('Style').setStringSelectMenuComponent(
-        new StringSelectMenuBuilder().setCustomId(styleId).setOptions(
+      new LabelBuilder()
+        .setLabel('Display Mode')
+        .setDescription('How application types are presented to the Panel.')
+        .setStringSelectMenuComponent(
+          new StringSelectMenuBuilder().setCustomId(customIds.mode).setOptions(
+            new StringSelectMenuOptionBuilder()
+              .setLabel('Select Menu')
+              .setValue('menu')
+              .setDescription('One button opens a dropdown for members to choose a type')
+              .setDefault(currentMode === 'menu'),
+            new StringSelectMenuOptionBuilder()
+              .setLabel('Buttons')
+              .setValue('buttons')
+              .setDescription('One button per application type (max 5; falls back to menu if more)')
+              .setDefault(currentMode === 'buttons')
+          )
+        ),
+      new LabelBuilder()
+        .setLabel('Button Label (select menu mode only)')
+        .setTextInputComponent(labelInput),
+      new LabelBuilder()
+        .setLabel('Emoji (select menu mode only)')
+        .setTextInputComponent(emojiInput),
+      new LabelBuilder().setLabel('Style (select menu mode only)').setStringSelectMenuComponent(
+        new StringSelectMenuBuilder().setCustomId(customIds.style).setOptions(
           new StringSelectMenuOptionBuilder()
             .setLabel('Primary')
             .setValue('1')
@@ -578,12 +523,15 @@ export default class TicketSetupCommand extends Command {
     await action.showModal(modal);
     const submit = await action.awaitModalSubmit({
       time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
+      filter: (a) => a.customId === customIds.modal
     });
 
-    const label = submit.fields.getTextInputValue(labelId) || current.label;
-    const emoji = submit.fields.getTextInputValue(emojiId) || undefined;
-    const styleVal = parseInt(submit.fields.getStringSelectValues(styleId)?.[0] ?? '1');
+    const displayMode = (submit.fields.getStringSelectValues(customIds.mode)?.[0] ?? 'menu') as
+      | 'menu'
+      | 'buttons';
+    const label = submit.fields.getTextInputValue(customIds.label) || current.label;
+    const emoji = submit.fields.getTextInputValue(customIds.emoji) || undefined;
+    const styleVal = parseInt(submit.fields.getStringSelectValues(customIds.style)?.[0] ?? '1');
     const style = [
       ButtonStyle.Primary,
       ButtonStyle.Secondary,
@@ -597,11 +545,11 @@ export default class TicketSetupCommand extends Command {
       .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
       .updateOne(
         { _id: panel._id },
-        { $set: { button: { label, emoji, style }, updatedAt: new Date() } }
+        { $set: { displayMode, button: { label, emoji, style }, updatedAt: new Date() } }
       );
 
     await submit.deferUpdate();
-    this.client.components.delete(modalId);
+    this.client.components.delete(customIds.modal);
 
     return (await this.getPanel(panel.guildId, panel.name)) ?? panel;
   }
@@ -613,6 +561,8 @@ export default class TicketSetupCommand extends Command {
   ): Promise<WithId<TicketPanelEntity>> {
     const staticIds = {
       addButton: this.client.uuid(interaction.user.id),
+      toggleMode: this.client.uuid(interaction.user.id),
+      reorder: this.client.uuid(interaction.user.id),
       back: this.client.uuid(interaction.user.id)
     };
 
@@ -628,17 +578,35 @@ export default class TicketSetupCommand extends Command {
     for (const b of panel.ticketTypes) getOrCreateButtonIds(b.id);
 
     const renderButtonsMenu = (currentPanel: WithId<TicketPanelEntity>) => {
+      const mode = currentPanel.displayMode ?? 'menu';
+      const modeLabel = mode === 'buttons' ? 'Buttons' : 'Select Menu';
+      const modeDescription =
+        mode === 'buttons'
+          ? 'Each type gets its own button on the panel (max 5).'
+          : 'Types appear in a dropdown when members click the panel button.';
+
       const container = new ContainerBuilder();
-      container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          [
-            '## Application Types',
-            'Each type appears as a select menu option when a user clicks the "Create Ticket" button. You can have up to **25 types** per panel.',
-            currentPanel.ticketTypes.length === 0
-              ? '-# No types yet — click **Add Type** to create your first one.'
-              : `-# Click **Edit / Delete** next to a type to edit its settings or remove it.`
-          ].join('\n')
-        )
+      container.addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              [
+                '## Application Types',
+                `**Display Mode: ${modeLabel}** — ${modeDescription}`,
+                currentPanel.ticketTypes.length === 0
+                  ? '-# No types yet — click **Add Type** to create your first one.'
+                  : mode === 'buttons'
+                    ? `-# Up to **5 types** in Buttons mode (${currentPanel.ticketTypes.length}/5 used). Click **Edit / Delete** to edit or remove a type.`
+                    : `-# Up to **25 types** in Select Menu mode (${currentPanel.ticketTypes.length}/25 used). Click **Edit / Delete** to edit or remove a type.`
+              ].join('\n')
+            )
+          )
+          .setButtonAccessory(
+            new ButtonBuilder()
+              .setCustomId(staticIds.toggleMode)
+              .setLabel(mode === 'buttons' ? 'Switch to Menu' : 'Switch to Buttons')
+              .setStyle(ButtonStyle.Secondary)
+          )
       );
       for (const b of currentPanel.ticketTypes) {
         const bIds = getOrCreateButtonIds(b.id);
@@ -649,8 +617,10 @@ export default class TicketSetupCommand extends Command {
               new TextDisplayBuilder().setContent(
                 [
                   `${b.emoji ? `${b.emoji} ` : ''}**${b.label}**`,
-                  `Ping: ${b.pingRoleIds.length ? b.pingRoleIds.map((r) => `<@&${r}>`).join(', ') : '*none*'} | Questions: ${b.questions?.length ?? 0}`,
-                  `TH min: ${b.thMin ?? '*-*'} | Max accounts: ${b.maxAccounts ?? '*unlimited*'} | Require linked: ${b.requireLinkedAccount ? 'Yes' : 'No'}`
+                  `Ping: ${b.pingRoleIds.length ? b.pingRoleIds.map((r) => `<@&${r}>`).join(', ') : '*None*'} | Questions: ${b.questions?.length ?? 0}`,
+                  b.requireLinkedAccount
+                    ? `Linked account required | TH min: ${b.thMin ?? 'Any'} | Trophies: ${b.minTrophies ?? 'Any'} | League: ${b.minLeagueTier ? (PLAYER_LEAGUE_MAP[b.minLeagueTier] ?? b.minLeagueTier) : 'Any'}`
+                    : 'No linked account required'
                 ].join('\n')
               )
             )
@@ -665,20 +635,29 @@ export default class TicketSetupCommand extends Command {
 
       container.addSeparatorComponents((sep) => sep.setSpacing(SeparatorSpacingSize.Small));
 
-      container.addActionRowComponents((row) =>
-        row.addComponents(
+      const actionRow = [
+        new ButtonBuilder()
+          .setCustomId(staticIds.addButton)
+          .setLabel('Add Type')
+          .setEmoji('➕')
+          .setStyle(ButtonStyle.Success)
+          .setDisabled(currentPanel.ticketTypes.length >= 25)
+      ];
+      if (currentPanel.ticketTypes.length > 1) {
+        actionRow.push(
           new ButtonBuilder()
-            .setCustomId(staticIds.addButton)
-            .setLabel('Add Type')
-            .setEmoji('➕')
-            .setStyle(ButtonStyle.Success)
-            .setDisabled(currentPanel.ticketTypes.length >= 25),
-          new ButtonBuilder()
-            .setCustomId(staticIds.back)
-            .setLabel('Back')
+            .setCustomId(staticIds.reorder)
+            .setLabel('Reorder')
             .setStyle(ButtonStyle.Secondary)
-        )
+        );
+      }
+      actionRow.push(
+        new ButtonBuilder()
+          .setCustomId(staticIds.back)
+          .setLabel('Back')
+          .setStyle(ButtonStyle.Secondary)
       );
+      container.addActionRowComponents((row) => row.addComponents(...actionRow));
       return container;
     };
 
@@ -707,7 +686,68 @@ export default class TicketSetupCommand extends Command {
           return;
         }
 
-        if (action.customId === staticIds.addButton) {
+        if (action.customId === staticIds.toggleMode) {
+          await action.deferUpdate();
+          const newMode = (currentPanel.displayMode ?? 'menu') === 'buttons' ? 'menu' : 'buttons';
+          await this.client.db
+            .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
+            .updateOne(
+              { _id: currentPanel._id },
+              { $set: { displayMode: newMode, updatedAt: new Date() } }
+            );
+          currentPanel =
+            (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
+        } else if (action.customId === staticIds.reorder) {
+          const customIds = { modal: this.client.uuid(action.user.id), select: nanoid(8) };
+          const n = currentPanel.ticketTypes.length;
+          const modal = new ModalBuilder()
+            .setCustomId(customIds.modal)
+            .setTitle('Reorder Application Types');
+          modal.addLabelComponents(
+            new LabelBuilder()
+              .setLabel('Select all types in your desired order:')
+              .setDescription('')
+              .setStringSelectMenuComponent(
+                new StringSelectMenuBuilder()
+                  .setCustomId(customIds.select)
+                  .setMinValues(n)
+                  .setMaxValues(n)
+                  .setOptions(
+                    ...currentPanel.ticketTypes.map((t) => {
+                      const opt = new StringSelectMenuOptionBuilder()
+                        .setLabel(t.label)
+                        .setValue(t.id);
+                      if (t.emoji) opt.setEmoji(t.emoji);
+                      return opt;
+                    })
+                  )
+              )
+          );
+          await action.showModal(modal);
+          const submit = await action
+            .awaitModalSubmit({
+              filter: (s) => s.customId === customIds.modal,
+              time: 5 * 60 * 1000
+            })
+            .catch(() => null);
+          if (submit) {
+            const selected = submit.fields.getStringSelectValues(customIds.select) ?? [];
+            if (selected.length === n) {
+              const reordered = selected.map(
+                (id) => currentPanel.ticketTypes.find((t) => t.id === id)!
+              );
+              await this.client.db
+                .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
+                .updateOne(
+                  { _id: currentPanel._id },
+                  { $set: { ticketTypes: reordered, updatedAt: new Date() } }
+                );
+              currentPanel =
+                (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
+            }
+            await submit.deferUpdate();
+          }
+        } else if (action.customId === staticIds.addButton) {
           try {
             currentPanel = await this.addTicketTypeModal(
               action as ButtonInteraction<'cached'>,
@@ -756,17 +796,19 @@ export default class TicketSetupCommand extends Command {
     action: ButtonInteraction<'cached'>,
     panel: WithId<TicketPanelEntity>
   ): Promise<WithId<TicketPanelEntity>> {
-    const modalId = this.client.uuid(action.user.id);
-    const labelId = nanoid(8);
-    const emojiId = nanoid(8);
+    const customIds = {
+      modal: this.client.uuid(action.user.id),
+      label: nanoid(8),
+      emoji: nanoid(8)
+    };
 
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Add Application Type');
+    const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Add Application Type');
     modal.addLabelComponents(
       new LabelBuilder()
         .setLabel('Label')
         .setTextInputComponent(
           new TextInputBuilder()
-            .setCustomId(labelId)
+            .setCustomId(customIds.label)
             .setStyle(TextInputStyle.Short)
             .setMaxLength(80)
             .setRequired(true)
@@ -776,7 +818,7 @@ export default class TicketSetupCommand extends Command {
         .setLabel('Emoji (optional, e.g. 🎫 or :emoji_name:)')
         .setTextInputComponent(
           new TextInputBuilder()
-            .setCustomId(emojiId)
+            .setCustomId(customIds.emoji)
             .setStyle(TextInputStyle.Short)
             .setMaxLength(32)
             .setRequired(false)
@@ -788,11 +830,11 @@ export default class TicketSetupCommand extends Command {
 
     const submit = await action.awaitModalSubmit({
       time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
+      filter: (a) => a.customId === customIds.modal
     });
 
-    const label = submit.fields.getTextInputValue(labelId);
-    const emoji = submit.fields.getTextInputValue(emojiId) || undefined;
+    const label = submit.fields.getTextInputValue(customIds.label);
+    const emoji = submit.fields.getTextInputValue(customIds.emoji) || undefined;
 
     const newButton: TicketTypeConfig = {
       id: nanoid(8),
@@ -815,7 +857,7 @@ export default class TicketSetupCommand extends Command {
       );
 
     await submit.deferUpdate();
-    this.client.components.delete(modalId);
+    this.client.components.delete(customIds.modal);
 
     return (await this.getPanel(panel.guildId, panel.name)) ?? panel;
   }
@@ -826,7 +868,7 @@ export default class TicketSetupCommand extends Command {
     buttonId: string
   ): Promise<WithId<TicketPanelEntity>> {
     let currentPanel = panel;
-    let btn = currentPanel.ticketTypes.find((b) => b.id === buttonId);
+    let btn = currentPanel.ticketTypes.find((b) => b.id === buttonId)!;
     if (!btn) return currentPanel;
 
     const ids = {
@@ -847,7 +889,11 @@ export default class TicketSetupCommand extends Command {
         new SectionBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `## Edit Application Type: ${b.label}\n**Label:** ${b.label} | **Emoji:** ${b.emoji ?? '*(none)*'}`
+              [
+                `## Edit Application Type: ${b.label}`,
+                `**Label:** ${b.label} | **Emoji:** ${b.emoji ?? '*(none)*'}`,
+                `**Button Style:** ${b.buttonStyle != null ? (ButtonStyle[b.buttonStyle] ?? b.buttonStyle) : 'Primary'}`
+              ].join('\n')
             )
           )
           .setButtonAccessory(
@@ -861,7 +907,13 @@ export default class TicketSetupCommand extends Command {
         new SectionBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `**Staff Roles**\nPing: ${b.pingRoleIds.length ? b.pingRoleIds.map((r) => `<@&${r}>`).join(', ') : '*(none)*'}\nView-only: ${b.viewOnlyRoleIds.length ? b.viewOnlyRoleIds.map((r) => `<@&${r}>`).join(', ') : '*(none)*'}`
+              [
+                '**Staff Roles**',
+                `Ping: ${b.pingRoleIds.length ? b.pingRoleIds.map((r) => `<@&${r}>`).join(', ') : '*(none)*'}`,
+                `Viewer: ${b.viewOnlyRoleIds.length ? b.viewOnlyRoleIds.map((r) => `<@&${r}>`).join(', ') : '*(none)*'}`,
+                `Add roles: ${b.addRoleIds.length ? b.addRoleIds.map((r) => `<@&${r}>`).join(', ') : '*(none)*'}`,
+                `Remove roles: ${b.removeRoleIds.length ? b.removeRoleIds.map((r) => `<@&${r}>`).join(', ') : '*(none)*'}`
+              ].join('\n')
             )
           )
           .setButtonAccessory(
@@ -875,7 +927,17 @@ export default class TicketSetupCommand extends Command {
         new SectionBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `**Rules**\nTH min: ${b.thMin ?? '*-*'} | War stars: ${b.minWarStars ?? '*-*'} | Max accounts: ${b.maxAccounts ?? '*unlimited*'}\nRequire linked: ${b.requireLinkedAccount ? 'Yes' : 'No'} | Staff thread: ${b.createStaffThread ? 'Yes' : 'No'}`
+              [
+                '**Rules**',
+                b.requireLinkedAccount
+                  ? `Linked account required | TH min: ${b.thMin ?? 'Any'} | Trophies: ${b.minTrophies ?? 'Any'} | League: ${b.minLeagueTier ? (PLAYER_LEAGUE_MAP[b.minLeagueTier] ?? b.minLeagueTier) : 'Any'}`
+                  : 'No linked account required',
+                [
+                  `Staff thread: ${b.createStaffThread ? 'Yes' : 'No'}`,
+                  `Auto-sleep: ${b.autoSleepHours ? `${b.autoSleepHours}h` : 'Off'}`,
+                  `Claiming: ${b.allowClaim ? 'Enabled' : 'Disabled'}`
+                ].join(' | ')
+              ].join('\n')
             )
           )
           .setButtonAccessory(
@@ -985,127 +1047,190 @@ export default class TicketSetupCommand extends Command {
 
         try {
           if (action.customId === ids.editLabel) {
-            const modalId = this.client.uuid(action.user.id);
-            const labelFieldId = nanoid(8);
-            const emojiFieldId = nanoid(8);
-            const modal = new ModalBuilder().setCustomId(modalId).setTitle('Edit Application Type');
+            const customIds = {
+              modal: this.client.uuid(action.user.id),
+              label: nanoid(8),
+              emoji: nanoid(8),
+              btnStyle: nanoid(8)
+            };
+            const modal = new ModalBuilder()
+              .setCustomId(customIds.modal)
+              .setTitle('Edit Application Type');
             const labelInput = new TextInputBuilder()
-              .setCustomId(labelFieldId)
+              .setCustomId(customIds.label)
               .setStyle(TextInputStyle.Short)
               .setMaxLength(80)
               .setRequired(true);
-            if (btn!.label) labelInput.setValue(btn!.label);
+            if (btn.label) labelInput.setValue(btn.label);
             const emojiInput = new TextInputBuilder()
-              .setCustomId(emojiFieldId)
+              .setCustomId(customIds.emoji)
               .setStyle(TextInputStyle.Short)
               .setMaxLength(32)
               .setRequired(false);
-            if (btn!.emoji) emojiInput.setValue(btn!.emoji);
+            if (btn.emoji) emojiInput.setValue(btn.emoji);
+            const currentBtnStyle = btn.buttonStyle ?? ButtonStyle.Primary;
             modal.addLabelComponents(
               new LabelBuilder().setLabel('Label').setTextInputComponent(labelInput),
-              new LabelBuilder().setLabel('Emoji (optional)').setTextInputComponent(emojiInput)
-            );
-            await action.showModal(modal);
-            const submit = await action.awaitModalSubmit({
-              time: 5 * 60 * 1000,
-              filter: (a) => a.customId === modalId
-            });
-            await updateTicketType({
-              label: submit.fields.getTextInputValue(labelFieldId),
-              emoji: submit.fields.getTextInputValue(emojiFieldId) || undefined
-            });
-            await submit.deferUpdate();
-            this.client.components.delete(modalId);
-          } else if (action.customId === ids.editRoles) {
-            currentPanel = await this.editTicketTypeRolesModal(
-              action as unknown as ButtonInteraction<'cached'>,
-              currentPanel,
-              buttonId,
-              btn!
-            );
-            btn = currentPanel.ticketTypes.find((b) => b.id === buttonId)!;
-          } else if (action.customId === ids.editRules) {
-            const modalId = this.client.uuid(action.user.id);
-            const thId = nanoid(8);
-            const maxId = nanoid(8);
-            const starsId = nanoid(8);
-            const flagsId = nanoid(8);
-            const modal = new ModalBuilder().setCustomId(modalId).setTitle('Apply Rules');
-            modal.addLabelComponents(
+              new LabelBuilder().setLabel('Emoji (optional)').setTextInputComponent(emojiInput),
               new LabelBuilder()
-                .setLabel('Minimum TH level (empty = no requirement)')
-                .setTextInputComponent(
-                  new TextInputBuilder()
-                    .setCustomId(thId)
-                    .setStyle(TextInputStyle.Short)
-                    .setMaxLength(2)
-                    .setRequired(false)
-                    .setValue(btn!.thMin != null ? String(btn!.thMin) : '')
-                ),
-              new LabelBuilder().setLabel('Max accounts (blank = unlimited)').setTextInputComponent(
-                new TextInputBuilder()
-                  .setCustomId(maxId)
-                  .setStyle(TextInputStyle.Short)
-                  .setMaxLength(2)
-                  .setRequired(false)
-                  .setValue(btn!.maxAccounts != null ? String(btn!.maxAccounts) : '')
-              ),
-              new LabelBuilder()
-                .setLabel('Min war stars (empty = no requirement)')
-                .setTextInputComponent(
-                  new TextInputBuilder()
-                    .setCustomId(starsId)
-                    .setStyle(TextInputStyle.Short)
-                    .setMaxLength(6)
-                    .setRequired(false)
-                    .setValue(btn!.minWarStars != null ? String(btn!.minWarStars) : '')
-                ),
-              new LabelBuilder()
-                .setLabel('Options')
-                .setCheckboxGroupComponent(
-                  new CheckboxGroupBuilder()
-                    .setCustomId(flagsId)
-                    .addOptions(
-                      new CheckboxGroupOptionBuilder()
-                        .setLabel('Require linked CoC account')
-                        .setValue('require_linked')
-                        .setDefault(btn!.requireLinkedAccount),
-                      new CheckboxGroupOptionBuilder()
-                        .setLabel('Create staff thread')
-                        .setValue('staff_thread')
-                        .setDefault(btn!.createStaffThread)
-                    )
+                .setLabel('Button Style (Buttons display mode only)')
+                .setStringSelectMenuComponent(
+                  new StringSelectMenuBuilder().setCustomId(customIds.btnStyle).setOptions(
+                    new StringSelectMenuOptionBuilder()
+                      .setLabel('Primary')
+                      .setValue('1')
+                      .setDefault(currentBtnStyle === ButtonStyle.Primary),
+                    new StringSelectMenuOptionBuilder()
+                      .setLabel('Secondary')
+                      .setValue('2')
+                      .setDefault(currentBtnStyle === ButtonStyle.Secondary),
+                    new StringSelectMenuOptionBuilder()
+                      .setLabel('Success')
+                      .setValue('3')
+                      .setDefault(currentBtnStyle === ButtonStyle.Success),
+                    new StringSelectMenuOptionBuilder()
+                      .setLabel('Danger')
+                      .setValue('4')
+                      .setDefault(currentBtnStyle === ButtonStyle.Danger)
+                  )
                 )
             );
             await action.showModal(modal);
             const submit = await action.awaitModalSubmit({
               time: 5 * 60 * 1000,
-              filter: (a) => a.customId === modalId
+              filter: (a) => a.customId === customIds.modal
             });
-            const thRaw = submit.fields.getTextInputValue(thId);
-            const maxRaw = submit.fields.getTextInputValue(maxId);
-            const starsRaw = submit.fields.getTextInputValue(starsId);
-            const flags = submit.fields.getCheckboxGroup(flagsId);
-            const requireLinkedAccount = flags.includes('require_linked');
-            const createStaffThread = flags.includes('staff_thread');
+            const btnStyleVal = parseInt(
+              submit.fields.getStringSelectValues(customIds.btnStyle)?.[0] ?? '1'
+            );
+            const buttonStyle = [
+              ButtonStyle.Primary,
+              ButtonStyle.Secondary,
+              ButtonStyle.Success,
+              ButtonStyle.Danger
+            ].includes(btnStyleVal)
+              ? btnStyleVal
+              : ButtonStyle.Primary;
             await updateTicketType({
-              thMin: thRaw ? parseInt(thRaw) || undefined : undefined,
-              maxAccounts: maxRaw ? parseInt(maxRaw) || undefined : undefined,
-              minWarStars: starsRaw ? parseInt(starsRaw) || undefined : undefined,
-              requireLinkedAccount,
-              createStaffThread
+              label: submit.fields.getTextInputValue(customIds.label),
+              emoji: submit.fields.getTextInputValue(customIds.emoji) || undefined,
+              buttonStyle
             });
             await submit.deferUpdate();
-            this.client.components.delete(modalId);
+            this.client.components.delete(customIds.modal);
+          } else if (action.customId === ids.editRoles) {
+            currentPanel = await this.editTicketTypeRolesModal(
+              action as unknown as ButtonInteraction<'cached'>,
+              currentPanel,
+              buttonId,
+              btn
+            );
+            btn = currentPanel.ticketTypes.find((b) => b.id === buttonId)!;
+          } else if (action.customId === ids.editRules) {
+            const customIds = {
+              modal: this.client.uuid(action.user.id),
+              th: nanoid(8),
+              trophies: nanoid(8),
+              league: nanoid(8),
+              autoSleep: nanoid(8),
+              flags: nanoid(8)
+            };
+            const leagueOptions: [string, string][] = [
+              ['none', 'No minimum'],
+              ...Object.entries(PLAYER_LEAGUE_MAP).slice(-24)
+            ];
+            const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Apply Rules');
+            modal.addLabelComponents(
+              new LabelBuilder().setLabel('Minimum TH level').setTextInputComponent(
+                new TextInputBuilder()
+                  .setCustomId(customIds.th)
+                  .setStyle(TextInputStyle.Short)
+                  .setMaxLength(2)
+                  .setRequired(false)
+                  .setValue(btn.thMin != null ? String(btn.thMin) : '')
+              ),
+              new LabelBuilder().setLabel('Minimum trophies').setTextInputComponent(
+                new TextInputBuilder()
+                  .setCustomId(customIds.trophies)
+                  .setStyle(TextInputStyle.Short)
+                  .setMaxLength(6)
+                  .setRequired(false)
+                  .setValue(btn.minTrophies != null ? String(btn.minTrophies) : '')
+              ),
+              new LabelBuilder().setLabel('Minimum league tier').setStringSelectMenuComponent(
+                new StringSelectMenuBuilder().setCustomId(customIds.league).setOptions(
+                  ...leagueOptions.map(([value, label]) =>
+                    new StringSelectMenuOptionBuilder()
+                      .setLabel(label)
+                      .setValue(value)
+                      .setDefault(
+                        value === 'none' ? !btn.minLeagueTier : btn.minLeagueTier === value
+                      )
+                  )
+                )
+              ),
+              new LabelBuilder().setLabel('Auto-sleep after inactivity').setTextInputComponent(
+                new TextInputBuilder()
+                  .setCustomId(customIds.autoSleep)
+                  .setStyle(TextInputStyle.Short)
+                  .setMaxLength(3)
+                  .setRequired(false)
+                  .setValue(btn.autoSleepHours != null ? String(btn.autoSleepHours) : '')
+              ),
+              new LabelBuilder().setLabel('Options').setCheckboxGroupComponent(
+                new CheckboxGroupBuilder().setCustomId(customIds.flags).addOptions(
+                  new CheckboxGroupOptionBuilder()
+                    .setLabel('Linked account required')
+                    .setValue('require_linked')
+                    .setDefault(btn.requireLinkedAccount),
+                  new CheckboxGroupOptionBuilder()
+                    .setLabel('Create staff thread')
+                    .setValue('staff_thread')
+                    .setDefault(btn.createStaffThread),
+                  new CheckboxGroupOptionBuilder()
+                    .setLabel('Allow claiming')
+                    .setValue('allow_claim')
+                    .setDefault(btn.allowClaim ?? false)
+                )
+              )
+            );
+            await action.showModal(modal);
+            const submit = await action.awaitModalSubmit({
+              time: 5 * 60 * 1000,
+              filter: (a) => a.customId === customIds.modal
+            });
+            const thRaw = submit.fields.getTextInputValue(customIds.th);
+            const trophiesRaw = submit.fields.getTextInputValue(customIds.trophies);
+            const autoSleepRaw = submit.fields.getTextInputValue(customIds.autoSleep);
+            const leagueTier = submit.fields.getStringSelectValues(customIds.league)?.[0];
+            const flags = submit.fields.getCheckboxGroup(customIds.flags);
+            const requireLinkedAccount = flags.includes('require_linked');
+            const createStaffThread = flags.includes('staff_thread');
+            const allowClaim = flags.includes('allow_claim');
+            await updateTicketType({
+              thMin: thRaw ? parseInt(thRaw) || undefined : undefined,
+              minTrophies: trophiesRaw ? parseInt(trophiesRaw) || undefined : undefined,
+              autoSleepHours: autoSleepRaw ? parseInt(autoSleepRaw) || undefined : undefined,
+              minLeagueTier: leagueTier === 'none' ? undefined : leagueTier,
+              requireLinkedAccount,
+              createStaffThread,
+              allowClaim: allowClaim || undefined
+            });
+            await submit.deferUpdate();
+            this.client.components.delete(customIds.modal);
           } else if (action.customId === ids.editQuestions) {
-            const modalId = this.client.uuid(action.user.id);
-            const q1 = nanoid(8);
-            const q2 = nanoid(8);
-            const q3 = nanoid(8);
-            const q4 = nanoid(8);
-            const q5 = nanoid(8);
-            const existing = btn!.questions ?? [];
-            const modal = new ModalBuilder().setCustomId(modalId).setTitle('Questions (up to 5)');
+            const customIds = {
+              modal: this.client.uuid(action.user.id),
+              q1: nanoid(8),
+              q2: nanoid(8),
+              q3: nanoid(8),
+              q4: nanoid(8),
+              q5: nanoid(8)
+            };
+            const existing = btn.questions ?? [];
+            const modal = new ModalBuilder()
+              .setCustomId(customIds.modal)
+              .setTitle('Questions (up to 5)');
             const makeQ = (id: string, n: number) => {
               const inp = new TextInputBuilder()
                 .setCustomId(id)
@@ -1118,29 +1243,29 @@ export default class TicketSetupCommand extends Command {
                 .setTextInputComponent(inp);
             };
             modal.addLabelComponents(
-              makeQ(q1, 1),
-              makeQ(q2, 2),
-              makeQ(q3, 3),
-              makeQ(q4, 4),
-              makeQ(q5, 5)
+              makeQ(customIds.q1, 1),
+              makeQ(customIds.q2, 2),
+              makeQ(customIds.q3, 3),
+              makeQ(customIds.q4, 4),
+              makeQ(customIds.q5, 5)
             );
             await action.showModal(modal);
             const submit = await action.awaitModalSubmit({
               time: 5 * 60 * 1000,
-              filter: (a) => a.customId === modalId
+              filter: (a) => a.customId === customIds.modal
             });
             const questions = [
-              submit.fields.getTextInputValue(q1),
-              submit.fields.getTextInputValue(q2),
-              submit.fields.getTextInputValue(q3),
-              submit.fields.getTextInputValue(q4),
-              submit.fields.getTextInputValue(q5)
+              submit.fields.getTextInputValue(customIds.q1),
+              submit.fields.getTextInputValue(customIds.q2),
+              submit.fields.getTextInputValue(customIds.q3),
+              submit.fields.getTextInputValue(customIds.q4),
+              submit.fields.getTextInputValue(customIds.q5)
             ]
               .filter(Boolean)
               .map((label) => ({ label, required: true }));
             await updateTicketType({ questions });
             await submit.deferUpdate();
-            this.client.components.delete(modalId);
+            this.client.components.delete(customIds.modal);
           } else if (action.customId === ids.editCategories) {
             currentPanel = await this.editTicketTypeCategoriesModal(
               action as unknown as ButtonInteraction<'cached'>,
@@ -1149,30 +1274,34 @@ export default class TicketSetupCommand extends Command {
             );
             btn = currentPanel.ticketTypes.find((b) => b.id === buttonId)!;
           } else if (action.customId === ids.editNaming) {
-            const modalId = this.client.uuid(action.user.id);
-            const namingId = nanoid(8);
-            const modal = new ModalBuilder().setCustomId(modalId).setTitle('Channel Naming');
+            const customIds = {
+              modal: this.client.uuid(action.user.id),
+              naming: nanoid(8)
+            };
+            const modal = new ModalBuilder()
+              .setCustomId(customIds.modal)
+              .setTitle('Channel Naming');
             modal.addLabelComponents(
               new LabelBuilder().setLabel('Naming convention').setTextInputComponent(
                 new TextInputBuilder()
-                  .setCustomId(namingId)
+                  .setCustomId(customIds.naming)
                   .setStyle(TextInputStyle.Short)
                   .setMaxLength(64)
                   .setRequired(true)
                   .setPlaceholder('ticket-{count}')
-                  .setValue(btn!.namingConvention || DEFAULT_NAMING)
+                  .setValue(btn.namingConvention || DEFAULT_NAMING)
               )
             );
             await action.showModal(modal);
             const submit = await action.awaitModalSubmit({
               time: 5 * 60 * 1000,
-              filter: (a) => a.customId === modalId
+              filter: (a) => a.customId === customIds.modal
             });
             await updateTicketType({
-              namingConvention: submit.fields.getTextInputValue(namingId) || DEFAULT_NAMING
+              namingConvention: submit.fields.getTextInputValue(customIds.naming) || DEFAULT_NAMING
             });
             await submit.deferUpdate();
-            this.client.components.delete(modalId);
+            this.client.components.delete(customIds.modal);
           }
         } catch (e) {
           if (
@@ -1204,40 +1333,40 @@ export default class TicketSetupCommand extends Command {
     buttonId: string,
     btn: TicketTypeConfig
   ): Promise<WithId<TicketPanelEntity>> {
-    const modalId = this.client.uuid(action.user.id);
-    const pingId = nanoid(8);
-    const viewId = nanoid(8);
-    const addId = nanoid(8);
-    const removeId = nanoid(8);
+    const customIds = {
+      modal: this.client.uuid(action.user.id),
+      ping: nanoid(8),
+      view: nanoid(8),
+      add: nanoid(8),
+      remove: nanoid(8)
+    };
 
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Edit Staff Roles');
+    const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Staff Roles');
     modal.addLabelComponents(
       new LabelBuilder().setLabel('Ping roles (get notified + access)').setRoleSelectMenuComponent(
         new RoleSelectMenuBuilder()
-          .setCustomId(pingId)
+          .setCustomId(customIds.ping)
           .setRequired(false)
           .setMaxValues(10)
           .setDefaultRoles(btn.pingRoleIds ?? [])
       ),
-      new LabelBuilder()
-        .setLabel('View-only roles (can see but not ping)')
-        .setRoleSelectMenuComponent(
-          new RoleSelectMenuBuilder()
-            .setCustomId(viewId)
-            .setRequired(false)
-            .setMaxValues(10)
-            .setDefaultRoles(btn.viewOnlyRoleIds ?? [])
-        ),
-      new LabelBuilder().setLabel('Roles to ADD to ticket creator').setRoleSelectMenuComponent(
+      new LabelBuilder().setLabel('Viewer roles (can see but not ping)').setRoleSelectMenuComponent(
         new RoleSelectMenuBuilder()
-          .setCustomId(addId)
+          .setCustomId(customIds.view)
+          .setRequired(false)
+          .setMaxValues(10)
+          .setDefaultRoles(btn.viewOnlyRoleIds ?? [])
+      ),
+      new LabelBuilder().setLabel('Roles to add to ticket creator').setRoleSelectMenuComponent(
+        new RoleSelectMenuBuilder()
+          .setCustomId(customIds.add)
           .setRequired(false)
           .setMaxValues(10)
           .setDefaultRoles(btn.addRoleIds ?? [])
       ),
-      new LabelBuilder().setLabel('Roles to REMOVE from ticket creator').setRoleSelectMenuComponent(
+      new LabelBuilder().setLabel('Roles to remove from ticket creator').setRoleSelectMenuComponent(
         new RoleSelectMenuBuilder()
-          .setCustomId(removeId)
+          .setCustomId(customIds.remove)
           .setRequired(false)
           .setMaxValues(10)
           .setDefaultRoles(btn.removeRoleIds ?? [])
@@ -1247,13 +1376,13 @@ export default class TicketSetupCommand extends Command {
     await action.showModal(modal);
     const submit = await action.awaitModalSubmit({
       time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
+      filter: (a) => a.customId === customIds.modal
     });
 
-    const pingRoleIds = submit.fields.getSelectedRoles(pingId)?.map((r) => r.id) ?? [];
-    const viewOnlyRoleIds = submit.fields.getSelectedRoles(viewId)?.map((r) => r.id) ?? [];
-    const addRoleIds = submit.fields.getSelectedRoles(addId)?.map((r) => r.id) ?? [];
-    const removeRoleIds = submit.fields.getSelectedRoles(removeId)?.map((r) => r.id) ?? [];
+    const pingRoleIds = submit.fields.getSelectedRoles(customIds.ping)?.map((r) => r.id) ?? [];
+    const viewOnlyRoleIds = submit.fields.getSelectedRoles(customIds.view)?.map((r) => r.id) ?? [];
+    const addRoleIds = submit.fields.getSelectedRoles(customIds.add)?.map((r) => r.id) ?? [];
+    const removeRoleIds = submit.fields.getSelectedRoles(customIds.remove)?.map((r) => r.id) ?? [];
 
     await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
       { '_id': panel._id, 'ticketTypes.id': buttonId },
@@ -1269,7 +1398,7 @@ export default class TicketSetupCommand extends Command {
     );
 
     await submit.deferUpdate();
-    this.client.components.delete(modalId);
+    this.client.components.delete(customIds.modal);
 
     return (await this.getPanel(panel.guildId, panel.name)) ?? panel;
   }
@@ -1394,16 +1523,20 @@ export default class TicketSetupCommand extends Command {
               await action.deferUpdate();
               return;
             }
-            const modalId = this.client.uuid(action.user.id);
-            const nameId = nanoid(8);
-            const contentId = nanoid(8);
-            const modal = new ModalBuilder().setCustomId(modalId).setTitle('Add Saved Reply');
+            const customIds = {
+              modal: this.client.uuid(action.user.id),
+              name: nanoid(8),
+              content: nanoid(8)
+            };
+            const modal = new ModalBuilder()
+              .setCustomId(customIds.modal)
+              .setTitle('Add Saved Reply');
             modal.addLabelComponents(
               new LabelBuilder()
                 .setLabel('Reply name')
                 .setTextInputComponent(
                   new TextInputBuilder()
-                    .setCustomId(nameId)
+                    .setCustomId(customIds.name)
                     .setStyle(TextInputStyle.Short)
                     .setMaxLength(64)
                     .setRequired(true)
@@ -1413,7 +1546,7 @@ export default class TicketSetupCommand extends Command {
                 .setLabel('Reply content (supports variables)')
                 .setTextInputComponent(
                   new TextInputBuilder()
-                    .setCustomId(contentId)
+                    .setCustomId(customIds.content)
                     .setStyle(TextInputStyle.Paragraph)
                     .setMaxLength(1800)
                     .setRequired(true)
@@ -1425,33 +1558,37 @@ export default class TicketSetupCommand extends Command {
             await action.showModal(modal);
             const submit = await action.awaitModalSubmit({
               time: 5 * 60 * 1000,
-              filter: (a) => a.customId === modalId
+              filter: (a) => a.customId === customIds.modal
             });
-            const name = submit.fields.getTextInputValue(nameId).trim();
-            const content = submit.fields.getTextInputValue(contentId).trim();
+            const name = submit.fields.getTextInputValue(customIds.name).trim();
+            const content = submit.fields.getTextInputValue(customIds.content).trim();
             if (name && content) {
               await saveTemplates([...templates, { name, content }]);
               getOrCreateReplyIds(name);
             }
             await submit.deferUpdate();
-            this.client.components.delete(modalId);
+            this.client.components.delete(customIds.modal);
           } else {
             for (const [replyName, replyIds] of perReplyIds.entries()) {
               if (action.customId === replyIds.edit) {
                 const template = templates.find((t) => t.name === replyName);
                 if (!template) break;
 
-                const modalId = this.client.uuid(action.user.id);
-                const nameId = nanoid(8);
-                const contentId = nanoid(8);
-                const deleteId = nanoid(8);
-                const modal = new ModalBuilder().setCustomId(modalId).setTitle('Edit Saved Reply');
+                const customIds = {
+                  modal: this.client.uuid(action.user.id),
+                  name: nanoid(8),
+                  content: nanoid(8),
+                  delete: nanoid(8)
+                };
+                const modal = new ModalBuilder()
+                  .setCustomId(customIds.modal)
+                  .setTitle('Edit Saved Reply');
                 modal.addLabelComponents(
                   new LabelBuilder()
                     .setLabel('Reply name')
                     .setTextInputComponent(
                       new TextInputBuilder()
-                        .setCustomId(nameId)
+                        .setCustomId(customIds.name)
                         .setStyle(TextInputStyle.Short)
                         .setMaxLength(64)
                         .setRequired(true)
@@ -1461,7 +1598,7 @@ export default class TicketSetupCommand extends Command {
                     .setLabel('Reply content (supports variables)')
                     .setTextInputComponent(
                       new TextInputBuilder()
-                        .setCustomId(contentId)
+                        .setCustomId(customIds.content)
                         .setStyle(TextInputStyle.Paragraph)
                         .setMaxLength(1800)
                         .setRequired(true)
@@ -1471,7 +1608,7 @@ export default class TicketSetupCommand extends Command {
                     .setLabel('Delete this reply?')
                     .setCheckboxGroupComponent(
                       new CheckboxGroupBuilder()
-                        .setCustomId(deleteId)
+                        .setCustomId(customIds.delete)
                         .addOptions(
                           new CheckboxGroupOptionBuilder()
                             .setLabel('Yes, delete this reply')
@@ -1483,15 +1620,17 @@ export default class TicketSetupCommand extends Command {
                 await action.showModal(modal);
                 const submit = await action.awaitModalSubmit({
                   time: 5 * 60 * 1000,
-                  filter: (a) => a.customId === modalId
+                  filter: (a) => a.customId === customIds.modal
                 });
-                const shouldDelete = submit.fields.getCheckboxGroup(deleteId).includes('delete');
+                const shouldDelete = submit.fields
+                  .getCheckboxGroup(customIds.delete)
+                  .includes('delete');
                 if (shouldDelete) {
                   await saveTemplates(templates.filter((t) => t.name !== replyName));
                   perReplyIds.delete(replyName);
                 } else {
-                  const newName = submit.fields.getTextInputValue(nameId).trim();
-                  const newContent = submit.fields.getTextInputValue(contentId).trim();
+                  const newName = submit.fields.getTextInputValue(customIds.name).trim();
+                  const newContent = submit.fields.getTextInputValue(customIds.content).trim();
                   if (newName && newContent) {
                     await saveTemplates(
                       templates.map((t) =>
@@ -1505,7 +1644,7 @@ export default class TicketSetupCommand extends Command {
                   }
                 }
                 await submit.deferUpdate();
-                this.client.components.delete(modalId);
+                this.client.components.delete(customIds.modal);
                 break;
               }
             }
@@ -1543,16 +1682,18 @@ export default class TicketSetupCommand extends Command {
     const btn = panel.ticketTypes.find((b) => b.id === buttonId);
     if (!btn) return panel;
 
-    const modalId = this.client.uuid(action.user.id);
-    const openId = nanoid(8);
-    const sleepId = nanoid(8);
-    const closedId = nanoid(8);
+    const customIds = {
+      modal: this.client.uuid(action.user.id),
+      open: nanoid(8),
+      sleep: nanoid(8),
+      closed: nanoid(8)
+    };
 
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Edit Categories');
+    const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Categories');
     modal.addLabelComponents(
       new LabelBuilder().setLabel('Open tickets category').setChannelSelectMenuComponent(
         new ChannelSelectMenuBuilder()
-          .setCustomId(openId)
+          .setCustomId(customIds.open)
           .setChannelTypes(ChannelType.GuildCategory)
           .setRequired(false)
           .setMaxValues(1)
@@ -1560,7 +1701,7 @@ export default class TicketSetupCommand extends Command {
       ),
       new LabelBuilder().setLabel('Sleeping tickets category').setChannelSelectMenuComponent(
         new ChannelSelectMenuBuilder()
-          .setCustomId(sleepId)
+          .setCustomId(customIds.sleep)
           .setChannelTypes(ChannelType.GuildCategory)
           .setRequired(false)
           .setMaxValues(1)
@@ -1568,7 +1709,7 @@ export default class TicketSetupCommand extends Command {
       ),
       new LabelBuilder().setLabel('Closed tickets category').setChannelSelectMenuComponent(
         new ChannelSelectMenuBuilder()
-          .setCustomId(closedId)
+          .setCustomId(customIds.closed)
           .setChannelTypes(ChannelType.GuildCategory)
           .setRequired(false)
           .setMaxValues(1)
@@ -1579,230 +1720,48 @@ export default class TicketSetupCommand extends Command {
     await action.showModal(modal);
     const submit = await action.awaitModalSubmit({
       time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
+      filter: (a) => a.customId === customIds.modal
     });
 
-    const openId2 = submit.fields.getSelectedChannels(openId)?.first()?.id ?? null;
-    const sleepId2 = submit.fields.getSelectedChannels(sleepId)?.first()?.id ?? null;
-    const closedId2 = submit.fields.getSelectedChannels(closedId)?.first()?.id ?? null;
+    const openCategoryId = submit.fields.getSelectedChannels(customIds.open)?.first()?.id ?? null;
+    const sleepCategoryId = submit.fields.getSelectedChannels(customIds.sleep)?.first()?.id ?? null;
+    const closedCategoryId =
+      submit.fields.getSelectedChannels(customIds.closed)?.first()?.id ?? null;
 
     await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
       { '_id': panel._id, 'ticketTypes.id': buttonId },
       {
         $set: {
-          'ticketTypes.$.openCategoryId': openId2,
-          'ticketTypes.$.sleepCategoryId': sleepId2,
-          'ticketTypes.$.closedCategoryId': closedId2,
+          'ticketTypes.$.openCategoryId': openCategoryId,
+          'ticketTypes.$.sleepCategoryId': sleepCategoryId,
+          'ticketTypes.$.closedCategoryId': closedCategoryId,
           'updatedAt': new Date()
         }
       }
     );
 
     await submit.deferUpdate();
-    this.client.components.delete(modalId);
+    this.client.components.delete(customIds.modal);
 
     return (await this.getPanel(panel.guildId, panel.name)) ?? panel;
-  }
-
-  private async editRulesModal(
-    action: ButtonInteraction<'cached'>,
-    panel: WithId<TicketPanelEntity>
-  ) {
-    if (panel.ticketTypes.length === 0) return;
-    const btn = panel.ticketTypes[0];
-    const modalId = this.client.uuid(action.user.id);
-    const thId = nanoid(8);
-    const maxId = nanoid(8);
-    const starsId = nanoid(8);
-    const flagsId = nanoid(8);
-
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Apply Rules');
-    modal.addLabelComponents(
-      new LabelBuilder().setLabel('Min TH level (empty = no requirement)').setTextInputComponent(
-        new TextInputBuilder()
-          .setCustomId(thId)
-          .setStyle(TextInputStyle.Short)
-          .setMaxLength(2)
-          .setRequired(false)
-          .setValue(btn.thMin != null ? String(btn.thMin) : '')
-      ),
-      new LabelBuilder().setLabel('Max accounts per application').setTextInputComponent(
-        new TextInputBuilder()
-          .setCustomId(maxId)
-          .setStyle(TextInputStyle.Short)
-          .setMaxLength(2)
-          .setRequired(false)
-          .setValue(btn.maxAccounts != null ? String(btn.maxAccounts) : '')
-      ),
-      new LabelBuilder().setLabel('Min war stars (empty = no requirement)').setTextInputComponent(
-        new TextInputBuilder()
-          .setCustomId(starsId)
-          .setStyle(TextInputStyle.Short)
-          .setMaxLength(6)
-          .setRequired(false)
-          .setValue(btn.minWarStars != null ? String(btn.minWarStars) : '')
-      ),
-      new LabelBuilder()
-        .setLabel('Options')
-        .setCheckboxGroupComponent(
-          new CheckboxGroupBuilder()
-            .setCustomId(flagsId)
-            .addOptions(
-              new CheckboxGroupOptionBuilder()
-                .setLabel('Require linked CoC account')
-                .setValue('require_linked')
-                .setDefault(btn.requireLinkedAccount),
-              new CheckboxGroupOptionBuilder()
-                .setLabel('Create staff thread')
-                .setValue('staff_thread')
-                .setDefault(btn.createStaffThread)
-            )
-        )
-    );
-
-    await action.showModal(modal);
-    const submit = await action.awaitModalSubmit({
-      time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
-    });
-
-    const thRaw = submit.fields.getTextInputValue(thId);
-    const maxRaw = submit.fields.getTextInputValue(maxId);
-    const starsRaw = submit.fields.getTextInputValue(starsId);
-    const flags = submit.fields.getCheckboxGroup(flagsId);
-    const requireLinkedAccount = flags.includes('require_linked');
-    const createStaffThread = flags.includes('staff_thread');
-
-    await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
-      { '_id': panel._id, 'ticketTypes.id': btn.id },
-      {
-        $set: {
-          'ticketTypes.$.thMin': thRaw ? parseInt(thRaw) || undefined : undefined,
-          'ticketTypes.$.maxAccounts': maxRaw ? parseInt(maxRaw) || undefined : undefined,
-          'ticketTypes.$.minWarStars': starsRaw ? parseInt(starsRaw) || undefined : undefined,
-          'ticketTypes.$.requireLinkedAccount': requireLinkedAccount,
-          'ticketTypes.$.createStaffThread': createStaffThread,
-          'updatedAt': new Date()
-        }
-      }
-    );
-
-    await submit.deferUpdate();
-    this.client.components.delete(modalId);
-  }
-
-  private async editQuestionsModal(
-    action: ButtonInteraction<'cached'>,
-    panel: WithId<TicketPanelEntity>
-  ) {
-    if (panel.ticketTypes.length === 0) return;
-    const btn = panel.ticketTypes[0];
-    const existing = btn.questions ?? [];
-    const modalId = this.client.uuid(action.user.id);
-    const q1 = nanoid(8);
-    const q2 = nanoid(8);
-    const q3 = nanoid(8);
-    const q4 = nanoid(8);
-    const q5 = nanoid(8);
-
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Questions (up to 5)');
-    const makeQ = (id: string, n: number) => {
-      const inp = new TextInputBuilder()
-        .setCustomId(id)
-        .setStyle(TextInputStyle.Short)
-        .setMaxLength(256)
-        .setRequired(false);
-      if (existing[n - 1]) inp.setValue(existing[n - 1].label);
-      return new LabelBuilder()
-        .setLabel(`Question ${n} (leave blank to remove)`)
-        .setTextInputComponent(inp);
-    };
-    modal.addLabelComponents(makeQ(q1, 1), makeQ(q2, 2), makeQ(q3, 3), makeQ(q4, 4), makeQ(q5, 5));
-
-    await action.showModal(modal);
-    const submit = await action.awaitModalSubmit({
-      time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
-    });
-
-    const questions = [
-      submit.fields.getTextInputValue(q1),
-      submit.fields.getTextInputValue(q2),
-      submit.fields.getTextInputValue(q3),
-      submit.fields.getTextInputValue(q4),
-      submit.fields.getTextInputValue(q5)
-    ]
-      .filter(Boolean)
-      .map((label) => ({ label, required: true }));
-
-    await this.client.db
-      .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-      .updateOne(
-        { '_id': panel._id, 'ticketTypes.id': btn.id },
-        { $set: { 'ticketTypes.$.questions': questions, 'updatedAt': new Date() } }
-      );
-
-    await submit.deferUpdate();
-    this.client.components.delete(modalId);
-  }
-
-  private async editNamingModal(
-    action: ButtonInteraction<'cached'>,
-    panel: WithId<TicketPanelEntity>
-  ) {
-    if (panel.ticketTypes.length === 0) return;
-    const btn = panel.ticketTypes[0];
-    const modalId = this.client.uuid(action.user.id);
-    const namingId = nanoid(8);
-
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Channel Naming');
-    modal.addLabelComponents(
-      new LabelBuilder().setLabel('Convention').setTextInputComponent(
-        new TextInputBuilder()
-          .setCustomId(namingId)
-          .setStyle(TextInputStyle.Short)
-          .setMaxLength(64)
-          .setRequired(true)
-          .setPlaceholder('ticket-{count}')
-          .setValue(btn.namingConvention || DEFAULT_NAMING)
-      )
-    );
-
-    await action.showModal(modal);
-    const submit = await action.awaitModalSubmit({
-      time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
-    });
-
-    await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
-      { '_id': panel._id, 'ticketTypes.id': btn.id },
-      {
-        $set: {
-          'ticketTypes.$.namingConvention':
-            submit.fields.getTextInputValue(namingId) || DEFAULT_NAMING,
-          'updatedAt': new Date()
-        }
-      }
-    );
-
-    await submit.deferUpdate();
-    this.client.components.delete(modalId);
   }
 
   private async editLoggingModal(
     action: ButtonInteraction<'cached'>,
     panel: WithId<TicketPanelEntity>
   ): Promise<WithId<TicketPanelEntity>> {
-    const modalId = this.client.uuid(action.user.id);
-    const buttonClickId = nanoid(8);
-    const statusChangeId = nanoid(8);
-    const ticketCloseId = nanoid(8);
+    const customIds = {
+      modal: this.client.uuid(action.user.id),
+      buttonClick: nanoid(8),
+      statusChange: nanoid(8),
+      ticketClose: nanoid(8)
+    };
 
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle('Edit Logging Channels');
+    const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Logging Channels');
     modal.addLabelComponents(
       new LabelBuilder().setLabel('Button click log channel').setChannelSelectMenuComponent(
         new ChannelSelectMenuBuilder()
-          .setCustomId(buttonClickId)
+          .setCustomId(customIds.buttonClick)
           .setChannelTypes(ChannelType.GuildText)
           .setRequired(false)
           .setMaxValues(1)
@@ -1810,7 +1769,7 @@ export default class TicketSetupCommand extends Command {
       ),
       new LabelBuilder().setLabel('Status change log channel').setChannelSelectMenuComponent(
         new ChannelSelectMenuBuilder()
-          .setCustomId(statusChangeId)
+          .setCustomId(customIds.statusChange)
           .setChannelTypes(ChannelType.GuildText)
           .setRequired(false)
           .setMaxValues(1)
@@ -1820,7 +1779,7 @@ export default class TicketSetupCommand extends Command {
       ),
       new LabelBuilder().setLabel('Ticket close log channel').setChannelSelectMenuComponent(
         new ChannelSelectMenuBuilder()
-          .setCustomId(ticketCloseId)
+          .setCustomId(customIds.ticketClose)
           .setChannelTypes(ChannelType.GuildText)
           .setRequired(false)
           .setMaxValues(1)
@@ -1831,15 +1790,15 @@ export default class TicketSetupCommand extends Command {
     await action.showModal(modal);
     const submit = await action.awaitModalSubmit({
       time: 5 * 60 * 1000,
-      filter: (a) => a.customId === modalId
+      filter: (a) => a.customId === customIds.modal
     });
 
     const buttonClickChannel =
-      submit.fields.getSelectedChannels(buttonClickId)?.first()?.id ?? null;
+      submit.fields.getSelectedChannels(customIds.buttonClick)?.first()?.id ?? null;
     const statusChangeChannel =
-      submit.fields.getSelectedChannels(statusChangeId)?.first()?.id ?? null;
+      submit.fields.getSelectedChannels(customIds.statusChange)?.first()?.id ?? null;
     const ticketCloseChannel =
-      submit.fields.getSelectedChannels(ticketCloseId)?.first()?.id ?? null;
+      submit.fields.getSelectedChannels(customIds.ticketClose)?.first()?.id ?? null;
 
     await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
       { _id: panel._id },
@@ -1854,16 +1813,14 @@ export default class TicketSetupCommand extends Command {
     );
 
     await submit.deferUpdate();
-    this.client.components.delete(modalId);
+    this.client.components.delete(customIds.modal);
 
     return (await this.getPanel(panel.guildId, panel.name)) ?? panel;
   }
 
   // =================== UTILITY ===================
 
-  public async getPanel(guildId: string, name: string) {
-    return this.client.db
-      .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-      .findOne({ guildId, name });
+  public getPanel(guildId: string, name: string) {
+    return this.client.tickets.getPanel(guildId, name);
   }
 }

@@ -4,11 +4,13 @@ export interface TicketTypeConfig {
   id: string;
   label: string;
   emoji?: string;
+  buttonStyle?: number;
   requireLinkedAccount: boolean;
   thMin?: number;
   maxAccounts?: number;
   heroRequirements?: { name: string; level: number }[];
-  minWarStars?: number;
+  minTrophies?: number;
+  minLeagueTier?: string;
   questions?: { label: string; placeholder?: string; required: boolean }[];
   pingRoleIds: string[];
   viewOnlyRoleIds: string[];
@@ -19,6 +21,8 @@ export interface TicketTypeConfig {
   closedCategoryId?: string;
   namingConvention: string;
   createStaffThread: boolean;
+  autoSleepHours?: number;
+  allowClaim?: boolean;
 }
 
 export interface TicketPanelEntity {
@@ -33,6 +37,7 @@ export interface TicketPanelEntity {
     thumbnailUrl?: string;
     footerText?: string;
   };
+  displayMode: 'menu' | 'buttons';
   button: {
     label: string;
     emoji?: string;
@@ -73,6 +78,8 @@ export interface TicketEntity {
   status: 'open' | 'sleep' | 'closed';
   notifyMeUserIds: string[];
   transcriptUrl?: string;
+  autoSleepAt?: Date;
+  claimedBy?: string;
   createdAt: Date;
   updatedAt: Date;
   closedAt?: Date;

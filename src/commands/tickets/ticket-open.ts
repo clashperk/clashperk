@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, PLAYER_LEAGUE_MAP } from '@app/constants';
 import {
   TicketEntity,
   TicketGuildSettingsEntity,
@@ -95,7 +95,8 @@ export default class TicketOpenCommand extends Command {
         'AttachFiles',
         'EmbedLinks',
         'CreatePrivateThreads',
-        'SendMessagesInThreads'
+        'SendMessagesInThreads',
+        'MentionEveryone'
       ],
       defer: false,
       ephemeral: true
@@ -129,6 +130,10 @@ export default class TicketOpenCommand extends Command {
         return this.setClan(interaction, args);
       case 'notify':
         return this.toggleNotify(interaction, args);
+      case 'claim':
+        return this.claimTicket(interaction, args);
+      case 'unclaim':
+        return this.unclaimTicket(interaction, args);
     }
   }
 
@@ -152,6 +157,14 @@ export default class TicketOpenCommand extends Command {
       return interaction.editReply({
         content: 'No application types are configured for this panel.'
       });
+    }
+
+    // Buttons mode: type is pre-selected via the button's customId
+    const typeId = args.bid as string | undefined;
+    if (typeId) {
+      const btn = panel.ticketTypes.find((b) => b.id === typeId);
+      if (!btn) return interaction.editReply({ content: 'Application type not found.' });
+      return this.proceedWithType(interaction, panel, btn);
     }
 
     // Single type — proceed directly
@@ -270,12 +283,19 @@ export default class TicketOpenCommand extends Command {
 
     const qualifying = validPlayers.filter((p) => {
       if (btn.thMin && (p.townHallLevel ?? 0) < btn.thMin) return false;
+      if (btn.minTrophies && (p.trophies ?? 0) < btn.minTrophies) return false;
+      if (btn.minLeagueTier && (p.leagueTier?.id ?? 0) < Number(btn.minLeagueTier)) return false;
       return true;
     });
 
     if (qualifying.length === 0) {
       const parts = ['None of your linked accounts meet the requirements:'];
       if (btn.thMin) parts.push(`- TH${btn.thMin}+ required`);
+      if (btn.minTrophies) parts.push(`- ${btn.minTrophies}+ trophies required`);
+      if (btn.minLeagueTier)
+        parts.push(
+          `- ${PLAYER_LEAGUE_MAP[btn.minLeagueTier] ?? btn.minLeagueTier} or higher required`
+        );
       await interaction.reply({ content: parts.join('\n'), flags: MessageFlags.Ephemeral });
       return null;
     }
@@ -435,6 +455,21 @@ export default class TicketOpenCommand extends Command {
         deny: [PermissionFlagsBits.ViewChannel]
       },
       {
+        id: this.client.user.id,
+        allow: [
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.AttachFiles,
+          PermissionFlagsBits.EmbedLinks,
+          PermissionFlagsBits.ReadMessageHistory,
+          PermissionFlagsBits.ManageMessages,
+          PermissionFlagsBits.ManageChannels,
+          PermissionFlagsBits.CreatePrivateThreads,
+          PermissionFlagsBits.SendMessagesInThreads,
+          PermissionFlagsBits.MentionEveryone
+        ]
+      },
+      {
         id: interaction.user.id,
         allow: [
           PermissionFlagsBits.ViewChannel,
@@ -496,11 +531,22 @@ export default class TicketOpenCommand extends Command {
       answers: answers.length ? answers : undefined,
       status: 'open',
       notifyMeUserIds: [],
+      autoSleepAt: btn.autoSleepHours
+        ? new Date(Date.now() + btn.autoSleepHours * 60 * 60 * 1000)
+        : undefined,
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
     await this.client.db.collection<TicketEntity>(Collections.TICKETS).insertOne(ticketDoc);
+
+    if (btn.autoSleepHours) {
+      void this.client.tickets.setAutoSleepCache(
+        ticketChannel.id,
+        interaction.user.id,
+        btn.autoSleepHours
+      );
+    }
 
     // Post ticket embed in channel
     await this.postTicketEmbed(
@@ -551,11 +597,13 @@ export default class TicketOpenCommand extends Command {
 
   private buildTicketContainer(ticket: TicketEntity, btn: TicketTypeConfig, channelId: string) {
     const ticketNum = String(ticket.count).padStart(4, '0');
-    const headerText = [
+    const headerLines = [
       `## Ticket #${ticketNum}`,
       `**Created by:** <@${ticket.creatorId}>`,
       `**Created at:** <t:${Math.floor(ticket.createdAt.getTime() / 1000)}:F>`
-    ].join('\n');
+    ];
+    if (ticket.claimedBy) headerLines.push(`**Claimed by:** <@${ticket.claimedBy}>`);
+    const headerText = headerLines.join('\n');
 
     const container = new ContainerBuilder();
 
@@ -662,14 +710,48 @@ export default class TicketOpenCommand extends Command {
       container.addActionRowComponents((row) => row.addComponents(...topButtons));
     }
 
-    // Row 2: Delete Ticket | View Account
-    const bottomButtons: ButtonBuilder[] = [
+    // Row 2: [Claim|Unclaim] | Delete Ticket | [View Account]
+    const bottomButtons: ButtonBuilder[] = [];
+
+    if (btn.allowClaim) {
+      if (ticket.claimedBy) {
+        const unclaimId = this.createId({
+          cmd: 'ticket-open',
+          action: 'unclaim',
+          cid: channelId,
+          ephemeral: true
+        });
+        bottomButtons.push(
+          new ButtonBuilder()
+            .setCustomId(unclaimId)
+            .setLabel('Unclaim')
+            .setEmoji('🔓')
+            .setStyle(ButtonStyle.Secondary)
+        );
+      } else {
+        const claimId = this.createId({
+          cmd: 'ticket-open',
+          action: 'claim',
+          cid: channelId,
+          ephemeral: true
+        });
+        bottomButtons.push(
+          new ButtonBuilder()
+            .setCustomId(claimId)
+            .setLabel('Claim')
+            .setEmoji('🎟️')
+            .setStyle(ButtonStyle.Primary)
+        );
+      }
+    }
+
+    bottomButtons.push(
       new ButtonBuilder()
         .setCustomId(deleteId)
         .setLabel('Delete Ticket')
         .setEmoji('🗑️')
         .setStyle(ButtonStyle.Danger)
-    ];
+    );
     if (viewAccId) {
       bottomButtons.push(
         new ButtonBuilder()
@@ -1086,6 +1168,149 @@ export default class TicketOpenCommand extends Command {
         this.reply('You will be notified when the ticket creator sends a message.')
       );
     }
+  }
+
+  private async claimTicket(
+    interaction: MessageComponentInteraction<'cached'>,
+    args: Record<string, unknown>
+  ) {
+    const channelId = args.cid as string;
+    const ticket = await this.getTicketByChannel(channelId);
+    if (!ticket) return interaction.editReply(this.reply('Ticket not found.'));
+
+    if (ticket.claimedBy) {
+      return interaction.editReply(
+        this.reply(`This ticket is already claimed by <@${ticket.claimedBy}>.`)
+      );
+    }
+
+    const panel = await this.client.db
+      .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
+      .findOne({ _id: new ObjectId(ticket.panelId) });
+    const btn = panel?.ticketTypes.find((b) => b.id === ticket.buttonId);
+    if (!btn) return interaction.editReply(this.reply('Could not load panel configuration.'));
+
+    // To restrict claiming to staff only, uncomment:
+    // const member = interaction.member as GuildMember;
+    // if (!btn.pingRoleIds.some((id) => member.roles.cache.has(id))) {
+    //   return interaction.editReply(this.reply('Only staff can claim tickets.'));
+    // }
+
+    const channel = interaction.guild!.channels.cache.get(channelId) as TextChannel | undefined;
+    if (!channel) return interaction.editReply(this.reply('Channel not found.'));
+
+    // Give claimer a personal overwrite so they keep access after role overwrites are removed
+    await channel.permissionOverwrites
+      .edit(interaction.user.id, {
+        ViewChannel: true,
+        SendMessages: true,
+        AttachFiles: true,
+        EmbedLinks: true,
+        ReadMessageHistory: true,
+        ManageMessages: true
+      })
+      .catch(() => null);
+
+    // Remove all staff and viewer role overwrites
+    for (const roleId of [...(btn.pingRoleIds ?? []), ...(btn.viewOnlyRoleIds ?? [])]) {
+      await channel.permissionOverwrites.delete(roleId).catch(() => null);
+    }
+
+    await this.client.db
+      .collection<TicketEntity>(Collections.TICKETS)
+      .updateOne(
+        { _id: ticket._id },
+        { $set: { claimedBy: interaction.user.id, updatedAt: new Date() } }
+      );
+
+    const updatedTicket = { ...ticket, claimedBy: interaction.user.id };
+    const container = this.buildTicketContainer(updatedTicket, btn, channelId);
+    await interaction.message
+      .edit({ components: [container], flags: MessageFlags.IsComponentsV2 })
+      .catch(() => null);
+
+    void this.logStatusChange(panel!, ticket, 'claimed', null, ticket.status, interaction.user.id);
+    await interaction.editReply(
+      this.reply('You have claimed this ticket. Other staff no longer have access.')
+    );
+  }
+
+  private async unclaimTicket(
+    interaction: MessageComponentInteraction<'cached'>,
+    args: Record<string, unknown>
+  ) {
+    const channelId = args.cid as string;
+    const ticket = await this.getTicketByChannel(channelId);
+    if (!ticket) return interaction.editReply(this.reply('Ticket not found.'));
+
+    if (!ticket.claimedBy) {
+      return interaction.editReply(this.reply('This ticket is not claimed.'));
+    }
+
+    if (ticket.claimedBy !== interaction.user.id) {
+      return interaction.editReply(
+        this.reply(`This ticket is claimed by <@${ticket.claimedBy}>. Only they can unclaim it.`)
+      );
+    }
+
+    const panel = await this.client.db
+      .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
+      .findOne({ _id: new ObjectId(ticket.panelId) });
+    const btn = panel?.ticketTypes.find((b) => b.id === ticket.buttonId);
+    if (!btn) return interaction.editReply(this.reply('Could not load panel configuration.'));
+
+    const channel = interaction.guild!.channels.cache.get(channelId) as TextChannel | undefined;
+    if (!channel) return interaction.editReply(this.reply('Channel not found.'));
+
+    // Remove claimer's personal overwrite (unless they are also the creator)
+    if (ticket.claimedBy !== ticket.creatorId) {
+      await channel.permissionOverwrites.delete(interaction.user.id).catch(() => null);
+    }
+
+    // Restore ping roles (full staff access)
+    for (const roleId of btn.pingRoleIds ?? []) {
+      await channel.permissionOverwrites
+        .edit(roleId, {
+          ViewChannel: true,
+          SendMessages: true,
+          AttachFiles: true,
+          EmbedLinks: true,
+          ReadMessageHistory: true,
+          ManageMessages: true,
+          ManageChannels: true
+        })
+        .catch(() => null);
+    }
+
+    // Restore view-only roles
+    for (const roleId of btn.viewOnlyRoleIds ?? []) {
+      await channel.permissionOverwrites
+        .edit(roleId, { ViewChannel: true, SendMessages: true, ReadMessageHistory: true })
+        .catch(() => null);
+    }
+
+    await this.client.db
+      .collection<TicketEntity>(Collections.TICKETS)
+      .updateOne(
+        { _id: ticket._id },
+        { $unset: { claimedBy: '' }, $set: { updatedAt: new Date() } }
+      );
+
+    const updatedTicket = { ...ticket, claimedBy: undefined };
+    const container = this.buildTicketContainer(updatedTicket, btn, channelId);
+    await interaction.message
+      .edit({ components: [container], flags: MessageFlags.IsComponentsV2 })
+      .catch(() => null);
+
+    void this.logStatusChange(
+      panel!,
+      ticket,
+      'unclaimed',
+      null,
+      ticket.status,
+      interaction.user.id
+    );
+    await interaction.editReply(this.reply('Ticket unclaimed. Staff access has been restored.'));
   }
 
   // =================== UTILITY ===================

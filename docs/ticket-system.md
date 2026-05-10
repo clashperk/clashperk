@@ -55,6 +55,10 @@ interface TicketPanelEntity {
   guildId: string;
   name: string;                  // panel name, unique per guild
 
+  displayMode?: 'menu' | 'buttons'; // default 'menu'
+                                 // 'menu'    → single "Create Ticket" button opens a select menu
+                                 // 'buttons' → one button per type (max 5; falls back to menu if >5)
+
   embed: {
     title?: string;
     description?: string;
@@ -64,13 +68,13 @@ interface TicketPanelEntity {
     footerText?: string;
   };
 
-  button: {                      // the single "Create Ticket" Discord button
+  button: {                      // used only in 'menu' display mode
     label: string;               // default: "Create Ticket"
     emoji?: string;              // default: "📩"
     style: number;               // ButtonStyle enum value, default: Primary
   };
 
-  ticketTypes: TicketTypeConfig[];  // application type options (shown in select menu if >1)
+  ticketTypes: TicketTypeConfig[];
 
   logChannels: {
     buttonClick?: string;        // channel ID for button click logs
@@ -92,20 +96,20 @@ interface TicketTypeConfig {
   id: string;                    // nanoid(8), used as buttonId in tickets
   label: string;
   emoji?: string;
-
+  buttonStyle?: number;          // ButtonStyle for this type's button in 'buttons' display mode
   // Gate checks — evaluated before creating the channel
   requireLinkedAccount: boolean;
-  thMin?: number;                // minimum Town Hall level
-  maxAccounts?: number;
+  thMin?: number;                // minimum Town Hall level (only checked when requireLinkedAccount=true)
+  minTrophies?: number;          // minimum trophy count (only checked when requireLinkedAccount=true)
+  minLeagueTier?: string;        // minimum league tier ID from PLAYER_LEAGUE_MAP (requireLinkedAccount=true)
   heroRequirements?: { name: string; level: number }[];
-  minWarStars?: number;
 
   // Application questions shown in a modal before ticket creation
   questions?: { label: string; placeholder?: string; required: boolean }[];
 
   // Staff role permissions
   pingRoleIds: string[];         // full access + ManageMessages/ManageChannels
-  viewOnlyRoleIds: string[];     // ViewChannel + SendMessages, no manage
+  viewOnlyRoleIds: string[];     // ViewChannel + SendMessages, no manage (displayed as "Viewer")
 
   // Role changes applied to ticket creator on open
   addRoleIds: string[];
@@ -117,8 +121,22 @@ interface TicketTypeConfig {
   closedCategoryId?: string;
 
   namingConvention: string;      // see Channel Naming Conventions
-  messageTemplates: { name: string; content: string }[];  // saved staff replies
   createStaffThread: boolean;    // create a private thread for staff on ticket open
+  autoSleepHours?: number;       // auto-sleep ticket after N hours of creator inactivity
+  allowClaim?: boolean;          // if true, staff can claim exclusive ownership of this ticket type
+}
+```
+
+### `TicketGuildSettingsEntity` (collection: `TicketSettings`)
+
+One document per guild. Stores server-wide saved replies (shared across all panels and types).
+
+```ts
+interface TicketGuildSettingsEntity {
+  _id: ObjectId;
+  guildId: string;
+  savedReplies: { name: string; content: string }[];  // max 25 per server
+  updatedAt: Date;
 }
 ```
 
@@ -145,6 +163,8 @@ interface TicketEntity {
   status: 'open' | 'sleep' | 'closed';
   notifyMeUserIds: string[];
   transcriptUrl?: string;
+  autoSleepAt?: Date;            // set on creation if autoSleepHours configured
+  claimedBy?: string;            // Discord user ID of the admin who claimed the ticket
   createdAt: Date;
   updatedAt: Date;
   closedAt?: Date;
@@ -173,7 +193,6 @@ Creates the panel if it does not exist (with a default "General" application typ
       requireLinkedAccount: false,
       pingRoleIds: [], viewOnlyRoleIds: [], addRoleIds: [], removeRoleIds: [],
       namingConvention: 'ticket-{count}',
-      messageTemplates: [],
       createStaffThread: false
     }
   ],
@@ -183,20 +202,46 @@ Creates the panel if it does not exist (with a default "General" application typ
 
 ### Dashboard sections
 
-The dashboard is a CV2 container with **Edit** buttons for each section:
+The dashboard is a CV2 container laid out as numbered steps, each with an **Edit** button:
+
+| Step | Section | What it configures |
+|---|---|---|
+| **Step 1** | **Embed** | Panel embed: title, description, hex color |
+| **Step 2** | **Create Ticket Button** | Display mode (Menu or Buttons) + panel button label/emoji/style (menu mode only) |
+| **Step 3** | **Application Types** | Add/edit/delete/reorder types; summary of each (roles, questions, requirements) |
+| **Step 4** | **Saved Replies** | Server-wide staff reply templates (shared across all panels and types) |
+| **Step 5** | **Logging** | Log channels for button click, status change, ticket close events |
+
+Per-type settings (staff roles, apply rules, questions, categories, naming, button style) are configured inside the **Application Types** sub-flow, not in the main dashboard.
+
+### Application type sub-flow
+
+Opened via **Edit / Delete** next to a type. Sections:
 
 | Section | What it configures |
 |---|---|
-| **Embed** | Panel embed: title, description, hex color |
-| **Create Ticket Button** | The single Discord button: label, emoji, style (Primary/Secondary/Success/Danger) |
-| **Application Types** | Add/edit/remove application types (shown as select menu to users if >1 type) |
-| **Staff Roles** | Ping roles (full access) and view-only roles per application type |
-| **Apply Rules** | TH minimum, max accounts, war stars, require linked account |
-| **Questions** | Up to 5 questions (text inputs) shown in a modal before ticket creation |
-| **Saved Replies** | Staff reply templates |
+| **Label / Emoji / Button Style** | Type label, emoji, and individual button style (for Buttons display mode) |
+| **Staff Roles** | Ping roles (full access + notify), Viewer roles (read only), Add roles, Remove roles |
+| **Rules** | TH min, min trophies, min league tier, require linked account, staff thread, allow claiming |
+| **Questions** | Up to 5 text-input questions shown in a modal before ticket creation |
 | **Categories** | Open / Sleep / Closed Discord category channels |
 | **Naming** | Channel naming convention |
-| **Logging** | Log channels for button click, status change, ticket close events |
+
+### Reordering types
+
+The **Reorder** button (visible when 2+ types exist) opens a modal with a single multi-select menu listing all types. The user must select all types — the order of selection becomes the new display order. On submit, the entire `ticketTypes` array is replaced in the new order via `$set`.
+
+### Apply Rules gate checks
+
+Gate checks run in `fetchQualifyingAccounts` before the ticket channel is created. All require `requireLinkedAccount=true`:
+
+| Field | Check |
+|---|---|
+| `thMin` | `player.townHallLevel >= thMin` |
+| `minTrophies` | `player.trophies >= minTrophies` |
+| `minLeagueTier` | `player.leagueTier.id >= Number(minLeagueTier)` |
+
+League tier options are derived from `PLAYER_LEAGUE_MAP` (top 25 entries by ID). The key stored is the string league ID (e.g. `'105000034'`).
 
 ### Dashboard collector
 
@@ -208,15 +253,26 @@ The dashboard uses a `createMessageComponentCollector` (10-minute timeout, filte
 
 **Command:** `/ticket-post panel_name:<name> [channel:<channel>]`
 
-Fetches the panel from DB, builds the embed and a single **"Create Ticket"** `ButtonBuilder`, and posts `{ embeds: [embed], components: [row] }` to the target channel.
+Fetches the panel from DB, builds the embed and button row(s), and posts `{ embeds: [embed], components: [rows] }` to the target channel.
 
-The button's customId encodes:
+### Display modes
 
+| Mode | Condition | What is posted |
+|---|---|---|
+| **Select Menu** | `displayMode === 'menu'` or `>5 types` | Single "Create Ticket" button using `panel.button` config |
+| **Buttons** | `displayMode === 'buttons'` and `≤5 types` | One button per application type using `type.buttonStyle` |
+
+**Menu mode customId:**
 ```
 cmd=ticket-open  action=open  pid=<panelId>  defer=false
 ```
 
-`defer=false` tells the handler framework **not** to auto-defer this interaction, because the first response may need to be `showModal()`.
+**Buttons mode customId (per type):**
+```
+cmd=ticket-open  action=open  pid=<panelId>  bid=<typeId>  defer=false
+```
+
+`defer=false` tells the handler framework **not** to auto-defer, because the first response may need to be `showModal()`.
 
 ---
 
@@ -226,23 +282,24 @@ cmd=ticket-open  action=open  pid=<panelId>  defer=false
 
 | `action` | Handler | Trigger |
 |---|---|---|
-| `open` | `openTicketFlow` | User clicks "Create Ticket" button on panel |
-| `select-type` | `handleTypeSelect` | User picks an application type from the select menu |
-| `accounts` | `handleAccountSelect` | User picks an account from the standalone account select |
+| `open` | `openTicketFlow` | User clicks a panel button (menu or buttons mode) |
+| `select-type` | `handleTypeSelect` | User picks a type from the select menu (menu mode, >1 type) |
+| `accounts` | `handleAccountSelect` | User picks an account from the account select menu |
 | `del-confirm` | `confirmDeleteTicket` | "Delete Ticket" button in ticket channel |
 | `del-ticket` | `deleteTicketChannel` | Confirmation button to actually delete |
-| `respond` | `sendResponse` | "Respond" button — sends a saved reply or custom message |
+| `reply` | `sendReply` | "Reply" button — sends a saved reply with optional variable fill-in |
 | `set-clan` | `setClan` | "Set Clan" button |
-| `set-clan-select` | `setClanSelect` | Clan select menu submission |
-| `view-acc` | `viewAccount` | "View Account" button — shows linked CoC account |
 | `notify` | `toggleNotify` | "Notify Me" button — opt in/out of DM on status change |
+| `claim` | `claimTicket` | "Claim" button — staff claims exclusive ownership (only shown if `allowClaim=true`) |
+| `unclaim` | `unclaimTicket` | "Unclaim" button — claimer releases the ticket back to shared access |
 
 ### `openTicketFlow` logic
 
 1. Load panel by `pid`.
 2. If `ticketTypes.length === 0` → reply error.
-3. If `ticketTypes.length === 1` → call `proceedWithType` directly.
-4. If `ticketTypes.length >= 2` → show a `StringSelectMenu` with one option per type (up to 25).
+3. If `args.bid` is present (buttons display mode) → find that type by ID and call `proceedWithType` directly.
+4. If `ticketTypes.length === 1` → call `proceedWithType` directly.
+5. If `ticketTypes.length >= 2` → show a `StringSelectMenu` with one option per type (up to 25).
 
 ### `proceedWithType` logic
 
@@ -268,7 +325,12 @@ requireLinkedAccount=false AND no questions
 
 ### `fetchQualifyingAccounts`
 
-Fetches linked player tags for the user, calls the CoC API for each, filters by `thMin`, returns formatted options. Returns `null` and sends an ephemeral error if no accounts qualify.
+Fetches linked player tags for the user, calls the CoC API for each, then filters by:
+- `thMin` — player town hall level
+- `minTrophies` — player trophy count
+- `minLeagueTier` — player league tier ID (numeric comparison against stored string ID)
+
+Returns formatted options. Returns `null` and sends an ephemeral error listing unmet requirements if no accounts qualify.
 
 ### `showQuestionsModal`
 
@@ -280,7 +342,7 @@ Fetches linked player tags for the user, calls the CoC API for each, filters by 
 
 1. Gets the next ticket count (max `count` in guild + 1).
 2. Resolves channel name from `namingConvention`.
-3. Builds permission overwrites (everyone denied, creator allowed, ping roles full access, view-only roles read/send).
+3. Builds permission overwrites (everyone denied, creator allowed, ping roles full access, viewer roles read/send).
 4. Creates the `GuildText` channel (placed in `openCategoryId` if set).
 5. Inserts `TicketEntity` to DB.
 6. Calls `postTicketEmbed` to post the CV2 ticket embed.
@@ -288,27 +350,36 @@ Fetches linked player tags for the user, calls the CoC API for each, filters by 
 8. Creates a private staff thread if `createStaffThread=true` and ping roles exist.
 9. Logs `created` status change.
 
-### Ticket embed (`postTicketEmbed`)
+### Ticket embed (`postTicketEmbed` / `buildTicketContainer`)
 
-Posted to the new ticket channel as a CV2 `ContainerBuilder`:
+Posted to the new ticket channel as a CV2 `ContainerBuilder`. After a Set Clan action, the embed is re-edited via `interaction.message.edit(...)` using the original interaction's message reference.
 
 ```
-## Ticket #0001                          [avatar button]
-Created by: @user
-Created at: <timestamp>
+## Ticket #0001
+Created by: @user                        [View Profile ↗]  ← SectionBuilder with link button
+Created at: <timestamp>                                       only shown if accountTag is set;
+Claimed by: @staff                       ← only shown when ticket.claimedBy is set
+                                                              plain TextDisplay otherwise
 ─────────────────────────────────────────
 Account: PlayerName (TH15) — #TAG        ← only if linked account used
 ─────────────────────────────────────────
-Q: Question 1
-A: Answer text
-                                         ← only if questions answered
-Q: Question 2
-A: Answer text
+Clan: ClanName — #TAG                    ← only if clan set via Set Clan
 ─────────────────────────────────────────
-[Delete Ticket] [Respond] [Set Clan] [View Account] [Notify Me]
+Q: Question 1
+A: Answer text                           ← only if questions were answered
+─────────────────────────────────────────
+[Reply 💬]  [Set Clan 🏰]  [Notify Me 🔔]
+─────────────────────────────────────────
+[Claim 🔒]  [Delete Ticket 🗑️]  [⚔️ View Account]   ← Claim only if allowClaim=true and not claimed
+[Unclaim 🔓]  [Delete Ticket 🗑️]  [⚔️ View Account] ← Unclaim shown instead when ticket.claimedBy set
+─────────────────────────────────────────
+@staffRole1 @staffRole2 @creator
 ```
 
-Action buttons in the ticket channel all encode `cid=<channelId>` in their customId.
+- `View Profile` is a `ButtonStyle.Link` URL button (no customId, no handler).
+- `View Account` routes to the `player` command (`cmd: 'player'`).
+- All other buttons encode `cid=<channelId>` in their customId.
+- Top-level flags (`SHOW_REPLY_BUTTON`, `SHOW_SET_CLAN_BUTTON`, `SHOW_NOTIFY_BUTTON`) can disable buttons without removing handlers.
 
 ---
 
@@ -320,7 +391,7 @@ Action buttons in the ticket channel all encode `cid=<channelId>` in their custo
 | `/ticket-reopen` | Set status → `open`, move back to `openCategoryId` |
 | `/ticket-sleep` | Set status → `sleep`, move to `sleepCategoryId` |
 | `/ticket-delete` | Hard delete the channel and update DB |
-| `/ticket-info` | Show ticket metadata (panel, type, creator, account, status) |
+| `/ticket-info` | Show ticket metadata (panel, type, creator, account, status, trophies, league) |
 | `/ticket-add` | Add a Discord member to the ticket channel |
 
 ---
@@ -332,10 +403,12 @@ All buttons in the ticket channel send CV2-format responses (no `content` field 
 | Button | Action | Notes |
 |---|---|---|
 | **Delete Ticket** | `del-confirm` → `del-ticket` | Two-step confirm; generates transcript before delete |
-| **Respond** | `respond` | Shows saved reply templates or free-text input |
-| **Set Clan** | `set-clan` | Clan select menu; stored on ticket as `clanTag`/`clanName` |
-| **View Account** | `view-acc` | Shows linked CoC player profile; only if `accountTag` set |
-| **Notify Me** | `notify` | Toggles DM notifications for ticket status changes |
+| **Reply** | `reply` | Shows saved reply select menu; supports variable fill-in modal for unknown vars |
+| **Set Clan** | `set-clan` | Clan select menu (inline collector); updates `clanTag`/`clanName` on ticket and re-edits the embed via `interaction.message.edit` |
+| **View Account** | routes to `player` cmd | Link button in ticket header (only shown when `accountTag` set); no in-file handler |
+| **Notify Me** | `notify` | Toggles `notifyMeUserIds` array on ticket |
+| **Claim** | `claim` | Sets `claimedBy`; adds claimer user overwrite; removes all `pingRoleIds`+`viewOnlyRoleIds` overwrites; rebuilds embed. Only staff (has a pingRoleId) can claim. Only shown if `btn.allowClaim=true`. |
+| **Unclaim** | `unclaim` | Clears `claimedBy`; deletes claimer user overwrite; restores all role overwrites; rebuilds embed. Only the claimer can unclaim. |
 
 ---
 
@@ -365,7 +438,7 @@ Three optional log channels per panel, configured in the **Logging** dashboard s
 | Event | Log channel key | Fires when |
 |---|---|---|
 | Button click | `buttonClick` | User clicks "Create Ticket" |
-| Status change | `statusChange` | Ticket opened / closed / slept / reopened |
+| Status change | `statusChange` | Ticket opened / closed / slept / reopened / claimed / unclaimed |
 | Ticket close | `ticketClose` | Ticket deleted (transcript attached) |
 
 ---
@@ -374,18 +447,7 @@ Three optional log channels per panel, configured in the **Logging** dashboard s
 
 The ticket panel message (posted by `/ticket-post`) uses `MessageFlags.IsComponentsV2`. This means **all** interaction responses to components on that message must also use CV2 format — the `content` field is not allowed.
 
-All handlers in `ticket-open.ts` that respond to in-channel buttons use the `cv2Reply(text)` helper or inline `ContainerBuilder` objects:
-
-```ts
-private cv2Reply(text: string): InteractionEditReplyOptions {
-  return {
-    components: [new ContainerBuilder().addTextDisplayComponents((t) => t.setContent(text))],
-    flags: MessageFlags.IsComponentsV2
-  };
-}
-```
-
-When a handler needs to show a select menu in addition to text, it builds an inline `ContainerBuilder` with both `addTextDisplayComponents` and `addActionRowComponents`.
+All handlers in `ticket-open.ts` that respond to in-channel buttons use `this.reply(text)` (a base-class helper) or inline `ContainerBuilder` objects. When a handler needs a select menu alongside text, it builds an inline `ContainerBuilder` with both `addTextDisplayComponents` and `addActionRowComponents`.
 
 ### Framework defer behavior
 

@@ -2,7 +2,7 @@ import { Collections } from '@app/constants';
 import { TicketEntity, TicketPanelEntity } from '@app/entities';
 import { CategoryChannel, CommandInteraction, EmbedBuilder, TextChannel } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class TicketReopenCommand extends Command {
   public constructor() {
@@ -14,10 +14,6 @@ export default class TicketReopenCommand extends Command {
       defer: true,
       ephemeral: true
     });
-  }
-
-  public args(): Args {
-    return {};
   }
 
   public async exec(interaction: CommandInteraction<'cached'>) {
@@ -57,10 +53,39 @@ export default class TicketReopenCommand extends Command {
       }
     }
 
+    // If the ticket was claimed, restore staff role access and clear the claim
+    if (ticket.claimedBy) {
+      if (ticket.claimedBy !== ticket.creatorId) {
+        await channel.permissionOverwrites.delete(ticket.claimedBy).catch(() => null);
+      }
+      for (const roleId of btn?.pingRoleIds ?? []) {
+        await channel.permissionOverwrites
+          .edit(roleId, {
+            ViewChannel: true,
+            SendMessages: true,
+            AttachFiles: true,
+            EmbedLinks: true,
+            ReadMessageHistory: true,
+            ManageMessages: true,
+            ManageChannels: true
+          })
+          .catch(() => null);
+      }
+      for (const roleId of btn?.viewOnlyRoleIds ?? []) {
+        await channel.permissionOverwrites
+          .edit(roleId, { ViewChannel: true, SendMessages: true, ReadMessageHistory: true })
+          .catch(() => null);
+      }
+    }
+
     // Update DB
-    await this.client.db
-      .collection<TicketEntity>(Collections.TICKETS)
-      .updateOne({ _id: ticket._id }, { $set: { status: 'open', updatedAt: new Date() } });
+    await this.client.db.collection<TicketEntity>(Collections.TICKETS).updateOne(
+      { _id: ticket._id },
+      {
+        $set: { status: 'open', updatedAt: new Date() },
+        ...(ticket.claimedBy ? { $unset: { claimedBy: '' } } : {})
+      }
+    );
 
     // Log
     if (panel?.logChannels.statusChange) {

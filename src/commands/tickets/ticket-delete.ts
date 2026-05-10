@@ -8,7 +8,6 @@ import {
   EmbedBuilder
 } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
-import TicketSetupCommand from './ticket-setup.js';
 
 export default class TicketDeleteCommand extends Command {
   public constructor() {
@@ -34,11 +33,7 @@ export default class TicketDeleteCommand extends Command {
       return interaction.editReply({ content: 'Please provide a panel name.' });
     }
 
-    const setupCmd = this.client.commandHandler.modules.get('ticket-setup') as
-      | TicketSetupCommand
-      | undefined;
-
-    const panel = await setupCmd?.getPanel(interaction.guildId, panel_name);
+    const panel = await this.client.tickets.getPanel(interaction.guildId, panel_name);
 
     if (!panel) {
       return interaction.editReply({ content: `Panel **${panel_name}** does not exist.` });

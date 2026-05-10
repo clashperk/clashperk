@@ -60,15 +60,17 @@ An application type is an option shown to the user when they click the ticket bu
 
 | Setting | Description |
 |---|---|
-| Label / Emoji | Name and icon shown in the select menu |
-| Staff Roles | Which roles are notified and can manage the ticket |
-| Apply Rules | TH minimum, war stars, max linked accounts, require CoC link |
+| Label / Emoji | Name and icon shown in the select menu or on the button |
+| Button Style | Button colour for Buttons display mode (Primary / Secondary / Success / Danger) |
+| Staff Roles | Which roles are notified, can manage, can only view, or are added/removed on ticket open |
+| Apply Rules | TH minimum, min trophies, min league tier, require linked account, allow claiming |
 | Questions | Up to 5 questions shown to the user before the ticket opens |
-| Saved Replies | Pre-written messages staff can send in one click |
 | Categories | Which Discord categories to place open / sleeping / closed tickets |
 | Naming | Channel name format (see [Channel Naming Tokens](#channel-naming-tokens)) |
 
-> You can have up to **25 application types** per panel.
+**To reorder types:** click **Reorder** (shown when 2+ types exist). A select menu appears listing all types — select them in your desired order and submit.
+
+> You can have up to **25 application types** per panel in Select Menu mode, or up to **5** in Buttons mode.
 
 ---
 
@@ -101,13 +103,15 @@ The message shown above the Create Ticket button.
 
 #### Create Ticket Button
 
-The single button members click to start the flow.
+Controls how the panel presents application types to members.
 
 | Field | Options |
 |---|---|
-| Label | Any text (default: `Create Ticket`) |
-| Emoji | Optional emoji before the label (default: `📩`) |
-| Style | Primary (blue) / Secondary (grey) / Success (green) / Danger (red) |
+| **Display Mode** | **Select Menu** — one "Create Ticket" button opens a dropdown of types (default) |
+| | **Buttons** — one button per type shown directly (max 5 types; falls back to menu if more) |
+| Label | Text for the "Create Ticket" button — used in Select Menu mode only |
+| Emoji | Optional emoji before the label — Select Menu mode only (default: `📩`) |
+| Style | Primary (blue) / Secondary (grey) / Success (green) / Danger (red) — Select Menu mode only |
 
 #### Logging
 
@@ -127,23 +131,24 @@ Each application type has its own independent settings.
 
 #### Staff Roles
 
-| Role type | Channel permissions granted |
+| Role type | What it does |
 |---|---|
-| **Ping roles** | View, Send Messages, Attach Files, Embed Links, Manage Messages, Manage Channels |
-| **View-only roles** | View, Send Messages, Read Message History only |
-
-Ping roles are also mentioned in the ticket channel when the ticket is created.
+| **Ping roles** | Notified when ticket opens; get View, Send Messages, Manage Messages, Manage Channels |
+| **Viewer roles** | Can see and send messages in the ticket but cannot manage it |
+| **Add roles** | Automatically added to the ticket creator when the ticket is opened |
+| **Remove roles** | Automatically removed from the ticket creator when the ticket is opened |
 
 #### Apply Rules
 
-Gates checked before the ticket channel is created. If a member doesn't meet the requirements they see an error and no ticket is created.
+Gates checked before the ticket channel is created. All rules below require **Linked account required** to be enabled. If a member doesn't meet the requirements they see an error and no ticket is created.
 
 | Rule | Description |
 |---|---|
 | **Require linked account** | Member must have a Clash of Clans account linked via `/link add` |
 | **TH minimum** | Linked account must be at least this Town Hall level |
-| **Max accounts** | Limit how many accounts can be submitted per application |
-| **Min war stars** | Linked account must have at least this many war stars |
+| **Min trophies** | Linked account must have at least this many trophies |
+| **Min league tier** | Linked account must be in this league or higher (chosen from a select menu) |
+| **Allow claiming** | When enabled, a staff member can click **Claim** in the ticket to take exclusive ownership — once claimed, all other staff and viewer roles lose channel access until unclaimed |
 
 #### Questions
 
@@ -151,7 +156,7 @@ Up to **5** questions shown in a pop-up modal before the ticket opens. Each ques
 
 #### Saved Replies
 
-Pre-written message templates that staff can send inside a ticket with one click using the **Respond** button. Useful for common answers, acceptance/rejection messages, etc.
+Pre-written message templates that staff can send inside a ticket with one click using the **Reply** button. Saved replies are configured at the **server level** (Step 4 in the dashboard) and are shared across all panels and application types. Useful for common answers, acceptance/rejection messages, etc.
 
 Templates support these variables:
 
@@ -210,7 +215,7 @@ Use these slash commands inside or targeting a ticket channel:
 | `/ticket-reopen` | Reopen a closed or sleeping ticket |
 | `/ticket-sleep` | Put a ticket to sleep — moves to the sleep category |
 | `/ticket-delete` | Permanently delete the ticket channel (generates a transcript first) |
-| `/ticket-info` | Show ticket details: creator, linked account, status, panel, type |
+| `/ticket-info` | Show ticket details: creator, linked account, status, panel, type, trophies, league |
 | `/ticket-add member:@user` | Add a Discord member to the ticket channel |
 
 ---
@@ -220,11 +225,12 @@ Use these slash commands inside or targeting a ticket channel:
 ### Opening a Ticket
 
 1. Find the ticket panel posted in a channel (usually named `#apply` or `#open-a-ticket`).
-2. Click the **Create Ticket** button.
-3. If the panel has multiple ticket types, a dropdown menu appears — select the type that matches your request.
-4. If the type requires a linked Clash of Clans account, you'll be prompted to select which account to apply with.
-5. If the type has questions, a pop-up form appears. Fill in the answers and submit.
-6. A private channel is created just for you and the staff team. You'll see a link to it in the reply.
+2. Click the button to start. Depending on how the panel is configured:
+   - **Select Menu mode:** one "Create Ticket" button → if multiple types exist, a dropdown appears — choose the type that matches your request.
+   - **Buttons mode:** one button per type is shown directly — click the one that matches.
+3. If the type requires a linked Clash of Clans account, you'll be prompted to select which account to apply with.
+4. If the type has questions, a pop-up form appears. Fill in the answers and submit.
+5. A private channel is created just for you and the staff team. You'll see a link to it in the reply.
 
 > If you already have an open ticket for the same type, you'll be shown a link to your existing ticket instead of creating a new one.
 
@@ -233,7 +239,7 @@ Use these slash commands inside or targeting a ticket channel:
 | Error | What to do |
 |---|---|
 | *You need a linked Clash of Clans account* | Run `/link add` to link your account first |
-| *None of your linked accounts meet the requirements* | Check the minimum TH level or war stars required for this application type |
+| *None of your linked accounts meet the requirements* | Check the minimum TH level, trophies, or league required for this application type |
 | *You already have an open ticket* | Your ticket is already open — click the link provided |
 
 ---
@@ -244,10 +250,13 @@ Once your ticket channel is open, you'll see a summary card with your details an
 
 | Button | What it does |
 |---|---|
-| **Delete Ticket** | Close and delete the ticket (asks for confirmation first) |
-| **Respond** | *(Staff only)* Send a saved reply or custom message |
+| **View Profile** | Opens the Clash of Clans profile for the linked account — shown in the ticket header (only visible if an account was linked) |
+| **Reply** | *(Staff only)* Send a saved reply — choose from the server's saved templates |
 | **Set Clan** | Attach a clan to this ticket — useful if your application is for a specific clan |
-| **View Account** | Show the Clash of Clans profile for the account linked to this ticket |
+| **View Account** | Show the linked CoC account stats via the `/player` command |
 | **Notify Me** | Toggle DM notifications — get a direct message when the ticket status changes |
+| **Claim 🔒** | *(Staff only, if enabled)* Claim exclusive ownership of this ticket — all other staff and viewer roles lose access. The ticket header shows "Claimed by" with your name. |
+| **Unclaim 🔓** | *(Claimer only)* Release the claim — all staff and viewer roles regain access |
+| **Delete Ticket** | Close and delete the ticket (asks for confirmation first) |
 
 > Only ticket creators and staff with the configured roles can see the ticket channel.

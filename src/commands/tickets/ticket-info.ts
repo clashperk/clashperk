@@ -1,9 +1,8 @@
-import { Collections } from '@app/constants';
+import { Collections, PLAYER_LEAGUE_MAP } from '@app/constants';
 import { TicketPanelEntity } from '@app/entities';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
-import TicketSetupCommand from './ticket-setup.js';
 
 export default class TicketInfoCommand extends Command {
   public constructor() {
@@ -29,11 +28,7 @@ export default class TicketInfoCommand extends Command {
       return interaction.editReply({ content: 'Please provide a panel name.' });
     }
 
-    const setupCmd = this.client.commandHandler.modules.get('ticket-setup') as
-      | TicketSetupCommand
-      | undefined;
-
-    const panel = await setupCmd?.getPanel(interaction.guildId, panel_name);
+    const panel = await this.client.tickets.getPanel(interaction.guildId, panel_name);
 
     if (!panel) {
       return interaction.editReply({ content: `Panel **${panel_name}** does not exist.` });
@@ -95,7 +90,7 @@ export default class TicketInfoCommand extends Command {
             `**${b.emoji ? `${b.emoji} ` : ''}${b.label}**`,
             `  Ping roles: ${b.pingRoleIds.length > 0 ? b.pingRoleIds.map((id) => `<@&${id}>`).join(', ') : 'none'}`,
             `  Questions: ${b.questions?.length ?? 0}`,
-            `  TH min: ${b.thMin ?? 'none'} | War stars: ${b.minWarStars ?? 'none'}`
+            `  TH min: ${b.thMin ?? 'Any'} | Trophies: ${b.minTrophies ?? 'Any'} | League: ${b.minLeagueTier ? (PLAYER_LEAGUE_MAP[b.minLeagueTier] ?? b.minLeagueTier) : 'Any'}`
           ];
           return lines.join('\n');
         })
