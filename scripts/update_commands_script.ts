@@ -15,7 +15,8 @@ const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64'
 const CUSTOM_BOT_SERVER_ID = '1130572457175175293';
 const SUPPORT_SERVER_ID = '509784317598105619';
 
-const BETA_TESTING_GUILD_IDS = [SUPPORT_SERVER_ID, '609250675431309313'];
+const BETA_TESTERS = process.env.BETA_TESTERS?.split(',') ?? [];
+const BETA_TESTING_GUILD_IDS = [SUPPORT_SERVER_ID, '609250675431309313', ...BETA_TESTERS];
 
 const decrypt = (value: string) => {
   const key = Buffer.from(process.env.CRYPTO_KEY!, 'hex');

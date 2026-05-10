@@ -46,3 +46,4 @@ jobs:
         run: npm run deploy -- --gh-action
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          BETA_TESTERS: ${{vars.BETA_TESTERS}}
