@@ -127,6 +127,7 @@
         "description": "The season to show attacks for.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -143,8 +144,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       }
     ]
@@ -918,12 +918,12 @@
         "description": "The week to show contributions for.",
         "type": "String",
         "choices": [
-          "03 Apr, 2026",
-          "27 Mar, 2026",
-          "20 Mar, 2026",
-          "13 Mar, 2026",
-          "06 Mar, 2026",
-          "27 Feb, 2026"
+          "08 May, 2026",
+          "01 May, 2026",
+          "24 Apr, 2026",
+          "17 Apr, 2026",
+          "10 Apr, 2026",
+          "03 Apr, 2026"
         ]
       }
     ]
@@ -950,12 +950,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
-          "03 Apr, 2026",
-          "27 Mar, 2026",
-          "20 Mar, 2026",
-          "13 Mar, 2026",
-          "06 Mar, 2026",
-          "27 Feb, 2026"
+          "08 May, 2026",
+          "01 May, 2026",
+          "24 Apr, 2026",
+          "17 Apr, 2026",
+          "10 Apr, 2026",
+          "03 Apr, 2026"
         ]
       }
     ]
@@ -1058,6 +1058,7 @@
         "description": "The season to show the scoreboard for.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1074,8 +1075,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       }
     ]
@@ -1171,6 +1171,7 @@
         "description": "CWL season",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1187,8 +1188,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -1272,6 +1272,7 @@
         "description": "CWL season",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1288,8 +1289,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -1316,6 +1316,7 @@
         "description": "CWL season",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1332,8 +1333,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -1360,6 +1360,7 @@
         "description": "CWL season",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1376,8 +1377,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -1416,6 +1416,7 @@
         "description": "The season to show donations for.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1432,8 +1433,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -1564,6 +1564,7 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1580,8 +1581,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -1623,6 +1623,7 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1639,8 +1640,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -1697,6 +1697,7 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Since May 2026",
           "Since Apr 2026",
           "Since Mar 2026",
           "Since Feb 2026",
@@ -1713,8 +1714,7 @@
           "Since Mar 2025",
           "Since Feb 2025",
           "Since Jan 2025",
-          "Since Dec 2024",
-          "Since Nov 2024"
+          "Since Dec 2024"
         ]
       },
       {
@@ -1758,6 +1758,7 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -1774,8 +1775,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -2101,6 +2101,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -2117,8 +2118,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       }
     ]
@@ -2139,6 +2139,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -2155,8 +2156,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       }
     ]
@@ -2177,6 +2177,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -2193,8 +2194,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       }
     ]
@@ -2271,6 +2271,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -2287,8 +2288,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -3623,6 +3623,7 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Since May 2026",
           "Since Apr 2026",
           "Since Mar 2026",
           "Since Feb 2026",
@@ -3639,8 +3640,7 @@
           "Since Mar 2025",
           "Since Feb 2025",
           "Since Jan 2025",
-          "Since Dec 2024",
-          "Since Nov 2024"
+          "Since Dec 2024"
         ]
       },
       {
@@ -3743,6 +3743,7 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Since May 2026",
           "Since Apr 2026",
           "Since Mar 2026",
           "Since Feb 2026",
@@ -3759,8 +3760,7 @@
           "Since Mar 2025",
           "Since Feb 2025",
           "Since Jan 2025",
-          "Since Dec 2024",
-          "Since Nov 2024"
+          "Since Dec 2024"
         ]
       },
       {
@@ -3802,6 +3802,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -3818,8 +3819,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       }
     ]
@@ -3840,6 +3840,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -3856,8 +3857,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       }
     ]
@@ -3878,6 +3878,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -3894,8 +3895,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -3931,6 +3931,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -3947,8 +3948,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -3956,12 +3956,12 @@
         "description": "The week to show capital contributions for.",
         "type": "String",
         "choices": [
-          "03 Apr, 2026",
-          "27 Mar, 2026",
-          "20 Mar, 2026",
-          "13 Mar, 2026",
-          "06 Mar, 2026",
-          "27 Feb, 2026"
+          "08 May, 2026",
+          "01 May, 2026",
+          "24 Apr, 2026",
+          "17 Apr, 2026",
+          "10 Apr, 2026",
+          "03 Apr, 2026"
         ]
       }
     ]
@@ -3982,12 +3982,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
-          "03 Apr, 2026",
-          "27 Mar, 2026",
-          "20 Mar, 2026",
-          "13 Mar, 2026",
-          "06 Mar, 2026",
-          "27 Feb, 2026"
+          "08 May, 2026",
+          "01 May, 2026",
+          "24 Apr, 2026",
+          "17 Apr, 2026",
+          "10 Apr, 2026",
+          "03 Apr, 2026"
         ]
       }
     ]
@@ -4002,6 +4002,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -4018,8 +4019,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -4066,6 +4066,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -4082,8 +4083,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -4117,6 +4117,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -4133,8 +4134,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       },
       {
@@ -4185,6 +4185,7 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Since May 2026",
           "Since Apr 2026",
           "Since Mar 2026",
           "Since Feb 2026",
@@ -4201,8 +4202,7 @@
           "Since Mar 2025",
           "Since Feb 2025",
           "Since Jan 2025",
-          "Since Dec 2024",
-          "Since Nov 2024"
+          "Since Dec 2024"
         ]
       }
     ]
@@ -4242,6 +4242,7 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "May 2026",
           "Apr 2026",
           "Mar 2026",
           "Feb 2026",
@@ -4258,8 +4259,7 @@
           "Mar 2025",
           "Feb 2025",
           "Jan 2025",
-          "Dec 2024",
-          "Nov 2024"
+          "Dec 2024"
         ]
       }
     ]
