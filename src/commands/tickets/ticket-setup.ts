@@ -116,8 +116,16 @@ export default class TicketSetupCommand extends Command {
 
     const ids = this.makeDashboardIds(interaction.user.id);
 
+    const getReplyCount = async () => {
+      const s = await this.client.db
+        .collection<TicketGuildSettingsEntity>(Collections.TICKET_SETTINGS)
+        .findOne({ guildId: interaction.guildId }, { projection: { savedReplies: 1 } });
+      return s?.savedReplies?.length ?? 0;
+    };
+    let replyCount = await getReplyCount();
+
     await interaction.editReply({
-      components: [this.buildDashboard(panel, ids)],
+      components: [this.buildDashboard(panel, ids, replyCount)],
       flags: MessageFlags.IsComponentsV2
     });
 
@@ -153,6 +161,7 @@ export default class TicketSetupCommand extends Command {
         } else if (action.customId === ids.editMessages) {
           await action.deferUpdate();
           await this.editSavedRepliesFlow(interaction, panel!.guildId);
+          replyCount = await getReplyCount();
         } else if (action.customId === ids.editLogging) {
           panel = await this.editLoggingModal(btn, panel!);
         } else if (action.customId === ids.editExtraButtons) {
@@ -173,7 +182,7 @@ export default class TicketSetupCommand extends Command {
       if (panel) {
         await interaction
           .editReply({
-            components: [this.buildDashboard(panel, ids)],
+            components: [this.buildDashboard(panel, ids, replyCount)],
             flags: MessageFlags.IsComponentsV2
           })
           .catch(() => null);
@@ -202,7 +211,8 @@ export default class TicketSetupCommand extends Command {
 
   private buildDashboard(
     panel: WithId<TicketPanelEntity>,
-    ids: ReturnType<typeof this.makeDashboardIds>
+    ids: ReturnType<typeof this.makeDashboardIds>,
+    savedReplyCount = 0
   ) {
     const container = new ContainerBuilder();
 
@@ -316,7 +326,7 @@ export default class TicketSetupCommand extends Command {
       new SectionBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### Step 4: Saved Replies\nPre-written messages shared across all application types in this server.`
+            `### Step 4: Saved Replies\nPre-written messages shared across all application types in this server. (${savedReplyCount}/25 configured)`
           )
         )
         .setButtonAccessory(
