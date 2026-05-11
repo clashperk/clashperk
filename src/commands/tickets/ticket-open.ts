@@ -31,7 +31,7 @@ import {
 } from 'discord.js';
 import { ObjectId, WithId } from 'mongodb';
 import { nanoid } from 'nanoid';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -94,6 +94,8 @@ export default class TicketOpenCommand extends Command {
         'SendMessages',
         'AttachFiles',
         'EmbedLinks',
+        'ReadMessageHistory',
+        'ManageMessages',
         'CreatePrivateThreads',
         'SendMessagesInThreads',
         'MentionEveryone'
@@ -101,10 +103,6 @@ export default class TicketOpenCommand extends Command {
       defer: false,
       ephemeral: true
     });
-  }
-
-  public args(): Args {
-    return {};
   }
 
   public async exec(

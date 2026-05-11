@@ -49,6 +49,16 @@ export interface TicketPanelEntity {
     statusChange?: string;
     ticketClose?: string;
   };
+  extraButtons?: {
+    id: string;
+    label: string;
+    emoji?: string;
+    cmd?: string;
+    args?: Record<string, string>;
+    style?: number;
+    url?: string;
+  }[];
+  extraButtonsPlacement?: 'same-row' | 'new-row';
   createdAt: Date;
   updatedAt: Date;
 }

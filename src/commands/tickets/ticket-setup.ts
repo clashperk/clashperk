@@ -17,6 +17,7 @@ import {
   MessageComponentInteraction,
   MessageFlags,
   ModalBuilder,
+  parseEmoji,
   RoleSelectMenuBuilder,
   SectionBuilder,
   SeparatorSpacingSize,
@@ -154,6 +155,9 @@ export default class TicketSetupCommand extends Command {
           await this.editSavedRepliesFlow(interaction, panel!.guildId);
         } else if (action.customId === ids.editLogging) {
           panel = await this.editLoggingModal(btn, panel!);
+        } else if (action.customId === ids.editExtraButtons) {
+          await action.deferUpdate();
+          panel = await this.editExtraButtonsFlow(interaction, panel!);
         }
       } catch (e) {
         if (
@@ -191,6 +195,7 @@ export default class TicketSetupCommand extends Command {
       editTicketTypes: this.client.uuid(userId),
       editMessages: this.client.uuid(userId),
       editLogging: this.client.uuid(userId),
+      editExtraButtons: this.client.uuid(userId),
       done: this.client.uuid(userId)
     };
   }
@@ -338,6 +343,32 @@ export default class TicketSetupCommand extends Command {
         .setButtonAccessory(
           new ButtonBuilder()
             .setCustomId(ids.editLogging)
+            .setLabel('Edit')
+            .setStyle(ButtonStyle.Secondary)
+        )
+    );
+
+    container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
+
+    // Extra Buttons
+    const extraButtonsText = panel.extraButtons?.length
+      ? panel.extraButtons
+          .map(
+            (eb, i) =>
+              `${i + 1}. ${eb.emoji ? `${eb.emoji} ` : ''}**${eb.label}** (${eb.url ? 'link' : eb.cmd})`
+          )
+          .join('\n')
+      : '*(none)*';
+    container.addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### Step 6: Extra Buttons\n${extraButtonsText}\n-# Placement: ${(panel.extraButtonsPlacement ?? 'same-row') === 'same-row' ? 'Same row as Create Ticket' : 'New row below Create Ticket'}`
+          )
+        )
+        .setButtonAccessory(
+          new ButtonBuilder()
+            .setCustomId(ids.editExtraButtons)
             .setLabel('Edit')
             .setStyle(ButtonStyle.Secondary)
         )
@@ -530,7 +561,8 @@ export default class TicketSetupCommand extends Command {
       | 'menu'
       | 'buttons';
     const label = submit.fields.getTextInputValue(customIds.label) || current.label;
-    const emoji = submit.fields.getTextInputValue(customIds.emoji) || undefined;
+    const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
+    const emoji = emojiRaw && parseEmoji(emojiRaw) ? emojiRaw : undefined;
     const styleVal = parseInt(submit.fields.getStringSelectValues(customIds.style)?.[0] ?? '1');
     const style = [
       ButtonStyle.Primary,
@@ -834,7 +866,8 @@ export default class TicketSetupCommand extends Command {
     });
 
     const label = submit.fields.getTextInputValue(customIds.label);
-    const emoji = submit.fields.getTextInputValue(customIds.emoji) || undefined;
+    const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
+    const emoji = emojiRaw && parseEmoji(emojiRaw) ? emojiRaw : undefined;
 
     const newButton: TicketTypeConfig = {
       id: nanoid(8),
@@ -1113,7 +1146,10 @@ export default class TicketSetupCommand extends Command {
               : ButtonStyle.Primary;
             await updateTicketType({
               label: submit.fields.getTextInputValue(customIds.label),
-              emoji: submit.fields.getTextInputValue(customIds.emoji) || undefined,
+              emoji: (() => {
+                const raw = submit.fields.getTextInputValue(customIds.emoji);
+                return raw && parseEmoji(raw) ? raw : undefined;
+              })(),
               buttonStyle
             });
             await submit.deferUpdate();
@@ -1562,7 +1598,7 @@ export default class TicketSetupCommand extends Command {
             });
             const name = submit.fields.getTextInputValue(customIds.name).trim();
             const content = submit.fields.getTextInputValue(customIds.content).trim();
-            if (name && content) {
+            if (name && content && !templates.some((t) => t.name === name)) {
               await saveTemplates([...templates, { name, content }]);
               getOrCreateReplyIds(name);
             }
@@ -1631,7 +1667,9 @@ export default class TicketSetupCommand extends Command {
                 } else {
                   const newName = submit.fields.getTextInputValue(customIds.name).trim();
                   const newContent = submit.fields.getTextInputValue(customIds.content).trim();
-                  if (newName && newContent) {
+                  const nameConflict =
+                    newName !== replyName && templates.some((t) => t.name === newName);
+                  if (newName && newContent && !nameConflict) {
                     await saveTemplates(
                       templates.map((t) =>
                         t.name === replyName ? { name: newName, content: newContent } : t
@@ -1816,6 +1854,477 @@ export default class TicketSetupCommand extends Command {
     this.client.components.delete(customIds.modal);
 
     return (await this.getPanel(panel.guildId, panel.name)) ?? panel;
+  }
+
+  private async editExtraButtonsFlow(
+    interaction: CommandInteraction<'cached'>,
+    initialPanel: WithId<TicketPanelEntity>
+  ): Promise<WithId<TicketPanelEntity>> {
+    let currentPanel = initialPanel;
+
+    const staticIds = {
+      addCmdButton: this.client.uuid(interaction.user.id),
+      addUrlButton: this.client.uuid(interaction.user.id),
+      togglePlacement: this.client.uuid(interaction.user.id),
+      back: this.client.uuid(interaction.user.id)
+    };
+
+    const perBtnIds = new Map<string, { edit: string }>();
+    const getOrCreateBtnIds = (btnId: string) => {
+      if (!perBtnIds.has(btnId)) {
+        perBtnIds.set(btnId, { edit: this.client.uuid(interaction.user.id) });
+      }
+      return perBtnIds.get(btnId)!;
+    };
+
+    for (const eb of currentPanel.extraButtons ?? []) getOrCreateBtnIds(eb.id);
+
+    const saveExtraButtons = async (updated: NonNullable<TicketPanelEntity['extraButtons']>) => {
+      await this.client.db
+        .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
+        .updateOne(
+          { _id: currentPanel._id },
+          { $set: { extraButtons: updated, updatedAt: new Date() } }
+        );
+      currentPanel = (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
+    };
+
+    const renderMenu = () => {
+      const buttons = currentPanel.extraButtons ?? [];
+      const placement = currentPanel.extraButtonsPlacement ?? 'same-row';
+
+      const container = new ContainerBuilder();
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          [
+            '## Extra Buttons',
+            'Additional buttons shown on the panel post alongside the Create Ticket button.',
+            buttons.length === 0
+              ? '-# No extra buttons yet.'
+              : `-# Up to **10 extra buttons** (${buttons.length}/10 used).`
+          ].join('\n')
+        )
+      );
+      container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
+
+      for (const eb of buttons) {
+        const ebIds = getOrCreateBtnIds(eb.id);
+        container.addSectionComponents(
+          new SectionBuilder()
+            .addTextDisplayComponents(
+              new TextDisplayBuilder().setContent(
+                `${eb.emoji ? `${eb.emoji} ` : ''}**${eb.label}** (${eb.url ? 'link' : eb.cmd})`
+              )
+            )
+            .setButtonAccessory(
+              new ButtonBuilder()
+                .setCustomId(ebIds.edit)
+                .setLabel('Edit / Delete')
+                .setStyle(ButtonStyle.Secondary)
+            )
+        );
+        container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
+      }
+
+      container.addActionRowComponents((row) =>
+        row.addComponents(
+          new ButtonBuilder()
+            .setCustomId(staticIds.addCmdButton)
+            .setLabel('Add Command Button')
+            .setStyle(ButtonStyle.Success)
+            .setDisabled(buttons.length >= 10),
+          new ButtonBuilder()
+            .setCustomId(staticIds.addUrlButton)
+            .setLabel('Add URL Button')
+            .setStyle(ButtonStyle.Success)
+            .setDisabled(buttons.length >= 10),
+          new ButtonBuilder()
+            .setCustomId(staticIds.togglePlacement)
+            .setLabel(`Placement: ${placement === 'same-row' ? 'Same Row' : 'New Row'}`)
+            .setStyle(ButtonStyle.Secondary),
+          new ButtonBuilder()
+            .setCustomId(staticIds.back)
+            .setLabel('Back')
+            .setStyle(ButtonStyle.Primary)
+        )
+      );
+
+      return container;
+    };
+
+    await interaction.editReply({
+      components: [renderMenu()],
+      flags: MessageFlags.IsComponentsV2
+    });
+
+    return new Promise<WithId<TicketPanelEntity>>((resolve) => {
+      const collector = interaction.channel!.createMessageComponentCollector<ComponentType.Button>({
+        filter: (a) => {
+          const allIds = [
+            ...Object.values(staticIds),
+            ...[...perBtnIds.values()].map((v) => v.edit)
+          ];
+          return allIds.includes(a.customId) && a.user.id === interaction.user.id;
+        },
+        time: 5 * 60 * 1000
+      });
+
+      collector.on('collect', async (action) => {
+        if (action.customId === staticIds.back) {
+          await action.deferUpdate();
+          collector.stop('back');
+          return;
+        }
+
+        try {
+          if (action.customId === staticIds.togglePlacement) {
+            await action.deferUpdate();
+            const current = currentPanel.extraButtonsPlacement ?? 'same-row';
+            await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
+              { _id: currentPanel._id },
+              {
+                $set: {
+                  extraButtonsPlacement: current === 'same-row' ? 'new-row' : 'same-row',
+                  updatedAt: new Date()
+                }
+              }
+            );
+            currentPanel =
+              (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
+          } else if (action.customId === staticIds.addCmdButton) {
+            const existing = currentPanel.extraButtons ?? [];
+            if (existing.length >= 10) {
+              await action.deferUpdate();
+              return;
+            }
+            const customIds = {
+              modal: this.client.uuid(action.user.id),
+              preset: nanoid(8),
+              label: nanoid(8),
+              emoji: nanoid(8),
+              style: nanoid(8)
+            };
+            const modal = new ModalBuilder()
+              .setCustomId(customIds.modal)
+              .setTitle('Add Command Button');
+            modal.addLabelComponents(
+              new LabelBuilder()
+                .setLabel('Button Type')
+                .setStringSelectMenuComponent(
+                  new StringSelectMenuBuilder()
+                    .setCustomId(customIds.preset)
+                    .setOptions(
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Link Account')
+                        .setValue('link-add')
+                        .setDescription('Opens the link account flow for the user')
+                    )
+                ),
+              new LabelBuilder()
+                .setLabel('Label')
+                .setTextInputComponent(
+                  new TextInputBuilder()
+                    .setCustomId(customIds.label)
+                    .setStyle(TextInputStyle.Short)
+                    .setMaxLength(80)
+                    .setRequired(true)
+                    .setPlaceholder('e.g. Link Account')
+                ),
+              new LabelBuilder()
+                .setLabel('Emoji (optional)')
+                .setTextInputComponent(
+                  new TextInputBuilder()
+                    .setCustomId(customIds.emoji)
+                    .setStyle(TextInputStyle.Short)
+                    .setMaxLength(32)
+                    .setRequired(false)
+                    .setPlaceholder('🔗')
+                ),
+              new LabelBuilder()
+                .setLabel('Style')
+                .setStringSelectMenuComponent(
+                  new StringSelectMenuBuilder()
+                    .setCustomId(customIds.style)
+                    .setOptions(
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Primary')
+                        .setValue('1')
+                        .setDefault(false),
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Secondary')
+                        .setValue('2')
+                        .setDefault(true),
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Success')
+                        .setValue('3')
+                        .setDefault(false),
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Danger')
+                        .setValue('4')
+                        .setDefault(false)
+                    )
+                )
+            );
+            await action.showModal(modal);
+            const submit = await action.awaitModalSubmit({
+              time: 5 * 60 * 1000,
+              filter: (a) => a.customId === customIds.modal
+            });
+            const presetValue = submit.fields.getStringSelectValues(customIds.preset)?.[0];
+            const label = submit.fields.getTextInputValue(customIds.label).trim();
+            const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
+            const emoji = emojiRaw && parseEmoji(emojiRaw) ? emojiRaw : undefined;
+            const styleVal = parseInt(
+              submit.fields.getStringSelectValues(customIds.style)?.[0] ?? '2'
+            );
+            const style = [
+              ButtonStyle.Primary,
+              ButtonStyle.Secondary,
+              ButtonStyle.Success,
+              ButtonStyle.Danger
+            ].includes(styleVal)
+              ? styleVal
+              : ButtonStyle.Secondary;
+            if (label && presetValue === 'link-add') {
+              const newBtn = {
+                id: nanoid(8),
+                label,
+                emoji,
+                style,
+                cmd: 'link-add',
+                args: { token_field: 'required' }
+              };
+              await saveExtraButtons([...existing, newBtn]);
+              getOrCreateBtnIds(newBtn.id);
+            }
+            await submit.deferUpdate();
+            this.client.components.delete(customIds.modal);
+          } else if (action.customId === staticIds.addUrlButton) {
+            const existing = currentPanel.extraButtons ?? [];
+            if (existing.length >= 10) {
+              await action.deferUpdate();
+              return;
+            }
+            const customIds = {
+              modal: this.client.uuid(action.user.id),
+              label: nanoid(8),
+              emoji: nanoid(8),
+              url: nanoid(8)
+            };
+            const modal = new ModalBuilder()
+              .setCustomId(customIds.modal)
+              .setTitle('Add URL Button');
+            modal.addLabelComponents(
+              new LabelBuilder()
+                .setLabel('Label')
+                .setTextInputComponent(
+                  new TextInputBuilder()
+                    .setCustomId(customIds.label)
+                    .setStyle(TextInputStyle.Short)
+                    .setMaxLength(80)
+                    .setRequired(true)
+                    .setPlaceholder('e.g. Rules')
+                ),
+              new LabelBuilder()
+                .setLabel('Emoji (optional)')
+                .setTextInputComponent(
+                  new TextInputBuilder()
+                    .setCustomId(customIds.emoji)
+                    .setStyle(TextInputStyle.Short)
+                    .setMaxLength(32)
+                    .setRequired(false)
+                    .setPlaceholder('📋')
+                ),
+              new LabelBuilder()
+                .setLabel('URL')
+                .setTextInputComponent(
+                  new TextInputBuilder()
+                    .setCustomId(customIds.url)
+                    .setStyle(TextInputStyle.Short)
+                    .setMaxLength(256)
+                    .setRequired(true)
+                    .setPlaceholder('https://example.com/rules')
+                )
+            );
+            await action.showModal(modal);
+            const submit = await action.awaitModalSubmit({
+              time: 5 * 60 * 1000,
+              filter: (a) => a.customId === customIds.modal
+            });
+            const label = submit.fields.getTextInputValue(customIds.label).trim();
+            const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
+            const emoji = emojiRaw && parseEmoji(emojiRaw) ? emojiRaw : undefined;
+            const url = submit.fields.getTextInputValue(customIds.url).trim();
+            if (label && url) {
+              const newBtn = { id: nanoid(8), label, emoji, url };
+              await saveExtraButtons([...existing, newBtn]);
+              getOrCreateBtnIds(newBtn.id);
+            }
+            await submit.deferUpdate();
+            this.client.components.delete(customIds.modal);
+          } else {
+            for (const [btnId, ebIds] of perBtnIds.entries()) {
+              if (action.customId !== ebIds.edit) continue;
+              const existing = currentPanel.extraButtons ?? [];
+              const eb = existing.find((b) => b.id === btnId);
+              if (!eb) break;
+
+              const customIds = {
+                modal: this.client.uuid(action.user.id),
+                label: nanoid(8),
+                emoji: nanoid(8),
+                style: nanoid(8),
+                url: nanoid(8),
+                delete: nanoid(8)
+              };
+
+              const labelInput = new TextInputBuilder()
+                .setCustomId(customIds.label)
+                .setStyle(TextInputStyle.Short)
+                .setMaxLength(80)
+                .setRequired(true)
+                .setValue(eb.label);
+              const emojiInput = new TextInputBuilder()
+                .setCustomId(customIds.emoji)
+                .setStyle(TextInputStyle.Short)
+                .setMaxLength(32)
+                .setRequired(false);
+              if (eb.emoji) emojiInput.setValue(eb.emoji);
+
+              const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Button');
+
+              if (eb.cmd) {
+                modal.addLabelComponents(
+                  new LabelBuilder().setLabel('Label').setTextInputComponent(labelInput),
+                  new LabelBuilder().setLabel('Emoji (optional)').setTextInputComponent(emojiInput),
+                  new LabelBuilder().setLabel('Style').setStringSelectMenuComponent(
+                    new StringSelectMenuBuilder().setCustomId(customIds.style).setOptions(
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Primary')
+                        .setValue('1')
+                        .setDefault(eb.style === ButtonStyle.Primary),
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Secondary')
+                        .setValue('2')
+                        .setDefault(!eb.style || eb.style === ButtonStyle.Secondary),
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Success')
+                        .setValue('3')
+                        .setDefault(eb.style === ButtonStyle.Success),
+                      new StringSelectMenuOptionBuilder()
+                        .setLabel('Danger')
+                        .setValue('4')
+                        .setDefault(eb.style === ButtonStyle.Danger)
+                    )
+                  ),
+                  new LabelBuilder()
+                    .setLabel('Delete this button?')
+                    .setCheckboxGroupComponent(
+                      new CheckboxGroupBuilder()
+                        .setCustomId(customIds.delete)
+                        .addOptions(
+                          new CheckboxGroupOptionBuilder()
+                            .setLabel('Yes, delete this button')
+                            .setValue('delete')
+                            .setDefault(false)
+                        )
+                    )
+                );
+              } else {
+                const urlInput = new TextInputBuilder()
+                  .setCustomId(customIds.url)
+                  .setStyle(TextInputStyle.Short)
+                  .setMaxLength(256)
+                  .setRequired(true);
+                if (eb.url) urlInput.setValue(eb.url);
+                modal.addLabelComponents(
+                  new LabelBuilder().setLabel('Label').setTextInputComponent(labelInput),
+                  new LabelBuilder().setLabel('Emoji (optional)').setTextInputComponent(emojiInput),
+                  new LabelBuilder().setLabel('URL').setTextInputComponent(urlInput),
+                  new LabelBuilder()
+                    .setLabel('Delete this button?')
+                    .setCheckboxGroupComponent(
+                      new CheckboxGroupBuilder()
+                        .setCustomId(customIds.delete)
+                        .addOptions(
+                          new CheckboxGroupOptionBuilder()
+                            .setLabel('Yes, delete this button')
+                            .setValue('delete')
+                            .setDefault(false)
+                        )
+                    )
+                );
+              }
+
+              await action.showModal(modal);
+              const submit = await action.awaitModalSubmit({
+                time: 5 * 60 * 1000,
+                filter: (a) => a.customId === customIds.modal
+              });
+
+              const shouldDelete = submit.fields
+                .getCheckboxGroup(customIds.delete)
+                .includes('delete');
+              if (shouldDelete) {
+                await saveExtraButtons(existing.filter((b) => b.id !== btnId));
+                perBtnIds.delete(btnId);
+              } else {
+                const newLabel =
+                  submit.fields.getTextInputValue(customIds.label).trim() || eb.label;
+                const newEmojiRaw = submit.fields.getTextInputValue(customIds.emoji);
+                const newEmoji = newEmojiRaw && parseEmoji(newEmojiRaw) ? newEmojiRaw : undefined;
+                let newStyle = eb.style;
+                let newUrl = eb.url;
+                if (eb.cmd) {
+                  const sv = parseInt(
+                    submit.fields.getStringSelectValues(customIds.style)?.[0] ?? '2'
+                  );
+                  newStyle = [
+                    ButtonStyle.Primary,
+                    ButtonStyle.Secondary,
+                    ButtonStyle.Success,
+                    ButtonStyle.Danger
+                  ].includes(sv)
+                    ? sv
+                    : ButtonStyle.Secondary;
+                } else {
+                  newUrl = submit.fields.getTextInputValue(customIds.url).trim() || eb.url;
+                }
+                await saveExtraButtons(
+                  existing.map((b) =>
+                    b.id === btnId
+                      ? { ...b, label: newLabel, emoji: newEmoji, style: newStyle, url: newUrl }
+                      : b
+                  )
+                );
+              }
+              await submit.deferUpdate();
+              this.client.components.delete(customIds.modal);
+              break;
+            }
+          }
+        } catch (e) {
+          if (
+            !(
+              e instanceof DiscordjsError &&
+              e.code === DiscordjsErrorCodes.InteractionCollectorError
+            )
+          )
+            throw e;
+        }
+
+        await interaction
+          .editReply({ components: [renderMenu()], flags: MessageFlags.IsComponentsV2 })
+          .catch(() => null);
+      });
+
+      collector.on('end', () => {
+        [...Object.values(staticIds), ...[...perBtnIds.values()].map((v) => v.edit)].forEach((id) =>
+          this.client.components.delete(id)
+        );
+        resolve(currentPanel);
+      });
+    });
   }
 
   // =================== UTILITY ===================

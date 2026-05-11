@@ -15,7 +15,20 @@ export default class TicketPostCommand extends Command {
       category: 'tickets',
       channel: 'guild',
       userPermissions: ['ManageGuild'],
-      clientPermissions: ['EmbedLinks', 'SendMessages', 'ViewChannel', 'UseExternalEmojis'],
+      clientPermissions: [
+        'ViewChannel',
+        'SendMessages',
+        'AttachFiles',
+        'EmbedLinks',
+        'ReadMessageHistory',
+        'ManageMessages',
+        'ManageChannels',
+        'ManageRoles',
+        'CreatePrivateThreads',
+        'SendMessagesInThreads',
+        'MentionEveryone',
+        'UseExternalEmojis'
+      ],
       defer: true,
       ephemeral: true
     });
@@ -68,38 +81,68 @@ export default class TicketPostCommand extends Command {
       panel.ticketTypes.length > 0 &&
       panel.ticketTypes.length <= 5;
 
-    if (useButtonMode) {
-      const buttons = panel.ticketTypes.map((type) => {
-        const customId = this.createId({
-          cmd: 'ticket-open',
-          action: 'open',
-          pid: panel._id.toHexString(),
-          bid: type.id,
-          defer: false
-        });
-        const btn = new ButtonBuilder()
-          .setCustomId(customId)
-          .setLabel(type.label)
-          .setStyle(type.buttonStyle ?? ButtonStyle.Primary);
-        if (type.emoji) btn.setEmoji(type.emoji);
-        return btn;
-      });
-      return [new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons)];
-    }
+    const ticketButtons: ButtonBuilder[] = useButtonMode
+      ? panel.ticketTypes.map((type) => {
+          const customId = this.createId({
+            cmd: 'ticket-open',
+            action: 'open',
+            pid: panel._id.toHexString(),
+            bid: type.id,
+            defer: false
+          });
+          const btn = new ButtonBuilder()
+            .setCustomId(customId)
+            .setLabel(type.label)
+            .setStyle(type.buttonStyle ?? ButtonStyle.Primary);
+          if (type.emoji) btn.setEmoji(type.emoji);
+          return btn;
+        })
+      : (() => {
+          const customId = this.createId({
+            cmd: 'ticket-open',
+            action: 'open',
+            pid: panel._id.toHexString(),
+            defer: false
+          });
+          const cfg = panel.button ?? {
+            label: 'Create Ticket',
+            emoji: '📩',
+            style: ButtonStyle.Primary
+          };
+          const btn = new ButtonBuilder()
+            .setCustomId(customId)
+            .setLabel(cfg.label)
+            .setStyle(cfg.style ?? ButtonStyle.Primary);
+          if (cfg.emoji) btn.setEmoji(cfg.emoji);
+          return [btn];
+        })();
 
-    // Menu mode (or >5 types fallback: single button opens select menu)
-    const customId = this.createId({
-      cmd: 'ticket-open',
-      action: 'open',
-      pid: panel._id.toHexString(),
-      defer: false
+    const extraBuilt = (panel.extraButtons ?? []).map((eb) => {
+      if (eb.url) {
+        const b = new ButtonBuilder().setURL(eb.url).setLabel(eb.label).setStyle(ButtonStyle.Link);
+        if (eb.emoji) b.setEmoji(eb.emoji);
+        return b;
+      }
+      const b = new ButtonBuilder()
+        .setCustomId(this.createId({ cmd: eb.cmd!, ...eb.args, ephemeral: true, defer: false }))
+        .setLabel(eb.label)
+        .setStyle(eb.style ?? ButtonStyle.Secondary);
+      if (eb.emoji) b.setEmoji(eb.emoji);
+      return b;
     });
-    const cfg = panel.button ?? { label: 'Create Ticket', emoji: '📩', style: ButtonStyle.Primary };
-    const btn = new ButtonBuilder()
-      .setCustomId(customId)
-      .setLabel(cfg.label)
-      .setStyle(cfg.style ?? ButtonStyle.Primary);
-    if (cfg.emoji) btn.setEmoji(cfg.emoji);
-    return [new ActionRowBuilder<ButtonBuilder>().addComponents(btn)];
+
+    const chunk = (btns: ButtonBuilder[]) => {
+      const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+      for (let i = 0; i < btns.length; i += 5)
+        rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(...btns.slice(i, i + 5)));
+      return rows;
+    };
+
+    if (!extraBuilt.length) return chunk(ticketButtons);
+
+    if ((panel.extraButtonsPlacement ?? 'same-row') === 'same-row') {
+      return chunk([...ticketButtons, ...extraBuilt]);
+    }
+    return [...chunk(ticketButtons), ...chunk(extraBuilt)];
   }
 }

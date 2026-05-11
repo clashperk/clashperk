@@ -70,7 +70,7 @@ interface TicketPanelEntity {
 
   button: {                      // used only in 'menu' display mode
     label: string;               // default: "Create Ticket"
-    emoji?: string;              // default: "📩"
+    emoji?: string;              // default: "📩"; validated with parseEmoji on save — invalid input discarded
     style: number;               // ButtonStyle enum value, default: Primary
   };
 
@@ -81,6 +81,20 @@ interface TicketPanelEntity {
     statusChange?: string;       // channel ID for status change logs
     ticketClose?: string;        // channel ID for ticket close logs
   };
+
+  // Extra buttons appended to panel post action rows alongside Create Ticket buttons
+  extraButtons?: {
+    id: string;                  // nanoid(8), stable key for UI state
+    label: string;
+    emoji?: string;              // validated with parseEmoji on save
+    cmd?: string;                // command name for routing button (e.g. 'link-add')
+    args?: Record<string, string>; // baked into custom ID at render time
+    style?: number;              // ButtonStyle for command buttons (default: Secondary)
+    url?: string;                // URL for ButtonStyle.Link buttons
+  }[];                           // max 10; cmd or url is set, not both
+  extraButtonsPlacement?: 'same-row' | 'new-row'; // default: 'same-row'
+                                 // 'same-row' → extra buttons fill the Create Ticket row, overflow to next
+                                 // 'new-row'  → extra buttons always start on a fresh action row
 
   createdAt: Date;
   updatedAt: Date;
@@ -211,6 +225,7 @@ The dashboard is a CV2 container laid out as numbered steps, each with an **Edit
 | **Step 3** | **Application Types** | Add/edit/delete/reorder types; summary of each (roles, questions, requirements) |
 | **Step 4** | **Saved Replies** | Server-wide staff reply templates (shared across all panels and types) |
 | **Step 5** | **Logging** | Log channels for button click, status change, ticket close events |
+| **Step 6** | **Extra Buttons** | Additional buttons appended to the panel post alongside Create Ticket buttons |
 
 Per-type settings (staff roles, apply rules, questions, categories, naming, button style) are configured inside the **Application Types** sub-flow, not in the main dashboard.
 
@@ -220,7 +235,7 @@ Opened via **Edit / Delete** next to a type. Sections:
 
 | Section | What it configures |
 |---|---|
-| **Label / Emoji / Button Style** | Type label, emoji, and individual button style (for Buttons display mode) |
+| **Label / Emoji / Button Style** | Type label, emoji (validated with `parseEmoji` — invalid input is discarded), and individual button style (for Buttons display mode) |
 | **Staff Roles** | Ping roles (full access + notify), Viewer roles (read only), Add roles, Remove roles |
 | **Rules** | TH min, min trophies, min league tier, require linked account, staff thread, allow claiming |
 | **Questions** | Up to 5 text-input questions shown in a modal before ticket creation |
@@ -243,6 +258,17 @@ Gate checks run in `fetchQualifyingAccounts` before the ticket channel is create
 
 League tier options are derived from `PLAYER_LEAGUE_MAP` (top 25 entries by ID). The key stored is the string league ID (e.g. `'105000034'`).
 
+### Extra Buttons sub-flow (`editExtraButtonsFlow`)
+
+Manages `panel.extraButtons` and `panel.extraButtonsPlacement`. Panel-level (not per-type). Two add flows:
+
+- **Add Command Button** — modal with preset selector (currently only `link-add`), Label, Emoji, Style. Custom ID at render time: `this.createId({ cmd: eb.cmd, ...eb.args, ephemeral: true, defer: false })`. Max 10 total.
+- **Add URL Button** — modal with Label, Emoji, URL. Renders as `ButtonStyle.Link`.
+
+**Placement toggle** switches between `same-row` (extra buttons fill the Create Ticket row, overflow to next) and `new-row` (always start on a fresh action row). Saved immediately to DB.
+
+Edit modal (per entry): Label + Emoji + Style (command buttons only) + Delete checkbox. `cmd`/`args`/`url` are immutable after creation.
+
 ### Dashboard collector
 
 The dashboard uses a `createMessageComponentCollector` (10-minute timeout, filtered to the invoking user). On each button click the relevant modal or sub-flow is launched, then the dashboard embed is refreshed with current panel state.
@@ -252,6 +278,8 @@ The dashboard uses a `createMessageComponentCollector` (10-minute timeout, filte
 ## Posting a Panel (`/ticket-post`)
 
 **Command:** `/ticket-post panel_name:<name> [channel:<channel>]`
+
+**Required bot permissions (target channel):** `ViewChannel, SendMessages, AttachFiles, EmbedLinks, ReadMessageHistory, ManageMessages, ManageChannels, ManageRoles, CreatePrivateThreads, SendMessagesInThreads, MentionEveryone, UseExternalEmojis`
 
 Fetches the panel from DB, builds the embed and button row(s), and posts `{ embeds: [embed], components: [rows] }` to the target channel.
 
@@ -274,9 +302,24 @@ cmd=ticket-open  action=open  pid=<panelId>  bid=<typeId>  defer=false
 
 `defer=false` tells the handler framework **not** to auto-defer, because the first response may need to be `showModal()`.
 
+### Extra buttons in `buildPanelComponents`
+
+`panel.extraButtons` are appended after the Create Ticket buttons and chunked into action rows of 5:
+
+- **Command button** → `this.createId({ cmd: eb.cmd, ...eb.args, ephemeral: true, defer: false })` + `eb.style ?? ButtonStyle.Secondary`
+- **URL button** → `ButtonStyle.Link` with `eb.url`
+
+**Placement modes:**
+- `same-row` (default) — Create Ticket buttons and extra buttons are merged into one flat list, then chunked. A Create Ticket row with 1 button + 4 extra buttons = single row.
+- `new-row` — Create Ticket buttons are chunked separately, then extra buttons are chunked separately and appended.
+
+Run `/ticket-post` again after editing extra buttons to push the updated panel message.
+
 ---
 
 ## Opening a Ticket (`ticket-open`)
+
+**Required bot permissions (ticket channel):** `ViewChannel, SendMessages, AttachFiles, EmbedLinks, ReadMessageHistory, ManageMessages, ManageChannels, ManageRoles, CreatePrivateThreads, SendMessagesInThreads, MentionEveryone`
 
 ### Action routing
 
@@ -342,7 +385,12 @@ Returns formatted options. Returns `null` and sends an ephemeral error listing u
 
 1. Gets the next ticket count (max `count` in guild + 1).
 2. Resolves channel name from `namingConvention`.
-3. Builds permission overwrites (everyone denied, creator allowed, ping roles full access, viewer roles read/send).
+3. Builds permission overwrites:
+   - `@everyone` — deny `ViewChannel`
+   - **Bot** — allow `ViewChannel, SendMessages, AttachFiles, EmbedLinks, ReadMessageHistory, ManageMessages, ManageChannels, CreatePrivateThreads, SendMessagesInThreads`
+   - **Creator** — allow `ViewChannel, SendMessages, AttachFiles, EmbedLinks, ReadMessageHistory`
+   - **Ping roles** — allow `ViewChannel, SendMessages, AttachFiles, EmbedLinks, ReadMessageHistory, ManageMessages, ManageChannels`
+   - **View-only roles** — allow `ViewChannel, SendMessages, ReadMessageHistory`
 4. Creates the `GuildText` channel (placed in `openCategoryId` if set).
 5. Inserts `TicketEntity` to DB.
 6. Calls `postTicketEmbed` to post the CV2 ticket embed.
