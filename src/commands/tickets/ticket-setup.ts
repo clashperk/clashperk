@@ -17,7 +17,6 @@ import {
   MessageComponentInteraction,
   MessageFlags,
   ModalBuilder,
-  parseEmoji,
   RoleSelectMenuBuilder,
   SectionBuilder,
   SeparatorSpacingSize,
@@ -30,6 +29,14 @@ import {
 import { ObjectId, WithId } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { Command } from '../../lib/handlers.js';
+
+const CUSTOM_EMOJI_RE = /^<a?:[\w]{2,32}:\d{17,19}>$/;
+const isValidEmoji = (input: string) => {
+  const trimmed = input.trim();
+  if (CUSTOM_EMOJI_RE.test(trimmed)) return true;
+  // Unicode emoji: must contain at least one pictographic/emoji character and no ':'
+  return !trimmed.includes(':') && /\p{Extended_Pictographic}/u.test(trimmed);
+};
 
 const DEFAULT_EMBED = {
   title: 'Open a Ticket',
@@ -60,6 +67,14 @@ export default class TicketSetupCommand extends Command {
     });
   }
 
+  private get ticketPanels() {
+    return this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS);
+  }
+
+  private get ticketGuildSettings() {
+    return this.client.db.collection<TicketGuildSettingsEntity>(Collections.TICKET_SETTINGS);
+  }
+
   public async exec(
     interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>,
     args: Record<string, unknown>
@@ -81,35 +96,31 @@ export default class TicketSetupCommand extends Command {
     let panel = await this.getPanel(interaction.guildId, panelName);
 
     if (!panel) {
-      const insertResult = await this.client.db
-        .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-        .insertOne({
-          _id: new ObjectId(),
-          guildId: interaction.guildId,
-          name: panelName,
-          embed: { ...DEFAULT_EMBED },
-          displayMode: 'menu',
-          button: { label: 'Create Ticket', emoji: '📩', style: ButtonStyle.Primary },
-          ticketTypes: [
-            {
-              id: nanoid(8),
-              label: 'General',
-              requireLinkedAccount: false,
-              pingRoleIds: [],
-              viewOnlyRoleIds: [],
-              addRoleIds: [],
-              removeRoleIds: [],
-              namingConvention: 'ticket-{count}',
-              createStaffThread: false
-            }
-          ],
-          logChannels: {},
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-      panel = await this.client.db
-        .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-        .findOne({ _id: insertResult.insertedId });
+      const insertResult = await this.ticketPanels.insertOne({
+        _id: new ObjectId(),
+        guildId: interaction.guildId,
+        name: panelName,
+        embed: { ...DEFAULT_EMBED },
+        displayMode: 'menu',
+        button: { label: 'Create Ticket', emoji: '📩', style: ButtonStyle.Primary },
+        ticketTypes: [
+          {
+            id: nanoid(8),
+            label: 'General',
+            requireLinkedAccount: false,
+            pingRoleIds: [],
+            viewOnlyRoleIds: [],
+            addRoleIds: [],
+            removeRoleIds: [],
+            namingConvention: 'ticket-{count}',
+            createStaffThread: false
+          }
+        ],
+        logChannels: {},
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      panel = await this.ticketPanels.findOne({ _id: insertResult.insertedId });
     }
 
     if (!panel) return interaction.editReply({ content: 'Failed to load panel.' });
@@ -117,10 +128,11 @@ export default class TicketSetupCommand extends Command {
     const ids = this.makeDashboardIds(interaction.user.id);
 
     const getReplyCount = async () => {
-      const s = await this.client.db
-        .collection<TicketGuildSettingsEntity>(Collections.TICKET_SETTINGS)
-        .findOne({ guildId: interaction.guildId }, { projection: { savedReplies: 1 } });
-      return s?.savedReplies?.length ?? 0;
+      const ticketGuildSettings = await this.ticketGuildSettings.findOne(
+        { guildId: interaction.guildId },
+        { projection: { savedReplies: 1 } }
+      );
+      return ticketGuildSettings?.savedReplies?.length ?? 0;
     };
     let replyCount = await getReplyCount();
 
@@ -168,14 +180,14 @@ export default class TicketSetupCommand extends Command {
           await action.deferUpdate();
           panel = await this.editExtraButtonsFlow(interaction, panel!);
         }
-      } catch (e) {
+      } catch (error) {
         if (
-          e instanceof DiscordjsError &&
-          e.code === DiscordjsErrorCodes.InteractionCollectorError
+          error instanceof DiscordjsError &&
+          error.code === DiscordjsErrorCodes.InteractionCollectorError
         ) {
           // Timed out — ignore
         } else {
-          throw e;
+          throw error;
         }
       }
 
@@ -373,7 +385,7 @@ export default class TicketSetupCommand extends Command {
       new SectionBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### Step 6: Extra Buttons\n${extraButtonsText}\n-# Placement: ${(panel.extraButtonsPlacement ?? 'same-row') === 'same-row' ? 'Same row as Create Ticket' : 'New row below Create Ticket'}`
+            `### Step 6: Extra Buttons\n${extraButtonsText}\n-# Placement: ${(panel.extraButtonsPlacement ?? 'row') === 'row' ? 'Same row as Create Ticket' : 'New row below Create Ticket'}`
           )
         )
         .setButtonAccessory(
@@ -466,7 +478,7 @@ export default class TicketSetupCommand extends Command {
     const colorRaw = submit.fields.getTextInputValue(customIds.color);
     const color = colorRaw ? parseInt(colorRaw.replace('#', ''), 16) || undefined : undefined;
 
-    await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
+    await this.ticketPanels.updateOne(
       { _id: panel._id },
       {
         $set: {
@@ -510,7 +522,7 @@ export default class TicketSetupCommand extends Command {
     const emojiInput = new TextInputBuilder()
       .setCustomId(customIds.emoji)
       .setStyle(TextInputStyle.Short)
-      .setMaxLength(32)
+      .setMaxLength(56)
       .setRequired(false);
     if (current.emoji) emojiInput.setValue(current.emoji);
 
@@ -572,7 +584,7 @@ export default class TicketSetupCommand extends Command {
       | 'buttons';
     const label = submit.fields.getTextInputValue(customIds.label) || current.label;
     const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
-    const emoji = emojiRaw && parseEmoji(emojiRaw) ? emojiRaw : undefined;
+    const emoji = emojiRaw && isValidEmoji(emojiRaw) ? emojiRaw : undefined;
     const styleVal = parseInt(submit.fields.getStringSelectValues(customIds.style)?.[0] ?? '1');
     const style = [
       ButtonStyle.Primary,
@@ -583,12 +595,10 @@ export default class TicketSetupCommand extends Command {
       ? styleVal
       : ButtonStyle.Primary;
 
-    await this.client.db
-      .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-      .updateOne(
-        { _id: panel._id },
-        { $set: { displayMode, button: { label, emoji, style }, updatedAt: new Date() } }
-      );
+    await this.ticketPanels.updateOne(
+      { _id: panel._id },
+      { $set: { displayMode, button: { label, emoji, style }, updatedAt: new Date() } }
+    );
 
     await submit.deferUpdate();
     this.client.components.delete(customIds.modal);
@@ -731,12 +741,10 @@ export default class TicketSetupCommand extends Command {
         if (action.customId === staticIds.toggleMode) {
           await action.deferUpdate();
           const newMode = (currentPanel.displayMode ?? 'menu') === 'buttons' ? 'menu' : 'buttons';
-          await this.client.db
-            .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-            .updateOne(
-              { _id: currentPanel._id },
-              { $set: { displayMode: newMode, updatedAt: new Date() } }
-            );
+          await this.ticketPanels.updateOne(
+            { _id: currentPanel._id },
+            { $set: { displayMode: newMode, updatedAt: new Date() } }
+          );
           currentPanel =
             (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
         } else if (action.customId === staticIds.reorder) {
@@ -778,12 +786,10 @@ export default class TicketSetupCommand extends Command {
               const reordered = selected.map(
                 (id) => currentPanel.ticketTypes.find((t) => t.id === id)!
               );
-              await this.client.db
-                .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-                .updateOne(
-                  { _id: currentPanel._id },
-                  { $set: { ticketTypes: reordered, updatedAt: new Date() } }
-                );
+              await this.ticketPanels.updateOne(
+                { _id: currentPanel._id },
+                { $set: { ticketTypes: reordered, updatedAt: new Date() } }
+              );
               currentPanel =
                 (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
             }
@@ -862,7 +868,7 @@ export default class TicketSetupCommand extends Command {
           new TextInputBuilder()
             .setCustomId(customIds.emoji)
             .setStyle(TextInputStyle.Short)
-            .setMaxLength(32)
+            .setMaxLength(56)
             .setRequired(false)
             .setPlaceholder('📩')
         )
@@ -877,7 +883,7 @@ export default class TicketSetupCommand extends Command {
 
     const label = submit.fields.getTextInputValue(customIds.label);
     const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
-    const emoji = emojiRaw && parseEmoji(emojiRaw) ? emojiRaw : undefined;
+    const emoji = emojiRaw && isValidEmoji(emojiRaw) ? emojiRaw : undefined;
 
     const newButton: TicketTypeConfig = {
       id: nanoid(8),
@@ -892,12 +898,10 @@ export default class TicketSetupCommand extends Command {
       createStaffThread: false
     };
 
-    await this.client.db
-      .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-      .updateOne(
-        { _id: panel._id },
-        { $push: { ticketTypes: newButton }, $set: { updatedAt: new Date() } }
-      );
+    await this.ticketPanels.updateOne(
+      { _id: panel._id },
+      { $push: { ticketTypes: newButton }, $set: { updatedAt: new Date() } }
+    );
 
     await submit.deferUpdate();
     this.client.components.delete(customIds.modal);
@@ -1054,7 +1058,7 @@ export default class TicketSetupCommand extends Command {
       });
 
       const updateTicketType = async (update: Partial<TicketTypeConfig>) => {
-        await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
+        await this.ticketPanels.updateOne(
           { '_id': currentPanel._id, 'ticketTypes.id': buttonId },
           {
             $set: {
@@ -1079,9 +1083,10 @@ export default class TicketSetupCommand extends Command {
 
         if (action.customId === ids.delete) {
           await action.deferUpdate();
-          await this.client.db
-            .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-            .updateOne({ _id: currentPanel._id }, { $pull: { ticketTypes: { id: buttonId } } });
+          await this.ticketPanels.updateOne(
+            { _id: currentPanel._id },
+            { $pull: { ticketTypes: { id: buttonId } } }
+          );
           currentPanel =
             (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
           collector.stop('deleted');
@@ -1108,7 +1113,7 @@ export default class TicketSetupCommand extends Command {
             const emojiInput = new TextInputBuilder()
               .setCustomId(customIds.emoji)
               .setStyle(TextInputStyle.Short)
-              .setMaxLength(32)
+              .setMaxLength(56)
               .setRequired(false);
             if (btn.emoji) emojiInput.setValue(btn.emoji);
             const currentBtnStyle = btn.buttonStyle ?? ButtonStyle.Primary;
@@ -1158,7 +1163,7 @@ export default class TicketSetupCommand extends Command {
               label: submit.fields.getTextInputValue(customIds.label),
               emoji: (() => {
                 const raw = submit.fields.getTextInputValue(customIds.emoji);
-                return raw && parseEmoji(raw) ? raw : undefined;
+                return raw && isValidEmoji(raw) ? raw : undefined;
               })(),
               buttonStyle
             });
@@ -1349,14 +1354,14 @@ export default class TicketSetupCommand extends Command {
             await submit.deferUpdate();
             this.client.components.delete(customIds.modal);
           }
-        } catch (e) {
+        } catch (error) {
           if (
             !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
+              error instanceof DiscordjsError &&
+              error.code === DiscordjsErrorCodes.InteractionCollectorError
             )
           )
-            throw e;
+            throw error;
         }
 
         if (btn) {
@@ -1430,7 +1435,7 @@ export default class TicketSetupCommand extends Command {
     const addRoleIds = submit.fields.getSelectedRoles(customIds.add)?.map((r) => r.id) ?? [];
     const removeRoleIds = submit.fields.getSelectedRoles(customIds.remove)?.map((r) => r.id) ?? [];
 
-    await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
+    await this.ticketPanels.updateOne(
       { '_id': panel._id, 'ticketTypes.id': buttonId },
       {
         $set: {
@@ -1453,10 +1458,7 @@ export default class TicketSetupCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     guildId: string
   ): Promise<void> {
-    const getSettings = () =>
-      this.client.db
-        .collection<TicketGuildSettingsEntity>(Collections.TICKET_SETTINGS)
-        .findOne({ guildId });
+    const getSettings = () => this.ticketGuildSettings.findOne({ guildId });
 
     let settings = await getSettings();
     let templates = settings?.savedReplies ?? [];
@@ -1477,13 +1479,11 @@ export default class TicketSetupCommand extends Command {
     for (const t of templates) getOrCreateReplyIds(t.name);
 
     const saveTemplates = async (updated: { name: string; content: string }[]) => {
-      await this.client.db
-        .collection<TicketGuildSettingsEntity>(Collections.TICKET_SETTINGS)
-        .updateOne(
-          { guildId },
-          { $set: { savedReplies: updated, updatedAt: new Date() } },
-          { upsert: true }
-        );
+      await this.ticketGuildSettings.updateOne(
+        { guildId },
+        { $set: { savedReplies: updated, updatedAt: new Date() } },
+        { upsert: true }
+      );
       settings = await getSettings();
       templates = settings?.savedReplies ?? [];
     };
@@ -1697,14 +1697,14 @@ export default class TicketSetupCommand extends Command {
               }
             }
           }
-        } catch (e) {
+        } catch (error) {
           if (
             !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
+              error instanceof DiscordjsError &&
+              error.code === DiscordjsErrorCodes.InteractionCollectorError
             )
           )
-            throw e;
+            throw error;
         }
 
         await interaction
@@ -1776,7 +1776,7 @@ export default class TicketSetupCommand extends Command {
     const closedCategoryId =
       submit.fields.getSelectedChannels(customIds.closed)?.first()?.id ?? null;
 
-    await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
+    await this.ticketPanels.updateOne(
       { '_id': panel._id, 'ticketTypes.id': buttonId },
       {
         $set: {
@@ -1848,7 +1848,7 @@ export default class TicketSetupCommand extends Command {
     const ticketCloseChannel =
       submit.fields.getSelectedChannels(customIds.ticketClose)?.first()?.id ?? null;
 
-    await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
+    await this.ticketPanels.updateOne(
       { _id: panel._id },
       {
         $set: {
@@ -1890,18 +1890,16 @@ export default class TicketSetupCommand extends Command {
     for (const eb of currentPanel.extraButtons ?? []) getOrCreateBtnIds(eb.id);
 
     const saveExtraButtons = async (updated: NonNullable<TicketPanelEntity['extraButtons']>) => {
-      await this.client.db
-        .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
-        .updateOne(
-          { _id: currentPanel._id },
-          { $set: { extraButtons: updated, updatedAt: new Date() } }
-        );
+      await this.ticketPanels.updateOne(
+        { _id: currentPanel._id },
+        { $set: { extraButtons: updated, updatedAt: new Date() } }
+      );
       currentPanel = (await this.getPanel(currentPanel.guildId, currentPanel.name)) ?? currentPanel;
     };
 
     const renderMenu = () => {
       const buttons = currentPanel.extraButtons ?? [];
-      const placement = currentPanel.extraButtonsPlacement ?? 'same-row';
+      const placement = currentPanel.extraButtonsPlacement ?? 'row';
 
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
@@ -1950,7 +1948,7 @@ export default class TicketSetupCommand extends Command {
             .setDisabled(buttons.length >= 10),
           new ButtonBuilder()
             .setCustomId(staticIds.togglePlacement)
-            .setLabel(`Placement: ${placement === 'same-row' ? 'Same Row' : 'New Row'}`)
+            .setLabel(`Placement: ${placement === 'row' ? 'Same Row' : 'New Row'}`)
             .setStyle(ButtonStyle.Secondary),
           new ButtonBuilder()
             .setCustomId(staticIds.back)
@@ -1989,12 +1987,12 @@ export default class TicketSetupCommand extends Command {
         try {
           if (action.customId === staticIds.togglePlacement) {
             await action.deferUpdate();
-            const current = currentPanel.extraButtonsPlacement ?? 'same-row';
-            await this.client.db.collection<TicketPanelEntity>(Collections.TICKET_PANELS).updateOne(
+            const current = currentPanel.extraButtonsPlacement ?? 'row';
+            await this.ticketPanels.updateOne(
               { _id: currentPanel._id },
               {
                 $set: {
-                  extraButtonsPlacement: current === 'same-row' ? 'new-row' : 'same-row',
+                  extraButtonsPlacement: current === 'row' ? 'col' : 'row',
                   updatedAt: new Date()
                 }
               }
@@ -2046,7 +2044,7 @@ export default class TicketSetupCommand extends Command {
                   new TextInputBuilder()
                     .setCustomId(customIds.emoji)
                     .setStyle(TextInputStyle.Short)
-                    .setMaxLength(32)
+                    .setMaxLength(56)
                     .setRequired(false)
                     .setPlaceholder('🔗')
                 ),
@@ -2083,7 +2081,7 @@ export default class TicketSetupCommand extends Command {
             const presetValue = submit.fields.getStringSelectValues(customIds.preset)?.[0];
             const label = submit.fields.getTextInputValue(customIds.label).trim();
             const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
-            const emoji = emojiRaw && parseEmoji(emojiRaw) ? emojiRaw : undefined;
+            const emoji = emojiRaw && isValidEmoji(emojiRaw) ? emojiRaw : undefined;
             const styleVal = parseInt(
               submit.fields.getStringSelectValues(customIds.style)?.[0] ?? '2'
             );
@@ -2141,7 +2139,7 @@ export default class TicketSetupCommand extends Command {
                   new TextInputBuilder()
                     .setCustomId(customIds.emoji)
                     .setStyle(TextInputStyle.Short)
-                    .setMaxLength(32)
+                    .setMaxLength(56)
                     .setRequired(false)
                     .setPlaceholder('📋')
                 ),
@@ -2163,7 +2161,7 @@ export default class TicketSetupCommand extends Command {
             });
             const label = submit.fields.getTextInputValue(customIds.label).trim();
             const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
-            const emoji = emojiRaw && parseEmoji(emojiRaw) ? emojiRaw : undefined;
+            const emoji = emojiRaw && isValidEmoji(emojiRaw) ? emojiRaw : undefined;
             const url = submit.fields.getTextInputValue(customIds.url).trim();
             if (label && url) {
               const newBtn = { id: nanoid(8), label, emoji, url };
@@ -2197,7 +2195,7 @@ export default class TicketSetupCommand extends Command {
               const emojiInput = new TextInputBuilder()
                 .setCustomId(customIds.emoji)
                 .setStyle(TextInputStyle.Short)
-                .setMaxLength(32)
+                .setMaxLength(56)
                 .setRequired(false);
               if (eb.emoji) emojiInput.setValue(eb.emoji);
 
@@ -2282,7 +2280,7 @@ export default class TicketSetupCommand extends Command {
                 const newLabel =
                   submit.fields.getTextInputValue(customIds.label).trim() || eb.label;
                 const newEmojiRaw = submit.fields.getTextInputValue(customIds.emoji);
-                const newEmoji = newEmojiRaw && parseEmoji(newEmojiRaw) ? newEmojiRaw : undefined;
+                const newEmoji = newEmojiRaw && isValidEmoji(newEmojiRaw) ? newEmojiRaw : undefined;
                 let newStyle = eb.style;
                 let newUrl = eb.url;
                 if (eb.cmd) {
@@ -2313,14 +2311,14 @@ export default class TicketSetupCommand extends Command {
               break;
             }
           }
-        } catch (e) {
+        } catch (error) {
           if (
             !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
+              error instanceof DiscordjsError &&
+              error.code === DiscordjsErrorCodes.InteractionCollectorError
             )
           )
-            throw e;
+            throw error;
         }
 
         await interaction

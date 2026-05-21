@@ -116,7 +116,7 @@ const applicationCommands = async (
   console.log(`Updated ${commands.length} Application Commands`);
 };
 
-const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
+const customBotCommands = async () => {
   const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services`, {
     method: 'GET',
     headers: {
@@ -133,9 +133,17 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
     token: string;
     guildIds: string[];
   }[];
+
   for (const application of applications) {
     for (const guildId of [...application.guildIds, CUSTOM_BOT_SERVER_ID]) {
-      await applicationGuildCommands(application.token, guildId, commands);
+      if (BETA_TESTING_GUILD_IDS.includes(guildId)) {
+        await applicationGuildCommands(application.token, guildId, [
+          ...COMMANDS,
+          ...HIDDEN_COMMANDS
+        ]);
+      } else {
+        await applicationGuildCommands(application.token, guildId, [...COMMANDS]);
+      }
     }
   }
 };
@@ -165,24 +173,19 @@ const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJ
   if (process.argv.includes('--gh-action')) {
     await applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS]);
 
-    if (BETA_TESTING_GUILD_IDS.length) {
-      for (const guildId of BETA_TESTING_GUILD_IDS) {
-        await applicationGuildCommands(token, guildId, [...HIDDEN_COMMANDS]);
-      }
+    for (const guildId of BETA_TESTING_GUILD_IDS) {
+      const commands =
+        guildId === SUPPORT_SERVER_ID
+          ? [...HIDDEN_COMMANDS, ...PRIVATE_COMMANDS]
+          : [...PRIVATE_COMMANDS];
+
+      await applicationGuildCommands(token, guildId, commands);
     }
     return;
   }
 
   if (process.argv.includes('--custom-bot')) {
-    await customBotCommands([...COMMANDS]);
-    return;
-  }
-
-  if (process.argv.includes('--private')) {
-    await applicationGuildCommands(process.env.PROD_TOKEN!, SUPPORT_SERVER_ID, [
-      ...PRIVATE_COMMANDS,
-      ...HIDDEN_COMMANDS
-    ]);
+    await customBotCommands();
     return;
   }
 

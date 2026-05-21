@@ -7,7 +7,7 @@ import {
   EmbedBuilder
 } from 'discord.js';
 import { WithId } from 'mongodb';
-import { Args, Command } from '../../lib/handlers.js';
+import { Command } from '../../lib/handlers.js';
 
 export default class TicketPostCommand extends Command {
   public constructor() {
@@ -32,12 +32,6 @@ export default class TicketPostCommand extends Command {
       defer: true,
       ephemeral: true
     });
-  }
-
-  public args(): Args {
-    return {
-      panel_name: { match: 'STRING' }
-    };
   }
 
   public async exec(interaction: CommandInteraction<'cached'>, args: { panel_name: string }) {
@@ -140,7 +134,7 @@ export default class TicketPostCommand extends Command {
 
     if (!extraBuilt.length) return chunk(ticketButtons);
 
-    if ((panel.extraButtonsPlacement ?? 'same-row') === 'same-row') {
+    if ((panel.extraButtonsPlacement ?? 'row') === 'row') {
       return chunk([...ticketButtons, ...extraBuilt]);
     }
     return [...chunk(ticketButtons), ...chunk(extraBuilt)];

@@ -58,7 +58,7 @@ export interface TicketPanelEntity {
     style?: number;
     url?: string;
   }[];
-  extraButtonsPlacement?: 'same-row' | 'new-row';
+  extraButtonsPlacement?: 'row' | 'col';
   createdAt: Date;
   updatedAt: Date;
 }
