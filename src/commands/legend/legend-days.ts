@@ -596,7 +596,7 @@ export default class LegendDaysCommand extends Command {
               .reverse()
               .map((b, idx) => {
                 const timeLabel =
-                  Date.now() - new Date(b.ingestedAt).getTime() >= 24 * 60 * 60 * 1000 && idx >= 10
+                  Date.now() - new Date(b.ingestedAt).getTime() >= 24 * 60 * 60 * 1000 && idx >= 5
                     ? `${ms(Date.now() - new Date(b.ingestedAt).getTime(), { long: true })} ago`
                     : `${time(new Date(b.ingestedAt), 'R')}`;
                 return `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${timeLabel}`;
@@ -612,7 +612,7 @@ export default class LegendDaysCommand extends Command {
               .reverse()
               .map((b, idx) => {
                 const timeLabel =
-                  Date.now() - new Date(b.ingestedAt).getTime() >= 24 * 60 * 60 * 1000 && idx >= 10
+                  Date.now() - new Date(b.ingestedAt).getTime() >= 24 * 60 * 60 * 1000 && idx >= 5
                     ? `${ms(Date.now() - new Date(b.ingestedAt).getTime(), { long: true })} ago`
                     : `${time(new Date(b.ingestedAt), 'R')}`;
                 return `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${timeLabel}`;
