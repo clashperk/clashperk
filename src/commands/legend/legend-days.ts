@@ -21,6 +21,7 @@ import {
   time
 } from 'discord.js';
 import moment from 'moment';
+import ms from 'ms';
 import pluralize from 'pluralize';
 import { api, encode } from '../../api/axios.js';
 import { BattleLogDto } from '../../api/generated.js';
@@ -440,44 +441,7 @@ export default class LegendDaysCommand extends Command {
     });
 
     const totalAttacks = perDayLogs.reduce((acc, cur) => acc + cur.attackCount, 0);
-
     const weaponLevel = data.townHallWeaponLevel ? ATTACK_COUNTS[data.townHallWeaponLevel] : '';
-    const logDescription =
-      perDayLogs.length >= 32
-        ? [
-            '```',
-            'DAY ATK   DEF  +/-  INIT FINAL',
-            ...perDayLogs.map((day, i) => {
-              const net = day.gain + day.loss;
-              const def = padStart(
-                `-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`,
-                5
-              );
-              const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
-              const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
-              const final = padStart(day.final, 4);
-              const init = padStart(day.initial, 4);
-              const n = (i + 1).toString().padStart(2, ' ');
-              return `\u200e${n} ${atk} ${def} ${ng} ${init}  ${final}`;
-            }),
-            '```'
-          ]
-        : [
-            '`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
-            ...perDayLogs.map((day, i) => {
-              const net = day.gain + day.loss;
-              const def = padStart(
-                `-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`,
-                5
-              );
-              const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
-              const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
-              const final = padStart(day.final, 4);
-              const init = padStart(day.initial, 5);
-              const n = (i + 1).toString().padStart(2, ' ');
-              return `\`\u200e${n} \` \`${atk} \` \`${def} \` \`${ng} \` \`${init} \` \` ${final} \``;
-            })
-          ];
 
     const description = [
       ...[
@@ -491,7 +455,22 @@ export default class LegendDaysCommand extends Command {
       `**Legend Season Logs (${Season.ID})**`,
       `- ${data.attackWins || totalAttacks} ${pluralize('attack', data.attackWins)} and ${data.defenseWins} ${pluralize('defense', data.defenseWins)} won`,
       '',
-      logDescription.join('\n')
+      [
+        '`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
+        ...perDayLogs.map((day, i) => {
+          const net = day.gain + day.loss;
+          const def = padStart(
+            `-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`,
+            5
+          );
+          const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
+          const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
+          const final = padStart(day.final, 4);
+          const init = padStart(day.initial, 5);
+          const n = (i + 1).toString().padStart(2, ' ');
+          return `\`\u200e${n} \` \`${atk} \` \`${def} \` \`${ng} \` \`${init} \` \` ${final} \``;
+        })
+      ].join('\n')
     ].join('\n');
 
     const embed = new EmbedBuilder();
@@ -614,12 +593,14 @@ export default class LegendDaysCommand extends Command {
         name: `**Attacks** (Avg: ${avgOffenseStars}★ ${avgOffenseDestruction}%)`,
         value: attacks.length
           ? attacks
-              .slice(0, 10)
               .reverse()
-              .map(
-                (b) =>
-                  `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
-              )
+              .map((b, idx) => {
+                const timeLabel =
+                  Date.now() - new Date(b.ingestedAt).getTime() >= 24 * 60 * 60 * 1000 && idx >= 10
+                    ? `${ms(Date.now() - new Date(b.ingestedAt).getTime(), { long: true })} ago`
+                    : `${time(new Date(b.ingestedAt), 'R')}`;
+                return `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${timeLabel}`;
+              })
               .join('\n')
           : '-',
         inline: true
@@ -628,12 +609,14 @@ export default class LegendDaysCommand extends Command {
         name: `**Defenses** (Avg: ${avgDefenseStars}★ ${avgDefenseDestruction}%)`,
         value: defenses.length
           ? defenses
-              .slice(0, 10)
               .reverse()
-              .map(
-                (b) =>
-                  `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${time(new Date(b.ingestedAt), 'R')}`
-              )
+              .map((b, idx) => {
+                const timeLabel =
+                  Date.now() - new Date(b.ingestedAt).getTime() >= 24 * 60 * 60 * 1000 && idx >= 10
+                    ? `${ms(Date.now() - new Date(b.ingestedAt).getTime(), { long: true })} ago`
+                    : `${time(new Date(b.ingestedAt), 'R')}`;
+                return `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${timeLabel}`;
+              })
               .join('\n')
           : '-',
         inline: true
