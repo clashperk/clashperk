@@ -1,5 +1,10 @@
 import { Collections, PLAYER_LEAGUE_MAP } from '@app/constants';
-import { TicketGuildSettingsEntity, TicketPanelEntity, TicketTypeConfig } from '@app/entities';
+import {
+  SAVED_REPLY_VARIABLES,
+  TicketGuildSettingsEntity,
+  TicketPanelEntity,
+  TicketTypeConfig
+} from '@app/entities';
 import {
   ButtonBuilder,
   ButtonInteraction,
@@ -1497,7 +1502,10 @@ export default class TicketSetupCommand extends Command {
             'Pre-written messages shared across all panels and application types in this server.',
             templates.length === 0
               ? '-# No saved replies yet — click **Add Reply** to create your first one.'
-              : `-# Click **Edit / Delete** next to a reply to edit or remove it. Up to **25 replies** per server.`
+              : `-# Click **Edit / Delete** next to a reply to edit or remove it. Up to **25 replies** per server.`,
+            '',
+            '**Supported variables:**',
+            SAVED_REPLY_VARIABLES.map((v) => `\`{${v}}\``).join(' ')
           ].join('\n')
         )
       );
@@ -1655,6 +1663,7 @@ export default class TicketSetupCommand extends Command {
                     .setCheckboxGroupComponent(
                       new CheckboxGroupBuilder()
                         .setCustomId(customIds.delete)
+                        .setRequired(false)
                         .addOptions(
                           new CheckboxGroupOptionBuilder()
                             .setLabel('Yes, delete this reply')

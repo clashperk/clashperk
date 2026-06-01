@@ -1,5 +1,21 @@
 import { ObjectId } from 'mongodb';
 
+export const SAVED_REPLY_VARIABLES = [
+  'user_mention',
+  'user_name',
+  'account_name',
+  'account_th',
+  'account_heroes',
+  'clan_name',
+  'clan_tag',
+  'clan_link',
+  'clan_leader',
+  'clan_leader_mention',
+  'ticket_count',
+  'ticket_status',
+  'server_name'
+] as const;
+
 export interface TicketTypeConfig {
   id: string;
   label: string;
