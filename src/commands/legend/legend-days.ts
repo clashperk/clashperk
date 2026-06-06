@@ -534,6 +534,8 @@ export default class LegendDaysCommand extends Command {
     const avgOffenseDestruction = avgStat(attacks, 'destruction');
     const avgDefenseStars = avgStat(defenses, 'stars');
     const avgDefenseDestruction = avgStat(defenses, 'destruction');
+    const trophiesFromAttacks = attacks.reduce((acc, b) => acc + b.trophyChange, 0);
+    const trophiesFromDefenses = defenses.reduce((acc, b) => acc + b.trophyChange, 0);
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
@@ -562,6 +564,8 @@ export default class LegendDaysCommand extends Command {
           `- ${player.trophies} trophies gained`,
           `- ${attacks.length}/${BattlesPerWeek[leagueId]} attacks`,
           `- ${defenses.length}/${BattlesPerWeek[leagueId]} defenses`,
+          `- +${trophiesFromAttacks} from attacks (Avg: ${avgOffenseStars} | ${avgOffenseDestruction}%)`,
+          `- +${trophiesFromDefenses} from defenses (Avg: ${avgDefenseStars} | ${avgDefenseDestruction}%)`,
           `- Rank **#${tournament.rank}** / ${tournament.total} (Top **${tournament.topPercentage}%**)`,
           zoneLine
         ]
@@ -590,34 +594,33 @@ export default class LegendDaysCommand extends Command {
 
     embed.addFields([
       {
-        name: `**Attacks** (Avg: ${avgOffenseStars}★ ${avgOffenseDestruction}%)`,
+        name: `**Attacks**`,
         value: attacks.length
-          ? attacks
-              .reverse()
-              .map((b, idx) => {
+          ? [
+              ...attacks.reverse().map((b, idx) => {
                 const timeLabel =
                   idx >= 5
                     ? `${ms(Date.now() - new Date(b.ingestedAt).getTime())}`
                     : `${time(new Date(b.ingestedAt), 'R')}`;
                 return `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${timeLabel}`;
               })
-              .join('\n')
+            ].join('\n')
           : '-',
+
         inline: true
       },
       {
-        name: `**Defenses** (Avg: ${avgDefenseStars}★ ${avgDefenseDestruction}%)`,
+        name: `**Defenses**`,
         value: defenses.length
-          ? defenses
-              .reverse()
-              .map((b, idx) => {
+          ? [
+              ...defenses.reverse().map((b, idx) => {
                 const timeLabel =
                   idx >= 5
                     ? `${ms(Date.now() - new Date(b.ingestedAt).getTime())}`
                     : `${time(new Date(b.ingestedAt), 'R')}`;
                 return `\` ${padStart(`+${b.trophyChange}`, 3)}\` \u200b \`${'★'.repeat(b.stars)}${'☆'.repeat(3 - b.stars)}\` \u200b \`${padStart(b.destruction, 3)}%\` \u200b ${timeLabel}`;
               })
-              .join('\n')
+            ].join('\n')
           : '-',
         inline: true
       }
