@@ -4,8 +4,30 @@ import { container } from 'tsyringe';
 import { api, encode } from '../api/axios.js';
 import { BattleLogDailyDto, BattleLogDto } from '../api/generated.js';
 import { Client } from '../struct/client.js';
-import { LeaguePromotionsMap } from '../util/constants.js';
+import { Collections, LeaguePromotionsMap } from '../util/constants.js';
 import { Season, Util } from '../util/toolkit.js';
+
+export const getDailyLegendEntries = async (playerTag: string) => {
+  const client = container.resolve(Client);
+  const result = await client.db
+    .collection(Collections.LEGEND_ATTACKS)
+    .findOne({ tag: playerTag, seasonId: Season.ID });
+
+  return (result?.logs ?? []).reduce<Record<string, { start: number; end: number; diff: number }>>(
+    (record, log) => {
+      const date = moment(log.timestamp).subtract(5, 'hours').toISOString().slice(0, 10);
+      if (!record[date]) {
+        record[date] = { start: log.start, end: log.end, diff: log.inc };
+      } else {
+        record[date].end = log.end;
+        record[date].diff += log.inc;
+      }
+
+      return record;
+    },
+    {}
+  );
+};
 
 export const getLegendTimestampAgainstDay = (day?: number) => {
   if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
@@ -16,9 +38,19 @@ export const getLegendTimestampAgainstDay = (day?: number) => {
 };
 
 export const getLegendBattleLog = async (playerTag: string): Promise<BattleLogDto[]> => {
-  const result = await api.players.getBattleLog({ playerTag: encode(playerTag) });
+  const [result, logsMap] = await Promise.all([
+    api.players.getBattleLog({ playerTag: encode(playerTag) }),
+    getDailyLegendEntries(playerTag)
+  ]);
   if (!result?.data?.items) return [];
-  return result.data.items.filter((b) => b.battleType === 'legend');
+  return result.data.items
+    .filter((b) => b.battleType === 'legend')
+    .map((log) => ({
+      ...log,
+      trophies: logsMap[log.battleDate]?.end ?? log.trophies,
+      startTrophies: logsMap[log.battleDate]?.start ?? log.trophies,
+      endTrophies: logsMap[log.battleDate]?.end ?? log.trophies
+    }));
 };
 
 export const getRankedBattleLog = async (
@@ -51,6 +83,8 @@ export const getTournament = async (player: APIPlayer, lastTournament = false) =
     destruction: log.destructionPercentage,
     isAttack: true,
     leagueId: player.leagueTier?.id ?? 0,
+    startTrophies: 0,
+    endTrophies: 0,
     stars: log.stars,
     name: player.name,
     opponentTag: log.opponentPlayerTag,
@@ -73,6 +107,8 @@ export const getTournament = async (player: APIPlayer, lastTournament = false) =
     leagueId: player.leagueTier?.id ?? 0,
     stars: log.stars,
     name: player.name,
+    startTrophies: 0,
+    endTrophies: 0,
     opponentTag: log.opponentPlayerTag,
     tag: player.tag,
     trophyChange: calculateTrophies(log.stars, log.destructionPercentage, {

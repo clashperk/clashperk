@@ -231,12 +231,12 @@ export default class LegendDaysCommand extends Command {
   private async embed(
     interaction: CommandInteraction | ButtonInteraction,
     data: APIPlayer,
-    allBattles: BattleLogDto[],
+    battleLogs: BattleLogDto[],
     _day?: number
   ) {
     const { startTime, day } = getLegendTimestampAgainstDay(_day);
     const battleDate = new Date(startTime).toISOString().slice(0, 10);
-    const dayBattles = allBattles.filter((b) => {
+    const dayBattles = battleLogs.filter((b) => {
       return b.battleDate === battleDate;
     });
 
@@ -412,12 +412,12 @@ export default class LegendDaysCommand extends Command {
     });
   }
 
-  private async logs(data: APIPlayer, allBattles: BattleLogDto[]) {
+  private async logs(data: APIPlayer, battleLogs: BattleLogDto[]) {
     const days = Util.getLegendDays();
 
     const perDayLogs = days.map(({ startTime }) => {
       const battleDate = new Date(startTime).toISOString().slice(0, 10);
-      const dayBattles = allBattles.filter((b) => b.battleDate === battleDate);
+      const dayBattles = battleLogs.filter((b) => b.battleDate === battleDate);
 
       const attacks = dayBattles.filter((b) => b.isAttack);
       const defenses = dayBattles.filter((b) => !b.isAttack);
@@ -427,16 +427,17 @@ export default class LegendDaysCommand extends Command {
 
       const firstBattle = dayBattles.at(-1);
       const lastBattle = dayBattles.at(0);
-      const initial = firstBattle ? firstBattle.trophies - firstBattle.trophyChange : '-';
-      const final = lastBattle ? lastBattle.trophies : '-';
+      const initial = firstBattle?.startTrophies;
+      const final = lastBattle?.endTrophies;
 
       return {
         attackCount: attacks.length,
         defenseCount: defenses.length,
         gain,
         loss,
-        final,
-        initial
+        net: initial && final ? final - initial : gain + loss,
+        final: final || '-',
+        initial: initial || '-'
       };
     });
 
@@ -458,13 +459,12 @@ export default class LegendDaysCommand extends Command {
       [
         '`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
         ...perDayLogs.map((day, i) => {
-          const net = day.gain + day.loss;
           const def = padStart(
             `-${Math.abs(day.loss)}${ATTACK_COUNTS[Math.min(8, day.defenseCount)]}`,
             5
           );
           const atk = padStart(`+${day.gain}${ATTACK_COUNTS[Math.min(8, day.attackCount)]}`, 5);
-          const ng = padStart(`${net > 0 ? '+' : ''}${net}`, 4);
+          const ng = padStart(`${day.net > 0 ? '+' : ''}${day.net}`, 4);
           const final = padStart(day.final, 4);
           const init = padStart(day.initial, 5);
           const n = (i + 1).toString().padStart(2, ' ');
