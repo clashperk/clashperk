@@ -255,10 +255,8 @@ export default class LegendDaysCommand extends Command {
 
     const firstBattle = dayBattles.at(-1);
     const lastBattle = dayBattles.at(0);
-    const initialTrophies = firstBattle
-      ? firstBattle.trophies - firstBattle.trophyChange
-      : data.trophies;
-    const currentTrophies = lastBattle ? lastBattle.trophies : data.trophies;
+    const initialTrophies = firstBattle ? firstBattle.startTrophies : data.trophies;
+    const currentTrophies = lastBattle ? lastBattle.endTrophies : data.trophies;
 
     const { globalRank, countryRank } = await this.rankings(data.tag);
 
