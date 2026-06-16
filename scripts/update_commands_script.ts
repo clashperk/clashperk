@@ -177,7 +177,7 @@ const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJ
       const commands =
         guildId === SUPPORT_SERVER_ID
           ? [...HIDDEN_COMMANDS, ...PRIVATE_COMMANDS]
-          : [...PRIVATE_COMMANDS];
+          : [...HIDDEN_COMMANDS];
 
       await applicationGuildCommands(token, guildId, commands);
     }
