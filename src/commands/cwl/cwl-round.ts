@@ -14,7 +14,6 @@ import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
-import { Util } from '../../util/toolkit.js';
 
 export default class CWLRoundCommand extends Command {
   public constructor() {
@@ -56,13 +55,11 @@ export default class CWLRoundCommand extends Command {
       );
     }
 
-    const isIncorrectSeason =
-      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike =
-      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
-    const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
+    const entityLike = args.season ? group : res.ok ? body : group;
+    // A specific season request targets archived (past) data; otherwise use the live group.
+    const isApiData = !args.season;
 
-    if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
+    if ((!res.ok && !group) || !entityLike) {
       return interaction.editReply(
         this.i18n('command.cwl.not_in_season', {
           lng: interaction.locale,
@@ -199,7 +196,7 @@ export default class CWLRoundCommand extends Command {
       }
     }
 
-    if (!chunks.length && body.season !== Util.getCWLSeasonId()) {
+    if (!chunks.length && args.season) {
       return interaction.editReply(
         this.i18n('command.cwl.not_in_season', {
           lng: interaction.locale,

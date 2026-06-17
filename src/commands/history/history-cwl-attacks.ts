@@ -82,7 +82,9 @@ export default class CWLHistoryCommand extends Command {
 
     const groupMap = groups.reduce<Record<string, number>>((acc, group) => {
       Object.entries(group.leagues ?? {}).map(([tag, leagueId]) => {
-        acc[`${group.season}-${tag}`] = leagueId;
+        // Key by month to match the war-month lookup key (war.endTime → YYYY-MM); live group
+        // seasons are now YYYY-MM-DD, so trim to the month here.
+        acc[`${group.season.slice(0, 7)}-${tag}`] = leagueId;
       });
       return acc;
     }, {});
@@ -159,10 +161,7 @@ export default class CWLHistoryCommand extends Command {
       {
         $match: {
           startTime: {
-            $gte: moment()
-              .startOf('month')
-              .subtract(new Date().getDate() >= 10 ? 2 : 3, 'month')
-              .toDate()
+            $gte: moment().startOf('month').subtract(3, 'month').toDate()
           },
           warType: WarType.CWL,
           $or: [{ 'clan.members.tag': { $in: tags } }, { 'opponent.members.tag': { $in: tags } }]

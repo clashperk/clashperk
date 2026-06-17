@@ -59,13 +59,11 @@ export default class CWLStatsCommand extends Command {
       });
     }
 
-    const isIncorrectSeason =
-      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike =
-      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
-    const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
+    const entityLike = args.season ? group : res.ok ? body : group;
+    // A specific season request targets archived (past) data; otherwise use the live group.
+    const isApiData = !args.season;
 
-    if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
+    if ((!res.ok && !group) || !entityLike) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', {
@@ -232,7 +230,7 @@ export default class CWLStatsCommand extends Command {
       }
     }
 
-    if (!collection.length && body.season !== Util.getCWLSeasonId()) {
+    if (!collection.length && args.season) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', {

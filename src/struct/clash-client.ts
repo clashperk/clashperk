@@ -11,7 +11,6 @@ import {
 } from 'clashofclans.js';
 import moment from 'moment';
 import { isWinner } from '../helper/cwl.helper.js';
-import { Season } from '../util/toolkit.js';
 import { Client } from './client.js';
 
 export function timeoutSignal(timeout: number, path: string) {
@@ -180,23 +179,24 @@ export class ClashClient extends RestManager {
   public async getCurrentWars(
     clanTag: string
   ): Promise<(APIClanWar & { warTag?: string; round?: number; isFriendly?: boolean })[]> {
-    const date = new Date().getUTCDate();
-    if (!(date >= 1 && date <= 10)) {
-      return this._getCurrentWar(clanTag);
-    }
-
-    return this._getClanWarLeague(clanTag);
+    // CWL no longer runs on a fixed day-of-month window, so fetch both the CWL and the regular
+    // war and combine them (only one source is active at a time; notInWar entries are dropped).
+    const [cwl, war] = await Promise.all([
+      this._getClanWarLeague(clanTag),
+      this._getCurrentWar(clanTag)
+    ]);
+    return [...cwl, ...war];
   }
 
   private async _getCurrentWar(clanTag: string) {
     const { body: data, res } = await this.getCurrentWar(clanTag);
-    return res.ok ? [Object.assign(data, { isFriendly: this.isFriendly(data) })] : [];
+    if (!res.ok || data.state === 'notInWar') return [];
+    return [Object.assign(data, { isFriendly: this.isFriendly(data) })];
   }
 
   private async _getClanWarLeague(clanTag: string) {
     const { body: data, res } = await this.getClanWarLeagueGroup(clanTag);
-    if (res.status === 504 || data.state === 'notInWar') return [];
-    if (!res.ok) return this._getCurrentWar(clanTag);
+    if (!res.ok || data.state === 'notInWar') return [];
     return this._clanWarLeagueRounds(clanTag, data);
   }
 
@@ -238,7 +238,9 @@ export class ClashClient extends RestManager {
     const rounds = group.rounds.filter((r) => !r.warTags.includes('#0'));
     const warTags = rounds.map((round) => round.warTags).flat();
 
-    if (Season.monthId !== group.season && !isApiData) {
+    // Non-live data is always served from the archive (which is keyed by the season as stored,
+    // whether that's YYYY-MM or YYYY-MM-DD). "Archived" means past, not a particular format.
+    if (!isApiData) {
       return this.getDataFromArchive(clanTag, group.season, group);
     }
 

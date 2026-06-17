@@ -22,7 +22,7 @@ import { aggregateRoundsForRanking, calculateLeagueRanking } from '../helper/cwl
 import { getCWLSummaryImage } from '../struct/image-helper.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS, WAR_STARS } from '../util/emojis.js';
 import { padStart } from '../util/helper.js';
-import { Season, Util } from '../util/toolkit.js';
+import { Util } from '../util/toolkit.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 
@@ -553,7 +553,7 @@ export class ClanWarLog extends RootLog {
   }
 
   private async getSummaryImage(clanTag: string) {
-    const leagueGroup = await this.client.storage.getWarTags(clanTag, Season.monthId);
+    const leagueGroup = await this.client.storage.getWarTags(clanTag);
     if (!leagueGroup) return null;
 
     const body = await this.client.coc.aggregateClanWarLeague(clanTag, leagueGroup, true);

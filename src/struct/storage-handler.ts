@@ -390,8 +390,11 @@ export class StorageHandler {
 
   public async getWarTags(
     tag: string,
-    season: string = Season.monthId
+    season?: string | null
   ): Promise<ClanWarLeagueGroupsEntity | null> {
+    // A specific season targets that exact stored group; a missing season returns the latest
+    // group for the clan (the live YYYY-MM-DD one), since the current season can no longer be
+    // derived from the clock.
     return this.client.db
       .collection<ClanWarLeagueGroupsEntity>(Collections.CWL_GROUPS)
       .findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });

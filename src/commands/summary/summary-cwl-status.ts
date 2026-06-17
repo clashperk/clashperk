@@ -25,10 +25,6 @@ export default class SummaryCWLStatus extends Command {
     });
   }
 
-  private getCWLSeasonId() {
-    return new Date().toISOString().slice(0, 7);
-  }
-
   public async exec(
     interaction: CommandInteraction<'cached'>,
     args: { clans?: string; season?: string }
@@ -51,7 +47,8 @@ export default class SummaryCWLStatus extends Command {
         status = SpinStatus.SPINNING;
       } else if (body.state === 'notInWar') {
         status = SpinStatus.SPINNING;
-      } else if (body.season === this.getCWLSeasonId()) {
+      } else {
+        // Any live group that isn't notInWar/500 is the current CWL.
         status = SpinStatus.MATCHED;
       }
 

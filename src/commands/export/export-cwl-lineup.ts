@@ -28,7 +28,7 @@ export default class ExportCwlLineup extends Command {
     for (const clan of clans) {
       const result = season ? null : await this.client.coc.getClanWarLeagueGroup(clan.tag);
       if (!result?.res.ok || result.body.state === 'notInWar') {
-        const data = await this.client.storage.getWarTags(clan.tag, season || Season.monthId);
+        const data = await this.client.storage.getWarTags(clan.tag, season);
         if (!data) continue;
         if (args.season && data.season !== args.season) continue;
         const { perRound } = await this.rounds(data, clan, season);

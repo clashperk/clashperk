@@ -17,7 +17,6 @@ import { Args, Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { padStart } from '../../util/helper.js';
-import { Util } from '../../util/toolkit.js';
 
 export default class CWLStarsCommand extends Command {
   public constructor() {
@@ -58,13 +57,11 @@ export default class CWLStarsCommand extends Command {
       });
     }
 
-    const isIncorrectSeason =
-      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike =
-      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
-    const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
+    const entityLike = args.season ? group : res.ok ? body : group;
+    // A specific season request targets archived (past) data; otherwise use the live group.
+    const isApiData = !args.season;
 
-    if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
+    if ((!res.ok && !group) || !entityLike) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', {
@@ -166,7 +163,7 @@ export default class CWLStarsCommand extends Command {
     }
 
     const leaderboard = Object.values(members);
-    if (!leaderboard.length && body.season !== Util.getCWLSeasonId()) {
+    if (!leaderboard.length && args.season) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', {
