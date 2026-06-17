@@ -35,7 +35,7 @@ export function getCWLSeasonIds() {
         const monthId = moment().subtract(i, 'months').format('YYYY-MM');
         return { name: moment(monthId, 'YYYY-MM').format('MMM YYYY'), value: monthId };
       })
-  ];
+  ].sort((a, b) => (a.value < b.value ? 1 : -1));
 }
 
 export function getSeasonSinceIds() {
