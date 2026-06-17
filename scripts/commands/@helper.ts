@@ -29,7 +29,12 @@ export function getCWLSeasonIds() {
       name: moment(seasonId, 'YYYY-MM-DD').format('MMM DD, YYYY'),
       value: seasonId
     })),
-    ...getSeasonIds()
+    ...Array(12)
+      .fill(0)
+      .map((_, i) => {
+        const monthId = moment().subtract(i, 'months').format('YYYY-MM');
+        return { name: moment(monthId, 'YYYY-MM').format('MMM YYYY'), value: monthId };
+      })
   ];
 }
 
