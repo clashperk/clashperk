@@ -68,9 +68,13 @@ export default class CWLAttacksCommand extends Command {
       );
     }
 
-    const entityLike = args.season ? group : res.ok ? body : group;
-    // A specific season request targets archived (past) data; otherwise use the live group.
-    const isApiData = !args.season;
+    // Prefer the live body for the current season (works even before the tracker stores it); use
+    // the DB group only when a different (past) season is requested.
+    const entityLike =
+      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
+    // Live data when no season is requested, or the requested season is the current live one.
+    // A request for a different (past) season is served from the archive.
+    const isApiData = !args.season || args.season === body.season;
 
     if ((!res.ok && !group) || !entityLike) {
       return interaction.editReply(

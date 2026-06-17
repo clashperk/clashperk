@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, translation, guildInstallable } from './@helper.js';
+import { getCWLSeasonIds, translation, guildInstallable } from './@helper.js';
 
 export const CWL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'cwl',
@@ -49,7 +49,7 @@ export const CWL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: command.cwl.round.options.season.description,
           description_localizations: translation('command.cwl.round.options.season.description'),
-          choices: getSeasonIds()
+          choices: getCWLSeasonIds()
         },
         {
           name: 'user',
@@ -101,7 +101,7 @@ export const CWL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: command.cwl.round.options.season.description,
           description_localizations: translation('command.cwl.round.options.season.description'),
-          choices: getSeasonIds()
+          choices: getCWLSeasonIds()
         },
         {
           name: 'user',
@@ -131,7 +131,7 @@ export const CWL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: command.cwl.round.options.season.description,
           description_localizations: translation('command.cwl.round.options.season.description'),
-          choices: getSeasonIds()
+          choices: getCWLSeasonIds()
         },
         {
           name: 'user',
@@ -161,7 +161,7 @@ export const CWL_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: command.cwl.round.options.season.description,
           description_localizations: translation('command.cwl.round.options.season.description'),
-          choices: getSeasonIds()
+          choices: getCWLSeasonIds()
         },
         {
           name: 'user',

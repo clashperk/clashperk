@@ -19,6 +19,20 @@ export function getSeasonIds() {
   });
 }
 
+// CWL seasons now use the API's full-date id (YYYY-MM-DD) and can occur more than once a month.
+// New seasons are listed explicitly here (newest first); older (<= 2026-05) seasons stay month-based.
+const cwlSeasonIds = ['2026-06-16'];
+
+export function getCWLSeasonIds() {
+  return [
+    ...cwlSeasonIds.map((seasonId) => ({
+      name: moment(seasonId, 'YYYY-MM-DD').format('MMM DD, YYYY'),
+      value: seasonId
+    })),
+    ...getSeasonIds()
+  ];
+}
+
 export function getSeasonSinceIds() {
   return getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }));
 }
