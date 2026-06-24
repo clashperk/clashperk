@@ -1,6 +1,12 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, getSeasonSinceIds, translation, guildInstallable } from './@helper.js';
+import {
+  getCWLSeasonIds,
+  getSeasonIds,
+  getSeasonSinceIds,
+  guildInstallable,
+  translation
+} from './@helper.js';
 
 export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'export',
@@ -87,7 +93,7 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season_since.description,
           description_localizations: translation('common.options.season_since.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          choices: getCWLSeasonIds()
         },
         {
           name: 'wars',

@@ -314,9 +314,9 @@ export const PLAYER_LEAGUE_TIERS: Record<string, string> = {
   'Electro League 33': '<:ElectroLeague33:1424720610793361598>',
 
   'Legend League': '<:LegendLeague:1424720630183497832>',
-  'Legend League III': '<:Legend3:1502756189954506886>',
-  'Legend League II': '<:Legend2:1502756123974045867>',
-  'Legend League I': '<:Legend1:1502756072803401968>'
+  'Legend III': '<:Legend3:1502756189954506886>',
+  'Legend II': '<:Legend2:1502756123974045867>',
+  'Legend I': '<:Legend1:1502756072803401968>'
 };
 
 export const CAPITAL_LEAGUES: Record<string, string> = {

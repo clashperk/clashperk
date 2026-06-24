@@ -266,8 +266,11 @@ export class ClashClient extends RestManager {
       `https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clanTag)}/cwl/seasons/${season}`,
       {
         headers: {
-          'x-api-key': process.env.INTERNAL_API_KEY!
-        }
+          'x-api-key': process.env.INTERNAL_API_KEY!,
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify(group ?? {})
       }
     );
     if (!res.ok) return null;
