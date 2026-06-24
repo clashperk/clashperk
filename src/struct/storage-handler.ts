@@ -17,9 +17,9 @@ import {
   NewsChannel,
   TextChannel
 } from 'discord.js';
+import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { createHash } from 'node:crypto';
-import moment from 'moment';
 import { cluster, unique } from 'radash';
 import { i18n } from '../util/i18n.js';
 import { Season } from '../util/toolkit.js';
@@ -407,7 +407,7 @@ export class StorageHandler {
           ])
         ]
       : [];
-    return this.client.db
+    const group = await this.client.db
       .collection<ClanWarLeagueGroupsEntity>(Collections.CWL_GROUPS)
       .findOne(
         seasonIds.length
@@ -417,6 +417,9 @@ export class StorageHandler {
           sort: { _id: -1 }
         }
       );
+
+    if (season && group?.season) group.season = season;
+    return group;
   }
 
   private md5(id: string) {
