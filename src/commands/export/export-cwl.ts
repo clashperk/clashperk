@@ -24,18 +24,25 @@ export default class ExportCWL extends Command {
     const command = this.handler.getCommand('export-cwl-lineup');
     if (command && args.lineup_only) return command.exec(interaction, args);
 
-    const season = args.season === Season.monthId ? null : args.season;
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
     const chunks = [];
     for (const clan of clans) {
-      const result = season ? null : await this.client.coc.getClanWarLeagueGroup(clan.tag);
-      if (!result?.res.ok || result.body.state === 'notInWar') {
-        const data = await this.client.storage.getWarTags(clan.tag, season);
+      const result = await this.client.coc.getClanWarLeagueGroup(clan.tag);
+      // Use the live group for the current CWL (no season requested, or the requested season is
+      // the live one); otherwise read the requested past season from the database.
+      const isApiData =
+        result.res.ok &&
+        result.body.state !== 'notInWar' &&
+        (!args.season || Util.estimateCwlSeasonIds(args.season).includes(result.body.season));
+
+      if (!isApiData) {
+        const data = await this.client.storage.getWarTags(clan.tag, args.season);
         if (!data) continue;
-        if (args.season && data.season !== args.season) continue;
-        const { members, perRound, ranking } = await this.rounds(data, clan, { season });
+        const { members, perRound, ranking } = await this.rounds(data, clan, {
+          season: data.season
+        });
         if (!perRound.length) continue;
 
         chunks.push({
@@ -49,7 +56,6 @@ export default class ExportCWL extends Command {
         continue;
       }
 
-      if (args.season && result.body.season !== args.season) continue;
       const { members, perRound, ranking } = await this.rounds(result.body, clan, {});
       if (!perRound.length) continue;
       chunks.push({
@@ -58,7 +64,7 @@ export default class ExportCWL extends Command {
         members,
         perRound,
         ranking,
-        id: moment().format('MMM YYYY')
+        id: moment(result.body.season).format('MMM YYYY')
       });
     }
 
@@ -66,7 +72,7 @@ export default class ExportCWL extends Command {
       return interaction.editReply(
         this.i18n('command.cwl.no_season_data', {
           lng: interaction.locale,
-          season: season ?? Season.monthId
+          season: args.season ?? Season.monthId
         })
       );
     }

@@ -96,14 +96,6 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           choices: getCWLSeasonIds()
         },
         {
-          name: 'wars',
-          min_value: 1,
-          max_value: 100,
-          description: command.export.options.wars.description,
-          description_localizations: translation('command.export.options.wars.description'),
-          type: ApplicationCommandOptionType.Integer
-        },
-        {
           name: 'lineup_only',
           description: command.export.cwl.options.lineup_only.description,
           description_localizations: translation(

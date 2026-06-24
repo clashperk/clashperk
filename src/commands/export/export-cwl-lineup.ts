@@ -20,18 +20,23 @@ export default class ExportCwlLineup extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { clans?: string; season?: string }
   ) {
-    const season = args.season === Season.monthId ? null : args.season;
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
     const chunks = [];
     for (const clan of clans) {
-      const result = season ? null : await this.client.coc.getClanWarLeagueGroup(clan.tag);
-      if (!result?.res.ok || result.body.state === 'notInWar') {
-        const data = await this.client.storage.getWarTags(clan.tag, season);
+      const result = await this.client.coc.getClanWarLeagueGroup(clan.tag);
+      // Use the live group for the current CWL (no season requested, or the requested season is
+      // the live one); otherwise read the requested past season from the database.
+      const isApiData =
+        result.res.ok &&
+        result.body.state !== 'notInWar' &&
+        (!args.season || Util.estimateCwlSeasonIds(args.season).includes(result.body.season));
+
+      if (!isApiData) {
+        const data = await this.client.storage.getWarTags(clan.tag, args.season);
         if (!data) continue;
-        if (args.season && data.season !== args.season) continue;
-        const { perRound } = await this.rounds(data, clan, season);
+        const { perRound } = await this.rounds(data, clan, data.season);
 
         const id = moment(data.season).format('MMM YYYY');
         chunks.push({
@@ -43,8 +48,7 @@ export default class ExportCwlLineup extends Command {
         continue;
       }
 
-      if (args.season && result.body.season !== args.season) continue;
-      const id = moment().format('MMM YYYY');
+      const id = moment(result.body.season).format('MMM YYYY');
 
       const { perRound } = await this.rounds(result.body, clan);
       chunks.push({
@@ -59,7 +63,7 @@ export default class ExportCwlLineup extends Command {
       return interaction.editReply(
         this.i18n('command.cwl.no_season_data', {
           lng: interaction.locale,
-          season: season ?? Season.monthId
+          season: args.season ?? Season.monthId
         })
       );
     }

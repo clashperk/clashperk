@@ -15,6 +15,7 @@ import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import { ClanWarLeagueGroupAggregated } from '../../struct/clash-client.js';
 import { EMOJIS, RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/emojis.js';
+import { Util } from '../../util/toolkit.js';
 
 const stars: Record<string, string> = {
   0: '☆☆☆',
@@ -68,13 +69,13 @@ export default class CWLAttacksCommand extends Command {
       );
     }
 
-    // Prefer the live body for the current season (works even before the tracker stores it); use
-    // the DB group only when a different (past) season is requested.
-    const entityLike =
-      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
-    // Live data when no season is requested, or the requested season is the current live one.
-    // A request for a different (past) season is served from the archive.
-    const isApiData = !args.season || args.season === body.season;
+    // The requested season is the live one when it matches the API season within a few days (the
+    // CWL season date isn't perfectly predictable); otherwise it's a past/archived season. Prefer
+    // the live body for the current season (works even before the tracker stores it).
+    const isLiveSeason =
+      !args.season || Util.estimateCwlSeasonIds(args.season).includes(body.season);
+    const entityLike = args.season && res.ok && !isLiveSeason ? group : res.ok ? body : group;
+    const isApiData = isLiveSeason;
 
     if ((!res.ok && !group) || !entityLike) {
       return interaction.editReply(

@@ -17,12 +17,11 @@ import {
   NewsChannel,
   TextChannel
 } from 'discord.js';
-import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { cluster, unique } from 'radash';
 import { i18n } from '../util/i18n.js';
-import { Season } from '../util/toolkit.js';
+import { Season, Util } from '../util/toolkit.js';
 import { Client } from './client.js';
 
 const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
@@ -397,16 +396,7 @@ export class StorageHandler {
     // current season can no longer be derived from the clock. A given season matches the exact
     // value plus the next 3 days, because the API's CWL season date is not perfectly predictable
     // (e.g. "2026-06" → also 2026-06-01..03; "2026-06-16" → also 2026-06-17, 2026-06-18).
-    const seasonIds = season
-      ? [
-          ...new Set([
-            season,
-            ...Array.from({ length: 3 }, (_, i) =>
-              moment(season).add(i, 'day').format('YYYY-MM-DD')
-            )
-          ])
-        ]
-      : [];
+    const seasonIds = season ? Util.estimateCwlSeasonIds(season) : [];
     const group = await this.client.db
       .collection<ClanWarLeagueGroupsEntity>(Collections.CWL_GROUPS)
       .findOne(
