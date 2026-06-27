@@ -246,7 +246,6 @@ export default class TicketOpenCommand extends Command {
     void this.logButtonClick(panel, btn, interaction);
 
     if (btn.requireLinkedAccount) {
-      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       return this.showAccountSelect(interaction, panel, btn);
     }
 
@@ -267,9 +266,25 @@ export default class TicketOpenCommand extends Command {
 
     if (linkedTags.length === 0) {
       await interaction.reply({
+        flags: MessageFlags.Ephemeral,
         content:
-          'You need a linked Clash of Clans account to open this ticket. Use </link add:0> to link your account.',
-        flags: MessageFlags.Ephemeral
+          'You need a linked Clash of Clans account to open this ticket. Click **Link Account** below to link your account.',
+        components: [
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setCustomId(
+                this.createId({
+                  cmd: 'link-add',
+                  token_field: 'optional',
+                  ephemeral: true,
+                  defer: false
+                })
+              )
+              .setLabel('Link Account')
+              .setEmoji('🔗')
+              .setStyle(ButtonStyle.Primary)
+          )
+        ]
       });
       return null;
     }
@@ -287,14 +302,20 @@ export default class TicketOpenCommand extends Command {
     });
 
     if (qualifying.length === 0) {
+      const bestTh = Math.max(0, ...validPlayers.map((p) => p.townHallLevel ?? 0));
+      const bestTrophies = Math.max(0, ...validPlayers.map((p) => p.trophies ?? 0));
+      const bestLeagueId = Math.max(0, ...validPlayers.map((p) => p.leagueTier?.id ?? 0));
+
       const parts = ['None of your linked accounts meet the requirements:'];
-      if (btn.thMin) parts.push(`- TH${btn.thMin}+ required`);
-      if (btn.minTrophies) parts.push(`- ${btn.minTrophies}+ trophies required`);
-      if (btn.minLeagueTier)
-        parts.push(
-          `- ${PLAYER_LEAGUE_MAP[btn.minLeagueTier] ?? btn.minLeagueTier} or higher required`
-        );
-      await interaction.editReply({ content: parts.join('\n') });
+      if (btn.thMin) parts.push(`- TH${btn.thMin}+ required *(your best: TH${bestTh})*`);
+      if (btn.minTrophies)
+        parts.push(`- ${btn.minTrophies}+ trophies required *(your best: ${bestTrophies})*`);
+      if (btn.minLeagueTier) {
+        const required = PLAYER_LEAGUE_MAP[btn.minLeagueTier] ?? btn.minLeagueTier;
+        const current = PLAYER_LEAGUE_MAP[String(bestLeagueId)] ?? 'Unranked';
+        parts.push(`- ${required} or higher required *(your best: ${current})*`);
+      }
+      await interaction.reply({ content: parts.join('\n'), flags: MessageFlags.Ephemeral });
       return null;
     }
 
@@ -312,6 +333,8 @@ export default class TicketOpenCommand extends Command {
   ) {
     const accountOptions = await this.fetchQualifyingAccounts(interaction, btn);
     if (!accountOptions) return;
+
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const selectId = this.createId({
       cmd: 'ticket-open',
