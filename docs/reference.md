@@ -111,7 +111,7 @@ npm run knip
 | File | Purpose |
 |---|---|
 | [client.ts](src/struct/client.ts) | Extended discord.js Client — holds all service references |
-| [clash-client.ts](src/struct/clash-client.ts) | CoC API wrapper (clashofclans.js), retry/cache/error handling |
+| [clash-client.ts](src/struct/clash-client.ts) | Clash of Clans API wrapper (clashofclans.js), retry/cache/error handling |
 | [database.ts](src/struct/database.ts) | MongoDB connection manager (main + global DBs) |
 | [settings-provider.ts](src/struct/settings-provider.ts) | Per-guild settings backed by MongoDB with change stream sync |
 | [resolver.ts](src/struct/resolver.ts) | Resolves player/clan tags from user input, aliases, or linked accounts |
@@ -152,7 +152,7 @@ src/
 ├── inhibitors/           # Pre-command validation
 ├── lib/                  # Handler framework (discovers/loads commands, listeners, inhibitors)
 ├── listeners/            # Discord event listeners
-├── api/                  # Auto-generated CoC Swagger types
+├── api/                  # Auto-generated Clash of Clans Swagger types
 └── util/
     ├── constants.ts      # Feature flags, collection names, magic numbers
     ├── i18n.ts
@@ -172,7 +172,7 @@ src/
 | `MONGODB_URL` | Main MongoDB connection string |
 | `GLOBAL_MONGODB_URL` | Global tracking MongoDB connection string |
 | `REDIS_URL` | Redis connection string |
-| `CLASH_OF_CLANS_API_KEYS` | Comma-separated CoC API keys |
+| `CLASH_OF_CLANS_API_KEYS` | Comma-separated Clash of Clans API keys |
 
 ### Optional / Service-specific
 
@@ -188,7 +188,7 @@ src/
 | `CLICKHOUSE_HOST` | ClickHouse URL |
 | `CLICKHOUSE_USER` | ClickHouse user (default: `default`) |
 | `CLICKHOUSE_PASSWORD` | ClickHouse password |
-| `CLASH_OF_CLANS_API_BASE_URL` | CoC API base (default: `https://api.clashofclans.com/v1`) |
+| `CLASH_OF_CLANS_API_BASE_URL` | Clash of Clans API base (default: `https://api.clashofclans.com/v1`) |
 | `MIXPANEL_TOKEN` | Mixpanel token |
 | `POSTHOG_API_KEY` | PostHog API key |
 | `POSTHOG_PERSONAL_API_KEY` | PostHog personal key |

@@ -171,7 +171,7 @@ interface TicketEntity {
   panelId: string; // TicketPanelEntity._id as hex string
   buttonId: string; // TicketTypeConfig.id
   creatorId: string;
-  accountTag?: string; // CoC player tag if linked account was used
+  accountTag?: string; // Clash of Clans player tag if linked account was used
   accountName?: string;
   accountTh?: number;
   answers?: { question: string; answer: string }[];
@@ -378,7 +378,7 @@ requireLinkedAccount=false AND no questions
 
 ### `fetchQualifyingAccounts`
 
-Fetches linked player tags for the user, calls the CoC API for each, then filters by:
+Fetches linked player tags for the user, calls the Clash of Clans API for each, then filters by:
 
 - `thMin` — player town hall level
 - `minTrophies` — player trophy count
@@ -479,7 +479,7 @@ Set per application type via `namingConvention`. Supported tokens:
 | ---------------- | ------------------------------------------------------- |
 | `{count}`        | Zero-padded ticket number (e.g. `0042`)                 |
 | `{user}`         | Creator's Discord username (alphanumeric, max 16 chars) |
-| `{account_name}` | Linked CoC account name (alphanumeric, max 16 chars)    |
+| `{account_name}` | Linked Clash of Clans account name (alphanumeric, max 16 chars)    |
 | `{account_th}`   | Linked account Town Hall level                          |
 | `{status}`       | Always `open` at creation                               |
 | `{emoji_status}` | Empty string at creation                                |
