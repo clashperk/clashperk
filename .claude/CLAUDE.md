@@ -83,4 +83,4 @@ Log handlers (clan-log, clan-war-log, capital-log, donation-log, etc.) process g
 
 - After any change to the ticket system (`src/commands/tickets/*.ts`, `src/entities/tickets.entity.ts`), always update both:
   - `docs/ticket-system.md` — developer/internal reference
-  - `docs/ticket-system-guide.md` — user-facing guide
+  - `docs.clashperk.com/features/tickets.md` — user-facing guide (in the `docs.clashperk.com` workspace)

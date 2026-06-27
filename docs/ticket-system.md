@@ -71,7 +71,7 @@ interface TicketPanelEntity {
   button: {
     // used only in 'menu' display mode
     label: string; // default: "Create Ticket"
-    emoji?: string; // default: "📩"; validated with parseEmoji on save — invalid input discarded
+    emoji?: string; // default: "📩"; validated with isValidEmoji on save — invalid input discarded
     style: number; // ButtonStyle enum value, default: Primary
   };
 
@@ -87,7 +87,7 @@ interface TicketPanelEntity {
   extraButtons?: {
     id: string; // nanoid(8), stable key for UI state
     label: string;
-    emoji?: string; // validated with parseEmoji on save
+    emoji?: string; // validated with isValidEmoji on save
     cmd?: string; // command name for routing button (e.g. 'link-add')
     args?: Record<string, string>; // baked into custom ID at render time
     style?: number; // ButtonStyle for command buttons (default: Secondary)
@@ -150,10 +150,12 @@ One document per guild. Stores server-wide saved replies (shared across all pane
 interface TicketGuildSettingsEntity {
   _id: ObjectId;
   guildId: string;
-  savedReplies: { name: string; content: string }[]; // max 25 per server
+  savedReplies: { name: string; content: string }[]; // max 25 per server; names unique per guild
   updatedAt: Date;
 }
 ```
+
+**Saved reply variables** — resolved in `sendReply`, defined as `SAVED_REPLY_VARIABLES` in `tickets.entity.ts`, and listed in the dashboard's Saved Replies section so users can reference them: `{user_mention}`, `{user_name}`, `{account_name}`, `{account_th}`, `{account_heroes}`, `{clan_name}`, `{clan_tag}`, `{clan_link}`, `{clan_leader}`, `{clan_leader_mention}`, `{ticket_count}`, `{ticket_status}`, `{server_name}`. Any unknown `{...}` token triggers a fill-in modal before the reply is sent.
 
 ### `TicketEntity` (collection: `Tickets`)
 
@@ -236,12 +238,16 @@ Opened via **Edit / Delete** next to a type. Sections:
 
 | Section                          | What it configures                                                                                                                   |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Label / Emoji / Button Style** | Type label, emoji (validated with `parseEmoji` — invalid input is discarded), and individual button style (for Buttons display mode) |
+| **Label / Emoji / Button Style** | Type label, emoji (validated with `isValidEmoji` — invalid input is discarded), and individual button style (for Buttons display mode) |
 | **Staff Roles**                  | Ping roles (full access + notify), Viewer roles (read only), Add roles, Remove roles                                                 |
 | **Rules**                        | TH min, min trophies, min league tier, require linked account, staff thread, allow claiming                                          |
 | **Questions**                    | Up to 5 text-input questions shown in a modal before ticket creation                                                                 |
 | **Categories**                   | Open / Sleep / Closed Discord category channels                                                                                      |
 | **Naming**                       | Channel naming convention                                                                                                            |
+
+### Emoji validation
+
+All emoji inputs (panel button, ticket types, extra buttons) are validated by `isValidEmoji` (`ticket-setup.ts`). It accepts either a single Unicode emoji (matched via the `\p{Extended_Pictographic}` property) or a Discord custom emoji (`<:name:id>` / `<a:name:id>`, matched by `CUSTOM_EMOJI_RE`). Plain `:name:` text labels and any other input are rejected, and invalid input is discarded (the field is left unset). Emoji text inputs allow up to 56 characters.
 
 ### Reordering types
 
