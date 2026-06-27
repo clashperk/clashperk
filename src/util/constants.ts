@@ -340,8 +340,8 @@ export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
   '105000031': 'electro',
   '105000032': 'electro',
   '105000033': 'electro',
-  '105000034': 'legend',
-  '105000035': 'legend',
+  '105000034': 'legend_3',
+  '105000035': 'legend_2',
   '105000036': 'legend'
 };
 

@@ -606,6 +606,18 @@
         "choices": []
       },
       {
+        "name": "legend_3",
+        "description": "Legend 3 league role.",
+        "type": "Role",
+        "choices": []
+      },
+      {
+        "name": "legend_2",
+        "description": "Legend 2 league role.",
+        "type": "Role",
+        "choices": []
+      },
+      {
         "name": "legend",
         "description": "Legend league role.",
         "type": "Role",
@@ -918,12 +930,12 @@
         "description": "The week to show contributions for.",
         "type": "String",
         "choices": [
+          "26 Jun, 2026",
           "19 Jun, 2026",
           "12 Jun, 2026",
           "05 Jun, 2026",
           "29 May, 2026",
-          "22 May, 2026",
-          "15 May, 2026"
+          "22 May, 2026"
         ]
       }
     ]
@@ -950,12 +962,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
+          "26 Jun, 2026",
           "19 Jun, 2026",
           "12 Jun, 2026",
           "05 Jun, 2026",
           "29 May, 2026",
-          "22 May, 2026",
-          "15 May, 2026"
+          "22 May, 2026"
         ]
       }
     ]
@@ -1558,12 +1570,6 @@
           "Aug 2025",
           "Jul 2025"
         ]
-      },
-      {
-        "name": "wars",
-        "description": "Number of wars (Default: 25)",
-        "type": "Integer",
-        "choices": []
       },
       {
         "name": "lineup_only",
@@ -3931,12 +3937,12 @@
         "description": "The week to show capital contributions for.",
         "type": "String",
         "choices": [
+          "26 Jun, 2026",
           "19 Jun, 2026",
           "12 Jun, 2026",
           "05 Jun, 2026",
           "29 May, 2026",
-          "22 May, 2026",
-          "15 May, 2026"
+          "22 May, 2026"
         ]
       }
     ]
@@ -3957,12 +3963,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
+          "26 Jun, 2026",
           "19 Jun, 2026",
           "12 Jun, 2026",
           "05 Jun, 2026",
           "29 May, 2026",
-          "22 May, 2026",
-          "15 May, 2026"
+          "22 May, 2026"
         ]
       }
     ]

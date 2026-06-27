@@ -148,11 +148,15 @@ export default class TicketOpenCommand extends Command {
       .findOne({ _id: new ObjectId(panelId) });
 
     if (!panel) {
-      return interaction.editReply({ content: 'This panel no longer exists.' });
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
+        content: 'This panel no longer exists.'
+      });
     }
 
     if (panel.ticketTypes.length === 0) {
-      return interaction.editReply({
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
         content: 'No application types are configured for this panel.'
       });
     }
@@ -161,7 +165,11 @@ export default class TicketOpenCommand extends Command {
     const typeId = args.bid as string | undefined;
     if (typeId) {
       const btn = panel.ticketTypes.find((b) => b.id === typeId);
-      if (!btn) return interaction.editReply({ content: 'Application type not found.' });
+      if (!btn)
+        return interaction.reply({
+          flags: MessageFlags.Ephemeral,
+          content: 'Application type not found.'
+        });
       return this.proceedWithType(interaction, panel, btn);
     }
 
@@ -210,10 +218,15 @@ export default class TicketOpenCommand extends Command {
       .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
       .findOne({ _id: new ObjectId(panelId) });
 
-    if (!panel) return interaction.editReply({ content: 'Panel not found.' });
+    if (!panel)
+      return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'Panel not found.' });
 
     const btn = panel.ticketTypes.find((b) => b.id === typeId);
-    if (!btn) return interaction.editReply({ content: 'Application type not found.' });
+    if (!btn)
+      return interaction.reply({
+        flags: MessageFlags.Ephemeral,
+        content: 'Application type not found.'
+      });
 
     return this.proceedWithType(interaction, panel, btn);
   }
@@ -369,10 +382,12 @@ export default class TicketOpenCommand extends Command {
       .collection<TicketPanelEntity>(Collections.TICKET_PANELS)
       .findOne({ _id: new ObjectId(panelId) });
 
-    if (!panel) return interaction.editReply({ content: 'Panel not found.' });
+    if (!panel)
+      return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'Panel not found.' });
 
     const btn = panel.ticketTypes.find((b) => b.id === buttonId);
-    if (!btn) return interaction.editReply({ content: 'Button not found.' });
+    if (!btn)
+      return interaction.reply({ flags: MessageFlags.Ephemeral, content: 'Button not found.' });
 
     const playerResult = accountTag
       ? await this.client.coc.getPlayer(accountTag).catch(() => null)
