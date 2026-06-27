@@ -1,5 +1,5 @@
 ---
-name: component-v2
+name: discord-components
 description: Use this skill when the user wants to build a Discord Components v2 message, use ContainerBuilder, SectionBuilder, TextDisplayBuilder, FileBuilder, SeparatorBuilder, or send a message with MessageFlags.IsComponentsV2. Triggers on requests like "build a components v2 message", "use container builder", "send a v2 embed", or "create a discord components v2 layout".
 version: 0.1.0
 ---
