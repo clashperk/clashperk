@@ -6,6 +6,7 @@ import {
   Routes
 } from 'discord.js';
 import { writeFileSync } from 'fs';
+import { unique } from 'radash';
 import { inspect } from 'util';
 import { flattenApplicationCommands } from '../src/helper/commands.helper.js';
 import { COMMANDS, HIDDEN_COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './commands.js';
@@ -16,7 +17,7 @@ const CUSTOM_BOT_SERVER_ID = '1130572457175175293';
 const SUPPORT_SERVER_ID = '509784317598105619';
 
 const BETA_TESTERS = process.env.BETA_TESTERS?.split(',') ?? [];
-const BETA_TESTING_GUILD_IDS = [SUPPORT_SERVER_ID, '609250675431309313', ...BETA_TESTERS];
+const BETA_TESTING_GUILD_IDS = unique([SUPPORT_SERVER_ID, '609250675431309313', ...BETA_TESTERS]);
 
 const decrypt = (value: string) => {
   const key = Buffer.from(process.env.CRYPTO_KEY!, 'hex');
@@ -141,6 +142,7 @@ const customBotCommands = async () => {
           ...COMMANDS,
           ...HIDDEN_COMMANDS
         ]);
+        console.log(`Beta commands for client: ${application.serviceId} guild: ${guildId}`);
       } else {
         await applicationGuildCommands(application.token, guildId, [...COMMANDS]);
       }
