@@ -49,3 +49,4 @@ jobs:
           CRYPTO_IV: ${{ secrets.CRYPTO_IV }}
           DOCKER_SERVICE_API_BASE_URL: ${{ secrets.DOCKER_SERVICE_API_BASE_URL }}
           DOCKER_SERVICE_API_KEY: ${{ secrets.DOCKER_SERVICE_API_KEY }}
+          BETA_TESTERS: ${{ vars.BETA_TESTERS }}
