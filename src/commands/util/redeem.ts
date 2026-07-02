@@ -123,7 +123,7 @@ export default class RedeemCommand extends Command {
 
     const rewardId = isLifetime
       ? pledge.attributes.note
-      : pledge.relationships.currently_entitled_tiers.data[0]?.id;
+      : this.client.subscribers.resolveRewardId(pledge);
 
     if (!rewardId || !(rewardId in guildLimits)) {
       return interaction.editReply(

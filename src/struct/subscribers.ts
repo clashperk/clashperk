@@ -10,10 +10,11 @@ import { Client } from './client.js';
 export const rewards = {
   bronze: '3705318',
   silver: '4742718',
-  gold: '5352215',
   /** @deprecated */
-  gold_deprecated: '21789215'
+  gold_deprecated: '21789215',
+  gold: '5352215'
 };
+const rewardRanks = Object.values(rewards);
 
 export enum CustomScopes {
   CUSTOM_BOT = 'discounted_custom_bot'
@@ -199,7 +200,7 @@ export class Subscribers {
       });
     }
 
-    const rewardId = pledge?.relationships.currently_entitled_tiers.data[0]?.id;
+    const rewardId = this.resolveRewardId(pledge);
 
     // Downgrade Subscription
     if (pledge && rewardId && patron.rewardId !== rewardId && guildLimits[rewardId]) {
@@ -334,6 +335,17 @@ export class Subscribers {
 
   private gracePeriodExpired(date: Date) {
     return Date.now() - date.getTime() >= 3 * 24 * 60 * 60 * 1000;
+  }
+
+  public resolveRewardId(pledge?: PatreonMember | null) {
+    const rewardId =
+      (pledge?.relationships.currently_entitled_tiers.data ?? [])
+        .map((tier) => tier.id)
+        .filter((id) => rewardRanks.includes(id))
+        .sort((a, b) => rewardRanks.indexOf(b) - rewardRanks.indexOf(a))[0] ||
+      pledge?.relationships.currently_entitled_tiers.data[0]?.id;
+
+    return rewardId;
   }
 
   private async restoreGuild(guildId: string) {
