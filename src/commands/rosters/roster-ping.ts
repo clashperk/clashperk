@@ -25,6 +25,7 @@ export default class RosterPingCommand extends Command {
       ping_option?: 'unregistered' | 'missing' | 'everyone';
       group?: string;
       message?: string;
+      compact?: boolean;
     }
   ) {
     if (!(args.ping_option || args.group))
@@ -54,8 +55,10 @@ export default class RosterPingCommand extends Command {
 
     // close all rosters that should be closed
     this.client.rosterManager.closeRosters(interaction.guild.id);
+    const compact = args.compact === true;
 
-    const msgText = `\u200e**${roster.name} - ${roster.clan.name} (${roster.clan.tag})** ${args.message ? `\n\n${args.message}` : ''}`;
+    const msgText = `\u200e**${roster.name} - ${roster.clan.name} (${roster.clan.tag})**`;
+    const header = args.message ? `${msgText}\n\n${args.message}` : msgText;
 
     if (args.group) {
       const groupMembers = updated.members.filter(
@@ -72,7 +75,7 @@ export default class RosterPingCommand extends Command {
         };
       });
 
-      return this.followUp(interaction, msgText, result);
+      return this.followUp(interaction, header, result, compact);
     }
 
     if (args.ping_option === 'unregistered') {
@@ -93,7 +96,7 @@ export default class RosterPingCommand extends Command {
           mention: `${member.userId ? `<@${member.userId}>` : ''}`
         };
       });
-      return this.followUp(interaction, msgText, result);
+      return this.followUp(interaction, header, result, compact);
     }
 
     if (args.ping_option === 'missing') {
@@ -110,8 +113,7 @@ export default class RosterPingCommand extends Command {
           mention: `${member.userId ? `<@${member.userId}>` : ''}`
         };
       });
-
-      return this.followUp(interaction, msgText, result);
+      return this.followUp(interaction, header, result, compact);
     }
 
     const result = updated.members.map((member) => {
@@ -120,13 +122,14 @@ export default class RosterPingCommand extends Command {
         mention: `${member.userId ? `<@${member.userId}>` : ''}`
       };
     });
-    return this.followUp(interaction, msgText, result);
+    return this.followUp(interaction, header, result, compact);
   }
 
   private async followUp(
     interaction: CommandInteraction<'cached'>,
-    msgText: string,
-    result: { name: string; mention: string }[]
+    header: string,
+    result: { name: string; mention: string }[],
+    compact: boolean
   ) {
     const customIds = {
       confirm: this.client.uuid(interaction.user.id)
@@ -137,9 +140,13 @@ export default class RosterPingCommand extends Command {
         .setLabel('Confirm and Ping')
         .setStyle(ButtonStyle.Primary)
     );
+    const preview = result.map((m) => `0. \u200e${m.name}`).join('\n');
+    const pingContent = compact
+      ? result.map((m) => m.mention).join('')
+      : result.map((m) => `- \u200e${m.name} ${m.mention}`).join('\n');
 
     const message = await interaction.editReply({
-      content: `${msgText}\n${result.map((m) => `0. \u200e${m.name}`).join('\n')}`,
+      content: `${header}\n\n${preview}`,
       components: interaction.ephemeral ? [] : [row],
       allowedMentions: { parse: [] }
     });
@@ -151,15 +158,12 @@ export default class RosterPingCommand extends Command {
       onClick: async (action) => {
         await action.update({
           components: [],
-          content: `${msgText}\nPinging ${result.length} members`
+          content: `${header}\n\nPinging ${result.length} members`
         });
 
-        for (const content of Util.splitMessage(
-          `${msgText}\n${result.map((m) => `- \u200e${m.name} ${m.mention}`).join('\n')}`,
-          {
-            maxLength: 2000
-          }
-        )) {
+        for (const content of Util.splitMessage(`${header}\n\n${pingContent}`, {
+          maxLength: 2000
+        })) {
           await action.followUp({ content });
         }
       }

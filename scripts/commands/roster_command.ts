@@ -800,6 +800,12 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String
         },
         {
+          name: 'compact',
+          description: command.roster.ping.options.compact.description,
+          description_localizations: translation('command.roster.ping.options.compact.description'),
+          type: ApplicationCommandOptionType.Boolean
+        },
+        {
           name: 'ping_option',
           description: command.roster.ping.options.ping_option.description,
           description_localizations: translation(
