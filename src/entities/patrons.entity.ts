@@ -35,6 +35,8 @@ export interface PatreonMembersEntity {
       active: boolean;
       avatarUrl: string;
       nickname: string;
+      bio: string | null;
+      banner: string | null;
     }
   >;
 

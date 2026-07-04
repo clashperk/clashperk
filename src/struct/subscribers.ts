@@ -265,7 +265,9 @@ export class Subscribers {
         if (guild) {
           await this.setBotProfile(guild, patron, {
             nick: profile.nickname,
-            avatar: profile.avatarUrl
+            avatar: profile.avatarUrl,
+            banner: profile.banner,
+            bio: profile.bio
           });
         }
       }
@@ -405,7 +407,7 @@ export class Subscribers {
   public async setBotProfile(
     guild: Guild,
     patron: PatreonMembersEntity,
-    editData: { nick: string; avatar: string }
+    editData: { nick: string; avatar: string; banner?: string | null; bio?: string | null }
   ) {
     if (this.client.isCustom()) return null;
     try {
@@ -418,7 +420,9 @@ export class Subscribers {
             [`customBots.${guild.id}`]: {
               active: true,
               nickname: editData.nick,
-              avatarUrl: editData.avatar
+              avatarUrl: editData.avatar,
+              bio: editData.bio || null,
+              banner: editData.banner || null
             }
           }
         }
@@ -456,8 +460,13 @@ export class Subscribers {
     if (!patron.customBots?.[guild.id]?.active) return;
 
     try {
-      // We only unset the avatar because users can change the nickname themselves but not the avatar.
-      await guild.members.editMe({ avatar: null, reason: 'Custom Profile Disabled' });
+      // We only unset the avatar, bio and banner because users can change the nickname themselves but not the avatar.
+      await guild.members.editMe({
+        avatar: null,
+        banner: null,
+        bio: null,
+        reason: 'Custom Profile Disabled'
+      });
 
       if (options.clear) {
         await this.collection.updateOne(

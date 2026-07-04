@@ -253,7 +253,7 @@ export default class SetupCustomBotCommand extends Command {
       if (!isEligible) return fallbackMessage(action);
 
       const modalCustomId = this.client.uuid(action.user.id);
-      const fieldIds = { avatar: 'avatar', nickname: 'nickname' };
+      const fieldIds = { avatar: 'avatar', nickname: 'nickname', bio: 'bio', banner: 'banner' };
 
       const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle('Quick Customize');
 
@@ -276,6 +276,25 @@ export default class SetupCustomBotCommand extends Command {
               .setRequired(true)
           )
       );
+      modal.addLabelComponents(
+        new LabelBuilder()
+          .setLabel('Banner')
+          .setFileUploadComponent(
+            new FileUploadBuilder().setCustomId(fieldIds.banner).setRequired(false)
+          )
+      );
+      modal.addLabelComponents(
+        new LabelBuilder()
+          .setLabel('Bio')
+          .setTextInputComponent(
+            new TextInputBuilder()
+              .setCustomId(fieldIds.bio)
+              .setPlaceholder('Enter a bio for this bot')
+              .setStyle(TextInputStyle.Paragraph)
+              .setMaxLength(100)
+              .setRequired(false)
+          )
+      );
 
       await action.showModal(modal);
 
@@ -289,7 +308,11 @@ export default class SetupCustomBotCommand extends Command {
         const avatarFile = modalSubmit.fields.getUploadedFiles(fieldIds.avatar, true).first()!;
         const nickname = modalSubmit.fields.getTextInputValue(fieldIds.nickname).trim();
 
-        const editData = { nick: nickname, avatar: avatarFile.url };
+        const bannerFile =
+          modalSubmit.fields.getUploadedFiles(fieldIds.banner, true).first() || null;
+        const bio = modalSubmit.fields.getTextInputValue(fieldIds.bio).trim() || null;
+
+        const editData = { nick: nickname, avatar: avatarFile.url, bio, banner: bannerFile?.url };
         const updated = await this.client.subscribers.setBotProfile(
           interaction.guild,
           patron,

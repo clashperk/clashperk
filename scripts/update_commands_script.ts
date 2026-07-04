@@ -142,7 +142,7 @@ const customBotCommands = async () => {
           ...COMMANDS,
           ...HIDDEN_COMMANDS
         ]);
-        console.log(`Beta commands for client: ${application.serviceId} guild: ${guildId}`);
+        console.log(`Beta commands for the guild: ${guildId}`);
       } else {
         await applicationGuildCommands(application.token, guildId, [...COMMANDS]);
       }
