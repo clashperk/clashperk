@@ -1,8 +1,8 @@
 import { Listener } from '../../lib/handlers.js';
 
-export default class OnReadyListener extends Listener {
+export default class OnRescheduleRemindersListener extends Listener {
   public constructor() {
-    super('onReady', {
+    super('auto-reschedule-reminders', {
       event: 'clientReady',
       emitter: 'client',
       category: 'client'
@@ -10,7 +10,7 @@ export default class OnReadyListener extends Listener {
   }
 
   public async exec() {
-    if (new Date().getTime() >= new Date('2026-08-09').getTime()) return;
+    if (new Date().getTime() >= new Date('2026-08-06').getTime()) return;
     for (const guild of this.client.guilds.cache.values()) {
       const key = `REM:${guild.id}`;
       if (await this.client.redis.get(key)) continue;
