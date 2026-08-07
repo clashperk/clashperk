@@ -1,5 +1,6 @@
 import { Collections } from '@app/constants';
 import { Listener } from '../../lib/handlers.js';
+import { Util } from '../../util/toolkit.js';
 
 export default class AutoChannelRefreshListener extends Listener {
   public constructor() {
@@ -16,7 +17,7 @@ export default class AutoChannelRefreshListener extends Listener {
     for await (const log of collection.find({
       guildId: { $in: [...this.client.guilds.cache.keys()] }
     })) {
-      const channel = await this.client.channels.fetch(log.channelId);
+      const channel = await this.client.channels.fetch(log.channelId).catch(() => null);
       if (!channel) continue;
 
       if (channel.isThread()) {
@@ -35,6 +36,8 @@ export default class AutoChannelRefreshListener extends Listener {
           { $set: { threadId: channel.id, parentId: channel.parentId } }
         );
       }
+
+      await Util.delay(250);
     }
   }
 }
