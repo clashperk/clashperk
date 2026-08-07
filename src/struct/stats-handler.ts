@@ -168,6 +168,6 @@ export class StatsHandler {
     );
     await this.client.db
       .collection(Collections.CLAN_STORES)
-      .updateMany({ guild: guild.id }, { lastExecution: new Date() });
+      .updateMany({ guild: guild.id }, { $set: { lastExecution: new Date() } });
   }
 }
