@@ -32,6 +32,10 @@ export class RedisService {
     return this.connection.set(key, value, { EX });
   }
 
+  public get(key: string) {
+    return this.connection.get(key);
+  }
+
   public async getLegendThreshold(key: string) {
     try {
       const raw = await this.connection.get(key);
