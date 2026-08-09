@@ -472,12 +472,10 @@ export default class SetupUtilsCommand extends Command {
 
         await modalSubmit.editReply(getText());
       } catch (error) {
-        if (
-          !(
-            error instanceof DiscordjsError &&
-            error.code === DiscordjsErrorCodes.InteractionCollectorError
-          )
-        ) {
+        if (!(
+          error instanceof DiscordjsError &&
+          error.code === DiscordjsErrorCodes.InteractionCollectorError
+        )) {
           throw error;
         }
       }

@@ -143,12 +143,10 @@ export default class LayoutCommand extends Command {
 
       return await this.handleSubmit(interaction, args);
     } catch (error) {
-      if (
-        !(
-          error instanceof DiscordjsError &&
-          error.code === DiscordjsErrorCodes.InteractionCollectorError
-        )
-      ) {
+      if (!(
+        error instanceof DiscordjsError &&
+        error.code === DiscordjsErrorCodes.InteractionCollectorError
+      )) {
         throw error;
       }
     }
@@ -156,9 +154,7 @@ export default class LayoutCommand extends Command {
 
   public async handleSubmit(
     interaction:
-      | CommandInteraction<'cached'>
-      | ButtonInteraction<'cached'>
-      | ModalSubmitInteraction<'cached'>,
+      CommandInteraction<'cached'> | ButtonInteraction<'cached'> | ModalSubmitInteraction<'cached'>,
     args: LayoutCommandArgs
   ) {
     if (!args.layout_link || !LAYOUT_REGEX.test(args.layout_link)) {
@@ -300,12 +296,10 @@ export default class LayoutCommand extends Command {
 
       return await modalSubmitInteraction.deferUpdate();
     } catch (error) {
-      if (
-        !(
-          error instanceof DiscordjsError &&
-          error.code === DiscordjsErrorCodes.InteractionCollectorError
-        )
-      ) {
+      if (!(
+        error instanceof DiscordjsError &&
+        error.code === DiscordjsErrorCodes.InteractionCollectorError
+      )) {
         throw error;
       }
     }

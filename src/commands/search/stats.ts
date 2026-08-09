@@ -85,14 +85,12 @@ export default class StatsCommand extends Command {
     const attackerTownHall = Number(match?.groups?.attackerTownHall);
     const defenderTownHall = Number(match?.groups?.defenderTownHall);
 
-    if (
-      !(
-        attackerTownHall > 1 &&
-        attackerTownHall <= MAX_TOWN_HALL_LEVEL &&
-        defenderTownHall > 1 &&
-        defenderTownHall <= MAX_TOWN_HALL_LEVEL
-      )
-    ) {
+    if (!(
+      attackerTownHall > 1 &&
+      attackerTownHall <= MAX_TOWN_HALL_LEVEL &&
+      defenderTownHall > 1 &&
+      defenderTownHall <= MAX_TOWN_HALL_LEVEL
+    )) {
       return 'all';
     }
 

@@ -923,8 +923,7 @@ export default class TicketOpenCommand extends Command {
     // Log ticket close
     if (panel?.logChannels.ticketClose) {
       const logChannel = interaction.guild!.channels.cache.get(panel.logChannels.ticketClose) as
-        | TextChannel
-        | undefined;
+        TextChannel | undefined;
 
       if (logChannel) {
         const closeContainer = new ContainerBuilder();
@@ -1382,8 +1381,7 @@ export default class TicketOpenCommand extends Command {
     if (!panel.logChannels.buttonClick) return;
 
     const logChannel = interaction.guild!.channels.cache.get(panel.logChannels.buttonClick) as
-      | TextChannel
-      | undefined;
+      TextChannel | undefined;
 
     if (!logChannel) return;
 
@@ -1410,8 +1408,7 @@ export default class TicketOpenCommand extends Command {
 
     const guild = this.client.guilds.cache.get(ticket.guildId);
     const logChannel = guild?.channels.cache.get(panel.logChannels.statusChange) as
-      | TextChannel
-      | undefined;
+      TextChannel | undefined;
 
     if (!logChannel) return;
 

@@ -163,9 +163,9 @@ export default class LinkAddCommand extends Command {
           return this.playerLink(modalSubmit, { player: data, member: interaction.member });
         });
     } catch (e) {
-      if (
-        !(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)
-      ) {
+      if (!(
+        e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError
+      )) {
         throw e;
       }
     }

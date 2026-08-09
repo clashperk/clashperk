@@ -100,8 +100,7 @@ export class TicketHandler {
 
     if (panel?.logChannels.statusChange) {
       const logCh = guild.channels.cache.get(panel.logChannels.statusChange) as
-        | TextChannel
-        | undefined;
+        TextChannel | undefined;
       await logCh
         ?.send({
           embeds: [

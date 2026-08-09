@@ -311,9 +311,9 @@ export class ClanWarLog extends RootLog {
                   .toString()
                   .concat('%')
                   .padStart(pad, ' ');
-                return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
-                  attacker.townHallLevel
-                ]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
+                return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]}${
+                  ORANGE_NUMBERS[attacker.townHallLevel]
+                }${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]}${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
               })
             ].join('\n')
           }
@@ -539,9 +539,9 @@ export class ClanWarLog extends RootLog {
                 .toString()
                 .concat('%')
                 .padStart(pad, ' ');
-              return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]}${ORANGE_NUMBERS[
-                attacker.townHallLevel
-              ]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]}${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
+              return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]}${
+                ORANGE_NUMBERS[attacker.townHallLevel]!
+              }${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]}${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
             })
           ].join('\n')
         }

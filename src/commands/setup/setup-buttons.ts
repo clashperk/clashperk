@@ -268,12 +268,9 @@ export default class SetupButtonsCommand extends Command {
         } catch (e) {
           if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (
-            !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          ) {
+          } else if (!(
+            e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError
+          )) {
             throw e;
           }
         }
@@ -435,12 +432,9 @@ export default class SetupButtonsCommand extends Command {
         } catch (e) {
           if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (
-            !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          ) {
+          } else if (!(
+            e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError
+          )) {
             throw e;
           }
         }
@@ -597,12 +591,9 @@ export default class SetupButtonsCommand extends Command {
         } catch (e) {
           if (e.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (
-            !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          ) {
+          } else if (!(
+            e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError
+          )) {
             throw e;
           }
         }
@@ -759,12 +750,10 @@ export default class SetupButtonsCommand extends Command {
         } catch (error) {
           if (error.code === DiscordErrorCodes.INVALID_FORM_BODY) {
             await resetImages();
-          } else if (
-            !(
-              error instanceof DiscordjsError &&
-              error.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          ) {
+          } else if (!(
+            error instanceof DiscordjsError &&
+            error.code === DiscordjsErrorCodes.InteractionCollectorError
+          )) {
             throw error;
           }
         }
