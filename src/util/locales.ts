@@ -620,6 +620,9 @@ export const command = {
         message: {
           description: 'Message for the members'
         },
+        compact: {
+          description: 'Send member pings in a compact inline format'
+        },
         ping_option: {
           description: 'Select a ping option'
         },
