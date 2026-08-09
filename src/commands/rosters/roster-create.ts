@@ -166,6 +166,12 @@ export default class RosterCreateCommand extends Command {
         return interaction.editReply('Roster must be at least 10 minutes long.');
     }
 
+    if (!data.allowCategorySelection && data.requireCategorySelection) {
+      return interaction.editReply(
+        'Cannot require category selection if category selection is disabled.'
+      );
+    }
+
     const roster = await this.client.rosterManager.create(data);
     this.client.rosterManager.setDefaultSettings(interaction.guild.id, roster);
 

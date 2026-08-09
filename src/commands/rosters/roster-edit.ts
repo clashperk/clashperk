@@ -260,6 +260,12 @@ export default class RosterEditCommand extends Command {
         return interaction.editReply('Roster must be at least 10 minutes long.');
     }
 
+    if (!data.allowCategorySelection && data.requireCategorySelection) {
+      return interaction.editReply(
+        'Cannot require category selection if category selection is disabled.'
+      );
+    }
+
     const updated = await this.client.rosterManager.edit(rosterId, data);
     if (!updated)
       return interaction.followUp({
