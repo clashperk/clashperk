@@ -61,6 +61,7 @@ export default class RosterEditCommand extends Command {
       delete_role?: boolean;
       allow_multi_signup?: boolean;
       allow_group_selection?: boolean;
+      require_group_selection?: boolean;
       max_accounts_per_user?: number;
       end_time?: string;
       start_time?: string;
@@ -145,6 +146,8 @@ export default class RosterEditCommand extends Command {
       data.allowMultiSignup = args.allow_multi_signup;
     if (typeof args.allow_group_selection === 'boolean')
       data.allowCategorySelection = args.allow_group_selection;
+    if (typeof args.require_group_selection === 'boolean')
+      data.requireCategorySelection = args.require_group_selection;
     if (args.clear_members) data.members = [];
     if (args.sort_by) data.sortBy = args.sort_by;
     if (typeof args.max_accounts_per_user === 'number')
@@ -255,6 +258,12 @@ export default class RosterEditCommand extends Command {
         return interaction.editReply('End time cannot be before start time.');
       if (data.endTime.getTime() - data.startTime.getTime() < 600000)
         return interaction.editReply('Roster must be at least 10 minutes long.');
+    }
+
+    if (!data.allowCategorySelection && data.requireCategorySelection) {
+      return interaction.editReply(
+        'Cannot require category selection if category selection is disabled.'
+      );
     }
 
     const updated = await this.client.rosterManager.edit(rosterId, data);

@@ -466,6 +466,9 @@ export const command = {
         allow_group_selection: {
           description: 'Whether to allow members to select group'
         },
+        require_group_selection: {
+          description: 'Whether to require members to select group'
+        },
         allow_multi_signup: {
           description: 'Whether to allow multiple roster signups'
         },

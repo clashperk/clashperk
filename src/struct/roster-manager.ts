@@ -213,6 +213,7 @@ export interface IRoster {
   } | null;
   logChannelId?: string | null;
   allowCategorySelection?: boolean;
+  requireCategorySelection?: boolean;
   lastUpdated: Date;
   createdAt: Date;
 }
@@ -228,6 +229,7 @@ export interface IRosterDefaultSettings {
   sortBy: RosterSortTypes;
   colorCode: number;
   allowCategorySelection: boolean;
+  requireCategorySelection: boolean;
   allowUnlinked: boolean;
 }
 
@@ -1588,6 +1590,7 @@ export class RosterManager {
     const settings: Partial<IRosterDefaultSettings> = {
       allowMultiSignup: data.allowMultiSignup,
       allowCategorySelection: data.allowCategorySelection,
+      requireCategorySelection: data.requireCategorySelection,
       maxMembers: data.maxMembers,
       minHeroLevels: data.minHeroLevels,
       minTownHall: data.minTownHall,

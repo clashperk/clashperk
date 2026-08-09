@@ -178,6 +178,14 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.Boolean
         },
         {
+          name: 'require_group_selection',
+          description: command.roster.create.options.require_group_selection.description,
+          description_localizations: translation(
+            'command.roster.create.options.require_group_selection.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
+        },
+        {
           name: 'allow_multi_signup',
           description: command.roster.create.options.allow_multi_signup.description,
           description_localizations: translation(
@@ -496,6 +504,14 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.roster.create.options.allow_group_selection.description,
           description_localizations: translation(
             'command.roster.create.options.allow_group_selection.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
+        },
+        {
+          name: 'require_group_selection',
+          description: command.roster.create.options.require_group_selection.description,
+          description_localizations: translation(
+            'command.roster.create.options.require_group_selection.description'
           ),
           type: ApplicationCommandOptionType.Boolean
         },

@@ -43,6 +43,7 @@ export default class RosterCreateCommand extends Command {
       min_hero_level?: number;
       roster_role?: Role;
       allow_group_selection?: boolean;
+      require_group_selection?: boolean;
       allow_multi_signup?: boolean;
       max_accounts_per_user?: number;
       end_time?: string;
@@ -83,7 +84,13 @@ export default class RosterCreateCommand extends Command {
         args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true
       ),
       allowCategorySelection: Boolean(
-        args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true
+        args.allow_group_selection ??
+        args.require_group_selection ??
+        defaultSettings.allowCategorySelection ??
+        true
+      ),
+      requireCategorySelection: Boolean(
+        args.require_group_selection ?? defaultSettings.requireCategorySelection ?? false
       ),
       allowUnlinked: Boolean(args.allow_unlinked ?? defaultSettings.allowUnlinked ?? false),
       maxMembers: args.max_members ?? defaultSettings.maxMembers,
@@ -157,6 +164,12 @@ export default class RosterCreateCommand extends Command {
         return interaction.editReply('End time cannot be before start time.');
       if (data.endTime.getTime() - data.startTime.getTime() < 600000)
         return interaction.editReply('Roster must be at least 10 minutes long.');
+    }
+
+    if (!data.allowCategorySelection && data.requireCategorySelection) {
+      return interaction.editReply(
+        'Cannot require category selection if category selection is disabled.'
+      );
     }
 
     const roster = await this.client.rosterManager.create(data);
