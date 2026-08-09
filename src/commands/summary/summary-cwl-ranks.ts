@@ -45,18 +45,25 @@ export default class SummaryCWLRanks extends Command {
 
     const chunks = [];
     for (const clan of _clans) {
-      const [lastLeagueGroup, leagueGroup] = await Promise.all([
+      const [{ body, res }, leagueGroup] = await Promise.all([
         this.client.coc.getClanWarLeagueGroup(clan.tag),
         this.client.storage.getWarTags(clan.tag, season)
       ]);
-      if (!leagueGroup?.leagues?.[clan.tag]) continue;
+      const warLeagueId = leagueGroup?.leagues?.[clan.tag];
+      if (!warLeagueId) continue;
 
-      // A specific (past) season is served from the archive; the current one uses live war data.
-      const isApiData = !season;
+      // The requested season is the live one when it matches the API season within a few days (the
+      // CWL season date isn't perfectly predictable); otherwise it's a past/archived season. Prefer
+      // the live body for the current season; on 504/notInWar the live body is unusable, so fall
+      // back to the stored group (a summary spans many clans, so skip-worthy failures can't bail).
+      const isLiveBody = res.ok && body.state !== 'notInWar';
+      const isLiveSeason = !season || Util.estimateCwlSeasonIds(season).includes(body.season);
+      const entityLike = isLiveBody && isLiveSeason ? body : leagueGroup;
+      const isApiData = isLiveSeason;
 
       const aggregated = await this.client.coc.aggregateClanWarLeague(
         clan.tag,
-        leagueGroup,
+        { ...entityLike, leagues: leagueGroup.leagues ?? {} },
         isApiData
       );
       if (!aggregated) continue;
@@ -65,9 +72,9 @@ export default class SummaryCWLRanks extends Command {
       if (!ranking) continue;
 
       chunks.push({
-        warLeagueId: leagueGroup.leagues[clan.tag],
+        warLeagueId,
         ...ranking,
-        status: lastLeagueGroup.body.state
+        status: body.state
       });
     }
 
@@ -197,6 +204,6 @@ export default class SummaryCWLRanks extends Command {
     const pr = new Intl.PluralRules('en-US', { type: 'ordinal' });
     const rule = pr.select(n);
     const suffix = suffixes.get(rule);
-    return `${n}${suffix!}`;
+    return `${n}${suffix}`;
   }
 }
