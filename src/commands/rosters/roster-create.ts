@@ -85,9 +85,9 @@ export default class RosterCreateCommand extends Command {
       ),
       allowCategorySelection: Boolean(
         args.allow_group_selection ??
-          args.require_group_selection ??
-          defaultSettings.allowCategorySelection ??
-          true
+        args.require_group_selection ??
+        defaultSettings.allowCategorySelection ??
+        true
       ),
       requireCategorySelection: Boolean(
         args.require_group_selection ?? defaultSettings.requireCategorySelection ?? false
