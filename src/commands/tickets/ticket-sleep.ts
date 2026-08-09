@@ -49,8 +49,7 @@ export default class TicketSleepCommand extends Command {
     // Move to sleep category
     if (btn?.sleepCategoryId) {
       const sleepCat = interaction.guild!.channels.cache.get(btn.sleepCategoryId) as
-        | CategoryChannel
-        | undefined;
+        CategoryChannel | undefined;
 
       if (sleepCat) {
         await channel.setParent(sleepCat, { lockPermissions: false }).catch(() => null);
@@ -65,8 +64,7 @@ export default class TicketSleepCommand extends Command {
     // Log
     if (panel?.logChannels.statusChange) {
       const logCh = interaction.guild!.channels.cache.get(panel.logChannels.statusChange) as
-        | TextChannel
-        | undefined;
+        TextChannel | undefined;
 
       if (logCh) {
         await logCh

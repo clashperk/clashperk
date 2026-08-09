@@ -167,12 +167,10 @@ export default class LayoutConfigCommand extends Command {
           const container = getEmbed();
           return interaction.editReply({ components: [container], withComponents: true });
         } catch (error) {
-          if (
-            !(
-              error instanceof DiscordjsError &&
-              error.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          ) {
+          if (!(
+            error instanceof DiscordjsError &&
+            error.code === DiscordjsErrorCodes.InteractionCollectorError
+          )) {
             throw error;
           }
         }

@@ -1626,9 +1626,9 @@ export default class RosterManageCommand extends Command {
           content: messageTexts.join('\n')
         });
       } catch (e) {
-        if (
-          !(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)
-        ) {
+        if (!(
+          e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError
+        )) {
           throw e;
         }
       }

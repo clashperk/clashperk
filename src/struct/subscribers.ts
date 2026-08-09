@@ -625,14 +625,7 @@ export interface PatreonMember {
     pledge_relationship_start: string;
     patron_status: 'active_patron' | 'declined_patron' | 'former_patron' | 'account_deleted' | null;
     last_charge_status:
-      | 'Paid'
-      | 'Declined'
-      | 'Deleted'
-      | 'Pending'
-      | 'Refunded'
-      | 'Fraud'
-      | 'Other'
-      | null;
+      'Paid' | 'Declined' | 'Deleted' | 'Pending' | 'Refunded' | 'Fraud' | 'Other' | null;
   };
   id: string;
   relationships: {

@@ -585,8 +585,7 @@ export default class TicketSetupCommand extends Command {
     });
 
     const displayMode = (submit.fields.getStringSelectValues(customIds.mode)?.[0] ?? 'menu') as
-      | 'menu'
-      | 'buttons';
+      'menu' | 'buttons';
     const label = submit.fields.getTextInputValue(customIds.label) || current.label;
     const emojiRaw = submit.fields.getTextInputValue(customIds.emoji);
     const emoji = emojiRaw && isValidEmoji(emojiRaw) ? emojiRaw : undefined;
@@ -788,8 +787,8 @@ export default class TicketSetupCommand extends Command {
           if (submit) {
             const selected = submit.fields.getStringSelectValues(customIds.select) ?? [];
             if (selected.length === n) {
-              const reordered = selected.map(
-                (id) => currentPanel.ticketTypes.find((t) => t.id === id)!
+              const reordered = selected.map((id) =>
+                currentPanel.ticketTypes.find((t) => t.id === id)!
               );
               await this.ticketPanels.updateOne(
                 { _id: currentPanel._id },
@@ -808,12 +807,10 @@ export default class TicketSetupCommand extends Command {
             );
             for (const b of currentPanel.ticketTypes) getOrCreateButtonIds(b.id);
           } catch (e) {
-            if (
-              !(
-                e instanceof DiscordjsError &&
-                e.code === DiscordjsErrorCodes.InteractionCollectorError
-              )
-            )
+            if (!(
+              e instanceof DiscordjsError &&
+              e.code === DiscordjsErrorCodes.InteractionCollectorError
+            ))
               throw e;
           }
         } else {
@@ -1360,12 +1357,10 @@ export default class TicketSetupCommand extends Command {
             this.client.components.delete(customIds.modal);
           }
         } catch (error) {
-          if (
-            !(
-              error instanceof DiscordjsError &&
-              error.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          )
+          if (!(
+            error instanceof DiscordjsError &&
+            error.code === DiscordjsErrorCodes.InteractionCollectorError
+          ))
             throw error;
         }
 
@@ -1707,12 +1702,10 @@ export default class TicketSetupCommand extends Command {
             }
           }
         } catch (error) {
-          if (
-            !(
-              error instanceof DiscordjsError &&
-              error.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          )
+          if (!(
+            error instanceof DiscordjsError &&
+            error.code === DiscordjsErrorCodes.InteractionCollectorError
+          ))
             throw error;
         }
 
@@ -2321,12 +2314,10 @@ export default class TicketSetupCommand extends Command {
             }
           }
         } catch (error) {
-          if (
-            !(
-              error instanceof DiscordjsError &&
-              error.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          )
+          if (!(
+            error instanceof DiscordjsError &&
+            error.code === DiscordjsErrorCodes.InteractionCollectorError
+          ))
             throw error;
         }
 

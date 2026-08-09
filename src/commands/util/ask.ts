@@ -26,8 +26,7 @@ export default class AskCommand extends Command {
 
   public async exec(
     interaction:
-      | MessageContextMenuCommandInteraction<'cached'>
-      | ChatInputCommandInteraction<'cached'>,
+      MessageContextMenuCommandInteraction<'cached'> | ChatInputCommandInteraction<'cached'>,
     args: { message: string }
   ) {
     if (!args.message?.length || !(args.message.length >= 5)) {

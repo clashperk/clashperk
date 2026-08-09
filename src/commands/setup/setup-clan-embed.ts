@@ -301,12 +301,10 @@ export default class ClanEmbedCommand extends Command {
 
         await modalSubmit.editReply({ embeds: [embed], components: [buttonRow, menuRow] });
       } catch (error) {
-        if (
-          !(
-            error instanceof DiscordjsError &&
-            error.code === DiscordjsErrorCodes.InteractionCollectorError
-          )
-        ) {
+        if (!(
+          error instanceof DiscordjsError &&
+          error.code === DiscordjsErrorCodes.InteractionCollectorError
+        )) {
           throw error;
         }
       }

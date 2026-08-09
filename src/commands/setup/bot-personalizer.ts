@@ -236,12 +236,10 @@ export default class SetupCustomBotCommand extends Command {
         );
         return modalSubmit.editReply(this.reply(messages.join('\n')));
       } catch (error) {
-        if (
-          !(
-            error instanceof DiscordjsError &&
-            error.code === DiscordjsErrorCodes.InteractionCollectorError
-          )
-        ) {
+        if (!(
+          error instanceof DiscordjsError &&
+          error.code === DiscordjsErrorCodes.InteractionCollectorError
+        )) {
           throw error;
         }
       }
@@ -337,12 +335,10 @@ export default class SetupCustomBotCommand extends Command {
           );
         }
       } catch (error) {
-        if (
-          !(
-            error instanceof DiscordjsError &&
-            error.code === DiscordjsErrorCodes.InteractionCollectorError
-          )
-        ) {
+        if (!(
+          error instanceof DiscordjsError &&
+          error.code === DiscordjsErrorCodes.InteractionCollectorError
+        )) {
           throw error;
         }
       }

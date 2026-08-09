@@ -121,8 +121,7 @@ export default class TicketCloseCommand extends Command {
 
     if (panel?.logChannels.ticketClose) {
       const logCh = interaction.guild!.channels.cache.get(panel.logChannels.ticketClose) as
-        | TextChannel
-        | undefined;
+        TextChannel | undefined;
 
       if (logCh) {
         const logEmbed = new EmbedBuilder()

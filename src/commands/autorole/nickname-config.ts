@@ -323,12 +323,9 @@ export default class NicknameConfigCommand extends Command {
           );
           await modalSubmit.editReply({ withComponents: true, components: [container] });
         } catch (e) {
-          if (
-            !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          ) {
+          if (!(
+            e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError
+          )) {
             throw e;
           }
         }

@@ -362,12 +362,9 @@ export default class SetupEventsCommand extends Command {
             components: [menuRow, durationRow, buttonRow]
           });
         } catch (e) {
-          if (
-            !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          ) {
+          if (!(
+            e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError
+          )) {
             throw e;
           }
         }
@@ -445,12 +442,9 @@ export default class SetupEventsCommand extends Command {
             components: [menuRow, durationRow, buttonRow]
           });
         } catch (e) {
-          if (
-            !(
-              e instanceof DiscordjsError &&
-              e.code === DiscordjsErrorCodes.InteractionCollectorError
-            )
-          ) {
+          if (!(
+            e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError
+          )) {
             throw e;
           }
         }
