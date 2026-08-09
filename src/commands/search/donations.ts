@@ -91,6 +91,7 @@ export default class DonationsCommand extends Command {
       townHall: number;
       difference: number;
       ratio: number;
+      total: number;
     }[] = [];
 
     if (isSameSeason) {
@@ -103,7 +104,8 @@ export default class DonationsCommand extends Command {
           received: donationsReceived,
           townHall: townHallLevel,
           difference: donations - donationsReceived,
-          ratio: +(donationsReceived === 0 ? 0 : donations / donationsReceived).toFixed(2)
+          ratio: +(donationsReceived === 0 ? 0 : donations / donationsReceived).toFixed(2),
+          total: donations + donationsReceived
         });
       }
     }
@@ -137,7 +139,8 @@ export default class DonationsCommand extends Command {
           donated,
           received,
           difference: donated - received,
-          ratio: +(received === 0 ? 0 : donated / received).toFixed(2)
+          ratio: +(received === 0 ? 0 : donated / received).toFixed(2),
+          total: donated + received
         });
       }
     }
@@ -158,6 +161,7 @@ export default class DonationsCommand extends Command {
     const isTh = sortBy?.includes('townHall');
     const isDiff = sortBy?.includes('difference');
     const isRatio = sortBy?.includes('ratio');
+    const isTotal = sortBy?.includes('total');
     const getEmbed = () => {
       const embed = new EmbedBuilder()
         .setColor(this.client.embed(interaction))
@@ -189,6 +193,21 @@ export default class DonationsCommand extends Command {
               const name = this.padEnd(mem.name.slice(0, 15));
               const rank = (count + 1).toString().padStart(2, ' ');
               return `${rank} ${this.donation(mem.difference, ds)} ${ratio}  \u200e${name}`;
+            }),
+            '```'
+          ].join('\n')
+        );
+      } else if (isTotal) {
+        const ds = Math.max(...members.map((m) => m.total)).toString().length + 1;
+        embed.setDescription(
+          [
+            '```',
+            `\u200e # ${padStart('D+R', ds)} ${padStart('RATIO', 5)}  ${'NAME'}`,
+            ...members.map((mem, count) => {
+              const ratio = padStart(mem.ratio, 5);
+              const name = this.padEnd(mem.name.slice(0, 15));
+              const rank = (count + 1).toString().padStart(2, ' ');
+              return `${rank} ${this.donation(mem.total, ds)} ${ratio}  \u200e${name}`;
             }),
             '```'
           ].join('\n')
@@ -270,6 +289,12 @@ export default class DonationsCommand extends Command {
             description: 'Sorted by Town-Hall level',
             value: 'townHall',
             default: sortBy?.includes('townHall')
+          },
+          {
+            label: 'Donations + Received',
+            description: 'Sum of donations and donations received',
+            value: 'total',
+            default: sortBy?.includes('total')
           }
         ])
     );
@@ -306,5 +331,5 @@ export default class DonationsCommand extends Command {
   }
 }
 
-type SortKey = 'donated' | 'received' | 'townHall' | 'difference' | 'ratio';
+type SortKey = 'donated' | 'received' | 'townHall' | 'difference' | 'ratio' | 'total';
 type OrderKey = 'asc' | 'desc';
