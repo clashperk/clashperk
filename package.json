@@ -85,7 +85,7 @@
     "knip": "^5.66.2",
     "prettier": "^3.8.4",
     "rimraf": "^6.0.1",
-    "swagger-typescript-api": "^13.12.2",
+    "swagger-typescript-api": "^13.12.6",
     "tsc-alias": "^1.8.11",
     "tsx": "^4.20.6",
     "typescript": "^5.8.3"
