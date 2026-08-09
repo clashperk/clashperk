@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
 import {
+  getCWLSeasonIds,
   getRaidWeekIds,
   getSeasonIds,
   getSeasonSinceIds,
@@ -110,7 +111,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getSeasonIds()
+          choices: getCWLSeasonIds()
         },
         {
           name: 'clans',
