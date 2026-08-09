@@ -47,7 +47,7 @@
     "chalk": "^5.6.2",
     "clashofclans.js": "^4.0.7-dev.299c200",
     "discord-hybrid-sharding": "^3.0.1",
-    "discord.js": "^14.26.4",
+    "discord.js": "^14.27.0",
     "google-auth-library": "^10.6.2",
     "i18next": "^21.6.13",
     "jsonwebtoken": "^9.0.0",
@@ -64,7 +64,8 @@
     "readdirp": "^4.1.2",
     "redis": "^5.9.0",
     "reflect-metadata": "^0.2.2",
-    "tsyringe": "^4.10.0"
+    "tsyringe": "^4.10.0",
+    "undici": "^8.10.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.0",
@@ -97,14 +98,6 @@
     "zlib-sync": "^0.1.8"
   },
   "engines": {
-    "node": ">=20.x"
-  },
-  "overrides": {
-    "discord.js": {
-      "undici": "6.27.0"
-    },
-    "@elastic/transport": {
-      "undici": "6.27.0"
-    }
+    "node": ">=24.x"
   }
 }
