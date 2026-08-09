@@ -312,73 +312,44 @@ export default class MembersCommand extends Command {
   }
 
   private async getWarPref(clan: APIClan, players: APIPlayer[]) {
-    const { aggregations } = await this.client.elastic.search({
-      index: 'war_pref_events',
-      query: {
-        bool: {
-          filter: [
-            { match: { op: 'WAR_PREF_CHANGE' } },
-            // { match: { clan_tag: clan.tag } },
-            { terms: { tag: players.map((p) => p.tag) } }
-          ]
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT
+            tag,
+            action,
+            MAX(createdAt) AS maxTime
+          FROM player_activities
+          WHERE
+            tag IN {playersTags: Array(String)}
+            AND action IN ('OPTED_IN', 'OPTED_OUT')
+            AND createdAt >= now() - INTERVAL 90 DAY
+          GROUP BY tag, action
+        `,
+        query_params: {
+          playersTags: players.map((p) => p.tag)
         }
-      },
-      size: 0,
-      from: 0,
-      sort: [{ created_at: 'desc' }],
-      aggs: {
-        players: {
-          terms: {
-            field: 'tag'
-          },
-          aggs: {
-            in_stats: {
-              filter: { term: { value: 'in' } },
-              aggs: {
-                aggregated: {
-                  stats: { field: 'created_at' }
-                }
-              }
-            },
-            out_stats: {
-              filter: { term: { value: 'out' } },
-              aggs: {
-                aggregated: {
-                  stats: { field: 'created_at' }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
+      })
+      .then((res) => res.json<{ tag: string; action: string; maxTime: string }>());
 
-    const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
-    const playersMap = buckets.reduce<Record<string, AggsBucket>>((acc, cur) => {
-      acc[cur.key] = cur;
-      return acc;
-    }, {});
+    const playersMap: Record<string, { inTime: Date | null; outTime: Date | null }> = {};
+    for (const row of rows.data) {
+      if (!playersMap[row.tag]) playersMap[row.tag] = { inTime: null, outTime: null };
+      if (row.action === 'OPTED_IN') {
+        playersMap[row.tag].inTime = new Date(row.maxTime);
+      } else if (row.action === 'OPTED_OUT') {
+        playersMap[row.tag].outTime = new Date(row.maxTime);
+      }
+    }
 
     const warPref = players.map((player) => {
-      if (!playersMap[player.tag])
-        return {
-          warPreference: player.warPreference,
-          townHallLevel: player.townHallLevel,
-          name: player.name,
-          inTime: null,
-          outTime: null
-        };
-
-      const { in_stats, out_stats } = playersMap[player.tag];
-      const inTime = in_stats.aggregated.max;
-      const outTime = out_stats.aggregated.max;
-
+      const stats = playersMap[player.tag];
       return {
         name: player.name,
         townHallLevel: player.townHallLevel,
         warPreference: player.warPreference,
-        inTime: inTime ? new Date(inTime) : null,
-        outTime: outTime ? new Date(outTime) : null
+        inTime: stats?.inTime ?? null,
+        outTime: stats?.outTime ?? null
       };
     });
 
@@ -386,76 +357,53 @@ export default class MembersCommand extends Command {
   }
 
   private async joinLeave(clan: APIClan, players: APIPlayer[]) {
-    const { aggregations } = await this.client.elastic.search({
-      index: 'join_leave_events',
-      query: {
-        bool: {
-          filter: [
-            { terms: { op: ['JOINED', 'LEFT'] } },
-            { match: { clan_tag: clan.tag } },
-            { terms: { tag: players.map((p) => p.tag) } }
-          ]
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT
+            tag,
+            action,
+            COUNT(*) AS count,
+            MAX(createdAt) AS maxTime
+          FROM player_activities
+          WHERE
+            tag IN {playersTags: Array(String)}
+            AND clanTag = {clanTag: String}
+            AND action IN ('JOINED_CLAN', 'LEFT_CLAN')
+          GROUP BY tag, action
+        `,
+        query_params: {
+          playersTags: players.map((p) => p.tag),
+          clanTag: clan.tag
         }
-      },
-      size: 0,
-      from: 0,
-      sort: [{ created_at: 'desc' }],
-      aggs: {
-        players: {
-          terms: {
-            field: 'tag',
-            size: 50
-          },
-          aggs: {
-            in_stats: {
-              filter: { term: { op: 'JOINED' } },
-              aggs: {
-                aggregated: {
-                  stats: { field: 'created_at' }
-                }
-              }
-            },
-            out_stats: {
-              filter: { term: { op: 'LEFT' } },
-              aggs: {
-                aggregated: {
-                  stats: { field: 'created_at' }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
+      })
+      .then((res) => res.json<{ tag: string; action: string; count: string; maxTime: string }>());
 
-    const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
-    const playersMap = buckets.reduce<Record<string, AggsBucket>>((acc, cur) => {
-      acc[cur.key] = cur;
-      return acc;
-    }, {});
+    const playersMap: Record<
+      string,
+      { in: number; out: number; inTime: Date | null; outTime: Date | null }
+    > = {};
+    for (const row of rows.data) {
+      if (!playersMap[row.tag])
+        playersMap[row.tag] = { in: 0, out: 0, inTime: null, outTime: null };
+      if (row.action === 'JOINED_CLAN') {
+        playersMap[row.tag].in = Number(row.count);
+        playersMap[row.tag].inTime = new Date(row.maxTime);
+      } else if (row.action === 'LEFT_CLAN') {
+        playersMap[row.tag].out = Number(row.count);
+        playersMap[row.tag].outTime = new Date(row.maxTime);
+      }
+    }
 
     const warPref = players.map((player) => {
-      if (!playersMap[player.tag])
-        return {
-          townHallLevel: player.townHallLevel,
-          name: player.name,
-          inTime: null,
-          outTime: null,
-          in: 0,
-          out: 0
-        };
-
-      const { in_stats, out_stats } = playersMap[player.tag];
-      const inTime = in_stats.aggregated.max;
-      const outTime = out_stats.aggregated.max;
-
+      const stats = playersMap[player.tag];
       return {
         name: player.name,
         townHallLevel: player.townHallLevel,
-        inTime: inTime ? new Date(inTime) : null,
-        outTime: outTime ? new Date(outTime) : null,
-        in: in_stats.doc_count,
-        out: out_stats.doc_count
+        inTime: stats?.inTime ?? null,
+        outTime: stats?.outTime ?? null,
+        in: stats?.in ?? 0,
+        out: stats?.out ?? 0
       };
     });
 
@@ -496,17 +444,4 @@ export default class MembersCommand extends Command {
 
     return playersMap;
   }
-}
-
-interface AggsBucket {
-  key: string;
-  doc_count: number;
-  in_stats: {
-    doc_count: number;
-    aggregated: { max: number | null; min: number | null; count: number };
-  };
-  out_stats: {
-    doc_count: number;
-    aggregated: { max: number | null; min: number | null; count: number };
-  };
 }

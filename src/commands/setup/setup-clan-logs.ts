@@ -66,6 +66,13 @@ const logGroups: { name: string; logs: LogMap }[] = [
   {
     name: 'War Logs',
     logs: {
+      [ClanLogType.WAR_ATTACK_LOG]: {
+        description: 'Posted for every War Attack [NEW]'
+      },
+      [ClanLogType.CWL_ATTACK_LOG]: {
+        description: 'Posted for every CWL Attack [NEW]'
+      },
+
       [ClanLogType.WAR_EMBED_LOG]: {
         description: 'Self-updating and Posted for every War'
       },
@@ -74,6 +81,7 @@ const logGroups: { name: string; logs: LogMap }[] = [
         description: 'Self-updating and Posted for every CWL Round'
       },
       [ClanLogType.CWL_MISSED_ATTACKS_LOG]: {},
+
       [ClanLogType.CWL_LINEUP_CHANGE_LOG]: {},
       [ClanLogType.CWL_MONTHLY_SUMMARY_LOG]: {}
     }
@@ -89,7 +97,10 @@ const logGroups: { name: string; logs: LogMap }[] = [
       },
       [ClanLogType.NAME_CHANGE_LOG]: {},
       [ClanLogType.TOWN_HALL_UPGRADE_LOG]: {},
-      [ClanLogType.WAR_PREFERENCE_LOG]: {}
+      [ClanLogType.WAR_PREFERENCE_LOG]: {},
+      [ClanLogType.RANKED_BATTLE_LEAGUE_CHANGE_LOG]: {
+        label: 'Ranked Battle League Change Log (NEW)'
+      }
     }
   }
 ];
@@ -98,28 +109,6 @@ export const logActionsMap = logGroups.reduce<LogMap>((record, group) => {
   record = { ...record, ...group.logs };
   return record;
 }, {});
-
-export const DeprecatedLogs = {
-  'war-feed': [
-    ClanLogType.WAR_EMBED_LOG,
-    ClanLogType.WAR_MISSED_ATTACKS_LOG,
-    ClanLogType.CWL_EMBED_LOG,
-    ClanLogType.CWL_MISSED_ATTACKS_LOG
-  ],
-  'last-seen': [ClanLogType.LAST_SEEN_EMBED_LOG],
-  'clan-games': [ClanLogType.CLAN_GAMES_EMBED_LOG],
-  'legend-log': [ClanLogType.LEGEND_ATTACKS_DAILY_SUMMARY_LOG],
-  'capital-log': [ClanLogType.CLAN_CAPITAL_WEEKLY_SUMMARY_LOG],
-  'clan-feed': [
-    ClanLogType.CLAN_ACHIEVEMENTS_LOG,
-    ClanLogType.WAR_PREFERENCE_LOG,
-    ClanLogType.NAME_CHANGE_LOG,
-    ClanLogType.TOWN_HALL_UPGRADE_LOG
-  ],
-  'join-leave': [ClanLogType.MEMBER_JOIN_LEAVE_LOG],
-  'clan-embed': [ClanLogType.CLAN_EMBED_LOG],
-  'donation-log': [ClanLogType.CONTINUOUS_DONATION_LOG]
-};
 
 export default class SetupLogsCommand extends Command {
   public constructor() {
@@ -150,7 +139,7 @@ export default class SetupLogsCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: {
       clan: string;
-      action: 'enable-logs' | 'disable-logs' | keyof typeof DeprecatedLogs;
+      action: 'enable-logs' | 'disable-logs';
       color?: number;
       ping_role?: Role;
       channel: TextChannel | AnyThreadChannel;
@@ -233,10 +222,6 @@ export default class SetupLogsCommand extends Command {
         components: []
       });
     };
-
-    // if (args.action && args.action in DeprecatedLogs) {
-    //   return onComplete(interaction, DeprecatedLogs[args.action as keyof typeof DeprecatedLogs]);
-    // }
 
     const rows: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
     for (const group of logGroups) {

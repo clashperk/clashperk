@@ -32,8 +32,8 @@ export class CommandsMap {
     return this.get(this.idMappings.get(id) ?? `/${id}`);
   }
 
-  public get SETUP_ENABLE() {
-    return this.get('/setup enable');
+  public get SETUP_CLAN() {
+    return this.get('/setup clan');
   }
 
   public get SETUP_CLAN_LOGS() {

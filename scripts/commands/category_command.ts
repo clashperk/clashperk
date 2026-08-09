@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const CATEGORY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'category',
@@ -73,5 +73,6 @@ export const CATEGORY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

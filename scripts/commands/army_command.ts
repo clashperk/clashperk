@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const ARMY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'army',
@@ -30,5 +30,6 @@ export const ARMY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       max_length: 600,
       required: false
     }
-  ]
+  ],
+  ...guildInstallable
 };

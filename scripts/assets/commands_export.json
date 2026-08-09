@@ -127,6 +127,14 @@
         "description": "The season to show attacks for.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -136,15 +144,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       }
     ]
@@ -606,6 +606,18 @@
         "choices": []
       },
       {
+        "name": "legend_3",
+        "description": "Legend 3 league role.",
+        "type": "Role",
+        "choices": []
+      },
+      {
+        "name": "legend_2",
+        "description": "Legend 2 league role.",
+        "type": "Role",
+        "choices": []
+      },
+      {
         "name": "legend",
         "description": "Legend league role.",
         "type": "Role",
@@ -918,12 +930,12 @@
         "description": "The week to show contributions for.",
         "type": "String",
         "choices": [
-          "21 Nov, 2025",
-          "14 Nov, 2025",
-          "07 Nov, 2025",
-          "31 Oct, 2025",
-          "24 Oct, 2025",
-          "17 Oct, 2025"
+          "26 Jun, 2026",
+          "19 Jun, 2026",
+          "12 Jun, 2026",
+          "05 Jun, 2026",
+          "29 May, 2026",
+          "22 May, 2026"
         ]
       }
     ]
@@ -950,12 +962,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
-          "21 Nov, 2025",
-          "14 Nov, 2025",
-          "07 Nov, 2025",
-          "31 Oct, 2025",
-          "24 Oct, 2025",
-          "17 Oct, 2025"
+          "26 Jun, 2026",
+          "19 Jun, 2026",
+          "12 Jun, 2026",
+          "05 Jun, 2026",
+          "29 May, 2026",
+          "22 May, 2026"
         ]
       }
     ]
@@ -1058,6 +1070,14 @@
         "description": "The season to show the scoreboard for.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -1067,15 +1087,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       }
     ]
@@ -1171,24 +1183,19 @@
         "description": "CWL season",
         "type": "String",
         "choices": [
+          "Jun 16, 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
           "Aug 2025",
-          "Jul 2025",
-          "Jun 2025",
-          "May 2025",
-          "Apr 2025",
-          "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Jul 2025"
         ]
       },
       {
@@ -1272,24 +1279,19 @@
         "description": "CWL season",
         "type": "String",
         "choices": [
+          "Jun 16, 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
           "Aug 2025",
-          "Jul 2025",
-          "Jun 2025",
-          "May 2025",
-          "Apr 2025",
-          "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Jul 2025"
         ]
       },
       {
@@ -1316,24 +1318,19 @@
         "description": "CWL season",
         "type": "String",
         "choices": [
+          "Jun 16, 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
           "Aug 2025",
-          "Jul 2025",
-          "Jun 2025",
-          "May 2025",
-          "Apr 2025",
-          "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Jul 2025"
         ]
       },
       {
@@ -1360,24 +1357,19 @@
         "description": "CWL season",
         "type": "String",
         "choices": [
+          "Jun 16, 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
           "Aug 2025",
-          "Jul 2025",
-          "Jun 2025",
-          "May 2025",
-          "Apr 2025",
-          "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Jul 2025"
         ]
       },
       {
@@ -1416,6 +1408,14 @@
         "description": "The season to show donations for.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -1425,15 +1425,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -1564,31 +1556,20 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Jun 16, 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
           "Aug 2025",
-          "Jul 2025",
-          "Jun 2025",
-          "May 2025",
-          "Apr 2025",
-          "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Jul 2025"
         ]
-      },
-      {
-        "name": "wars",
-        "description": "Number of wars (Default: 25)",
-        "type": "Integer",
-        "choices": []
       },
       {
         "name": "lineup_only",
@@ -1623,6 +1604,14 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -1632,15 +1621,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -1663,29 +1644,10 @@
         "choices": []
       },
       {
-        "name": "season",
-        "description": "Retrieve data since the specified season.",
-        "type": "String",
-        "choices": [
-          "Nov 2025",
-          "Oct 2025",
-          "Sep 2025",
-          "Aug 2025",
-          "Jul 2025",
-          "Jun 2025",
-          "May 2025",
-          "Apr 2025",
-          "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
-        ]
+        "name": "auto_export_on",
+        "description": "Whether to schedule the export to run every Sunday at 4:55 UTC.",
+        "type": "Boolean",
+        "choices": []
       }
     ]
   },
@@ -1716,6 +1678,14 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Since Jul 2026",
+          "Since Jun 2026",
+          "Since May 2026",
+          "Since Apr 2026",
+          "Since Mar 2026",
+          "Since Feb 2026",
+          "Since Jan 2026",
+          "Since Dec 2025",
           "Since Nov 2025",
           "Since Oct 2025",
           "Since Sep 2025",
@@ -1725,15 +1695,7 @@
           "Since May 2025",
           "Since Apr 2025",
           "Since Mar 2025",
-          "Since Feb 2025",
-          "Since Jan 2025",
-          "Since Dec 2024",
-          "Since Nov 2024",
-          "Since Oct 2024",
-          "Since Sep 2024",
-          "Since Aug 2024",
-          "Since Jul 2024",
-          "Since Jun 2024"
+          "Since Feb 2025"
         ]
       },
       {
@@ -1777,6 +1739,14 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -1786,15 +1756,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -1977,6 +1939,12 @@
         "description": "Name of the command.",
         "type": "String",
         "choices": []
+      },
+      {
+        "name": "ask",
+        "description": "Find answers with AI.",
+        "type": "String",
+        "choices": []
       }
     ]
   },
@@ -2019,6 +1987,12 @@
         "name": "user",
         "description": "Select a user for the history.",
         "type": "User",
+        "choices": []
+      },
+      {
+        "name": "roster",
+        "description": "Select a roster for the history.",
+        "type": "String",
         "choices": []
       }
     ]
@@ -2108,6 +2082,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -2117,15 +2099,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       }
     ]
@@ -2146,6 +2120,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -2155,15 +2137,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       }
     ]
@@ -2184,6 +2158,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -2193,15 +2175,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       }
     ]
@@ -2278,6 +2252,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -2287,15 +2269,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -3211,6 +3185,18 @@
         "description": "Search rosters by clan",
         "type": "String",
         "choices": []
+      },
+      {
+        "name": "category",
+        "description": "Search rosters by category",
+        "type": "String",
+        "choices": [
+          "CWL",
+          "WAR",
+          "E-SPORTS",
+          "TROPHY",
+          "Un-categorized"
+        ]
       }
     ]
   },
@@ -3384,6 +3370,74 @@
     ]
   },
   {
+    "name": "setup clan",
+    "description": "Link/unlink clans to the server or channels.",
+    "description_long": "Manage clans on the server (link server, link channel, clan embed)",
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String",
+        "choices": []
+      },
+      {
+        "name": "category",
+        "description": "Category of the clan. (select from the menu or type your own)",
+        "type": "String",
+        "choices": []
+      },
+      {
+        "name": "clan_channel",
+        "description": "Link the clan to a channel.",
+        "type": "Channel",
+        "choices": []
+      },
+      {
+        "name": "unlink_clan_channel",
+        "description": "Unlink a channel from the clan.",
+        "type": "Channel",
+        "choices": []
+      },
+      {
+        "name": "unlink_clan",
+        "description": "Unlink a clan from the server and remove all the features related to it.",
+        "type": "Boolean",
+        "choices": []
+      }
+    ]
+  },
+  {
+    "name": "setup clan-embed",
+    "description": "Enable/disable clan embed on the server or add/remove clans.",
+    "description_long": null,
+    "options": [
+      {
+        "name": "clan",
+        "description": "Clan tag or name or alias.",
+        "type": "String",
+        "choices": []
+      },
+      {
+        "name": "channel",
+        "description": "Channel to send updates to (defaults to the current channel)",
+        "type": "Channel",
+        "choices": []
+      },
+      {
+        "name": "color",
+        "description": "Hex color code for the embed (for donation log, clan games, last seen, etc)",
+        "type": "String",
+        "choices": []
+      },
+      {
+        "name": "disable_embed",
+        "description": "Disable clan embed.",
+        "type": "Boolean",
+        "choices": []
+      }
+    ]
+  },
+  {
     "name": "setup clan-logs",
     "description": "Setup automatic logs for the clan.",
     "description_long": null,
@@ -3411,7 +3465,7 @@
       },
       {
         "name": "color",
-        "description": "Hex color code (only for donation log, clan games, last seen and clan embed)",
+        "description": "Hex color code for the embed (for donation log, clan games, last seen, etc)",
         "type": "String",
         "choices": []
       },
@@ -3425,73 +3479,15 @@
   },
   {
     "name": "setup disable",
-    "description": "Disable a feature on the server or remove a clan.",
+    "description": "This command has been replaced with /setup clan and /setup clan-embed",
     "description_long": null,
-    "options": [
-      {
-        "name": "action",
-        "description": "Select an option",
-        "type": "String",
-        "choices": [
-          "Unlink from Channel",
-          "Remove Clan",
-          "Clan Embed"
-        ]
-      },
-      {
-        "name": "clan",
-        "description": "Clan tag or name or alias.",
-        "type": "String",
-        "choices": []
-      },
-      {
-        "name": "channel",
-        "description": "Channel to be removed.",
-        "type": "Channel",
-        "choices": []
-      }
-    ]
+    "options": []
   },
   {
     "name": "setup enable",
-    "description": "Enable a feature on the server or add a clan.",
-    "description_long": "Enable a feature on the server (War Feed, Last Seen, Clan Games, Legend Log, Capital Log, Clan Feed, Join/Leave Log, Clan Embed, Donation Log) or add a clan or link a clan to a channel.",
-    "options": [
-      {
-        "name": "action",
-        "description": "Select an option",
-        "type": "String",
-        "choices": [
-          "Link to Server",
-          "Link to Channel",
-          "Clan Embed"
-        ]
-      },
-      {
-        "name": "clan",
-        "description": "Clan tag or name or alias.",
-        "type": "String",
-        "choices": []
-      },
-      {
-        "name": "category",
-        "description": "Category of the clan. (select from the menu or type your own)",
-        "type": "String",
-        "choices": []
-      },
-      {
-        "name": "channel",
-        "description": "Channel to send updates to (defaults to the current channel)",
-        "type": "Channel",
-        "choices": []
-      },
-      {
-        "name": "color",
-        "description": "Hex color code (only for donation log, clan games, last seen and clan embed)",
-        "type": "String",
-        "choices": []
-      }
-    ]
+    "description": "This command has been replaced with /setup clan and /setup clan-embed",
+    "description_long": null,
+    "options": []
   },
   {
     "name": "setup events",
@@ -3608,6 +3604,14 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Since Jul 2026",
+          "Since Jun 2026",
+          "Since May 2026",
+          "Since Apr 2026",
+          "Since Mar 2026",
+          "Since Feb 2026",
+          "Since Jan 2026",
+          "Since Dec 2025",
           "Since Nov 2025",
           "Since Oct 2025",
           "Since Sep 2025",
@@ -3617,15 +3621,7 @@
           "Since May 2025",
           "Since Apr 2025",
           "Since Mar 2025",
-          "Since Feb 2025",
-          "Since Jan 2025",
-          "Since Dec 2024",
-          "Since Nov 2024",
-          "Since Oct 2024",
-          "Since Sep 2024",
-          "Since Aug 2024",
-          "Since Jul 2024",
-          "Since Jun 2024"
+          "Since Feb 2025"
         ]
       },
       {
@@ -3648,6 +3644,12 @@
           "Fresh",
           "Cleanup"
         ]
+      },
+      {
+        "name": "filter_loot_hits",
+        "description": "Filter out loot hits (attacks targeting 3-starred bases)",
+        "type": "Boolean",
+        "choices": []
       },
       {
         "name": "filter_farm_hits",
@@ -3722,6 +3724,14 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Since Jul 2026",
+          "Since Jun 2026",
+          "Since May 2026",
+          "Since Apr 2026",
+          "Since Mar 2026",
+          "Since Feb 2026",
+          "Since Jan 2026",
+          "Since Dec 2025",
           "Since Nov 2025",
           "Since Oct 2025",
           "Since Sep 2025",
@@ -3731,15 +3741,7 @@
           "Since May 2025",
           "Since Apr 2025",
           "Since Mar 2025",
-          "Since Feb 2025",
-          "Since Jan 2025",
-          "Since Dec 2024",
-          "Since Nov 2024",
-          "Since Oct 2024",
-          "Since Sep 2024",
-          "Since Aug 2024",
-          "Since Jul 2024",
-          "Since Jun 2024"
+          "Since Feb 2025"
         ]
       },
       {
@@ -3781,6 +3783,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -3790,15 +3800,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       }
     ]
@@ -3819,6 +3821,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -3828,15 +3838,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       }
     ]
@@ -3857,6 +3859,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -3866,15 +3876,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -3910,6 +3912,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -3919,15 +3929,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -3935,12 +3937,12 @@
         "description": "The week to show capital contributions for.",
         "type": "String",
         "choices": [
-          "21 Nov, 2025",
-          "14 Nov, 2025",
-          "07 Nov, 2025",
-          "31 Oct, 2025",
-          "24 Oct, 2025",
-          "17 Oct, 2025"
+          "26 Jun, 2026",
+          "19 Jun, 2026",
+          "12 Jun, 2026",
+          "05 Jun, 2026",
+          "29 May, 2026",
+          "22 May, 2026"
         ]
       }
     ]
@@ -3961,12 +3963,12 @@
         "description": "Retrieve data for the specified raid weekend.",
         "type": "String",
         "choices": [
-          "21 Nov, 2025",
-          "14 Nov, 2025",
-          "07 Nov, 2025",
-          "31 Oct, 2025",
-          "24 Oct, 2025",
-          "17 Oct, 2025"
+          "26 Jun, 2026",
+          "19 Jun, 2026",
+          "12 Jun, 2026",
+          "05 Jun, 2026",
+          "29 May, 2026",
+          "22 May, 2026"
         ]
       }
     ]
@@ -3981,6 +3983,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -3990,15 +4000,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -4045,6 +4047,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -4054,15 +4064,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -4096,6 +4098,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -4105,15 +4115,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       },
       {
@@ -4164,6 +4166,14 @@
         "description": "Retrieve data since the specified season.",
         "type": "String",
         "choices": [
+          "Since Jul 2026",
+          "Since Jun 2026",
+          "Since May 2026",
+          "Since Apr 2026",
+          "Since Mar 2026",
+          "Since Feb 2026",
+          "Since Jan 2026",
+          "Since Dec 2025",
           "Since Nov 2025",
           "Since Oct 2025",
           "Since Sep 2025",
@@ -4173,15 +4183,7 @@
           "Since May 2025",
           "Since Apr 2025",
           "Since Mar 2025",
-          "Since Feb 2025",
-          "Since Jan 2025",
-          "Since Dec 2024",
-          "Since Nov 2024",
-          "Since Oct 2024",
-          "Since Sep 2024",
-          "Since Aug 2024",
-          "Since Jul 2024",
-          "Since Jun 2024"
+          "Since Feb 2025"
         ]
       }
     ]
@@ -4221,6 +4223,14 @@
         "description": "Retrieve data for the specified season.",
         "type": "String",
         "choices": [
+          "Jul 2026",
+          "Jun 2026",
+          "May 2026",
+          "Apr 2026",
+          "Mar 2026",
+          "Feb 2026",
+          "Jan 2026",
+          "Dec 2025",
           "Nov 2025",
           "Oct 2025",
           "Sep 2025",
@@ -4230,15 +4240,7 @@
           "May 2025",
           "Apr 2025",
           "Mar 2025",
-          "Feb 2025",
-          "Jan 2025",
-          "Dec 2024",
-          "Nov 2024",
-          "Oct 2024",
-          "Sep 2024",
-          "Aug 2024",
-          "Jul 2024",
-          "Jun 2024"
+          "Feb 2025"
         ]
       }
     ]
@@ -4255,6 +4257,89 @@
         "choices": []
       }
     ]
+  },
+  {
+    "name": "ticket add",
+    "description": "Add a member to this ticket channel",
+    "description_long": null,
+    "options": [
+      {
+        "name": "member",
+        "description": "The member to add",
+        "type": "User",
+        "choices": []
+      }
+    ]
+  },
+  {
+    "name": "ticket close",
+    "description": "Close this ticket (generates transcript and deletes channel)",
+    "description_long": null,
+    "options": []
+  },
+  {
+    "name": "ticket delete",
+    "description": "Delete a ticket panel",
+    "description_long": null,
+    "options": [
+      {
+        "name": "panel_name",
+        "description": "Name of the panel to delete",
+        "type": "String",
+        "choices": []
+      }
+    ]
+  },
+  {
+    "name": "ticket info",
+    "description": "View the configuration of a ticket panel",
+    "description_long": null,
+    "options": [
+      {
+        "name": "panel_name",
+        "description": "Name of the panel to view",
+        "type": "String",
+        "choices": []
+      }
+    ]
+  },
+  {
+    "name": "ticket post",
+    "description": "Post a ticket panel to the current channel",
+    "description_long": null,
+    "options": [
+      {
+        "name": "panel_name",
+        "description": "Name of the panel to post",
+        "type": "String",
+        "choices": []
+      }
+    ]
+  },
+  {
+    "name": "ticket reopen",
+    "description": "Reopen a sleeping ticket (restore user access)",
+    "description_long": null,
+    "options": []
+  },
+  {
+    "name": "ticket setup",
+    "description": "Create or edit a ticket panel configuration",
+    "description_long": null,
+    "options": [
+      {
+        "name": "panel_name",
+        "description": "Name of the panel to create or edit",
+        "type": "String",
+        "choices": []
+      }
+    ]
+  },
+  {
+    "name": "ticket sleep",
+    "description": "Put this ticket to sleep (remove user access, move to sleep category)",
+    "description_long": null,
+    "options": []
   },
   {
     "name": "timezone",

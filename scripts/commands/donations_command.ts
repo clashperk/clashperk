@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, translation } from './@helper.js';
+import { getSeasonIds, translation, guildInstallable } from './@helper.js';
 
 export const DONATIONS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'donations',
@@ -45,5 +45,6 @@ export const DONATIONS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       type: ApplicationCommandOptionType.String,
       required: false
     }
-  ]
+  ],
+  ...guildInstallable
 };

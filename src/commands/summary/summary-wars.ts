@@ -89,24 +89,22 @@ export default class SummaryWarsCommand extends Command {
     }
   }
 
-  private get onGoingCWL() {
-    return new Date().getDate() >= 1 && new Date().getDate() <= 10;
+  private async getWAR(clanTag: string) {
+    // CWL no longer runs on a fixed day-of-month window (it can start any time, more than once a
+    // month), so we can't gate on the date — fetch both the CWL and the regular war and combine
+    // them. The notInWar entries are dropped by the filter in exec().
+    const [cwl, war] = await Promise.all([this.getCWL(clanTag), this.getCurrentWar(clanTag)]);
+    return [...cwl, ...war];
   }
 
-  private async getWAR(clanTag: string) {
-    if (this.onGoingCWL) return this.getCWL(clanTag);
+  private async getCurrentWar(clanTag: string) {
     const { res, body } = await this.client.coc.getCurrentWar(clanTag);
     return res.ok ? [{ ...body, round: 0 }] : [];
   }
 
   private async getCWL(clanTag: string) {
     const { res, body: group } = await this.client.coc.getClanWarLeagueGroup(clanTag);
-
-    if (res.status === 504 || group.state === 'notInWar') return [];
-    if (!res.ok) {
-      const { res, body } = await this.client.coc.getCurrentWar(clanTag);
-      return res.ok ? [{ ...body, round: 0 }] : [];
-    }
+    if (!res.ok || group.state === 'notInWar') return [];
 
     const chunks = await this.client.coc._clanWarLeagueRounds(clanTag, group);
     const war =

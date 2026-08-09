@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const LINEUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'lineup',
@@ -23,5 +23,6 @@ export const LINEUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       type: ApplicationCommandOptionType.User,
       required: false
     }
-  ]
+  ],
+  ...guildInstallable
 };

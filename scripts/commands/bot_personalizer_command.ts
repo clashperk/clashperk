@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const BOT_PERSONALIZER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'bot-personalizer',
@@ -16,5 +16,6 @@ export const BOT_PERSONALIZER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = 
       ),
       type: ApplicationCommandOptionType.Boolean
     }
-  ]
+  ],
+  ...guildInstallable
 };

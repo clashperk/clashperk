@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonSinceIds, translation } from './@helper.js';
+import { getSeasonSinceIds, translation, guildInstallable } from './@helper.js';
 
 export const STATS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'stats',
@@ -148,6 +148,14 @@ export const STATS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
               value: 'cleanup'
             }
           ]
+        },
+        {
+          name: 'filter_loot_hits',
+          description: command.stats.options.filter_loot_hits.description,
+          description_localizations: translation(
+            'command.stats.options.filter_loot_hits.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'filter_farm_hits',
@@ -303,5 +311,6 @@ export const STATS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

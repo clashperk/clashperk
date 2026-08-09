@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const BOOSTS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'boosts',
@@ -16,5 +16,6 @@ export const BOOSTS_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       autocomplete: true,
       required: false
     }
-  ]
+  ],
+  ...guildInstallable
 };

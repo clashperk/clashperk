@@ -1,5 +1,4 @@
 import { ButtonInteraction, CommandInteraction, User } from 'discord.js';
-import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
@@ -52,74 +51,62 @@ export default class JoinLeaveHistoryCommand extends Command {
   }
 
   private async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
-    const gte = moment().subtract(1, 'month').toDate().toISOString();
-    const { hits } = await this.client.elastic.search<AggregatedResult>({
-      index: 'join_leave_events',
-      size: 10_000,
-      sort: [
-        {
-          created_at: {
-            order: 'desc'
-          }
-        }
-      ],
-      query: {
-        bool: {
-          filter: [
-            {
-              terms: {
-                tag: playerTags
-              }
-            },
-            {
-              range: {
-                created_at: {
-                  gte
-                }
-              }
-            }
-          ]
-        }
-      }
-    });
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT tag, clanTag, action, createdAt
+          FROM player_activities
+          WHERE
+            tag IN {playerTags: Array(String)}
+            AND action IN ('JOINED_CLAN', 'LEFT_CLAN')
+            AND createdAt >= now() - INTERVAL 30 DAY
+          ORDER BY createdAt DESC
+          LIMIT 10000
+        `,
+        query_params: { playerTags }
+      })
+      .then((res) =>
+        res.json<{ tag: string; clanTag: string; action: string; createdAt: string }>()
+      );
 
-    const result = hits.hits.map((hit) => hit._source!);
+    const result: AggregatedResult[] = rows.data.map((r) => ({
+      name: 'Unknown',
+      tag: r.tag,
+      op: r.action,
+      clan_name: 'Unknown',
+      clan_tag: r.clanTag,
+      created_at: r.createdAt
+    }));
     return { embeds: [], result };
   }
 
   private async getClanHistory(interaction: CommandInteraction<'cached'>, clanTags: string[]) {
-    const gte = moment().subtract(1, 'month').toDate().toISOString();
-    const { hits } = await this.client.elastic.search<AggregatedResult>({
-      index: 'join_leave_events',
-      size: 10_000,
-      sort: [
-        {
-          created_at: {
-            order: 'desc'
-          }
-        }
-      ],
-      query: {
-        bool: {
-          filter: [
-            {
-              terms: {
-                clan_tag: clanTags
-              }
-            },
-            {
-              range: {
-                created_at: {
-                  gte
-                }
-              }
-            }
-          ]
-        }
-      }
-    });
+    const rows = await this.client.clickhouse
+      .query({
+        query: `
+          SELECT tag, clanTag, action, createdAt
+          FROM player_activities
+          WHERE
+            clanTag IN {clanTags: Array(String)}
+            AND action IN ('JOINED_CLAN', 'LEFT_CLAN')
+            AND createdAt >= now() - INTERVAL 30 DAY
+          ORDER BY createdAt DESC
+          LIMIT 10000
+        `,
+        query_params: { clanTags }
+      })
+      .then((res) =>
+        res.json<{ tag: string; clanTag: string; action: string; createdAt: string }>()
+      );
 
-    const result = hits.hits.map((hit) => hit._source!);
+    const result: AggregatedResult[] = rows.data.map((r) => ({
+      name: 'unknown',
+      tag: r.tag,
+      op: r.action,
+      clan_name: 'unknown',
+      clan_tag: r.clanTag,
+      created_at: r.createdAt
+    }));
     return { embeds: [], result };
   }
 

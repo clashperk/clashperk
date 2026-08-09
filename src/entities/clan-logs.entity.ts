@@ -54,6 +54,7 @@ export enum ClanLogType {
   ROLE_CHANGE_LOG = 'role_change_log',
   TOWN_HALL_UPGRADE_LOG = 'town_hall_upgrade_log',
   NAME_CHANGE_LOG = 'name_change_log',
+  RANKED_BATTLE_LEAGUE_CHANGE_LOG = 'ranked_battle_league_change_log',
 
   // PLAYER
   WAR_PREFERENCE_LOG = 'war_preference_log',
@@ -74,6 +75,9 @@ export enum ClanLogType {
 
   WAR_EMBED_LOG = 'war_embed_log',
   WAR_MISSED_ATTACKS_LOG = 'war_missed_attacks_log',
+
+  WAR_ATTACK_LOG = 'war_attack_log',
+  CWL_ATTACK_LOG = 'cwl_attack_log',
 
   CWL_EMBED_LOG = 'cwl_embed_log',
   CWL_LINEUP_CHANGE_LOG = 'cwl_lineup_change_log',

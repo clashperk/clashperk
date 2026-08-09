@@ -182,8 +182,8 @@ export class CapitalLog extends RootLog {
 
     const hasTrophyCard = Boolean(
       season?.clanCapitalPoints &&
-        season._clanCapitalPoints &&
-        season._clanCapitalPoints !== season.clanCapitalPoints
+      season._clanCapitalPoints &&
+      season._clanCapitalPoints !== season.clanCapitalPoints
     );
 
     const files: AttachmentBuilder[] = [];

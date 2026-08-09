@@ -1,4 +1,4 @@
-import { UNRANKED_WAR_LEAGUE_ID, WAR_LEAGUE_PROMOTION_MAP } from '@app/constants';
+import { calculateBonus, UNRANKED_WAR_LEAGUE_ID } from '@app/constants';
 import { APIClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -58,13 +58,15 @@ export default class CWLStarsCommand extends Command {
       });
     }
 
-    const isIncorrectSeason =
-      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike =
-      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
-    const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
+    // The requested season is the live one when it matches the API season within a few days (the
+    // CWL season date isn't perfectly predictable); otherwise it's a past/archived season. Prefer
+    // the live body for the current season (works even before the tracker stores it).
+    const isLiveSeason =
+      !args.season || Util.estimateCwlSeasonIds(args.season).includes(body.season);
+    const entityLike = args.season && res.ok && !isLiveSeason ? group : res.ok ? body : group;
+    const isApiData = isLiveSeason;
 
-    if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
+    if ((!res.ok && !group) || !entityLike) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', {
@@ -166,7 +168,7 @@ export default class CWLStarsCommand extends Command {
     }
 
     const leaderboard = Object.values(members);
-    if (!leaderboard.length && body.season !== Util.getCWLSeasonId()) {
+    if (!leaderboard.length && args.season) {
       return interaction.followUp({
         flags: MessageFlags.Ephemeral,
         content: this.i18n('command.cwl.not_in_season', {
@@ -188,8 +190,10 @@ export default class CWLStarsCommand extends Command {
 
     const leagueId = body.leagues?.[clan.tag];
     const bonuses =
-      WAR_LEAGUE_PROMOTION_MAP[(leagueId || clan.warLeague?.id) ?? UNRANKED_WAR_LEAGUE_ID].bonuses +
-      warsWon;
+      calculateBonus({
+        leagueId: (leagueId || clan.warLeague?.id) ?? UNRANKED_WAR_LEAGUE_ID,
+        teamSize: body.wars.at(0)?.teamSize || 0
+      }) + warsWon;
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))

@@ -183,16 +183,20 @@ export default class ClanCommand extends Command {
         ]
       );
     }
+
     if (wars.length) {
-      const won = wars.filter((war) => war.result).length;
-      const lost = wars.filter((war) => !war.result).length;
+      const won = wars.filter((war) => war.result === 'won').length;
+      const lost = wars.filter((war) => war.result === 'lost').length;
+      const tied = wars.filter((war) => war.result === 'tied').length;
+
       fields.push(
         ...[
           '**Total Wars**',
-          `${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`
+          `${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost${tied ? ` ${EMOJIS.EMPTY} ${tied} Tied` : ''}`
         ]
       );
     }
+
     if (fields.length)
       embed.addFields([
         { name: `**Season Stats (${Season.ID})**`, value: [...fields, '\u200e'].join('\n') }
@@ -351,10 +355,10 @@ export default class ClanCommand extends Command {
     return result;
   }
 
-  private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {
+  private async getWars(tag: string) {
     return this.client.db
       .collection(Collections.CLAN_WARS)
-      .aggregate<{ result: boolean; stars: number[] }>([
+      .aggregate<{ result: 'won' | 'lost' | 'tied'; stars: number[] }>([
         {
           $match: {
             $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
@@ -379,26 +383,26 @@ export default class ClanCommand extends Command {
                 branches: [
                   {
                     case: { $gt: ['$clan.stars', '$opponent.stars'] },
-                    then: true
+                    then: 'won'
                   },
                   {
                     case: { $lt: ['$clan.stars', '$opponent.stars'] },
-                    then: false
+                    then: 'lost'
                   },
                   {
                     case: {
                       $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage']
                     },
-                    then: true
+                    then: 'won'
                   },
                   {
                     case: {
                       $lt: ['$clan.destructionPercentage', '$opponent.destructionPercentage']
                     },
-                    then: false
+                    then: 'lost'
                   }
                 ],
-                default: false
+                default: 'tied'
               }
             }
           }

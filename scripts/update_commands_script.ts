@@ -6,6 +6,7 @@ import {
   Routes
 } from 'discord.js';
 import { writeFileSync } from 'fs';
+import { unique } from 'radash';
 import { inspect } from 'util';
 import { flattenApplicationCommands } from '../src/helper/commands.helper.js';
 import { COMMANDS, HIDDEN_COMMANDS, MAIN_BOT_ONLY_COMMANDS, PRIVATE_COMMANDS } from './commands.js';
@@ -14,6 +15,9 @@ const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64'
 
 const CUSTOM_BOT_SERVER_ID = '1130572457175175293';
 const SUPPORT_SERVER_ID = '509784317598105619';
+
+const BETA_TESTERS = process.env.BETA_TESTERS?.split(',') ?? [];
+const BETA_TESTING_GUILD_IDS = unique([SUPPORT_SERVER_ID, '609250675431309313', ...BETA_TESTERS]);
 
 const decrypt = (value: string) => {
   const key = Buffer.from(process.env.CRYPTO_KEY!, 'hex');
@@ -59,7 +63,7 @@ async function exportCommands(commands: ApplicationCommand[]) {
   }));
 
   items.sort((a, b) => a.name.localeCompare(b.name));
-  writeFileSync('./scripts/commands_export.json', JSON.stringify(items, null, 2));
+  writeFileSync('./scripts/assets/commands_export.json', JSON.stringify(items, null, 2));
 }
 
 const applicationGuildCommands = async (
@@ -113,7 +117,7 @@ const applicationCommands = async (
   console.log(`Updated ${commands.length} Application Commands`);
 };
 
-const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBody[]) => {
+const customBotCommands = async () => {
   const res = await fetch(`${process.env.DOCKER_SERVICE_API_BASE_URL}/services`, {
     method: 'GET',
     headers: {
@@ -130,9 +134,18 @@ const customBotCommands = async (commands: RESTPostAPIApplicationCommandsJSONBod
     token: string;
     guildIds: string[];
   }[];
+
   for (const application of applications) {
     for (const guildId of [...application.guildIds, CUSTOM_BOT_SERVER_ID]) {
-      await applicationGuildCommands(application.token, guildId, commands);
+      if (BETA_TESTING_GUILD_IDS.includes(guildId)) {
+        await applicationGuildCommands(application.token, guildId, [
+          ...COMMANDS,
+          ...HIDDEN_COMMANDS
+        ]);
+        console.log(`Beta commands for the guild: ${guildId}`);
+      } else {
+        await applicationGuildCommands(application.token, guildId, [...COMMANDS]);
+      }
     }
   }
 };
@@ -161,19 +174,20 @@ const customBotPublicCommands = async (commands: RESTPostAPIApplicationCommandsJ
   const token = process.env.DISCORD_TOKEN!;
   if (process.argv.includes('--gh-action')) {
     await applicationCommands(token, [...COMMANDS, ...MAIN_BOT_ONLY_COMMANDS]);
+
+    for (const guildId of BETA_TESTING_GUILD_IDS) {
+      const commands =
+        guildId === SUPPORT_SERVER_ID
+          ? [...HIDDEN_COMMANDS, ...PRIVATE_COMMANDS]
+          : [...HIDDEN_COMMANDS];
+
+      await applicationGuildCommands(token, guildId, commands);
+    }
     return;
   }
 
   if (process.argv.includes('--custom-bot')) {
-    await customBotCommands([...COMMANDS]);
-    return;
-  }
-
-  if (process.argv.includes('--private')) {
-    await applicationGuildCommands(process.env.PROD_TOKEN!, SUPPORT_SERVER_ID, [
-      ...PRIVATE_COMMANDS,
-      ...HIDDEN_COMMANDS
-    ]);
+    await customBotCommands();
     return;
   }
 

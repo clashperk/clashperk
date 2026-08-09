@@ -1,7 +1,7 @@
 import { BUILDER_BASE_LEAGUES_MAP, PLAYER_LEAGUE_MAP } from '@app/constants';
-import { APIPlayer, RawData } from 'clashofclans.js';
+import { APIPlayer, RAW_DATA } from 'clashofclans.js';
 
-export interface PartialPlayer {
+interface PartialPlayer {
   name: string;
   tag: string;
   townHallLevel: number;
@@ -28,6 +28,9 @@ export interface PartialPlayer {
   } | null;
   leagueId: number;
   builderBaseLeagueId: number;
+
+  leagueGroupTag: string;
+  leagueSeasonId: number;
 
   achievements: { [id: string]: number };
   units: { [id: string]: number };
@@ -67,6 +70,10 @@ export function mapToPlayerInterface(player: PartialPlayer): APIPlayer {
     donationsReceived: player.donationsReceived,
     clanCapitalContributions: player.clanCapitalContributions || 0,
     bestBuilderBaseTrophies: player.bestBuilderBaseTrophies || 0,
+    currentLeagueGroupTag: player.leagueGroupTag,
+    currentLeagueSeasonId: player.leagueSeasonId,
+    previousLeagueGroupTag: '',
+    previousLeagueSeasonId: 0,
     builderBaseLeague: {
       id: player.builderBaseLeagueId || 44000000,
       name: BUILDER_BASE_LEAGUES_MAP[player.builderBaseLeagueId] || 'Wood League V'
@@ -355,7 +362,15 @@ export const UNITS_MAP_BY_NAME: Record<string, number> = {
   'Action Figure': 133,
   'Meteor Staff': 134,
   'Meteor Golem': 135,
-  'Totem Spell': 136
+  'Totem Spell': 136,
+  'Frost Flake': 137,
+  'Stick Horse': 138,
+  'Dragon Duke': 139,
+  'Greedy Raven': 140,
+  'Fire Heart': 141,
+  'Stun Blaster': 142,
+  'Flame Blower': 143,
+  'Rocket Backpack': 144
 };
 
 const ACHIEVEMENT_LIST = Object.entries(ACHIEVEMENTS_MAP_BY_NAME).reduce<
@@ -382,7 +397,7 @@ interface RawUnit {
   maxLevel: number;
 }
 
-const RAW_UNITS_MAP = RawData.RawUnits.reduce<Record<string, RawUnit>>((record, unit) => {
+const RAW_UNITS_MAP = RAW_DATA.RAW_UNITS.reduce<Record<string, RawUnit>>((record, unit) => {
   record[unit.name] = {
     id: unit.id,
     name: unit.name,

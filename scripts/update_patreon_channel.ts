@@ -1,5 +1,4 @@
-import { config } from 'dotenv';
-config();
+import 'dotenv/config';
 
 import { Collections } from '@app/constants';
 import { Client, EmbedBuilder, GatewayIntentBits, WebhookClient } from 'discord.js';
@@ -26,7 +25,7 @@ client.on('clientReady', async () => {
   const channel = client.channels.cache.get('689103059455967251');
   if (!channel || !channel.isTextBased()) return;
 
-  const messages = await channel.messages.fetch({ limit: 100 });
+  const messages = await channel.messages.fetch({ limit: 100, after: '1483038653449244753' });
   const webhook = new WebhookClient({
     url: process.env.PATREON_DISCORD_WEBHOOK_URL!
   });

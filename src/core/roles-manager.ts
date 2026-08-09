@@ -309,7 +309,7 @@ export class RolesManager {
 
     const playerClanTags = players
       .filter((player) => player.clanTag)
-      .map((player) => player.clanTag!);
+      .map((player) => player.clanTag as string);
     const inFamily = rolesMap.clanTags.some((clanTag) => playerClanTags.includes(clanTag));
     const isFamilyLeader = players.some(
       (player) =>
@@ -343,7 +343,7 @@ export class RolesManager {
       // EOS Push Role
       if (
         player.clanTag &&
-        (player.leagueId === LEGEND_LEAGUE_ID || player.trophies >= 5000) &&
+        player.leagueId === LEGEND_LEAGUE_ID &&
         rolesMap.eosPushClans.includes(player.clanTag)
       ) {
         rolesToInclude.push(...rolesMap.eosPushClanRoles);

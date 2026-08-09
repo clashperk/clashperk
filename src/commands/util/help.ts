@@ -56,8 +56,12 @@ export default class HelpCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { command?: string; category?: string; selected?: string; expand?: boolean }
+    args: { command?: string; category?: string; selected?: string; expand?: boolean; ask?: string }
   ) {
+    if (args.ask) {
+      return this.handler.exec(interaction, this.handler.getCommand('ask')!, { message: args.ask });
+    }
+
     const commands = await this.getCommands(interaction);
 
     const command = commands.find(

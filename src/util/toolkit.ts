@@ -228,6 +228,18 @@ export class Util extends CocUtil {
     return new Date().toISOString().slice(0, 7);
   }
 
+  public static estimateCwlSeasonIds(season: string) {
+    // The API's CWL season date isn't perfectly predictable, so a stored/live season may be the
+    // requested one plus a few days. Match the season plus the next 3 days
+    // (e.g. "2026-06" -> also 2026-06-01..03; "2026-06-16" -> also 2026-06-17, 2026-06-18).
+    return [
+      ...new Set([
+        season,
+        ...Array.from({ length: 3 }, (_, i) => moment(season).add(i, 'day').format('YYYY-MM-DD'))
+      ])
+    ];
+  }
+
   public static escapeSheetName(name: string) {
     return name.replace(/[\*\?\:\[\]\\\/\']/g, '');
   }
@@ -318,5 +330,12 @@ export class Season {
     return (
       (date.getDay() === 1 && date.getHours() > 5) || (date.getDay() === 2 && date.getHours() < 5)
     );
+  }
+
+  public static toBattleDate(timestamp: Date) {
+    const shifted = new Date(timestamp.getTime() - 5 * 60 * 60 * 1000);
+    return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()))
+      .toISOString()
+      .slice(0, 10);
   }
 }

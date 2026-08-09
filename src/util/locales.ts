@@ -513,6 +513,9 @@ export const command = {
         },
         clan: {
           description: 'Search rosters by clan'
+        },
+        category: {
+          description: 'Search rosters by category'
         }
       }
     },
@@ -647,7 +650,12 @@ export const command = {
       }
     },
     members: {
-      description: 'Export a comprehensive version of clan member stats.'
+      description: 'Export a comprehensive version of clan member stats.',
+      options: {
+        auto_export_on: {
+          description: 'Whether to schedule the export to run every Sunday at 4:55 UTC.'
+        }
+      }
     },
     clans: {
       description: 'Export all linked clans.'
@@ -953,6 +961,9 @@ export const command = {
       },
       user: {
         description: 'Select a user for the history.'
+      },
+      roster: {
+        description: 'Select a roster for the history.'
       }
     }
   },
@@ -1129,6 +1140,9 @@ export const command = {
       filter_farm_hits: {
         description: 'Filter out farm hits (1 star and < 50% destruction)'
       },
+      filter_loot_hits: {
+        description: 'Filter out loot hits (attacks targeting 3-starred bases)'
+      },
       clan_only: {
         description: "Only include the specified clan's war attacks."
       }
@@ -1161,62 +1175,37 @@ export const command = {
   },
   setup: {
     description: 'Enable/disable features on the server or add/remove clans.',
-    enable: {
-      description: 'Enable a feature on the server or add a clan.',
-      description_long:
-        'Enable a feature on the server (War Feed, Last Seen, Clan Games, Legend Log, Capital Log, Clan Feed, Join/Leave Log, Clan Embed, Donation Log) or add a clan or link a clan to a channel.',
+    clan: {
+      description: 'Link/unlink clans to the server or channels.',
+      description_long: 'Manage clans on the server (link server, link channel, clan embed)',
       options: {
-        channel: {
-          description: 'Channel to send updates to (defaults to the current channel)'
-        },
-        color: {
-          description:
-            'Hex color code (only for donation log, clan games, last seen and clan embed)'
-        },
-        role: {
-          description: 'Role for the flag notification (only for clan feed)'
+        clan_channel: {
+          description: 'Link the clan to a channel.'
         },
         category: {
           description: 'Category of the clan. (select from the menu or type your own)'
+        },
+        unlink_clan: {
+          description: 'Unlink a clan from the server and remove all the features related to it.'
+        },
+        unlink_clan_channel: {
+          description: 'Unlink a channel from the clan.'
         }
-      },
-      no_leader_link: 'Clan Leader must be linked to the bot to enable this feature.',
-      server_link: {
-        success: 'Successfully linked {{clan}} to {{guild}}.',
-        already_linked: '{{clan}} is already linked to {{guild}}.'
-      },
-      channel_link: {
-        description: 'Link a channel to a clan.',
-        already_linked: '{{clan}} is already linked to {{channel}}.',
-        success: 'Successfully linked {{clan}} to {{channel}}.'
       }
     },
-    disable: {
-      description: 'Disable a feature on the server or remove a clan.',
+    clan_embed: {
+      description: 'Enable/disable clan embed on the server or add/remove clans.',
       options: {
-        channel: {
-          description: 'Channel to be removed.'
+        disable_embed: {
+          description: 'Disable clan embed.'
         }
-      },
-      channel_unlink: 'Successfully unlinked {{clan}} from {{channel}}.',
-      channel_not_found: 'No clans were found that are linked to {{channel}}.',
-      clan_not_linked: 'No clans were found on the server for the specified tag.',
-      clan_deleted: 'Successfully deleted {{clan}}.',
-      feature_disabled: 'Successfully disabled {{feature}} for {{clan}}.'
+      }
     },
     list: {
       description: 'List all enabled features and clans.',
       options: {
         clans: {
           description: 'Select the clans to list.'
-        }
-      }
-    },
-    utils: {
-      description: '[DEPRECATED] Setup other utility features (link button, events schedular)',
-      options: {
-        disable: {
-          description: 'Disable a scheduled event.'
         }
       }
     },
@@ -1258,7 +1247,30 @@ export const command = {
         },
         action: {
           description: 'What logs to enable or disable.'
+        },
+        color: {
+          description: 'Hex color code for the embed (for donation log, clan games, last seen, etc)'
+        },
+        channel: {
+          description: 'Channel to send updates to (defaults to the current channel)'
         }
+      }
+    },
+    responses: {
+      channel_unlink: 'Successfully unlinked {{clan}} from {{channel}}.',
+      channel_not_found: 'No clans were found that are linked to {{channel}}.',
+      clan_not_linked: 'No clans were found on the server for the specified tag.',
+      clan_deleted: 'Successfully deleted {{clan}}.',
+      feature_disabled: 'Successfully disabled {{feature}} for {{clan}}.',
+      no_leader_link: 'Clan Leader must be linked to the bot to enable this feature.',
+      server_link: {
+        success: 'Successfully linked {{clan}} to {{guild}}.',
+        already_linked: '{{clan}} is already linked to {{guild}}.'
+      },
+      channel_link: {
+        description: 'Link a channel to a clan.',
+        already_linked: '{{channel}} is already linked to {{clan}}',
+        success: 'Successfully linked {{clan}} to {{channel}}.'
       }
     }
   },
@@ -1513,6 +1525,9 @@ export const command = {
     options: {
       name: {
         description: 'Name of the command.'
+      },
+      ask: {
+        description: 'Find answers with AI.'
       }
     }
   },

@@ -8,7 +8,7 @@ export const welcomeEmbedMaker = () => {
     .setDescription(
       [
         '### Greetings!',
-        `- Let's start with ${client.commands.SETUP_ENABLE} command to link your clan or enable features.`,
+        `- Let's start with ${client.commands.SETUP_CLAN} command to link your clan or enable features.`,
         `- Then ${client.commands.LINK_CREATE} command to link your Clash of Clans account to your Discord.`,
         `- That's it! You are ready to use the bot!`,
         '',

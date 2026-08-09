@@ -11,11 +11,13 @@ export const CommandHandlerEvents = {
 } as const;
 
 const WSEventTypes = {
-  GUILD_MEMBER_UPDATE: 'GUILD_MEMBER_UPDATE'
+  GUILD_MEMBER_UPDATE: 'GUILD_MEMBER_UPDATE',
+  RATE_LIMITED: 'RATE_LIMITED'
 } as const;
 
 export interface WSEvents {
   [WSEventTypes.GUILD_MEMBER_UPDATE]: [];
+  [WSEventTypes.RATE_LIMITED]: [];
 }
 
 export interface CommandEvents {

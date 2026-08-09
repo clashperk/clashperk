@@ -6,12 +6,11 @@ import {
   APIClanWarAttack,
   APIClanWarLeagueGroup,
   APIWarClan,
-  RESTManager,
-  RequestHandler
+  RequestHandler,
+  RestManager
 } from 'clashofclans.js';
 import moment from 'moment';
 import { isWinner } from '../helper/cwl.helper.js';
-import { Season } from '../util/toolkit.js';
 import { Client } from './client.js';
 
 export function timeoutSignal(timeout: number, path: string) {
@@ -30,8 +29,9 @@ export function timeoutSignal(timeout: number, path: string) {
   return controller.signal;
 }
 
-export class ClashClient extends RESTManager {
+export class ClashClient extends RestManager {
   private bearerToken!: string;
+  private linkApiURL = 'https://cocdiscord.link';
 
   public constructor(private readonly client: Client) {
     const keys = process.env.CLASH_OF_CLANS_API_KEYS?.split(',') ?? [];
@@ -47,8 +47,6 @@ export class ClashClient extends RESTManager {
       rejectIfNotValid: false,
       cache: false,
       retryLimit: 0,
-      connections: 50,
-      pipelining: 10,
       keys: [...keys],
       baseURL: process.env.CLASH_OF_CLANS_API_BASE_URL,
       onError: ({ path, status, body }) => {
@@ -181,23 +179,24 @@ export class ClashClient extends RESTManager {
   public async getCurrentWars(
     clanTag: string
   ): Promise<(APIClanWar & { warTag?: string; round?: number; isFriendly?: boolean })[]> {
-    const date = new Date().getUTCDate();
-    if (!(date >= 1 && date <= 10)) {
-      return this._getCurrentWar(clanTag);
-    }
-
-    return this._getClanWarLeague(clanTag);
+    // CWL no longer runs on a fixed day-of-month window, so fetch both the CWL and the regular
+    // war and combine them (only one source is active at a time; notInWar entries are dropped).
+    const [cwl, war] = await Promise.all([
+      this._getClanWarLeague(clanTag),
+      this._getCurrentWar(clanTag)
+    ]);
+    return [...cwl, ...war];
   }
 
   private async _getCurrentWar(clanTag: string) {
     const { body: data, res } = await this.getCurrentWar(clanTag);
-    return res.ok ? [Object.assign(data, { isFriendly: this.isFriendly(data) })] : [];
+    if (!res.ok || data.state === 'notInWar') return [];
+    return [Object.assign(data, { isFriendly: this.isFriendly(data) })];
   }
 
   private async _getClanWarLeague(clanTag: string) {
     const { body: data, res } = await this.getClanWarLeagueGroup(clanTag);
-    if (res.status === 504 || data.state === 'notInWar') return [];
-    if (!res.ok) return this._getCurrentWar(clanTag);
+    if (!res.ok || data.state === 'notInWar') return [];
     return this._clanWarLeagueRounds(clanTag, data);
   }
 
@@ -239,7 +238,9 @@ export class ClashClient extends RESTManager {
     const rounds = group.rounds.filter((r) => !r.warTags.includes('#0'));
     const warTags = rounds.map((round) => round.warTags).flat();
 
-    if (Season.monthId !== group.season && !isApiData) {
+    // Non-live data is always served from the archive (which is keyed by the season as stored,
+    // whether that's YYYY-MM or YYYY-MM-DD). "Archived" means past, not a particular format.
+    if (!isApiData) {
       return this.getDataFromArchive(clanTag, group.season, group);
     }
 
@@ -265,8 +266,11 @@ export class ClashClient extends RESTManager {
       `https://clan-war-league-api-production.up.railway.app/clans/${encodeURIComponent(clanTag)}/cwl/seasons/${season}`,
       {
         headers: {
-          'x-api-key': process.env.INTERNAL_API_KEY!
-        }
+          'x-api-key': process.env.INTERNAL_API_KEY!,
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify(group ?? {})
       }
     );
     if (!res.ok) return null;
@@ -306,7 +310,7 @@ export class ClashClient extends RESTManager {
   }
 
   private async _login() {
-    const res = await fetch('https://cocdiscord.link/login', {
+    const res = await fetch(`${this.linkApiURL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -323,14 +327,26 @@ export class ClashClient extends RESTManager {
     return res?.status === 200 && this.bearerToken;
   }
 
-  public async linkPlayerTag(discordId: string, playerTag: string, force = true) {
-    if (!this.client.isFeatureEnabled(FeatureFlags.USE_DISCORD_LINK_API, 'global')) return true;
+  public async forceLink(userId: string, tag: string) {
+    const link = await this.getLinkedUser(tag);
+    if (link && link.userId !== userId) {
+      await this.linkPlayerTag(userId, tag, { force: true });
+    }
+  }
 
-    if (force) {
+  public async linkPlayerTag(discordId: string, playerTag: string, options?: { force?: boolean }) {
+    if (
+      !options?.force &&
+      !this.client.isFeatureEnabled(FeatureFlags.USE_DISCORD_LINK_API, 'global')
+    ) {
+      return true;
+    }
+
+    if (options?.force) {
       await this.unlinkPlayerTag(playerTag);
     }
 
-    const res = await fetch('https://cocdiscord.link/links', {
+    const res = await fetch(`${this.linkApiURL}/links`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -344,7 +360,7 @@ export class ClashClient extends RESTManager {
   }
 
   public async unlinkPlayerTag(playerTag: string) {
-    const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(playerTag)}`, {
+    const res = await fetch(`${this.linkApiURL}/links/${encodeURIComponent(playerTag)}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -356,8 +372,9 @@ export class ClashClient extends RESTManager {
     return Promise.resolve(res?.status === 200);
   }
 
-  public async getPlayerTags(user: string) {
-    const res = await fetch(`https://cocdiscord.link/links/${user}`, {
+  /** @deprecated -- deleted */
+  public async getPlayerTags(userId: string) {
+    const res = await fetch(`${this.linkApiURL}/links/${userId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -371,8 +388,9 @@ export class ClashClient extends RESTManager {
     return data.filter((en) => TAG_REGEX.test(en.playerTag)).map((en) => this.fixTag(en.playerTag));
   }
 
+  /** @deprecated */
   public async getLinkedUser(tag: string) {
-    const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(tag)}`, {
+    const res = await fetch(`${this.linkApiURL}/links/${encodeURIComponent(tag)}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,
@@ -386,10 +404,11 @@ export class ClashClient extends RESTManager {
     return data.map((en) => ({ userId: en.discordId, tag }))[0] ?? null;
   }
 
+  /** @deprecated */
   public async getDiscordLinks(players: { tag: string }[]) {
     if (!players.length) return [];
 
-    const res = await fetch('https://cocdiscord.link/batch', {
+    const res = await fetch(`${this.linkApiURL}/batch`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.bearerToken}`,

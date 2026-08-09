@@ -437,21 +437,7 @@ export class ClanLog extends RootLog {
     const guildIds = this.client.guilds.cache.map((guild) => guild.id);
     for await (const data of this.collection.find({
       isEnabled: true,
-      logType: {
-        $in: [
-          ClanLogType.MEMBER_JOIN_LEAVE_LOG,
-          ClanLogType.TOWN_HALL_UPGRADE_LOG,
-          ClanLogType.ROLE_CHANGE_LOG,
-          ClanLogType.ROLE_CHANGE_LOG,
-          ClanLogType.WAR_PREFERENCE_LOG,
-          ClanLogType.NAME_CHANGE_LOG,
-          ClanLogType.HERO_UPGRADE_LOG,
-          ClanLogType.CONTINUOUS_DONATION_LOG,
-          ClanLogType.CLAN_ACHIEVEMENTS_LOG,
-          ClanLogType.CLAN_CAPITAL_CONTRIBUTION_LOG,
-          ClanLogType.CLAN_CAPITAL_RAID_LOG
-        ]
-      },
+      logType: { $in: this.logTypes },
       guildId: { $in: guildIds }
     })) {
       this.setCache(data);
@@ -462,24 +448,26 @@ export class ClanLog extends RootLog {
     for await (const data of this.collection.find({
       guildId,
       isEnabled: true,
-      logType: {
-        $in: [
-          ClanLogType.MEMBER_JOIN_LEAVE_LOG,
-          ClanLogType.TOWN_HALL_UPGRADE_LOG,
-          ClanLogType.ROLE_CHANGE_LOG,
-          ClanLogType.ROLE_CHANGE_LOG,
-          ClanLogType.WAR_PREFERENCE_LOG,
-          ClanLogType.NAME_CHANGE_LOG,
-          ClanLogType.HERO_UPGRADE_LOG,
-          ClanLogType.CONTINUOUS_DONATION_LOG,
-          ClanLogType.CLAN_ACHIEVEMENTS_LOG,
-          ClanLogType.CLAN_CAPITAL_CONTRIBUTION_LOG,
-          ClanLogType.CLAN_CAPITAL_RAID_LOG
-        ]
-      }
+      logType: { $in: this.logTypes }
     })) {
       this.setCache(data);
     }
+  }
+
+  private get logTypes() {
+    return [
+      ClanLogType.MEMBER_JOIN_LEAVE_LOG,
+      ClanLogType.TOWN_HALL_UPGRADE_LOG,
+      ClanLogType.ROLE_CHANGE_LOG,
+      ClanLogType.ROLE_CHANGE_LOG,
+      ClanLogType.WAR_PREFERENCE_LOG,
+      ClanLogType.NAME_CHANGE_LOG,
+      ClanLogType.HERO_UPGRADE_LOG,
+      ClanLogType.CONTINUOUS_DONATION_LOG,
+      ClanLogType.CLAN_ACHIEVEMENTS_LOG,
+      ClanLogType.CLAN_CAPITAL_CONTRIBUTION_LOG,
+      ClanLogType.CLAN_CAPITAL_RAID_LOG
+    ];
   }
 
   private setCache(data: WithId<ClanLogsEntity>) {

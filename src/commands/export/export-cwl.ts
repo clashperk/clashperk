@@ -24,18 +24,25 @@ export default class ExportCWL extends Command {
     const command = this.handler.getCommand('export-cwl-lineup');
     if (command && args.lineup_only) return command.exec(interaction, args);
 
-    const season = args.season === Season.monthId ? null : args.season;
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
     const chunks = [];
     for (const clan of clans) {
-      const result = season ? null : await this.client.coc.getClanWarLeagueGroup(clan.tag);
-      if (!result?.res.ok || result.body.state === 'notInWar') {
-        const data = await this.client.storage.getWarTags(clan.tag, season || Season.monthId);
+      const result = await this.client.coc.getClanWarLeagueGroup(clan.tag);
+      // Use the live group for the current CWL (no season requested, or the requested season is
+      // the live one); otherwise read the requested past season from the database.
+      const isApiData =
+        result.res.ok &&
+        result.body.state !== 'notInWar' &&
+        (!args.season || Util.estimateCwlSeasonIds(args.season).includes(result.body.season));
+
+      if (!isApiData) {
+        const data = await this.client.storage.getWarTags(clan.tag, args.season);
         if (!data) continue;
-        if (args.season && data.season !== args.season) continue;
-        const { members, perRound, ranking } = await this.rounds(data, clan, { season });
+        const { members, perRound, ranking } = await this.rounds(data, clan, {
+          season: data.season
+        });
         if (!perRound.length) continue;
 
         chunks.push({
@@ -49,7 +56,6 @@ export default class ExportCWL extends Command {
         continue;
       }
 
-      if (args.season && result.body.season !== args.season) continue;
       const { members, perRound, ranking } = await this.rounds(result.body, clan, {});
       if (!perRound.length) continue;
       chunks.push({
@@ -58,7 +64,7 @@ export default class ExportCWL extends Command {
         members,
         perRound,
         ranking,
-        id: moment().format('MMM YYYY')
+        id: moment(result.body.season).format('MMM YYYY')
       });
     }
 
@@ -66,7 +72,7 @@ export default class ExportCWL extends Command {
       return interaction.editReply(
         this.i18n('command.cwl.no_season_data', {
           lng: interaction.locale,
-          season: season ?? Season.monthId
+          season: args.season ?? Season.monthId
         })
       );
     }
@@ -94,10 +100,30 @@ export default class ExportCWL extends Command {
             { name: 'Zero Stars', width: 100, align: 'RIGHT' },
             { name: 'Missed', width: 100, align: 'RIGHT' },
             { name: 'Total Defenses', width: 100, align: 'RIGHT' },
-            { name: 'Def Stars', width: 100, align: 'RIGHT' },
-            { name: 'Avg. Def Stars', width: 100, align: 'RIGHT' },
-            { name: 'Total Def Dest', width: 100, align: 'RIGHT' },
-            { name: 'Avg Def Dest', width: 100, align: 'RIGHT' },
+            {
+              name: 'Defensive Stars',
+              width: 100,
+              align: 'RIGHT',
+              note: 'Stars lost in defensive attacks'
+            },
+            {
+              name: 'Avg. Defensive Stars',
+              width: 100,
+              align: 'RIGHT',
+              note: 'Average stars lost in defensive attacks'
+            },
+            {
+              name: 'Total Defensive Destruction',
+              width: 100,
+              align: 'RIGHT',
+              note: 'Total destruction in defensive attacks'
+            },
+            {
+              name: 'Avg Defensive Destruction',
+              width: 100,
+              align: 'RIGHT',
+              note: 'Average destruction in defensive attacks'
+            },
             { name: 'Lower TH Hits (Dips)', width: 100, align: 'RIGHT' },
             { name: 'Upper TH Hits (Reaches)', width: 100, align: 'RIGHT' },
             {
@@ -177,9 +203,9 @@ export default class ExportCWL extends Command {
             { name: 'Destruction', align: 'RIGHT', width: 100 },
             { name: 'Opponent', align: 'LEFT', width: 160 },
             { name: 'Opponent Tag', align: 'LEFT', width: 120 },
-            { name: 'Opp. Attacks', align: 'RIGHT', width: 100 },
-            { name: 'Opp. Stars', align: 'RIGHT', width: 100 },
-            { name: 'Opp. Dest.', align: 'RIGHT', width: 100 }
+            { name: 'Opponent Attacks', align: 'RIGHT', width: 100 },
+            { name: 'Opponent Stars', align: 'RIGHT', width: 100 },
+            { name: 'Opponent Destruction', align: 'RIGHT', width: 100 }
           ],
           rows: chunk.perRound.map((round, i) => [
             i + 1,
@@ -212,8 +238,18 @@ export default class ExportCWL extends Command {
             { name: 'Attacker TH', align: 'RIGHT', width: 100 },
             { name: 'Defender Map', align: 'RIGHT', width: 100 },
             { name: 'Defender TH', align: 'RIGHT', width: 100 },
-            { name: 'Defender Stars', align: 'RIGHT', width: 100 },
-            { name: 'Defender Destruction', align: 'RIGHT', width: 100 }
+            {
+              name: 'Defensive Stars',
+              align: 'RIGHT',
+              width: 100,
+              note: 'Stars lost in defensive attacks'
+            },
+            {
+              name: 'Defensive Destruction',
+              align: 'RIGHT',
+              width: 100,
+              note: 'Total destruction in defensive attacks'
+            }
           ],
           rows: round.clan.members.map((m) => {
             const opponent = round.opponent.members.find(

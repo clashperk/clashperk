@@ -45,6 +45,7 @@ export class StatsHandler {
       {
         $inc: { usage: 1 },
         $set: {
+          isAdmin: interaction.member.permissions.has('ManageGuild'),
           locale: interaction.locale,
           guildLocale: interaction.guildLocale,
           lastUpdated: new Date()
@@ -146,8 +147,8 @@ export class StatsHandler {
     );
   }
 
-  public guilds(guild: Guild, usage = 1) {
-    return this.client.db.collection(Collections.BOT_GUILDS).updateOne(
+  public async guilds(guild: Guild, usage = 1) {
+    await this.client.db.collection(Collections.BOT_GUILDS).updateOne(
       { guild: guild.id },
       {
         $setOnInsert: {
@@ -156,6 +157,7 @@ export class StatsHandler {
         $set: {
           guild: guild.id,
           name: guild.name,
+          iconUrl: guild.iconURL(),
           updatedAt: new Date(),
           locale: guild.preferredLocale,
           memberCount: guild.approximateMemberCount || guild.memberCount
@@ -164,5 +166,8 @@ export class StatsHandler {
       },
       { upsert: true }
     );
+    await this.client.db
+      .collection(Collections.CLAN_STORES)
+      .updateMany({ guild: guild.id }, { $set: { lastExecution: new Date() } });
   }
 }

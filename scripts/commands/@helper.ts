@@ -19,6 +19,25 @@ export function getSeasonIds() {
   });
 }
 
+// CWL seasons now use the API's full-date id (YYYY-MM-DD) and can occur more than once a month.
+// New seasons are listed explicitly here (newest first); older (<= 2026-05) seasons stay month-based.
+const cwlSeasonIds = ['2026-06-16'];
+
+export function getCWLSeasonIds() {
+  return [
+    ...cwlSeasonIds.map((seasonId) => ({
+      name: moment(seasonId, 'YYYY-MM-DD').format('MMM DD, YYYY'),
+      value: seasonId
+    })),
+    ...Array(12)
+      .fill(0)
+      .map((_, i) => {
+        const monthId = moment().subtract(i, 'months').format('YYYY-MM');
+        return { name: moment(monthId, 'YYYY-MM').format('MMM YYYY'), value: monthId };
+      })
+  ].sort((a, b) => (a.value < b.value ? 1 : -1));
+}
+
 export function getSeasonSinceIds() {
   return getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }));
 }
@@ -57,6 +76,11 @@ export const userInstallable = {
     InteractionContextType.Guild,
     InteractionContextType.PrivateChannel
   ]
+};
+
+export const guildInstallable = {
+  integration_types: [ApplicationIntegrationType.GuildInstall],
+  contexts: [InteractionContextType.Guild]
 };
 
 export const translation = (text: TranslationKey): Record<string, string> => {

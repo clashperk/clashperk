@@ -1,0 +1,113 @@
+import { ObjectId } from 'mongodb';
+
+export const SAVED_REPLY_VARIABLES = [
+  'user_mention',
+  'user_name',
+  'account_name',
+  'account_th',
+  'account_heroes',
+  'clan_name',
+  'clan_tag',
+  'clan_link',
+  'clan_leader',
+  'clan_leader_mention',
+  'ticket_count',
+  'ticket_status',
+  'server_name'
+] as const;
+
+export interface TicketTypeConfig {
+  id: string;
+  label: string;
+  emoji?: string;
+  buttonStyle?: number;
+  requireLinkedAccount: boolean;
+  thMin?: number;
+  maxAccounts?: number;
+  heroRequirements?: { name: string; level: number }[];
+  minTrophies?: number;
+  minLeagueTier?: string;
+  questions?: { label: string; placeholder?: string; required: boolean }[];
+  pingRoleIds: string[];
+  viewOnlyRoleIds: string[];
+  addRoleIds: string[];
+  removeRoleIds: string[];
+  openCategoryId?: string;
+  sleepCategoryId?: string;
+  closedCategoryId?: string;
+  namingConvention: string;
+  createStaffThread: boolean;
+  autoSleepHours?: number;
+  allowClaim?: boolean;
+}
+
+export interface TicketPanelEntity {
+  _id: ObjectId;
+  guildId: string;
+  name: string;
+  embed: {
+    title?: string;
+    description?: string;
+    color?: number;
+    imageUrl?: string;
+    thumbnailUrl?: string;
+    footerText?: string;
+  };
+  displayMode: 'menu' | 'buttons';
+  button: {
+    label: string;
+    emoji?: string;
+    style: number;
+  };
+  ticketTypes: TicketTypeConfig[];
+  logChannels: {
+    buttonClick?: string;
+    statusChange?: string;
+    ticketClose?: string;
+  };
+  extraButtons?: {
+    id: string;
+    label: string;
+    emoji?: string;
+    cmd?: string;
+    args?: Record<string, string>;
+    style?: number;
+    url?: string;
+  }[];
+  extraButtonsPlacement?: 'row' | 'col';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TicketGuildSettingsEntity {
+  _id: ObjectId;
+  guildId: string;
+  savedReplies: { name: string; content: string }[];
+  updatedAt: Date;
+}
+
+export interface TicketEntity {
+  _id: ObjectId;
+  count: number;
+  guildId: string;
+  channelId: string;
+  threadId?: string;
+  panelId: string;
+  buttonId: string;
+  creatorId: string;
+  accountTag?: string;
+  accountName?: string;
+  accountTh?: number;
+  answers?: { question: string; answer: string }[];
+  clanTag?: string;
+  clanName?: string;
+  status: 'open' | 'sleep' | 'closed';
+  notifyMeUserIds: string[];
+  transcriptUrl?: string;
+  autoSleepAt?: Date;
+  claimedBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  closedAt?: Date;
+  closedBy?: string;
+}

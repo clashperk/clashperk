@@ -56,7 +56,10 @@ export default class PatreonCommand extends Command {
         embed.setDescription(
           [
             `**Our Current Members (${patrons.length})**`,
-            ...patrons.map((patron) => `0. ${patron.username}`)
+            ...patrons.map(
+              (patron) =>
+                `0. ${patron.username} ${patron.note && (patron.note as string) !== '-' ? `(${patron.note})` : ''}`
+            )
           ].join('\n')
         );
 

@@ -31,7 +31,7 @@ export default class ClansCommand extends Command {
       return interaction.editReply({
         content: this.i18n('common.no_clans_linked', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       });
     }

@@ -294,7 +294,7 @@ export class ClanWarScheduler {
                 ? ''
                 : ` (${mem.attacks}/${attacksPerMember})`;
             const prefix = mention === '0x' && i === 0 ? '\n' : '\u200e';
-            return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${escapeMarkdown(mem.name)}${hits}`;
+            return `${prefix}${ORANGE_NUMBERS[mem.townHallLevel]}${ping} ${escapeMarkdown(mem.name)}${hits}`;
           })
           .join('\n')
       )

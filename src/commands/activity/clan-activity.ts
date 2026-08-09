@@ -231,32 +231,4 @@ export default class ClanActivityCommand extends Command {
       .toLowerCase()
       .replace(/\b(\w)/g, (char) => char.toUpperCase());
   }
-
-  private async leaveJoinGraph(interaction: CommandInteraction<'cached'>, clanTag: string) {
-    await this.client.elastic.search({
-      size: 0,
-      from: 0,
-      query: {
-        match: {
-          clan_tag: clanTag
-        }
-      },
-      aggs: {
-        dates: {
-          date_histogram: {
-            field: 'created_at',
-            calendar_interval: '1d',
-            min_doc_count: 0
-          },
-          aggs: {
-            events: {
-              terms: {
-                field: 'op'
-              }
-            }
-          }
-        }
-      }
-    });
-  }
 }

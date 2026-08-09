@@ -18,18 +18,12 @@ export const linkListEmbedMaker = async ({
   showTag?: boolean;
 }) => {
   const client = container.resolve(Client);
-  const memberTags = await client.coc.getDiscordLinks(clan.memberList);
   const dbMembers = await client.db
     .collection(Collections.PLAYER_LINKS)
     .find({ tag: { $in: clan.memberList.map((m) => m.tag) } })
     .toArray();
 
   const members: { name: string; tag: string; userId: string; verified: boolean }[] = [];
-  for (const m of memberTags) {
-    const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
-    if (!clanMember) continue;
-    members.push({ tag: m.tag, userId: m.userId, name: clanMember.name, verified: false });
-  }
 
   for (const member of dbMembers) {
     const clanMember = clan.memberList.find((mem) => mem.tag === member.tag);

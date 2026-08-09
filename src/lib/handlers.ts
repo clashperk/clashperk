@@ -1,4 +1,5 @@
 import { Settings } from '@app/constants';
+import { startSpan } from '@sentry/node';
 import {
   ApplicationCommandOptionType,
   AutocompleteInteraction,
@@ -11,12 +12,15 @@ import {
   Events,
   GuildBasedChannel,
   Interaction,
+  InteractionEditReplyOptions,
   Message,
   MessageComponentInteraction,
   MessageContextMenuCommandInteraction,
   MessageFlags,
   PermissionsString,
   RestEvents,
+  StringSelectMenuInteraction,
+  TextDisplayBuilder,
   User,
   UserContextMenuCommandInteraction
 } from 'discord.js';
@@ -26,7 +30,7 @@ import { pathToFileURL } from 'node:url';
 import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
-import { CustomIdProps } from '../struct/component-handler.js';
+import { CustomIdProps } from '../struct/redis-service.js';
 import { i18n } from '../util/i18n.js';
 import './modifier.js';
 import {
@@ -61,6 +65,12 @@ export type Args = Record<
     default?: unknown | ((value: unknown) => unknown);
   } | null
 >;
+
+const deferredDisallowed = ['link-add'];
+
+const deletedCommands: Record<string, string> = {
+  layout: 'layout-post'
+};
 
 class BaseHandler extends EventEmitter {
   public readonly directory: string;
@@ -116,6 +126,9 @@ export class CommandHandler extends BaseHandler {
       if (interaction.isContextMenuCommand()) {
         return this.handleContextInteraction(interaction);
       }
+      if (interaction.isMessageComponent()) {
+        return this.handleComponentInteraction(interaction);
+      }
     });
   }
 
@@ -128,6 +141,103 @@ export class CommandHandler extends BaseHandler {
       }
       this.aliases.set(alias, command.id);
     }
+  }
+
+  private async handleComponentInteraction(interaction: MessageComponentInteraction) {
+    const userIds = this.client.components.get(interaction.customId);
+    if (userIds?.length && userIds.includes(interaction.user.id)) return;
+
+    if (
+      interaction.isButton() &&
+      interaction.inCachedGuild() &&
+      interaction.customId.startsWith('action-')
+    ) {
+      const [action, ...userIds] = interaction.customId.split(':');
+      const isAuthorized =
+        userIds.includes(interaction.user.id) || this.client.util.isManager(interaction.member);
+
+      await interaction.deferUpdate();
+      if (action === 'action-consume' && isAuthorized) {
+        return interaction.editReply({ components: [] });
+      }
+
+      if (action === 'action-delete' && isAuthorized) {
+        return interaction.deleteReply();
+      }
+    }
+
+    if (userIds?.length && !userIds.includes(interaction.user.id)) {
+      return interaction.reply({
+        content: i18n('common.component.unauthorized', { lng: interaction.locale }),
+        flags: MessageFlags.Ephemeral
+      });
+    }
+
+    if (this.client.components.has(interaction.customId)) return;
+
+    const parsed = await this.client.redis.parseCommandId(interaction.customId);
+    const command = parsed && this.getCommand(deletedCommands[parsed.cmd] || parsed.cmd);
+    if (!command) {
+      //
+      const isEmpty = !(
+        interaction.message.attachments.size ||
+        interaction.message.embeds.length ||
+        interaction.message.content.length ||
+        interaction.message.stickers.size
+      );
+
+      const content = i18n('common.component.expired', { lng: interaction.locale });
+      if (interaction.message.flags.has(MessageFlags.IsComponentsV2)) {
+        return interaction.update({ components: [new TextDisplayBuilder({ content })] });
+      }
+
+      if (isEmpty) {
+        return interaction.update({ components: [], content });
+      }
+
+      await interaction.update({ components: [] });
+      return interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+    }
+
+    if (!interaction.inCachedGuild() && command.channel !== 'dm') return true;
+    if (interaction.inCachedGuild() && !interaction.channel) return true;
+
+    // if (this.preInhibitor(interaction, command, { commandName: parsed.cmd })) return;
+
+    if (
+      parsed.is_locked &&
+      interaction.message.interactionMetadata &&
+      interaction.message.interactionMetadata?.user.id !== interaction.user.id
+    ) {
+      await interaction.reply({
+        content: i18n('common.component.unauthorized', { lng: interaction.locale }),
+        flags: MessageFlags.Ephemeral
+      });
+      return true;
+    }
+
+    const deferredDisabled = parsed.hasOwnProperty('defer') && !parsed.defer;
+    if (!deferredDisallowed.includes(parsed.cmd) && !deferredDisabled) {
+      if (parsed.ephemeral) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+      } else {
+        await interaction.deferUpdate();
+      }
+    }
+
+    if (parsed.user_id) {
+      parsed.user = await this.client.users.fetch(parsed.user_id as string).catch(() => null);
+    }
+
+    function resolveMenu(interaction: StringSelectMenuInteraction, parsed: CustomIdProps) {
+      const values = interaction.values;
+      if (parsed.array_key) return { [parsed.array_key]: values };
+      if (parsed.string_key) return { [parsed.string_key]: values.at(0) };
+      return { selected: values };
+    }
+
+    const selected = interaction.isStringSelectMenu() ? resolveMenu(interaction, parsed) : {};
+    return this.exec(interaction, command, { ...parsed, ...selected });
   }
 
   public handleInteraction(interaction: ChatInputCommandInteraction) {
@@ -342,19 +452,44 @@ export class CommandHandler extends BaseHandler {
     command: Command,
     args: Record<string, unknown> = {}
   ) {
-    try {
-      const options = command.refine(interaction, args);
+    await startSpan(
+      {
+        op: 'command_executed',
+        name: command.id,
+        attributes: {
+          'interaction.command': command.id,
+          'interaction.userId': interaction.user.id,
+          'interaction.guildId': interaction.guildId ?? 'DM'
+        }
+      },
+      async (span) => {
+        try {
+          const options = command.refine(interaction, args);
 
-      if (options.defer && !interaction.deferred && !interaction.replied) {
-        await interaction.deferReply(options.ephemeral ? { flags: MessageFlags.Ephemeral } : {});
+          const deferred = options.defer && !interaction.deferred && !interaction.replied;
+          span.setAttribute('interaction.deferred', deferred);
+
+          if (deferred) {
+            await interaction.deferReply(
+              options.ephemeral ? { flags: MessageFlags.Ephemeral } : {}
+            );
+          }
+
+          this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
+
+          await command.exec(interaction, args);
+
+          span.setStatus({ code: 1, message: 'ok' });
+        } catch (error) {
+          this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
+          span.setStatus({ code: 2, message: 'internal_error' });
+        } finally {
+          this.emit(CommandHandlerEvents.COMMAND_ENDED, interaction, command, args);
+        }
+
+        return span;
       }
-      this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
-      await command.exec(interaction, args);
-    } catch (error) {
-      this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
-    } finally {
-      this.emit(CommandHandlerEvents.COMMAND_ENDED, interaction, command, args);
-    }
+    );
   }
 
   public preInhibitor(
@@ -624,6 +759,13 @@ export class Command implements CommandOptions {
 
   public createId(payload: CustomIdProps) {
     return this.client.redis.createCustomId(payload);
+  }
+
+  public reply(text: string): InteractionEditReplyOptions {
+    return {
+      components: [new TextDisplayBuilder().setContent(text)],
+      flags: MessageFlags.IsComponentsV2
+    };
   }
 }
 

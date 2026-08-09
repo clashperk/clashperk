@@ -1,4 +1,3 @@
-import { Settings } from '@app/constants';
 import {
   ButtonInteraction,
   CommandInteraction,
@@ -15,8 +14,6 @@ export default class RosterListCommand extends Command {
     super('roster-list', {
       category: 'roster',
       channel: 'guild',
-      userPermissions: ['ManageGuild'],
-      roleKey: Settings.ROSTER_MANAGER_ROLE,
       defer: true,
       ephemeral: true
     });
@@ -24,7 +21,13 @@ export default class RosterListCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-    args: { user?: User; player?: string; name?: string; clan?: string }
+    args: {
+      user?: User;
+      player?: string;
+      name?: string;
+      clan?: string;
+      category?: IRoster['category'];
+    }
   ) {
     if (interaction.isButton()) args.user = interaction.user;
 
@@ -38,6 +41,7 @@ export default class RosterListCommand extends Command {
       query.name = { $regex: `.*${text}.*`, $options: 'i' };
     }
     if (args.clan) query['clan.tag'] = args.clan;
+    if (args.category) query['category'] = args.category;
 
     const isQuery = Object.keys(query).length > 1;
     const filter = args.user

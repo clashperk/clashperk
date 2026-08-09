@@ -14,3 +14,17 @@ git tag -a "v$VERSION" -m "Release version $VERSION"
 git push origin "v$VERSION"
 
 echo "Tag 'v$VERSION' created and pushed to remote."
+
+REMOTE_URL=$(git config --get remote.origin.url)
+
+if [[ $REMOTE_URL =~ ^git@github.com: ]]; then
+  REMOTE_URL=$(echo "$REMOTE_URL" | sed -e 's/^git@github.com:/https:\/\/github.com\//')
+fi
+
+REMOTE_URL=$(echo "$REMOTE_URL" | sed 's/\.git$//')
+
+PREV_TAG=$(git describe --tags --abbrev=0 "v$VERSION^")
+
+echo ""
+echo "Diff link against the previous tag ($PREV_TAG):"
+echo "$REMOTE_URL/compare/$PREV_TAG...v$VERSION"

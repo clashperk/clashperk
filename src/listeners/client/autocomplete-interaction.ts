@@ -245,7 +245,43 @@ export default class AutocompleteInteractionListener extends Listener {
       case 'location': {
         return this.client.autocomplete.locationAutocomplete(interaction, query);
       }
+      case 'panel_name': {
+        if (interaction.commandName === 'ticket') {
+          return this.ticketPanelAutocomplete(interaction, focused);
+        }
+        break;
+      }
     }
+  }
+
+  private async ticketPanelAutocomplete(
+    interaction: AutocompleteInteraction<'cached'>,
+    focused: string
+  ) {
+    const query = interaction.options.getString(focused)?.trim() ?? '';
+    const filter: Record<string, unknown> = { guildId: interaction.guild.id };
+    if (query) {
+      const text = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.name = { $regex: `.*${text}.*`, $options: 'i' };
+    }
+
+    const panels = await this.client.db
+      .collection(Collections.TICKET_PANELS)
+      .find(filter)
+      .limit(25)
+      .toArray();
+
+    if (!panels.length) {
+      // If no panels yet, just return what the user typed as a "new panel" option
+      if (query) {
+        return interaction.respond([{ value: query, name: `Create new: "${query}"` }]);
+      }
+      return interaction.respond([{ value: 'default', name: 'Create new: "default"' }]);
+    }
+
+    return interaction.respond(
+      panels.map((p) => ({ value: p.name as string, name: p.name as string }))
+    );
   }
 
   private async timezoneAutocomplete(interaction: AutocompleteInteraction, focused: string) {

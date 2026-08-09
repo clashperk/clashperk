@@ -2,7 +2,9 @@ import { Collections, WAR_LEAGUE_MAP, WarType } from '@app/constants';
 import { APIClanWar, APIClanWarAttack, APIClanWarMember } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
+import { ObjectId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
+import { IRoster } from '../../struct/roster-manager.js';
 import {
   BLUE_NUMBERS,
   CWL_LEAGUES,
@@ -31,7 +33,7 @@ export default class CWLHistoryCommand extends Command {
 
   public async exec(
     interaction: CommandInteraction<'cached'>,
-    args: { clans?: string; player?: string; user?: User }
+    args: { clans?: string; player?: string; user?: User; roster?: string }
   ) {
     if (args.player) {
       const player = await this.client.resolver.resolvePlayer(interaction, args.player);
@@ -47,6 +49,18 @@ export default class CWLHistoryCommand extends Command {
       const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag).slice(0, 1));
       const playerTags = _clans.flatMap((clan) => clan.memberList.map((member) => member.tag));
       return this.getHistory(interaction, playerTags);
+    }
+
+    if (args.roster && ObjectId.isValid(args.roster)) {
+      const data = await this.client.db
+        .collection<IRoster>(Collections.ROSTERS)
+        .findOne({ _id: new ObjectId(args.roster) });
+      if (!data || !data.members?.length) return interaction.editReply('No roster found.');
+
+      return this.getHistory(
+        interaction,
+        data.members.map((m) => m.tag)
+      );
     }
 
     const playerTags = await this.client.resolver.getLinkedPlayerTags(
@@ -68,7 +82,9 @@ export default class CWLHistoryCommand extends Command {
 
     const groupMap = groups.reduce<Record<string, number>>((acc, group) => {
       Object.entries(group.leagues ?? {}).map(([tag, leagueId]) => {
-        acc[`${group.season}-${tag}`] = leagueId;
+        // Key by month to match the war-month lookup key (war.endTime → YYYY-MM); live group
+        // seasons are now YYYY-MM-DD, so trim to the month here.
+        acc[`${group.season.slice(0, 7)}-${tag}`] = leagueId;
       });
       return acc;
     }, {});
@@ -145,10 +161,7 @@ export default class CWLHistoryCommand extends Command {
       {
         $match: {
           startTime: {
-            $gte: moment()
-              .startOf('month')
-              .subtract(new Date().getDate() >= 10 ? 2 : 3, 'month')
-              .toDate()
+            $gte: moment().startOf('month').subtract(3, 'month').toDate()
           },
           warType: WarType.CWL,
           $or: [{ 'clan.members.tag': { $in: tags } }, { 'opponent.members.tag': { $in: tags } }]

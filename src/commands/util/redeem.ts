@@ -14,7 +14,7 @@ import { WithId } from 'mongodb';
 import { Args, Command } from '../../lib/handlers.js';
 import { CustomTiers, guildLimits, PatreonUser } from '../../struct/subscribers.js';
 
-const defaultClanLimit = 50;
+const defaultClanLimit = 100;
 
 export default class RedeemCommand extends Command {
   public constructor() {
@@ -61,27 +61,31 @@ export default class RedeemCommand extends Command {
       Settings.DISABLED_PATREON_IDS,
       []
     );
-    const patron = result.included.find(
-      (entry) =>
+
+    const patron = result.included.find((entry) => {
+      return (
         !disabledUserIds.includes(entry.id) &&
         entry.attributes.social_connections?.discord?.user_id === interaction.user.id
-    );
+      );
+    });
 
     if (!patron) {
-      const embed = new EmbedBuilder()
-        .setColor(16345172)
-        .setDescription(
-          [
-            'I could not find any Patreon account connected to your Discord.',
-            '',
-            'Make sure that you are connected and subscribed to ClashPerk.',
-            'Not subscribed yet? [Subscribe on Patreon](https://www.patreon.com/clashperk)'
-          ].join('\n')
-        )
-        .addFields([{ name: 'How to connect?', value: 'https://www.patreon.com/settings/apps' }])
-        .setImage('https://i.imgur.com/APME0CX.png');
-
-      return interaction.editReply({ embeds: [embed] });
+      return interaction.editReply({
+        content: [
+          `### I couldn't find any Patreon account connected to your Discord.`,
+          `### Please make sure your Discord is linked to Patreon and you're subscribed to ClashPerk.`,
+          `### Not subscribed yet? Subscribe here <https://www.patreon.com/clashperk>`,
+          `### Connect your account here <https://www.patreon.com/settings/apps>`
+        ].join('\n'),
+        components: [
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setLabel('Support Discord')
+              .setStyle(ButtonStyle.Link)
+              .setURL('https://discord.gg/ppuppun')
+          )
+        ]
+      });
     }
 
     const collection = this.client.db.collection<PatreonMembersEntity>(Collections.PATREON_MEMBERS);
@@ -108,8 +112,8 @@ export default class RedeemCommand extends Command {
       );
     }
 
-    const isGifted =
-      !!pledge.attributes.is_gifted || Object.values(CustomTiers).includes(pledge.attributes.note);
+    const isLifetime = Object.values(CustomTiers).includes(pledge.attributes.note);
+    const isGifted = !!pledge.attributes.is_gifted || isLifetime;
 
     if (pledge.attributes.patron_status !== 'active_patron' && !isGifted) {
       return interaction.editReply(
@@ -117,7 +121,10 @@ export default class RedeemCommand extends Command {
       );
     }
 
-    const rewardId = pledge.relationships.currently_entitled_tiers.data[0]?.id;
+    const rewardId = isLifetime
+      ? pledge.attributes.note
+      : this.client.subscribers.resolveRewardId(pledge);
+
     if (!rewardId || !(rewardId in guildLimits)) {
       return interaction.editReply(
         `**Something went wrong (unknown tier ${rewardId || '00000'}), please [contact us.](<https://discord.gg/ppuppun>)**`
@@ -151,7 +158,7 @@ export default class RedeemCommand extends Command {
             isGifted: !!pledge.attributes.is_gifted,
             note: pledge.attributes.note,
             status: patronStatus,
-            isLifetime: Object.values(CustomTiers).includes(pledge.attributes.note),
+            isLifetime,
             active: true,
             declined: false,
             cancelled: false,

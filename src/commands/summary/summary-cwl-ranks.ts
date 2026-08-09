@@ -34,7 +34,8 @@ export default class SummaryCWLRanks extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { clans?: string; season?: string }
   ) {
-    const season = args.season ?? Util.getCWLSeasonId();
+    // A specific (past) season filters the stored group; otherwise look up the latest (current) one.
+    const season = args.season;
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
       args: args.clans
     });
@@ -48,13 +49,10 @@ export default class SummaryCWLRanks extends Command {
         this.client.coc.getClanWarLeagueGroup(clan.tag),
         this.client.storage.getWarTags(clan.tag, season)
       ]);
-      if (!leagueGroup?.leagues?.[clan.tag] || leagueGroup.season !== season) continue;
+      if (!leagueGroup?.leagues?.[clan.tag]) continue;
 
-      const isApiData = !(
-        !lastLeagueGroup.res.ok ||
-        lastLeagueGroup.body.state === 'notInWar' ||
-        lastLeagueGroup.body.season !== season
-      );
+      // A specific (past) season is served from the archive; the current one uses live war data.
+      const isApiData = !season;
 
       const aggregated = await this.client.coc.aggregateClanWarLeague(
         clan.tag,
@@ -89,7 +87,9 @@ export default class SummaryCWLRanks extends Command {
     );
 
     const embed = new EmbedBuilder().setTimestamp().setColor(this.client.embed(interaction));
-    embed.setDescription(`${EMOJIS.CWL} **Clan War League Ranking (${season})**`);
+    embed.setDescription(
+      `${EMOJIS.CWL} **Clan War League Ranking (${season ?? Util.getCWLSeasonId()})**`
+    );
     leagueGroups.sort(([a], [b]) => Number(b) - Number(a));
     leagueGroups.forEach(([leagueId, clans], idx) => {
       clans.sort((a, b) => b.stars - a.stars);

@@ -96,7 +96,6 @@ export default class LinkAddCommand extends Command {
       { upsert: true }
     );
 
-    this.resetLinkAPI(member.id, player.tag);
     this.client.rolesManager.updateOne(member.user, interaction.guildId, accounts.length === 0);
 
     return interaction.editReply(
@@ -213,7 +212,7 @@ export default class LinkAddCommand extends Command {
       { upsert: true }
     );
 
-    this.resetLinkAPI(interaction.user.id, data.tag);
+    this.client.coc.forceLink(interaction.user.id, data.tag);
     this.client.rolesManager.updateOne(interaction.user, interaction.guildId, !lastAccount);
     return interaction.editReply(
       this.i18n('command.verify.success', {
@@ -226,9 +225,5 @@ export default class LinkAddCommand extends Command {
   private async getPlayer(tag: string, userId: string) {
     const collection = this.client.db.collection(Collections.PLAYER_LINKS);
     return Promise.all([collection.findOne({ tag }), collection.find({ userId }).toArray()]);
-  }
-
-  private async resetLinkAPI(user: string, tag: string) {
-    await this.client.coc.linkPlayerTag(user, tag);
   }
 }

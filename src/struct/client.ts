@@ -38,6 +38,7 @@ import { SettingsProvider } from './settings-provider.js';
 import { StatsHandler } from './stats-handler.js';
 import { StorageHandler } from './storage-handler.js';
 import { Subscribers } from './subscribers.js';
+import { TicketHandler } from './ticket-handler.js';
 
 export class Client extends DiscordClient<true> {
   public commandHandler = new CommandHandler(this, {
@@ -98,6 +99,7 @@ export class Client extends DiscordClient<true> {
   public cacheOverLimitGuilds = new Set<string>();
   public rolesManager = new RolesManager(this);
   public commands!: CommandsMap;
+  public tickets = new TicketHandler(this);
   public postHog: PostHog;
 
   public cluster: ClusterClient<this>;
@@ -258,6 +260,8 @@ export class Client extends DiscordClient<true> {
       await this.analytics.flush();
       await this.settings.init({ globalOnly: false });
       await this.subscribers.refresh();
+
+      this.tickets.init();
 
       if (process.env.NODE_ENV === 'production') {
         await this.enqueue();

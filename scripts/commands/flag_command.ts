@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const FLAG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'flag',
@@ -171,5 +171,6 @@ export const FLAG_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

@@ -1,6 +1,12 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, getSeasonSinceIds, translation } from './@helper.js';
+import {
+  getCWLSeasonIds,
+  getSeasonIds,
+  getSeasonSinceIds,
+  guildInstallable,
+  translation
+} from './@helper.js';
 
 export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'export',
@@ -87,15 +93,7 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season_since.description,
           description_localizations: translation('common.options.season_since.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
-        },
-        {
-          name: 'wars',
-          min_value: 1,
-          max_value: 100,
-          description: command.export.options.wars.description,
-          description_localizations: translation('command.export.options.wars.description'),
-          type: ApplicationCommandOptionType.Integer
+          choices: getCWLSeasonIds()
         },
         {
           name: 'lineup_only',
@@ -149,11 +147,12 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String
         },
         {
-          name: 'season',
-          description: common.options.season_since.description,
-          description_localizations: translation('common.options.season_since.description'),
-          type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          name: 'auto_export_on',
+          description: command.export.members.options.auto_export_on.description,
+          description_localizations: translation(
+            'command.export.members.options.auto_export_on.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
         }
       ]
     },
@@ -403,5 +402,6 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

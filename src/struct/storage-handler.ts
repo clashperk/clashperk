@@ -4,6 +4,7 @@ import {
   ClanStoresEntity,
   ClanWarLeagueGroupsEntity,
   ClanWarRemindersEntity,
+  ClanWarSchedulersEntity,
   PlayerLinksEntity
 } from '@app/entities';
 import { APIClanWarLeagueGroup } from 'clashofclans.js';
@@ -20,7 +21,7 @@ import { Collection, ObjectId, WithId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { cluster, unique } from 'radash';
 import { i18n } from '../util/i18n.js';
-import { Season } from '../util/toolkit.js';
+import { Season, Util } from '../util/toolkit.js';
 import { Client } from './client.js';
 
 const defaultCategories = ['War', 'CWL', 'Farming', 'Esports', 'Events'];
@@ -122,7 +123,7 @@ export class StorageHandler {
       await interaction.editReply(
         i18n('common.no_clan_tag', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
       return { clans: null };
@@ -137,7 +138,7 @@ export class StorageHandler {
       await interaction.editReply(
         i18n('common.no_clans_found', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
       return { clans: null, isTotal };
@@ -147,7 +148,7 @@ export class StorageHandler {
       await interaction.editReply(
         i18n('common.no_clans_linked', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
       return { clans: null, isTotal };
@@ -169,7 +170,7 @@ export class StorageHandler {
     if (ObjectId.isValid(category)) {
       const result = await collection.findOne({ guildId, _id: new ObjectId(category) });
 
-      return result?._id ?? null;
+      return result;
     }
 
     const lastCategory = await collection.findOne({ guildId }, { sort: { order: -1 } });
@@ -186,7 +187,7 @@ export class StorageHandler {
       },
       { upsert: true, returnDocument: 'after' }
     );
-    return value?._id ?? null;
+    return value;
   }
 
   public async getOrCreateDefaultCategories(guildId: string) {
@@ -283,11 +284,10 @@ export class StorageHandler {
 
     for (const { reminder, scheduler } of reminders) {
       const reminders = await this.client.db
-        .collection(reminder)
+        .collection<ClanWarRemindersEntity>(reminder)
         .find({ guild, clans: clanTag })
         .toArray();
       for (const rem of reminders) {
-        await this.client.db.collection(scheduler).deleteMany({ reminderId: rem._id });
         if (rem.clans.length === 1) {
           await this.client.db.collection(reminder).deleteOne({ _id: rem._id });
         } else {
@@ -295,6 +295,10 @@ export class StorageHandler {
             .collection<ClanWarRemindersEntity>(reminder)
             .updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
         }
+
+        await this.client.db
+          .collection<ClanWarSchedulersEntity>(scheduler)
+          .deleteMany({ guild, tag: clanTag });
       }
     }
   }
@@ -369,25 +373,50 @@ export class StorageHandler {
 
     if (channelWebhooks.size >= 10) return null;
 
+    const member = channel.guild.members.me;
     const webhook = await channel.createWebhook({
-      name: this.client.user.displayName,
-      avatar: this.client.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
+      name: !!member?.avatar ? member.displayName : this.client.user.displayName,
+      avatar: !!member?.avatar
+        ? member.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
+        : this.client.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
     });
+
     this.client.logger.log(`Created webhook for ${channel.guild.name}#${channel.name}`, {
       label: 'HOOK'
     });
+
     return webhook;
   }
 
   public async getWarTags(
     tag: string,
-    season: string = Season.monthId
+    season?: string | null
   ): Promise<ClanWarLeagueGroupsEntity | null> {
-    return this.client.db
+    // A missing season returns the latest group for the clan (the live YYYY-MM-DD one), since the
+    // current season can no longer be derived from the clock. A given season matches the exact
+    // value plus the next 3 days, because the API's CWL season date is not perfectly predictable
+    // (e.g. "2026-06" → also 2026-06-01..03; "2026-06-16" → also 2026-06-17, 2026-06-18).
+    const seasonIds = season ? Util.estimateCwlSeasonIds(season) : [];
+    const group = await this.client.db
       .collection<ClanWarLeagueGroupsEntity>(Collections.CWL_GROUPS)
-      .findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });
+      .findOne(
+        seasonIds.length
+          ? { 'clans.tag': tag, 'season': { $in: seasonIds } }
+          : { 'clans.tag': tag },
+        {
+          sort: { _id: -1 }
+        }
+      );
+
+    if (season && group?.season) group.season = season;
+    return group;
   }
 
+  private md5(id: string) {
+    return createHash('md5').update(id).digest('hex');
+  }
+
+  // unused
   public async pushWarTags(tag: string, body: APIClanWarLeagueGroup) {
     const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
     if (rounds.length !== body.clans.length - 1) return null;
@@ -415,10 +444,7 @@ export class StorageHandler {
     // return this.pushToDB(tag, body.clans, warTags, rounds, body.season);
   }
 
-  private md5(id: string) {
-    return createHash('md5').update(id).digest('hex');
-  }
-
+  // unused
   private async pushToDB(
     clanTag: string,
     clans: { tag: string; name: string }[],
@@ -577,6 +603,7 @@ export class StorageHandler {
     return this.client.enqueuer.addAutoBoard(value!._id.toHexString());
   }
 
+  // instructions for agent: do not update this method
   public async updateClanLinks(guildId: string) {
     const conflicts = [];
 
@@ -597,6 +624,7 @@ export class StorageHandler {
     }
   }
 
+  // instructions for agent: do not update this method
   public async updatePlayerLinks(players: { tag: string; name?: string }[]) {
     const conflicts = [];
 

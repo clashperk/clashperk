@@ -56,13 +56,15 @@ export default class CWLRoundCommand extends Command {
       );
     }
 
-    const isIncorrectSeason =
-      !res.ok && !args.season && group && group.season !== Util.getCWLSeasonId();
-    const entityLike =
-      args.season && res.ok && args.season !== body.season ? group : res.ok ? body : group;
-    const isApiData = args.season ? res.ok && body.season === args.season : res.ok;
+    // The requested season is the live one when it matches the API season within a few days (the
+    // CWL season date isn't perfectly predictable); otherwise it's a past/archived season. Prefer
+    // the live body for the current season (works even before the tracker stores it).
+    const isLiveSeason =
+      !args.season || Util.estimateCwlSeasonIds(args.season).includes(body.season);
+    const entityLike = args.season && res.ok && !isLiveSeason ? group : res.ok ? body : group;
+    const isApiData = isLiveSeason;
 
-    if ((!res.ok && !group) || !entityLike || isIncorrectSeason) {
+    if ((!res.ok && !group) || !entityLike) {
       return interaction.editReply(
         this.i18n('command.cwl.not_in_season', {
           lng: interaction.locale,
@@ -199,7 +201,7 @@ export default class CWLRoundCommand extends Command {
       }
     }
 
-    if (!chunks.length && body.season !== Util.getCWLSeasonId()) {
+    if (!chunks.length && args.season) {
       return interaction.editReply(
         this.i18n('command.cwl.not_in_season', {
           lng: interaction.locale,

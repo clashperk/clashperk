@@ -29,6 +29,16 @@ export interface PatreonMembersEntity {
   status: string;
 
   applicationId?: string;
+  customBots?: Record<
+    string,
+    {
+      active: boolean;
+      avatarUrl: string;
+      nickname: string;
+      bio: string | null;
+      banner: string | null;
+    }
+  >;
 
   lastChargeDate: Date;
   createdAt: Date;

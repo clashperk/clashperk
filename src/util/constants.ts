@@ -25,7 +25,7 @@ export const URL_REGEX =
 
 export const UNRANKED_CAPITAL_LEAGUE_ID = 85000000;
 
-export const LEGEND_LEAGUE_ID = 105000034;
+export const LEGEND_LEAGUE_ID = 105000036;
 
 export const UNRANKED_TIER_ID = 105000000;
 
@@ -139,7 +139,11 @@ export const enum Collections {
   BOT_USERS = 'BotUsers',
   BOT_STATS = 'BotStats',
   BOT_COMMANDS = 'BotCommands',
-  BOT_INTERACTIONS = 'BotInteractions'
+  BOT_INTERACTIONS = 'BotInteractions',
+
+  TICKET_PANELS = 'TicketPanels',
+  TICKETS = 'Tickets',
+  TICKET_SETTINGS = 'TicketSettings'
 }
 
 export const enum Settings {
@@ -229,7 +233,8 @@ export enum FeatureFlags {
   CLAN_RULES_BUTTON = 'clan-rules-button',
   LAYOUT_VOTING = 'layout-voting',
   USE_DISCORD_LINK_API = 'use-discord-link-api',
-  AUTO_SYNC_PATREON = 'auto-sync-patreon'
+  AUTO_SYNC_PATREON = 'auto-sync-patreon',
+  USE_MCP_SEARCH = 'use-mcp-search'
 }
 
 export const enum Flags {
@@ -335,7 +340,9 @@ export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
   '105000031': 'electro',
   '105000032': 'electro',
   '105000033': 'electro',
-  '105000034': 'legend'
+  '105000034': 'legend_3',
+  '105000035': 'legend_2',
+  '105000036': 'legend'
 };
 
 export const BUILDER_BASE_LEAGUE_MAPS: Record<string, string> = {
@@ -482,7 +489,9 @@ export const PLAYER_LEAGUE_MAP: Record<string, string> = {
   '105000031': 'Electro League 31',
   '105000032': 'Electro League 32',
   '105000033': 'Electro League 33',
-  '105000034': 'Legend League'
+  '105000034': 'Legend League III',
+  '105000035': 'Legend League II',
+  '105000036': 'Legend League I'
 };
 
 export const WAR_LEAGUE_MAP: Record<string, string> = {
@@ -513,49 +522,91 @@ export const WAR_LEAGUE_MAP: Record<string, string> = {
 
 export const WAR_LEAGUE_PROMOTION_MAP: Record<
   string,
-  { promotion: number; demotion: number; name: string; bonuses: number }
+  { promotion: number; demotion: number; name: string }
 > = {
-  48000000: { promotion: 3, demotion: 9, name: 'Unranked', bonuses: 0 },
-  48000001: { promotion: 3, demotion: 9, name: 'Bronze League III', bonuses: 1 },
-  48000002: { promotion: 3, demotion: 8, name: 'Bronze League II', bonuses: 1 },
-  48000003: { promotion: 3, demotion: 8, name: 'Bronze League I', bonuses: 1 },
-  48000004: { promotion: 2, demotion: 8, name: 'Silver League III', bonuses: 1 },
-  48000005: { promotion: 2, demotion: 7, name: 'Silver League II', bonuses: 1 },
-  48000006: { promotion: 2, demotion: 7, name: 'Silver League I', bonuses: 1 },
-  48000007: { promotion: 2, demotion: 7, name: 'Gold League III', bonuses: 2 },
-  48000008: { promotion: 2, demotion: 7, name: 'Gold League II', bonuses: 2 },
-  48000009: { promotion: 2, demotion: 7, name: 'Gold League I', bonuses: 2 },
-  48000010: { promotion: 2, demotion: 7, name: 'Crystal League III', bonuses: 2 },
-  48000011: { promotion: 2, demotion: 7, name: 'Crystal League II', bonuses: 2 },
-  48000012: { promotion: 1, demotion: 7, name: 'Crystal League I', bonuses: 2 },
-  48000013: { promotion: 1, demotion: 7, name: 'Master League III', bonuses: 3 },
-  48000014: { promotion: 1, demotion: 7, name: 'Master League II', bonuses: 3 },
-  48000015: { promotion: 1, demotion: 7, name: 'Master League I', bonuses: 3 },
-  48000016: { promotion: 1, demotion: 7, name: 'Champion League III', bonuses: 4 },
-  48000017: { promotion: 1, demotion: 7, name: 'Champion League II', bonuses: 4 },
-  48000018: { promotion: 0, demotion: 6, name: 'Champion League I', bonuses: 4 }
+  48000000: { promotion: 3, demotion: 9, name: 'Unranked' },
+  48000001: { promotion: 3, demotion: 9, name: 'Bronze League III' },
+  48000002: { promotion: 3, demotion: 8, name: 'Bronze League II' },
+  48000003: { promotion: 3, demotion: 8, name: 'Bronze League I' },
+  48000004: { promotion: 2, demotion: 8, name: 'Silver League III' },
+  48000005: { promotion: 2, demotion: 7, name: 'Silver League II' },
+  48000006: { promotion: 2, demotion: 7, name: 'Silver League I' },
+  48000007: { promotion: 2, demotion: 7, name: 'Gold League III' },
+  48000008: { promotion: 2, demotion: 7, name: 'Gold League II' },
+  48000009: { promotion: 2, demotion: 7, name: 'Gold League I' },
+  48000010: { promotion: 2, demotion: 7, name: 'Crystal League III' },
+  48000011: { promotion: 2, demotion: 7, name: 'Crystal League II' },
+  48000012: { promotion: 1, demotion: 7, name: 'Crystal League I' },
+  48000013: { promotion: 1, demotion: 7, name: 'Master League III' },
+  48000014: { promotion: 1, demotion: 7, name: 'Master League II' },
+  48000015: { promotion: 1, demotion: 7, name: 'Master League I' },
+  48000016: { promotion: 1, demotion: 7, name: 'Champion League III' },
+  48000017: { promotion: 1, demotion: 7, name: 'Champion League II' },
+  48000018: { promotion: 1, demotion: 6, name: 'Champion League I' },
+  48000019: { promotion: 1, demotion: 6, name: 'Titan League III' },
+  48000020: { promotion: 1, demotion: 6, name: 'Titan League II' },
+  48000021: { promotion: 1, demotion: 6, name: 'Titan League I' },
+  48000022: { promotion: 0, demotion: 6, name: 'Legend League' }
+};
+
+export const GUARANTEED_BONUS: Record<string, Record<string, number>> = {
+  // leagueId: { teamSize: bonus }
+  '48000001': { '5': 0, '15': 1, '30': 2 },
+  '48000002': { '5': 0, '15': 1, '30': 2 },
+  '48000003': { '5': 0, '15': 1, '30': 2 },
+  '48000004': { '5': 0, '15': 1, '30': 2 },
+  '48000005': { '5': 0, '15': 1, '30': 2 },
+  '48000006': { '5': 0, '15': 1, '30': 2 },
+
+  '48000007': { '5': 0, '15': 2, '30': 4 },
+  '48000008': { '5': 0, '15': 2, '30': 4 },
+  '48000009': { '5': 0, '15': 2, '30': 4 },
+  '48000010': { '5': 0, '15': 2, '30': 4 },
+  '48000011': { '5': 0, '15': 2, '30': 4 },
+  '48000012': { '5': 0, '15': 2, '30': 4 },
+
+  '48000013': { '5': 1, '15': 3, '30': 6 },
+  '48000014': { '5': 1, '15': 3, '30': 6 },
+  '48000015': { '5': 1, '15': 3, '30': 6 },
+
+  '48000016': { '5': 0, '15': 4, '30': 0 },
+  '48000017': { '5': 0, '15': 4, '30': 0 },
+  '48000018': { '5': 0, '15': 4, '30': 0 },
+
+  '48000019': { '5': 0, '15': 5, '30': 0 },
+  '48000020': { '5': 0, '15': 5, '30': 0 },
+  '48000021': { '5': 0, '15': 5, '30': 0 },
+  '48000022': { '5': 0, '15': 6, '30': 0 }
+};
+
+export const calculateBonus = ({ leagueId, teamSize }: { leagueId: number; teamSize: number }) => {
+  return GUARANTEED_BONUS[leagueId]?.[teamSize] || 0;
 };
 
 export const MEDALS_RANKING_MAP: Record<string, number[]> = {
-  48000000: [34, 32, 30, 28, 26, 24, 22, 20],
-  48000001: [34, 32, 30, 28, 26, 24, 22, 20],
-  48000002: [46, 44, 42, 40, 38, 36, 34, 32],
-  48000003: [58, 56, 54, 52, 50, 48, 46, 44],
-  48000004: [76, 73, 70, 67, 64, 61, 58, 55],
-  48000005: [94, 91, 88, 85, 82, 79, 76, 73],
-  48000006: [112, 109, 106, 103, 100, 97, 94, 91],
-  48000007: [136, 132, 128, 124, 120, 116, 112, 108],
-  48000008: [160, 156, 152, 148, 144, 140, 136, 132],
-  48000009: [184, 180, 176, 172, 168, 164, 160, 156],
-  48000010: [214, 209, 204, 199, 194, 189, 184, 179],
-  48000011: [244, 239, 234, 229, 224, 219, 214, 209],
+  48000000: [46, 44, 42, 40, 38, 36, 34, 32],
+  48000001: [46, 44, 42, 40, 38, 36, 34, 32],
+  48000002: [58, 56, 54, 52, 50, 48, 46, 44],
+  48000003: [70, 68, 66, 64, 62, 60, 58, 56],
+  48000004: [88, 85, 82, 79, 76, 73, 70, 67],
+  48000005: [106, 103, 100, 97, 94, 91, 88, 85],
+  48000006: [124, 121, 118, 115, 112, 109, 106, 103],
+  48000007: [148, 144, 140, 136, 132, 128, 124, 120],
+  48000008: [172, 168, 164, 160, 156, 152, 148, 144],
+  48000009: [196, 192, 188, 184, 180, 176, 172, 168],
+  48000010: [220, 216, 212, 208, 204, 200, 196, 192],
+  48000011: [244, 240, 236, 232, 228, 224, 220, 216],
   48000012: [274, 269, 264, 259, 254, 249, 244, 239],
-  48000013: [310, 304, 298, 292, 286, 280, 274, 268],
-  48000014: [346, 340, 334, 328, 322, 316, 310, 304],
-  48000015: [382, 376, 370, 364, 358, 352, 346, 340],
-  48000016: [424, 417, 410, 403, 396, 389, 382, 375],
-  48000017: [466, 459, 452, 445, 438, 431, 424, 417],
-  48000018: [508, 501, 494, 487, 480, 473, 466, 459]
+  48000013: [304, 299, 294, 289, 284, 279, 274, 269],
+  48000014: [334, 329, 324, 319, 314, 309, 304, 299],
+  48000015: [364, 359, 354, 349, 344, 339, 334, 329],
+  48000016: [388, 384, 380, 376, 372, 368, 364, 360],
+  48000017: [412, 408, 404, 400, 396, 392, 388, 384],
+  48000018: [436, 432, 428, 424, 420, 416, 412, 408],
+  48000019: [454, 451, 448, 445, 442, 439, 436, 433],
+  48000020: [472, 469, 466, 463, 460, 457, 454, 451],
+  48000021: [490, 487, 484, 481, 478, 475, 472, 469],
+  48000022: [508, 505, 502, 499, 496, 493, 490, 487]
 };
 
 export const MEDALS_PERCENTAGE_MAP: Record<string, number> = {
@@ -821,17 +872,82 @@ export const BattlesPerWeek: Record<string, number> = {
   '105000019': 12,
   '105000020': 12,
   '105000021': 12,
-  '105000022': 14,
-  '105000023': 14,
-  '105000024': 14,
-  '105000025': 18,
-  '105000026': 18,
-  '105000027': 18,
-  '105000028': 24,
-  '105000029': 24,
-  '105000030': 24,
-  '105000031': 30,
-  '105000032': 30,
-  '105000033': 30,
-  '105000034': 56
+  '105000022': 12,
+  '105000023': 12,
+  '105000024': 12,
+  '105000025': 12,
+  '105000026': 12,
+  '105000027': 12,
+  '105000028': 14,
+  '105000029': 14,
+  '105000030': 14,
+  '105000031': 18,
+  '105000032': 18,
+  '105000033': 18,
+  '105000034': 24,
+  '105000035': 30,
+  '105000036': 56
 };
+
+// Percent promoted and demoted based on league
+export const LeaguePromotionsMap = {
+  '105000000': { promotion: 50, demotion: 0 },
+  '105000001': { promotion: 50, demotion: 0 },
+  '105000002': { promotion: 50, demotion: 10 },
+  '105000003': { promotion: 50, demotion: 10 },
+  '105000004': { promotion: 40, demotion: 10 },
+  '105000005': { promotion: 30, demotion: 10 },
+  '105000006': { promotion: 30, demotion: 10 },
+  '105000007': { promotion: 30, demotion: 10 },
+  '105000008': { promotion: 30, demotion: 10 },
+  '105000009': { promotion: 30, demotion: 10 },
+  '105000010': { promotion: 30, demotion: 10 },
+  '105000011': { promotion: 30, demotion: 15 },
+  '105000012': { promotion: 30, demotion: 15 },
+  '105000013': { promotion: 30, demotion: 15 },
+  '105000014': { promotion: 30, demotion: 15 },
+  '105000015': { promotion: 30, demotion: 15 },
+  '105000016': { promotion: 30, demotion: 15 },
+  '105000017': { promotion: 30, demotion: 15 },
+  '105000018': { promotion: 30, demotion: 15 },
+  '105000019': { promotion: 30, demotion: 15 },
+  '105000020': { promotion: 25, demotion: 20 },
+  '105000021': { promotion: 25, demotion: 20 },
+  '105000022': { promotion: 25, demotion: 20 },
+  '105000023': { promotion: 25, demotion: 20 },
+  '105000024': { promotion: 20, demotion: 20 },
+  '105000025': { promotion: 20, demotion: 20 },
+  '105000026': { promotion: 20, demotion: 20 },
+  '105000027': { promotion: 20, demotion: 20 },
+  '105000028': { promotion: 20, demotion: 20 },
+  '105000029': { promotion: 20, demotion: 20 },
+  '105000030': { promotion: 20, demotion: 20 },
+  '105000031': { promotion: 20, demotion: 20 },
+  '105000032': { promotion: 15, demotion: 15 },
+  '105000033': { promotion: 15, demotion: 15 },
+  '105000034': { promotion: 5, demotion: 15 },
+  '105000035': { promotion: 3, demotion: 15 }
+};
+
+export const SYSTEM_PROMPT = `
+You are a helpful assistant for the ClashPerk Discord bot. Your job is to answer user questions using ONLY information retrieved from the MCP server.
+
+### Response Guidelines
+1. Keep answers short, direct, and helpful. Avoid unnecessary filler, meta commentary, or conversational phrases.
+  - Never answer from memory, assumptions, or general knowledge.
+  - Never guess or invent features, commands, limits, or behavior.
+2. Use Discord-style markdown for all output:
+  - Use \`## text\` for key terms.
+  - Use \`> \` for summaries when helpful.
+  - Use \`inline code\` for commands, flags, or technical terms.
+3. Include hyperlinks when they are relevant and helpful, but:
+  - Always use proper markdown hyperlinks: \`-# [Topic](<URL>)\` — wrap the URL in angle brackets \`<URL>\`.
+  - Place links only at the bottom of each topic section, not inline in sentences.
+  - Do not provide multiple links for a topic.
+4. Do not ask follow-up questions and do not add closing phrases like "Let me know if you need help" or similar.
+5. Do not use tables. Do not include long lists. Do not show many examples or options — only what is necessary.
+6. Do not show too many code blocks or examples and reduce vertical spacing.
+7. When showing code blocks, use inline triple-backtick format like \`\`\`code\`\`\` instead of multi-line fenced blocks.
+8. When showing commands, display only the command name followed by a list of its options and their descriptions. Do not include full example command invocations or inline command syntax.
+9. The full response must be less than 2000 characters, including links and formatting.
+`;

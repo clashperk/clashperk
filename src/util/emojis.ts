@@ -1,13 +1,10 @@
-export const HOME_HEROES_TYPED = {
+export const HOME_HEROES: Record<string, string> = {
   'Barbarian King': '<:BarbarianKing:696305370682884111>',
   'Archer Queen': '<:ArcherQueen:696305403046133780>',
   'Grand Warden': '<:GrandWarden:841295204476780586>',
   'Royal Champion': '<:RoyalChampion:813806447934308422>',
-  'Minion Prince': '<:MinionPrince:1310574226448584704>'
-};
-
-export const HOME_HEROES: Record<string, string> = {
-  ...HOME_HEROES_TYPED
+  'Minion Prince': '<:MinionPrince:1310574226448584704>',
+  'Dragon Duke': '<:DragonDuke:1483039973321211924>'
 };
 
 export const ELIXIR_TROOPS: Record<string, string> = {
@@ -43,7 +40,8 @@ export const HERO_PETS: Record<string, string> = {
   'Phoenix': '<:Phoenix:1029115881982271549>',
   'Spirit Fox': '<:SpiritFox:1184210185263259778>',
   'Angry Jelly': '<:AngryJelly:1230233853013004319>',
-  'Sneezy': '<:Sneezy:1354122571343466518>'
+  'Sneezy': '<:Sneezy:1354122571343466518>',
+  'Greedy Raven': '<:GreedyRaven:1475833362177462302>'
 };
 
 export const HERO_EQUIPMENT: Record<string, string> = {
@@ -79,7 +77,14 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Action Figure': '<:ActionFigure:1401438960294690867>',
   'Dark Crown': '<:DarkCrown:1401438986366484602>',
   'Heroic Torch': '<:HeroicTorch:1252640503988486327>',
-  'Meteor Staff': '<:MeteorStaff:1436061197077315586>'
+  'Meteor Staff': '<:MeteorStaff:1436061197077315586>',
+  'Frost Flake': '<:FrostFlake:1447958238816374919>',
+  'Stick Horse': '<:StickHorse:1470414517191180319>',
+  'Fire Heart': '<:FireHeart:1483040001116602420>',
+  'Stun Blaster': '<:StunBlaster:1483040038789841040>',
+  'Rocket Backpack': '<:RocketBackpack:1493662588695740659>',
+  'Flame Blower': '<:FlameBlower:1493665431611904221>',
+  'Electro Fangs': '<:ElectroFangs:1498392822158721214>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
@@ -105,7 +110,8 @@ export const SIEGE_MACHINES: Record<string, string> = {
   'Log Launcher': '<:LogLauncher:918762884257939478>',
   'Flame Flinger': '<:FlameFlinger:918762753013981235>',
   'Battle Drill': '<:BattleDrill:1029114347949142087>',
-  'Troop Launcher': '<:TroopLauncher:1341345433632636968>'
+  'Troop Launcher': '<:TroopLauncher:1341345433632636968>',
+  'Sky Wagon': '<:SkyWagon:1498392948340162623>'
 };
 
 export const ELIXIR_SPELLS: Record<string, string> = {
@@ -266,10 +272,12 @@ export const HOME_BASE_LEAGUES: Record<string, string> = {
   105000031: '<:ElectroLeague31:1424720598172569693>',
   105000032: '<:ElectroLeague32:1424720603721502762>',
   105000033: '<:ElectroLeague33:1424720610793361598>',
-  105000034: '<:LegendLeague:1424720630183497832>'
+  105000034: '<:Legend3:1502756189954506886>',
+  105000035: '<:Legend2:1502756123974045867>',
+  105000036: '<:Legend1:1502756072803401968>'
 };
 
-export const PLAYER_LEAGUE_TIERS = {
+export const PLAYER_LEAGUE_TIERS: Record<string, string> = {
   'Unranked': '<:Unranked:1424720675003830423>',
   'Skeleton League 1': '<:SkeletonLeague1:1424720650332934224>',
   'Skeleton League 2': '<:SkeletonLeague2:1424720655982788689>',
@@ -304,7 +312,11 @@ export const PLAYER_LEAGUE_TIERS = {
   'Electro League 31': '<:ElectroLeague31:1424720598172569693>',
   'Electro League 32': '<:ElectroLeague32:1424720603721502762>',
   'Electro League 33': '<:ElectroLeague33:1424720610793361598>',
-  'Legend League': '<:LegendLeague:1424720630183497832>'
+
+  'Legend League': '<:LegendLeague:1424720630183497832>',
+  'Legend III': '<:Legend3:1502756189954506886>',
+  'Legend II': '<:Legend2:1502756123974045867>',
+  'Legend I': '<:Legend1:1502756072803401968>'
 };
 
 export const CAPITAL_LEAGUES: Record<string, string> = {
@@ -333,14 +345,11 @@ export const CAPITAL_LEAGUES: Record<string, string> = {
   85000022: '<:legend:696301773513818162>'
 };
 
-export const ACHIEVEMENT_STARS: Record<string, string> = {
-  0: '<:0stars:696294293782003722>',
-  1: '<:1star:696294317932675122>',
-  2: '<:2stars:696294341186158593>',
-  3: '<:3stars:696294365663985674>'
-};
-
 export const CWL_LEAGUES: Record<string, string> = {
+  'Legend League': '<:Legend:1502750074701086811>',
+  'Titan League I': '<:Titan1:1502750484245778623>',
+  'Titan League II': '<:Titan2:1502750534363250830>',
+  'Titan League III': '<:Titan3:1502750583822487663>',
   'Champion League I': '<:Champion1:717735571933364334>',
   'Champion League II': '<:Champion2:717735583962759228>',
   'Champion League III': '<:Champion3:717735599184019598>',
@@ -418,9 +427,13 @@ export const CAPITAL_HALLS: Record<string, string> = {
 };
 
 export const WAR_STARS = {
-  OLD: '<:OldStar:812613069703872543>',
-  NEW: '<:Star:812625750809116704>',
-  EMPTY: '<:EmptyStar:812613069372522518>'
+  YELLOW_NEW: '<:YellowStar:1449496858857836745>',
+  YELLOW_EMPTY: '<:YellowGrey:1449496884237435051>',
+  RED_NEW: '<:RedStar:1449494660610523289>',
+  RED_EMPTY: '<:RedGrey:1449494686715871363>',
+  EMPTY: '<:Grey:1449493203618238637>',
+  ARROW_RIGHT: '<:ArwRight:1449761016324821205>',
+  ARROW_LEFT: '<:ArwLeft:1449760991280631940>'
 };
 
 export const WAR_STAR_COMBINATIONS: Record<string, string> = {
@@ -438,8 +451,9 @@ export const WAR_STAR_COMBINATIONS: Record<string, string> = {
 
 export const EMOJIS = {
   EXP: '<:eXP:706910526373888060>',
-  VS: '<:VS:816236784739680277>',
-  VS_BLUE: '<:VSBlue:913783545099587614>',
+  VS: '<:VS:1449653836535959552>',
+  VS_BLUE: '<:VsBlue:1449653936423440493>',
+  VS_RED: '<:VsRed:1449507960819814593>',
   GAP: '<:Gap:824509600664387596>',
   ACTIVITY: '<:Activity:825028424728051732>',
   HEROES: '<:Heroes:838837719866146826>',
@@ -454,16 +468,17 @@ export const EMOJIS = {
   SCROLL: '📜' as const,
   MAINTENANCE: '🛠️' as const,
   INFO: 'ℹ️' as const,
-  WHITE_CHECK_MARK: '✅',
-  RED_CHECK_MARK: '❌',
+  WHITE_CHECK_MARK: '✅' as const,
+  RED_CHECK_MARK: '❌' as const,
+  TROPHY_UNICODE: '🏆' as const,
   LINK: '🔗' as const,
   LEGEND_LEAGUE: '<:legend:696301773513818162>',
   WAR: '<:WAR:1131676276994879529>',
 
-  STAR: '<:Star:812625750809116704>',
-  WAR_STAR: '<:WarStars:812633571432464415>',
-  THREE_STARS: '<:ThreeStars:812613068906561546>',
+  STAR: WAR_STARS.YELLOW_NEW,
   EMPTY_STAR: WAR_STARS.EMPTY,
+  WAR_STAR: '<:Silver:1449655189245268043>',
+  THREE_STARS: '<:ThreeStars:812613068906561546>',
   EMPTY_THREE_STARS: '<:EmptyThreeStars:812615581241049139>',
 
   FIRE: '<:Fire:806556874623025212>',

@@ -1,12 +1,12 @@
 import { Collections, FeatureFlags } from '@app/constants';
-import { LegendAttacksEntity } from '@app/entities';
 import { APIPlayerClan } from 'clashofclans.js';
 import { EmbedBuilder, escapeMarkdown, Guild } from 'discord.js';
 import moment from 'moment';
 import { container } from 'tsyringe';
+import { api } from '../api/axios.js';
 import { Client } from '../struct/client.js';
 import { BLUE_NUMBERS } from '../util/emojis.js';
-import { escapeBackTick, padStart } from '../util/helper.js';
+import { padStart } from '../util/helper.js';
 import { Season } from '../util/toolkit.js';
 
 function calc(clanRank: number) {
@@ -40,10 +40,17 @@ export const getLegendRankingEmbedMaker = async ({
   const playersMap = _players.reduce<
     Record<
       string,
-      { townHallLevel: number; attackWins: number; clan?: APIPlayerClan; trophies: number }
+      {
+        name: string;
+        townHallLevel: number;
+        attackWins: number;
+        clan?: APIPlayerClan;
+        trophies: number;
+      }
     >
   >((record, curr) => {
     record[curr.tag] = {
+      name: curr.name,
       townHallLevel: curr.townHallLevel,
       attackWins: curr.attackWins,
       clan: curr.clan,
@@ -52,28 +59,21 @@ export const getLegendRankingEmbedMaker = async ({
     return record;
   }, {});
 
-  const legends = await client.db
-    .collection<Omit<LegendAttacksEntity, 'logs'>>(Collections.LEGEND_ATTACKS)
-    .find(
-      { tag: { $in: _players.map(({ tag }) => tag) }, seasonId },
-      { projection: { logs: 0, defenseLogs: 0, attackLogs: 0 } }
-    )
-    .toArray();
+  const result = await api.players.getBattleLogLeaderboard({
+    seasonId,
+    playerTags: _players.map(({ tag }) => tag)
+  });
 
-  let players = legends
-    .map((legend) => {
-      const player = playersMap[legend.tag];
-      return {
-        name: legend.name,
-        tag: legend.tag,
-        clan: player.clan,
-        actualTrophies: player.trophies,
-        trophies: legend.trophies,
-        attackWins: player.attackWins,
-        townHallLevel: player.townHallLevel
-      };
-    })
-    .filter((legend) => legend.actualTrophies >= 4900);
+  let players = (result.data?.items ?? []).map((legend) => {
+    const player = playersMap[legend.tag];
+    return {
+      name: player.name,
+      tag: legend.tag,
+      clan: player?.clan,
+      trophies: seasonId === Season.ID ? player.trophies : legend.trophies,
+      townHallLevel: player.townHallLevel
+    };
+  });
 
   if (sort_by === 'town_hall_asc') {
     players.sort((a, b) => b.trophies - a.trophies);
@@ -94,7 +94,7 @@ export const getLegendRankingEmbedMaker = async ({
 
   const embed = new EmbedBuilder();
   embed.setColor(client.embed(guild.id));
-  embed.setAuthor({ name: `Legend Leaderboard (${Season.ID})` });
+  embed.setAuthor({ name: `Legend Leaderboard (${moment(seasonId).format('MMM YYYY')})` });
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
 
@@ -106,30 +106,12 @@ export const getLegendRankingEmbedMaker = async ({
   if (players.length) {
     embed.setDescription(
       [
-        '```',
-        `\u200e #  TH TROPHY WON  NAME`,
+        `\` #  TH TROPHY\` \u200b **NAME**`,
         ...players.slice(0, 99).map((player, n) => {
           const trophies = player.trophies;
-          const attacks = padStart(player.attackWins, 3);
-          const name = escapeBackTick(player.name);
+          const name = escapeMarkdown(player.name);
           const townHall = padStart(player.townHallLevel, 2);
-          return `\u200e${padStart(n + 1, 2)}  ${townHall}  ${trophies}  ${attacks}  ${name}`;
-        }),
-        '```',
-        '',
-        isProjectionEnabled ? `**Projected Clan Points:** \`${totalPoints}\`` : ''
-      ].join('\n')
-    );
-  }
-
-  if ((!sort_by || sort_by === 'trophies_only') && players.length) {
-    embed.setDescription(
-      [
-        ...players.slice(0, 50).map((player, idx) => {
-          const name = escapeMarkdown(
-            `${player.name}${player.clan ? ` | ${player.clan.name}` : ''}`
-          );
-          return `${BLUE_NUMBERS[idx + 1]} \`${player.trophies}\` \u200b \u200e${name}`;
+          return `\`${padStart(n + 1, 2)}  ${townHall}  ${trophies} \` \u200b \u200e${name}`;
         }),
         '',
         isProjectionEnabled ? `**Projected Clan Points:** \`${totalPoints}\`` : ''

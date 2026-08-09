@@ -384,7 +384,8 @@ export default class RemindersEditCommand extends Command {
               message: state.message,
               duration
             }
-          }
+          },
+          { returnDocument: 'after' }
         );
 
         if (updated && updated.duration !== reminder.duration) {

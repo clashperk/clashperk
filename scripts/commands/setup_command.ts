@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { channelTypes, translation } from './@helper.js';
+import { channelTypes, translation, guildInstallable } from './@helper.js';
 
 export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'setup',
@@ -8,37 +8,13 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   description_localizations: translation('command.setup.description'),
   dm_permission: false,
   options: [
-    // enable
+    // clan
     {
-      name: 'enable',
-      description: command.setup.enable.description,
-      description_localizations: translation('command.setup.enable.description'),
+      name: 'clan',
+      description: command.setup.clan.description,
+      description_localizations: translation('command.setup.clan.description'),
       type: ApplicationCommandOptionType.Subcommand,
       options: [
-        {
-          name: 'action',
-          description: common.select_an_option,
-          description_localizations: translation('common.select_an_option'),
-          type: ApplicationCommandOptionType.String,
-          required: true,
-          choices: [
-            {
-              name: common.choices.setup.link_server,
-              name_localizations: translation('common.choices.setup.link_server'),
-              value: 'link-clan'
-            },
-            {
-              name: common.choices.setup.link_channel,
-              name_localizations: translation('common.choices.setup.link_channel'),
-              value: 'link-channel'
-            },
-            {
-              name: common.choices.setup.clan_embed,
-              name_localizations: translation('common.choices.setup.clan_embed'),
-              value: 'clan-embed'
-            }
-          ]
-        },
         {
           name: 'clan',
           description: common.options.clan.tag.description,
@@ -49,19 +25,60 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         },
         {
           name: 'category',
-          description: command.setup.enable.options.category.description,
-          description_localizations: translation(
-            'command.setup.enable.options.category.description'
-          ),
+          description: command.setup.clan.options.category.description,
+          description_localizations: translation('command.setup.clan.options.category.description'),
           type: ApplicationCommandOptionType.String,
           max_length: 36,
           autocomplete: true
         },
         {
-          name: 'channel',
-          description: command.setup.enable.options.channel.description,
+          name: 'clan_channel',
+          description: command.setup.clan.options.clan_channel.description,
           description_localizations: translation(
-            'command.setup.enable.options.channel.description'
+            'command.setup.clan.options.clan_channel.description'
+          ),
+          type: ApplicationCommandOptionType.Channel,
+          channel_types: channelTypes
+        },
+        {
+          name: 'unlink_clan_channel',
+          description: command.setup.clan.options.unlink_clan_channel.description,
+          description_localizations: translation(
+            'command.setup.clan.options.unlink_clan_channel.description'
+          ),
+          type: ApplicationCommandOptionType.Channel,
+          channel_types: channelTypes
+        },
+        {
+          name: 'unlink_clan',
+          description: command.setup.clan.options.unlink_clan.description,
+          description_localizations: translation(
+            'command.setup.clan.options.unlink_clan.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
+        }
+      ]
+    },
+    // clan-embed
+    {
+      name: 'clan-embed',
+      description: command.setup.clan_embed.description,
+      description_localizations: translation('command.setup.clan_embed.description'),
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'clan',
+          description: common.options.clan.tag.description,
+          description_localizations: translation('common.options.clan.tag.description'),
+          required: true,
+          autocomplete: true,
+          type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'channel',
+          description: command.setup.clan_logs.options.channel.description,
+          description_localizations: translation(
+            'command.setup.clan_logs.options.channel.description'
           ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
@@ -69,9 +86,19 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         {
           name: 'color',
           name_localizations: { 'en-GB': 'colour' },
-          description: command.setup.enable.options.color.description,
-          description_localizations: translation('command.setup.enable.options.color.description'),
+          description: command.setup.clan_logs.options.color.description,
+          description_localizations: translation(
+            'command.setup.clan_logs.options.color.description'
+          ),
           type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'disable_embed',
+          description: command.setup.clan_embed.options.disable_embed.description,
+          description_localizations: translation(
+            'command.setup.clan_embed.options.disable_embed.description'
+          ),
+          type: ApplicationCommandOptionType.Boolean
         }
       ]
     },
@@ -265,9 +292,9 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         },
         {
           name: 'channel',
-          description: command.setup.enable.options.channel.description,
+          description: command.setup.clan_logs.options.channel.description,
           description_localizations: translation(
-            'command.setup.enable.options.channel.description'
+            'command.setup.clan_logs.options.channel.description'
           ),
           type: ApplicationCommandOptionType.Channel,
           channel_types: channelTypes
@@ -277,8 +304,10 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           name_localizations: {
             'en-GB': 'colour'
           },
-          description: command.setup.enable.options.color.description,
-          description_localizations: translation('command.setup.enable.options.color.description'),
+          description: command.setup.clan_logs.options.color.description,
+          description_localizations: translation(
+            'command.setup.clan_logs.options.color.description'
+          ),
           type: ApplicationCommandOptionType.String
         },
         {
@@ -288,55 +317,19 @@ export const SETUP_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     },
+
+    // enable
+    {
+      name: 'enable',
+      description: 'This command has been replaced with /setup clan and /setup clan-embed',
+      type: ApplicationCommandOptionType.Subcommand
+    },
     // disable
     {
       name: 'disable',
-      description: command.setup.disable.description,
-      description_localizations: translation('command.setup.disable.description'),
-      type: ApplicationCommandOptionType.Subcommand,
-      options: [
-        {
-          name: 'action',
-          required: true,
-          description: common.select_an_option,
-          description_localizations: translation('common.select_an_option'),
-          type: ApplicationCommandOptionType.String,
-          choices: [
-            {
-              name: common.choices.setup.unlink_channel,
-              name_localizations: translation('common.choices.setup.unlink_channel'),
-              value: 'unlink-channel'
-            },
-            {
-              name: common.choices.setup.remove_clan,
-              name_localizations: translation('common.choices.setup.remove_clan'),
-              value: 'delete-clan'
-            },
-            {
-              name: common.choices.setup.clan_embed,
-              name_localizations: translation('common.choices.setup.clan_embed'),
-              value: 'clan-embed'
-            }
-          ]
-        },
-        {
-          name: 'clan',
-          autocomplete: true,
-          description: common.options.clan.tag.description,
-          description_localizations: translation('common.options.clan.tag.description'),
-          type: ApplicationCommandOptionType.String,
-          required: true
-        },
-        {
-          name: 'channel',
-          description: command.setup.disable.options.channel.description,
-          description_localizations: translation(
-            'command.setup.disable.options.channel.description'
-          ),
-          type: ApplicationCommandOptionType.Channel,
-          channel_types: channelTypes
-        }
-      ]
+      description: 'This command has been replaced with /setup clan and /setup clan-embed',
+      type: ApplicationCommandOptionType.Subcommand
     }
-  ]
+  ],
+  ...guildInstallable
 };

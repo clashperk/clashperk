@@ -181,7 +181,7 @@ export default class LayoutConfigCommand extends Command {
   }
 }
 
-export interface LayoutCommandArgs {
+interface LayoutCommandArgs {
   allow_voting?: boolean;
   allow_tracking?: boolean;
   commandName?: string;

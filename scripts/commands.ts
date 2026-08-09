@@ -47,6 +47,7 @@ import { SETUP_COMMAND } from './commands/setup_command.js';
 import { STATS_COMMAND } from './commands/stats_command.js';
 import { STATUS_COMMAND } from './commands/status_command.js';
 import { SUMMARY_COMMAND } from './commands/summary_command.js';
+import { TICKET_COMMAND } from './commands/ticket_command.js';
 import { TIMEZONE_COMMAND } from './commands/timezone_command.js';
 import { TRANSLATE_COMMAND } from './commands/translate_command.js';
 import { UNITS_COMMAND } from './commands/units_command.js';
@@ -135,4 +136,4 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
   ASK_COMMAND
 ];
 
-export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [];
+export const HIDDEN_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [TICKET_COMMAND];

@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import { title } from 'radash';
 import { command, common } from '../../src/util/locales.js';
-import { translation } from './@helper.js';
+import { translation, guildInstallable } from './@helper.js';
 
 export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'autorole',
@@ -652,5 +652,6 @@ export const AUTOROLE_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
         }
       ]
     }
-  ]
+  ],
+  ...guildInstallable
 };

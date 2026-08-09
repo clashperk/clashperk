@@ -69,8 +69,8 @@ export default class CapitalRaidsCommand extends Command {
 
       const hasTrophyCard = Boolean(
         season?.clanCapitalPoints &&
-          season._clanCapitalPoints &&
-          season._clanCapitalPoints !== season.clanCapitalPoints
+        season._clanCapitalPoints &&
+        season._clanCapitalPoints !== season.clanCapitalPoints
       );
 
       const query = new URLSearchParams({

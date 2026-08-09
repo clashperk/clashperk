@@ -1,7 +1,33 @@
-import { Collections } from '@app/constants';
+import { APIPlayer } from 'clashofclans.js';
+import moment from 'moment';
 import { container } from 'tsyringe';
+import { api, encode } from '../api/axios.js';
+import { BattleLogDailyDto, BattleLogDto } from '../api/generated.js';
 import { Client } from '../struct/client.js';
+import { Collections, LeaguePromotionsMap } from '../util/constants.js';
 import { Season, Util } from '../util/toolkit.js';
+
+export const getDailyLegendEntries = async (playerTag: string) => {
+  const client = container.resolve(Client);
+  const result = await client.db
+    .collection(Collections.LEGEND_ATTACKS)
+    .findOne({ tag: playerTag, seasonId: Season.ID });
+
+  return (result?.logs ?? []).reduce<Record<string, { start: number; end: number; diff: number }>>(
+    (record, log) => {
+      const date = moment(log.timestamp).subtract(5, 'hours').toISOString().slice(0, 10);
+      if (!record[date]) {
+        record[date] = { start: log.start, end: log.end, diff: log.inc };
+      } else {
+        record[date].end = log.end;
+        record[date].diff += log.inc;
+      }
+
+      return record;
+    },
+    {}
+  );
+};
 
 export const getLegendTimestampAgainstDay = (day?: number) => {
   if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
@@ -11,208 +37,208 @@ export const getLegendTimestampAgainstDay = (day?: number) => {
   return { ...days[num - 1], day };
 };
 
-export const getLegendAttack = async (playerTag: string) => {
-  const client = container.resolve(Client);
-  return await client.db
-    .collection(Collections.LEGEND_ATTACKS)
-    .findOne({ tag: playerTag, seasonId: Season.ID });
+export const getLegendBattleLog = async (playerTag: string): Promise<BattleLogDto[]> => {
+  const [result, logsMap] = await Promise.all([
+    api.players.getBattleLog({ playerTag: encode(playerTag) }),
+    getDailyLegendEntries(playerTag)
+  ]);
+  if (!result?.data?.items) return [];
+  return result.data.items
+    .filter((b) => b.battleType === 'legend')
+    .map((log) => ({
+      ...log,
+      trophies: logsMap[log.battleDate]?.end ?? log.trophies,
+      startTrophies: logsMap[log.battleDate]?.start ?? log.trophies,
+      endTrophies: logsMap[log.battleDate]?.end ?? log.trophies
+    }));
 };
 
-export const aggregateLegendAttacks = async (playerTag: string) => {
+export const getRankedBattleLog = async (
+  playerTag: string,
+  weekId: string
+): Promise<BattleLogDto[]> => {
+  const result = await api.players.getBattleLog({ playerTag: encode(playerTag) });
+  if (!result?.data?.items) return [];
+  return result.data.items.filter((b) => b.battleWeek === weekId && b.battleType === 'ranked');
+};
+
+export const getTournament = async (player: APIPlayer, lastTournament = false) => {
   const client = container.resolve(Client);
-  const lastDayEnd = Util.getCurrentLegendTimestamp().startTime;
+  const { body, res } = await client.coc.getLeagueGroup(
+    lastTournament ? player.previousLeagueGroupTag : player.currentLeagueGroupTag,
+    lastTournament ? player.previousLeagueSeasonId : player.currentLeagueSeasonId,
+    { playerTag: player.tag }
+  );
+  if (!res.ok || !body?.members?.length) return null;
 
+  const total = body.members.length;
+  const rankIndex = body.members.findIndex((m) => m.playerTag === player.tag);
+  if (rankIndex < 0) return null;
+
+  const attacks: BattleLogDto[] = [...body.attackLogs].map((log) => ({
+    battleDate: Season.toBattleDate(new Date(log.creationTime)),
+    battleType: 'ranked',
+    battleWeek: Season.tournamentID,
+    battleSeason: Season.ID,
+    destruction: log.destructionPercentage,
+    isAttack: true,
+    leagueId: player.leagueTier?.id ?? 0,
+    startTrophies: 0,
+    endTrophies: 0,
+    stars: log.stars,
+    name: player.name,
+    opponentTag: log.opponentPlayerTag,
+    tag: player.tag,
+    trophyChange: calculateTrophies(log.stars, log.destructionPercentage, {
+      isAttack: true,
+      isLegendLeague: false
+    }),
+    trophies: 0,
+    ingestedAt: new Date(log.creationTime).toISOString()
+  }));
+
+  const defenses: BattleLogDto[] = [...body.defenseLogs].map((log) => ({
+    battleDate: Season.toBattleDate(new Date(log.creationTime)),
+    battleType: 'ranked',
+    battleWeek: Season.tournamentID,
+    battleSeason: Season.ID,
+    destruction: log.destructionPercentage,
+    isAttack: false,
+    leagueId: player.leagueTier?.id ?? 0,
+    stars: log.stars,
+    name: player.name,
+    startTrophies: 0,
+    endTrophies: 0,
+    opponentTag: log.opponentPlayerTag,
+    tag: player.tag,
+    trophyChange: calculateTrophies(log.stars, log.destructionPercentage, {
+      isAttack: false,
+      isLegendLeague: false
+    }),
+    trophies: 0,
+    ingestedAt: new Date(log.creationTime).toISOString()
+  }));
+
+  const rank = rankIndex + 1;
+  const topPercentage = Math.ceil((rank / total) * 100);
+
+  const leagueId = String(player.leagueTier?.id ?? 0);
+  const promotions = LeaguePromotionsMap[leagueId as keyof typeof LeaguePromotionsMap];
+  const demotionZone = promotions ? Math.ceil(total * (promotions.demotion / 100)) : 0;
+  const isInDemotionZone = demotionZone > 0 && rank > total - demotionZone;
+
+  const promotionZone = promotions ? Math.ceil(total * (promotions.promotion / 100)) : 0;
+  const isInPromotionZone = promotionZone > 0 && rank <= promotionZone;
+
+  return {
+    rank,
+    total,
+    topPercentage,
+    demotionZone,
+    isInDemotionZone,
+    promotionZone,
+    isInPromotionZone,
+    battles: [...attacks, ...defenses]
+  };
+};
+
+export const getLegendBattleLogAggregate = async (
+  playerTag: string
+): Promise<BattleLogDailyDto[]> => {
+  const result = await api.players.getBattleLogAggregate({ playerTag: encode(playerTag) });
+  if (!result?.data?.items) return [];
+  return result.data.items;
+};
+
+export const aggregateLegendBattleLog = (dailyItems: BattleLogDailyDto[]) => {
   const seasons = Util.getSeasons().slice(0, 3).reverse();
-  const [, seasonStart, seasonEnd] = seasons.map(({ endTime }) => endTime);
-  const [, lastSeasonEnd] = seasons.map(({ endTime }) => endTime);
+  const [prevPrev, prevSeason, currentSeason] = seasons;
 
-  const items = await client.db
-    .collection(Collections.LEGEND_ATTACKS)
-    .aggregate<{
-      _id: string;
-      logs: {
-        timestamp: Date;
-        trophies: number | null;
-      }[];
-      avgGain: number;
-      avgOffense: number;
-      avgDefense: number;
-    }>([
-      {
-        $match: {
-          tag: playerTag,
-          seasonId: {
-            $in: seasons.map(({ seasonId }) => seasonId)
-          }
-        }
-      },
-      {
-        $unwind: {
-          path: '$logs'
-        }
-      },
-      {
-        $set: {
-          ts: {
-            $toDate: '$logs.timestamp'
-          }
-        }
-      },
-      {
-        $set: {
-          ts: {
-            $dateTrunc: {
-              date: '$ts',
-              unit: 'day',
-              timezone: '-05:00'
-            }
-          }
-        }
-      },
-      {
-        $sort: {
-          ts: 1
-        }
-      },
-      {
-        $addFields: {
-          gain: {
-            $subtract: ['$logs.end', '$logs.start']
-          },
-          offense: {
-            $cond: {
-              if: {
-                $gt: ['$logs.inc', 0]
-              },
-              then: '$logs.inc',
-              else: 0
-            }
-          },
-          defense: {
-            $cond: {
-              if: {
-                $lte: ['$logs.inc', 0]
-              },
-              then: '$logs.inc',
-              else: 0
-            }
-          }
-        }
-      },
-      {
-        $group: {
-          _id: '$ts',
-          seasonId: {
-            $first: '$seasonId'
-          },
-          trophies: {
-            $last: '$logs.end'
-          },
-          gain: {
-            $sum: '$gain'
-          },
-          offense: {
-            $sum: '$offense'
-          },
-          defense: {
-            $sum: '$defense'
-          },
-          count: {
-            $sum: 1
-          }
-        }
-      },
-      {
-        $sort: {
-          _id: 1
-        }
-      },
-      {
-        $group: {
-          _id: '$seasonId',
-          logs: {
-            $push: {
-              timestamp: '$_id',
-              trophies: '$trophies',
-              defense: '$defense',
-              offense: '$offense',
-              gain: '$gain',
-              count: '$count'
-            }
-          }
-        }
-      },
-      {
-        $set: {
-          filtered_logs: {
-            $filter: {
-              input: '$logs',
-              as: 'log',
-              cond: {
-                $or: [
-                  {
-                    $lt: [
-                      '$$log.timestamp',
-                      {
-                        $toDate: lastDayEnd
-                      }
-                    ]
-                  },
-                  {
-                    $gte: ['$$log.count', 16]
-                  }
-                ]
-              }
-            }
-          }
-        }
-      },
-      {
-        $project: {
-          avgOffense: {
-            $avg: {
-              $cond: {
-                if: {
-                  $gt: [{ $size: '$filtered_logs' }, 0]
-                },
-                then: '$filtered_logs.offense',
-                else: '$logs.offense'
-              }
-            }
-          },
-          avgDefense: {
-            $avg: {
-              $cond: {
-                if: {
-                  $gt: [{ $size: '$filtered_logs' }, 0]
-                },
-                then: '$filtered_logs.defense',
-                else: '$logs.defense'
-              }
-            }
-          },
-          avgGain: {
-            $avg: {
-              $cond: {
-                if: {
-                  $gt: [{ $size: '$filtered_logs' }, 0]
-                },
-                then: '$filtered_logs.gain',
-                else: '$logs.gain'
-              }
-            }
-          },
-          logs: 1,
-          _id: 1
-        }
-      },
-      {
-        $sort: {
-          _id: -1
-        }
-      }
-    ])
-    .toArray();
+  const seasonStart = new Date(prevSeason.endTime);
+  const seasonEnd = new Date(currentSeason.endTime);
+  const lastSeasonEnd = new Date(prevSeason.endTime);
+
+  const groupBySeason = (startMs: number, endMs: number) =>
+    dailyItems.filter((item) => {
+      const t = moment(item.battleDate).add(6, 'hours').toDate().getTime();
+      return t >= startMs && t < endMs;
+    });
+
+  const buildSeasonEntry = (seasonId: string, startDate: Date, endDate: Date) => {
+    const items = groupBySeason(startDate.getTime(), endDate.getTime());
+    const logs = items.map((item) => ({
+      timestamp: new Date(item.battleDate),
+      trophies: Number(item.trophies) as number | null
+    }));
+    const avgGain = items.length ? items.reduce((s, i) => s + Number(i.gain), 0) / items.length : 0;
+    const avgOffense = items.length
+      ? items.reduce((s, i) => s + Number(i.offenseTrophies), 0) / items.length
+      : 0;
+    const avgDefense = items.length
+      ? items.reduce((s, i) => s + Number(i.defenseTrophies), 0) / items.length
+      : 0;
+    return { _id: seasonId, logs, avgGain, avgOffense, avgDefense };
+  };
+
+  const currentEntry = buildSeasonEntry(
+    currentSeason.seasonId,
+    new Date(prevSeason.endTime),
+    new Date(currentSeason.endTime)
+  );
+  const prevEntry = buildSeasonEntry(
+    prevSeason.seasonId,
+    new Date(prevPrev.endTime),
+    new Date(prevSeason.endTime)
+  );
+
+  const items = [currentEntry, prevEntry].filter((s) => s.logs.length > 0);
 
   return { items, seasonStart, seasonEnd, lastSeasonEnd };
+};
+
+export const calculateTrophies = (
+  stars: number,
+  destruction: number,
+  { isAttack, isLegendLeague }: { isAttack: boolean; isLegendLeague: boolean }
+): number => {
+  let attackerGain = 0;
+
+  if (stars === 3) {
+    // 3 stars always awards the full pool
+    attackerGain = 40;
+  } else if (stars === 2) {
+    // 16 base + 1 per 3% over 50%
+    attackerGain = 16 + Math.floor((destruction - 50) / 3);
+  } else if (stars === 1) {
+    // 5 base + 1 per 9% destruction ABOVE the initial 1%
+    attackerGain = 5 + Math.floor((destruction - 1) / 9);
+  } else {
+    // 0 stars: 1 trophy base, + 1 per 10% destruction ABOVE 9%
+    if (destruction >= 9) {
+      attackerGain = 1 + Math.floor((destruction - 9) / 10);
+    }
+  }
+
+  // Cap at 40 (standard trophy pool)
+  if (attackerGain > 40) {
+    attackerGain = 40;
+  }
+
+  if (isAttack) {
+    return attackerGain;
+  }
+
+  // In Legend League, the defender LOSES what the attacker gains
+  // Exception: 0 stars means no trophies are lost by the defender
+  if (isLegendLeague) {
+    return stars === 0 ? 0 : -attackerGain;
+  }
+
+  // In Ranked, the defender GAINS the remainder of the 40 pool
+  // 0-star defense always gives full 40 to defender
+  if (stars === 0) {
+    return 40;
+  }
+
+  return 40 - attackerGain;
 };

@@ -46,7 +46,7 @@ export default class LastSeenCommand extends Command {
       return interaction.editReply(
         this.i18n('common.no_clans_found', {
           lng: interaction.locale,
-          command: this.client.commands.SETUP_ENABLE
+          command: this.client.commands.SETUP_CLAN
         })
       );
     }

@@ -13,33 +13,34 @@
 export enum WarTypes {
   REGULAR = 1,
   FRIENDLY = 2,
-  CWL = 3,
+  CWL = 3
 }
 
 export enum UserRoles {
-  USER = "user",
-  ADMIN = "admin",
-  VIEWER = "viewer",
-  FETCH_WARS = "fetch:wars",
-  FETCH_CLANS = "fetch:clans",
-  FETCH_PLAYERS = "fetch:players",
-  FETCH_LEGENDS = "fetch:legends",
-  FETCH_LINKS = "fetch:links",
-  MANAGE_LINKS = "manage:links",
-  MANAGE_ROSTERS = "manage:rosters",
-  MANAGE_REMINDERS = "manage:reminders",
+  USER = 'user',
+  ADMIN = 'admin',
+  VIEWER = 'viewer',
+  FETCH_WARS = 'fetch:wars',
+  FETCH_CLANS = 'fetch:clans',
+  FETCH_PLAYERS = 'fetch:players',
+  FETCH_LEGENDS = 'fetch:legends',
+  FETCH_LINKS = 'fetch:links',
+  MANAGE_LINKS = 'manage:links',
+  FETCH_ROSTERS = 'fetch:rosters',
+  MANAGE_ROSTERS = 'manage:rosters',
+  MANAGE_REMINDERS = 'manage:reminders'
 }
 
 export enum ErrorCodes {
-  FORBIDDEN = "FORBIDDEN",
-  UNAUTHORIZED = "UNAUTHORIZED",
-  NOT_FOUND = "NOT_FOUND",
-  BAD_REQUEST = "BAD_REQUEST",
-  INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
-  HANDOFF_TOKEN_EXPIRED = "HANDOFF_TOKEN_EXPIRED",
-  USER_BLOCKED = "USER_BLOCKED",
-  INVALID_PASSKEY = "INVALID_PASSKEY",
-  GUILD_ACCESS_FORBIDDEN = "GUILD_ACCESS_FORBIDDEN",
+  FORBIDDEN = 'FORBIDDEN',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  NOT_FOUND = 'NOT_FOUND',
+  BAD_REQUEST = 'BAD_REQUEST',
+  INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+  HANDOFF_TOKEN_EXPIRED = 'HANDOFF_TOKEN_EXPIRED',
+  USER_BLOCKED = 'USER_BLOCKED',
+  INVALID_PASSKEY = 'INVALID_PASSKEY',
+  GUILD_ACCESS_FORBIDDEN = 'GUILD_ACCESS_FORBIDDEN'
 }
 
 export interface ErrorResponseDto {
@@ -49,6 +50,18 @@ export interface ErrorResponseDto {
   statusCode: number;
   method: string;
   path: string;
+}
+
+export interface JwtUserInput {
+  roles: string[];
+  jti: string;
+  userId: string;
+  username: string;
+  version: string;
+  guildIds: string[];
+  applicationId?: string;
+  remoteIp?: string;
+  cacheMultiplier?: number;
 }
 
 export interface LoginInputDto {
@@ -62,7 +75,7 @@ export interface LoginOkDto {
 }
 
 export interface GenerateTokenInputDto {
-  /** @default ["user","admin","viewer","fetch:wars","fetch:clans","fetch:players","fetch:legends","fetch:links","manage:links","manage:rosters","manage:reminders"] */
+  /** @default ["user","admin","viewer","fetch:wars","fetch:clans","fetch:players","fetch:legends","fetch:links","manage:links","fetch:rosters","manage:rosters","manage:reminders"] */
   roles: UserRoles[];
   userId: string;
 }
@@ -83,19 +96,31 @@ export interface AuthUserDto {
   isBot: boolean;
 }
 
+export interface HandoffGuildDto {
+  id: string;
+  name: string;
+  iconUrl: string | null;
+}
+
 export interface HandoffUserDto {
   roles: UserRoles[];
   userId: string;
   displayName: string;
   username: string;
   isBot: boolean;
-  guildId: string;
+  guild: HandoffGuildDto;
+  applicationId: string | null;
   avatarUrl: string | null;
 }
 
 export interface HandoffTokenInputDto {
   userId: string;
   guildId: string;
+  applicationId: string | null;
+}
+
+export interface HandoffTokenDto {
+  token: string;
 }
 
 export interface CreateLinkInputDto {
@@ -104,19 +129,23 @@ export interface CreateLinkInputDto {
   apiToken: string | null;
 }
 
+export interface ResultOkDto {
+  message: string;
+}
+
 export interface GetLinksInputDto {
   /**
    * @maxItems 100
    * @minItems 1
    * @example ["#2PP"]
    */
-  playerTags: string[];
+  playerTags?: string[];
   /**
    * @maxItems 100
    * @minItems 1
    * @example ["444432489818357760"]
    */
-  userIds: string[];
+  userIds?: string[];
 }
 
 export interface LinksDto {
@@ -150,6 +179,65 @@ export interface LastSeenDto {
   items: LastSeenMemberDto[];
 }
 
+export interface BattleLogDto {
+  name: string;
+  tag: string;
+  opponentTag: string;
+  battleType: string;
+  isAttack: boolean;
+  stars: number;
+  destruction: number;
+  trophies: number;
+  trophyChange: number;
+  startTrophies: number;
+  endTrophies: number;
+  battleDate: string;
+  battleSeason: string;
+  battleWeek: string;
+  leagueId: number;
+  /** @format date-time */
+  ingestedAt: string;
+}
+
+export interface BattleLogItemsDto {
+  items: BattleLogDto[];
+}
+
+export interface BattleLogDailyDto {
+  name: string;
+  tag: string;
+  battleDate: string;
+  trophies: number;
+  offenseTrophies: number;
+  defenseTrophies: number;
+  gain: number;
+  attackCount: number;
+  defenseCount: number;
+}
+
+export interface BattleLogAggregateItemsDto {
+  items: BattleLogDailyDto[];
+}
+
+export interface BattleLogLeaderboardInputDto {
+  /**
+   * @pattern /^\d{4}-\d{2}$/
+   * @example "2026-05"
+   */
+  seasonId: string;
+  playerTags: string[];
+}
+
+export interface BattleLogLeaderboardItemDto {
+  tag: string;
+  name: string;
+  trophies: number;
+}
+
+export interface BattleLogLeaderboardDto {
+  items: BattleLogLeaderboardItemDto[];
+}
+
 export interface GlobalClanEntity {
   tag: string;
   name: string;
@@ -177,7 +265,7 @@ export interface AttackRecordDto {
   stars: number;
   trueStars: number;
   defenderTag: string;
-  destructionPercentage: number;
+  destruction: number;
 }
 
 export interface AttackHistoryDto {
@@ -187,6 +275,7 @@ export interface AttackHistoryDto {
   /** @format date-time */
   endTime: string;
   attacks: AttackRecordDto[];
+  season: string;
   id: number;
   clan: {
     name: string;
@@ -211,11 +300,30 @@ export interface AttackHistoryItemsDto {
 }
 
 export interface AggregateAttackHistoryDto {
+  season: string;
   totalWars: number;
   totalAttacks: number;
   total3Stars: number;
   totalMissed: number;
   totalStars: number;
+}
+
+export interface AggregateAttackHistoryItemsDto {
+  items: AggregateAttackHistoryDto[];
+}
+
+export interface AggregateClanWarLeagueHistoryDto {
+  season: string;
+  totalAttacks: number;
+  totalMissed: number;
+  totalDestruction: number;
+  totalStars: number;
+  totalWars: number;
+  rounds: number;
+}
+
+export interface AggregateClanWarLeagueHistoryItemsDto {
+  items: AggregateClanWarLeagueHistoryDto[];
 }
 
 export interface ThresholdsDto {
@@ -232,30 +340,6 @@ export interface LegendRankingThresholdsDto {
   live: LegendRankingThresholdsSnapShotDto;
   eod: LegendRankingThresholdsSnapShotDto | null;
   history: LegendRankingThresholdsSnapShotDto[];
-}
-
-export interface LeaderboardByTagsInputDto {
-  /**
-   * @maxItems 100
-   * @minItems 0
-   * @example ["#2PP"]
-   */
-  playerTags: string[];
-  /** @example 1 */
-  minRank: number;
-  /** @example 100 */
-  maxRank: number;
-}
-
-export interface LeaderboardByTagsDto {
-  tag: string;
-  name: string;
-  rank: number;
-  trophies: number;
-}
-
-export interface LeaderboardByTagsItemsDto {
-  items: LeaderboardByTagsDto[];
 }
 
 export interface GetLegendAttacksInputDto {
@@ -287,11 +371,18 @@ export interface LegendAttacksItemsDto {
   items: LegendAttacksDto[];
 }
 
+export interface LegendRankDto {
+  tag: string;
+  name: string;
+  rank: number;
+  trophies: number;
+}
+
 export interface ClanWarLeagueRound {
   warTags: string[];
 }
 
-export interface ClanDto {
+export interface LeagueGroupClanDto {
   tag: string;
   name: string;
   leagueId: number;
@@ -335,23 +426,184 @@ export interface WarClanDto {
 
 export interface ClanWarDto {
   state: string;
-  battleModifier?: string;
-  teamSize: number;
   startTime: string;
   preparationStartTime: string;
   endTime: string;
+  battleModifier?: string | null;
+  attacksPerMember?: number | null;
+  round?: number | null;
+  warTag?: string | null;
+  teamSize: number;
   clan: WarClanDto;
   opponent: WarClanDto;
-  attacksPerMember?: number;
-  round: number;
-  warTag: string;
+  result: string;
 }
 
 export interface ClanWarLeaguesDto {
   season: string;
   rounds: ClanWarLeagueRound[];
-  clans: ClanDto[];
+  clans: LeagueGroupClanDto[];
   wars: ClanWarDto[];
+}
+
+export interface RosterMemberOfRostersEntity {
+  warPreference: string;
+  categoryId?: string | null;
+  name: string;
+  tag: string;
+  userId: string | null;
+  username: string | null;
+  role: string | null;
+  townHallLevel: number;
+  heroes: object;
+  trophies: number;
+  clan?: {
+    tag: string;
+    name: string;
+    alias?: string | null;
+  };
+  /** @format date-time */
+  createdAt: string;
+}
+
+export interface RostersEntity {
+  _id: string;
+  category: string;
+  name: string;
+  guildId: string;
+  maxMembers?: number;
+  minTownHall?: number;
+  maxTownHall?: number;
+  minHeroLevels?: number;
+  roleId?: string | null;
+  colorCode?: number;
+  clan: {
+    tag: string;
+    name: string;
+    badgeUrl: string;
+  };
+  members: RosterMemberOfRostersEntity[];
+  layout?: string;
+  sheetId?: string;
+  closed: boolean;
+  /** @format date-time */
+  startTime?: string | null;
+  /** @format date-time */
+  endTime?: string | null;
+  sortBy?: string;
+  useClanAlias?: boolean;
+  allowUnlinked?: boolean;
+  allowMultiSignup?: boolean;
+  allowCategorySelection?: boolean;
+  /** @format date-time */
+  lastUpdated: string;
+  /** @format date-time */
+  createdAt: string;
+}
+
+export interface RosterGroupsEntity {
+  _id: string;
+  displayName: string;
+  name: string;
+  guildId: string;
+  selectable: boolean;
+  roleId?: string | null;
+  /** @format date-time */
+  createdAt: string;
+}
+
+export interface GetRostersDto {
+  rosters: RostersEntity[];
+  categories: RosterGroupsEntity[];
+}
+
+export interface MessageOkDto {
+  message: string;
+}
+
+export interface RemoveMembersBulkInput {
+  /** @minItems 1 */
+  playerTags: string[];
+}
+
+export interface TransferRosterMembersInput {
+  /** @minItems 1 */
+  playerTags: string[];
+  newRosterId: string;
+  newGroupId: string;
+}
+
+export interface TransferRosterMembersDto {
+  roster: RostersEntity;
+  result: {
+    player: {
+      name?: string;
+      tag?: string;
+    };
+    success: boolean;
+    message: string;
+  }[];
+}
+
+export interface GuildClanDto {
+  _id: string;
+  categoryId: string;
+  name: string;
+  tag: string;
+  order: number;
+  league: string;
+  level: number;
+  members: number;
+}
+
+export interface CategoryDto {
+  _id: string;
+  displayName: string;
+  order: number;
+  clans: GuildClanDto[];
+}
+
+export interface GuildClansDto {
+  guildId: string;
+  name: string;
+  categories: CategoryDto[];
+}
+
+export interface ReorderClansInput {
+  _id: string;
+  order: number;
+}
+
+export interface ReorderCategoriesInput {
+  _id: string;
+  order: number;
+  clans: ReorderClansInput[];
+}
+
+export interface ReorderClanCategoriesInput {
+  /** @minItems 1 */
+  categories: ReorderCategoriesInput[];
+}
+
+export interface ListMemberDto {
+  id: string;
+  username: string;
+  displayName: string;
+}
+
+export interface ExportMembersInput {
+  /**
+   * @maxItems 100
+   * @minItems 1
+   */
+  clanTags: string[];
+  guildId: string;
+  scheduled: boolean;
+}
+
+export interface ExportMembersOutputDto {
+  spreadsheetId: string;
+  spreadsheetUrl: string;
 }
 
 export interface CommandsUsageLogDto {
@@ -369,9 +621,9 @@ export type LoginData = LoginOkDto;
 
 export type LoginError = ErrorResponseDto;
 
-export type GenerateTokenData = GenerateTokenDto;
+export type GeneratePasskeyData = GenerateTokenDto;
 
-export type GenerateTokenError = ErrorResponseDto;
+export type GeneratePasskeyError = ErrorResponseDto;
 
 export interface GetAuthUserParams {
   userId: string;
@@ -389,11 +641,11 @@ export type DecodeHandoffTokenData = HandoffUserDto;
 
 export type DecodeHandoffTokenError = ErrorResponseDto;
 
-export type CreateHandoffTokenData = any;
+export type CreateHandoffTokenData = HandoffTokenDto;
 
 export type CreateHandoffTokenError = ErrorResponseDto;
 
-export type LinkData = any;
+export type LinkData = ResultOkDto;
 
 export type LinkError = ErrorResponseDto;
 
@@ -401,7 +653,7 @@ export interface UnlinkParams {
   playerTag: string;
 }
 
-export type UnlinkData = any;
+export type UnlinkData = ResultOkDto;
 
 export type UnlinkError = ErrorResponseDto;
 
@@ -417,6 +669,26 @@ export type GetLastSeenData = LastSeenDto;
 
 export type GetLastSeenError = ErrorResponseDto;
 
+export interface GetBattleLogParams {
+  playerTag: string;
+}
+
+export type GetBattleLogData = BattleLogItemsDto;
+
+export type GetBattleLogError = ErrorResponseDto;
+
+export interface GetBattleLogAggregateParams {
+  playerTag: string;
+}
+
+export type GetBattleLogAggregateData = BattleLogAggregateItemsDto;
+
+export type GetBattleLogAggregateError = ErrorResponseDto;
+
+export type GetBattleLogLeaderboardData = BattleLogLeaderboardDto;
+
+export type GetBattleLogLeaderboardError = ErrorResponseDto;
+
 export interface GetClanHistoryParams {
   playerTag: string;
 }
@@ -430,7 +702,7 @@ export interface GetAttackHistoryParams {
    * Date string or timestamp in milliseconds
    * @format date-time
    */
-  startDate?: string;
+  startDate: string;
   playerTag: string;
 }
 
@@ -443,29 +715,38 @@ export interface AggregateAttackHistoryParams {
    * Date string or timestamp in milliseconds
    * @format date-time
    */
-  startDate?: string;
+  startDate: string;
   playerTag: string;
 }
 
-export type AggregateAttackHistoryData = AggregateAttackHistoryDto;
+export type AggregateAttackHistoryData = AggregateAttackHistoryItemsDto;
 
 export type AggregateAttackHistoryError = ErrorResponseDto;
+
+export interface AggregateClanWarLeagueHistoryParams {
+  /**
+   * Date string or timestamp in milliseconds
+   * @format date-time
+   */
+  startDate: string;
+  playerTag: string;
+}
+
+export type AggregateClanWarLeagueHistoryData = AggregateClanWarLeagueHistoryItemsDto;
+
+export type AggregateClanWarLeagueHistoryError = ErrorResponseDto;
 
 export interface AddPlayerAccountParams {
   playerTag: string;
 }
 
-export type AddPlayerAccountData = any;
+export type AddPlayerAccountData = ResultOkDto;
 
 export type AddPlayerAccountError = ErrorResponseDto;
 
 export type GetLegendRankingThresholdsData = LegendRankingThresholdsDto;
 
 export type GetLegendRankingThresholdsError = ErrorResponseDto;
-
-export type GetLeaderboardData = LeaderboardByTagsItemsDto;
-
-export type GetLeaderboardError = ErrorResponseDto;
 
 export type GetLegendAttacksData = LegendAttacksItemsDto;
 
@@ -478,6 +759,14 @@ export interface GetLegendAttacksByPlayerTagParams {
 export type GetLegendAttacksByPlayerTagData = LegendAttacksDto;
 
 export type GetLegendAttacksByPlayerTagError = ErrorResponseDto;
+
+export interface EstimateRankParams {
+  playerTag: string;
+}
+
+export type EstimateRankData = LegendRankDto;
+
+export type EstimateRankError = ErrorResponseDto;
 
 export interface GetClanWarLeagueGroupsParams {
   clanTag: string;
@@ -495,12 +784,37 @@ export type GetClanWarLeagueForClanData = ClanWarLeaguesDto;
 
 export type GetClanWarLeagueForClanError = ErrorResponseDto;
 
+export interface GetClanWarParams {
+  clanTag: string;
+  warId: string;
+}
+
+export type GetClanWarData = ClanWarDto;
+
+export type GetClanWarError = ErrorResponseDto;
+
+export interface GetRostersParams {
+  guildId: string;
+}
+
+export type GetRostersData = GetRostersDto;
+
+export type GetRostersError = ErrorResponseDto;
+
+export interface CreateRosterParams {
+  guildId: string;
+}
+
+export type CreateRosterData = MessageOkDto;
+
+export type CreateRosterError = ErrorResponseDto;
+
 export interface GetRosterParams {
   rosterId: string;
   guildId: string;
 }
 
-export type GetRosterData = any;
+export type GetRosterData = RostersEntity;
 
 export type GetRosterError = ErrorResponseDto;
 
@@ -509,7 +823,7 @@ export interface UpdateRosterParams {
   guildId: string;
 }
 
-export type UpdateRosterData = any;
+export type UpdateRosterData = MessageOkDto;
 
 export type UpdateRosterError = ErrorResponseDto;
 
@@ -518,34 +832,16 @@ export interface DeleteRosterParams {
   guildId: string;
 }
 
-export type DeleteRosterData = any;
+export type DeleteRosterData = MessageOkDto;
 
 export type DeleteRosterError = ErrorResponseDto;
-
-export interface GetRostersParams {
-  rosterId: string;
-  guildId: string;
-}
-
-export type GetRostersData = any;
-
-export type GetRostersError = ErrorResponseDto;
-
-export interface CreateRosterParams {
-  rosterId: string;
-  guildId: string;
-}
-
-export type CreateRosterData = any;
-
-export type CreateRosterError = ErrorResponseDto;
 
 export interface CloneRosterParams {
   rosterId: string;
   guildId: string;
 }
 
-export type CloneRosterData = any;
+export type CloneRosterData = MessageOkDto;
 
 export type CloneRosterError = ErrorResponseDto;
 
@@ -554,7 +850,7 @@ export interface AddRosterMembersParams {
   guildId: string;
 }
 
-export type AddRosterMembersData = any;
+export type AddRosterMembersData = MessageOkDto;
 
 export type AddRosterMembersError = ErrorResponseDto;
 
@@ -563,7 +859,7 @@ export interface DeleteRosterMembersParams {
   guildId: string;
 }
 
-export type DeleteRosterMembersData = any;
+export type DeleteRosterMembersData = MessageOkDto;
 
 export type DeleteRosterMembersError = ErrorResponseDto;
 
@@ -572,24 +868,24 @@ export interface RefreshRosterMembersParams {
   guildId: string;
 }
 
-export type RefreshRosterMembersData = any;
+export type RefreshRosterMembersData = MessageOkDto;
 
 export type RefreshRosterMembersError = ErrorResponseDto;
 
-export interface ManageRosterParams {
+export interface TransferRosterMembersParams {
   rosterId: string;
   guildId: string;
 }
 
-export type ManageRosterData = any;
+export type TransferRosterMembersData = TransferRosterMembersDto;
 
-export type ManageRosterError = ErrorResponseDto;
+export type TransferRosterMembersError = ErrorResponseDto;
 
 export interface GetUserParams {
   userId: string;
 }
 
-export type GetUserData = any;
+export type GetUserData = MessageOkDto;
 
 export type GetUserError = ErrorResponseDto;
 
@@ -597,20 +893,37 @@ export interface GetGuildClansParams {
   guildId: string;
 }
 
-export type GetGuildClansData = any;
+export type GetGuildClansData = GuildClansDto;
 
 export type GetGuildClansError = ErrorResponseDto;
 
-export type ExportClanMembersData = any;
+export interface ReorderGuildClansParams {
+  guildId: string;
+}
+
+export type ReorderGuildClansData = GuildClansDto;
+
+export type ReorderGuildClansError = ErrorResponseDto;
+
+export interface ListMembersParams {
+  query: string;
+  guildId: string;
+}
+
+export type ListMembersData = ListMemberDto[];
+
+export type ListMembersError = ErrorResponseDto;
+
+export type ExportClanMembersData = ExportMembersOutputDto;
 
 export type ExportClanMembersError = ErrorResponseDto;
 
 export namespace Auth {
   /**
-   * No description
+   * @description Authenticates a user using a `passKey` and returns an `accessToken` with a limited validity period (2 hours). Once the token expires, a new token must be generated.<br/><br/>The `accessToken` must be included in all protected API requests using the following header `Authorization: Bearer <accessToken>`
    * @tags Auth
    * @name Login
-   * @summary Authenticates a user and returns login information.
+   * @summary Authenticate with your passKey to receive an accessToken required for authorized API requests.
    * @request POST:/auth/login
    * @response `201` `LoginData`
    * @response `500` `ErrorResponseDto`
@@ -626,26 +939,25 @@ export namespace Auth {
   /**
    * No description
    * @tags Auth
-   * @name GenerateToken
-   * @summary Generates a JWT token with specified user roles.
-   * @request POST:/auth/generate-token
+   * @name GeneratePasskey
+   * @summary Generate a passKey required for authentication.
+   * @request POST:/auth/generate-passkey
    * @secure
-   * @response `201` `GenerateTokenData`
+   * @response `201` `GeneratePasskeyData`
    * @response `500` `ErrorResponseDto`
    */
-  export namespace GenerateToken {
+  export namespace GeneratePasskey {
     export type RequestParams = {};
     export type RequestQuery = {};
     export type RequestBody = GenerateTokenInputDto;
     export type RequestHeaders = {};
-    export type ResponseBody = GenerateTokenData;
+    export type ResponseBody = GeneratePasskeyData;
   }
 
   /**
    * No description
    * @tags Auth
    * @name GetAuthUser
-   * @summary Retrieves authenticated user information based on userId.
    * @request GET:/auth/users/{userId}
    * @secure
    * @response `200` `GetAuthUserData`
@@ -779,6 +1091,61 @@ export namespace Players {
   /**
    * No description
    * @tags Players
+   * @name GetBattleLog
+   * @request GET:/players/{playerTag}/battle-log
+   * @secure
+   * @response `200` `GetBattleLogData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetBattleLog {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetBattleLogData;
+  }
+
+  /**
+   * No description
+   * @tags Players
+   * @name GetBattleLogAggregate
+   * @request GET:/players/{playerTag}/battle-log/aggregate
+   * @secure
+   * @response `200` `GetBattleLogAggregateData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetBattleLogAggregate {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetBattleLogAggregateData;
+  }
+
+  /**
+   * No description
+   * @tags Players
+   * @name GetBattleLogLeaderboard
+   * @request POST:/players/battle-log/leaderboard
+   * @secure
+   * @response `201` `GetBattleLogLeaderboardData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetBattleLogLeaderboard {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = BattleLogLeaderboardInputDto;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetBattleLogLeaderboardData;
+  }
+
+  /**
+   * No description
+   * @tags Players
    * @name GetClanHistory
    * @request GET:/players/{playerTag}/history
    * @secure
@@ -813,7 +1180,7 @@ export namespace Players {
        * Date string or timestamp in milliseconds
        * @format date-time
        */
-      startDate?: string;
+      startDate: string;
     };
     export type RequestBody = never;
     export type RequestHeaders = {};
@@ -838,11 +1205,36 @@ export namespace Players {
        * Date string or timestamp in milliseconds
        * @format date-time
        */
-      startDate?: string;
+      startDate: string;
     };
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = AggregateAttackHistoryData;
+  }
+
+  /**
+   * No description
+   * @tags Players
+   * @name AggregateClanWarLeagueHistory
+   * @request GET:/players/{playerTag}/clan-war-leagues/aggregate
+   * @secure
+   * @response `200` `AggregateClanWarLeagueHistoryData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace AggregateClanWarLeagueHistory {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {
+      /**
+       * Date string or timestamp in milliseconds
+       * @format date-time
+       */
+      startDate: string;
+    };
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = AggregateClanWarLeagueHistoryData;
   }
 
   /**
@@ -886,23 +1278,6 @@ export namespace Legends {
   /**
    * No description
    * @tags Legends
-   * @name GetLeaderboard
-   * @request POST:/legends/leaderboard/query
-   * @secure
-   * @response `201` `GetLeaderboardData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace GetLeaderboard {
-    export type RequestParams = {};
-    export type RequestQuery = {};
-    export type RequestBody = LeaderboardByTagsInputDto;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetLeaderboardData;
-  }
-
-  /**
-   * No description
-   * @tags Legends
    * @name GetLegendAttacks
    * @request POST:/legends/attacks/query
    * @secure
@@ -934,6 +1309,25 @@ export namespace Legends {
     export type RequestBody = never;
     export type RequestHeaders = {};
     export type ResponseBody = GetLegendAttacksByPlayerTagData;
+  }
+
+  /**
+   * No description
+   * @tags Legends
+   * @name EstimateRank
+   * @request GET:/legends/{playerTag}/estimate-rank
+   * @secure
+   * @response `200` `EstimateRankData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace EstimateRank {
+    export type RequestParams = {
+      playerTag: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = EstimateRankData;
   }
 }
 
@@ -975,9 +1369,67 @@ export namespace Wars {
     export type RequestHeaders = {};
     export type ResponseBody = GetClanWarLeagueForClanData;
   }
+
+  /**
+   * No description
+   * @tags Wars
+   * @name GetClanWar
+   * @request GET:/wars/{clanTag}/{warId}
+   * @secure
+   * @response `200` `GetClanWarData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetClanWar {
+    export type RequestParams = {
+      clanTag: string;
+      warId: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetClanWarData;
+  }
 }
 
 export namespace Rosters {
+  /**
+   * No description
+   * @tags Rosters
+   * @name GetRosters
+   * @request GET:/rosters/{guildId}/list
+   * @secure
+   * @response `200` `GetRostersData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace GetRosters {
+    export type RequestParams = {
+      guildId: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetRostersData;
+  }
+
+  /**
+   * No description
+   * @tags Rosters
+   * @name CreateRoster
+   * @request POST:/rosters/{guildId}/create
+   * @secure
+   * @response `201` `CreateRosterData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace CreateRoster {
+    export type RequestParams = {
+      guildId: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = CreateRosterData;
+  }
+
   /**
    * No description
    * @tags Rosters
@@ -1041,46 +1493,6 @@ export namespace Rosters {
   /**
    * No description
    * @tags Rosters
-   * @name GetRosters
-   * @request GET:/rosters/{guildId}/{rosterId}/list
-   * @secure
-   * @response `200` `GetRostersData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace GetRosters {
-    export type RequestParams = {
-      rosterId: string;
-      guildId: string;
-    };
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = GetRostersData;
-  }
-
-  /**
-   * No description
-   * @tags Rosters
-   * @name CreateRoster
-   * @request POST:/rosters/{guildId}/create
-   * @secure
-   * @response `201` `CreateRosterData`
-   * @response `500` `ErrorResponseDto`
-   */
-  export namespace CreateRoster {
-    export type RequestParams = {
-      rosterId: string;
-      guildId: string;
-    };
-    export type RequestQuery = {};
-    export type RequestBody = never;
-    export type RequestHeaders = {};
-    export type ResponseBody = CreateRosterData;
-  }
-
-  /**
-   * No description
-   * @tags Rosters
    * @name CloneRoster
    * @request POST:/rosters/{guildId}/{rosterId}/clone
    * @secure
@@ -1133,7 +1545,7 @@ export namespace Rosters {
       guildId: string;
     };
     export type RequestQuery = {};
-    export type RequestBody = never;
+    export type RequestBody = RemoveMembersBulkInput;
     export type RequestHeaders = {};
     export type ResponseBody = DeleteRosterMembersData;
   }
@@ -1161,21 +1573,21 @@ export namespace Rosters {
   /**
    * No description
    * @tags Rosters
-   * @name ManageRoster
+   * @name TransferRosterMembers
    * @request PUT:/rosters/{guildId}/{rosterId}/members/transfer
    * @secure
-   * @response `200` `ManageRosterData`
+   * @response `200` `TransferRosterMembersData`
    * @response `500` `ErrorResponseDto`
    */
-  export namespace ManageRoster {
+  export namespace TransferRosterMembers {
     export type RequestParams = {
       rosterId: string;
       guildId: string;
     };
     export type RequestQuery = {};
-    export type RequestBody = never;
+    export type RequestBody = TransferRosterMembersInput;
     export type RequestHeaders = {};
-    export type ResponseBody = ManageRosterData;
+    export type ResponseBody = TransferRosterMembersData;
   }
 }
 
@@ -1219,6 +1631,46 @@ export namespace Guilds {
     export type RequestHeaders = {};
     export type ResponseBody = GetGuildClansData;
   }
+
+  /**
+   * No description
+   * @tags Guilds
+   * @name ReorderGuildClans
+   * @request PATCH:/guilds/{guildId}/clans/reorder
+   * @secure
+   * @response `200` `ReorderGuildClansData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace ReorderGuildClans {
+    export type RequestParams = {
+      guildId: string;
+    };
+    export type RequestQuery = {};
+    export type RequestBody = ReorderClanCategoriesInput;
+    export type RequestHeaders = {};
+    export type ResponseBody = ReorderGuildClansData;
+  }
+
+  /**
+   * No description
+   * @tags Guilds
+   * @name ListMembers
+   * @request GET:/guilds/{guildId}/members/list
+   * @secure
+   * @response `200` `ListMembersData`
+   * @response `500` `ErrorResponseDto`
+   */
+  export namespace ListMembers {
+    export type RequestParams = {
+      guildId: string;
+    };
+    export type RequestQuery = {
+      query: string;
+    };
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = ListMembersData;
+  }
 }
 
 export namespace Exports {
@@ -1233,7 +1685,7 @@ export namespace Exports {
   export namespace ExportClanMembers {
     export type RequestParams = {};
     export type RequestQuery = {};
-    export type RequestBody = never;
+    export type RequestBody = ExportMembersInput;
     export type RequestHeaders = {};
     export type ResponseBody = ExportClanMembersData;
   }
@@ -1244,14 +1696,16 @@ import type {
   AxiosRequestConfig,
   AxiosResponse,
   HeadersDefaults,
-  ResponseType,
-} from "axios";
-import axios from "axios";
+  ResponseType
+} from 'axios';
+import axios from 'axios';
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams extends Omit<
+  AxiosRequestConfig,
+  'data' | 'params' | 'url' | 'responseType'
+> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -1266,32 +1720,31 @@ export interface FullRequestParams
   body?: unknown;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  "body" | "method" | "query" | "path"
->;
+export type RequestParams = Omit<FullRequestParams, 'body' | 'method' | 'query' | 'path'>;
 
-export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown> extends Omit<
+  AxiosRequestConfig,
+  'data' | 'cancelToken'
+> {
   securityWorker?: (
-    securityData: SecurityDataType | null,
+    securityData: SecurityDataType | null
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
 }
 
 export enum ContentType {
-  Json = "application/json",
-  JsonApi = "application/vnd.api+json",
-  FormData = "multipart/form-data",
-  UrlEncoded = "application/x-www-form-urlencoded",
-  Text = "text/plain",
+  Json = 'application/json',
+  JsonApi = 'application/vnd.api+json',
+  FormData = 'multipart/form-data',
+  UrlEncoded = 'application/x-www-form-urlencoded',
+  Text = 'text/plain'
 }
 
 export class HttpClient<SecurityDataType = unknown> {
   public instance: AxiosInstance;
   private securityData: SecurityDataType | null = null;
-  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
+  private securityWorker?: ApiConfig<SecurityDataType>['securityWorker'];
   private secure?: boolean;
   private format?: ResponseType;
 
@@ -1303,7 +1756,7 @@ export class HttpClient<SecurityDataType = unknown> {
   }: ApiConfig<SecurityDataType> = {}) {
     this.instance = axios.create({
       ...axiosConfig,
-      baseURL: axiosConfig.baseURL || "/v1",
+      baseURL: axiosConfig.baseURL || '/v1'
     });
     this.secure = secure;
     this.format = format;
@@ -1316,7 +1769,7 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected mergeRequestParams(
     params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig,
+    params2?: AxiosRequestConfig
   ): AxiosRequestConfig {
     const method = params1.method || (params2 && params2.method);
 
@@ -1326,18 +1779,16 @@ export class HttpClient<SecurityDataType = unknown> {
       ...(params2 || {}),
       headers: {
         ...((method &&
-          this.instance.defaults.headers[
-            method.toLowerCase() as keyof HeadersDefaults
-          ]) ||
+          this.instance.defaults.headers[method.toLowerCase() as keyof HeadersDefaults]) ||
           {}),
         ...(params1.headers || {}),
-        ...((params2 && params2.headers) || {}),
-      },
+        ...((params2 && params2.headers) || {})
+      }
     };
   }
 
   protected stringifyFormItem(formItem: unknown) {
-    if (typeof formItem === "object" && formItem !== null) {
+    if (typeof formItem === 'object' && formItem !== null) {
       return JSON.stringify(formItem);
     } else {
       return `${formItem}`;
@@ -1350,15 +1801,11 @@ export class HttpClient<SecurityDataType = unknown> {
     }
     return Object.keys(input || {}).reduce((formData, key) => {
       const property = input[key];
-      const propertyContent: any[] =
-        property instanceof Array ? property : [property];
+      const propertyContent: any[] = property instanceof Array ? property : [property];
 
       for (const formItem of propertyContent) {
         const isFileType = formItem instanceof Blob || formItem instanceof File;
-        formData.append(
-          key,
-          isFileType ? formItem : this.stringifyFormItem(formItem),
-        );
+        formData.append(key, isFileType ? formItem : this.stringifyFormItem(formItem));
       }
 
       return formData;
@@ -1375,28 +1822,18 @@ export class HttpClient<SecurityDataType = unknown> {
     ...params
   }: FullRequestParams): Promise<AxiosResponse<T>> => {
     const secureParams =
-      ((typeof secure === "boolean" ? secure : this.secure) &&
+      ((typeof secure === 'boolean' ? secure : this.secure) &&
         this.securityWorker &&
         (await this.securityWorker(this.securityData))) ||
       {};
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = format || this.format || undefined;
 
-    if (
-      type === ContentType.FormData &&
-      body &&
-      body !== null &&
-      typeof body === "object"
-    ) {
+    if (type === ContentType.FormData && body && body !== null && typeof body === 'object') {
       body = this.createFormData(body as Record<string, unknown>);
     }
 
-    if (
-      type === ContentType.Text &&
-      body &&
-      body !== null &&
-      typeof body !== "string"
-    ) {
+    if (type === ContentType.Text && body && body !== null && typeof body !== 'string') {
       body = JSON.stringify(body);
     }
 
@@ -1404,29 +1841,25 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type ? { "Content-Type": type } : {}),
+        ...(type ? { 'Content-Type': type } : {})
       },
       params: query,
       responseType: responseFormat,
       data: body,
-      url: path,
+      url: path
     });
   };
 }
 
 /**
  * @title ClashPerk Discord Bot API
- * @version v1
+ * @version v2.0.1
  * @baseUrl /v1
  * @contact
  *
  * ### API Routes for ClashPerk Discord Bot and Services
  *
- * API endpoints are protected by **Cloudflare** with a global rate limit of **300 requests per 10 seconds**.<br/>Response **caching is enabled**, with duration varying across different endpoints for optimal performance.<br/>API **access is limited** and reviewed individually. If you'd like to request access, reach out to us on Discord.
- *
- * By using this API, you agree to fair usage. Access may be revoked for abuse, misuse, or security violations.
- *
- * [Join our Discord](https://discord.gg/ppuppun) | [Terms of Service](https://clashperk.com/terms) | [Privacy Policy](https://clashperk.com/privacy)
+ * [Terms of Service](https://clashperk.com/terms) | [Privacy Policy](https://clashperk.com/privacy)
  */
 export class Api<SecurityDataType extends unknown> {
   http: HttpClient<SecurityDataType>;
@@ -1437,11 +1870,11 @@ export class Api<SecurityDataType extends unknown> {
 
   auth = {
     /**
-     * No description
+     * @description Authenticates a user using a `passKey` and returns an `accessToken` with a limited validity period (2 hours). Once the token expires, a new token must be generated.<br/><br/>The `accessToken` must be included in all protected API requests using the following header `Authorization: Bearer <accessToken>`
      *
      * @tags Auth
      * @name Login
-     * @summary Authenticates a user and returns login information.
+     * @summary Authenticate with your passKey to receive an accessToken required for authorized API requests.
      * @request POST:/auth/login
      * @response `201` `LoginData`
      * @response `500` `ErrorResponseDto`
@@ -1449,33 +1882,33 @@ export class Api<SecurityDataType extends unknown> {
     login: (data: LoginInputDto, params: RequestParams = {}) =>
       this.http.request<LoginData, LoginError>({
         path: `/auth/login`,
-        method: "POST",
+        method: 'POST',
         body: data,
         type: ContentType.Json,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
      * No description
      *
      * @tags Auth
-     * @name GenerateToken
-     * @summary Generates a JWT token with specified user roles.
-     * @request POST:/auth/generate-token
+     * @name GeneratePasskey
+     * @summary Generate a passKey required for authentication.
+     * @request POST:/auth/generate-passkey
      * @secure
-     * @response `201` `GenerateTokenData`
+     * @response `201` `GeneratePasskeyData`
      * @response `500` `ErrorResponseDto`
      */
-    generateToken: (data: GenerateTokenInputDto, params: RequestParams = {}) =>
-      this.http.request<GenerateTokenData, GenerateTokenError>({
-        path: `/auth/generate-token`,
-        method: "POST",
+    generatePasskey: (data: GenerateTokenInputDto, params: RequestParams = {}) =>
+      this.http.request<GeneratePasskeyData, GeneratePasskeyError>({
+        path: `/auth/generate-passkey`,
+        method: 'POST',
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1483,22 +1916,18 @@ export class Api<SecurityDataType extends unknown> {
      *
      * @tags Auth
      * @name GetAuthUser
-     * @summary Retrieves authenticated user information based on userId.
      * @request GET:/auth/users/{userId}
      * @secure
      * @response `200` `GetAuthUserData`
      * @response `500` `ErrorResponseDto`
      */
-    getAuthUser: (
-      { userId, ...query }: GetAuthUserParams,
-      params: RequestParams = {},
-    ) =>
+    getAuthUser: ({ userId, ...query }: GetAuthUserParams, params: RequestParams = {}) =>
       this.http.request<GetAuthUserData, GetAuthUserError>({
         path: `/auth/users/${userId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1513,14 +1942,14 @@ export class Api<SecurityDataType extends unknown> {
      */
     decodeHandoffToken: (
       { token, ...query }: DecodeHandoffTokenParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.http.request<DecodeHandoffTokenData, DecodeHandoffTokenError>({
         path: `/auth/handoff/${token}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1533,18 +1962,16 @@ export class Api<SecurityDataType extends unknown> {
      * @response `201` `CreateHandoffTokenData`
      * @response `500` `ErrorResponseDto`
      */
-    createHandoffToken: (
-      data: HandoffTokenInputDto,
-      params: RequestParams = {},
-    ) =>
+    createHandoffToken: (data: HandoffTokenInputDto, params: RequestParams = {}) =>
       this.http.request<CreateHandoffTokenData, CreateHandoffTokenError>({
         path: `/auth/handoff`,
-        method: "POST",
+        method: 'POST',
         body: data,
         secure: true,
         type: ContentType.Json,
-        ...params,
-      }),
+        format: 'json',
+        ...params
+      })
   };
   links = {
     /**
@@ -1560,11 +1987,12 @@ export class Api<SecurityDataType extends unknown> {
     link: (data: CreateLinkInputDto, params: RequestParams = {}) =>
       this.http.request<LinkData, LinkError>({
         path: `/links`,
-        method: "POST",
+        method: 'POST',
         body: data,
         secure: true,
         type: ContentType.Json,
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1577,15 +2005,13 @@ export class Api<SecurityDataType extends unknown> {
      * @response `200` `UnlinkData`
      * @response `500` `ErrorResponseDto`
      */
-    unlink: (
-      { playerTag, ...query }: UnlinkParams,
-      params: RequestParams = {},
-    ) =>
+    unlink: ({ playerTag, ...query }: UnlinkParams, params: RequestParams = {}) =>
       this.http.request<UnlinkData, UnlinkError>({
         path: `/links/${playerTag}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1602,13 +2028,13 @@ export class Api<SecurityDataType extends unknown> {
     getLinks: (data: GetLinksInputDto, params: RequestParams = {}) =>
       this.http.request<GetLinksData, GetLinksError>({
         path: `/links/query`,
-        method: "POST",
+        method: 'POST',
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+        format: 'json',
+        ...params
+      })
   };
   clans = {
     /**
@@ -1621,19 +2047,78 @@ export class Api<SecurityDataType extends unknown> {
      * @response `200` `GetLastSeenData`
      * @response `500` `ErrorResponseDto`
      */
-    getLastSeen: (
-      { clanTag, ...query }: GetLastSeenParams,
-      params: RequestParams = {},
-    ) =>
+    getLastSeen: ({ clanTag, ...query }: GetLastSeenParams, params: RequestParams = {}) =>
       this.http.request<GetLastSeenData, GetLastSeenError>({
         path: `/clans/${clanTag}/lastseen`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
-        ...params,
-      }),
+        format: 'json',
+        ...params
+      })
   };
   players = {
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name GetBattleLog
+     * @request GET:/players/{playerTag}/battle-log
+     * @secure
+     * @response `200` `GetBattleLogData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getBattleLog: ({ playerTag, ...query }: GetBattleLogParams, params: RequestParams = {}) =>
+      this.http.request<GetBattleLogData, GetBattleLogError>({
+        path: `/players/${playerTag}/battle-log`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name GetBattleLogAggregate
+     * @request GET:/players/{playerTag}/battle-log/aggregate
+     * @secure
+     * @response `200` `GetBattleLogAggregateData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getBattleLogAggregate: (
+      { playerTag, ...query }: GetBattleLogAggregateParams,
+      params: RequestParams = {}
+    ) =>
+      this.http.request<GetBattleLogAggregateData, GetBattleLogAggregateError>({
+        path: `/players/${playerTag}/battle-log/aggregate`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name GetBattleLogLeaderboard
+     * @request POST:/players/battle-log/leaderboard
+     * @secure
+     * @response `201` `GetBattleLogLeaderboardData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getBattleLogLeaderboard: (data: BattleLogLeaderboardInputDto, params: RequestParams = {}) =>
+      this.http.request<GetBattleLogLeaderboardData, GetBattleLogLeaderboardError>({
+        path: `/players/battle-log/leaderboard`,
+        method: 'POST',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params
+      }),
+
     /**
      * No description
      *
@@ -1644,16 +2129,13 @@ export class Api<SecurityDataType extends unknown> {
      * @response `200` `GetClanHistoryData`
      * @response `500` `ErrorResponseDto`
      */
-    getClanHistory: (
-      { playerTag, ...query }: GetClanHistoryParams,
-      params: RequestParams = {},
-    ) =>
+    getClanHistory: ({ playerTag, ...query }: GetClanHistoryParams, params: RequestParams = {}) =>
       this.http.request<GetClanHistoryData, GetClanHistoryError>({
         path: `/players/${playerTag}/history`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1668,15 +2150,15 @@ export class Api<SecurityDataType extends unknown> {
      */
     getAttackHistory: (
       { playerTag, ...query }: GetAttackHistoryParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.http.request<GetAttackHistoryData, GetAttackHistoryError>({
         path: `/players/${playerTag}/wars`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1691,18 +2173,38 @@ export class Api<SecurityDataType extends unknown> {
      */
     aggregateAttackHistory: (
       { playerTag, ...query }: AggregateAttackHistoryParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
-      this.http.request<
-        AggregateAttackHistoryData,
-        AggregateAttackHistoryError
-      >({
+      this.http.request<AggregateAttackHistoryData, AggregateAttackHistoryError>({
         path: `/players/${playerTag}/wars/aggregate`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Players
+     * @name AggregateClanWarLeagueHistory
+     * @request GET:/players/{playerTag}/clan-war-leagues/aggregate
+     * @secure
+     * @response `200` `AggregateClanWarLeagueHistoryData`
+     * @response `500` `ErrorResponseDto`
+     */
+    aggregateClanWarLeagueHistory: (
+      { playerTag, ...query }: AggregateClanWarLeagueHistoryParams,
+      params: RequestParams = {}
+    ) =>
+      this.http.request<AggregateClanWarLeagueHistoryData, AggregateClanWarLeagueHistoryError>({
+        path: `/players/${playerTag}/clan-war-leagues/aggregate`,
+        method: 'GET',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1717,14 +2219,15 @@ export class Api<SecurityDataType extends unknown> {
      */
     addPlayerAccount: (
       { playerTag, ...query }: AddPlayerAccountParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.http.request<AddPlayerAccountData, AddPlayerAccountError>({
         path: `/players/${playerTag}`,
-        method: "PUT",
+        method: 'PUT',
         secure: true,
-        ...params,
-      }),
+        format: 'json',
+        ...params
+      })
   };
   legends = {
     /**
@@ -1738,39 +2241,12 @@ export class Api<SecurityDataType extends unknown> {
      * @response `500` `ErrorResponseDto`
      */
     getLegendRankingThresholds: (params: RequestParams = {}) =>
-      this.http.request<
-        GetLegendRankingThresholdsData,
-        GetLegendRankingThresholdsError
-      >({
+      this.http.request<GetLegendRankingThresholdsData, GetLegendRankingThresholdsError>({
         path: `/legends/ranking-thresholds`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Legends
-     * @name GetLeaderboard
-     * @request POST:/legends/leaderboard/query
-     * @secure
-     * @response `201` `GetLeaderboardData`
-     * @response `500` `ErrorResponseDto`
-     */
-    getLeaderboard: (
-      data: LeaderboardByTagsInputDto,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetLeaderboardData, GetLeaderboardError>({
-        path: `/legends/leaderboard/query`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1783,18 +2259,15 @@ export class Api<SecurityDataType extends unknown> {
      * @response `200` `GetLegendAttacksData`
      * @response `500` `ErrorResponseDto`
      */
-    getLegendAttacks: (
-      data: GetLegendAttacksInputDto,
-      params: RequestParams = {},
-    ) =>
+    getLegendAttacks: (data: GetLegendAttacksInputDto, params: RequestParams = {}) =>
       this.http.request<GetLegendAttacksData, GetLegendAttacksError>({
         path: `/legends/attacks/query`,
-        method: "POST",
+        method: 'POST',
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1809,18 +2282,34 @@ export class Api<SecurityDataType extends unknown> {
      */
     getLegendAttacksByPlayerTag: (
       { playerTag, ...query }: GetLegendAttacksByPlayerTagParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
-      this.http.request<
-        GetLegendAttacksByPlayerTagData,
-        GetLegendAttacksByPlayerTagError
-      >({
+      this.http.request<GetLegendAttacksByPlayerTagData, GetLegendAttacksByPlayerTagError>({
         path: `/legends/${playerTag}/attacks`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
+
+    /**
+     * No description
+     *
+     * @tags Legends
+     * @name EstimateRank
+     * @request GET:/legends/{playerTag}/estimate-rank
+     * @secure
+     * @response `200` `EstimateRankData`
+     * @response `500` `ErrorResponseDto`
+     */
+    estimateRank: ({ playerTag, ...query }: EstimateRankParams, params: RequestParams = {}) =>
+      this.http.request<EstimateRankData, EstimateRankError>({
+        path: `/legends/${playerTag}/estimate-rank`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params
+      })
   };
   wars = {
     /**
@@ -1835,17 +2324,14 @@ export class Api<SecurityDataType extends unknown> {
      */
     getClanWarLeagueGroups: (
       { clanTag, ...query }: GetClanWarLeagueGroupsParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
-      this.http.request<
-        GetClanWarLeagueGroupsData,
-        GetClanWarLeagueGroupsError
-      >({
+      this.http.request<GetClanWarLeagueGroupsData, GetClanWarLeagueGroupsError>({
         path: `/wars/${clanTag}/clan-war-leagues/groups`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1860,20 +2346,74 @@ export class Api<SecurityDataType extends unknown> {
      */
     getClanWarLeagueForClan: (
       { clanTag, ...query }: GetClanWarLeagueForClanParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
-      this.http.request<
-        GetClanWarLeagueForClanData,
-        GetClanWarLeagueForClanError
-      >({
+      this.http.request<GetClanWarLeagueForClanData, GetClanWarLeagueForClanError>({
         path: `/wars/${clanTag}/clan-war-leagues/clan`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
-        ...params,
+        format: 'json',
+        ...params
       }),
+
+    /**
+     * No description
+     *
+     * @tags Wars
+     * @name GetClanWar
+     * @request GET:/wars/{clanTag}/{warId}
+     * @secure
+     * @response `200` `GetClanWarData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getClanWar: ({ clanTag, warId, ...query }: GetClanWarParams, params: RequestParams = {}) =>
+      this.http.request<GetClanWarData, GetClanWarError>({
+        path: `/wars/${clanTag}/${warId}`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params
+      })
   };
   rosters = {
+    /**
+     * No description
+     *
+     * @tags Rosters
+     * @name GetRosters
+     * @request GET:/rosters/{guildId}/list
+     * @secure
+     * @response `200` `GetRostersData`
+     * @response `500` `ErrorResponseDto`
+     */
+    getRosters: ({ guildId, ...query }: GetRostersParams, params: RequestParams = {}) =>
+      this.http.request<GetRostersData, GetRostersError>({
+        path: `/rosters/${guildId}/list`,
+        method: 'GET',
+        secure: true,
+        format: 'json',
+        ...params
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Rosters
+     * @name CreateRoster
+     * @request POST:/rosters/{guildId}/create
+     * @secure
+     * @response `201` `CreateRosterData`
+     * @response `500` `ErrorResponseDto`
+     */
+    createRoster: ({ guildId, ...query }: CreateRosterParams, params: RequestParams = {}) =>
+      this.http.request<CreateRosterData, CreateRosterError>({
+        path: `/rosters/${guildId}/create`,
+        method: 'POST',
+        secure: true,
+        format: 'json',
+        ...params
+      }),
+
     /**
      * No description
      *
@@ -1884,15 +2424,13 @@ export class Api<SecurityDataType extends unknown> {
      * @response `200` `GetRosterData`
      * @response `500` `ErrorResponseDto`
      */
-    getRoster: (
-      { rosterId, guildId, ...query }: GetRosterParams,
-      params: RequestParams = {},
-    ) =>
+    getRoster: ({ rosterId, guildId, ...query }: GetRosterParams, params: RequestParams = {}) =>
       this.http.request<GetRosterData, GetRosterError>({
         path: `/rosters/${guildId}/${rosterId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1907,13 +2445,14 @@ export class Api<SecurityDataType extends unknown> {
      */
     updateRoster: (
       { rosterId, guildId, ...query }: UpdateRosterParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.http.request<UpdateRosterData, UpdateRosterError>({
         path: `/rosters/${guildId}/${rosterId}`,
-        method: "PATCH",
+        method: 'PATCH',
         secure: true,
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1928,55 +2467,14 @@ export class Api<SecurityDataType extends unknown> {
      */
     deleteRoster: (
       { rosterId, guildId, ...query }: DeleteRosterParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.http.request<DeleteRosterData, DeleteRosterError>({
         path: `/rosters/${guildId}/${rosterId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Rosters
-     * @name GetRosters
-     * @request GET:/rosters/{guildId}/{rosterId}/list
-     * @secure
-     * @response `200` `GetRostersData`
-     * @response `500` `ErrorResponseDto`
-     */
-    getRosters: (
-      { rosterId, guildId, ...query }: GetRostersParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetRostersData, GetRostersError>({
-        path: `/rosters/${guildId}/${rosterId}/list`,
-        method: "GET",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Rosters
-     * @name CreateRoster
-     * @request POST:/rosters/{guildId}/create
-     * @secure
-     * @response `201` `CreateRosterData`
-     * @response `500` `ErrorResponseDto`
-     */
-    createRoster: (
-      { rosterId, guildId, ...query }: CreateRosterParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<CreateRosterData, CreateRosterError>({
-        path: `/rosters/${guildId}/create`,
-        method: "POST",
-        secure: true,
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -1989,15 +2487,13 @@ export class Api<SecurityDataType extends unknown> {
      * @response `201` `CloneRosterData`
      * @response `500` `ErrorResponseDto`
      */
-    cloneRoster: (
-      { rosterId, guildId, ...query }: CloneRosterParams,
-      params: RequestParams = {},
-    ) =>
+    cloneRoster: ({ rosterId, guildId, ...query }: CloneRosterParams, params: RequestParams = {}) =>
       this.http.request<CloneRosterData, CloneRosterError>({
         path: `/rosters/${guildId}/${rosterId}/clone`,
-        method: "POST",
+        method: 'POST',
         secure: true,
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -2012,13 +2508,14 @@ export class Api<SecurityDataType extends unknown> {
      */
     addRosterMembers: (
       { rosterId, guildId, ...query }: AddRosterMembersParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.http.request<AddRosterMembersData, AddRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members`,
-        method: "PUT",
+        method: 'PUT',
         secure: true,
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -2033,13 +2530,17 @@ export class Api<SecurityDataType extends unknown> {
      */
     deleteRosterMembers: (
       { rosterId, guildId, ...query }: DeleteRosterMembersParams,
-      params: RequestParams = {},
+      data: RemoveMembersBulkInput,
+      params: RequestParams = {}
     ) =>
       this.http.request<DeleteRosterMembersData, DeleteRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members`,
-        method: "DELETE",
+        method: 'DELETE',
+        body: data,
         secure: true,
-        ...params,
+        type: ContentType.Json,
+        format: 'json',
+        ...params
       }),
 
     /**
@@ -2054,35 +2555,40 @@ export class Api<SecurityDataType extends unknown> {
      */
     refreshRosterMembers: (
       { rosterId, guildId, ...query }: RefreshRosterMembersParams,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.http.request<RefreshRosterMembersData, RefreshRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members/refresh`,
-        method: "POST",
+        method: 'POST',
         secure: true,
-        ...params,
+        format: 'json',
+        ...params
       }),
 
     /**
      * No description
      *
      * @tags Rosters
-     * @name ManageRoster
+     * @name TransferRosterMembers
      * @request PUT:/rosters/{guildId}/{rosterId}/members/transfer
      * @secure
-     * @response `200` `ManageRosterData`
+     * @response `200` `TransferRosterMembersData`
      * @response `500` `ErrorResponseDto`
      */
-    manageRoster: (
-      { rosterId, guildId, ...query }: ManageRosterParams,
-      params: RequestParams = {},
+    transferRosterMembers: (
+      { rosterId, guildId, ...query }: TransferRosterMembersParams,
+      data: TransferRosterMembersInput,
+      params: RequestParams = {}
     ) =>
-      this.http.request<ManageRosterData, ManageRosterError>({
+      this.http.request<TransferRosterMembersData, TransferRosterMembersError>({
         path: `/rosters/${guildId}/${rosterId}/members/transfer`,
-        method: "PUT",
+        method: 'PUT',
+        body: data,
         secure: true,
-        ...params,
-      }),
+        type: ContentType.Json,
+        format: 'json',
+        ...params
+      })
   };
   users = {
     /**
@@ -2095,16 +2601,14 @@ export class Api<SecurityDataType extends unknown> {
      * @response `200` `GetUserData`
      * @response `500` `ErrorResponseDto`
      */
-    getUser: (
-      { userId, ...query }: GetUserParams,
-      params: RequestParams = {},
-    ) =>
+    getUser: ({ userId, ...query }: GetUserParams, params: RequestParams = {}) =>
       this.http.request<GetUserData, GetUserError>({
         path: `/users/${userId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        ...params,
-      }),
+        format: 'json',
+        ...params
+      })
   };
   guilds = {
     /**
@@ -2117,16 +2621,59 @@ export class Api<SecurityDataType extends unknown> {
      * @response `200` `GetGuildClansData`
      * @response `500` `ErrorResponseDto`
      */
-    getGuildClans: (
-      { guildId, ...query }: GetGuildClansParams,
-      params: RequestParams = {},
-    ) =>
+    getGuildClans: ({ guildId, ...query }: GetGuildClansParams, params: RequestParams = {}) =>
       this.http.request<GetGuildClansData, GetGuildClansError>({
         path: `/guilds/${guildId}/clans`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        ...params,
+        format: 'json',
+        ...params
       }),
+
+    /**
+     * No description
+     *
+     * @tags Guilds
+     * @name ReorderGuildClans
+     * @request PATCH:/guilds/{guildId}/clans/reorder
+     * @secure
+     * @response `200` `ReorderGuildClansData`
+     * @response `500` `ErrorResponseDto`
+     */
+    reorderGuildClans: (
+      { guildId, ...query }: ReorderGuildClansParams,
+      data: ReorderClanCategoriesInput,
+      params: RequestParams = {}
+    ) =>
+      this.http.request<ReorderGuildClansData, ReorderGuildClansError>({
+        path: `/guilds/${guildId}/clans/reorder`,
+        method: 'PATCH',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: 'json',
+        ...params
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Guilds
+     * @name ListMembers
+     * @request GET:/guilds/{guildId}/members/list
+     * @secure
+     * @response `200` `ListMembersData`
+     * @response `500` `ErrorResponseDto`
+     */
+    listMembers: ({ guildId, ...query }: ListMembersParams, params: RequestParams = {}) =>
+      this.http.request<ListMembersData, ListMembersError>({
+        path: `/guilds/${guildId}/members/list`,
+        method: 'GET',
+        query: query,
+        secure: true,
+        format: 'json',
+        ...params
+      })
   };
   exports = {
     /**
@@ -2138,11 +2685,14 @@ export class Api<SecurityDataType extends unknown> {
      * @response `201` `ExportClanMembersData`
      * @response `500` `ErrorResponseDto`
      */
-    exportClanMembers: (params: RequestParams = {}) =>
+    exportClanMembers: (data: ExportMembersInput, params: RequestParams = {}) =>
       this.http.request<ExportClanMembersData, ExportClanMembersError>({
         path: `/exports/members`,
-        method: "POST",
-        ...params,
-      }),
+        method: 'POST',
+        body: data,
+        type: ContentType.Json,
+        format: 'json',
+        ...params
+      })
   };
 }

@@ -8,13 +8,14 @@ import {
   EmbedBuilder,
   InteractionEditReplyOptions,
   Message,
+  MessageComponentInteraction,
   RoleSelectMenuInteraction,
   StringSelectMenuInteraction,
   UserSelectMenuInteraction
 } from 'discord.js';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
-import { CustomIdProps } from '../struct/component-handler.js';
+import { CustomIdProps } from '../struct/redis-service.js';
 import { EMOJIS } from './emojis.js';
 
 const NEXT = '➡️';
@@ -282,7 +283,7 @@ export const createInteractionCollector = ({
   onRoleSelect?: (interaction: RoleSelectMenuInteraction<'cached'>) => unknown;
   onChannelSelect?: (interaction: ChannelSelectMenuInteraction<'cached'>) => unknown;
   onClose?: () => unknown;
-  interaction: CommandInteraction<'cached'>;
+  interaction: CommandInteraction<'cached'> | MessageComponentInteraction<'cached'>;
   message: Message<true>;
   clear?: boolean;
 }) => {
