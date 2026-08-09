@@ -169,6 +169,21 @@ export default class RosterSignupCommand extends Command {
     const signupUser = async (action: StringSelectMenuInteraction<'cached'>) => {
       await action.deferUpdate();
 
+      const roster = await this.client.rosterManager.get(rosterId);
+      if (!roster)
+        return action.editReply({ content: 'Roster was deleted.', embeds: [], components: [] });
+
+      if (
+        roster.requireCategorySelection &&
+        selectableCategories.length &&
+        selected.category === null
+      ) {
+        return action.editReply({
+          content: 'Selection of a group is required. Please select a group to continue.',
+          components: [categoryRow, ...accountsRows]
+        });
+      }
+
       const result = [];
       const changeLog = [];
       for (const tag of action.values) {
@@ -190,10 +205,6 @@ export default class RosterSignupCommand extends Command {
         }
       }
       const errored = result.some((res) => !res.success);
-
-      const roster = await this.client.rosterManager.get(rosterId);
-      if (!roster)
-        return action.editReply({ content: 'Roster was deleted.', embeds: [], components: [] });
 
       if (errored) {
         await action.editReply({

@@ -1,29 +1,29 @@
 import {
-  COLOR_CODES,
-  Collections,
-  DiscordErrorCodes,
-  MAX_TOWN_HALL_LEVEL,
-  Settings,
-  UNRANKED_TIER_ID,
-  UNRANKED_WAR_LEAGUE_ID,
-  WarType
+	COLOR_CODES,
+	Collections,
+	DiscordErrorCodes,
+	MAX_TOWN_HALL_LEVEL,
+	Settings,
+	UNRANKED_TIER_ID,
+	UNRANKED_WAR_LEAGUE_ID,
+	WarType
 } from '@app/constants';
 import { captureException } from '@sentry/node';
 import { APIClan, APIClanMember, APIClanWar, APIPlayer } from 'clashofclans.js';
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonInteraction,
-  ButtonStyle,
-  CommandInteraction,
-  EmbedBuilder,
-  Guild,
-  MessageFlags,
-  PermissionFlagsBits,
-  StringSelectMenuInteraction,
-  User,
-  WebhookClient,
-  time
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	Guild,
+	MessageFlags,
+	PermissionFlagsBits,
+	StringSelectMenuInteraction,
+	User,
+	WebhookClient,
+	time
 } from 'discord.js';
 import moment from 'moment-timezone';
 import { Collection, Filter, ObjectId, WithId } from 'mongodb';
@@ -213,6 +213,7 @@ export interface IRoster {
   } | null;
   logChannelId?: string | null;
   allowCategorySelection?: boolean;
+  requireCategorySelection?: boolean;
   lastUpdated: Date;
   createdAt: Date;
 }
@@ -228,6 +229,7 @@ export interface IRosterDefaultSettings {
   sortBy: RosterSortTypes;
   colorCode: number;
   allowCategorySelection: boolean;
+  requireCategorySelection: boolean;
   allowUnlinked: boolean;
 }
 
@@ -1588,6 +1590,7 @@ export class RosterManager {
     const settings: Partial<IRosterDefaultSettings> = {
       allowMultiSignup: data.allowMultiSignup,
       allowCategorySelection: data.allowCategorySelection,
+      requireCategorySelection: data.requireCategorySelection,
       maxMembers: data.maxMembers,
       minHeroLevels: data.minHeroLevels,
       minTownHall: data.minTownHall,

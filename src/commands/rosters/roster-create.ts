@@ -43,6 +43,7 @@ export default class RosterCreateCommand extends Command {
       min_hero_level?: number;
       roster_role?: Role;
       allow_group_selection?: boolean;
+      require_group_selection?: boolean;
       allow_multi_signup?: boolean;
       max_accounts_per_user?: number;
       end_time?: string;
@@ -83,7 +84,13 @@ export default class RosterCreateCommand extends Command {
         args.allow_multi_signup ?? defaultSettings.allowMultiSignup ?? true
       ),
       allowCategorySelection: Boolean(
-        args.allow_group_selection ?? defaultSettings.allowCategorySelection ?? true
+        args.allow_group_selection ??
+          args.require_group_selection ??
+          defaultSettings.allowCategorySelection ??
+          true
+      ),
+      requireCategorySelection: Boolean(
+        args.require_group_selection ?? defaultSettings.requireCategorySelection ?? false
       ),
       allowUnlinked: Boolean(args.allow_unlinked ?? defaultSettings.allowUnlinked ?? false),
       maxMembers: args.max_members ?? defaultSettings.maxMembers,
