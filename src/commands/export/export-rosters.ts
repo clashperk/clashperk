@@ -6,6 +6,7 @@ import { CreateGoogleSheet } from '../../struct/google.js';
 import { IRosterCategory, rosterLabel } from '../../struct/roster-manager.js';
 import { getExportComponents } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
+import { PLAYER_LEAGUE_MAP } from '@app/constants';
 
 export default class RosterExportCommand extends Command {
   public constructor() {
@@ -40,12 +41,14 @@ export default class RosterExportCommand extends Command {
         { name: 'Discord', align: 'LEFT', width: 160 },
         { name: 'War Preference', align: 'LEFT', width: 100 },
         { name: 'Group', align: 'LEFT', width: 160 },
+        { name: 'Player League', align: 'LEFT', width: 160 },
         { name: 'Town Hall', align: 'RIGHT', width: 100 },
         { name: 'Combined Heroes', align: 'RIGHT', width: 100 }
       ],
       rows: roster.members.map((member) => {
         const key = member.categoryId?.toHexString();
         const category = key && key in categoriesMap ? categoriesMap[key].displayName : '';
+        const league = PLAYER_LEAGUE_MAP[member.leagueId.toString()] ?? '';
         return [
           member.name,
           member.tag,
@@ -55,6 +58,7 @@ export default class RosterExportCommand extends Command {
           member.username ?? '',
           member.warPreference ?? '',
           category,
+          league,
           member.townHallLevel,
           Object.values(member.heroes).reduce((acc, num) => acc + num, 0)
         ];
@@ -110,12 +114,14 @@ export default class RosterExportCommand extends Command {
           { name: 'Discord', align: 'LEFT', width: 160 },
           { name: 'War Preference', align: 'LEFT', width: 100 },
           { name: 'Group', align: 'LEFT', width: 160 },
+          { name: 'Player League', align: 'LEFT', width: 160 },
           { name: 'Town Hall', align: 'RIGHT', width: 100 },
           { name: 'Combined Heroes', align: 'RIGHT', width: 100 }
         ],
         rows: allRosterMembers.map((member) => {
           const key = member.categoryId?.toHexString();
           const category = key && key in categoriesMap ? categoriesMap[key].displayName : '';
+          const league = PLAYER_LEAGUE_MAP[member.leagueId.toString()] ?? '';
           return [
             member.name,
             member.tag,
@@ -127,6 +133,7 @@ export default class RosterExportCommand extends Command {
             member.username ?? '',
             member.warPreference ?? '',
             category,
+            league,
             member.townHallLevel,
             Object.values(member.heroes).reduce((acc, num) => acc + num, 0)
           ];
