@@ -166,7 +166,7 @@ export default class AutocompleteInteractionListener extends Listener {
         return this.client.autocomplete.startOrEndDateAutocomplete(interaction, focused);
       }
       case 'clans': {
-        if (interaction.commandName === 'activity' && !query) {
+        if (['activity', 'export', 'summary'].includes(interaction.commandName) && !query) {
           return this.client.autocomplete.clanAutoComplete(interaction, {
             withCategory: true,
             isMulti: true
