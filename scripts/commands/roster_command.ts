@@ -2,7 +2,7 @@ import { MAX_TOWN_HALL_LEVEL } from '@app/constants';
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { RosterCommandSortOptions, RosterManageActions } from '../../src/util/command.options.js';
 import { command, common } from '../../src/util/locales.js';
-import { channelTypes, guildInstallable, translation } from './@helper.js';
+import { channelTypes, translation, guildInstallable } from './@helper.js';
 
 export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'roster',
