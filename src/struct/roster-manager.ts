@@ -214,7 +214,7 @@ export interface IRoster {
   logChannelId?: string | null;
   allowCategorySelection?: boolean;
   requireCategorySelection?: boolean;
-  customCategorySelectionPrompt?: string | null;
+  categorySelectionCustomText?: string | null;
   lastUpdated: Date;
   createdAt: Date;
 }
