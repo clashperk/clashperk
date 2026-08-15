@@ -11,7 +11,6 @@ Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ev
 - [Node.js](https://nodejs.org/en/)
 - [Discord.js](https://discord.js.org/#/)
 - [MongoDB](https://www.mongodb.com/)
-- [Elasticsearch](https://www.elastic.co/)
 - [Clickhouse](https://clickhouse.com/)
 - [Redis](https://redis.io/)
 - [Kafka](https://kafka.apache.org/)

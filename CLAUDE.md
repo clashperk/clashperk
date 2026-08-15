@@ -29,7 +29,7 @@ npm run submodule      # Initialize/update locales git submodule
 
 ### Core Classes (`src/struct/`)
 
-- `client.ts` — Extended Discord.js client holding all service references (db, coc, redis, elastic, clickhouse, analytics, settings, handlers)
+- `client.ts` — Extended Discord.js client holding all service references (db, coc, redis, clickhouse, analytics, settings, handlers)
 - `clash-client.ts` — Clash of Clans API integration via `clashofclans.js`
 - `database.ts` — MongoDB connection managing two databases: main + global tracking
 - `settings-provider.ts` — Per-guild settings backed by MongoDB
@@ -69,7 +69,7 @@ Log handlers (clan-log, clan-war-log, capital-log, donation-log, etc.) process g
 - **Target**: ES2021, Module: Node16, strict mode
 - **Formatting**: Prettier — single quotes, no trailing commas, 100 char width, 2-space indent, LF line endings
 - **Node**: >= 20.x, Docker uses Node 22-alpine
-- **Databases**: MongoDB (replica set required), Redis, Elasticsearch, Clickhouse
+- **Databases**: MongoDB (replica set required), Redis, Clickhouse
 - **Monitoring**: Sentry for errors, PostHog + Mixpanel for analytics
 
 ## Workspaces:
