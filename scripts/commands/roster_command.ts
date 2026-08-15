@@ -2,7 +2,7 @@ import { MAX_TOWN_HALL_LEVEL } from '@app/constants';
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { RosterCommandSortOptions, RosterManageActions } from '../../src/util/command.options.js';
 import { command, common } from '../../src/util/locales.js';
-import { channelTypes, translation, guildInstallable } from './@helper.js';
+import { channelTypes, guildInstallable, translation } from './@helper.js';
 
 export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'roster',
@@ -186,6 +186,15 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.Boolean
         },
         {
+          name: 'group_selection_text',
+          description: command.roster.create.options.group_selection_text.description,
+          description_localizations: translation(
+            'command.roster.create.options.group_selection_text.description'
+          ),
+          type: ApplicationCommandOptionType.String,
+          max_length: 100
+        },
+        {
           name: 'allow_multi_signup',
           description: command.roster.create.options.allow_multi_signup.description,
           description_localizations: translation(
@@ -206,14 +215,6 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.roster.create.options.roster_image_url.description,
           description_localizations: translation(
             'command.roster.create.options.roster_image_url.description'
-          ),
-          type: ApplicationCommandOptionType.String
-        },
-        {
-          name: 'custom_category_selection_prompt',
-          description: command.roster.create.options.custom_category_selection_prompt.description,
-          description_localizations: translation(
-            'command.roster.create.options.custom_category_selection_prompt.description'
           ),
           type: ApplicationCommandOptionType.String
         },
@@ -524,6 +525,15 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.Boolean
         },
         {
+          name: 'group_selection_text',
+          description: command.roster.create.options.group_selection_text.description,
+          description_localizations: translation(
+            'command.roster.create.options.group_selection_text.description'
+          ),
+          type: ApplicationCommandOptionType.String,
+          max_length: 100
+        },
+        {
           name: 'allow_multi_signup',
           description: command.roster.create.options.allow_multi_signup.description,
           description_localizations: translation(
@@ -544,14 +554,6 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.roster.create.options.roster_image_url.description,
           description_localizations: translation(
             'command.roster.create.options.roster_image_url.description'
-          ),
-          type: ApplicationCommandOptionType.String
-        },
-        {
-          name: 'custom_category_selection_prompt',
-          description: command.roster.create.options.custom_category_selection_prompt.description,
-          description_localizations: translation(
-            'command.roster.create.options.custom_category_selection_prompt.description'
           ),
           type: ApplicationCommandOptionType.String
         },

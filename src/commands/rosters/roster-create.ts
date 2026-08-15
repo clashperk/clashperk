@@ -55,7 +55,7 @@ export default class RosterCreateCommand extends Command {
       allow_unlinked?: boolean;
       color_code?: number;
       roster_image_url?: string;
-      custom_category_selection_prompt?: string;
+      group_selection_text?: string;
       category?: IRoster['category'];
     }
   ) {
@@ -106,7 +106,7 @@ export default class RosterCreateCommand extends Command {
         args.roster_image_url && URL_REGEX.test(args.roster_image_url)
           ? args.roster_image_url
           : null,
-      customCategorySelectionPrompt: args.custom_category_selection_prompt ?? null,
+      categorySelectionCustomText: args.group_selection_text ?? null,
       roleId: args.roster_role?.id ?? null,
       colorCode: args.color_code ?? defaultSettings.colorCode,
       members: [],

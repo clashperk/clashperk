@@ -74,7 +74,7 @@ export default class RosterEditCommand extends Command {
       allow_unlinked?: boolean;
       color_code?: number;
       roster_image_url?: string;
-      custom_category_selection_prompt?: string;
+      group_selection_text?: string;
       components_only?: boolean;
       log_channel?: TextChannel | AnyThreadChannel;
       delete_log_channel?: boolean;
@@ -143,8 +143,7 @@ export default class RosterEditCommand extends Command {
       data.rosterImage = args.roster_image_url;
     if (args.roster_image_url && /^none$/i.test(args.roster_image_url)) data.rosterImage = null;
 
-    if (args.custom_category_selection_prompt)
-      data.customCategorySelectionPrompt = args.custom_category_selection_prompt;
+    if (args.group_selection_text) data.categorySelectionCustomText = args.group_selection_text;
 
     if (typeof args.allow_multi_signup === 'boolean')
       data.allowMultiSignup = args.allow_multi_signup;
