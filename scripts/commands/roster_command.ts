@@ -210,6 +210,14 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String
         },
         {
+          name: 'custom_category_selection_prompt',
+          description: command.roster.create.options.custom_category_selection_prompt.description,
+          description_localizations: translation(
+            'command.roster.create.options.custom_category_selection_prompt.description'
+          ),
+          type: ApplicationCommandOptionType.String
+        },
+        {
           name: 'color_code',
           description: command.roster.create.options.color_code.description,
           description_localizations: translation(
@@ -536,6 +544,14 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: command.roster.create.options.roster_image_url.description,
           description_localizations: translation(
             'command.roster.create.options.roster_image_url.description'
+          ),
+          type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'custom_category_selection_prompt',
+          description: command.roster.create.options.custom_category_selection_prompt.description,
+          description_localizations: translation(
+            'command.roster.create.options.custom_category_selection_prompt.description'
           ),
           type: ApplicationCommandOptionType.String
         },

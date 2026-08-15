@@ -478,6 +478,9 @@ export const command = {
         roster_image_url: {
           description: 'Image to be used in the roster embed'
         },
+        custom_category_selection_prompt: {
+          description: 'Custom prompt to show users when selecting a group in the roster'
+        },
         color_code: {
           description: 'Hex color code of the roster embed'
         }

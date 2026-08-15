@@ -123,9 +123,11 @@ export default class RosterSignupCommand extends Command {
       category: null
     };
 
+    const categoryMenuPlaceholder =
+      roster.customCategorySelectionPrompt ?? 'Choose a group (confirmed, substitute, etc)';
     const categoryMenu = new StringSelectMenuBuilder()
       .setMinValues(1)
-      .setPlaceholder('Choose a group (confirmed, substitute, etc)')
+      .setPlaceholder(categoryMenuPlaceholder)
       .setCustomId(customIds.category)
       .setOptions(
         selectableCategories.map((category) => ({
