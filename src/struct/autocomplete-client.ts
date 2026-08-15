@@ -1,5 +1,5 @@
 import { Collections } from '@app/constants';
-import { ClanCategoriesEntity, FlagsEntity, PlayersEntity } from '@app/entities';
+import { ClanCategoriesEntity, FlagsEntity, PlayerLinksEntity, PlayersEntity } from '@app/entities';
 import { AutocompleteInteraction } from 'discord.js';
 import { Filter } from 'mongodb';
 import { nanoid } from 'nanoid';
@@ -7,6 +7,37 @@ import { sift, unique } from 'radash';
 import { COUNTRIES } from '../util/countries.js';
 import { Util } from '../util/toolkit.js';
 import { Client } from './client.js';
+
+interface SearchEntry {
+  name: string;
+  tag: string;
+  alias?: string | null;
+}
+
+const normalize = (value: string) => value.toLowerCase().replace(/\s+/g, ' ').trim();
+
+/**
+ * Matches a name, tag or alias leniently: a case-insensitive substring hit, or every token of
+ * the query appearing somewhere in the field (so "war heroes" still finds "Heroes of War").
+ */
+const matchesQuery = (query: string, entry: SearchEntry) => {
+  const needle = normalize(query);
+  if (!needle) return true;
+
+  const tokens = needle.split(' ');
+  return sift([entry.name, entry.tag, entry.alias]).some((field) => {
+    const haystack = normalize(field);
+    return haystack.includes(needle) || tokens.every((token) => haystack.includes(token));
+  });
+};
+
+const searchEntries = (entries: SearchEntry[], query?: string) => {
+  const matched = entries.filter((entry) => entry.name && entry.tag);
+  return unique(
+    query ? matched.filter((entry) => matchesQuery(query, entry)) : matched,
+    (entry) => entry.tag
+  ).map(({ name, tag }) => ({ name, tag }));
+};
 
 export class Autocomplete {
   public constructor(private readonly client: Client) {}
@@ -124,7 +155,7 @@ export class Autocomplete {
     interaction: AutocompleteInteraction<'cached'>,
     args: { player?: string }
   ) {
-    const clans = await this.client.storage.find(interaction.guildId);
+    const clans = await this.client.storage.find(interaction.guildId, { tag: 1 });
     const query: Filter<PlayersEntity> = {
       'clan.tag': { $in: clans.map((clan) => clan.tag) }
     };
@@ -162,7 +193,7 @@ export class Autocomplete {
     { withCategory, isMulti }: { isMulti: boolean; withCategory: boolean }
   ) {
     const [clans, userClans] = await Promise.all([
-      this.client.storage.find(interaction.guildId),
+      this.client.storage.find(interaction.guildId, { name: 1, tag: 1, categoryId: 1 }),
       this.getUserLinkedClan(interaction.user.id)
     ]);
 
@@ -200,6 +231,47 @@ export class Autocomplete {
     }
 
     return interaction.respond(choices.slice(0, 25));
+  }
+
+  /** Linked players first (in the user's configured order), then their recent searches. */
+  public async searchLinkedPlayers(userId: string, query?: string) {
+    const [links, recentlySearched] = await Promise.all([
+      this.client.db
+        .collection<PlayerLinksEntity>(Collections.PLAYER_LINKS)
+        .find({ userId }, { projection: { name: 1, tag: 1 }, sort: { order: 1 }, limit: 100 })
+        .toArray(),
+      this.client.redis.getRecentSearches('PLAYER', userId)
+    ]);
+
+    return searchEntries([...links, ...recentlySearched], query);
+  }
+
+  /** The user's own clan first, then the server's clans, then their recent searches. */
+  public async searchLinkedClans({
+    userId,
+    guildId,
+    query,
+    withRecentlySearched
+  }: {
+    userId: string;
+    guildId: string;
+    query?: string;
+    withRecentlySearched: boolean;
+  }) {
+    const [userClans, guildClans, recentlySearched] = await Promise.all([
+      this.getUserLinkedClan(userId),
+      this.client.storage.find(guildId, { name: 1, tag: 1, alias: 1 }),
+      withRecentlySearched ? this.client.redis.getRecentSearches('CLAN', userId) : []
+    ]);
+
+    return searchEntries(
+      [
+        ...userClans,
+        ...guildClans.map((clan) => ({ name: clan.name, tag: clan.tag, alias: clan.alias })),
+        ...recentlySearched
+      ],
+      query
+    );
   }
 
   public async generateArgs(query: string) {

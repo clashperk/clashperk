@@ -1,6 +1,5 @@
 import { FeatureFlags, Settings } from '@app/constants';
 import { createClient as createClickHouseClient } from '@clickhouse/client';
-import { Client as ElasticClient } from '@elastic/elasticsearch';
 import { ClusterClient, getInfo } from 'discord-hybrid-sharding';
 import {
   BaseInteraction,
@@ -70,18 +69,6 @@ export class Client extends DiscordClient<true> {
   public inMaintenance = Boolean(false);
   public redis = new RedisService(this);
   public analytics = new AnalyticsManager(this);
-
-  public elastic = new ElasticClient({
-    node: process.env.ES_HOST!,
-    auth: {
-      username: 'elastic',
-      password: process.env.ES_PASSWORD!
-    },
-    tls: {
-      ca: process.env.ES_CA_CRT!,
-      rejectUnauthorized: false
-    }
-  });
 
   public clickhouse = createClickHouseClient({
     url: process.env.CLICKHOUSE_HOST,

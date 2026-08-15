@@ -1,9 +1,4 @@
-import {
-  MsearchMultiSearchItem,
-  QueryDslQueryContainer
-} from '@elastic/elasticsearch/lib/api/types.js';
-
-import { Collections, ESCAPE_CHAR_REGEX, ElasticIndex } from '@app/constants';
+import { Collections, ESCAPE_CHAR_REGEX } from '@app/constants';
 import { UserTimezone } from '@app/entities';
 import { addBreadcrumb } from '@sentry/node';
 import { AutocompleteInteraction, ChannelType, Interaction, InteractionType } from 'discord.js';
@@ -11,7 +6,7 @@ import moment from 'moment';
 import { Filter } from 'mongodb';
 import ms from 'ms';
 import { nanoid } from 'nanoid';
-import { unique } from 'radash';
+import { debounce } from 'radash';
 import {
   CAPITAL_RAID_REMINDERS_AUTOCOMPLETE,
   CLAN_GAMES_REMINDERS_AUTOCOMPLETE,
@@ -29,62 +24,12 @@ const ranges: Record<string, number> = {
   'default': ms('5d') + ms('23h')
 };
 
-const getClanQuery = (query: string): QueryDslQueryContainer[] => {
-  return [
-    {
-      match: {
-        name: query
-      }
-    },
-    {
-      prefix: {
-        name: query.toLowerCase()
-      }
-    },
-    {
-      match: {
-        alias: query
-      }
-    },
-    {
-      match: {
-        tag: query
-      }
-    },
-    {
-      prefix: {
-        tag: query.toLowerCase()
-      }
-    }
-  ];
-};
-
-const getPlayerQuery = (query: string): QueryDslQueryContainer[] => {
-  return [
-    {
-      match: {
-        name: query
-      }
-    },
-    {
-      prefix: {
-        name: query.toLowerCase()
-      }
-    },
-    {
-      match: {
-        tag: query
-      }
-    },
-    {
-      prefix: {
-        tag: query.toLowerCase()
-      }
-    }
-  ];
-};
+const AUTOCOMPLETE_DEBOUNCE_MS = 100;
 
 export default class AutocompleteInteractionListener extends Listener {
+  /** One debouncer per user, dropped once it fires, so this only holds users mid-keystroke. */
+  private readonly debouncers = new Map<string, (interaction: AutocompleteInteraction) => void>();
+
   public constructor() {
     super('autocomplete-interaction', {
       emitter: 'client',
@@ -95,8 +40,36 @@ export default class AutocompleteInteractionListener extends Listener {
 
   public exec(interaction: Interaction) {
     if (interaction.isAutocomplete()) {
-      return this.autocomplete(interaction);
+      return this.debounceAutocomplete(interaction);
     }
+  }
+
+  /**
+   * Discord fires an autocomplete interaction on every keystroke. Debouncing per user collapses
+   * a burst into a single lookup; the superseded keystrokes are simply never answered, which
+   * Discord handles - the reply to the final keystroke is what the user ends up seeing.
+   */
+  private debounceAutocomplete(interaction: AutocompleteInteraction) {
+    const userId = interaction.user.id;
+
+    let debounced = this.debouncers.get(userId);
+    if (!debounced) {
+      debounced = debounce(
+        { delay: AUTOCOMPLETE_DEBOUNCE_MS },
+        (latest: AutocompleteInteraction) => {
+          this.debouncers.delete(userId);
+
+          this.autocomplete(latest).catch((error: Error) => {
+            this.client.logger.error(`${latest.commandName} ~ ${error.message}`, {
+              label: `${latest.guild?.name ?? 'DM'}/${latest.user.displayName}`
+            });
+          });
+        }
+      );
+      this.debouncers.set(userId, debounced);
+    }
+
+    debounced(interaction);
   }
 
   private inRange(dur: number, cmd: string | null) {
@@ -520,78 +493,17 @@ export default class AutocompleteInteractionListener extends Listener {
     const userId = interaction.user.id;
 
     const now = Date.now();
-    const result = query
-      ? await this.client.elastic.msearch({
-          searches: [
-            { index: ElasticIndex.USER_LINKED_PLAYERS },
-            {
-              query: {
-                bool: {
-                  must: { term: { userId } },
-                  should: getPlayerQuery(query),
-                  minimum_should_match: 1
-                }
-              }
-            },
-            { index: ElasticIndex.RECENT_PLAYERS },
-            {
-              query: {
-                bool: {
-                  must: { term: { userId } },
-                  should: getPlayerQuery(query),
-                  minimum_should_match: 1
-                }
-              }
-            },
-            { index: ElasticIndex.USER_LINKED_PLAYERS },
-            {
-              query: {
-                bool: {
-                  must: { term: { userId } },
-                  should: getPlayerQuery(query),
-                  minimum_should_match: 1
-                }
-              }
-            }
-          ]
-        })
-      : await this.client.elastic.msearch({
-          searches: [
-            { index: ElasticIndex.USER_LINKED_PLAYERS },
-            {
-              size: 25,
-              sort: [{ order: 'asc' }],
-              query: {
-                bool: {
-                  must: { term: { userId } }
-                }
-              }
-            },
-            { index: ElasticIndex.RECENT_PLAYERS },
-            {
-              sort: [{ lastSearched: 'desc' }],
-              query: {
-                bool: {
-                  must: { term: { userId } }
-                }
-              }
-            }
-          ]
-        });
+    const players = (await this.client.autocomplete.searchLinkedPlayers(userId, query)).slice(
+      0,
+      25
+    );
+
     this.client.logger.debug(
       `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
       {
         label: `${interaction.guild?.name ?? 'DM'}/${interaction.user.displayName}`
       }
     );
-
-    let players = (
-      result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[]
-    )
-      .map((res) => res.hits.hits.map((hit) => hit._source!))
-      .flat()
-      .filter((player) => player.name && player.tag);
-    players = unique(players, (player) => player.tag).slice(0, 25);
 
     if (!players.length) {
       if (query && this.isValidQuery(query)) {
@@ -623,52 +535,12 @@ export default class AutocompleteInteractionListener extends Listener {
     const guildId = interaction.guild.id;
 
     const now = Date.now();
-    const result = query
-      ? await this.client.elastic.msearch({
-          searches: [
-            { index: ElasticIndex.USER_LINKED_CLANS },
-            {
-              size: 10,
-              query: {
-                bool: {
-                  must: { term: { userId } },
-                  should: getClanQuery(query),
-                  minimum_should_match: 1
-                }
-              }
-            },
-            { index: ElasticIndex.GUILD_LINKED_CLANS },
-            {
-              size: 100,
-              query: {
-                bool: {
-                  must: { term: { guildId } },
-                  should: getClanQuery(query),
-                  minimum_should_match: 1
-                }
-              }
-            }
-          ]
-        })
-      : await this.client.elastic.msearch({
-          searches: [
-            { index: ElasticIndex.USER_LINKED_CLANS },
-            {
-              size: 10,
-              query: {
-                bool: { must: { term: { userId } } }
-              }
-            },
-            { index: ElasticIndex.GUILD_LINKED_CLANS },
-            {
-              size: 100,
-              sort: [{ name: 'asc' }],
-              query: {
-                bool: { must: { term: { guildId } } }
-              }
-            }
-          ]
-        });
+    const clans = await this.client.autocomplete.searchLinkedClans({
+      userId,
+      guildId,
+      query,
+      withRecentlySearched: false
+    });
 
     this.client.logger.debug(
       `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
@@ -676,19 +548,6 @@ export default class AutocompleteInteractionListener extends Listener {
         label: `${interaction.guild.name}/${interaction.user.displayName}`
       }
     );
-
-    let clans = (
-      result.responses as MsearchMultiSearchItem<{
-        name: string;
-        tag: string;
-        guildId?: string;
-        userId?: string;
-      }>[]
-    )
-      .map((res) => res.hits.hits.map((hit) => hit._source!))
-      .flat()
-      .filter((clan) => clan.name && clan.tag);
-    clans = unique(clans, (clan) => clan.tag);
 
     const isValidQuery = this.isValidQuery(query);
     if (!clans.length) {
@@ -729,45 +588,14 @@ export default class AutocompleteInteractionListener extends Listener {
     }
 
     const now = Date.now();
-    const result = await this.client.elastic.msearch({
-      searches: [
-        { index: ElasticIndex.USER_LINKED_CLANS },
-        {
-          size: 25,
-          query: {
-            bool: {
-              must: { term: { userId } },
-              should: getClanQuery(query),
-              minimum_should_match: 1
-            }
-          }
-        },
-        { index: ElasticIndex.GUILD_LINKED_CLANS },
-        {
-          size: 25,
-          sort: [{ name: 'asc' }],
-          query: {
-            bool: {
-              must: { term: { guildId } },
-              should: getClanQuery(query),
-              minimum_should_match: 1
-            }
-          }
-        },
-        { index: ElasticIndex.RECENT_CLANS },
-        {
-          size: 25,
-          sort: [{ lastSearched: 'desc' }],
-          query: {
-            bool: {
-              must: { term: { userId } },
-              should: getClanQuery(query),
-              minimum_should_match: 1
-            }
-          }
-        }
-      ]
-    });
+    const clans = (
+      await this.client.autocomplete.searchLinkedClans({
+        userId,
+        guildId,
+        query,
+        withRecentlySearched: true
+      })
+    ).slice(0, 25);
 
     this.client.logger.debug(
       `${interaction.commandName}#${focused} ~ search took ${Date.now() - now}ms`,
@@ -775,19 +603,6 @@ export default class AutocompleteInteractionListener extends Listener {
         label: `${interaction.guild.name}/${interaction.user.displayName}`
       }
     );
-
-    let clans = (
-      result.responses as MsearchMultiSearchItem<{
-        name: string;
-        tag: string;
-        guildId?: string;
-        userId?: string;
-      }>[]
-    )
-      .map((res) => res.hits.hits.map((hit) => hit._source!))
-      .flat()
-      .filter((clan) => clan.name && clan.tag);
-    clans = unique(clans, (clan) => clan.tag).slice(0, 25);
 
     if (!clans.length) {
       if (query && this.isValidQuery(query)) {

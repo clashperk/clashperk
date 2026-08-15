@@ -4,6 +4,9 @@ import { createClient } from 'redis';
 import { mapToPlayerInterface } from '../helper/cache-mapper.helper.js';
 import { Client } from './client.js';
 
+const RECENT_SEARCH_LIMIT = 25;
+const RECENT_SEARCH_TTL = 60 * 60 * 24 * 7; // 7 days
+
 export class RedisService {
   public connection = createClient({
     url: process.env.REDIS_URL,
@@ -124,6 +127,53 @@ export class RedisService {
     }[];
   }
 
+  private recentSearchKey(type: RecentSearchType, userId: string) {
+    return `RECENT_SEARCH:${type}:${userId}`;
+  }
+
+  private parseRecentSearch(raw: string) {
+    try {
+      return JSON.parse(raw) as RecentSearchEntry;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Recent searches are best-effort; a failure here must never break the command path. */
+  public async trackRecentSearch(type: RecentSearchType, userId: string, entry: RecentSearchEntry) {
+    const key = this.recentSearchKey(type, userId);
+
+    try {
+      const members = await this.connection.zRange(key, 0, -1);
+      const staleMembers = members.filter(
+        (member) => this.parseRecentSearch(member)?.tag === entry.tag
+      );
+      if (staleMembers.length) await this.connection.zRem(key, staleMembers);
+
+      await this.connection.zAdd(key, {
+        score: Date.now(),
+        value: JSON.stringify({ name: entry.name, tag: entry.tag })
+      });
+      await this.connection.zRemRangeByRank(key, 0, -(RECENT_SEARCH_LIMIT + 1));
+      await this.connection.expire(key, RECENT_SEARCH_TTL);
+    } catch {
+      // ignored
+    }
+  }
+
+  /** Most recently searched first. */
+  public async getRecentSearches(type: RecentSearchType, userId: string) {
+    try {
+      const members = await this.connection.zRange(this.recentSearchKey(type, userId), 0, -1);
+      return members
+        .reverse()
+        .map((member) => this.parseRecentSearch(member))
+        .filter((entry): entry is RecentSearchEntry => Boolean(entry?.name && entry?.tag));
+    } catch {
+      return [];
+    }
+  }
+
   public createCustomId(payload: CustomIdProps) {
     const softId = JSON.stringify(payload);
     if (softId.length <= 100) return softId;
@@ -169,6 +219,13 @@ export class RedisService {
   public async expireCustomId(customId: string) {
     return this.connection.expire(customId, 60, 'XX');
   }
+}
+
+export type RecentSearchType = 'PLAYER' | 'CLAN';
+
+export interface RecentSearchEntry {
+  name: string;
+  tag: string;
 }
 
 export interface CustomIdProps {

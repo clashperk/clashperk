@@ -33,9 +33,13 @@ export class StorageHandler {
     this.collection = client.db.collection(Collections.CLAN_STORES);
   }
 
-  public async find(guildId: string) {
+  /**
+   * Pass a `projection` to avoid pulling whole clan documents when only a few fields are needed
+   * (hot paths like autocomplete run this on every keystroke).
+   */
+  public async find(guildId: string, projection?: Partial<Record<keyof ClanStoresEntity, 1>>) {
     const key = this.client.settings.get<string>(guildId, Settings.CLANS_SORTING_KEY, 'name');
-    return this.collection.find({ guild: guildId }, { sort: { [key]: 1 } }).toArray();
+    return this.collection.find({ guild: guildId }, { sort: { [key]: 1 }, projection }).toArray();
   }
 
   public async getTotalClans(guildId: string) {

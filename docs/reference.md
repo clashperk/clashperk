@@ -39,7 +39,6 @@ ClashPerk is a Discord bot for Clash of Clans built with TypeScript, discord.js 
 | Discord | discord.js v14, discord-hybrid-sharding |
 | Primary DB | MongoDB (replica set required) |
 | Cache | Redis |
-| Search | Elasticsearch |
 | Analytics DB | ClickHouse |
 | Error tracking | Sentry |
 | Analytics | PostHog + Mixpanel |
@@ -182,9 +181,6 @@ src/
 | `NODE_ENV` | `development` or `production` |
 | `SENTRY_DSN` | Sentry error tracking endpoint |
 | `SERVICE_NAME` | Sentry service identifier |
-| `ES_HOST` | Elasticsearch URL |
-| `ES_PASSWORD` | Elasticsearch password |
-| `ES_CA_CRT` | Elasticsearch TLS CA certificate |
 | `CLICKHOUSE_HOST` | ClickHouse URL |
 | `CLICKHOUSE_USER` | ClickHouse user (default: `default`) |
 | `CLICKHOUSE_PASSWORD` | ClickHouse password |

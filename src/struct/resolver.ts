@@ -3,7 +3,6 @@ import {
   DISCORD_ID_REGEX,
   DISCORD_MENTION_REGEX,
   ESCAPE_CHAR_REGEX,
-  ElasticIndex,
   PATREON_LINK,
   Settings,
   TAG_REGEX,
@@ -17,14 +16,14 @@ import { ObjectId } from 'mongodb';
 import { unique } from 'radash';
 import { i18n } from '../util/i18n.js';
 import { Client } from './client.js';
-import { ElasticIndexer } from './indexer.js';
 import { mixpanel } from './mixpanel.js';
+import { PlayerSync } from './player-sync.js';
 
 export class Resolver {
-  private readonly indexer: ElasticIndexer;
+  private readonly playerSync: PlayerSync;
 
   public constructor(private readonly client: Client) {
-    this.indexer = new ElasticIndexer(client);
+    this.playerSync = new PlayerSync(client);
   }
 
   public async resolvePlayer(
@@ -147,8 +146,8 @@ export class Resolver {
   }
 
   private async updateLastSearchedPlayer(user: User, player: APIPlayer) {
-    await this.indexer.reSyncClanHistory(player);
-    if (player.leagueTier?.id !== UNRANKED_TIER_ID) await this.indexer.reSyncLegends(player);
+    await this.playerSync.reSyncClanHistory(player);
+    if (player.leagueTier?.id !== UNRANKED_TIER_ID) await this.playerSync.reSyncLegends(player);
 
     await this.client.db.collection(Collections.USERS).updateOne(
       { userId: user.id },
@@ -163,10 +162,10 @@ export class Resolver {
       { upsert: true }
     );
 
-    await this.indexer.index(
-      { name: player.name, tag: player.tag, userId: user.id },
-      ElasticIndex.RECENT_PLAYERS
-    );
+    await this.client.redis.trackRecentSearch('PLAYER', user.id, {
+      name: player.name,
+      tag: player.tag
+    });
   }
 
   private async updateLastSearchedClan(user: User, clan: APIClan) {
@@ -183,10 +182,10 @@ export class Resolver {
       { upsert: true }
     );
 
-    await this.indexer.index(
-      { name: clan.name, tag: clan.tag, userId: user.id },
-      ElasticIndex.RECENT_CLANS
-    );
+    await this.client.redis.trackRecentSearch('CLAN', user.id, {
+      name: clan.name,
+      tag: clan.tag
+    });
   }
 
   private async fail(interaction: BaseInteraction, content: string) {
