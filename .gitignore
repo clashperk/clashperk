@@ -11,3 +11,5 @@ test/
 scripts/sql/
 service-account.json
 clashperk.code-workspace
+.claude/**/*.local.json
+.claude/**/*.local.md

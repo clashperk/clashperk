@@ -1,4 +1,4 @@
-name: aws-ecr-publish
+name: aws-ecr-publish-amd
 
 on:
   workflow_dispatch:
@@ -7,8 +7,8 @@ on:
 jobs:
   build:
     environment: Production
-    name: aws-ecr-publish
-    runs-on: ubuntu-24.04-arm
+    name: aws-ecr-publish-amd
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -57,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: linux/arm64,linux/amd64
+          platforms: linux/amd64
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
           build-args: GIT_SHA=${{ github.sha }}
