@@ -9,18 +9,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_arm:
+  docker_build:
     uses: ./.github/workflows/aws-ecr-publish.yml
     secrets: inherit
 
-  build_amd:
-    uses: ./.github/workflows/aws-ecr-publish-amd.yml
-    secrets: inherit
-
-  deploy-main-bot:
-    needs: build_arm
+  deploy_main_bot:
+    needs: docker_build
     environment: Production
-    name: deploy-main-bot
+    name: deploy_main_bot
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +32,7 @@ jobs:
             docker compose pull
             docker compose up -d
 
-  deploy-custom-bot:
-    needs: build_arm
+  deploy_custom_bot:
+    needs: docker_build
     uses: ./.github/workflows/deploy-custom-bot.yml
     secrets: inherit
