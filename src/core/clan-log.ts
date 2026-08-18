@@ -23,6 +23,9 @@ import moment from 'moment';
 import { ObjectId, WithId } from 'mongodb';
 import {
   BLUE_NUMBERS,
+  CAPITAL_HALLS,
+  CAPITAL_LEAGUES,
+  CWL_LEAGUES,
   EMOJIS,
   HEROES,
   HOME_BASE_LEAGUES,
@@ -283,6 +286,12 @@ export class ClanLog extends RootLog {
 
     if (data.type === LogActions.CAPITAL_HALL_LEVEL_UP) {
       embed.setDescription(`Capital Hall leveled up to **${data.clan.capitalHallLevel}**`);
+      if (data.clan.capitalHallLevel && CAPITAL_HALLS[data.clan.capitalHallLevel]) {
+        const emoji = parseEmoji(CAPITAL_HALLS[data.clan.capitalHallLevel]);
+        if (emoji?.id) {
+          embed.setThumbnail(`https://cdn.discordapp.com/emojis/${emoji.id}.png?v=1`);
+        }
+      }
     }
 
     if (data.type === LogActions.CAPITAL_LEAGUE_CHANGE) {
@@ -291,6 +300,12 @@ export class ClanLog extends RootLog {
       embed.setDescription(
         `Capital League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.capitalLeague.name}**`
       );
+      if (data.clan.capitalLeague?.id && CAPITAL_LEAGUES[data.clan.capitalLeague.id]) {
+        const emoji = parseEmoji(CAPITAL_LEAGUES[data.clan.capitalLeague.id]);
+        if (emoji?.id) {
+          embed.setThumbnail(`https://cdn.discordapp.com/emojis/${emoji.id}.png?v=1`);
+        }
+      }
     }
 
     if (data.type === LogActions.WAR_LEAGUE_CHANGE) {
@@ -299,6 +314,12 @@ export class ClanLog extends RootLog {
       embed.setDescription(
         `War League was ${isPromoted ? 'promoted' : 'demoted'} to **${data.clan.warLeague.name}**`
       );
+      if (data.clan.warLeague?.name && CWL_LEAGUES[data.clan.warLeague.name]) {
+        const emoji = parseEmoji(CWL_LEAGUES[data.clan.warLeague.name]);
+        if (emoji?.id) {
+          embed.setThumbnail(`https://cdn.discordapp.com/emojis/${emoji.id}.png?v=1`);
+        }
+      }
     }
 
     return this.send(cache, webhook, {
