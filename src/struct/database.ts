@@ -263,6 +263,9 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { tag: 1 }
+        },
+        {
+          key: { paused: 1, lastExecution: 1 }
         }
       ]),
 

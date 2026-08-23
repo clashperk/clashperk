@@ -1,4 +1,4 @@
-import { Collections, Flags } from '@app/constants';
+import { Collections, Flags, INACTIVE_GUILD_DURATION } from '@app/constants';
 import { captureException } from '@sentry/node';
 import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
@@ -127,6 +127,7 @@ export class Enqueuer {
           $match: {
             guild: { $in: this.client.guilds.cache.map((guild) => guild.id) },
             paused: false,
+            ...activeGuildFilter(),
             ...(tag ? { tag } : {})
           }
         },
@@ -171,6 +172,10 @@ export class Enqueuer {
 
   public async add(data: { tag: string; guild: string }) {
     if (!this.client.guilds.cache.has(data.guild)) return;
+
+    await this.client.db
+      .collection(Collections.CLAN_STORES)
+      .updateMany({ guild: data.guild, tag: data.tag }, { $set: { lastExecution: new Date() } });
 
     const [result] = await this.client.db
       .collection(Collections.CLAN_STORES)
@@ -297,6 +302,13 @@ export class Enqueuer {
     await this.client.redis.subscriber.unsubscribe(REDIS_PUB_SUB_CHANNEL);
   }
 }
+
+const activeGuildFilter = () => ({
+  $or: [
+    { lastExecution: { $exists: false } },
+    { lastExecution: { $gt: new Date(Date.now() - INACTIVE_GUILD_DURATION) } }
+  ]
+});
 
 interface Cached {
   _id: string;

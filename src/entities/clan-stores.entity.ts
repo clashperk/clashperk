@@ -14,6 +14,7 @@ export interface ClanStoresEntity {
   active: boolean;
   verified: boolean;
   lastRan?: Date;
+  lastExecution?: Date;
   channels?: string[];
   color?: number;
   order?: number;
