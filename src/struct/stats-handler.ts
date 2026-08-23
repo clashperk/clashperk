@@ -1,4 +1,4 @@
-import { Collections } from '@app/constants';
+import { Collections, INACTIVE_GUILD_DURATION } from '@app/constants';
 import { BaseInteraction, Guild } from 'discord.js';
 import { Client } from './client.js';
 
@@ -166,8 +166,23 @@ export class StatsHandler {
       },
       { upsert: true }
     );
-    await this.client.db
-      .collection(Collections.CLAN_STORES)
-      .updateMany({ guild: guild.id }, { $set: { lastExecution: new Date() } });
+    const stores = this.client.db.collection(Collections.CLAN_STORES);
+    const revived = await stores
+      .find(
+        {
+          guild: guild.id,
+          paused: false,
+          lastExecution: { $lte: new Date(Date.now() - INACTIVE_GUILD_DURATION) }
+        },
+        { projection: { tag: 1 } }
+      )
+      .toArray();
+
+    if (revived.length) {
+      await stores.updateMany({ guild: guild.id }, { $set: { lastExecution: new Date() } });
+      for (const clan of revived) {
+        await this.client.enqueuer.add({ tag: clan.tag, guild: guild.id });
+      }
+    }
   }
 }
