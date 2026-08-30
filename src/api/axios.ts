@@ -1,12 +1,29 @@
 import { captureException, setContext } from '@sentry/node';
 import { AxiosError } from 'axios';
+import { Agent as HttpAgent } from 'http';
+import { Agent as HttpsAgent } from 'https';
 import { container } from 'tsyringe';
 import { Client } from '../struct/client.js';
 import { Api, HttpClient } from './generated.js';
 
+/** Endpoints that answer with 404 as a normal "no data" result, not as a failure. */
+const EXPECTED_NOT_FOUND = [/^\/legends\/[^/]+\/estimate-rank$/];
+
+const isExpectedError = (error: AxiosError) => {
+  if (error.response?.status !== 404) return false;
+  const url = error.config?.url ?? '';
+  return EXPECTED_NOT_FOUND.some((pattern) => pattern.test(url));
+};
+
+// the host has no IPv6 route, so every AAAA attempt ends in ENETUNREACH before falling back
+const agentOptions = { keepAlive: true, family: 4 } as const;
+
 const httpClient = new HttpClient({
   baseURL: `${process.env.INTERNAL_API_BASE_URL}/v1`,
   secure: true,
+  timeout: 30_000,
+  httpAgent: new HttpAgent(agentOptions),
+  httpsAgent: new HttpsAgent(agentOptions),
   securityWorker: () => {
     return {
       headers: {
@@ -25,17 +42,22 @@ httpClient.instance.interceptors.response.use(
       label: 'AXIOS'
     });
 
-    setContext('http_call_errored', {
-      response: error.response?.data || {},
-      url: error.config?.url,
-      code: error.code,
-      message: error.message,
-      method: error.config?.method,
-      params: error.config?.params,
-      data: error.config?.data
-    });
+    if (!isExpectedError(error)) {
+      setContext('http_call_errored', {
+        response: error.response?.data || {},
+        url: error.config?.url,
+        code: error.code,
+        message: error.message,
+        method: error.config?.method,
+        params: error.config?.params,
+        data: error.config?.data
+      });
 
-    captureException(error);
+      captureException(error);
+    }
+
+    // callers must see the failure; resolving here would hand them an undefined response
+    return Promise.reject(error);
   }
 );
 

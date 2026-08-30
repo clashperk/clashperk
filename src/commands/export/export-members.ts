@@ -20,11 +20,15 @@ export default class ExportClanMembersCommand extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const { data } = await api.exports.exportClanMembers({
-      clanTags: clans.map((clan) => clan.tag),
-      guildId: interaction.guildId,
-      scheduled: !!args.auto_export_on
-    });
+    const { data } = await api.exports.exportClanMembers(
+      {
+        clanTags: clans.map((clan) => clan.tag),
+        guildId: interaction.guildId,
+        scheduled: !!args.auto_export_on
+      },
+      // sheet generation runs long for large guilds; the default client timeout is too tight
+      { timeout: 120_000 }
+    );
 
     return interaction.editReply({
       content: [

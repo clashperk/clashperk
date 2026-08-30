@@ -48,7 +48,7 @@ export default class RosterExportCommand extends Command {
       rows: roster.members.map((member) => {
         const key = member.categoryId?.toHexString();
         const category = key && key in categoriesMap ? categoriesMap[key].displayName : '';
-        const league = PLAYER_LEAGUE_MAP[member.leagueId.toString()] ?? '';
+        const league = PLAYER_LEAGUE_MAP[member.leagueId?.toString()] ?? '';
         return [
           member.name,
           member.tag,

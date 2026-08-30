@@ -1,4 +1,5 @@
 import { addBreadcrumb, captureException, setContext, setUser } from '@sentry/node';
+import { isAxiosError } from 'axios';
 import {
   ActionRowBuilder,
   AutocompleteInteraction,
@@ -74,13 +75,16 @@ export default class ErrorListener extends Listener {
       id: interaction.user.id,
       username: interaction.user.username
     });
-    captureException(error, {
-      tags: {
-        command: command.id,
-        userId: interaction.user.id,
-        guildId: interaction.guildId || 'DM'
-      }
-    });
+    // the API interceptor already reports these with the full HTTP context
+    if (!isAxiosError(error)) {
+      captureException(error, {
+        tags: {
+          command: command.id,
+          userId: interaction.user.id,
+          guildId: interaction.guildId || 'DM'
+        }
+      });
+    }
 
     const content =
       interaction.inCachedGuild() && !interaction.channel

@@ -334,8 +334,14 @@ export class AutoBoardLog {
         if (this.queued.has(logId)) continue;
 
         this.queued.add(logId);
-        await this.exec(logId, { channelId: log.channelId });
-        this.queued.delete(logId);
+        try {
+          await this.exec(logId, { channelId: log.channelId });
+        } catch (error: any) {
+          // one failing board must not abort the loop or leave its id queued forever
+          this.client.logger.error(`${error as string} {${logId}}`, { label: 'AutoBoardLog' });
+        } finally {
+          this.queued.delete(logId);
+        }
         await Util.delay(3000);
       }
     } finally {
