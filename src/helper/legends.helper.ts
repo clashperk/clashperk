@@ -57,7 +57,7 @@ export const getRankedBattleLog = async (
   playerTag: string,
   weekId: string
 ): Promise<BattleLogDto[]> => {
-  const result = await api.players.getBattleLog({ playerTag: encode(playerTag) });
+  const result = await api.players.getBattleLog({ playerTag: encode(playerTag) }).catch(() => null);
   if (!result?.data?.items) return [];
   return result.data.items.filter((b) => b.battleWeek === weekId && b.battleType === 'ranked');
 };
@@ -145,7 +145,9 @@ export const getTournament = async (player: APIPlayer, lastTournament = false) =
 export const getLegendBattleLogAggregate = async (
   playerTag: string
 ): Promise<BattleLogDailyDto[]> => {
-  const result = await api.players.getBattleLogAggregate({ playerTag: encode(playerTag) });
+  const result = await api.players
+    .getBattleLogAggregate({ playerTag: encode(playerTag) })
+    .catch(() => null);
   if (!result?.data?.items) return [];
   return result.data.items;
 };

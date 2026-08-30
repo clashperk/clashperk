@@ -103,6 +103,7 @@ export class PlayerSync {
         upsert: true
       }
     );
-    await api.players.addPlayerAccount({ playerTag: encode(player.tag) });
+    // background bookkeeping; a failure here must not break the command that triggered it
+    await api.players.addPlayerAccount({ playerTag: encode(player.tag) }).catch(() => null);
   }
 }

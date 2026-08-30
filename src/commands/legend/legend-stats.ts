@@ -172,7 +172,9 @@ export default class LegendStatsCommand extends Command {
   }
 
   private async getLegendThreshold(isEod: boolean, ref?: string) {
-    const { data } = await api.legends.getLegendRankingThresholds();
+    const result = await api.legends.getLegendRankingThresholds().catch(() => null);
+    if (!result) return null;
+    const { data } = result;
 
     if (ref && moment(ref).isValid()) {
       const entry = data.history.findIndex((record) =>

@@ -59,12 +59,14 @@ export const getLegendRankingEmbedMaker = async ({
     return record;
   }, {});
 
-  const result = await api.players.getBattleLogLeaderboard({
-    seasonId,
-    playerTags: _players.map(({ tag }) => tag)
-  });
+  const result = await api.players
+    .getBattleLogLeaderboard({
+      seasonId,
+      playerTags: _players.map(({ tag }) => tag)
+    })
+    .catch(() => null);
 
-  let players = (result.data?.items ?? []).map((legend) => {
+  let players = (result?.data?.items ?? []).map((legend) => {
     const player = playersMap[legend.tag];
     return {
       name: player.name,
