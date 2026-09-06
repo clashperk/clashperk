@@ -401,10 +401,10 @@ const RAW_UNITS_MAP = RAW_DATA.RAW_UNITS.reduce<Record<string, RawUnit>>((record
   record[unit.name] = {
     id: unit.id,
     name: unit.name,
-    village: unit.village as 'home' | 'builderBase',
+    village: unit.village,
     category: unit.category,
     subCategory: unit.subCategory,
-    maxLevel: unit.levels[unit.levels.length - 1]
+    maxLevel: unit.maxLevel
   };
   return record;
 }, {});

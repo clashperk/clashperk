@@ -27,6 +27,16 @@ const [TOTAL_UNITS, TOTAL_SPELLS] = [340, 11];
 const ARMY_URL_REGEX =
   /^https?:\/\/link\.clashofclans\.com\/[a-z]{1,2}[\/]?\?action=CopyArmy&army=\S+$/;
 
+// Army links carry Supercell's per-category index; static data uses the game's GlobalID.
+const GLOBAL_ID_BASE: Record<string, number> = {
+  troop: 4_000_000,
+  siege: 4_000_000,
+  pet: 73_000_000,
+  spell: 26_000_000,
+  hero: 28_000_000,
+  equipment: 90_000_000
+};
+
 export default class ArmyCommand extends Command {
   public constructor() {
     super('army', {
@@ -195,9 +205,10 @@ export default class ArmyCommand extends Command {
       emojiRecords: Record<string, string>;
     }) => {
       const _findOne = (id: number) => {
+        const globalId = GLOBAL_ID_BASE[subCategory ?? category] + id;
         return RAW_TROOPS.find(
           (en) =>
-            en.id === id &&
+            en.id === globalId &&
             en.category === category &&
             (subCategory ? en.subCategory === subCategory : true) &&
             en.name in emojiRecords
@@ -223,7 +234,8 @@ export default class ArmyCommand extends Command {
     const troops = findUnits({ category: 'troop', emojiRecords: TROOPS, parts: troopList });
     const spells = findUnits({ category: 'spell', emojiRecords: SPELLS, parts: spellList });
     const siegeMachines = findUnits({
-      category: 'siege',
+      category: 'troop',
+      subCategory: 'siege',
       emojiRecords: SIEGE_MACHINES,
       parts: troopList
     });
@@ -232,20 +244,21 @@ export default class ArmyCommand extends Command {
 
     const superTroops = troopList
       .filter((parts) =>
-        RAW_SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS)
+        RAW_SUPER_TROOPS.find(
+          (en) => en.id === GLOBAL_ID_BASE.troop + parts.id && en.name in SUPER_TROOPS
+        )
       )
       .map((parts) => {
-        const unit = RAW_SUPER_TROOPS.find((en) => en.id === parts.id && en.name in SUPER_TROOPS)!;
+        const unit = RAW_SUPER_TROOPS.find(
+          (en) => en.id === GLOBAL_ID_BASE.troop + parts.id && en.name in SUPER_TROOPS
+        )!;
         return {
           id: parts.id,
           total: parts.total,
           name: unit.name,
           category: 'troop',
           subCategory: 'super',
-          hallLevel:
-            RAW_TROOPS.find((en) => en.name === unit.original)!.levels.findIndex(
-              (en) => en >= unit.minOriginalLevel
-            ) + 1,
+          hallLevel: RAW_TROOPS.find((en) => en.id === unit.id)!.unlock.hall,
           housing: unit.housingSpace
         };
       });
@@ -253,12 +266,18 @@ export default class ArmyCommand extends Command {
     const heroes = heroList
       .filter((parts) =>
         RAW_TROOPS.find(
-          (en) => en.id === parts.id && en.category === 'hero' && en.name in HOME_HEROES
+          (en) =>
+            en.id === GLOBAL_ID_BASE.hero + parts.id &&
+            en.category === 'hero' &&
+            en.name in HOME_HEROES
         )
       )
       .map((parts) => {
         const unit = RAW_TROOPS.find(
-          (en) => en.id === parts.id && en.category === 'hero' && en.name in HOME_HEROES
+          (en) =>
+            en.id === GLOBAL_ID_BASE.hero + parts.id &&
+            en.category === 'hero' &&
+            en.name in HOME_HEROES
         )!;
         return {
           id: parts.id,

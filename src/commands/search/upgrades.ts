@@ -138,16 +138,16 @@ export default class UpgradesCommand extends Command {
       );
 
     const getCharacterBuilding = (unit: TroopJSON[string][number]) => {
-      if (unit.allowedCharacters.includes('Barbarian King')) {
+      if (unit.hero === 'Barbarian King') {
         return 'Blacksmith_bk';
       }
-      if (unit.allowedCharacters.includes('Archer Queen')) {
+      if (unit.hero === 'Archer Queen') {
         return 'Blacksmith_aq';
       }
-      if (unit.allowedCharacters.includes('Grand Warden')) {
+      if (unit.hero === 'Grand Warden') {
         return 'Blacksmith_gw';
       }
-      if (unit.allowedCharacters.includes('Royal Champion')) {
+      if (unit.hero === 'Royal Champion') {
         return 'Blacksmith_rc';
       }
       return 'Blacksmith';
@@ -264,7 +264,7 @@ export default class UpgradesCommand extends Command {
         const apiTroop = apiTroops.find(
           (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
         );
-        const maxLevel = apiTroop?.maxLevel ?? unit.levels[unit.levels.length - 1];
+        const maxLevel = apiTroop?.maxLevel ?? unit.maxLevel;
         const _level = apiTroop?.level ?? 0;
         const hallLevel =
           unit.village === 'home' ? data.townHallLevel : (data.builderHallLevel ?? 0);
@@ -302,7 +302,7 @@ export default class UpgradesCommand extends Command {
           village: unit.village,
           isRushed,
           hallMaxLevel,
-          maxLevel: Math.max(unit.levels[unit.levels.length - 1], maxLevel),
+          maxLevel: Math.max(unit.maxLevel, maxLevel),
           resource: unit.upgrade.resource,
           resources,
           remainingCost,

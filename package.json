@@ -1,6 +1,6 @@
 {
   "name": "clashperk",
-  "version": "4.2.100",
+  "version": "4.2.101",
   "author": "",
   "license": "MIT",
   "description": "Clash of Clans Discord Bot",
@@ -44,7 +44,7 @@
     "ai": "^6.0.33",
     "axios": "^1.19.0",
     "chalk": "^5.6.2",
-    "clashofclans.js": "^4.0.7-dev.299c200",
+    "clashofclans.js": "^5.0.0-dev.12e7625",
     "discord-hybrid-sharding": "^3.0.1",
     "discord.js": "^14.27.0",
     "google-auth-library": "^10.6.2",

@@ -1,4 +1,4 @@
-import { RAW_DATA } from 'clashofclans.js';
+import { RAW_DATA, RawUnit } from 'clashofclans.js';
 import { ALL_TROOPS, SUPER_TROOPS } from './emojis.js';
 
 export const RAW_TROOPS = RAW_DATA.RAW_UNITS;
@@ -97,30 +97,5 @@ export const ARMY_CAPACITY = [
   }
 ];
 
-export interface TroopJSON {
-  [key: string]: {
-    id: number;
-    name: string;
-    village: string;
-    category: string;
-    subCategory: string;
-    unlock: {
-      hall: number;
-      cost: number;
-      time: number;
-      resource: string;
-      building: string;
-      buildingLevel: number;
-    };
-    upgrade: {
-      cost: number[];
-      time: number[];
-      resource: string;
-      resources: { resource: string; cost: number }[][];
-    };
-    allowedCharacters: string[];
-    minLevel?: number | null;
-    seasonal: boolean;
-    levels: number[];
-  }[];
-}
+/** Units grouped by the building that unlocks them. */
+export type TroopJSON = Record<string, RawUnit[]>;
