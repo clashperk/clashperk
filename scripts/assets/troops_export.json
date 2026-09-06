@@ -82,7 +82,9 @@
     "Stun Blaster",
     "Rocket Backpack",
     "Flame Blower",
-    "Electro Fangs"
+    "Electro Fangs",
+    "Monolith Arrow",
+    "Revenge Deck"
   ],
   "DARK_ELIXIR_TROOPS": [
     "Minion",
@@ -96,7 +98,8 @@
     "Headhunter",
     "Apprentice Warden",
     "Druid",
-    "Furnace"
+    "Furnace",
+    "Ruin Witch"
   ],
   "SIEGE_MACHINES": [
     "Wall Wrecker",
@@ -128,7 +131,8 @@
     "Skeleton Spell",
     "Bat Spell",
     "Overgrowth Spell",
-    "Ice Block Spell"
+    "Ice Block Spell",
+    "Angry Spell"
   ],
   "SUPER_TROOPS": [
     "Super Barbarian",
@@ -214,6 +218,7 @@
     "Apprentice Warden",
     "Druid",
     "Furnace",
+    "Ruin Witch",
     "Wall Wrecker",
     "Battle Blimp",
     "Stone Slammer",
@@ -240,6 +245,7 @@
     "Bat Spell",
     "Overgrowth Spell",
     "Ice Block Spell",
+    "Angry Spell",
     "L.A.S.S.I",
     "Electro Owl",
     "Mighty Yak",
@@ -291,7 +297,9 @@
     "Stun Blaster",
     "Rocket Backpack",
     "Flame Blower",
-    "Electro Fangs"
+    "Electro Fangs",
+    "Monolith Arrow",
+    "Revenge Deck"
   ],
   "BUILDER_TROOPS": [
     "Raged Barbarian",
