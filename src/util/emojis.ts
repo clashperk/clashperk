@@ -84,7 +84,9 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Stun Blaster': '<:StunBlaster:1483040038789841040>',
   'Rocket Backpack': '<:RocketBackpack:1493662588695740659>',
   'Flame Blower': '<:FlameBlower:1493665431611904221>',
-  'Electro Fangs': '<:ElectroFangs:1498392822158721214>'
+  'Electro Fangs': '<:ElectroFangs:1498392822158721214>',
+  'Monolith Arrow': '<:monolith_arrow:1546061610651615233>',
+  'Revenge Deck': '<:revenge_deck:1546061642830319756>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
@@ -99,7 +101,8 @@ export const DARK_ELIXIR_TROOPS: Record<string, string> = {
   'Headhunter': '<:Headhunter:724650414066106459>',
   'Apprentice Warden': '<:ApprenticeWarden:1117866249645461604>',
   'Druid': '<:Druid:1252640516881911900>',
-  'Furnace': '<:Furnace:1354122556499693578>'
+  'Furnace': '<:Furnace:1354122556499693578>',
+  'Ruin Witch': '<:ruin_witch:1546061698471829544>'
 };
 
 export const SIEGE_MACHINES: Record<string, string> = {
@@ -134,7 +137,8 @@ export const DARK_SPELLS: Record<string, string> = {
   'Skeleton Spell': '<:Skeleton:696302204348530698>',
   'Bat Spell': '<:Bat:696303291176583198>',
   'Overgrowth Spell': '<:Overgrowth:1212040817896726631>',
-  'Ice Block Spell': '<:IceBlock:1401438458664452238>'
+  'Ice Block Spell': '<:IceBlock:1401438458664452238>',
+  'Angry Spell': '<:angry_spell:1546061568758784120>'
 };
 
 export const SUPER_TROOPS: Record<string, string> = {
