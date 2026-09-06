@@ -393,14 +393,14 @@ export const ROSTER_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           autocomplete: true,
           type: ApplicationCommandOptionType.String
         },
-        {
-          name: 'detach_clan',
-          description: command.roster.edit.options.detach_clan.description,
-          description_localizations: translation(
-            'command.roster.edit.options.detach_clan.description'
-          ),
-          type: ApplicationCommandOptionType.Boolean
-        },
+        // {
+        //   name: 'detach_clan',
+        //   description: command.roster.edit.options.detach_clan.description,
+        //   description_localizations: translation(
+        //     'command.roster.edit.options.detach_clan.description'
+        //   ),
+        //   type: ApplicationCommandOptionType.Boolean
+        // },
         {
           name: 'allow_unlinked',
           description: command.roster.create.options.allow_unlinked.description,

@@ -50,6 +50,10 @@ function commandStructureValidationCheck(obj: Record<string, any>) {
   if (obj.options) {
     obj.options.map(commandStructureValidationCheck);
   }
+
+  if (obj.options?.length > 25) {
+    console.log(obj);
+  }
 }
 
 async function exportCommands(commands: ApplicationCommand[]) {
