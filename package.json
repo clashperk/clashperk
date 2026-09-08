@@ -32,8 +32,8 @@
     "generate:api": "swagger-typescript-api generate -p http://localhost:8080/docs/json?x-typings-ignored=1 -o ./src/api --name generated.ts --axios --route-types --extract-request-params --extract-response-body --extract-response-error --single-http-client --responses"
   },
   "dependencies": {
-    "@ai-sdk/cerebras": "^2.0.10",
-    "@ai-sdk/mcp": "^1.0.6",
+    "@ai-sdk/cerebras": "^2.0.80",
+    "@ai-sdk/mcp": "^1.0.78",
     "@clickhouse/client": "^1.12.0",
     "@google-cloud/translate": "^9.3.0",
     "@googleapis/drive": "^20.0.0",
@@ -41,7 +41,7 @@
     "@googleapis/sheets": "^13.0.1",
     "@sentry/node": "^10.47.0",
     "@sentry/profiling-node": "^10.47.0",
-    "ai": "^6.0.33",
+    "ai": "^6.0.277",
     "axios": "^1.19.0",
     "chalk": "^5.6.2",
     "clashofclans.js": "^5.0.0-dev.12e7625",
