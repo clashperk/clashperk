@@ -27,7 +27,7 @@ export const clanGamesEmbedMaker = (
   embed.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
   embed.setDescription(
     [
-      `**[Clan Games Scoreboard (${seasonId})](https://clashperk.com/faq)**`,
+      `**[Clan Games Scoreboard (${seasonId})](https://docs.clashperk.com/faq)**`,
       `\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
       members
         .slice(0, 55)

@@ -15,7 +15,7 @@ import {
 import ms from 'ms';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS, HEROES, SIEGE_MACHINES, TOWN_HALLS } from '../../util/emojis.js';
-import { getMenuFromMessage, trimTag } from '../../util/helper.js';
+import { dashboardUrl, getMenuFromMessage, trimTag } from '../../util/helper.js';
 
 const roles: Record<string, string> = {
   member: 'Member',
@@ -179,7 +179,7 @@ export default class PlayerCommand extends Command {
           `**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived.toLocaleString()} ${EMOJIS.DOWN_KEY}`,
           `**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
           `**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}`,
-          `[View war attack history](https://clashperk.com/players/${encodeURIComponent(data.tag)}/wars)`,
+          `[View war attack history](${dashboardUrl(`/web/players/${encodeURIComponent(data.tag)}/wars`)})`,
           '\u200b\u2002'
         ].join('\n')
       }

@@ -27,15 +27,13 @@ export default class CategoryListCommand extends Command {
     });
     embed.setDescription(categories.map((cat) => `1. ${cat.name}`).join('\n'));
 
-    const token = this.client.util.createToken({
+    const url = await this.client.util.createDashboardUrl({
       userId: interaction.user.id,
-      guildId: interaction.guild.id
+      guildId: interaction.guild.id,
+      path: '/clans'
     });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setURL(`https://clashperk.com/clans?token=${token}`)
-        .setLabel('Reorder')
-        .setStyle(ButtonStyle.Link)
+      new ButtonBuilder().setURL(url).setLabel('Reorder').setStyle(ButtonStyle.Link)
     );
 
     return interaction.editReply({ embeds: [embed], components: [row] });

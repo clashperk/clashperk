@@ -197,7 +197,7 @@ export default class SummaryClanGamesCommand extends Command {
       })
       .setDescription(
         [
-          `**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://clashperk.com/faq)**`,
+          `**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://docs.clashperk.com/faq)**`,
           showTime
             ? `\`\`\`\n\u200e\u2002# ${' '.padEnd(7, ' ')}  ${'NAME'.padEnd(20, ' ')}`
             : `\`\`\`\n\u200e\u2002# POINTS  ${'NAME'.padEnd(20, ' ')}`,

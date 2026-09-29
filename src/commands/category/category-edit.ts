@@ -21,15 +21,13 @@ export default class CategoryEditCommand extends Command {
   ) {
     if (!ObjectId.isValid(args.category)) return interaction.editReply('Invalid categoryId.');
 
-    const token = this.client.util.createToken({
+    const url = await this.client.util.createDashboardUrl({
       userId: interaction.user.id,
-      guildId: interaction.guild.id
+      guildId: interaction.guild.id,
+      path: '/clans'
     });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setURL(`https://clashperk.com/clans?token=${token}`)
-        .setLabel('Reorder')
-        .setStyle(ButtonStyle.Link)
+      new ButtonBuilder().setURL(url).setLabel('Reorder').setStyle(ButtonStyle.Link)
     );
 
     if (!(args.category_name || args.category_order)) {

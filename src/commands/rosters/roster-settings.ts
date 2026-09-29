@@ -218,11 +218,12 @@ export default class RosterEditCommand extends Command {
     };
 
     const getLink = async (action: StringSelectMenuInteraction<'cached'>) => {
-      const token = this.client.util.createToken({
+      const url = await this.client.util.createDashboardUrl({
         userId: interaction.user.id,
-        guildId: interaction.guild.id
+        guildId: interaction.guild.id,
+        path: '/rosters',
+        query: { roster: roster._id.toHexString() }
       });
-      const url = `https://clashperk.com/rosters?roster=${roster._id.toHexString()}&bot=${this.client.isCustom() ? 'custom' : 'public'}&token=${token}`;
 
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()

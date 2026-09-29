@@ -15,11 +15,12 @@ import {
   PermissionsString,
   TextChannel
 } from 'discord.js';
-import jwt from 'jsonwebtoken';
 import { createHash } from 'node:crypto';
+import { api } from '../api/axios.js';
 import { Client } from '../struct/client.js';
 import { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from '../struct/google.js';
 import { Collections, FeatureFlags, Settings } from './constants.js';
+import { dashboardUrl } from './helper.js';
 
 export class ClientUtil {
   private readonly fetchRecords: Record<string, Date> = {};
@@ -139,10 +140,29 @@ export class ClientUtil {
     return null;
   }
 
-  public createToken({ userId, guildId }: { userId: string; guildId: string }) {
-    return jwt.sign({ user_id: userId, guild_id: guildId }, process.env.JWT_DECODE_SECRET!, {
-      expiresIn: '6h'
+  /** Returns a dashboard URL that signs the user in for this guild (handoff tokens expire in 1h). */
+  public async createDashboardUrl({
+    userId,
+    guildId,
+    path,
+    query = {}
+  }: {
+    userId: string;
+    guildId: string;
+    path: string;
+    query?: Record<string, string>;
+  }) {
+    const { data } = await api.auth.createHandoffToken({
+      userId,
+      guildId,
+      applicationId: this.client.isCustom() ? this.client.user.id : null
     });
+
+    const url = new URL(dashboardUrl(path));
+    for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
+    url.searchParams.set('handoff_token', data.token);
+
+    return url.toString();
   }
 
   public isManager(member: GuildMember, roleKey?: string | null) {

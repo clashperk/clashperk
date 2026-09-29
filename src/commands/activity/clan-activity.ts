@@ -10,6 +10,7 @@ import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import Google from '../../struct/google.js';
 import { EMOJIS } from '../../util/emojis.js';
+import { dashboardUrl } from '../../util/helper.js';
 
 export default class ClanActivityCommand extends Command {
   public constructor() {
@@ -106,7 +107,7 @@ export default class ClanActivityCommand extends Command {
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
           .setLabel('Open in Web')
-          .setURL(`https://clashperk.com/web/charts/${res.headers.get('x-chart-id')}`)
+          .setURL(dashboardUrl(`/web/charts/${res.headers.get('x-chart-id')}`))
       );
 
     const timeZoneCommand = this.client.commands.get('/timezone');

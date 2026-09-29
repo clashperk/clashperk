@@ -13,6 +13,7 @@ import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { Util } from '../../util/toolkit.js';
+import { dashboardUrl } from '../../util/helper.js';
 
 export default class CapitalContributionCommand extends Command {
   public constructor() {
@@ -99,9 +100,7 @@ export default class CapitalContributionCommand extends Command {
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
           .setLabel('View Contribution Logs')
-          .setURL(
-            `https://clashperk.com/web/clans/${encodeURIComponent(clan.tag)}/capital-contribution`
-          )
+          .setURL(dashboardUrl(`/web/clans/${encodeURIComponent(clan.tag)}/capital-contribution`))
       );
 
     const embed = this.getCapitalContributionsEmbed({
