@@ -20,6 +20,7 @@ import { api } from '../api/axios.js';
 import { Client } from '../struct/client.js';
 import { CreateGoogleSheet, createGoogleSheet, updateGoogleSheet } from '../struct/google.js';
 import { Collections, FeatureFlags, Settings } from './constants.js';
+import { dashboardUrl } from './helper.js';
 
 export class ClientUtil {
   private readonly fetchRecords: Record<string, Date> = {};
@@ -157,7 +158,7 @@ export class ClientUtil {
       applicationId: this.client.isCustom() ? this.client.user.id : null
     });
 
-    const url = new URL(path, process.env.DASHBOARD_URL || 'https://clashperk.com');
+    const url = new URL(dashboardUrl(path));
     for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
     url.searchParams.set('handoff_token', data.token);
 

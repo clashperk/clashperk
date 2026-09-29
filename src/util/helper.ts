@@ -17,6 +17,10 @@ import { Client } from '../struct/client.js';
 import { Collections, FeatureFlags, Settings, UNRANKED_TIER_ID } from './constants.js';
 import { Season, Util } from './toolkit.js';
 
+/** Absolute URL on the web dashboard, `DASHBOARD_URL` with https://clashperk.com as fallback. */
+export const dashboardUrl = (path = '/') =>
+  new URL(path, process.env.DASHBOARD_URL || 'https://clashperk.com').toString();
+
 export const hexToNanoId = (hex: ObjectId) => {
   return hex.toHexString().slice(-5).toUpperCase();
 };
