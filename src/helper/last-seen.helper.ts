@@ -95,7 +95,7 @@ export const lastSeenEmbedMaker = async (
   } else {
     embed.setDescription(
       [
-        `**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
+        `**[Last seen and last 24h activity scores](https://docs.clashperk.com/faq)**`,
         '```',
         `TH  LAST-ON 24H  NAME`,
         members

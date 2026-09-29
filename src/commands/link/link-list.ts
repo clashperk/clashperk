@@ -66,17 +66,14 @@ export default class LinkListCommand extends Command {
         });
       }
 
-      const token = this.client.util.createToken({
+      const url = await this.client.util.createDashboardUrl({
         userId: interaction.user.id,
-        guildId: interaction.guild.id
+        guildId: interaction.guild.id,
+        path: '/links',
+        query: { tag: clan.tag }
       });
       const linkRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setURL(
-            `https://clashperk.com/links?tag=${encodeURIComponent(clan.tag)}&bot=${this.client.isCustom() ? 'custom' : 'public'}&token=${token}`
-          )
-          .setLabel('Open in Browser')
-          .setStyle(ButtonStyle.Link)
+        new ButtonBuilder().setURL(url).setLabel('Open in Browser').setStyle(ButtonStyle.Link)
       );
 
       this.client.storage.updateClanLinks(interaction.guildId);
