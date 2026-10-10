@@ -19,7 +19,7 @@ import { Season, Util } from './toolkit.js';
 
 /** Absolute URL on the web dashboard, `DASHBOARD_URL` with https://app.clashperk.com as fallback. */
 export const dashboardUrl = (path = '/') =>
-  new URL(path, process.env.DASHBOARD_URL || 'https://app.clashperk.com').toString();
+  new URL(path, process.env.DASHBOARD_URL || 'https://clashperk.com').toString();
 
 export const hexToNanoId = (hex: ObjectId) => {
   return hex.toHexString().slice(-5).toUpperCase();
