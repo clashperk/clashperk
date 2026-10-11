@@ -86,7 +86,8 @@ export const HERO_EQUIPMENT: Record<string, string> = {
   'Flame Blower': '<:FlameBlower:1493665431611904221>',
   'Electro Fangs': '<:ElectroFangs:1498392822158721214>',
   'Monolith Arrow': '<:monolith_arrow:1546061610651615233>',
-  'Revenge Deck': '<:revenge_deck:1546061642830319756>'
+  'Revenge Deck': '<:revenge_deck:1546061642830319756>',
+  'Portal Pendant': '<:portal_pendant:1558735000654970950>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {

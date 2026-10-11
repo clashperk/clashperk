@@ -370,7 +370,14 @@ export const UNITS_MAP_BY_NAME: Record<string, number> = {
   'Fire Heart': 141,
   'Stun Blaster': 142,
   'Flame Blower': 143,
-  'Rocket Backpack': 144
+  'Rocket Backpack': 144,
+  'Sky Wagon': 145,
+  'Monolith Arrow': 146,
+  'Electro Fangs': 147,
+  'Ruin Witch': 148,
+  'Angry Spell': 149,
+  'Revenge Deck': 150,
+  'Portal Pendant': 151
 };
 
 const ACHIEVEMENT_LIST = Object.entries(ACHIEVEMENTS_MAP_BY_NAME).reduce<

@@ -25,12 +25,20 @@ const units = {
 };
 
 for (const unit of RAW_DATA.RAW_UNITS) {
-  if (!units[unit.name]) {
-    console.log({ missingType: 'emoji', name: unit.name, type: unit.subCategory });
+  if (!units[unit.name] && !unit.seasonal) {
+    console.log({
+      missingType: 'emoji',
+      name: unit.name,
+      type: unit.subCategory
+    });
   }
 
-  if (!UNITS_MAP_BY_NAME[unit.name]) {
-    console.log({ missingType: 'mapping', name: unit.name, type: unit.subCategory });
+  if (!UNITS_MAP_BY_NAME[unit.name] && !unit.seasonal) {
+    console.log({
+      missingType: 'mapping',
+      name: unit.name,
+      type: unit.subCategory
+    });
   }
 }
 

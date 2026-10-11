@@ -103,7 +103,7 @@ export default class MembersCommand extends Command {
       .setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
       .setDescription(
         [
-          `\`TH  BK  AQ GW RC MP \`  **NAME**`,
+          `\`TH  BK  AQ GW RC MP DD \`  **NAME**`,
           ...members.map((mem) => {
             const heroes = this.heroes(mem.heroes)
               .map((hero, idx) => padStart(hero.level, idx > 1 ? 2 : 3))
@@ -307,7 +307,8 @@ export default class MembersCommand extends Command {
       { name: 'AQ', level: mapped['AQ'] ?? 0 },
       { name: 'GW', level: mapped['GW'] ?? 0 },
       { name: 'RC', level: mapped['RC'] ?? 0 },
-      { name: 'MP', level: mapped['MP'] ?? 0 }
+      { name: 'MP', level: mapped['MP'] ?? 0 },
+      { name: 'DD', level: mapped['DD'] ?? 0 }
     ];
   }
 
