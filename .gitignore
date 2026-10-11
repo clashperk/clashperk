@@ -13,3 +13,4 @@ service-account.json
 clashperk.code-workspace
 .claude/**/*.local.json
 .claude/**/*.local.md
+docs/*.local.md
