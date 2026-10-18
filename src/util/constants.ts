@@ -530,17 +530,17 @@ export const WAR_LEAGUE_PROMOTION_MAP: Record<
   48000009: { promotion: 2, demotion: 7, name: 'Gold League I' },
   48000010: { promotion: 2, demotion: 7, name: 'Crystal League III' },
   48000011: { promotion: 2, demotion: 7, name: 'Crystal League II' },
-  48000012: { promotion: 1, demotion: 7, name: 'Crystal League I' },
-  48000013: { promotion: 1, demotion: 7, name: 'Master League III' },
-  48000014: { promotion: 1, demotion: 7, name: 'Master League II' },
+  48000012: { promotion: 2, demotion: 7, name: 'Crystal League I' },
+  48000013: { promotion: 2, demotion: 7, name: 'Master League III' },
+  48000014: { promotion: 2, demotion: 7, name: 'Master League II' },
   48000015: { promotion: 1, demotion: 7, name: 'Master League I' },
   48000016: { promotion: 1, demotion: 7, name: 'Champion League III' },
   48000017: { promotion: 1, demotion: 7, name: 'Champion League II' },
-  48000018: { promotion: 1, demotion: 6, name: 'Champion League I' },
-  48000019: { promotion: 1, demotion: 6, name: 'Titan League III' },
-  48000020: { promotion: 1, demotion: 6, name: 'Titan League II' },
-  48000021: { promotion: 1, demotion: 6, name: 'Titan League I' },
-  48000022: { promotion: 0, demotion: 6, name: 'Legend League' }
+  48000018: { promotion: 1, demotion: 7, name: 'Champion League I' },
+  48000019: { promotion: 1, demotion: 7, name: 'Titan League III' },
+  48000020: { promotion: 1, demotion: 7, name: 'Titan League II' },
+  48000021: { promotion: 1, demotion: 7, name: 'Titan League I' },
+  48000022: { promotion: 0, demotion: 7, name: 'Legend League' }
 };
 
 export const GUARANTEED_BONUS: Record<string, Record<string, number>> = {
