@@ -34,7 +34,7 @@ import {
 } from '../util/emojis.js';
 import { unitsFlatten } from '../util/helper.js';
 import { Util } from '../util/toolkit.js';
-import { RAW_TROOPS_FILTERED } from '../util/troops.js';
+import { RAW_RUSHED_UNITS } from '../util/troops.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 
@@ -426,7 +426,7 @@ export class ClanLog extends RootLog {
 
   private remainingUpgrades(data: APIPlayer) {
     const apiTroops = unitsFlatten(data, { withEquipment: true });
-    const rem = RAW_TROOPS_FILTERED.reduce(
+    const rem = RAW_RUSHED_UNITS.reduce(
       (prev, unit) => {
         const apiTroop = apiTroops.find(
           (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category

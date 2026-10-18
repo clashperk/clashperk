@@ -13,7 +13,7 @@ import { cluster } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/emojis.js';
 import { getMenuFromMessage, unitsFlatten } from '../../util/helper.js';
-import { RAW_TROOPS_FILTERED, RAW_TROOPS_WITH_ICONS, TroopJSON } from '../../util/troops.js';
+import { RAW_RUSHED_UNITS, TroopJSON } from '../../util/troops.js';
 
 export default class RushedCommand extends Command {
   public constructor() {
@@ -122,7 +122,7 @@ export default class RushedCommand extends Command {
     const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
     const apiTroops = unitsFlatten(data, { withEquipment: true });
-    const Troops = RAW_TROOPS_WITH_ICONS.filter((unit) => {
+    const Troops = RAW_RUSHED_UNITS.filter((unit) => {
       const apiTroop = apiTroops.find(
         (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
       );
@@ -152,8 +152,7 @@ export default class RushedCommand extends Command {
       'Dark Spell Factory': 'Dark Spells',
       'Town Hall': 'Heroes',
       'Pet House': 'Pets',
-      'Workshop': 'Siege Machines',
-      'Blacksmith': 'Equipment'
+      'Workshop': 'Siege Machines'
       // 'Builder Hall': 'Builder Base Hero',
       // 'Builder Barracks': 'Builder Troops'
     };
@@ -222,7 +221,7 @@ export default class RushedCommand extends Command {
         '**Percentage**',
         `${this.rushedPercentage(data)}% (Lab)`,
         `${this.heroRushed(data)}% (Hero)`,
-        `${this.rushedOverall(data)}% (Overall) (equipment are excluded)`,
+        `${this.rushedOverall(data)}% (Overall)`,
         '\u200b'
       ].join('\n')
     );
@@ -303,7 +302,7 @@ export default class RushedCommand extends Command {
 
   private rushedPercentage(data: APIPlayer) {
     const apiTroops = unitsFlatten(data, { withEquipment: true });
-    const rem = RAW_TROOPS_FILTERED.reduce(
+    const rem = RAW_RUSHED_UNITS.reduce(
       (prev, unit) => {
         const apiTroop = apiTroops.find(
           (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
@@ -322,7 +321,7 @@ export default class RushedCommand extends Command {
 
   private heroRushed(data: APIPlayer) {
     const apiTroops = unitsFlatten(data, { withEquipment: true });
-    const rem = RAW_TROOPS_FILTERED.reduce(
+    const rem = RAW_RUSHED_UNITS.reduce(
       (prev, unit) => {
         const apiTroop = apiTroops.find(
           (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
@@ -341,7 +340,7 @@ export default class RushedCommand extends Command {
 
   private rushedOverall(data: APIPlayer) {
     const apiTroops = unitsFlatten(data, { withEquipment: true });
-    const rem = RAW_TROOPS_FILTERED.reduce(
+    const rem = RAW_RUSHED_UNITS.reduce(
       (prev, unit) => {
         const apiTroop = apiTroops.find(
           (u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
@@ -359,7 +358,7 @@ export default class RushedCommand extends Command {
   }
 
   private totalPercentage(hallLevel: number, rushed: number) {
-    const totalTroops = RAW_TROOPS_FILTERED.filter(
+    const totalTroops = RAW_RUSHED_UNITS.filter(
       (unit) => unit.village === 'home' && unit.levels[hallLevel - 2] > 0
     );
     return `${rushed}/${totalTroops.length} (${((rushed * 100) / totalTroops.length).toFixed(2)}%)`;
