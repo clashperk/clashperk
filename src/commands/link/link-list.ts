@@ -1,4 +1,3 @@
-import { Settings } from '@app/constants';
 import { APIClan } from 'clashofclans.js';
 import {
   ActionRowBuilder,
@@ -59,7 +58,8 @@ export default class LinkListCommand extends Command {
       );
 
     if (args.links) {
-      if (!this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE)) {
+      // The dashboard opens the whole server, so links managers alone don't get the link.
+      if (!this.client.util.isManager(interaction.member)) {
         return interaction.followUp({
           content: this.i18n('common.missing_manager_role', { lng: interaction.locale }),
           flags: MessageFlags.Ephemeral
