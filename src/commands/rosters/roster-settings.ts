@@ -95,12 +95,17 @@ export default class RosterEditCommand extends Command {
             description: 'Remove action buttons from the message.',
             value: 'archive'
           },
-          {
-            label: '[NEW] Manage Roster on the Web',
-            description: 'Easily manage rosters on the web.',
-            value: 'dashboard',
-            emoji: '🌐'
-          },
+          // The dashboard opens the whole server, so roster managers alone don't get the link.
+          ...(this.client.util.isManager(interaction.member)
+            ? [
+                {
+                  label: '[NEW] Manage Roster on the Web',
+                  description: 'Easily manage rosters on the web.',
+                  value: 'dashboard',
+                  emoji: '🌐'
+                }
+              ]
+            : []),
           {
             label: 'Add User',
             description: 'Add a user or players to the roster.',
@@ -218,6 +223,12 @@ export default class RosterEditCommand extends Command {
     };
 
     const getLink = async (action: StringSelectMenuInteraction<'cached'>) => {
+      if (!this.client.util.isManager(action.member)) {
+        return action.reply({
+          flags: MessageFlags.Ephemeral,
+          content: this.i18n('common.missing_manager_role', { lng: action.locale })
+        });
+      }
       const url = await this.client.util.createDashboardUrl({
         userId: interaction.user.id,
         guildId: interaction.guild.id,

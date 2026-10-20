@@ -277,12 +277,15 @@ export default class RosterEditCommand extends Command {
       });
     this.client.rosterManager.setDefaultSettings(interaction.guild.id, updated);
 
-    const url = await this.client.util.createDashboardUrl({
-      userId: interaction.user.id,
-      guildId: interaction.guild.id,
-      path: '/rosters',
-      query: { roster: updated._id.toHexString() }
-    });
+    // The dashboard opens the whole server, so roster managers alone don't get the link.
+    const url = this.client.util.isManager(interaction.member)
+      ? await this.client.util.createDashboardUrl({
+          userId: interaction.user.id,
+          guildId: interaction.guild.id,
+          path: '/rosters',
+          query: { roster: updated._id.toHexString() }
+        })
+      : null;
 
     const embed = this.client.rosterManager.getRosterInfoEmbed(updated);
     embed.setDescription(
@@ -298,10 +301,12 @@ export default class RosterEditCommand extends Command {
       ].join('\n')
     );
 
-    embed.addFields({
-      name: '\u200b',
-      value: `[Manage Roster on the Web](${url})`
-    });
+    if (url) {
+      embed.addFields({
+        name: '\u200b',
+        value: `[Manage Roster on the Web](${url})`
+      });
+    }
 
     const message = await interaction.editReply({
       embeds: args.components_only ? [] : [embed],
