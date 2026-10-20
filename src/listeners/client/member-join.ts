@@ -32,11 +32,14 @@ export default class GuildMemberAddListener extends Listener {
   private async sendWelcomeMessage(member: GuildMember, log: WelcomeLogConfig, isRetry = false) {
     const channel = this.client.util.getTextBasedChannel(log.channelId);
     if (!channel) return null;
+    // The dashboard can save a welcome log before the channel has a ClashPerk webhook.
+    if (!log.webhook) return isRetry ? null : this.retryWebhook(member, log);
 
     try {
-      const webhook = new WebhookClient({ id: log.webhook!.id, token: log.webhook!.token });
+      const webhook = new WebhookClient({ id: log.webhook.id, token: log.webhook.token });
 
-      const embed = new EmbedBuilder().setDescription(log.description);
+      const embed = new EmbedBuilder().setDescription(log.description || null);
+      if (log.embedColor) embed.setColor(log.embedColor);
       if (log.bannerImage) embed.setImage(log.bannerImage);
 
       const linkConfig = this.client.settings.get<LinkButtonConfig>(

@@ -2046,11 +2046,16 @@ export class RosterManager {
     const defaultConfig = this.client.settings.get<{
       fromRoster: boolean;
       channelId: string;
-      webhook: { token: string; id: string };
+      webhook: { token: string; id: string } | null;
     }>(roster.guildId, Settings.ROSTER_CHANGELOG, rosterLog);
 
     const config = rosterLog ?? defaultConfig;
     if (!config) return null;
+    // The dashboard can save a changelog before the channel has a ClashPerk webhook.
+    if (!config.webhook) {
+      if (!options.isRetry) await this.retryWebhook(options, config);
+      return null;
+    }
 
     const webhook = new WebhookClient(config.webhook);
     const channel = this.client.util.getTextBasedChannel(config.channelId);
@@ -2129,7 +2134,7 @@ interface RosterWebhookConfig {
   webhook: {
     token: string;
     id: string;
-  };
+  } | null;
 }
 
 export enum RosterLog {

@@ -1,5 +1,5 @@
 import { Collections, Flags, INACTIVE_GUILD_DURATION } from '@app/constants';
-import { ClanLogsEntity, ClanStoresEntity } from '@app/entities';
+import { ClanLogsEntity, ClanStoresEntity, FlagAlertLogsEntity } from '@app/entities';
 import { captureException } from '@sentry/node';
 import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
@@ -27,6 +27,7 @@ export class Enqueuer {
   private queue = new Queue();
 
   public flagAlertLog = new FlagAlertLog(this);
+  private watching = false;
 
   private autoBoardLog = new AutoBoardLog(this);
   private maintenanceLog = new MaintenanceLog(this);
@@ -169,8 +170,53 @@ export class Enqueuer {
     await this.flagAlertLog.init();
 
     await this.broadcast();
+    // init runs again after every maintenance break; the change streams must open once.
+    if (this.watching) return;
+    this.watching = true;
     this.watchClanLogs();
     this.watchClanStores();
+    this.watchFlagAlertLogs();
+  }
+
+  /** Flag alert logs set up outside this bot (e.g. the web dashboard) reload like `/setup server-logs`. */
+  private watchFlagAlertLogs() {
+    const settingFields = ['channelId', 'roleId', 'useAutoRole'];
+    const changed = settingFields.flatMap((field) => [
+      { [`updateDescription.updatedFields.${field}`]: { $exists: true } },
+      { 'updateDescription.removedFields': field }
+    ]);
+
+    this.client.db
+      .collection<FlagAlertLogsEntity>(Collections.FLAG_ALERT_LOGS)
+      .watch(
+        [
+          {
+            $match: {
+              $or: [
+                { operationType: { $in: ['insert', 'replace', 'delete'] } },
+                { operationType: 'update', $or: changed }
+              ]
+            }
+          }
+        ],
+        { fullDocument: 'updateLookup' }
+      )
+      .on('change', async (change) => {
+        try {
+          if (!('documentKey' in change)) return;
+          if (change.operationType === 'delete') {
+            const id = change.documentKey._id.toHexString();
+            const cache = this.flagAlertLog.cached.find((c) => c._id === id);
+            if (cache) this.flagAlertLog.del(cache.guildId);
+            return;
+          }
+          const guildId = change.fullDocument?.guildId;
+          if (guildId && this.client.guilds.cache.has(guildId))
+            await this.flagAlertLog.add(guildId);
+        } catch (error) {
+          captureException(error);
+        }
+      });
   }
 
   /**
