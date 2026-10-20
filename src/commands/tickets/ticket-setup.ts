@@ -56,6 +56,7 @@ export default class TicketSetupCommand extends Command {
     super('ticket-setup', {
       category: 'tickets',
       channel: 'guild',
+      userPermissions: ['ManageGuild'],
       clientPermissions: [
         'ManageChannels',
         'ManageRoles',

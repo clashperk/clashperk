@@ -42,8 +42,16 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Load beta servers
+        # Fails the run rather than registering beta commands for no servers.
+        run: |
+          ids=$(curl -fsS -H "x-api-key: $INTERNAL_API_KEY" "$INTERNAL_API_BASE_URL/v1/beta-guilds/ids" | jq -r '.guildIds | join(",")')
+          echo "BETA_TESTERS=$ids" >> "$GITHUB_ENV"
+        env:
+          INTERNAL_API_BASE_URL: ${{ secrets.INTERNAL_API_BASE_URL }}
+          INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+
       - name: Deploy
         run: npm run deploy -- --gh-action
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          BETA_TESTERS: ${{ vars.BETA_TESTERS }}
