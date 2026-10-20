@@ -81,6 +81,7 @@ Log handlers (clan-log, clan-war-log, capital-log, donation-log, etc.) process g
 
 ## Rules
 
+- Product direction lives in the dashboard repo's roadmap: [`clashperk/clashperk-client` → `docs/roadmap.md`](https://github.com/clashperk/clashperk-client/blob/main/docs/roadmap.md). Its "API first" goal: every write (reminders, clan logs, rosters, links, settings) is moving into the API (`clashperk-backend`), and the bot will later call those endpoints instead of writing MongoDB itself. Until it switches, build new write features in the API first and keep the bot's own write logic in step with it.
 - After any change to the ticket system (`src/commands/tickets/*.ts`, `src/entities/tickets.entity.ts`), always update both:
   - `docs/ticket-system.md` — developer/internal reference
   - `docs.clashperk.com/features/tickets.md` — user-facing guide (in the `docs.clashperk.com` workspace)
