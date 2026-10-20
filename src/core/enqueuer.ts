@@ -1,4 +1,5 @@
 import { Collections, Flags, INACTIVE_GUILD_DURATION } from '@app/constants';
+import { ClanLogsEntity } from '@app/entities';
 import { captureException } from '@sentry/node';
 import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
@@ -168,6 +169,43 @@ export class Enqueuer {
     await this.flagAlertLog.init();
 
     await this.broadcast();
+    this.watchClanLogs();
+  }
+
+  /**
+   * Logs set up outside this bot (e.g. the web dashboard) reload like `/setup clan-logs` does.
+   * Only setting changes count; the bot's own `messageId`/`lastPostedAt` writes are ignored.
+   */
+  private watchClanLogs() {
+    const settingFields = ['channelId', 'isEnabled', 'roleId', 'color'];
+    const changed = settingFields.flatMap((field) => [
+      { [`updateDescription.updatedFields.${field}`]: { $exists: true } },
+      { 'updateDescription.removedFields': field }
+    ]);
+
+    this.client.db
+      .collection<ClanLogsEntity>(Collections.CLAN_LOGS)
+      .watch(
+        [
+          {
+            $match: {
+              $or: [
+                { operationType: { $in: ['insert', 'replace', 'delete'] } },
+                { operationType: 'update', $or: changed }
+              ]
+            }
+          }
+        ],
+        { fullDocument: 'updateLookup' }
+      )
+      .on('change', async (change) => {
+        if (!('documentKey' in change)) return;
+        this.deleteLog(change.documentKey._id.toHexString());
+        if (change.operationType === 'delete' || !change.fullDocument) return;
+
+        const { guildId, clanTag } = change.fullDocument;
+        await this.add({ guild: guildId, tag: clanTag }).catch((error) => captureException(error));
+      });
   }
 
   public async add(data: { tag: string; guild: string }) {
