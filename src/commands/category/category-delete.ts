@@ -19,7 +19,7 @@ export default class CategoryDeleteCommand extends Command {
 
     const deleted = await this.client.db
       .collection(Collections.CLAN_CATEGORIES)
-      .findOneAndDelete({ _id: new ObjectId(args.category) });
+      .findOneAndDelete({ _id: new ObjectId(args.category), guildId: interaction.guildId });
     if (!deleted) return interaction.editReply('Failed to delete the category.');
 
     return interaction.editReply('Successfully deleted.');
