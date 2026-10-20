@@ -35,6 +35,9 @@ import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
+// Buttons inside a ticket that only staff may use; the creator can still open and get notified.
+const STAFF_ACTIONS = ['del-confirm', 'del-ticket', 'reply', 'set-clan', 'claim', 'unclaim'];
+
 const DEFAULT_NAMING = 'ticket-{count}';
 
 const SHOW_REPLY_BUTTON = true;
@@ -110,6 +113,13 @@ export default class TicketOpenCommand extends Command {
     args: Record<string, unknown>
   ) {
     const action = args.action as string | undefined;
+    if (
+      action &&
+      STAFF_ACTIONS.includes(action) &&
+      !this.isStaff(interaction, args.cid as string)
+    ) {
+      return interaction.editReply(this.reply('Only ticket staff can do this.'));
+    }
 
     switch (action) {
       case 'open':
@@ -133,6 +143,13 @@ export default class TicketOpenCommand extends Command {
       case 'unclaim':
         return this.unclaimTicket(interaction, args);
     }
+  }
+
+  /** Staff get Manage Channels on the ticket channel through its ping roles; managers always pass. */
+  private isStaff(interaction: MessageComponentInteraction<'cached'>, channelId: string) {
+    if (this.client.util.isManager(interaction.member)) return true;
+    const channel = interaction.guild.channels.cache.get(channelId);
+    return !!channel?.permissionsFor(interaction.member).has(PermissionFlagsBits.ManageChannels);
   }
 
   // =================== TICKET CREATION ===================
@@ -1224,12 +1241,6 @@ export default class TicketOpenCommand extends Command {
       .findOne({ _id: new ObjectId(ticket.panelId) });
     const btn = panel?.ticketTypes.find((b) => b.id === ticket.buttonId);
     if (!btn) return interaction.editReply(this.reply('Could not load panel configuration.'));
-
-    // To restrict claiming to staff only, uncomment:
-    // const member = interaction.member as GuildMember;
-    // if (!btn.pingRoleIds.some((id) => member.roles.cache.has(id))) {
-    //   return interaction.editReply(this.reply('Only staff can claim tickets.'));
-    // }
 
     const channel = interaction.guild!.channels.cache.get(channelId) as TextChannel | undefined;
     if (!channel) return interaction.editReply(this.reply('Channel not found.'));
