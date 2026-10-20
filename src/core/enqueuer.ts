@@ -224,7 +224,7 @@ export class Enqueuer {
    * Only setting changes count; the bot's own `messageId`/`lastPostedAt` writes are ignored.
    */
   private watchClanLogs() {
-    const settingFields = ['channelId', 'isEnabled', 'roleId', 'color'];
+    const settingFields = ['channelId', 'isEnabled', 'roleId', 'color', 'metadata'];
     const changed = settingFields.flatMap((field) => [
       { [`updateDescription.updatedFields.${field}`]: { $exists: true } },
       { 'updateDescription.removedFields': field }
