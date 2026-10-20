@@ -303,7 +303,7 @@ export default class SetupButtonsCommand extends Command {
       {
         title: `Welcome to ${interaction.guild.name}`,
         description: 'Click the button below to refresh your roles and nickname.',
-        thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
+        thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
       }
     );
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
@@ -391,6 +391,7 @@ export default class SetupButtonsCommand extends Command {
       if (action.customId === customIds.buttonStyle && action.isStringSelectMenu()) {
         await action.deferUpdate();
         state.button_style = Number(action.values.at(0) ?? ButtonStyle.Primary);
+        await this.client.settings.set(interaction.guild.id, Settings.REFRESH_EMBEDS, state);
 
         linkButton.setCustomId(customId);
         linkButton.setStyle(state.button_style);
@@ -462,7 +463,7 @@ export default class SetupButtonsCommand extends Command {
       {
         title: `Welcome to ${interaction.guild.name}`,
         description: 'Click the button below to refresh your roles and nickname.',
-        thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
+        thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
       }
     );
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
@@ -550,6 +551,7 @@ export default class SetupButtonsCommand extends Command {
       if (action.customId === customIds.buttonStyle && action.isStringSelectMenu()) {
         await action.deferUpdate();
         state.button_style = Number(action.values.at(0) ?? ButtonStyle.Primary);
+        await this.client.settings.set(interaction.guild.id, Settings.REFRESH_EMBEDS, state);
 
         linkButton.setCustomId(customId);
         linkButton.setStyle(state.button_style);
@@ -621,7 +623,7 @@ export default class SetupButtonsCommand extends Command {
       {
         title: `Welcome to ${interaction.guild.name}`,
         description: "Click the button below to find the rosters you're in.",
-        thumbnailUrl: interaction.guild.iconURL({ forceStatic: false })
+        thumbnail_url: interaction.guild.iconURL({ forceStatic: false })
       }
     );
     if (!state.button_style) state.button_style = ButtonStyle.Primary;
@@ -709,6 +711,7 @@ export default class SetupButtonsCommand extends Command {
       if (action.customId === customIds.buttonStyle && action.isStringSelectMenu()) {
         await action.deferUpdate();
         state.button_style = Number(action.values.at(0) ?? ButtonStyle.Primary);
+        await this.client.settings.set(interaction.guild.id, Settings.MY_ROSTERS_EMBEDS, state);
 
         linkButton.setCustomId(customId);
         linkButton.setStyle(state.button_style);
