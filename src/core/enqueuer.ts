@@ -1,5 +1,5 @@
 import { Collections, Flags, INACTIVE_GUILD_DURATION } from '@app/constants';
-import { ClanLogsEntity } from '@app/entities';
+import { ClanLogsEntity, ClanStoresEntity } from '@app/entities';
 import { captureException } from '@sentry/node';
 import { Collection } from 'discord.js';
 import { inspect } from 'node:util';
@@ -170,6 +170,7 @@ export class Enqueuer {
 
     await this.broadcast();
     this.watchClanLogs();
+    this.watchClanStores();
   }
 
   /**
@@ -205,6 +206,28 @@ export class Enqueuer {
 
         const { guildId, clanTag } = change.fullDocument;
         await this.add({ guild: guildId, tag: clanTag }).catch((error) => captureException(error));
+      });
+  }
+
+  /** Clans added or removed outside this bot (e.g. the web dashboard) start or stop like `/setup clan`. */
+  private watchClanStores() {
+    this.client.db
+      .collection<ClanStoresEntity>(Collections.CLAN_STORES)
+      .watch([{ $match: { operationType: { $in: ['insert', 'delete'] } } }])
+      .on('change', async (change) => {
+        try {
+          if (change.operationType === 'insert') {
+            const { tag, guild } = change.fullDocument;
+            return await this.add({ tag, guild });
+          }
+          if (change.operationType !== 'delete') return;
+          // A delete carries only the ID; the cache knows which clan and server it was.
+          const id = change.documentKey._id.toHexString();
+          const clan = [...this.cached.values()].flat().find((c) => c._id === id);
+          if (clan) await this.delete({ tag: clan.tag, guild: clan.guild });
+        } catch (error) {
+          captureException(error);
+        }
       });
   }
 

@@ -21,6 +21,11 @@ export default class CategoryEditCommand extends Command {
   ) {
     if (!ObjectId.isValid(args.category)) return interaction.editReply('Invalid categoryId.');
 
+    const category = await this.client.db
+      .collection(Collections.CLAN_CATEGORIES)
+      .findOne({ _id: new ObjectId(args.category), guildId: interaction.guildId });
+    if (!category) return interaction.editReply('Invalid categoryId.');
+
     const url = await this.client.util.createDashboardUrl({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
@@ -72,7 +77,10 @@ export default class CategoryEditCommand extends Command {
 
     await this.client.db
       .collection(Collections.CLAN_CATEGORIES)
-      .updateOne({ _id: new ObjectId(args.category) }, { $set: { ...payload } });
+      .updateOne(
+        { _id: new ObjectId(args.category), guildId: interaction.guildId },
+        { $set: { ...payload } }
+      );
 
     return interaction.editReply({
       content: '**Category name was updated.** Would you like to reorder categories and clans?',
