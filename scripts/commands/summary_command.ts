@@ -2,7 +2,6 @@ import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } 
 import { command, common } from '../../src/util/locales.js';
 import {
   getCWLSeasonIds,
-  getActivityPeriodChoices,
   getMonthChoices,
   getRaidWeekIds,
   getSeasonSinceIds,
@@ -399,7 +398,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getActivityPeriodChoices()
+          choices: getMonthChoices()
         }
       ]
     },

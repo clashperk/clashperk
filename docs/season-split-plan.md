@@ -15,10 +15,9 @@
 | CWL | API value | `CWLGroups` |
 
 - There is no calendar-month cutover and no `PlayerLeagueSeasons` collection.
-- `SEASON_SPLIT=1` switches on start-date ids. Set it on the worker, the API, the Go legend tracker, the bot and the custom bots.
-- With the flag off, every service keeps the legacy ids.
+- Every service writes and reads start-date ids unconditionally. The `SEASON_SPLIT` flag that gated them was removed once the migration finished.
 
-## Migration
+## Migration (done 2026-10-21)
 
 - **What gets renamed:** 28-day ids, renamed to start dates.
   - `PlayerSeasons` and `LegendAttacks` from `2025-09`.
@@ -32,14 +31,15 @@
   4. Turn the flag on everywhere, then run the bot's `npm run deploy`.
   5. Resume the writers.
   6. Rename the remaining ids online, newest first.
-- **Rollback** reverses the mapping stored in `SeasonIdMap`.
-- **Steps:** see `docs/season-split-runbook.md` in the backend repo.
+- All history was renamed and verified. The backups were dropped, so there is no rollback, and the backend's `season-split` script is gone.
 
 ## Done
 
 - clashofclans.js 5.1.0: `getLeagueSeason`, `getLeagueSeasonById`, `getMonth`.
 - The `battle_logs.battle_season` default stopgap, applied on 2026-10-21.
 - The clan games cleanup cron fix (clashperk/service-backend#51).
+- The migration, on 2026-10-21.
+- `SEASON_SPLIT` removed from the bot, the backend and metrics-backend: start-date ids no longer depend on an env var.
 
 ## Open
 
