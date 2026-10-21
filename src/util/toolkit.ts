@@ -189,31 +189,13 @@ export class Util extends CocUtil {
     return name.replace(/`/g, '');
   }
 
-  private static getLegacySeasonIds(count: number): string[] {
-    const { seasonId } = Util.getSeason();
-    return Array.from({ length: count }).map((_, idx) => {
-      return moment(seasonId, 'YYYY-MM').subtract(idx, 'month').format('YYYY-MM');
-    });
-  }
-
   /** Trophy league season ids, newest first. */
   public static getLeagueSeasonIds(count = 18): string[] {
-    if (!Season.split) return this.getLegacySeasonIds(count);
     return Util.getLeagueSeasons(count).map((season) => season.id);
   }
 
-  /** Ids Players.seasons (activity) is keyed by: calendar months once split, newest first. */
-  public static getActivityPeriodIds(count = 18): string[] {
-    return Season.split ? this.getMonthIds(count) : this.getLeagueSeasonIds(count);
-  }
-
-  public static activityPeriodLabel(periodId: string) {
-    return Season.split ? this.monthLabel(periodId) : this.leagueSeasonLabel(periodId);
-  }
-
-  /** The Players.seasons key for a league season: once split, the month holding most of it. */
+  /** The Players.seasons (calendar month) key for a league season: the month holding most of it. */
   public static activityMonthOf(seasonId: string) {
-    if (!Season.split) return seasonId;
     const { startTime, endTime } = Season.getLeagueSeasonById(seasonId);
     return Util.getMonth(new Date((startTime.getTime() + endTime.getTime()) / 2)).id;
   }
@@ -223,7 +205,7 @@ export class Util extends CocUtil {
     return Util.getMonths(count).map((month) => month.id);
   }
 
-  /** "5 Oct – 2 Nov 2026" for a league season id (start date or legacy YYYY-MM). */
+  /** "5 Oct – 2 Nov 2026" for a league season id. */
   public static leagueSeasonLabel(seasonId: string) {
     const { startTime, endTime } = Util.getLeagueSeasonById(seasonId);
     const start = moment.utc(startTime);
@@ -355,41 +337,28 @@ interface SeasonWindow {
 }
 
 export class Season {
-  // Off until the stored 28-day YYYY-MM ids are renamed to start dates (the Oct 31 migration).
-  public static get split() {
-    return process.env.SEASON_SPLIT === '1';
-  }
-
   public static get monthId() {
     return new Date().toISOString().slice(0, 7);
   }
 
-  /** Id every season-keyed store uses: PlayerSeasons, Players.seasons, ranks, legend data. */
+  /** League season id (start date): PlayerSeasons, LegendAttacks, ranks, legend data. */
   public static get leagueId() {
     return this.getLeagueSeason().id;
   }
 
-  /** The league season containing the date, with the id format currently stored. */
+  /** The league season containing the date. */
   public static getLeagueSeason(inputDate?: Date | string): SeasonWindow {
-    const season = Util.getLeagueSeason(moment(inputDate).toDate());
-    if (this.split) return season;
-    // The legacy rule puts a boundary instant in the ending season, so look just past the start.
-    return { ...season, id: Util.getSeason(new Date(season.startTime.getTime() + 1)).seasonId };
+    return Util.getLeagueSeason(moment(inputDate).toDate());
   }
 
   /** The latest league seasons, newest first. */
   public static getLeagueSeasons(count: number): SeasonWindow[] {
-    return Util.getLeagueSeasons(count).map((season) => this.getLeagueSeason(season.startTime));
+    return Util.getLeagueSeasons(count);
   }
 
-  /** A league season by its stored id (start date or legacy YYYY-MM). */
+  /** A league season by its start-date id. */
   public static getLeagueSeasonById(seasonId: string): SeasonWindow {
     return { ...Util.getLeagueSeasonById(seasonId), id: seasonId };
-  }
-
-  /** Players.seasons key for now: activity is counted per calendar month once split. */
-  public static get activityId() {
-    return this.split ? this.monthId : this.leagueId;
   }
 
   public static getLastLeagueSeason(): SeasonWindow {

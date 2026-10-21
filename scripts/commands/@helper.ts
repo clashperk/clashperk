@@ -13,16 +13,8 @@ await i18next.use(Backend).init({
   backend: { paths: [fileURLToPath(locales)] }
 });
 
-// Choices are fixed at deploy time, so run the deploy with the same SEASON_SPLIT as the bot.
 export function getLeagueSeasonChoices() {
   return Util.getLeagueSeasonIds().map((id) => ({ name: Util.leagueSeasonLabel(id), value: id }));
-}
-
-export function getActivityPeriodChoices() {
-  return Util.getActivityPeriodIds().map((id) => ({
-    name: Util.activityPeriodLabel(id),
-    value: id
-  }));
 }
 
 export function getMonthChoices() {
