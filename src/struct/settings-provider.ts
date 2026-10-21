@@ -20,7 +20,9 @@ export class SettingsProvider {
       { operationType: { $in: ['insert', 'update', 'delete'] } },
       (change) => {
         if (change.operationType === 'insert' || change.operationType === 'update') {
-          this.settings.set(change.fullDocument!.guildId, change.fullDocument);
+          // An update's lookup finds nothing if the document was deleted in the meantime.
+          if (change.fullDocument)
+            this.settings.set(change.fullDocument.guildId, change.fullDocument);
         }
       }
     );
@@ -30,7 +32,7 @@ export class SettingsProvider {
       { operationType: { $in: ['insert', 'update', 'delete'] } },
       (change) => {
         if (change.operationType === 'insert' || change.operationType === 'update') {
-          this.flags.set(change.fullDocument!.key as string, change.fullDocument!);
+          if (change.fullDocument) this.flags.set(change.fullDocument.key, change.fullDocument);
         }
         if (change.operationType === 'delete') {
           this.flags.delete(change.documentKey.key);
