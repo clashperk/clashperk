@@ -221,7 +221,7 @@ class MongoDbClient extends MongoClient {
           key: { tag: 1, season: 1 }
         },
         {
-          key: { 'clan.tag': 1 }
+          key: { 'clan.tag': 1, 'createdAt': 1 }
         },
         {
           key: { createdAt: 1 },
@@ -273,6 +273,9 @@ class MongoDbClient extends MongoClient {
         {
           key: { guildId: 1, clanTag: 1, logType: 1 },
           unique: true
+        },
+        {
+          key: { logType: 1, lastPostedAt: 1 }
         }
       ]),
 
