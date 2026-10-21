@@ -119,7 +119,7 @@ export default class AttacksHistoryCommand extends Command {
               .map((season) => {
                 return `${Util.formatNumber(season.attackWins).padStart(4, ' ')} ${Util.formatNumber(
                   season.defenseWins
-                ).padStart(4, ' ')}  ${moment(season.season).format('MMM YYYY')}`;
+                ).padStart(4, ' ')}  ${Util.statsPeriodShortLabel(season.season)}`;
               })
               .join('\n'),
             '```'
@@ -143,14 +143,14 @@ export default class AttacksHistoryCommand extends Command {
       })
       .flat();
 
-    const seasonIds = Util.getSeasonIds().slice(0, 12);
+    const seasonIds = Util.getStatsPeriodIds(12);
     const sheets: CreateGoogleSheet[] = [
       {
         title: `Attacks`,
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.statsPeriodLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [
@@ -164,7 +164,7 @@ export default class AttacksHistoryCommand extends Command {
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.statsPeriodLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [

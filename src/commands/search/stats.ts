@@ -57,8 +57,8 @@ export default class StatsCommand extends Command {
       },
       season: {
         match: 'ENUM',
-        enums: Util.getSeasonIds(),
-        default: Util.getLastSeasonId()
+        enums: Util.getMonthIds(),
+        default: Util.getLastMonthId()
       },
       compare: {
         match: 'STRING'
@@ -160,7 +160,7 @@ export default class StatsCommand extends Command {
     }
   ) {
     const stars = args.view === 'starsAvg' ? '>=1' : args.stars || '==3';
-    let season = args.season || Util.getLastSeasonId();
+    let season = args.season || Util.getLastMonthId();
     const type = args.type ?? 'noFriendly';
     const attempt = args.attempt;
     const compare = this.compare(args.compare as string);
@@ -412,7 +412,7 @@ export default class StatsCommand extends Command {
       embed.setFooter({ text: `War Type: ${WarTypes[type]}\n(Last ${wars.length} wars)` });
     } else {
       embed.setFooter({
-        text: `War Type: ${WarTypes[type]}\n(Since ${moment(season).format('MMM YYYY')}, ${wars.length} wars)`
+        text: `War Type: ${WarTypes[type]}\n(Since ${moment.utc(season).format(args.days ? 'D MMM YYYY' : 'MMM YYYY')}, ${wars.length} wars)`
       });
     }
 

@@ -11,7 +11,6 @@ import {
   StringSelectMenuBuilder,
   embedLength
 } from 'discord.js';
-import moment from 'moment';
 import { Command } from '../../lib/handlers.js';
 import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS } from '../../util/emojis.js';
 import { recoverDonations } from '../../util/helper.js';
@@ -37,7 +36,7 @@ export default class DonationSummaryCommand extends Command {
       clans_only?: boolean;
     }
   ) {
-    const season = args.season ?? Season.ID;
+    const season = args.season ?? Season.statsId;
 
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
       args: args.clans
@@ -389,8 +388,8 @@ export default class DonationSummaryCommand extends Command {
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `Donation Leaderboard for ${moment(seasonId).format('MMM YYYY')}` })
-      .setFooter({ text: `Season ${moment(seasonId).format('MMM YYYY')}` });
+      .setAuthor({ name: `Donation Leaderboard for ${Util.statsPeriodLabel(seasonId)}` })
+      .setFooter({ text: Util.statsPeriodLabel(seasonId) });
 
     const isTH = sortBy?.includes('townHallLevel');
     if (members.length) {

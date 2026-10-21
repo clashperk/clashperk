@@ -93,7 +93,7 @@ export default class SummaryBestCommand extends Command {
       selected?: string[];
     }
   ) {
-    const seasonId = args.season ?? Season.ID;
+    const seasonId = args.season ?? Season.statsId;
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
       args: args.clans
     });
@@ -102,7 +102,13 @@ export default class SummaryBestCommand extends Command {
     const _clans = await this.client.redis.getClans(clans.map((clan) => clan.tag));
     const members = _clans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
 
-    const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
+    const clanGamesMonth = Util.clanGamesMonthOf(seasonId);
+    const _clanGamesStartTimestamp = moment
+      .utc(clanGamesMonth)
+      .add(21, 'days')
+      .hour(8)
+      .toDate()
+      .getTime();
     const order = args.order ?? 'desc';
 
     const aggregated = await this.client.db
@@ -202,7 +208,7 @@ export default class SummaryBestCommand extends Command {
             foreignField: 'tag',
             as: '_clanGames',
             pipeline: [
-              { $match: { season: seasonId } },
+              { $match: { season: clanGamesMonth } },
               { $set: { clan: { $arrayElemAt: ['$__clans', 0] } } },
               { $match: { clan: { $in: clans.map((c) => c.tag) } } },
               { $project: { current: 1, initial: 1, completedAt: 1 } }
@@ -593,7 +599,7 @@ export default class SummaryBestCommand extends Command {
     const embed = new EmbedBuilder()
       .setTimestamp()
       .setColor(this.client.embed(interaction))
-      .setFooter({ text: `Season ${seasonId}` })
+      .setFooter({ text: Util.statsPeriodLabel(seasonId) })
       .setAuthor({
         name: `${interaction.guild.name} Best Players`,
         iconURL: interaction.guild.iconURL({ forceStatic: false })!
@@ -689,7 +695,7 @@ export default class SummaryBestCommand extends Command {
         )
     );
 
-    const isSameSeason = seasonId === Season.ID;
+    const isSameSeason = seasonId === Season.statsId;
     return interaction.editReply({
       embeds: [embed],
       components: isSameSeason ? [row, menuRow] : [menuRow]

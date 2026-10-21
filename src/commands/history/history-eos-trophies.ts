@@ -5,7 +5,7 @@ import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents, padStart } from '../../util/helper.js';
 import { handlePagination } from '../../util/pagination.js';
-import { Util } from '../../util/toolkit.js';
+import { Season, Util } from '../../util/toolkit.js';
 import { cluster } from 'radash';
 
 export default class EosTrophiesHistoryCommand extends Command {
@@ -58,8 +58,9 @@ export default class EosTrophiesHistoryCommand extends Command {
   }
 
   private async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
+    // Once split, PlayerSeasons is monthly and season-end trophies live per league season.
     const result = await this.client.db
-      .collection(Collections.PLAYER_SEASONS)
+      .collection(Season.split ? Collections.PLAYER_LEAGUE_SEASONS : Collections.PLAYER_SEASONS)
       .aggregate<AggregatedResult>([
         { $match: { tag: { $in: playerTags } } },
         {
@@ -77,7 +78,7 @@ export default class EosTrophiesHistoryCommand extends Command {
             tag: { $first: '$tag' },
             seasons: {
               $push: {
-                season: '$season',
+                season: Season.split ? '$seasonId' : '$season',
                 trophies: '$trophies.current'
               }
             }
@@ -97,10 +98,10 @@ export default class EosTrophiesHistoryCommand extends Command {
           name: `${name} (${tag})`,
           value: [
             '```',
-            `\u200eSEASON    TROPHY`,
+            `\u200eSEASON      TROPHY`,
             seasons
               .map((season) => {
-                return `${moment(season.season).format('MMM YYYY')}  ${padStart(season.trophies, 8)}`;
+                return `${Util.leagueSeasonShortLabel(season.season)}  ${padStart(season.trophies, 8)}`;
               })
               .join('\n'),
             '```'
@@ -124,14 +125,14 @@ export default class EosTrophiesHistoryCommand extends Command {
       })
       .flat();
 
-    const seasonIds = Util.getSeasonIds().slice(0, 12);
+    const seasonIds = Util.getLeagueSeasonIds(12);
     const sheets: CreateGoogleSheet[] = [
       {
         title: `Trophies`,
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.leagueSeasonLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [r.name, r.tag, ...seasonIds.map((id) => r.records[id] ?? '')])

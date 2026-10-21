@@ -6,7 +6,7 @@ import { sum } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet } from '../../struct/google.js';
 import { getExportComponents } from '../../util/helper.js';
-import { Season } from '../../util/toolkit.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class ExportSeason extends Command {
   public constructor() {
@@ -25,7 +25,7 @@ export default class ExportSeason extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const season = args.season ?? Season.ID;
+    const season = args.season ?? Season.statsId;
     const _clanTags = clans.map((clan) => clan.tag);
     const _clans = await this.client.coc._getClans(clans);
 
@@ -130,20 +130,20 @@ export default class ExportSeason extends Command {
           ...__achievements.map((ac) => (m[ac]?.current ?? 0) - (m[ac]?.initial ?? 0)),
           m.score ?? 0
         ]),
-        title: `Season ${season}`
+        title: Util.statsPeriodLabel(season)
       }
     ];
 
     const spreadsheet = await this.client.util.createOrUpdateSheet({
       clans,
       guild: interaction.guild,
-      label: `Season Stats (${season})`,
+      label: `Season Stats (${Util.statsPeriodLabel(season)})`,
       sheets,
       sheetType: SheetType.SEASON
     });
 
     return interaction.editReply({
-      content: `**Season Export (${season})**`,
+      content: `**Season Export (${Util.statsPeriodLabel(season)})**`,
       components: getExportComponents(spreadsheet)
     });
   }
@@ -203,7 +203,7 @@ export default class ExportSeason extends Command {
             pipeline: [
               {
                 $match: {
-                  season: seasonId
+                  season: Util.clanGamesMonthOf(seasonId)
                 }
               },
               {

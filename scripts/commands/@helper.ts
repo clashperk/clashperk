@@ -13,10 +13,17 @@ await i18next.use(Backend).init({
   backend: { paths: [fileURLToPath(locales)] }
 });
 
-export function getSeasonIds() {
-  return Util.getSeasonIds().map((seasonId) => {
-    return { name: moment(seasonId, 'YYYY-MM').format('MMM YYYY'), value: seasonId };
-  });
+// Choices are fixed at deploy time, so run the deploy with the same SEASON_SPLIT as the bot.
+export function getLeagueSeasonChoices() {
+  return Util.getLeagueSeasonIds().map((id) => ({ name: Util.leagueSeasonLabel(id), value: id }));
+}
+
+export function getStatsPeriodChoices() {
+  return Util.getStatsPeriodIds().map((id) => ({ name: Util.statsPeriodLabel(id), value: id }));
+}
+
+export function getMonthChoices() {
+  return Util.getMonthIds().map((id) => ({ name: Util.monthLabel(id), value: id }));
 }
 
 // CWL seasons now use the API's full-date id (YYYY-MM-DD) and can occur more than once a month.
@@ -39,7 +46,7 @@ export function getCWLSeasonIds() {
 }
 
 export function getSeasonSinceIds() {
-  return getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }));
+  return getMonthChoices().map((month) => ({ name: `Since ${month.name}`, value: month.value }));
 }
 
 export function getRaidWeekIds() {

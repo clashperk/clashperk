@@ -46,16 +46,13 @@ export default class LegendLeaderboardCommand extends Command {
     });
     if (!clans) return;
 
-    let seasonId = args.season ?? Season.ID;
+    let seasonId = args.season ?? Season.leagueId;
 
     const isDefaultMessage =
       interaction.isMessageComponent() && interaction.message.type === MessageType.Default;
     if (isDefaultMessage) {
-      const currentSeasonEnd = this.client.coc.util.getSeason(new Date()).endTime.toISOString();
-      const messageSentAt = this.client.coc.util
-        .getSeason(interaction.message.createdAt)
-        .endTime.toISOString();
-      if (currentSeasonEnd !== messageSentAt) seasonId = messageSentAt.slice(0, 7);
+      const messageSeasonId = Season.getLeagueSeason(interaction.message.createdAt).id;
+      if (messageSeasonId !== Season.leagueId) seasonId = messageSeasonId;
     }
 
     const { embed, players } = args.is_bb
@@ -92,7 +89,7 @@ export default class LegendLeaderboardCommand extends Command {
       return interaction.editReply('Successfully enabled auto updating Leaderboard.');
     }
 
-    const currentSeasonId = Season.ID;
+    const currentSeasonId = Season.leagueId;
     const payload = {
       cmd: this.id,
       clans: resolvedArgs,
@@ -162,7 +159,7 @@ export default class LegendLeaderboardCommand extends Command {
         )
     );
 
-    if (seasonId !== Season.ID && !args.season) {
+    if (seasonId !== Season.leagueId && !args.season) {
       return interaction.editReply({ embeds: [embed], components: [] });
     }
 

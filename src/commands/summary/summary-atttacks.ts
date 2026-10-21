@@ -8,7 +8,7 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Season } from '../../util/toolkit.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class SummaryAttacksCommand extends Command {
   public constructor() {
@@ -24,7 +24,7 @@ export default class SummaryAttacksCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { season?: string; clans?: string; clans_only?: boolean }
   ) {
-    const season = args.season ?? Season.ID;
+    const season = args.season ?? Season.statsId;
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
       args: args.clans
     });
@@ -103,7 +103,7 @@ export default class SummaryAttacksCommand extends Command {
         ].join('\n')
       );
     }
-    embed.setFooter({ text: `Season ${season}` });
+    embed.setFooter({ text: Util.statsPeriodLabel(season) });
 
     const payload = {
       cmd: this.id,

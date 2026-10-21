@@ -9,11 +9,10 @@ import {
   StringSelectMenuBuilder,
   User
 } from 'discord.js';
-import moment from 'moment';
 import { Args, Command } from '../../lib/handlers.js';
 import { MembersCommandOptions } from '../../util/command.options.js';
 import { EMOJIS } from '../../util/emojis.js';
-import { Season } from '../../util/toolkit.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class ClanAttacksCommand extends Command {
   public constructor() {
@@ -53,7 +52,7 @@ export default class ClanAttacksCommand extends Command {
     }
 
     const fetched = await this.getPlayers(clan.memberList, args.season);
-    const seasonId = args.season ?? Season.ID;
+    const seasonId = args.season ?? Season.statsId;
 
     const members = fetched.map((player) => ({
       name: player.name,
@@ -86,7 +85,7 @@ export default class ClanAttacksCommand extends Command {
           '```'
         ].join('\n')
       )
-      .setFooter({ text: `Season ${moment(seasonId).format('MMM YYYY')} \nSynced` })
+      .setFooter({ text: `${Util.statsPeriodLabel(seasonId)} \nSynced` })
       .setTimestamp();
 
     const payload = {
@@ -135,12 +134,13 @@ export default class ClanAttacksCommand extends Command {
     const fetched = await this.client.db
       .collection(Collections.PLAYER_SEASONS)
       .find<{ name: string; tag: string; attackWins: number; defenseWins: number }>({
-        season: seasonId ?? Season.ID,
+        season: seasonId ?? Season.statsId,
         tag: { $in: memberList.map((m) => m.tag) }
       })
       .toArray();
 
-    if (!fetched.length && !seasonId) {
+    // Live counters run from the last league reset, so they only stand in for league-season stats.
+    if (!fetched.length && !seasonId && !Season.monthlyStats) {
       const players = await this.client.coc._getPlayers(memberList);
       return players;
     }

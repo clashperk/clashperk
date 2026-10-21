@@ -177,14 +177,14 @@ export default class ClanGamesHistoryCommand extends Command {
       })
       .flat();
 
-    const seasonIds = Util.getSeasonIds();
+    const seasonIds = Util.getMonthIds();
     const sheets: CreateGoogleSheet[] = [
       {
         title: `Clan Games History`,
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.monthLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [

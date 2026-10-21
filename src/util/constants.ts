@@ -131,6 +131,7 @@ export const enum Collections {
 
   CLAN_GAMES_POINTS = 'ClanGamesPoints',
   PLAYER_SEASONS = 'PlayerSeasons',
+  PLAYER_LEAGUE_SEASONS = 'PlayerLeagueSeasons',
   CAPITAL_CONTRIBUTIONS = 'CapitalContributions',
   CAPITAL_RAID_SEASONS = 'CapitalRaidSeasons',
   LAYOUTS = 'Layouts',

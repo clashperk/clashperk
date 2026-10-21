@@ -1,6 +1,7 @@
 import { WAR_LEAGUE_MAP } from '@app/constants';
 import moment from 'moment';
 import { CWLRankCard } from '../helper/cwl.helper.js';
+import { Util } from '../util/toolkit.js';
 
 function formatNumber(num: number) {
   return `${num > 0 ? '+' : ''}${num.toFixed(0)}`;
@@ -52,11 +53,13 @@ export const createLegendGraph = async ({
       prevAvgDefense: lastSeason ? formatNumber(lastSeason.avgDefense) : '',
       townHall: data.townHallLevel.toString(),
       prevFinalTrophies,
-      prevSeason: lastSeason ? `${moment(lastSeason._id).format('MMM')}` : '',
+      prevSeason: lastSeason
+        ? moment.utc(Util.getLeagueSeasonById(lastSeason._id).startTime).format('D MMM')
+        : '',
       currentTrophies: data.trophies.toFixed(0),
       clanName: data.clan?.name,
       clanBadgeURL: data.clan?.badgeUrls.large,
-      season: `${moment(season._id).format('MMMM YYYY')} (${moment(seasonStart).format('DD MMM')} - ${moment(seasonEnd).format('DD MMM')})`
+      season: `${moment.utc(seasonStart).format('D MMM')} – ${moment.utc(seasonEnd).format('D MMM YYYY')}`
     })
   }).then((res) => res.arrayBuffer());
 

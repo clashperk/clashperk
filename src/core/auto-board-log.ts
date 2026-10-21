@@ -70,18 +70,10 @@ export class AutoBoardLog {
     }
   }
 
-  private isEndOfSeason(endOfSeason: Date) {
-    return endOfSeason.toISOString().slice(0, 7) !== new Date().toISOString().slice(0, 7);
-  }
-
   public async handleMessage(cache: Cache, webhook: WebhookClient) {
-    const endOfSeason = this.client.coc.util.getSeasonEnd(new Date());
-
-    if (cache.messageId && this.isEndOfSeason(endOfSeason)) {
-      const lastMessageTimestamp = this.client.coc.util
-        .getSeasonEnd(new Date(Number(SnowflakeUtil.deconstruct(cache.messageId).timestamp)))
-        .getTime();
-      if (lastMessageTimestamp !== endOfSeason.getTime()) delete cache.messageId;
+    if (cache.messageId) {
+      const sentAt = new Date(Number(SnowflakeUtil.deconstruct(cache.messageId).timestamp));
+      if (Season.getLeagueSeason(sentAt).id !== Season.leagueId) delete cache.messageId;
     }
 
     if (!cache.messageId) {
@@ -238,7 +230,7 @@ export class AutoBoardLog {
       const { embed, players } = await getBbLegendRankingEmbedMaker({
         guild,
         limit: cache.limit,
-        seasonId: Season.ID
+        seasonId: Season.leagueId
       });
       if (!players.length) return null;
 
@@ -248,7 +240,7 @@ export class AutoBoardLog {
     const { embed, players } = await getLegendRankingEmbedMaker({
       guild,
       limit: cache.limit,
-      seasonId: Season.ID
+      seasonId: Season.leagueId
     });
     if (!players.length) return null;
 

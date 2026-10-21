@@ -2,9 +2,10 @@ import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } 
 import { command, common } from '../../src/util/locales.js';
 import {
   getCWLSeasonIds,
+  getMonthChoices,
   getRaidWeekIds,
-  getSeasonIds,
   getSeasonSinceIds,
+  getStatsPeriodChoices,
   guildInstallable,
   translation
 } from './@helper.js';
@@ -35,7 +36,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getSeasonIds()
+          choices: getStatsPeriodChoices()
         },
         {
           name: 'limit',
@@ -167,7 +168,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getSeasonIds()
+          choices: getStatsPeriodChoices()
         },
         {
           name: 'clans',
@@ -215,7 +216,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getSeasonIds()
+          choices: getStatsPeriodChoices()
         }
       ]
     },
@@ -264,7 +265,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getSeasonIds()
+          choices: getMonthChoices()
         }
       ]
     },
@@ -363,7 +364,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getSeasonIds()
+          choices: getMonthChoices()
         },
         {
           name: 'week',
@@ -397,7 +398,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getSeasonIds()
+          choices: getStatsPeriodChoices()
         }
       ]
     },
@@ -413,7 +414,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getSeasonIds()
+          choices: getMonthChoices()
         },
         {
           name: 'clans',

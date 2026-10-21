@@ -181,7 +181,7 @@ export default class DonationsHistoryCommand extends Command {
                 const _donations = donations; // Math.max(donations, season.donations);
                 const don = Util.formatNumber(_donations).padStart(7, ' ');
                 const rec = Util.formatNumber(donationsReceived).padStart(7, ' ');
-                return `${don} ${rec}  ${moment(season.season).format('MMM YYYY')}`;
+                return `${don} ${rec}  ${Util.statsPeriodShortLabel(season.season)}`;
               })
               .join('\n'),
             '```'
@@ -227,14 +227,14 @@ export default class DonationsHistoryCommand extends Command {
       })
       .flat();
 
-    const seasonIds = Util.getSeasonIds().slice(0, 12);
+    const seasonIds = Util.getStatsPeriodIds(12);
     const sheets: CreateGoogleSheet[] = [
       {
         title: `Donated`,
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.statsPeriodLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [
@@ -248,7 +248,7 @@ export default class DonationsHistoryCommand extends Command {
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: s, align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.statsPeriodLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [

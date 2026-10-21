@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, translation, guildInstallable } from './@helper.js';
+import { getMonthChoices, guildInstallable, translation } from './@helper.js';
 
 export const CLAN_GAMES_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'clan-games',
@@ -29,7 +29,7 @@ export const CLAN_GAMES_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
       description_localizations: translation('command.clan_games.options.season.description'),
       type: ApplicationCommandOptionType.String,
       required: false,
-      choices: getSeasonIds()
+      choices: getMonthChoices()
     }
   ],
   ...guildInstallable
