@@ -7,11 +7,19 @@ import { createServer } from 'node:http';
 
 import { ClusterManager } from 'discord-hybrid-sharding';
 import { fileURLToPath } from 'node:url';
+import type { Client } from './struct/client.js';
 import { Logger } from './util/logger.js';
 
 const logger = new Logger(null);
 
+const DB_CHECK_INTERVAL_MS = 30_000;
+const DB_CHECK_TIMEOUT_MS = 10_000;
+const UNHEALTHY_AFTER_MS = 2 * 60_000;
+const EXIT_AFTER_MS = 10 * 60_000;
+
 class Manager extends ClusterManager {
+  private lastHealthyAt: number | null = null;
+
   public constructor() {
     super(fileURLToPath(new URL('main.js', import.meta.url)), {
       mode: 'process',
@@ -22,7 +30,8 @@ class Manager extends ClusterManager {
   }
 
   public isReady() {
-    return this.clusters.size > 0;
+    if (this.lastHealthyAt === null) return this.clusters.size > 0;
+    return Date.now() - this.lastHealthyAt < UNHEALTHY_AFTER_MS;
   }
 
   public async init() {
@@ -34,6 +43,31 @@ class Manager extends ClusterManager {
       logger.error(error, { label: 'Cluster' });
 
       if (error.message === 'DISCORD_TOKEN_INVALID') {
+        process.exit(1);
+      }
+    }
+
+    this.lastHealthyAt = Date.now();
+    setInterval(() => this.checkDatabase(), DB_CHECK_INTERVAL_MS);
+  }
+
+  // Docker never restarts an unhealthy container on its own, so exiting is what gets
+  // a cluster that lost MongoDB (and never recovered) back via the restart policy.
+  private async checkDatabase() {
+    try {
+      await this.broadcastEval(
+        (client) => (client as unknown as Client).db.command({ ping: 1 }).then(() => true),
+        { timeout: DB_CHECK_TIMEOUT_MS }
+      );
+      this.lastHealthyAt = Date.now();
+    } catch (error) {
+      const downForMs = Date.now() - this.lastHealthyAt!;
+      logger.warn(`MongoDB unreachable for ${Math.round(downForMs / 1000)}s: ${error}`, {
+        label: 'Health'
+      });
+
+      if (downForMs > EXIT_AFTER_MS) {
+        logger.error('MongoDB unreachable for too long, exiting to restart', { label: 'Health' });
         process.exit(1);
       }
     }
