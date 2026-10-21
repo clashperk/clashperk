@@ -17,7 +17,7 @@ import { Command } from '../../lib/handlers.js';
 import { MembersCommandOptions } from '../../util/command.options.js';
 import { CLAN_LABELS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/emojis.js';
 import { trimTag } from '../../util/helper.js';
-import { Season } from '../../util/toolkit.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 const clanTypes: Record<string, string> = {
   inviteOnly: 'Invite Only',
@@ -199,7 +199,10 @@ export default class ClanCommand extends Command {
 
     if (fields.length)
       embed.addFields([
-        { name: `**Season Stats (${Season.ID})**`, value: [...fields, '\u200e'].join('\n') }
+        {
+          name: `**Season Stats (${Util.statsPeriodLabel(Season.statsId)})**`,
+          value: [...fields, '\u200e'].join('\n')
+        }
       ]);
 
     embed.addFields([
@@ -314,7 +317,7 @@ export default class ClanCommand extends Command {
         {
           $match: {
             __clans: clan.tag,
-            season: Season.ID,
+            season: Season.statsId,
             tag: { $in: clan.memberList.map((m) => m.tag) }
           }
         },
@@ -363,7 +366,7 @@ export default class ClanCommand extends Command {
           $match: {
             $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
             state: 'warEnded',
-            season: Season.ID
+            season: Season.monthId
           }
         },
         {

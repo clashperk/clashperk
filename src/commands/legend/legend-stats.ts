@@ -104,7 +104,7 @@ export default class LegendStatsCommand extends Command {
     }
 
     const minLogs = 3;
-    const { startTime } = Season.getSeason();
+    const { startTime } = Season.getLeagueSeason();
     const thresholdRecords =
       moment().diff(startTime, 'days') >= minLogs
         ? threshold.history.filter((record) => moment(record.timestamp).isAfter(startTime))
@@ -206,8 +206,8 @@ export default class LegendStatsCommand extends Command {
   ) {
     const isResetDay =
       reference &&
-      Season.getSeason(target.timestamp).seasonId !==
-        Season.getSeason(reference.timestamp).seasonId;
+      Season.getLeagueSeason(target.timestamp).id !==
+        Season.getLeagueSeason(reference.timestamp).id;
 
     const thresholds = target.thresholds.map((threshold) => {
       const eod =

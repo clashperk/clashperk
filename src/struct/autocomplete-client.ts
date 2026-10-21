@@ -97,8 +97,8 @@ export class Autocomplete {
   ) {
     let query = interaction.options.getString(focused)?.trim();
     if (!query) {
-      const ids = Util.getSeasonIds().slice(0, 12);
-      return interaction.respond(ids.map((id) => ({ name: id, value: id })));
+      const ids = Util.getMonthIds(12);
+      return interaction.respond(ids.map((id) => ({ name: Util.monthLabel(id), value: id })));
     }
     query = query.slice(0, 100).trim();
     return interaction.respond([{ name: query, value: query }]);

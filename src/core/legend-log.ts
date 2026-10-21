@@ -13,7 +13,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { BattleLogDto } from '../api/generated.js';
 import { getLegendBattleLog } from '../helper/legends.helper.js';
 import { padStart } from '../util/helper.js';
-import { Util } from '../util/toolkit.js';
+import { Season, Util } from '../util/toolkit.js';
 import { Enqueuer } from './enqueuer.js';
 import { RootLog } from './root-log.js';
 
@@ -67,7 +67,7 @@ export class LegendLog extends RootLog {
     if (!res.ok) return null;
 
     const { startTime, endTime } = Util.getPreviousLegendTimestamp();
-    const season = Util.getSeason(new Date(endTime));
+    const season = Season.getLeagueSeason(new Date(endTime));
     const battleDate = new Date(startTime).toISOString().slice(0, 10);
 
     const legendMembers = clan.memberList.filter(
@@ -133,7 +133,7 @@ export class LegendLog extends RootLog {
     );
 
     embed.setFooter({
-      text: `End of Day ${Util.getPreviousLegendDay()}/${moment(season.endTime).diff(season.startTime, 'days')} (${season.seasonId})`
+      text: `End of Day ${Util.getPreviousLegendDay()}/${moment(season.endTime).diff(season.startTime, 'days')} (${Util.leagueSeasonLabel(season.id)})`
     });
 
     if (!members.length) return null;

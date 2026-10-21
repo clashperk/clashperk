@@ -372,7 +372,7 @@ export default class CapitalRaidsCommand extends Command {
       .aggregate<{ country: string; countryCode: string; clans: { rank: number } }>([
         {
           $match: {
-            season: Season.ID
+            season: Season.statsId
           }
         },
         {

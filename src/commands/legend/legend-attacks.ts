@@ -112,7 +112,10 @@ export default class LegendAttacksCommand extends Command {
       embed.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`);
       embed.setURL(`http://cprk.us/c/${trimTag(clan.tag)}`);
     } else {
-      embed.setAuthor({ name: `Legend League Attacks (${Season.ID})`, iconURL: guild.iconURL()! });
+      embed.setAuthor({
+        name: `Legend League Attacks (${Util.leagueSeasonLabel(Season.leagueId)})`,
+        iconURL: guild.iconURL()!
+      });
     }
 
     embed.setDescription(
@@ -133,10 +136,10 @@ export default class LegendAttacksCommand extends Command {
       ].join('\n')
     );
 
-    const season = Season.getSeason();
+    const season = Season.getLeagueSeason();
     embed.setTimestamp();
     embed.setFooter({
-      text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})`
+      text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Util.leagueSeasonLabel(Season.leagueId)})`
     });
 
     return embed;

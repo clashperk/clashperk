@@ -2,8 +2,9 @@ import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } 
 import { command, common } from '../../src/util/locales.js';
 import {
   getCWLSeasonIds,
-  getSeasonIds,
+  getMonthChoices,
   getSeasonSinceIds,
+  getStatsPeriodChoices,
   guildInstallable,
   translation
 } from './@helper.js';
@@ -123,7 +124,7 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season_since.description,
           description_localizations: translation('common.options.season_since.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          choices: getStatsPeriodChoices()
         },
         {
           name: 'include_past_members',
@@ -344,7 +345,7 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season_since.description,
           description_localizations: translation('common.options.season_since.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          choices: getMonthChoices()
         },
         {
           name: 'limit',

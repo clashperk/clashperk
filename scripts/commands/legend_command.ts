@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, translation, guildInstallable } from './@helper.js';
+import { getLeagueSeasonChoices, guildInstallable, translation } from './@helper.js';
 
 export const LEGEND_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'legend',
@@ -101,7 +101,7 @@ export const LEGEND_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          choices: getLeagueSeasonChoices()
         },
         {
           name: 'enable_auto_updating',

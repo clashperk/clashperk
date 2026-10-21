@@ -11,7 +11,7 @@ export const getDailyLegendEntries = async (playerTag: string) => {
   const client = container.resolve(Client);
   const result = await client.db
     .collection(Collections.LEGEND_ATTACKS)
-    .findOne({ tag: playerTag, seasonId: Season.ID });
+    .findOne({ tag: playerTag, seasonId: Season.leagueId });
 
   return (result?.logs ?? []).reduce<Record<string, { start: number; end: number; diff: number }>>(
     (record, log) => {
@@ -79,7 +79,7 @@ export const getTournament = async (player: APIPlayer, lastTournament = false) =
     battleDate: Season.toBattleDate(new Date(log.creationTime)),
     battleType: 'ranked',
     battleWeek: Season.tournamentID,
-    battleSeason: Season.ID,
+    battleSeason: Season.leagueId,
     destruction: log.destructionPercentage,
     isAttack: true,
     leagueId: player.leagueTier?.id ?? 0,
@@ -101,7 +101,7 @@ export const getTournament = async (player: APIPlayer, lastTournament = false) =
     battleDate: Season.toBattleDate(new Date(log.creationTime)),
     battleType: 'ranked',
     battleWeek: Season.tournamentID,
-    battleSeason: Season.ID,
+    battleSeason: Season.leagueId,
     destruction: log.destructionPercentage,
     isAttack: false,
     leagueId: player.leagueTier?.id ?? 0,
@@ -153,7 +153,7 @@ export const getLegendBattleLogAggregate = async (
 };
 
 export const aggregateLegendBattleLog = (dailyItems: BattleLogDailyDto[]) => {
-  const seasons = Util.getSeasons().slice(0, 3).reverse();
+  const seasons = Season.getLeagueSeasons(3).reverse();
   const [prevPrev, prevSeason, currentSeason] = seasons;
 
   const seasonStart = new Date(prevSeason.endTime);
@@ -183,12 +183,12 @@ export const aggregateLegendBattleLog = (dailyItems: BattleLogDailyDto[]) => {
   };
 
   const currentEntry = buildSeasonEntry(
-    currentSeason.seasonId,
+    currentSeason.id,
     new Date(prevSeason.endTime),
     new Date(currentSeason.endTime)
   );
   const prevEntry = buildSeasonEntry(
-    prevSeason.seasonId,
+    prevSeason.id,
     new Date(prevPrev.endTime),
     new Date(prevSeason.endTime)
   );

@@ -1,13 +1,12 @@
 import { Collections, FeatureFlags } from '@app/constants';
 import { APIPlayerClan } from 'clashofclans.js';
 import { EmbedBuilder, escapeMarkdown, Guild } from 'discord.js';
-import moment from 'moment';
 import { container } from 'tsyringe';
 import { api } from '../api/axios.js';
 import { Client } from '../struct/client.js';
 import { BLUE_NUMBERS } from '../util/emojis.js';
 import { padStart } from '../util/helper.js';
-import { Season } from '../util/toolkit.js';
+import { Season, Util } from '../util/toolkit.js';
 
 function calc(clanRank: number) {
   if (clanRank >= 41) return 3;
@@ -72,7 +71,7 @@ export const getLegendRankingEmbedMaker = async ({
       name: player.name,
       tag: legend.tag,
       clan: player?.clan,
-      trophies: seasonId === Season.ID ? player.trophies : legend.trophies,
+      trophies: seasonId === Season.leagueId ? player.trophies : legend.trophies,
       townHallLevel: player.townHallLevel
     };
   });
@@ -96,7 +95,7 @@ export const getLegendRankingEmbedMaker = async ({
 
   const embed = new EmbedBuilder();
   embed.setColor(client.embed(guild.id));
-  embed.setAuthor({ name: `Legend Leaderboard (${moment(seasonId).format('MMM YYYY')})` });
+  embed.setAuthor({ name: `Legend Leaderboard (${Util.leagueSeasonLabel(seasonId)})` });
   embed.setFooter({ text: 'Synced' });
   embed.setTimestamp();
 
@@ -144,28 +143,52 @@ export const getBbLegendRankingEmbedMaker = async ({
   const _players = await client.redis.getPlayers(memberTags);
 
   const playersMap = _players.reduce<
-    Record<string, { clan?: APIPlayerClan; attackWins: number; townHallLevel: number }>
+    Record<
+      string,
+      {
+        clan?: APIPlayerClan;
+        attackWins: number;
+        townHallLevel: number;
+        builderHallLevel?: number;
+      }
+    >
   >((record, curr) => {
     record[curr.tag] = {
       clan: curr.clan,
       attackWins: curr.attackWins,
-      townHallLevel: curr.townHallLevel
+      townHallLevel: curr.townHallLevel,
+      builderHallLevel: curr.builderHallLevel
     };
     return record;
   }, {});
 
-  const result = await client.db
-    .collection<{
-      name: string;
-      tag: string;
-      versusTrophies: { current: number };
-      builderHallLevel: number;
-    }>(Collections.PLAYER_SEASONS)
-    .find(
-      { season: seasonId, tag: { $in: _players.map(({ tag }) => tag) } },
-      { projection: { name: 1, tag: 1, versusTrophies: 1, builderHallLevel: 1 } }
-    )
-    .toArray();
+  const tags = _players.map(({ tag }) => tag);
+  // Builder base trophies reset with the league season, so once split they live per league season.
+  const result: {
+    name: string;
+    tag: string;
+    versusTrophies: { current: number };
+    builderHallLevel?: number;
+  }[] = Season.split
+    ? await client.db
+        .collection(Collections.PLAYER_LEAGUE_SEASONS)
+        .find(
+          { seasonId, tag: { $in: tags } },
+          { projection: { name: 1, tag: 1, versusTrophies: 1 } }
+        )
+        .toArray()
+    : await client.db
+        .collection<{
+          name: string;
+          tag: string;
+          versusTrophies: { current: number };
+          builderHallLevel: number;
+        }>(Collections.PLAYER_SEASONS)
+        .find(
+          { season: seasonId, tag: { $in: tags } },
+          { projection: { name: 1, tag: 1, versusTrophies: 1, builderHallLevel: 1 } }
+        )
+        .toArray();
 
   let players = result.map((player) => {
     const _player = playersMap[player.tag];
@@ -176,7 +199,7 @@ export const getBbLegendRankingEmbedMaker = async ({
       attackWins: _player.attackWins,
       townHallLevel: _player.townHallLevel,
       trophies: player.versusTrophies.current ?? 0,
-      builderHallLevel: player.builderHallLevel
+      builderHallLevel: player.builderHallLevel ?? _player.builderHallLevel ?? 0
     };
   });
 
@@ -188,7 +211,7 @@ export const getBbLegendRankingEmbedMaker = async ({
   const embed = new EmbedBuilder();
   embed.setColor(client.embed(guild.id));
   embed.setAuthor({
-    name: `${guild.name} Builder Base Leaderboard (${moment(seasonId).format('MMM YYYY')})`,
+    name: `${guild.name} Builder Base Leaderboard (${Util.leagueSeasonLabel(seasonId)})`,
     iconURL: guild.iconURL()!
   });
   embed.setFooter({ text: 'Synced' });

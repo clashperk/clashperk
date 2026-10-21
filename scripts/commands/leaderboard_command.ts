@@ -1,6 +1,11 @@
 import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import { command, common } from '../../src/util/locales.js';
-import { getSeasonIds, translation, guildInstallable } from './@helper.js';
+import {
+  getLeagueSeasonChoices,
+  getStatsPeriodChoices,
+  guildInstallable,
+  translation
+} from './@helper.js';
 
 export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
   name: 'leaderboard',
@@ -28,7 +33,7 @@ export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          choices: getLeagueSeasonChoices()
         }
       ]
     },
@@ -52,7 +57,7 @@ export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          choices: getLeagueSeasonChoices()
         }
       ]
     },
@@ -76,7 +81,7 @@ export const LEADERBOARD_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getSeasonIds()
+          choices: getStatsPeriodChoices()
         }
       ]
     }

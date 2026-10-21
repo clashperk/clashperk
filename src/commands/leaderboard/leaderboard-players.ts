@@ -1,10 +1,9 @@
 import { Collections } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
-import moment from 'moment';
 import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { dynamicPagination } from '../../util/pagination.js';
-import { Season } from '../../util/toolkit.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class LeaderboardPlayersCommand extends Command {
   public constructor() {
@@ -21,7 +20,7 @@ export default class LeaderboardPlayersCommand extends Command {
   ) {
     const loc = await this.client.db
       .collection(Collections.PLAYER_RANKS)
-      .findOne({ countryCode: args.location || 'global', season: args.season || Season.ID });
+      .findOne({ countryCode: args.location || 'global', season: args.season || Season.leagueId });
 
     if (!loc) {
       return interaction.editReply('An error occurred while fetching the leaderboard.');
@@ -34,7 +33,7 @@ export default class LeaderboardPlayersCommand extends Command {
       trophies: player.trophies
     }));
 
-    const season = moment(loc.season).format('MMM YYYY');
+    const season = Util.leagueSeasonLabel(loc.season);
     const embeds: EmbedBuilder[] = [];
 
     cluster(players, 100).forEach((players, idx) => {

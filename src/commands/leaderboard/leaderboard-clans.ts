@@ -1,10 +1,9 @@
 import { Collections } from '@app/constants';
 import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
-import moment from 'moment';
 import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { dynamicPagination } from '../../util/pagination.js';
-import { Season } from '../../util/toolkit.js';
+import { Season, Util } from '../../util/toolkit.js';
 
 export default class LeaderboardClansCommand extends Command {
   public constructor() {
@@ -21,7 +20,7 @@ export default class LeaderboardClansCommand extends Command {
   ) {
     const loc = await this.client.db
       .collection(Collections.CLAN_RANKS)
-      .findOne({ countryCode: args.location || 'global', season: args.season || Season.ID });
+      .findOne({ countryCode: args.location || 'global', season: args.season || Season.leagueId });
 
     const clanTags = (await this.client.storage.find(interaction.guildId)).map((clan) => clan.tag);
 
@@ -36,7 +35,7 @@ export default class LeaderboardClansCommand extends Command {
       trophies: clan.clanPoints
     }));
 
-    const season = moment(loc.season).format('MMM YYYY');
+    const season = Util.leagueSeasonLabel(loc.season);
     const embeds: EmbedBuilder[] = [];
 
     cluster(clans, 100).forEach((clans, idx) => {

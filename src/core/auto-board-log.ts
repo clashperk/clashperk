@@ -73,7 +73,7 @@ export class AutoBoardLog {
   public async handleMessage(cache: Cache, webhook: WebhookClient) {
     if (cache.messageId) {
       const sentAt = new Date(Number(SnowflakeUtil.deconstruct(cache.messageId).timestamp));
-      if (Util.getSeason(sentAt).seasonId !== Util.getSeason().seasonId) delete cache.messageId;
+      if (Season.getLeagueSeason(sentAt).id !== Season.leagueId) delete cache.messageId;
     }
 
     if (!cache.messageId) {
@@ -230,7 +230,7 @@ export class AutoBoardLog {
       const { embed, players } = await getBbLegendRankingEmbedMaker({
         guild,
         limit: cache.limit,
-        seasonId: Season.ID
+        seasonId: Season.leagueId
       });
       if (!players.length) return null;
 
@@ -240,7 +240,7 @@ export class AutoBoardLog {
     const { embed, players } = await getLegendRankingEmbedMaker({
       guild,
       limit: cache.limit,
-      seasonId: Season.ID
+      seasonId: Season.leagueId
     });
     if (!players.length) return null;
 

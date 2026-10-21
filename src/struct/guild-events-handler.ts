@@ -97,7 +97,7 @@ export class GuildEventsHandler {
       .subtract(graceTime, 'milliseconds')
       .toDate();
 
-    const seasonEndTime = moment(Util.getSeason().endTime)
+    const seasonEndTime = moment(Util.getLeagueSeason().endTime)
       .subtract(graceTime, 'milliseconds')
       .toDate();
 

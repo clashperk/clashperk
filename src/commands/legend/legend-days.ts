@@ -338,9 +338,9 @@ export default class LegendDaysCommand extends Command {
       }
     ]);
 
-    const season = Season.getSeason();
+    const season = Season.getLeagueSeason();
     embed.setFooter({
-      text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})`
+      text: `Day ${day}/${moment(season.endTime).diff(season.startTime, 'days')} (${Util.leagueSeasonLabel(Season.leagueId)})`
     });
     return embed;
   }
@@ -361,7 +361,7 @@ export default class LegendDaysCommand extends Command {
     const lastSeason = result.at(1);
     const prevFinalTrophies = lastSeason?.logs.at(-1)?.trophies ?? '';
 
-    if (season._id !== Season.ID) return null;
+    if (season._id !== Season.leagueId) return null;
 
     const labels = Array.from({ length: moment(seasonEnd).diff(seasonStart, 'days') + 1 }, (_, i) =>
       moment(seasonStart).add(i, 'days').toDate()
@@ -451,7 +451,7 @@ export default class LegendDaysCommand extends Command {
         } **${data.trophies}**`,
         ''
       ],
-      `**Legend Season Logs (${Season.ID})**`,
+      `**Legend Season Logs (${Util.leagueSeasonLabel(Season.leagueId)})**`,
       `- ${data.attackWins || totalAttacks} ${pluralize('attack', data.attackWins)} and ${data.defenseWins} ${pluralize('defense', data.defenseWins)} won`,
       '',
       [
@@ -476,9 +476,9 @@ export default class LegendDaysCommand extends Command {
     embed.setURL(`http://cprk.us/p/${trimTag(data.tag)}`);
     embed.setDescription(description);
 
-    const season = Season.getSeason();
+    const season = Season.getLeagueSeason();
     embed.setFooter({
-      text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Season.ID})`
+      text: `Day ${days.length}/${moment(season.endTime).diff(season.startTime, 'days')} (${Util.leagueSeasonLabel(Season.leagueId)})`
     });
 
     return embed;
@@ -488,7 +488,7 @@ export default class LegendDaysCommand extends Command {
     const ranks = await this.client.db
       .collection(Collections.PLAYER_RANKS)
       .aggregate<{ country: string; countryCode: string; players: { rank: number } }>([
-        { $match: { season: Season.ID } },
+        { $match: { season: Season.leagueId } },
         { $unwind: { path: '$players' } },
         { $match: { 'players.tag': tag } }
       ])

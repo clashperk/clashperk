@@ -28,8 +28,8 @@ export default class DonationsCommand extends Command {
     return {
       season: {
         match: 'ENUM',
-        enums: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
-        default: Season.ID
+        enums: [...Util.getStatsPeriodIds(), [Util.getLastStatsPeriodId(), 'last']],
+        default: Season.statsId
       },
       clan: {
         id: 'tag',
@@ -63,8 +63,11 @@ export default class DonationsCommand extends Command {
     }
 
     const { sort_by: sortBy, order_by: orderBy } = args;
-    const season = args.season || Season.ID;
-    const isSameSeason = Season.ID === season;
+    const season = args.season || Season.statsId;
+    const isSameSeason = Season.statsId === season;
+    // Live counters run from the last league reset; they fit the period only if that reset is inside it.
+    const liveCountersFit =
+      isSameSeason && Season.getLeagueSeason().startTime >= Season.getStatsPeriod().startTime;
 
     await recoverDonations(clan, season);
     const dbMembers = await this.client.db
@@ -94,7 +97,7 @@ export default class DonationsCommand extends Command {
       total: number;
     }[] = [];
 
-    if (isSameSeason) {
+    if (liveCountersFit) {
       for (const member of clan.memberList.filter((m) => !dbMembers.some((d) => d.tag === m.tag))) {
         const { tag, name, townHallLevel, donations, donationsReceived } = member;
         members.push({
@@ -122,7 +125,7 @@ export default class DonationsCommand extends Command {
             ? curr.donations.total + (mem.donations - curr.donations.current)
             : curr.donations.total
           : curr.donations.total;
-        donated = Math.max(mem.donations, donated);
+        if (liveCountersFit) donated = Math.max(mem.donations, donated);
 
         let received = isSameSeason
           ? mem.donationsReceived >= curr.donationsReceived.current
@@ -130,7 +133,7 @@ export default class DonationsCommand extends Command {
               (mem.donationsReceived - curr.donationsReceived.current)
             : curr.donationsReceived.total
           : curr.donationsReceived.total;
-        received = Math.max(mem.donationsReceived, received);
+        if (liveCountersFit) received = Math.max(mem.donationsReceived, received);
 
         members.push({
           name: mem.name,
@@ -228,7 +231,9 @@ export default class DonationsCommand extends Command {
         );
       }
 
-      return embed.setFooter({ text: `[DON ${donated} | REC ${received}] (Season ${season})` });
+      return embed.setFooter({
+        text: `[DON ${donated} | REC ${received}] (${Util.statsPeriodLabel(season)})`
+      });
     };
 
     const embed = getEmbed();
