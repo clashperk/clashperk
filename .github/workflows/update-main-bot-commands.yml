@@ -54,4 +54,6 @@ jobs:
       - name: Deploy
         run: npm run deploy -- --gh-action
         env:
+          # Season choices are built at deploy time, so they follow the services' switch.
+          SEASON_SPLIT: ${{ vars.SEASON_SPLIT }}
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
