@@ -20,7 +20,7 @@ export default class LeaderboardCapitalCommand extends Command {
   ) {
     const loc = await this.client.db
       .collection(Collections.CAPITAL_RANKS)
-      .findOne({ countryCode: args.location || 'global', season: args.season || Season.statsId });
+      .findOne({ countryCode: args.location || 'global', season: args.season || Season.leagueId });
 
     if (!loc) {
       return interaction.editReply('An error occurred while fetching the leaderboard.');
@@ -35,7 +35,7 @@ export default class LeaderboardCapitalCommand extends Command {
       trophies: clan.clanCapitalPoints
     }));
 
-    const season = Util.statsPeriodLabel(loc.season);
+    const season = Util.leagueSeasonLabel(loc.season);
     const embeds: EmbedBuilder[] = [];
 
     cluster(clans, 100).forEach((clans, idx) => {

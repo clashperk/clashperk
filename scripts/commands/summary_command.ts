@@ -2,10 +2,11 @@ import { ApplicationCommandOptionType, RESTPostAPIApplicationCommandsJSONBody } 
 import { command, common } from '../../src/util/locales.js';
 import {
   getCWLSeasonIds,
+  getActivityPeriodChoices,
   getMonthChoices,
   getRaidWeekIds,
   getSeasonSinceIds,
-  getStatsPeriodChoices,
+  getLeagueSeasonChoices,
   guildInstallable,
   translation
 } from './@helper.js';
@@ -36,7 +37,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getStatsPeriodChoices()
+          choices: getLeagueSeasonChoices()
         },
         {
           name: 'limit',
@@ -168,7 +169,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getStatsPeriodChoices()
+          choices: getLeagueSeasonChoices()
         },
         {
           name: 'clans',
@@ -216,7 +217,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getStatsPeriodChoices()
+          choices: getLeagueSeasonChoices()
         }
       ]
     },
@@ -398,7 +399,7 @@ export const SUMMARY_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           type: ApplicationCommandOptionType.String,
           description: common.options.season.description,
           description_localizations: translation('common.options.season.description'),
-          choices: getStatsPeriodChoices()
+          choices: getActivityPeriodChoices()
         }
       ]
     },

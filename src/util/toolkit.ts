@@ -1,11 +1,6 @@
 import { Util as CocUtil } from 'clashofclans.js';
 import moment from 'moment';
 
-// Stats move from league seasons to calendar months at this instant (same as the backend worker).
-const MONTHLY_STATS_FROM = Date.UTC(2026, 10, 1);
-
-const MONTH_ID = /^\d{4}-\d{2}$/;
-
 export class Util extends CocUtil {
   // Convert a JavaScript Date object to a Sheets serial date value
   public static dateToSerialDate(jsDate: Date) {
@@ -207,15 +202,20 @@ export class Util extends CocUtil {
     return Util.getLeagueSeasons(count).map((season) => season.id);
   }
 
-  /** Ids that PlayerSeasons, Players.seasons and CapitalRanks are keyed by, newest first. */
-  public static getStatsPeriodIds(count = 18): string[] {
-    if (!Season.split) return this.getLegacySeasonIds(count);
+  /** Ids Players.seasons (activity) is keyed by: calendar months once split, newest first. */
+  public static getActivityPeriodIds(count = 18): string[] {
+    return Season.split ? this.getMonthIds(count) : this.getLeagueSeasonIds(count);
+  }
 
-    const months = Util.getMonths(count)
-      .filter((month) => month.startTime.getTime() >= MONTHLY_STATS_FROM)
-      .map((month) => month.id);
-    const seasons = Util.getLeagueSeasons(count - months.length, new Date(MONTHLY_STATS_FROM - 1));
-    return [...months, ...seasons.map((season) => season.id)];
+  public static activityPeriodLabel(periodId: string) {
+    return Season.split ? this.monthLabel(periodId) : this.leagueSeasonLabel(periodId);
+  }
+
+  /** The Players.seasons key for a league season: once split, the month holding most of it. */
+  public static activityMonthOf(seasonId: string) {
+    if (!Season.split) return seasonId;
+    const { startTime, endTime } = Season.getLeagueSeasonById(seasonId);
+    return Util.getMonth(new Date((startTime.getTime() + endTime.getTime()) / 2)).id;
   }
 
   /** UTC calendar month ids, newest first. */
@@ -236,22 +236,9 @@ export class Util extends CocUtil {
     return moment.utc(Util.getLeagueSeasonById(seasonId).startTime).format('DD MMM YY');
   }
 
-  public static statsPeriodShortLabel(periodId: string) {
-    return Season.split && MONTH_ID.test(periodId)
-      ? this.monthLabel(periodId)
-      : this.leagueSeasonShortLabel(periodId);
-  }
-
-  /** Label for a stats period id: a calendar month once split, otherwise a league season. */
-  public static statsPeriodLabel(periodId: string) {
-    return Season.split && MONTH_ID.test(periodId)
-      ? this.monthLabel(periodId)
-      : this.leagueSeasonLabel(periodId);
-  }
-
-  /** The month whose Clan Games (22nd–28th) fall in a stats period; ClanGamesPoints is keyed by it. */
-  public static clanGamesMonthOf(periodId: string) {
-    const { startTime, endTime } = Season.getStatsPeriodById(periodId);
+  /** The month whose Clan Games (22nd–28th) fall in a league season; ClanGamesPoints is keyed by it. */
+  public static clanGamesMonthOf(seasonId: string) {
+    const { startTime, endTime } = Season.getLeagueSeasonById(seasonId);
     for (
       let month = Util.getMonth(startTime);
       month.startTime < endTime;
@@ -284,9 +271,9 @@ export class Util extends CocUtil {
     return weekIds.map((d) => d.value);
   }
 
-  /** The stats period before the current one. */
-  public static getLastStatsPeriodId(): string {
-    return Season.getLastStatsPeriod().id;
+  /** The league season before the current one. */
+  public static getLastLeagueSeasonId(): string {
+    return Season.getLastLeagueSeason().id;
   }
 
   public static getLastMonthId() {
@@ -377,19 +364,9 @@ export class Season {
     return new Date().toISOString().slice(0, 7);
   }
 
-  /** Id for trophy league data: LegendAttacks, PlayerRanks, ClanRanks, legend leaderboards. */
+  /** Id every season-keyed store uses: PlayerSeasons, Players.seasons, ranks, legend data. */
   public static get leagueId() {
     return this.getLeagueSeason().id;
-  }
-
-  /** Whether PlayerSeasons, Players.seasons and CapitalRanks are keyed by calendar month. */
-  public static get monthlyStats() {
-    return this.split && Date.now() >= MONTHLY_STATS_FROM;
-  }
-
-  /** Id for PlayerSeasons, Players.seasons and CapitalRanks. */
-  public static get statsId() {
-    return this.getStatsPeriod().id;
   }
 
   /** The league season containing the date, with the id format currently stored. */
@@ -410,20 +387,13 @@ export class Season {
     return { ...Util.getLeagueSeasonById(seasonId), id: seasonId };
   }
 
-  /** The stats period containing the date: a calendar month once monthly stats start, else a league season. */
-  public static getStatsPeriod(inputDate?: Date | string): SeasonWindow {
-    const date = moment(inputDate).toDate();
-    if (this.split && date.getTime() >= MONTHLY_STATS_FROM) return Util.getMonth(date);
-    return this.getLeagueSeason(date);
+  /** Players.seasons key for now: activity is counted per calendar month once split. */
+  public static get activityId() {
+    return this.split ? this.monthId : this.leagueId;
   }
 
-  public static getStatsPeriodById(periodId: string): SeasonWindow {
-    if (this.split && MONTH_ID.test(periodId)) return Util.getMonthById(periodId);
-    return this.getLeagueSeasonById(periodId);
-  }
-
-  public static getLastStatsPeriod(): SeasonWindow {
-    return this.getStatsPeriod(new Date(this.getStatsPeriod().startTime.getTime() - 1));
+  public static getLastLeagueSeason(): SeasonWindow {
+    return this.getLeagueSeason(new Date(this.getLeagueSeason().startTime.getTime() - 1));
   }
 
   public static get tournamentID() {

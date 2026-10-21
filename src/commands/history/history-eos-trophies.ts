@@ -5,7 +5,7 @@ import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet } from '../../struct/google.js';
 import { getExportComponents, padStart } from '../../util/helper.js';
 import { handlePagination } from '../../util/pagination.js';
-import { Season, Util } from '../../util/toolkit.js';
+import { Util } from '../../util/toolkit.js';
 import { cluster } from 'radash';
 
 export default class EosTrophiesHistoryCommand extends Command {
@@ -58,9 +58,8 @@ export default class EosTrophiesHistoryCommand extends Command {
   }
 
   private async getHistory(interaction: CommandInteraction<'cached'>, playerTags: string[]) {
-    // Once split, PlayerSeasons is monthly and season-end trophies live per league season.
     const result = await this.client.db
-      .collection(Season.split ? Collections.PLAYER_LEAGUE_SEASONS : Collections.PLAYER_SEASONS)
+      .collection(Collections.PLAYER_SEASONS)
       .aggregate<AggregatedResult>([
         { $match: { tag: { $in: playerTags } } },
         {
@@ -78,7 +77,7 @@ export default class EosTrophiesHistoryCommand extends Command {
             tag: { $first: '$tag' },
             seasons: {
               $push: {
-                season: Season.split ? '$seasonId' : '$season',
+                season: '$season',
                 trophies: '$trophies.current'
               }
             }

@@ -46,7 +46,7 @@ export default class DonationsCommand extends Command {
       );
     }
 
-    const startTime = moment(args.start_date || Season.getStatsPeriod().startTime).toDate();
+    const startTime = moment(args.start_date || Season.getLeagueSeason().startTime).toDate();
     const endTime = moment(args.end_date || new Date()).toDate();
 
     if (moment(endTime).diff(moment(startTime), 'months') > 6) {

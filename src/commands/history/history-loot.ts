@@ -141,7 +141,7 @@ export default class LootHistoryCommand extends Command {
                 const _gold = Util.formatNumber(season.goldLoot).padStart(7, ' ');
                 const _elixir = Util.formatNumber(season.elixirLoot).padStart(7, ' ');
                 const _dark = Util.formatNumber(season.darkLoot).padStart(7, ' ');
-                return `${_gold} ${_elixir} ${_dark}  ${Util.statsPeriodShortLabel(season.season)}`;
+                return `${_gold} ${_elixir} ${_dark}  ${Util.leagueSeasonShortLabel(season.season)}`;
               })
               .join('\n'),
             '```'
@@ -165,14 +165,14 @@ export default class LootHistoryCommand extends Command {
       })
       .flat();
 
-    const seasonIds = Util.getStatsPeriodIds(12);
+    const seasonIds = Util.getLeagueSeasonIds(12);
     const sheets: CreateGoogleSheet[] = [
       {
         title: `Gold`,
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: Util.statsPeriodLabel(s), align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.leagueSeasonLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [
@@ -186,7 +186,7 @@ export default class LootHistoryCommand extends Command {
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: Util.statsPeriodLabel(s), align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.leagueSeasonLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [
@@ -200,7 +200,7 @@ export default class LootHistoryCommand extends Command {
         columns: [
           { name: 'NAME', align: 'LEFT', width: 160 },
           { name: 'TAG', align: 'LEFT', width: 160 },
-          ...seasonIds.map((s) => ({ name: Util.statsPeriodLabel(s), align: 'RIGHT', width: 100 }))
+          ...seasonIds.map((s) => ({ name: Util.leagueSeasonLabel(s), align: 'RIGHT', width: 100 }))
         ],
 
         rows: chunks.map((r) => [

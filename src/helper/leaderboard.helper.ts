@@ -163,32 +163,18 @@ export const getBbLegendRankingEmbedMaker = async ({
   }, {});
 
   const tags = _players.map(({ tag }) => tag);
-  // Builder base trophies reset with the league season, so once split they live per league season.
-  const result: {
-    name: string;
-    tag: string;
-    versusTrophies: { current: number };
-    builderHallLevel?: number;
-  }[] = Season.split
-    ? await client.db
-        .collection(Collections.PLAYER_LEAGUE_SEASONS)
-        .find(
-          { seasonId, tag: { $in: tags } },
-          { projection: { name: 1, tag: 1, versusTrophies: 1 } }
-        )
-        .toArray()
-    : await client.db
-        .collection<{
-          name: string;
-          tag: string;
-          versusTrophies: { current: number };
-          builderHallLevel: number;
-        }>(Collections.PLAYER_SEASONS)
-        .find(
-          { season: seasonId, tag: { $in: tags } },
-          { projection: { name: 1, tag: 1, versusTrophies: 1, builderHallLevel: 1 } }
-        )
-        .toArray();
+  const result = await client.db
+    .collection<{
+      name: string;
+      tag: string;
+      versusTrophies: { current: number };
+      builderHallLevel: number;
+    }>(Collections.PLAYER_SEASONS)
+    .find(
+      { season: seasonId, tag: { $in: tags } },
+      { projection: { name: 1, tag: 1, versusTrophies: 1, builderHallLevel: 1 } }
+    )
+    .toArray();
 
   let players = result.map((player) => {
     const _player = playersMap[player.tag];

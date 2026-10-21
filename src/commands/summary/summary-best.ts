@@ -93,7 +93,7 @@ export default class SummaryBestCommand extends Command {
       selected?: string[];
     }
   ) {
-    const seasonId = args.season ?? Season.statsId;
+    const seasonId = args.season ?? Season.leagueId;
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
       args: args.clans
     });
@@ -195,7 +195,7 @@ export default class SummaryBestCommand extends Command {
               {
                 $project: {
                   _id: 0,
-                  count: `$seasons.${seasonId}`
+                  count: `$seasons.${Util.activityMonthOf(seasonId)}`
                 }
               }
             ]
@@ -599,7 +599,7 @@ export default class SummaryBestCommand extends Command {
     const embed = new EmbedBuilder()
       .setTimestamp()
       .setColor(this.client.embed(interaction))
-      .setFooter({ text: Util.statsPeriodLabel(seasonId) })
+      .setFooter({ text: Util.leagueSeasonLabel(seasonId) })
       .setAuthor({
         name: `${interaction.guild.name} Best Players`,
         iconURL: interaction.guild.iconURL({ forceStatic: false })!
@@ -695,7 +695,7 @@ export default class SummaryBestCommand extends Command {
         )
     );
 
-    const isSameSeason = seasonId === Season.statsId;
+    const isSameSeason = seasonId === Season.leagueId;
     return interaction.editReply({
       embeds: [embed],
       components: isSameSeason ? [row, menuRow] : [menuRow]

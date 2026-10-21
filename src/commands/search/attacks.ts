@@ -52,7 +52,7 @@ export default class ClanAttacksCommand extends Command {
     }
 
     const fetched = await this.getPlayers(clan.memberList, args.season);
-    const seasonId = args.season ?? Season.statsId;
+    const seasonId = args.season ?? Season.leagueId;
 
     const members = fetched.map((player) => ({
       name: player.name,
@@ -85,7 +85,7 @@ export default class ClanAttacksCommand extends Command {
           '```'
         ].join('\n')
       )
-      .setFooter({ text: `${Util.statsPeriodLabel(seasonId)} \nSynced` })
+      .setFooter({ text: `${Util.leagueSeasonLabel(seasonId)} \nSynced` })
       .setTimestamp();
 
     const payload = {
@@ -134,13 +134,12 @@ export default class ClanAttacksCommand extends Command {
     const fetched = await this.client.db
       .collection(Collections.PLAYER_SEASONS)
       .find<{ name: string; tag: string; attackWins: number; defenseWins: number }>({
-        season: seasonId ?? Season.statsId,
+        season: seasonId ?? Season.leagueId,
         tag: { $in: memberList.map((m) => m.tag) }
       })
       .toArray();
 
-    // Live counters run from the last league reset, so they only stand in for league-season stats.
-    if (!fetched.length && !seasonId && !Season.monthlyStats) {
+    if (!fetched.length && !seasonId) {
       const players = await this.client.coc._getPlayers(memberList);
       return players;
     }

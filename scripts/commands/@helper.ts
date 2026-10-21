@@ -18,8 +18,11 @@ export function getLeagueSeasonChoices() {
   return Util.getLeagueSeasonIds().map((id) => ({ name: Util.leagueSeasonLabel(id), value: id }));
 }
 
-export function getStatsPeriodChoices() {
-  return Util.getStatsPeriodIds().map((id) => ({ name: Util.statsPeriodLabel(id), value: id }));
+export function getActivityPeriodChoices() {
+  return Util.getActivityPeriodIds().map((id) => ({
+    name: Util.activityPeriodLabel(id),
+    value: id
+  }));
 }
 
 export function getMonthChoices() {

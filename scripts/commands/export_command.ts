@@ -4,7 +4,7 @@ import {
   getCWLSeasonIds,
   getMonthChoices,
   getSeasonSinceIds,
-  getStatsPeriodChoices,
+  getLeagueSeasonChoices,
   guildInstallable,
   translation
 } from './@helper.js';
@@ -124,7 +124,7 @@ export const EXPORT_COMMAND: RESTPostAPIApplicationCommandsJSONBody = {
           description: common.options.season_since.description,
           description_localizations: translation('common.options.season_since.description'),
           type: ApplicationCommandOptionType.String,
-          choices: getStatsPeriodChoices()
+          choices: getLeagueSeasonChoices()
         },
         {
           name: 'include_past_members',

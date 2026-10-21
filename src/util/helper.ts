@@ -160,7 +160,7 @@ export const getMenuFromMessage = (
 
 export const recoverDonations = async (clan: APIClan, season: string) => {
   const client = container.resolve(Client);
-  const { endTime, startTime, id: seasonId } = Season.getStatsPeriodById(season);
+  const { endTime, startTime, id: seasonId } = Season.getLeagueSeasonById(season);
 
   const isEnabled = client.isFeatureEnabled(FeatureFlags.DONATIONS_RECOVERY, 'global');
   if (!isEnabled) return;
