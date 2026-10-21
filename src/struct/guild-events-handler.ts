@@ -160,7 +160,7 @@ export class GuildEventsHandler {
       {
         type: 'season_end',
         name: i18n('common.choices.league_reset', { lng }),
-        formattedName: `${EMOJIS.TROPHY} ${i18n('common.choices.league_reset', { lng })} (${moment(seasonEndTime).format('MMM YYYY')})`,
+        formattedName: `${EMOJIS.TROPHY} ${i18n('common.choices.league_reset', { lng })} (${moment(seasonEndTime).format('D MMM YYYY')})`,
         value: getFormattedValue(seasonEndTime),
         timestamp: seasonEndTime.getTime(),
         visible: true

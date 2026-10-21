@@ -70,18 +70,10 @@ export class AutoBoardLog {
     }
   }
 
-  private isEndOfSeason(endOfSeason: Date) {
-    return endOfSeason.toISOString().slice(0, 7) !== new Date().toISOString().slice(0, 7);
-  }
-
   public async handleMessage(cache: Cache, webhook: WebhookClient) {
-    const endOfSeason = this.client.coc.util.getSeasonEnd(new Date());
-
-    if (cache.messageId && this.isEndOfSeason(endOfSeason)) {
-      const lastMessageTimestamp = this.client.coc.util
-        .getSeasonEnd(new Date(Number(SnowflakeUtil.deconstruct(cache.messageId).timestamp)))
-        .getTime();
-      if (lastMessageTimestamp !== endOfSeason.getTime()) delete cache.messageId;
+    if (cache.messageId) {
+      const sentAt = new Date(Number(SnowflakeUtil.deconstruct(cache.messageId).timestamp));
+      if (Util.getSeason(sentAt).seasonId !== Util.getSeason().seasonId) delete cache.messageId;
     }
 
     if (!cache.messageId) {
