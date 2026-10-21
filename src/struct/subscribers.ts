@@ -50,18 +50,15 @@ export class Subscribers {
 
   public constructor(private readonly client: Client) {
     this.collection = this.client.db.collection(Collections.PATREON_MEMBERS);
-    const watchStream = this.collection.watch([
-      {
-        $match: {
-          operationType: { $in: ['insert', 'update', 'delete'] }
+    this.client.changeStreams.on<PatreonMembersEntity>(
+      Collections.PATREON_MEMBERS,
+      { operationType: { $in: ['insert', 'update', 'delete'] } },
+      async (change) => {
+        if (['update', 'insert'].includes(change.operationType)) {
+          await this.refresh();
         }
       }
-    ]);
-    watchStream.on('change', async (change) => {
-      if (['update', 'insert'].includes(change.operationType)) {
-        await this.refresh();
-      }
-    });
+    );
   }
 
   public async init() {

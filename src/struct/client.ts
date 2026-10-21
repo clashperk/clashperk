@@ -23,6 +23,7 @@ import { Logger } from '../util/logger.js';
 import { AnalyticsManager } from './analytics.js';
 import { Autocomplete } from './autocomplete-client.js';
 import { CapitalRaidScheduler } from './capital-raid-scheduler.js';
+import { ChangeStreamHub } from './change-stream-hub.js';
 import { ClanGamesScheduler } from './clan-games-scheduler.js';
 import { ClanWarScheduler } from './clan-war-scheduler.js';
 import { ClashClient } from './clash-client.js';
@@ -55,6 +56,7 @@ export class Client extends DiscordClient<true> {
   public logger: Logger;
   public db!: Db;
   public globalDb!: Db;
+  public changeStreams!: ChangeStreamHub;
   public util: ClientUtil;
   public settings!: SettingsProvider;
   public coc: ClashClient;
@@ -218,6 +220,7 @@ export class Client extends DiscordClient<true> {
       .connect()
       .then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
     this.db = mongoClient.db(mongoClient.dbName);
+    this.changeStreams = new ChangeStreamHub(this.db);
 
     this.settings = new SettingsProvider(this);
     await this.settings.init({ globalOnly: true });

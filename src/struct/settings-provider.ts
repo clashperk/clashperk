@@ -15,41 +15,30 @@ export class SettingsProvider {
     this.settingsCollection = client.db.collection(Collections.SETTINGS);
     this.featureFlagsCollection = client.db.collection(Collections.FEATURE_FLAGS);
 
-    const watchStream = this.settingsCollection.watch(
-      [
-        {
-          $match: {
-            operationType: { $in: ['insert', 'update', 'delete'] }
-          }
-        }
-      ],
-      { fullDocument: 'updateLookup' }
-    );
-    watchStream.on('change', (change) => {
-      if (change.operationType === 'insert' || change.operationType === 'update') {
-        this.settings.set(change.fullDocument!.guildId, change.fullDocument);
-      }
-    });
-
-    this.featureFlagsCollection
-      .watch(
-        [
-          {
-            $match: {
-              operationType: { $in: ['insert', 'update', 'delete'] }
-            }
-          }
-        ],
-        { fullDocument: 'updateLookup' }
-      )
-      .on('change', (change) => {
+    client.changeStreams.on<Settings>(
+      Collections.SETTINGS,
+      { operationType: { $in: ['insert', 'update', 'delete'] } },
+      (change) => {
         if (change.operationType === 'insert' || change.operationType === 'update') {
-          this.flags.set(change.fullDocument!.key as string, change.fullDocument!);
+          // An update's lookup finds nothing if the document was deleted in the meantime.
+          if (change.fullDocument)
+            this.settings.set(change.fullDocument.guildId, change.fullDocument);
+        }
+      }
+    );
+
+    client.changeStreams.on<FeatureFlagsEntity>(
+      Collections.FEATURE_FLAGS,
+      { operationType: { $in: ['insert', 'update', 'delete'] } },
+      (change) => {
+        if (change.operationType === 'insert' || change.operationType === 'update') {
+          if (change.fullDocument) this.flags.set(change.fullDocument.key, change.fullDocument);
         }
         if (change.operationType === 'delete') {
           this.flags.delete(change.documentKey.key);
         }
-      });
+      }
+    );
   }
 
   public isFeatureEnabled(flagKey: FeatureFlags, distinctId: string | 'global') {

@@ -186,37 +186,26 @@ export class Enqueuer {
       { 'updateDescription.removedFields': field }
     ]);
 
-    this.client.db
-      .collection<FlagAlertLogsEntity>(Collections.FLAG_ALERT_LOGS)
-      .watch(
-        [
-          {
-            $match: {
-              $or: [
-                { operationType: { $in: ['insert', 'replace', 'delete'] } },
-                { operationType: 'update', $or: changed }
-              ]
-            }
-          }
-        ],
-        { fullDocument: 'updateLookup' }
-      )
-      .on('change', async (change) => {
-        try {
-          if (!('documentKey' in change)) return;
-          if (change.operationType === 'delete') {
-            const id = change.documentKey._id.toHexString();
-            const cache = this.flagAlertLog.cached.find((c) => c._id === id);
-            if (cache) this.flagAlertLog.del(cache.guildId);
-            return;
-          }
-          const guildId = change.fullDocument?.guildId;
-          if (guildId && this.client.guilds.cache.has(guildId))
-            await this.flagAlertLog.add(guildId);
-        } catch (error) {
-          captureException(error);
+    this.client.changeStreams.on<FlagAlertLogsEntity>(
+      Collections.FLAG_ALERT_LOGS,
+      {
+        $or: [
+          { operationType: { $in: ['insert', 'replace', 'delete'] } },
+          { operationType: 'update', $or: changed }
+        ]
+      },
+      async (change) => {
+        if (!('documentKey' in change)) return;
+        if (change.operationType === 'delete') {
+          const id = change.documentKey._id.toHexString();
+          const cache = this.flagAlertLog.cached.find((c) => c._id === id);
+          if (cache) this.flagAlertLog.del(cache.guildId);
+          return;
         }
-      });
+        const guildId = change.fullDocument?.guildId;
+        if (guildId && this.client.guilds.cache.has(guildId)) await this.flagAlertLog.add(guildId);
+      }
+    );
   }
 
   /**
@@ -230,51 +219,42 @@ export class Enqueuer {
       { 'updateDescription.removedFields': field }
     ]);
 
-    this.client.db
-      .collection<ClanLogsEntity>(Collections.CLAN_LOGS)
-      .watch(
-        [
-          {
-            $match: {
-              $or: [
-                { operationType: { $in: ['insert', 'replace', 'delete'] } },
-                { operationType: 'update', $or: changed }
-              ]
-            }
-          }
-        ],
-        { fullDocument: 'updateLookup' }
-      )
-      .on('change', async (change) => {
+    this.client.changeStreams.on<ClanLogsEntity>(
+      Collections.CLAN_LOGS,
+      {
+        $or: [
+          { operationType: { $in: ['insert', 'replace', 'delete'] } },
+          { operationType: 'update', $or: changed }
+        ]
+      },
+      async (change) => {
         if (!('documentKey' in change)) return;
         this.deleteLog(change.documentKey._id.toHexString());
         if (change.operationType === 'delete' || !change.fullDocument) return;
 
         const { guildId, clanTag } = change.fullDocument;
-        await this.add({ guild: guildId, tag: clanTag }).catch((error) => captureException(error));
-      });
+        await this.add({ guild: guildId, tag: clanTag });
+      }
+    );
   }
 
   /** Clans added or removed outside this bot (e.g. the web dashboard) start or stop like `/setup clan`. */
   private watchClanStores() {
-    this.client.db
-      .collection<ClanStoresEntity>(Collections.CLAN_STORES)
-      .watch([{ $match: { operationType: { $in: ['insert', 'delete'] } } }])
-      .on('change', async (change) => {
-        try {
-          if (change.operationType === 'insert') {
-            const { tag, guild } = change.fullDocument;
-            return await this.add({ tag, guild });
-          }
-          if (change.operationType !== 'delete') return;
-          // A delete carries only the ID; the cache knows which clan and server it was.
-          const id = change.documentKey._id.toHexString();
-          const clan = [...this.cached.values()].flat().find((c) => c._id === id);
-          if (clan) await this.delete({ tag: clan.tag, guild: clan.guild });
-        } catch (error) {
-          captureException(error);
+    this.client.changeStreams.on<ClanStoresEntity>(
+      Collections.CLAN_STORES,
+      { operationType: { $in: ['insert', 'delete'] } },
+      async (change) => {
+        if (change.operationType === 'insert') {
+          const { tag, guild } = change.fullDocument;
+          return await this.add({ tag, guild });
         }
-      });
+        if (change.operationType !== 'delete') return;
+        // A delete carries only the ID; the cache knows which clan and server it was.
+        const id = change.documentKey._id.toHexString();
+        const clan = [...this.cached.values()].flat().find((c) => c._id === id);
+        if (clan) await this.delete({ tag: clan.tag, guild: clan.guild });
+      }
+    );
   }
 
   public async add(data: { tag: string; guild: string }) {
