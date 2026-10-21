@@ -202,6 +202,22 @@ export class Util extends CocUtil {
     return Util.getLeagueSeasons(count).map((season) => season.id);
   }
 
+  /** Ids Players.seasons (activity) is keyed by: calendar months once split, newest first. */
+  public static getActivityPeriodIds(count = 18): string[] {
+    return Season.split ? this.getMonthIds(count) : this.getLeagueSeasonIds(count);
+  }
+
+  public static activityPeriodLabel(periodId: string) {
+    return Season.split ? this.monthLabel(periodId) : this.leagueSeasonLabel(periodId);
+  }
+
+  /** The Players.seasons key for a league season: once split, the month holding most of it. */
+  public static activityMonthOf(seasonId: string) {
+    if (!Season.split) return seasonId;
+    const { startTime, endTime } = Season.getLeagueSeasonById(seasonId);
+    return Util.getMonth(new Date((startTime.getTime() + endTime.getTime()) / 2)).id;
+  }
+
   /** UTC calendar month ids, newest first. */
   public static getMonthIds(count = 18): string[] {
     return Util.getMonths(count).map((month) => month.id);
@@ -369,6 +385,11 @@ export class Season {
   /** A league season by its stored id (start date or legacy YYYY-MM). */
   public static getLeagueSeasonById(seasonId: string): SeasonWindow {
     return { ...Util.getLeagueSeasonById(seasonId), id: seasonId };
+  }
+
+  /** Players.seasons key for now: activity is counted per calendar month once split. */
+  public static get activityId() {
+    return this.split ? this.monthId : this.leagueId;
   }
 
   public static getLastLeagueSeason(): SeasonWindow {

@@ -176,7 +176,7 @@ export default class ExportSeason extends Command {
         },
         {
           $set: {
-            score: `$lastSeen.seasons.${seasonId}`,
+            score: `$lastSeen.seasons.${Util.activityMonthOf(seasonId)}`,
             clans: {
               [clan.tag]: `$clans.${clan.tag}`
             },

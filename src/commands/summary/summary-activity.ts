@@ -25,7 +25,7 @@ export default class SummaryCommand extends Command {
     interaction: CommandInteraction<'cached'>,
     args: { clans?: string; season?: string; clans_only?: boolean; asc_order?: boolean }
   ) {
-    const season = args.season ?? Season.leagueId;
+    const season = args.season ?? Season.activityId;
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
       args: args.clans
     });
@@ -200,7 +200,7 @@ export default class SummaryCommand extends Command {
           .join('\n')
       ].join('\n')
     );
-    embed.setFooter({ text: Util.leagueSeasonLabel(season) });
+    embed.setFooter({ text: Util.activityPeriodLabel(season) });
     return embed;
   }
 

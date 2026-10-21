@@ -195,7 +195,7 @@ export default class SummaryBestCommand extends Command {
               {
                 $project: {
                   _id: 0,
-                  count: `$seasons.${seasonId}`
+                  count: `$seasons.${Util.activityMonthOf(seasonId)}`
                 }
               }
             ]
