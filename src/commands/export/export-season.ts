@@ -25,7 +25,7 @@ export default class ExportSeason extends Command {
     const { clans } = await this.client.storage.handleSearch(interaction, { args: args.clans });
     if (!clans) return;
 
-    const season = args.season ?? Season.statsId;
+    const season = args.season ?? Season.leagueId;
     const _clanTags = clans.map((clan) => clan.tag);
     const _clans = await this.client.coc._getClans(clans);
 
@@ -130,20 +130,20 @@ export default class ExportSeason extends Command {
           ...__achievements.map((ac) => (m[ac]?.current ?? 0) - (m[ac]?.initial ?? 0)),
           m.score ?? 0
         ]),
-        title: Util.statsPeriodLabel(season)
+        title: Util.leagueSeasonLabel(season)
       }
     ];
 
     const spreadsheet = await this.client.util.createOrUpdateSheet({
       clans,
       guild: interaction.guild,
-      label: `Season Stats (${Util.statsPeriodLabel(season)})`,
+      label: `Season Stats (${Util.leagueSeasonLabel(season)})`,
       sheets,
       sheetType: SheetType.SEASON
     });
 
     return interaction.editReply({
-      content: `**Season Export (${Util.statsPeriodLabel(season)})**`,
+      content: `**Season Export (${Util.leagueSeasonLabel(season)})**`,
       components: getExportComponents(spreadsheet)
     });
   }

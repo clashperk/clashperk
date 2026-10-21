@@ -10,7 +10,6 @@ import {
   FlagAlertLogsEntity,
   GoogleSheetsEntity,
   LegendAttacksEntity,
-  PlayerLeagueSeasonsEntity,
   PlayerLinksEntity,
   PlayerRanksEntity,
   PlayerSeasonsEntity,
@@ -23,7 +22,6 @@ import { Db, MongoClient } from 'mongodb';
 interface CollectionsMap {
   [Collections.CLAN_STORES]: ClanStoresEntity;
   [Collections.PLAYER_SEASONS]: PlayerSeasonsEntity;
-  [Collections.PLAYER_LEAGUE_SEASONS]: PlayerLeagueSeasonsEntity;
   [Collections.PLAYERS]: PlayersEntity;
   [Collections.PLAYER_LINKS]: PlayerLinksEntity;
   [Collections.CLAN_LOGS]: ClanLogsEntity;
@@ -184,16 +182,6 @@ class MongoDbClient extends MongoClient {
         },
         {
           key: { 'clans.tag': 1 }
-        }
-      ]),
-
-      db.collection(Collections.PLAYER_LEAGUE_SEASONS).createIndexes([
-        {
-          key: { tag: 1, seasonId: 1 },
-          unique: true
-        },
-        {
-          key: { seasonId: 1 }
         }
       ]),
 

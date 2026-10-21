@@ -36,7 +36,7 @@ export default class DonationSummaryCommand extends Command {
       clans_only?: boolean;
     }
   ) {
-    const season = args.season ?? Season.statsId;
+    const season = args.season ?? Season.leagueId;
 
     const { clans, resolvedArgs } = await this.client.storage.handleSearch(interaction, {
       args: args.clans
@@ -388,8 +388,8 @@ export default class DonationSummaryCommand extends Command {
 
     const embed = new EmbedBuilder()
       .setColor(this.client.embed(interaction))
-      .setAuthor({ name: `Donation Leaderboard for ${Util.statsPeriodLabel(seasonId)}` })
-      .setFooter({ text: Util.statsPeriodLabel(seasonId) });
+      .setAuthor({ name: `Donation Leaderboard for ${Util.leagueSeasonLabel(seasonId)}` })
+      .setFooter({ text: Util.leagueSeasonLabel(seasonId) });
 
     const isTH = sortBy?.includes('townHallLevel');
     if (members.length) {

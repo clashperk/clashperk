@@ -26,7 +26,6 @@ export * from './google-sheets.entity.js';
 export * from './layouts.entity.js';
 export * from './legend-attacks.entity.js';
 export * from './patrons.entity.js';
-export * from './player-league-seasons.entity.js';
 export * from './player-links.entity.js';
 export * from './player-ranks.entity.js';
 export * from './player-seasons.entity.js';

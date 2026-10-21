@@ -80,7 +80,7 @@ export class CapitalLog extends RootLog {
       .aggregate<{ country: string; countryCode: string; clans: { rank: number } }>([
         {
           $match: {
-            season: Season.statsId
+            season: Season.leagueId
           }
         },
         {

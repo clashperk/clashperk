@@ -200,7 +200,7 @@ export default class ClanCommand extends Command {
     if (fields.length)
       embed.addFields([
         {
-          name: `**Season Stats (${Util.statsPeriodLabel(Season.statsId)})**`,
+          name: `**Season Stats (${Util.leagueSeasonLabel(Season.leagueId)})**`,
           value: [...fields, '\u200e'].join('\n')
         }
       ]);
@@ -317,7 +317,7 @@ export default class ClanCommand extends Command {
         {
           $match: {
             __clans: clan.tag,
-            season: Season.statsId,
+            season: Season.leagueId,
             tag: { $in: clan.memberList.map((m) => m.tag) }
           }
         },
