@@ -33,7 +33,8 @@ export default class ErrorListener extends Listener {
       : `${interaction.user.displayName}`;
 
     this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
-    console.error(inspect(error, { depth: Infinity }));
+    // an AxiosError carries its request, socket and agents; the API interceptor already logged it
+    if (!isAxiosError(error)) console.error(inspect(error, { depth: Infinity }));
 
     const context = {
       user: {
