@@ -38,9 +38,10 @@ httpClient.instance.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ message: string }>) => {
     const client = container.resolve(Client);
-    client.logger.error(`${JSON.stringify(error.response?.data || error.code, null, 0)}`, {
-      label: 'AXIOS'
-    });
+    client.logger.error(
+      `${error.config?.method?.toUpperCase()} ${error.config?.url} ${JSON.stringify(error.response?.data || error.code, null, 0)}`,
+      { label: 'AXIOS' }
+    );
 
     if (!isExpectedError(error)) {
       setContext('http_call_errored', {
