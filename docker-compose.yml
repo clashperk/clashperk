@@ -8,6 +8,11 @@ services:
     env_file:
       - .env
     mem_limit: 10gb
+    # Set in /etc/docker/daemon.json on the VM instead; see docs/dns-eai-again.md
+    # dns:
+    #   - 194.140.196.51
+    #   - 1.1.1.1
+    #   - 8.8.8.8
     ports:
       - '8070:8070'
     healthcheck:
