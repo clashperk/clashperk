@@ -8,16 +8,25 @@ const RECENT_SEARCH_LIMIT = 25;
 const RECENT_SEARCH_TTL = 60 * 60 * 24 * 7; // 7 days
 
 export class RedisService {
+  // The ping keeps idle connections from being dropped by NAT/firewalls along the path to the VM.
   public connection = createClient({
     url: process.env.REDIS_URL,
-    disableOfflineQueue: false
+    disableOfflineQueue: false,
+    pingInterval: 30_000
   });
 
   public subscriber = this.connection.duplicate();
   public publisher = this.connection.duplicate();
 
+  // Every client needs a listener: an 'error' event without one crashes the cluster.
   public constructor(private readonly client: Client) {
     this.connection.on('error', (error) => this.client.logger.error(error, { label: 'REDIS' }));
+    this.subscriber.on('error', (error) =>
+      this.client.logger.error(error, { label: 'REDIS_SUBSCRIBER' })
+    );
+    this.publisher.on('error', (error) =>
+      this.client.logger.error(error, { label: 'REDIS_PUBLISHER' })
+    );
   }
 
   public async connect() {

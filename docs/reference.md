@@ -89,7 +89,9 @@ npm run knip
 - Uses `discord-hybrid-sharding` ClusterManager in multi-process mode
 - `totalShards: 'auto'`, `shardsPerClusters: 2`
 - Spawns HTTP health check server on `PORT` (default `8070`)
-- `GET /` returns `{ isReady: boolean }`
+- `GET /` returns `{ isReady: boolean }` (HTTP 200 or 503)
+- After spawning, pings MongoDB from every cluster every 30s (10s timeout). `isReady` turns false once no ping has succeeded for 2 minutes
+- After 10 minutes without a successful ping, the manager exits with code 1 so Docker's restart policy (`always` / `on-failure`) restarts the container. Docker does not restart a container just for being unhealthy
 
 **`src/main.ts`** — Individual shard bootstrap
 - Loads `reflect-metadata` for tsyringe DI
