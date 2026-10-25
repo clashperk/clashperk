@@ -1,4 +1,4 @@
-import { Collections, DOT, getHttpStatusText, Settings } from '@app/constants';
+import { Collections, DOT, getHttpStatusText } from '@app/constants';
 import { PlayerLinksEntity } from '@app/entities';
 import { APIPlayer } from 'clashofclans.js';
 import {
@@ -9,8 +9,6 @@ import {
   CommandInteraction,
   EmbedBuilder,
   MessageFlags,
-  StringSelectMenuBuilder,
-  StringSelectMenuInteraction,
   User
 } from 'discord.js';
 import { cluster } from 'radash';
@@ -212,9 +210,7 @@ export default class ProfileCommand extends Command {
     }
 
     const customIds = {
-      export: this.client.uuid(interaction.user.id, user.id),
-      change: this.client.uuid(interaction.user.id),
-      account: this.client.uuid(interaction.user.id)
+      export: this.client.uuid(interaction.user.id, user.id)
     };
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -230,43 +226,10 @@ export default class ProfileCommand extends Command {
         new ButtonBuilder()
           .setCustomId(JSON.stringify({ cmd: 'link-add', token_field: 'optional' }))
           .setEmoji('🔗')
-          .setStyle(ButtonStyle.Primary)
+          .setStyle(ButtonStyle.Primary),
+        dashboardButton('/accounts', 'profile', 'Manage on web')
       );
     }
-
-    if (
-      players.length > 1 &&
-      players.length <= 25 &&
-      (this.client.util.isManager(interaction.member, Settings.LINKS_MANAGER_ROLE) ||
-        user.id === interaction.user.id)
-    ) {
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(customIds.change)
-          .setLabel('Set Default Account')
-          .setStyle(ButtonStyle.Success)
-      );
-    }
-
-    if (user.id === interaction.user.id)
-      row.addComponents(dashboardButton('/accounts', 'profile', 'Manage on web'));
-
-    const changeDefaultAccount = async (action: StringSelectMenuInteraction) => {
-      await action.deferUpdate();
-
-      const firstAccount = await this.client.db
-        .collection(Collections.PLAYER_LINKS)
-        .findOne({ userId: user.id }, { sort: { order: 1 } });
-
-      const order = (firstAccount?.order ?? 0) - 1;
-      const [playerTag] = action.values;
-
-      await this.client.db
-        .collection(Collections.PLAYER_LINKS)
-        .updateOne({ userId: user.id, tag: playerTag }, { $set: { order } });
-
-      return this.handler.exec(action, this, args);
-    };
 
     const message = await interaction.editReply({ embeds: [embed], components: [row] });
     createInteractionCollector({
@@ -278,49 +241,6 @@ export default class ProfileCommand extends Command {
           await action.deferReply({ flags: MessageFlags.Ephemeral });
           return this.export(action, links, user);
         }
-
-        const isTrustedGuild = await this.client.util.isTrustedGuild(interaction);
-        if (action.customId === customIds.change) {
-          const isMember =
-            action.user.id === user.id
-              ? action.member
-              : await action.guild.members.fetch(user.id).catch(() => null);
-          if (
-            !isMember ||
-            // not manager && not author
-            (!this.client.util.isManager(action.member, Settings.LINKS_MANAGER_ROLE) &&
-              user.id !== action.user.id) ||
-            // not author && has verified account
-            (user.id !== action.user.id && players.some((link) => link.verified) && !isTrustedGuild)
-          ) {
-            return action.reply({
-              flags: MessageFlags.Ephemeral,
-              content: "You're not allowed to change this user's default account."
-            });
-          }
-
-          const linkedPlayerTags = players.map((link) => link.tag);
-          const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-            new StringSelectMenuBuilder()
-              .setPlaceholder('Select default account!')
-              .setCustomId(customIds.account)
-              .setOptions(
-                playerLinks
-                  .filter((player) => player.tag !== defaultPlayerTag)
-                  .filter((player) => linkedPlayerTags.includes(player.tag))
-                  .slice(0, 25)
-                  .map((link) => ({
-                    label: `${link.name} (${link.tag})`,
-                    emoji: TOWN_HALLS[link.townHallLevel],
-                    value: link.tag
-                  }))
-              )
-          );
-          await action.update({ components: [menu] });
-        }
-      },
-      onSelect: (action) => {
-        return changeDefaultAccount(action);
       }
     });
   }
