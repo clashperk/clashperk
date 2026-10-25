@@ -284,7 +284,7 @@ export default class SetupLogsCommand extends Command {
           ? '### Select the logs you want to disable'
           : `### Select the logs you want to enable in <#${args.channel.id}>`
       ].join('\n'),
-      components: [...rows]
+      components: [...rows, dashboardRow('/logs', 'clan-logs')]
     });
 
     return createInteractionCollector({

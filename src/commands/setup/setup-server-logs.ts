@@ -21,7 +21,7 @@ import {
   TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
-import { dashboardRow } from '../../util/helper.js';
+import { dashboardButton, dashboardRow } from '../../util/helper.js';
 import { resolveColorCode } from '../../lib/util.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -203,7 +203,8 @@ export default class SetupUtilsCommand extends Command {
     const roleRow = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleMenu);
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       confirmButton,
-      useAutoRoleButton
+      useAutoRoleButton,
+      dashboardButton('/server-logs', 'server-logs')
     );
 
     const getText = () => {
@@ -369,7 +370,11 @@ export default class SetupUtilsCommand extends Command {
       .setLabel('Confirm')
       .setCustomId(customIds.confirm);
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(editButton, confirmButton);
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      editButton,
+      confirmButton,
+      dashboardButton('/server-logs', 'server-logs')
+    );
 
     const getText = () => {
       const embed = new EmbedBuilder().setDescription(state.description);
