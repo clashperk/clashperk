@@ -12,6 +12,7 @@ import {
 import { ObjectId, UpdateResult } from 'mongodb';
 import { title as toTitle } from 'radash';
 import { Args, Command } from '../../lib/handlers.js';
+import { dashboardRow } from '../../util/helper.js';
 import { EMOJIS } from '../../util/emojis.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -219,7 +220,7 @@ export default class SetupLogsCommand extends Command {
           `### The logs have been enabled in <#${args.channel.id}>`,
           selectedLogs.map((log) => `- ${title(log)}`).join('\n')
         ].join('\n'),
-        components: []
+        components: [dashboardRow('/logs', 'clan-logs')]
       });
     };
 
@@ -305,7 +306,7 @@ export default class SetupLogsCommand extends Command {
               '### The logs have been disabled',
               selectedLogs.map((log) => `- ${title(log)}`).join('\n')
             ].join('\n'),
-            components: []
+            components: [dashboardRow('/logs', 'clan-logs')]
           });
         }
 

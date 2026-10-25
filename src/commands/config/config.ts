@@ -15,6 +15,7 @@ import {
 } from 'discord.js';
 import { title, unique } from 'radash';
 import { Command } from '../../lib/handlers.js';
+import { dashboardButton } from '../../util/helper.js';
 import { command } from '../../util/locales.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -116,7 +117,8 @@ export default class ConfigCommand extends Command {
       new ButtonBuilder()
         .setLabel('Manage Permissions')
         .setStyle(ButtonStyle.Success)
-        .setCustomId(customIds.manage)
+        .setCustomId(customIds.manage),
+      dashboardButton('/server-settings', 'config')
     );
     const menuOptions = new StringSelectMenuBuilder()
       .setCustomId(customIds.menu)

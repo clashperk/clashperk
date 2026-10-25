@@ -197,6 +197,8 @@ interface TicketEntity {
 
 Creates the panel if it does not exist (with a default "General" application type), then opens an interactive dashboard in the channel.
 
+The **Done** row also carries an **Open in dashboard** link button to `/tickets/<panelId>` on the web dashboard (`dashboardButton`, tagged `utm_campaign=tickets`). It is a plain link: the dashboard handles sign-in and server selection.
+
 ### Default panel on creation
 
 ```ts

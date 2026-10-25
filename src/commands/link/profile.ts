@@ -17,7 +17,12 @@ import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/google.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';
-import { getExportComponents, sumHeroes } from '../../util/helper.js';
+import {
+  dashboardButton,
+  dashboardRow,
+  getExportComponents,
+  sumHeroes
+} from '../../util/helper.js';
 import { createInteractionCollector, handlePagination } from '../../util/pagination.js';
 
 const roles: Record<string, string> = {
@@ -104,7 +109,13 @@ export default class ProfileCommand extends Command {
       embed.setDescription(
         [embed.data.description, 'No accounts are linked. Why not add some?'].join('\n')
       );
-      return interaction.editReply({ embeds: [embed] });
+      return interaction.editReply({
+        embeds: [embed],
+        components:
+          user.id === interaction.user.id
+            ? [dashboardRow('/accounts', 'profile', 'Manage on web')]
+            : []
+      });
     }
 
     const _fields: { field: string; values: string[] }[] = [];
@@ -236,6 +247,9 @@ export default class ProfileCommand extends Command {
           .setStyle(ButtonStyle.Success)
       );
     }
+
+    if (user.id === interaction.user.id)
+      row.addComponents(dashboardButton('/accounts', 'profile', 'Manage on web'));
 
     const changeDefaultAccount = async (action: StringSelectMenuInteraction) => {
       await action.deferUpdate();

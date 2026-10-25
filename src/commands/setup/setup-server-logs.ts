@@ -21,6 +21,7 @@ import {
   TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
+import { dashboardRow } from '../../util/helper.js';
 import { resolveColorCode } from '../../lib/util.js';
 import { createInteractionCollector } from '../../util/pagination.js';
 
@@ -96,7 +97,10 @@ export default class SetupUtilsCommand extends Command {
       webhook: { token: webhook.token, id: webhook.id }
     });
 
-    return interaction.editReply({ content: `Roster changelog set to <#${args.channel.id}>` });
+    return interaction.editReply({
+      content: `Roster changelog set to <#${args.channel.id}>`,
+      components: [dashboardRow('/server-logs', 'server-logs')]
+    });
   }
 
   public async maintenanceBreakLog(
@@ -126,7 +130,10 @@ export default class SetupUtilsCommand extends Command {
     }
 
     await this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, args.channel.id);
-    return interaction.editReply(`Maintenance notification channel set to <#${args.channel.id}>`);
+    return interaction.editReply({
+      content: `Maintenance notification channel set to <#${args.channel.id}>`,
+      components: [dashboardRow('/server-logs', 'server-logs')]
+    });
   }
 
   public async flagAlertLog(
@@ -313,7 +320,11 @@ export default class SetupUtilsCommand extends Command {
 
         await onMutation();
         this.client.settings.set(interaction.guildId, Settings.HAS_FLAG_ALERT_LOG, true);
-        await action.update({ embeds: [embed], components: [], content: null });
+        await action.update({
+          embeds: [embed],
+          components: [dashboardRow('/server-logs', 'server-logs')],
+          content: null
+        });
       }
     });
   }
@@ -515,7 +526,11 @@ export default class SetupUtilsCommand extends Command {
         state.enabled = true;
         state.webhook = { token: webhook.token!, id: webhook.id };
         await this.client.settings.set(interaction.guildId, Settings.WELCOME_LOG, state);
-        await action.update({ components: [], embeds: [], content: 'Welcome log enabled.' });
+        await action.update({
+          components: [dashboardRow('/server-logs', 'server-logs')],
+          embeds: [],
+          content: 'Welcome log enabled.'
+        });
       }
     });
   }

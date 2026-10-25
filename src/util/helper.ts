@@ -21,6 +21,17 @@ import { Season, Util } from './toolkit.js';
 export const dashboardUrl = (path = '/') =>
   new URL(path, process.env.DASHBOARD_URL || 'https://app.clashperk.com').toString();
 
+/** A link to a dashboard page, tagged with the command it came from; the dashboard asks for sign-in. */
+export const dashboardButton = (path: string, campaign: string, label = 'Open in dashboard') =>
+  new ButtonBuilder()
+    .setLabel(label)
+    .setStyle(ButtonStyle.Link)
+    .setURL(dashboardUrl(`${path}?utm_source=discord&utm_campaign=${campaign}`));
+
+/** `dashboardButton` on a row of its own. */
+export const dashboardRow = (...args: Parameters<typeof dashboardButton>) =>
+  new ActionRowBuilder<ButtonBuilder>().addComponents(dashboardButton(...args));
+
 export const hexToNanoId = (hex: ObjectId) => {
   return hex.toHexString().slice(-5).toUpperCase();
 };

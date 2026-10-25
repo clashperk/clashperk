@@ -9,6 +9,7 @@ import {
 import ms from 'ms';
 import { title } from 'radash';
 import { Command } from '../../lib/handlers.js';
+import { dashboardButton } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 const _rolesMap: Record<string, string> = {
@@ -251,14 +252,18 @@ export default class AutoRoleListCommand extends Command {
     if (footerTexts.length) embed.setFooter({ text: footerTexts.join('\n') });
 
     const customId = this.createId({ cmd: this.id, expand: !args.expand });
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Primary)
-        .setCustomId(customId)
-        .setLabel(args.expand ? 'All Roles' : 'Clan Specific Roles')
-    );
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    if (clanRoleList.length) {
+      row.addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(customId)
+          .setLabel(args.expand ? 'All Roles' : 'Clan Specific Roles')
+      );
+    }
+    row.addComponents(dashboardButton('/auto-roles', 'autorole'));
 
-    return interaction.editReply({ embeds: [embed], components: clanRoleList.length ? [row] : [] });
+    return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
   private getRoleOrNone(id?: string | null) {
