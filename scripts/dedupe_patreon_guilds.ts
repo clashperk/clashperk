@@ -17,8 +17,8 @@ const write = process.argv.includes('--write');
     const guilds = new Map<string, PatreonMembersEntity['guilds'][number]>();
     for (const guild of member.guilds) {
       const existing = guilds.get(guild.id);
-      // Keep the highest limit, since limits can be raised manually after redemption.
-      if (!existing || guild.limit > existing.limit) guilds.set(guild.id, guild);
+      // Later entries carry the newest server name; keep the highest limit, which can be raised manually.
+      guilds.set(guild.id, { ...guild, limit: Math.max(guild.limit, existing?.limit ?? 0) });
     }
     if (guilds.size === member.guilds.length) continue;
 
