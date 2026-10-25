@@ -30,7 +30,10 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import ms from 'ms';
 import { Args, Command } from '../../lib/handlers.js';
-import { dashboardButton } from '../../util/helper.js';
+import { dashboardLink } from '../../util/helper.js';
+
+const dashboardText = () =>
+  `Manage all your reminders on the [dashboard](<${dashboardLink('/reminders', 'reminders')}>).`;
 
 export default class RemindersCreateCommand extends Command {
   public constructor() {
@@ -349,9 +352,6 @@ export default class RemindersCreateCommand extends Command {
             .setDisabled(disable)
         );
 
-      // Once the form closes (saved or timed out), point to where reminders are managed.
-      if (disable) btnRow.addComponents(dashboardButton('/reminders', 'reminders'));
-
       if (dur === 0) {
         return [warTypeRow, btnRow];
       }
@@ -364,6 +364,7 @@ export default class RemindersCreateCommand extends Command {
     };
 
     const msg = await interaction.editReply({
+      content: dashboardText(),
       components: mutate(),
       embeds: [embed],
       allowedMentions: { parse: [] }
@@ -477,7 +478,10 @@ export default class RemindersCreateCommand extends Command {
         this.client.clanWarScheduler.create({ ...reminder, _id: insertedId });
         await action.editReply({
           components: mutate(true),
-          content: this.i18n('command.reminders.create.success', { lng: interaction.locale })
+          content: [
+            dashboardText(),
+            this.i18n('command.reminders.create.success', { lng: interaction.locale })
+          ].join('\n')
         });
       }
     });
@@ -686,12 +690,11 @@ export default class RemindersCreateCommand extends Command {
             .setDisabled(disable)
         );
 
-      if (disable) row4.addComponents(dashboardButton('/reminders', 'reminders'));
-
       return [row1, row2, row3, row4];
     };
 
     const msg = await interaction.editReply({
+      content: dashboardText(),
       components: mutate(),
       embeds: [embed],
       allowedMentions: { parse: [] }
@@ -779,7 +782,10 @@ export default class RemindersCreateCommand extends Command {
         this.client.clanGamesScheduler.create({ ...reminder, _id: insertedId });
         await action.editReply({
           components: mutate(true),
-          content: this.i18n('command.reminders.create.success', { lng: interaction.locale })
+          content: [
+            dashboardText(),
+            this.i18n('command.reminders.create.success', { lng: interaction.locale })
+          ].join('\n')
         });
       }
     });
@@ -989,12 +995,11 @@ export default class RemindersCreateCommand extends Command {
             .setDisabled(disable)
         );
 
-      if (disable) row4.addComponents(dashboardButton('/reminders', 'reminders'));
-
       return [row1, row2, row3, row4];
     };
 
     const msg = await interaction.editReply({
+      content: dashboardText(),
       components: mutate(),
       embeds: [embed],
       allowedMentions: { parse: [] }
@@ -1088,7 +1093,10 @@ export default class RemindersCreateCommand extends Command {
         this.client.capitalRaidScheduler.create({ ...reminder, _id: insertedId });
         await action.editReply({
           components: mutate(true),
-          content: this.i18n('command.reminders.create.success', { lng: interaction.locale })
+          content: [
+            dashboardText(),
+            this.i18n('command.reminders.create.success', { lng: interaction.locale })
+          ].join('\n')
         });
       }
     });
