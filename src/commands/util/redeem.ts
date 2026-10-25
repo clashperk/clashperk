@@ -184,7 +184,9 @@ export default class RedeemCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     }
 
-    const redeemed = this.redeemed({ ...user, rewardId });
+    // A server already on the subscription (e.g. after a lapsed pledge) doesn't take a new slot.
+    const isListed = user.guilds.some((guild) => guild.id === interaction.guild.id);
+    const redeemed = !isListed && this.redeemed({ ...user, rewardId });
     if (redeemed) {
       if (!this.isNew(user, interaction, patron)) await this.client.subscribers.refresh();
       const embed = new EmbedBuilder()
@@ -220,7 +222,13 @@ export default class RedeemCommand extends Command {
           entitledAmount: pledge.attributes.currently_entitled_amount_cents,
           lifetimeSupport: pledge.attributes.campaign_lifetime_support_cents,
           lastChargeDate: new Date(pledge.attributes.last_charge_date)
-        },
+        }
+      }
+    );
+    // The filter keeps a re-redeemed server (and its existing limit) from being stored twice.
+    await collection.updateOne(
+      { 'id': patron.id, 'guilds.id': { $ne: interaction.guild.id } },
+      {
         $push: {
           guilds: {
             id: interaction.guild.id,
