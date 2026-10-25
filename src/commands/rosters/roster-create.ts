@@ -2,6 +2,7 @@ import { Settings, UNRANKED_WAR_LEAGUE_ID, URL_REGEX } from '@app/constants';
 import { CommandInteraction, Role } from 'discord.js';
 import moment from 'moment-timezone';
 import { Args, Command } from '../../lib/handlers.js';
+import { dashboardRow } from '../../util/helper.js';
 import {
   DEFAULT_TROPHY_ROSTER_LAYOUT,
   IRoster,
@@ -193,6 +194,9 @@ export default class RosterCreateCommand extends Command {
         `- ${this.client.commands.get('/roster groups modify')} to edit/delete a user group.`
       ].join('\n')
     );
-    return interaction.editReply({ embeds: [embed] });
+    return interaction.editReply({
+      embeds: [embed],
+      components: [dashboardRow('/rosters', 'rosters')]
+    });
   }
 }

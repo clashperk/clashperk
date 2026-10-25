@@ -20,6 +20,7 @@ import {
   TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/handlers.js';
+import { dashboardButton } from '../../util/helper.js';
 import { EMOJIS } from '../../util/emojis.js';
 
 export default class SetupButtonsCommand extends Command {
@@ -115,7 +116,8 @@ export default class SetupButtonsCommand extends Command {
       new ButtonBuilder()
         .setCustomId(customIds.done)
         .setLabel('Post Embed')
-        .setStyle(ButtonStyle.Success)
+        .setStyle(ButtonStyle.Success),
+      dashboardButton('/buttons', 'buttons')
     );
     const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()
@@ -318,7 +320,8 @@ export default class SetupButtonsCommand extends Command {
       new ButtonBuilder()
         .setCustomId(customIds.done)
         .setLabel('Post Embed')
-        .setStyle(ButtonStyle.Success)
+        .setStyle(ButtonStyle.Success),
+      dashboardButton('/buttons', 'buttons')
     );
 
     const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
@@ -478,7 +481,8 @@ export default class SetupButtonsCommand extends Command {
       new ButtonBuilder()
         .setCustomId(customIds.done)
         .setLabel('Post Embed')
-        .setStyle(ButtonStyle.Success)
+        .setStyle(ButtonStyle.Success),
+      dashboardButton('/buttons', 'buttons')
     );
 
     const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);
@@ -638,7 +642,8 @@ export default class SetupButtonsCommand extends Command {
       new ButtonBuilder()
         .setCustomId(customIds.done)
         .setLabel('Post Embed')
-        .setStyle(ButtonStyle.Success)
+        .setStyle(ButtonStyle.Success),
+      dashboardButton('/buttons', 'buttons')
     );
 
     const buttonColorMenu = this.buttonStyleMenu(customIds.buttonStyle, state.button_style);

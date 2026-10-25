@@ -17,7 +17,7 @@ import {
 import moment from 'moment';
 import { Filter } from 'mongodb';
 import { Command, CommandOptions } from '../../lib/handlers.js';
-import { hexToNanoId } from '../../util/helper.js';
+import { dashboardRow, hexToNanoId } from '../../util/helper.js';
 import { Util } from '../../util/toolkit.js';
 
 export default class RemindersListCommand extends Command {
@@ -138,15 +138,24 @@ export default class RemindersListCommand extends Command {
 
     if (chunks.length === 1) {
       const embed = new EmbedBuilder().setDescription(chunks.join(''));
-      return interaction.followUp({ embeds: [embed], ephemeral: !args.compact_list });
+      return interaction.followUp({
+        embeds: [embed],
+        ephemeral: !args.compact_list,
+        components: [dashboardRow('/reminders', 'reminders')]
+      });
     }
 
     const contents = Util.splitMessage(chunks.join('\n\u200b\n'), {
       maxLength: 2000,
       char: '\n\u200b\n'
     });
-    for (const content of contents)
-      await interaction.followUp({ content, ephemeral: !args.compact_list });
+    for (const [i, content] of contents.entries()) {
+      await interaction.followUp({
+        content,
+        ephemeral: !args.compact_list,
+        components: i === contents.length - 1 ? [dashboardRow('/reminders', 'reminders')] : []
+      });
+    }
   }
 
   private async clanGamesReminders(
@@ -223,15 +232,24 @@ export default class RemindersListCommand extends Command {
 
     if (chunks.length === 1) {
       const embed = new EmbedBuilder().setDescription(chunks.join(''));
-      return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+        components: [dashboardRow('/reminders', 'reminders')]
+      });
     }
 
     const contents = Util.splitMessage(chunks.join('\n\u200b\n'), {
       maxLength: 2000,
       char: '\n\u200b\n'
     });
-    for (const content of contents)
-      await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+    for (const [i, content] of contents.entries()) {
+      await interaction.followUp({
+        content,
+        flags: MessageFlags.Ephemeral,
+        components: i === contents.length - 1 ? [dashboardRow('/reminders', 'reminders')] : []
+      });
+    }
   }
 
   public async capitalReminders(
@@ -313,14 +331,23 @@ export default class RemindersListCommand extends Command {
 
     if (chunks.length === 1) {
       const embed = new EmbedBuilder().setDescription(chunks.join(''));
-      return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+        components: [dashboardRow('/reminders', 'reminders')]
+      });
     }
 
     const contents = Util.splitMessage(chunks.join('\n\u200b\n'), {
       maxLength: 2000,
       char: '\n\u200b\n'
     });
-    for (const content of contents)
-      await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+    for (const [i, content] of contents.entries()) {
+      await interaction.followUp({
+        content,
+        flags: MessageFlags.Ephemeral,
+        components: i === contents.length - 1 ? [dashboardRow('/reminders', 'reminders')] : []
+      });
+    }
   }
 }

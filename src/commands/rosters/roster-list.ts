@@ -7,6 +7,7 @@ import {
 } from 'discord.js';
 import { Filter, WithId } from 'mongodb';
 import { Command } from '../../lib/handlers.js';
+import { dashboardRow } from '../../util/helper.js';
 import { IRoster, ROSTER_MAX_LIMIT, rosterLabel } from '../../struct/roster-manager.js';
 
 export default class RosterListCommand extends Command {
@@ -154,7 +155,7 @@ export default class RosterListCommand extends Command {
 
     if (isQuery) {
       if (!embeds.length) return interaction.editReply({ content: 'No rosters found.' });
-      return interaction.editReply({ embeds });
+      return interaction.editReply({ embeds, components: [dashboardRow('/rosters', 'rosters')] });
     }
 
     const categories = await this.client.rosterManager.getCategories(interaction.guild.id);
@@ -176,7 +177,7 @@ export default class RosterListCommand extends Command {
 
     if (categories.length) embeds.push(groupEmbed);
     if (!embeds.length) return interaction.editReply({ content: 'No rosters or groups found.' });
-    return interaction.editReply({ embeds });
+    return interaction.editReply({ embeds, components: [dashboardRow('/rosters', 'rosters')] });
   }
 }
 

@@ -17,7 +17,12 @@ import { cluster } from 'radash';
 import { Command } from '../../lib/handlers.js';
 import { CreateGoogleSheet, createGoogleSheet, createHyperlink } from '../../struct/google.js';
 import { EMOJIS, HEROES, TOWN_HALLS } from '../../util/emojis.js';
-import { dashboardUrl, getExportComponents, sumHeroes } from '../../util/helper.js';
+import {
+  dashboardButton,
+  dashboardRow,
+  getExportComponents,
+  sumHeroes
+} from '../../util/helper.js';
 import { createInteractionCollector, handlePagination } from '../../util/pagination.js';
 
 const roles: Record<string, string> = {
@@ -106,7 +111,10 @@ export default class ProfileCommand extends Command {
       );
       return interaction.editReply({
         embeds: [embed],
-        components: user.id === interaction.user.id ? [this.accountsRow()] : []
+        components:
+          user.id === interaction.user.id
+            ? [dashboardRow('/accounts', 'profile', 'Manage on web')]
+            : []
       });
     }
 
@@ -240,7 +248,8 @@ export default class ProfileCommand extends Command {
       );
     }
 
-    if (user.id === interaction.user.id) row.addComponents(this.accountsLink());
+    if (user.id === interaction.user.id)
+      row.addComponents(dashboardButton('/accounts', 'profile', 'Manage on web'));
 
     const changeDefaultAccount = async (action: StringSelectMenuInteraction) => {
       await action.deferUpdate();
@@ -314,18 +323,6 @@ export default class ProfileCommand extends Command {
         return changeDefaultAccount(action);
       }
     });
-  }
-
-  /** Your own accounts on the dashboard; it asks you to sign in, so the link is safe to share. */
-  private accountsLink() {
-    return new ButtonBuilder()
-      .setLabel('Manage on web')
-      .setStyle(ButtonStyle.Link)
-      .setURL(dashboardUrl('/accounts?utm_source=discord&utm_campaign=profile'));
-  }
-
-  private accountsRow() {
-    return new ActionRowBuilder<ButtonBuilder>().addComponents(this.accountsLink());
   }
 
   private async getUserByTag(interaction: CommandInteraction, playerTag: string) {

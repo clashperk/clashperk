@@ -34,6 +34,7 @@ import {
 import { ObjectId, WithId } from 'mongodb';
 import { nanoid } from 'nanoid';
 import { Command } from '../../lib/handlers.js';
+import { dashboardButton } from '../../util/helper.js';
 
 const CUSTOM_EMOJI_RE = /^<a?:[\w]{2,32}:\d{17,19}>$/;
 const isValidEmoji = (input: string) => {
@@ -419,7 +420,8 @@ export default class TicketSetupCommand extends Command {
     container.addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small));
     container.addActionRowComponents((row) =>
       row.addComponents(
-        new ButtonBuilder().setCustomId(ids.done).setLabel('Done').setStyle(ButtonStyle.Success)
+        new ButtonBuilder().setCustomId(ids.done).setLabel('Done').setStyle(ButtonStyle.Success),
+        dashboardButton(`/tickets/${panel._id.toHexString()}`, 'tickets')
       )
     );
 

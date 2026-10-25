@@ -30,6 +30,7 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import ms from 'ms';
 import { Args, Command } from '../../lib/handlers.js';
+import { dashboardButton } from '../../util/helper.js';
 
 export default class RemindersCreateCommand extends Command {
   public constructor() {
@@ -347,6 +348,9 @@ export default class RemindersCreateCommand extends Command {
             .setStyle(ButtonStyle.Primary)
             .setDisabled(disable)
         );
+
+      // Once the form closes (saved or timed out), point to where reminders are managed.
+      if (disable) btnRow.addComponents(dashboardButton('/reminders', 'reminders'));
 
       if (dur === 0) {
         return [warTypeRow, btnRow];
@@ -682,6 +686,8 @@ export default class RemindersCreateCommand extends Command {
             .setDisabled(disable)
         );
 
+      if (disable) row4.addComponents(dashboardButton('/reminders', 'reminders'));
+
       return [row1, row2, row3, row4];
     };
 
@@ -982,6 +988,8 @@ export default class RemindersCreateCommand extends Command {
             .setStyle(ButtonStyle.Primary)
             .setDisabled(disable)
         );
+
+      if (disable) row4.addComponents(dashboardButton('/reminders', 'reminders'));
 
       return [row1, row2, row3, row4];
     };
