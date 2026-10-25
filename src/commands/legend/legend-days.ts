@@ -42,7 +42,13 @@ import {
   PLAYER_LEAGUE_TIERS,
   TOWN_HALLS
 } from '../../util/emojis.js';
-import { formatLeague, getMenuFromMessage, padStart, trimTag } from '../../util/helper.js';
+import {
+  dashboardUrl,
+  formatLeague,
+  getMenuFromMessage,
+  padStart,
+  trimTag
+} from '../../util/helper.js';
 import { Season, Util } from '../../util/toolkit.js';
 
 export default class LegendDaysCommand extends Command {
@@ -90,6 +96,16 @@ export default class LegendDaysCommand extends Command {
           .setLabel(args.prev ? 'Overview / Current Day' : 'Previous Days / Graph')
           .setCustomId(customIds.overview)
           .setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
+      )
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('View season')
+          .setStyle(ButtonStyle.Link)
+          .setURL(
+            dashboardUrl(
+              `/web/players/${encodeURIComponent(data.tag)}/legends?utm_source=discord&utm_campaign=legend-days`
+            )
+          )
       );
 
     if (!data.leagueTier || data.leagueTier.id !== LEGEND_LEAGUE_ID) {
