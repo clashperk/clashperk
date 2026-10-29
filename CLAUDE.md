@@ -72,13 +72,6 @@ Log handlers (clan-log, clan-war-log, capital-log, donation-log, etc.) process g
 - **Databases**: MongoDB (replica set required), Redis, Clickhouse
 - **Monitoring**: Sentry for errors, PostHog + Mixpanel for analytics
 
-## Workspaces:
-
-- clashperk - bot code in this repository
-- clashperk-backend - API server for web dashboard and bot
-- dashboard - React web dashboard for clan management and stats
-- docs.clashperk.com - GitBook documentation site
-
 ## Rules
 
 - Product direction lives in the dashboard repo's roadmap: [`clashperk/clashperk-client` → `docs/roadmap.md`](https://github.com/clashperk/clashperk-client/blob/main/docs/roadmap.md). Its "API first" goal: every write (reminders, clan logs, rosters, links, settings) is moving into the API (`clashperk-backend`), and the bot will later call those endpoints instead of writing MongoDB itself. Until it switches, build new write features in the API first and keep the bot's own write logic in step with it.
