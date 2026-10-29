@@ -33,7 +33,7 @@ import { Args, Command } from '../../lib/handlers.js';
 import { dashboardLink } from '../../util/helper.js';
 
 const dashboardText = () =>
-  `Manage all your reminders on the [dashboard](<${dashboardLink('/reminders', 'reminders')}>).`;
+  `## Manage all your reminders on the [Dashboard](<${dashboardLink('/reminders', 'reminders')}>).`;
 
 export default class RemindersCreateCommand extends Command {
   public constructor() {
