@@ -203,7 +203,6 @@ src/
 | `GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret |
 | `GOOGLE_REFRESH_TOKEN` | Google OAuth2 refresh token |
 | `JWT_DECODE_SECRET` | JWT signing/verification secret |
-| `GITBOOK_API_TOKEN` | GitBook API token for `/ask` (Assistant API) |
 | `GROQ_API_KEY` | Groq API key for `/ask` answers |
 | `GIT_SHA` | Git commit SHA for versioning |
 
