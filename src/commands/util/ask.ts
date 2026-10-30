@@ -1,4 +1,7 @@
+import { createGroq } from '@ai-sdk/groq';
+import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import { ASK_AGENT_INSTRUCTIONS } from '@app/constants';
+import { generateText } from 'ai';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,6 +14,9 @@ import { Command } from '../../lib/handlers.js';
 const DOCS_MCP_URL = 'https://docs.clashperk.com/~gitbook/mcp';
 const GROQ_MODELS = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b'];
 
+const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+let mcpClient: Promise<MCPClient> | null = null;
+
 const NO_RESULTS =
   'No results were found. Visit our [documentation](<https://docs.clashperk.com>) to learn more or explore related topics.';
 
@@ -21,6 +27,8 @@ export default class AskCommand extends Command {
       channel: 'guild',
       defer: true
     });
+
+    // 
   }
 
   public async exec(
@@ -85,28 +93,33 @@ export default class AskCommand extends Command {
     return null;
   }
 
-  private async searchDocs(question: string) {
-    const res = await fetch(DOCS_MCP_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json, text/event-stream'
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'tools/call',
-        params: { name: 'searchDocumentation', arguments: { query: question.slice(0, 512) } }
-      }),
-      signal: AbortSignal.timeout(10_000)
-    });
-    if (!res.ok) throw new Error(`Docs search responded ${res.status}`);
+  private getMcpClient() {
+    mcpClient ??= createMCPClient({ transport: { type: 'http', url: DOCS_MCP_URL } }).catch(
+      (error) => {
+        mcpClient = null;
+        throw error;
+      }
+    );
+    return mcpClient;
+  }
 
-    const data = (await res.text()).split('\n').find((line) => line.startsWith('data: '));
-    const result = data
-      ? (JSON.parse(data.slice(6)) as { result?: { content?: { text: string }[] } }).result
-      : null;
-    const results = result?.content?.map((item) => item.text).join('\n') ?? '';
+  private async searchDocs(question: string) {
+    const client = await this.getMcpClient();
+    const result = await client
+      .callTool({
+        name: 'searchDocumentation',
+        arguments: { query: question.slice(0, 512) },
+        options: { timeout: 10_000 }
+      })
+      .catch((error) => {
+        // Drop the client so an expired session reconnects on the next question.
+        mcpClient = null;
+        throw error;
+      });
+    const content = Array.isArray(result.content)
+      ? (result.content as { type: string; text?: string }[])
+      : [];
+    const results = content.map((item) => (item.type === 'text' ? item.text : '')).join('\n');
 
     const urls = [...results.matchAll(/^Link: (\S+)/gm)].map((match) => match[1].split('#')[0]);
     const pageContents = await Promise.all(
@@ -126,37 +139,25 @@ export default class AskCommand extends Command {
 
   private async askGroq(question: string, context: string, model: string) {
     const startedAt = Date.now();
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        max_completion_tokens: 1200,
-        reasoning_effort: model.startsWith('qwen/') ? 'none' : 'low',
-        messages: [
-          { role: 'system', content: `${ASK_AGENT_INSTRUCTIONS}\n${context}` },
-          { role: 'user', content: question.slice(0, 2048) }
-        ]
-      }),
-      signal: AbortSignal.timeout(20_000)
+    const { text, usage } = await generateText({
+      model: groq(model),
+      system: `${ASK_AGENT_INSTRUCTIONS}\n${context}`,
+      prompt: question.slice(0, 2048),
+      temperature: 0.2,
+      maxOutputTokens: 1200,
+      // Fall through to the next model on a 429 instead of waiting out a retry.
+      maxRetries: 0,
+      abortSignal: AbortSignal.timeout(20_000),
+      providerOptions: {
+        groq: { reasoningEffort: model.startsWith('qwen/') ? 'none' : 'low' }
+      }
     });
-    if (!res.ok) throw new Error(`Groq responded ${res.status}: ${await res.text()}`);
-
-    const body = (await res.json()) as {
-      choices: { message: { content: string } }[];
-      usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
-    };
-    const { usage } = body;
     this.client.logger.info(
-      `${model}: ${Date.now() - startedAt}ms, ${usage?.prompt_tokens ?? '?'} in + ${usage?.completion_tokens ?? '?'} out = ${usage?.total_tokens ?? '?'} tokens`,
+      `${model}: ${Date.now() - startedAt}ms, ${usage.inputTokens ?? '?'} in + ${usage.outputTokens ?? '?'} out = ${usage.totalTokens ?? '?'} tokens`,
       { label: 'ASK' }
     );
 
-    const content = body.choices[0]?.message.content?.trim();
+    const content = text.trim();
     if (!content) throw new Error('Groq returned an empty answer');
     // Angle brackets stop Discord from embedding a preview for every link.
     return content.replace(/\]\((https?:\/\/[^)\s>]+)\)/g, '](<$1>)');

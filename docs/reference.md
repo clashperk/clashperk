@@ -44,7 +44,7 @@ ClashPerk is a Discord bot for Clash of Clans built with TypeScript, discord.js 
 | Analytics | PostHog + Mixpanel |
 | DI | tsyringe (reflect-metadata decorators) |
 | i18n | i18next (32+ languages via `locales/` submodule) |
-| AI | `/ask`: GitBook docs search + Groq, falling back to the GitBook Assistant API |
+| AI | Vercel AI SDK: `/ask` searches the docs via the GitBook MCP server and answers with Groq |
 
 ---
 
