@@ -17,6 +17,16 @@ const GROQ_MODELS = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b'];
 const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
 let mcpClient: Promise<MCPClient> | null = null;
 
+function getMcpClient() {
+  mcpClient ??= createMCPClient({ transport: { type: 'http', url: DOCS_MCP_URL } }).catch(
+    (error) => {
+      mcpClient = null;
+      throw error;
+    }
+  );
+  return mcpClient;
+}
+
 const NO_RESULTS =
   'No results were found. Visit our [documentation](<https://docs.clashperk.com>) to learn more or explore related topics.';
 
@@ -28,7 +38,8 @@ export default class AskCommand extends Command {
       defer: true
     });
 
-    // 
+    // Connect at startup so the first /ask doesn't pay for the MCP handshake.
+    getMcpClient().catch(() => null);
   }
 
   public async exec(
@@ -93,29 +104,19 @@ export default class AskCommand extends Command {
     return null;
   }
 
-  private getMcpClient() {
-    mcpClient ??= createMCPClient({ transport: { type: 'http', url: DOCS_MCP_URL } }).catch(
-      (error) => {
-        mcpClient = null;
-        throw error;
-      }
-    );
-    return mcpClient;
-  }
-
   private async searchDocs(question: string) {
-    const client = await this.getMcpClient();
-    const result = await client
-      .callTool({
+    const callSearch = async () =>
+      (await getMcpClient()).callTool({
         name: 'searchDocumentation',
         arguments: { query: question.slice(0, 512) },
         options: { timeout: 10_000 }
-      })
-      .catch((error) => {
-        // Drop the client so an expired session reconnects on the next question.
-        mcpClient = null;
-        throw error;
       });
+
+    // The server can expire an idle session, so retry once on a fresh client.
+    const result = await callSearch().catch(() => {
+      mcpClient = null;
+      return callSearch();
+    });
     const content = Array.isArray(result.content)
       ? (result.content as { type: string; text?: string }[])
       : [];
