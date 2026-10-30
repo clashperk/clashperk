@@ -61,10 +61,15 @@ export default class AskCommand extends Command {
   }
 
   private async ask(question: string) {
+    const startedAt = Date.now();
     const context = await this.searchDocs(question).catch((error) => {
       this.client.logger.error(error, { label: 'ASK' });
       return null;
     });
+    this.client.logger.info(
+      `docs search: ${Date.now() - startedAt}ms, ${context ? `${context.length} chars` : 'no results'}`,
+      { label: 'ASK' }
+    );
 
     if (!context) return null;
 
@@ -120,6 +125,7 @@ export default class AskCommand extends Command {
   }
 
   private async askGroq(question: string, context: string, model: string) {
+    const startedAt = Date.now();
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -140,7 +146,16 @@ export default class AskCommand extends Command {
     });
     if (!res.ok) throw new Error(`Groq responded ${res.status}: ${await res.text()}`);
 
-    const body = (await res.json()) as { choices: { message: { content: string } }[] };
+    const body = (await res.json()) as {
+      choices: { message: { content: string } }[];
+      usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
+    };
+    const { usage } = body;
+    this.client.logger.info(
+      `${model}: ${Date.now() - startedAt}ms, ${usage?.prompt_tokens ?? '?'} in + ${usage?.completion_tokens ?? '?'} out = ${usage?.total_tokens ?? '?'} tokens`,
+      { label: 'ASK' }
+    );
+
     const content = body.choices[0]?.message.content?.trim();
     if (!content) throw new Error('Groq returned an empty answer');
     // Angle brackets stop Discord from embedding a preview for every link.
