@@ -44,7 +44,7 @@ ClashPerk is a Discord bot for Clash of Clans built with TypeScript, discord.js 
 | Analytics | PostHog + Mixpanel |
 | DI | tsyringe (reflect-metadata decorators) |
 | i18n | i18next (32+ languages via `locales/` submodule) |
-| AI | Vercel AI SDK + Cerebras |
+| AI | Vercel AI SDK: `/ask` searches the docs via the GitBook MCP server and answers with Groq |
 
 ---
 
@@ -203,7 +203,7 @@ src/
 | `GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret |
 | `GOOGLE_REFRESH_TOKEN` | Google OAuth2 refresh token |
 | `JWT_DECODE_SECRET` | JWT signing/verification secret |
-| `CEREBRAS_API_KEY` | Cerebras AI API key |
+| `GROQ_API_KEY` | Groq API key for `/ask` answers |
 | `GIT_SHA` | Git commit SHA for versioning |
 
 ---

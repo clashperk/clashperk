@@ -1,7 +1,7 @@
-import { createCerebras } from '@ai-sdk/cerebras';
-import { createMCPClient } from '@ai-sdk/mcp';
-import { FeatureFlags, SYSTEM_PROMPT } from '@app/constants';
-import { generateText, stepCountIs } from 'ai';
+import { createGroq } from '@ai-sdk/groq';
+import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
+import { ASK_AGENT_INSTRUCTIONS } from '@app/constants';
+import { generateText } from 'ai';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,9 +11,24 @@ import {
 } from 'discord.js';
 import { Command } from '../../lib/handlers.js';
 
-const cerebras = createCerebras({
-  apiKey: process.env.CEREBRAS_API_KEY
-});
+const DOCS_MCP_URL = 'https://docs.clashperk.com/~gitbook/mcp';
+const GROQ_MODELS = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b'];
+
+const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+let mcpClient: Promise<MCPClient> | null = null;
+
+function getMcpClient() {
+  mcpClient ??= createMCPClient({ transport: { type: 'http', url: DOCS_MCP_URL } }).catch(
+    (error) => {
+      mcpClient = null;
+      throw error;
+    }
+  );
+  return mcpClient;
+}
+
+const NO_RESULTS =
+  'No results were found. Visit our [documentation](<https://docs.clashperk.com>) to learn more or explore related topics.';
 
 export default class AskCommand extends Command {
   public constructor() {
@@ -22,6 +37,9 @@ export default class AskCommand extends Command {
       channel: 'guild',
       defer: true
     });
+
+    // Connect at startup so the first /ask doesn't pay for the MCP handshake.
+    getMcpClient().catch(() => null);
   }
 
   public async exec(
@@ -30,31 +48,21 @@ export default class AskCommand extends Command {
     args: { message: string }
   ) {
     if (!args.message?.length || !(args.message.length >= 5)) {
-      return interaction.editReply(
-        'No results were found. Visit our [documentation](<https://docs.clashperk.com>) to learn more or explore related topics.'
-      );
+      return interaction.editReply(NO_RESULTS);
     }
 
-    const useMcpSearch = this.client.isFeatureEnabled(FeatureFlags.USE_MCP_SEARCH, 'global');
-    const content = await (useMcpSearch
-      ? this.askMcp(args.message)
-      : this.askGitBook(args.message));
+    const content = await this.ask(args.message);
+    if (!content) return interaction.editReply(NO_RESULTS);
 
-    if (!content)
-      return interaction.editReply(
-        'No results were found. Visit our [documentation](<https://docs.clashperk.com>) to learn more or explore related topics.'
-      );
+    const targetUser = interaction.isContextMenuCommand()
+      ? interaction.targetMessage.author
+      : interaction.user;
+    const row = this.getComponents(targetUser.id, interaction.user.id);
 
-    const row = this.getComponents(
-      interaction.isContextMenuCommand()
-        ? interaction.targetMessage.author.id
-        : interaction.user.id,
-      interaction.user.id
-    );
-
+    const mention = ` ${targetUser.toString()}`;
     return interaction.editReply({
       components: [row],
-      content: `${content} ${interaction.isContextMenuCommand() ? interaction.targetMessage.author.toString() : interaction.user.toString()}` // .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      content: `${content.slice(0, 2000 - mention.length)}${mention}`
     });
   }
 
@@ -71,62 +79,88 @@ export default class AskCommand extends Command {
     );
   }
 
-  private async askGitBook(message: string) {
-    const res = await fetch(
-      `https://api.gitbook.com/v1/orgs/quopd6hgTLS6pbOQ3351/ask?format=markdown&details=true`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': '*/*',
-          'Authorization': `Bearer ${process.env.GITBOOK_API_TOKEN}`
-        },
-        method: 'POST',
-        body: JSON.stringify({
-          query: [
-            `INSTRUCTIONS:`,
-            `- DO NOT PROVIDE ANY HYPERLINKS`,
-            '- DO NOT PROVIDE ANY REFERENCE ABOUT LINKS',
-            '- DO NOT SHOW ANY EXAMPLES IN CODE BLOCK',
-            `PROMPT: ${message}`
-          ].join('\n')
-        })
-      }
+  private async ask(question: string) {
+    const startedAt = Date.now();
+    const context = await this.searchDocs(question).catch((error) => {
+      this.client.logger.error(error, { label: 'ASK' });
+      return null;
+    });
+    this.client.logger.info(
+      `docs search: ${Date.now() - startedAt}ms, ${context ? `${context.length} chars` : 'no results'}`,
+      { label: 'ASK' }
     );
 
-    const body = (await res.json()) as { answer: { answer: { markdown: string } } };
-    return body['answer']?.['answer']?.['markdown'];
+    if (!context) return null;
+
+    // Groq's free tier caps tokens per minute per model, so a burst falls through to the next one.
+    for (const model of GROQ_MODELS) {
+      try {
+        return await this.askGroq(question, context, model);
+      } catch (error) {
+        this.client.logger.warn(`${model}: ${error}`, { label: 'ASK' });
+      }
+    }
+
+    return null;
   }
 
-  private async askMcp(message: string) {
-    const mcpClient = await createMCPClient({
-      transport: {
-        type: 'http',
-        url: 'https://docs.clashperk.com/~gitbook/mcp'
+  private async searchDocs(question: string) {
+    const callSearch = async () =>
+      (await getMcpClient()).callTool({
+        name: 'searchDocumentation',
+        arguments: { query: question.slice(0, 512) },
+        options: { timeout: 10_000 }
+      });
+
+    // The server can expire an idle session, so retry once on a fresh client.
+    const result = await callSearch().catch(() => {
+      mcpClient = null;
+      return callSearch();
+    });
+    const content = Array.isArray(result.content)
+      ? (result.content as { type: string; text?: string }[])
+      : [];
+    const results = content.map((item) => (item.type === 'text' ? item.text : '')).join('\n');
+
+    const urls = [...results.matchAll(/^Link: (\S+)/gm)].map((match) => match[1].split('#')[0]);
+    const pageContents = await Promise.all(
+      [...new Set(urls)].slice(0, 3).map(async (url) => {
+        const res = await fetch(`${url.replace(/\/$/, '')}.md`, {
+          signal: AbortSignal.timeout(10_000)
+        });
+        if (!res.ok) return '';
+        const markdown = (await res.text()).replace(/^> For the complete documentation.*\n/m, '');
+        return `<page url="${url}">\n${markdown.slice(0, 4000)}\n</page>`;
+      })
+    );
+
+    if (!results) return null;
+    return `Search results:\n${results.slice(0, 3000)}\n\nDocs pages:\n${pageContents.join('\n')}`;
+  }
+
+  private async askGroq(question: string, context: string, model: string) {
+    const startedAt = Date.now();
+    const { text, usage } = await generateText({
+      model: groq(model),
+      system: `${ASK_AGENT_INSTRUCTIONS}\n${context}`,
+      prompt: question.slice(0, 2048),
+      temperature: 0.2,
+      maxOutputTokens: 1200,
+      // Fall through to the next model on a 429 instead of waiting out a retry.
+      maxRetries: 0,
+      abortSignal: AbortSignal.timeout(20_000),
+      providerOptions: {
+        groq: { reasoningEffort: model.startsWith('qwen/') ? 'none' : 'low' }
       }
     });
+    this.client.logger.info(
+      `${model}: ${Date.now() - startedAt}ms, ${usage.inputTokens ?? '?'} in + ${usage.outputTokens ?? '?'} out = ${usage.totalTokens ?? '?'} tokens`,
+      { label: 'ASK' }
+    );
 
-    const tools = await mcpClient.tools();
-
-    const result = await generateText({
-      model: cerebras('qwen-3-235b-a22b-instruct-2507'),
-      tools,
-      stopWhen: stepCountIs(5),
-      messages: [
-        {
-          role: 'system',
-          content: SYSTEM_PROMPT
-        },
-        {
-          role: 'user',
-          content: [{ type: 'text', text: message }]
-        }
-      ],
-      maxOutputTokens: 4000,
-      onFinish: async () => {
-        await mcpClient.close();
-      }
-    });
-
-    return result.text;
+    const content = text.trim();
+    if (!content) throw new Error('Groq returned an empty answer');
+    // Angle brackets stop Discord from embedding a preview for every link.
+    return content.replace(/\]\((https?:\/\/[^)\s>]+)\)/g, '](<$1>)');
   }
 }
